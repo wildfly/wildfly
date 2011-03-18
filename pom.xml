@@ -58,7 +58,10 @@
         <version.antlr>2.7.6-brew</version.antlr>
         <version.asm>2.2.3</version.asm>
         <version.cglib>2.1_3</version.cglib>
+        <version.commons-codec>1.4</version.commons-codec>
         <version.commons-collections>3.1</version.commons-collections>
+        <version.commons-io>1.4</version.commons-io>
+        <version.commons-lang>2.4</version.commons-lang>
         <version.com.google.guava>r06</version.com.google.guava>
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
@@ -76,12 +79,17 @@
         <version.jline>0.9.94</version.jline>
         <version.junit>4.8.1</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
+        <version.net.sourceforge.cssparser.cssparser>0.9.5</version.net.sourceforge.cssparser.cssparser>
+        <version.net.sourceforge.htmlunit.htmlunit>2.8</version.net.sourceforge.htmlunit.htmlunit>
+        <version.net.sourceforge.nekohtml.nekohtml>1.9.14</version.net.sourceforge.nekohtml.nekohtml>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
         <version.org.apache.ant>1.7.1</version.org.apache.ant>
         <version.org.apache.cxf>2.3.1</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.3.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
+        <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
+        <version.org.apache.httpcomponents>4.0.1</version.org.apache.httpcomponents>
         <version.org.apache.neethi>2.0.4</version.org.apache.neethi>
         <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
@@ -336,6 +344,7 @@
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
                                             <exclude>org.slf4j:slf4j-log4j13</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
+                                            <exclude>commons-logging:commons-logging</exclude>
 
                                             <!-- JBAS-7558 Exclude older jboss-javaee artifacts -->
                                             <exclude>org.jboss.javaee:jboss-javaee</exclude>
@@ -359,6 +368,11 @@
                                             <!-- [JBAS-8874] Woodstox dependency causes smoke test failures -->
                                             <exclude>org.codehaus.woodstox:woodstox-core-asl</exclude>
                                             <exclude>org.codehaus.woodstox:wstx-lgpl</exclude>
+
+                                            <!-- JBAS-9000 more duplicate crap -->
+                                            <exclude>xalan:xalan</exclude>
+                                            <exclude>xalan:serializer</exclude>
+                                            <exclude>xml-apis:xml-apis</exclude>
 
                                             <exclude>trove:trove</exclude>
                                         </excludes>
@@ -681,15 +695,67 @@
             </dependency>
 
             <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${version.commons-codec}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>${version.commons-collections}</version>
             </dependency>
 
             <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${version.commons-io}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${version.commons-lang}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>${version.dom4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sourceforge.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>${version.net.sourceforge.htmlunit.htmlunit}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sourceforge.nekohtml</groupId>
+                <artifactId>nekohtml</artifactId>
+                <version>${version.net.sourceforge.nekohtml.nekohtml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -720,25 +786,18 @@
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>${version.org.apache.xerces}</version>
-            </dependency>
-
-            <dependency>
-
-               <groupId>org.apache.ant</groupId>
-               <artifactId>ant</artifactId>
-               <version>${version.org.apache.ant}</version>
-           </dependency>
-
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-ws-security</artifactId>
-                <version>${version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+               <groupId>org.apache.ant</groupId>
+               <artifactId>ant</artifactId>
+               <version>${version.org.apache.ant}</version>
             </dependency>
 
             <dependency>
@@ -1359,6 +1418,10 @@
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-ws-security</artifactId>
                     </exclusion>
@@ -1668,6 +1731,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
@@ -1711,6 +1775,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
@@ -1766,6 +1831,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-boolean</artifactId>
@@ -1805,6 +1871,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-bug671</artifactId>
@@ -1848,6 +1915,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-dv</artifactId>
@@ -1887,6 +1955,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
                 <artifactId>cxf-xjc-ts</artifactId>
@@ -1927,6 +1996,54 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${version.org.apache.httpcomponents}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${version.org.apache.httpcomponents}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${version.org.apache.httpcomponents}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j</artifactId>
+                <version>${version.org.apache.james.apache-mime4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2350,6 +2467,10 @@
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2834,6 +2955,20 @@
                 <groupId>org.jboss.jsfunit</groupId>
                 <artifactId>jboss-jsfunit-core</artifactId>
                 <version>${version.org.jboss.jsfunit.jsfunit}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>serializer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3361,6 +3496,20 @@
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-common</artifactId>
                 <version>${version.org.jboss.ws.common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jboss.jaxbintros</groupId>
+                        <artifactId>jboss-jaxb-intros</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

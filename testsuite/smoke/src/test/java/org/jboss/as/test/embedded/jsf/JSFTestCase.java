@@ -22,10 +22,7 @@
 
 package org.jboss.as.test.embedded.jsf;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import javax.faces.component.UIComponent;
@@ -34,15 +31,17 @@ import junit.framework.Assert;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.JUnitTestRunner;
 import org.jboss.arquillian.spi.TestRunner;
 import org.jboss.as.arquillian.protocol.servlet.WebContext;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.jsfunit.cdi.InitialPage;
+import org.jboss.jsfunit.context.JSFUnitFacesContext;
 import org.jboss.jsfunit.jsfsession.JSFClientSession;
 import org.jboss.jsfunit.jsfsession.JSFServerSession;
 import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,19 +61,9 @@ public class JSFTestCase {
         WebArchive war = ShrinkWrapUtils.createWebArchive("jsf-example.war", JSFTestCase.class);
         war.addWebResource(EmptyAsset.INSTANCE, "beans.xml")
             .addManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
-            .add(new Asset() {
-                @Override
-                public InputStream openStream() {
-                    try {
-                        return new ByteArrayInputStream("org.jboss.arquillian.junit.JUnitTestRunner".getBytes("UTF-8"));
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            , "META-INF/services/" + TestRunner.class.getName())
-           .addManifestResource(jsfunitFacesConfigXml(), "faces-config.xml")
-           .addManifestResource("arquillian/web-fragment.xml", "web-fragment.xml");
+            .add(new StringAsset(JUnitTestRunner.class.getName()), "META-INF/services/" + TestRunner.class.getName())
+            .addManifestResource(jsfunitFacesConfigXml(), "faces-config.xml")
+            .addManifestResource("arquillian/web-fragment.xml", "web-fragment.xml");
 
         //System.out.println(war.toString(true)); // for debugging
         return war;
@@ -102,6 +91,6 @@ public class JSFTestCase {
 
     private static URL jsfunitFacesConfigXml()
     {
-       return org.jboss.jsfunit.context.JSFUnitFacesContext.class.getResource("/META-INF/faces-config.xml");
+       return JSFUnitFacesContext.class.getResource("/META-INF/faces-config.xml");
     }
 }

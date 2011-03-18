@@ -33,6 +33,8 @@
         <module name="org.jboss.jsfunit.core"/>
         <module name="org.jboss.shrinkwrap.api"/>
         <module name="javax.servlet.api"/>
+        <!-- TODO - remove this once deserialization ClassLoader issue is sorted out-->
+        <module name="javax.enterprise.api"/>
     </dependencies>
 
 </module>

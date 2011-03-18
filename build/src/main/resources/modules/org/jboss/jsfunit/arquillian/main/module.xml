@@ -28,8 +28,19 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.arquillian.spi" export="true"/>
-        <module name="org.jboss.shrinkwrap.impl" export="true"/>
-        <module name="org.jboss.shrinkwrap.spi" export="true"/>
+        <module name="javax.inject.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="net.sourceforge.cssparser"/>
+        <module name="net.sourceforge.htmlunit"/>
+        <module name="net.sourceforge.nekohtml"/>
+        <module name="org.apache.commons.codec"/>
+        <module name="org.apache.commons.io"/>
+        <module name="org.apache.commons.lang"/>
+        <module name="org.apache.httpcomponents"/>
+        <module name="org.jboss.arquillian.spi"/>
+        <module name="org.jboss.jsfunit.core"/>
+        <module name="org.jboss.shrinkwrap.impl"/>
+        <module name="org.jboss.shrinkwrap.spi"/>
+        <module name="org.w3c.css.sac"/>
     </dependencies>
 </module>

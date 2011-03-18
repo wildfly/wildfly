@@ -31,7 +31,9 @@
     <dependencies>
        <module name="org.jboss.jsfunit.arquillian" export="true"/>
        <module name="org.jboss.jsfunit.core" export="true"/>
+       <module name="net.sourceforge.htmlunit" export="true"/>
        <module services="export" name="org.jboss.jsfunit.jsfunit-arquillian-processor" export="true"/>
        <module services="export" name="org.jboss.as.arquillian.protocol.servlet" export="true"/>
+       <module name="org.jboss.surefire.arquillian-deps"/>
     </dependencies>
 </module>

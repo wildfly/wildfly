@@ -69,16 +69,28 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
+        <module-def name="antlr.antlr">
+            <maven-resource group="antlr" artifact="antlr" />
+        </module-def>
+
+        <module-def name="asm.asm">
+            <maven-resource group="asm" artifact="asm" />
+        </module-def>
+
+        <module-def name="cglib.cglib">
+            <maven-resource group="cglib" artifact="cglib" />
+        </module-def>
+
         <module-def name="ch.qos.cal10n">
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
-        <module-def name="com.h2database.h2">
-            <maven-resource group="com.h2database" artifact="h2"/>
-        </module-def>
-
         <module-def name="com.google.guava">
             <maven-resource group="com.google.guava" artifact="guava" />
+        </module-def>
+
+        <module-def name="com.h2database.h2">
+            <maven-resource group="com.h2database" artifact="h2"/>
         </module-def>
 
         <module-def name="com.sun.httpserver">
@@ -96,6 +108,10 @@
 
         <module-def name="com.sun.xml.messaging.saaj">
             <maven-resource group="com.sun.xml.messaging.saaj" artifact="saaj-impl"/>
+        </module-def>
+
+        <module-def name="dom4j.dom4j">
+            <maven-resource group="dom4j" artifact="dom4j" />
         </module-def>
 
         <module-def name="javaee.api"/>
@@ -218,8 +234,21 @@
             <maven-resource group="jline" artifact="jline"/>
         </module-def>
 
-        <module-def name="org.junit">
-            <maven-resource group="junit" artifact="junit"/>
+        <module-def name="net.sourceforge.cssparser">
+            <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
+        </module-def>
+
+        <module-def name="net.sourceforge.htmlunit">
+            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit"/>
+            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit-core-js"/>
+        </module-def>
+
+        <module-def name="net.sourceforge.nekohtml">
+            <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
+        </module-def>
+
+        <module-def name="org.apache.ant">
+            <maven-resource group="org.apache.ant" artifact="ant"/>
         </module-def>
 
         <module-def name="org.apache.aries.jmx">
@@ -230,16 +259,23 @@
             <maven-resource group="org.apache.aries" artifact="org.apache.aries.util"/>
         </module-def>
 
+        <module-def name="org.apache.commons.codec">
+            <maven-resource group="commons-codec" artifact="commons-codec"/>
+        </module-def>
+
+        <module-def name="org.apache.commons.collections">
+            <maven-resource group="commons-collections" artifact="commons-collections" />
+        </module-def>
+
+        <module-def name="org.apache.commons.io">
+            <maven-resource group="commons-io" artifact="commons-io"/>
+        </module-def>
+
+        <module-def name="org.apache.commons.lang">
+            <maven-resource group="commons-lang" artifact="commons-lang"/>
+        </module-def>
+
         <module-def name="org.apache.commons.logging"/>
-
-        <module-def name="org.apache.xalan">
-            <maven-resource group="org.apache.xalan" artifact="serializer"/>
-            <maven-resource group="org.apache.xalan" artifact="xalan"/>
-        </module-def>
-
-        <module-def name="org.apache.xerces">
-            <maven-resource group="xerces" artifact="xercesImpl"/>
-        </module-def>
 
         <module-def name="org.apache.cxf">
             <maven-resource group="org.apache.cxf" artifact="cxf-api"/>
@@ -275,52 +311,46 @@
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-ts"/>
         </module-def>
 
-        <module-def name="org.apache.neethi">
-            <maven-resource group="org.apache.neethi" artifact="neethi"/>
-        </module-def>
-
         <module-def name="org.apache.felix.configadmin">
             <maven-resource group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
+        </module-def>
+
+        <module-def name="org.apache.httpcomponents">
+            <!-- These probably do not need to be split up but we can revisit later -->
+            <maven-resource group="org.apache.httpcomponents" artifact="httpclient"/>
+            <maven-resource group="org.apache.httpcomponents" artifact="httpcore"/>
+            <maven-resource group="org.apache.httpcomponents" artifact="httpmime"/>
+        </module-def>
+
+        <module-def name="org.apache.james.mime4j">
+            <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
         </module-def>
 
         <module-def name="org.apache.log4j">
             <maven-resource group="log4j" artifact="log4j"/>
         </module-def>
 
-        <module-def name="org.apache.commons.logging"/>
+        <module-def name="org.apache.neethi">
+            <maven-resource group="org.apache.neethi" artifact="neethi"/>
+        </module-def>
 
-        <module-def name="org.apache.commons.collections">
-            <maven-resource group="commons-collections" artifact="commons-collections" />
+        <module-def name="org.apache.ws.commons.xmlschema">
+            <maven-resource group="org.apache.ws.commons.schema" artifact="XmlSchema"/>
+        </module-def>
+
+        <module-def name="org.apache.xalan">
+            <maven-resource group="org.apache.xalan" artifact="serializer"/>
+            <maven-resource group="org.apache.xalan" artifact="xalan"/>
+        </module-def>
+
+        <module-def name="org.apache.xerces">
+            <maven-resource group="xerces" artifact="xercesImpl"/>
         </module-def>
 
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
-        </module-def>
-
-        <module-def name="antlr.antlr">
-            <maven-resource group="antlr" artifact="antlr" />
-        </module-def>
-
-        <module-def name="asm.asm">
-            <maven-resource group="asm" artifact="asm" />
-        </module-def>
-
-        <module-def name="cglib.cglib">
-            <maven-resource group="cglib" artifact="cglib" />
-        </module-def>
-
-        <module-def name="dom4j.dom4j">
-            <maven-resource group="dom4j" artifact="dom4j" />
-        </module-def>
-
-    	<module-def name="org.apache.ant">
-            <maven-resource group="org.apache.ant" artifact="ant"/>
-        </module-def>
-
-    	<module-def name="org.apache.ws.commons.xmlschema">
-            <maven-resource group="org.apache.ws.commons.schema" artifact="XmlSchema"/>
         </module-def>
 
         <module-def name="org.hibernate.validator">
@@ -362,7 +392,7 @@
 
         <module-def name="org.jboss.arquillian.testenricher.cdi">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
-        	   <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-cdi"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-cdi"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.jmx">
@@ -596,31 +626,12 @@
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
 
-    	  <module-def name="org.jboss.jsfunit.arquillian">
+        <module-def name="org.jboss.jsfunit.arquillian">
             <maven-resource group="org.jboss.jsfunit" artifact="jsfunit-arquillian"/>
         </module-def>
 
         <module-def name="org.jboss.jsfunit.core">
-        	   <maven-resource group="commons-codec" artifact="commons-codec"/>
-            <maven-resource group="commons-collections" artifact="commons-collections"/>
-            <maven-resource group="commons-io" artifact="commons-io"/>
-            <maven-resource group="commons-lang" artifact="commons-lang"/>
-        	   <maven-resource group="commons-logging" artifact="commons-logging"/>
-            <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
-            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit"/>
-            <maven-resource group="net.sourceforge.htmlunit" artifact="htmlunit-core-js"/>
-            <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
-            <maven-resource group="org.apache.httpcomponents" artifact="httpclient"/>
-            <maven-resource group="org.apache.httpcomponents" artifact="httpcore"/>
-            <maven-resource group="org.apache.httpcomponents" artifact="httpmime"/>
-            <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
             <maven-resource group="org.jboss.jsfunit" artifact="jboss-jsfunit-core"/>
-            <maven-resource group="org.w3c.css" artifact="sac"/>
-            <maven-resource group="xalan" artifact="xalan"/>
-            <maven-resource group="xalan" artifact="serializer"/>
-            <maven-resource group="xerces" artifact="xercesImpl"/>
-            <maven-resource group="xml-apis" artifact="xml-apis"/>
-
         </module-def>
 
         <module-def name="org.jboss.jsfunit.jsfunit-arquillian-processor">
@@ -708,17 +719,17 @@
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
 
-    	<module-def name="org.jboss.resteasy.async-http-servlet-30">
-    	    <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
-    	</module-def>
+        <module-def name="org.jboss.resteasy.async-http-servlet-30">
+            <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
+        </module-def>
 
-    	<module-def name="org.jboss.resteasy.resteasy-jaxrs" >
-    	    <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs" jandex="true"/>
-    	</module-def>
+        <module-def name="org.jboss.resteasy.resteasy-jaxrs">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs" jandex="true"/>
+        </module-def>
 
-    	<module-def name="org.jboss.resteasy.resteasy-cdi">
-    	    <maven-resource group="org.jboss.resteasy" artifact="resteasy-cdi"/>
-    	</module-def>
+        <module-def name="org.jboss.resteasy.resteasy-cdi">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-cdi"/>
+        </module-def>
 
         <module-def name="org.jboss.shrinkwrap.api">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
@@ -732,11 +743,11 @@
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
         </module-def>
 
-    	  <module-def name="org.jboss.surefire.arquillian-deps"/>
+        <module-def name="org.jboss.surefire.arquillian-deps"/>
 
         <module-def name="org.jboss.surefire.arquillian-jsfunit-deps"/>
 
-    	  <module-def name="org.jboss.staxmapper">
+        <module-def name="org.jboss.staxmapper">
             <maven-resource group="org.jboss" artifact="staxmapper"/>
         </module-def>
 
@@ -804,6 +815,10 @@
             <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
         </module-def>
 
+        <module-def name="org.junit">
+            <maven-resource group="junit" artifact="junit"/>
+        </module-def>
+
         <module-def name="org.osgi.core">
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
@@ -841,7 +856,11 @@
         </module-def>
 
         <module-def name="org.slf4j.ext">
-           <maven-resource group="org.slf4j" artifact="slf4j-ext"/>
+            <maven-resource group="org.slf4j" artifact="slf4j-ext"/>
+        </module-def>
+
+        <module-def name="org.w3c.css.sac">
+            <maven-resource group="org.w3c.css" artifact="sac"/>
         </module-def>
 
         <module-def name="wsdl4j.wsdl4j">
