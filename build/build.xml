@@ -230,7 +230,7 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="jline.jline">
+        <module-def name="jline">
             <maven-resource group="jline" artifact="jline"/>
         </module-def>
 

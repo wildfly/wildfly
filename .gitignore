@@ -20,3 +20,5 @@ transaction.log
 *.swp
 /.gitk-tmp.*
 atlassian-ide-plugin.xml
+# temp files
+*~
