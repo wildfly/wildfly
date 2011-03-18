@@ -39,6 +39,7 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.JndiService;
+import org.jboss.as.connector.services.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -59,6 +60,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -113,6 +116,12 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         log.debugf("Starting sevice %s",
                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+
+        context.getChildTarget()
+                .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
+                        new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
+                .install();
+
     }
 
     /**
