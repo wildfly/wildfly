@@ -45,16 +45,17 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -164,7 +165,6 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         if (puList.size() > 0) {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            final HashSet<ServiceName> serviceDependencies = new HashSet<ServiceName>();
 
             if (module == null)
                 throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
@@ -176,12 +176,6 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                     pu.setClassLoader(classLoader);
                     pu.setTempClassloader(new TempClassLoader(classLoader));
-                    if (pu.getJtaDataSourceName() != null) {
-                        serviceDependencies.add(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getJtaDataSourceName()));
-                    }
-                    if (pu.getNonJtaDataSourceName() != null) {
-                        serviceDependencies.add(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getNonJtaDataSourceName()));
-                    }
                     try {
                         PersistenceUnitService service = new PersistenceUnitService(pu, resourceRoot);
                         // TODO:  move this to a standalone service
@@ -198,7 +192,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         final Injector<TransactionSynchronizationRegistry> transactionRegistryInjector =
                             new Injector<TransactionSynchronizationRegistry>() {
-                                public void inject(final TransactionSynchronizationRegistry value) throws InjectionException {
+                                public void inject(final TransactionSynchronizationRegistry value) throws
+                                    InjectionException {
                                     TransactionUtil.setTransactionSynchronizationRegistry(value);
                                 }
 
@@ -212,9 +207,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         properties.put("javax.persistence.validation.factory", ValidatorFactoryProvider.getInstance().getValidatorFactory());
                         addHibernateProps(properties);
                         final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
-                        serviceTarget.addService(serviceName, service)
-                            .addDependencies(serviceDependencies)
-                            .addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
+
+                        ServiceBuilder builder = serviceTarget.addService(serviceName, service);
+                        if (pu.getJtaDataSourceName() != null) {
+                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getJtaDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
+                        }
+                        if (pu.getNonJtaDataSourceName() != null) {
+                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getNonJtaDataSourceName()),new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(),DataSource.class));
+                        }
+                        builder.addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
                             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .addInjection(service.getPropertiesInjector(), properties)

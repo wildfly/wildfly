@@ -69,9 +69,8 @@ class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
             final BootOperationContext updateContext = (BootOperationContext) context;
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_ANNOTATION, new JPAAnnotationParseProcessor());
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
-            // TODO move POST_PERSISTENCE_ANNOTATION back to PARSE as soon as Stuart moves his POST entries to PARSE
-            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_PERSISTENCE_ANNOTATION, new JPAAnnotationParseProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor());
         }
 

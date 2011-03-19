@@ -227,6 +227,7 @@ public enum Phase {
     public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1D00;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x1E00;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x1F00;
+    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x2000;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -277,8 +278,7 @@ public enum Phase {
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x1000;
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x1100;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x1200;
-    public static final int POST_PERSISTENCE_ANNOTATION                 = 0x1F00; // TODO: move back to PARSE when
-                                                                                  // Stuart moves the other POST entries.
+
 
     // INSTALL
     public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;

@@ -836,10 +836,6 @@
             <maven-resource group="org.picketbox" artifact="picketbox"/>
         </module-def>
 
-        <module-def name="org.slf4j.slf4j-api">
-            <maven-resource group="org.slf4j" artifact="slf4j-api"/>
-        </module-def>
-
         <module-def name="org.slf4j.jcl-over-slf4j">
             <maven-resource group="org.slf4j" artifact="jcl-over-slf4j"/>
         </module-def>

@@ -34,14 +34,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.util.naming.Util;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolverHolder;
-import javax.persistence.spi.PersistenceUnitInfo;
 import javax.sql.DataSource;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -64,6 +62,9 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     private final InjectedValue<Map> properties = new InjectedValue<Map>();
 
+    private final InjectedValue<DataSource> jtaDataSource = new InjectedValue<DataSource>();
+    private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
+
     private EntityManagerFactory entityManagerFactory;
     private PersistenceUnitMetadata pu;
 
@@ -82,21 +83,9 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     public void start(StartContext context) throws StartException {
         try {
             PersistenceProvider provider = lookupProvider(pu.getPersistenceProviderClassName());
-            try {
-                if (pu.getJtaDataSourceName() != null) {
-                    pu.setJtaDataSource((DataSource) Util.lookup(pu.getJtaDataSourceName(), DataSource.class));
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("couldn't locate jta DataSource " + pu.getJtaDataSourceName(), e);
-            }
 
-            try {
-                if (pu.getNonJtaDataSourceName() != null) {
-                    pu.setNonJtaDataSource((DataSource) Util.lookup(pu.getNonJtaDataSourceName(), DataSource.class));
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("couldn't locate non-jta DataSource " + pu.getNonJtaDataSourceName(), e);
-            }
+            pu.setJtaDataSource(jtaDataSource.getOptionalValue());
+            pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
             this.entityManagerFactory = createContainerEntityManagerFactory(provider);
             register(this);
 
@@ -162,6 +151,14 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     public Injector<Map> getPropertiesInjector() {
         return properties;
+    }
+
+    public Injector<DataSource> getJtaDataSourceInjector() {
+        return jtaDataSource;
+    }
+
+    public Injector<DataSource> getNonJtaDataSourceInjector() {
+        return nonJtaDataSource;
     }
 
     /**
