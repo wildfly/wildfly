@@ -22,16 +22,7 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -44,10 +35,18 @@ import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
 
 import javax.security.auth.login.Configuration;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
 import org.jboss.as.security.processors.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasConfigurationService;
@@ -164,31 +163,31 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         if ("default".equals(authenticationManagerClassName)) {
             resolvedAuthenticationManagerClassName = AUTHENTICATION_MANAGER;
         } else {
-            resolvedAuthenticationManagerClassName  = authenticationManagerClassName;
+            resolvedAuthenticationManagerClassName = authenticationManagerClassName;
         }
         final String resolvedCallbackHandlerClassName;
         if ("default".equals(callbackHandlerClassName)) {
             resolvedCallbackHandlerClassName = CALLBACK_HANDLER;
         } else {
-            resolvedCallbackHandlerClassName= callbackHandlerClassName;
+            resolvedCallbackHandlerClassName = callbackHandlerClassName;
         }
         final String resolvedAuthorizationManagerClassName;
         if ("default".equals(authorizationManagerClassName)) {
             resolvedAuthorizationManagerClassName = AUTHORIZATION_MANAGER;
         } else {
-            resolvedAuthorizationManagerClassName= authorizationManagerClassName;
+            resolvedAuthorizationManagerClassName = authorizationManagerClassName;
         }
         final String resolvedAuditManagerClassName;
         if ("default".equals(auditManagerClassName)) {
             resolvedAuditManagerClassName = AUDIT_MANAGER;
         } else {
-            resolvedAuditManagerClassName  = auditManagerClassName;
+            resolvedAuditManagerClassName = auditManagerClassName;
         }
         final String resolvedIdentityTrustManagerClassName;
         if ("default".equals(identityTrustManagerClassName)) {
             resolvedIdentityTrustManagerClassName = IDENTITY_TRUST_MANAGER;
         } else {
-             resolvedIdentityTrustManagerClassName = identityTrustManagerClassName;
+            resolvedIdentityTrustManagerClassName = identityTrustManagerClassName;
         }
         final String resolvedMappingManagerClassName;
         if ("default".equals(mappingManagerClassName)) {
@@ -217,28 +216,30 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                     target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService).setInitialMode(
                             ServiceController.Mode.ACTIVE).install();
 
-                    // add service to bind SecurityDomainObjectFactory to JNDI
+                    // add service to bind SecurityDomainJndiInjectable to JNDI
                     final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
                     final BinderService binderService = new BinderService("jaas");
-                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
+                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss", "jaas"), binderService)
                             .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
-                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
-                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class, securityDomainJndiInjectable.getSecurityManagementInjector())
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
-
+                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss"), NamingStore.class,
+                                    binderService.getNamingStoreInjector()).addDependency(
+                                    SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                                    securityDomainJndiInjectable.getSecurityManagementInjector()).setInitialMode(
+                                    ServiceController.Mode.ACTIVE).install();
 
                     final SecurityManagementService securityManagementService = new SecurityManagementService(
-                            resolvedAuthenticationManagerClassName, deepCopySubject, resolvedCallbackHandlerClassName, resolvedAuthorizationManagerClassName,
-                            resolvedAuditManagerClassName, resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
+                            resolvedAuthenticationManagerClassName, deepCopySubject, resolvedCallbackHandlerClassName,
+                            resolvedAuthorizationManagerClassName, resolvedAuditManagerClassName,
+                            resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
                     target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService).setInitialMode(
                             ServiceController.Mode.ACTIVE).install();
 
-                    final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(resolvedSubjectFactoryClassName);
+                    final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(
+                            resolvedSubjectFactoryClassName);
                     target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService).addDependency(
                             SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                            subjectFactoryService.getSecurityManagementInjector()).setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
+                            subjectFactoryService.getSecurityManagementInjector())
+                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
                     // add jaas configuration service
                     Configuration loginConfig = XMLLoginConfigImpl.getInstance();

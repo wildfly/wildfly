@@ -224,7 +224,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             if (contextName.startsWith(SecurityConstants.JAAS_CONTEXT_ROOT))
                 result = ctx.lookup(contextName);
             else
-                result = ctx.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + "/" + contextName);
+                result = ctx.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + contextName);
         } catch (Exception e) {
             log.trace("Look up of JNDI for " + contextName + " failed with " + e.getLocalizedMessage());
             return null;

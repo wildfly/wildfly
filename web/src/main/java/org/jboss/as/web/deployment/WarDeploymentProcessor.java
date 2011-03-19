@@ -30,8 +30,8 @@ import java.util.Map;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
 import javax.servlet.ServletContext;
+
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
@@ -221,12 +221,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     private AuthenticationManager getAuthenticationManager(String secDomain) throws NamingException {
         InitialContext ic = new InitialContext();
-        return (AuthenticationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + "/" + secDomain + "/authenticationMgr");
+        return (AuthenticationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/authenticationMgr");
     }
 
     private AuthorizationManager getAuthorizationManager(String secDomain) throws NamingException {
         InitialContext ic = new InitialContext();
-        return (AuthorizationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + "/" + secDomain + "/authorizationMgr");
+        return (AuthorizationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/authorizationMgr");
     }
 
 }

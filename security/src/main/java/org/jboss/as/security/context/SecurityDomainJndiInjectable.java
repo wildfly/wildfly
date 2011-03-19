@@ -22,6 +22,21 @@
 
 package org.jboss.as.security.context;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Name;
+import javax.naming.NameClassPair;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
+import javax.naming.OperationNotSupportedException;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -34,22 +49,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.SecurityConstants;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.Name;
-import javax.naming.NameClassPair;
-import javax.naming.NameParser;
-import javax.naming.NamingEnumeration;
-import javax.naming.OperationNotSupportedException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * Implementation of {@code ObjectFactory} that returns {@code AuthenticationManager}s
+ * Implementation of {@code ManagedReferenceFactory} that returns {@code AuthenticationManager}s
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
@@ -60,8 +61,8 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
     /**
      * {@inheritDoc}
      *
-     * This method returns a Context proxy that is only able to handle a lookup operation for an
-     * atomic name of a security domain.
+     * This method returns a Context proxy that is only able to handle a lookup operation for an atomic name of a security
+     * domain.
      */
     public ManagedReference getReference() {
         final ClassLoader loader;
@@ -76,7 +77,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
 
     /**
      * This is the InvocationHandler callback for the Context interface that was created by our getObjectInstance() method. We
-     * handle the java:/jaas/domain level operations here.
+     * handle the java:jboss/jaas/domain level operations here.
      */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Context ctx = new InitialContext();
@@ -84,14 +85,15 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
         String securityDomain = null;
         Name name = null;
 
-        final JNDIBasedSecurityManagement securityManagement = JNDIBasedSecurityManagement.class.cast(securityManagementValue.getValue());
+        final JNDIBasedSecurityManagement securityManagement = JNDIBasedSecurityManagement.class.cast(securityManagementValue
+                .getValue());
         final ConcurrentHashMap<String, SecurityDomainContext> securityManagerMap = securityManagement.getSecurityManagerMap();
 
         String methodName = method.getName();
-        if (methodName.equals("toString") == true)
+        if (methodName.equals("toString"))
             return SecurityConstants.JAAS_CONTEXT_ROOT + " Context proxy";
 
-        if (methodName.equals("list") == true)
+        if (methodName.equals("list"))
             return new DomainEnumeration(securityManagerMap.keys(), securityManagerMap);
 
         if (methodName.equals("bind") || methodName.equals("rebind")) {
@@ -104,7 +106,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
             securityManagerMap.put(securityDomain, val);
             return proxy;
         }
-        if (methodName.equals("lookup") == false)
+        if (!methodName.equals("lookup"))
             throw new OperationNotSupportedException("Operation not supported: " + method);
         if (args[0] instanceof String)
             name = parser.parse((String) args[0]);
@@ -125,12 +127,14 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
      * Creates a {@code SecurityDomainContext} if one cannot be found in JNDI for a given security domain
      *
      * @param securityManagement security management
-     * @param  securityManagerMap security manager map
+     * @param securityManagerMap security manager map
      * @param securityDomain the name of the security domain
      * @return an instance of {@code SecurityDomainContext}
      * @throws Exception if an error occurs
      */
-    private SecurityDomainContext lookupSecurityDomain(final JNDIBasedSecurityManagement securityManagement, final ConcurrentHashMap<String, SecurityDomainContext> securityManagerMap, final String securityDomain) throws Exception {
+    private SecurityDomainContext lookupSecurityDomain(final JNDIBasedSecurityManagement securityManagement,
+            final ConcurrentHashMap<String, SecurityDomainContext> securityManagerMap, final String securityDomain)
+            throws Exception {
         SecurityDomainContext sdc = securityManagerMap.get(securityDomain);
         if (sdc == null) {
             sdc = securityManagement.createSecurityDomainContext(securityDomain);

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.tomcat;
 
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityUtil;
 import org.jboss.wsf.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -35,8 +37,6 @@ import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
  * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAccessorEJB {
-    /** JAAS JNDI prefix. */
-    private static final String JAAS_JNDI_PREFIX = "java:/jaas/";
 
     /**
      * Constructor.
@@ -46,18 +46,15 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     }
 
     /**
-     * Appends 'java:/jaas/' prefix to security domain if it's not prefixed with it.
+     * Appends 'java:jboss/jaas/' prefix to security domain if it's not prefixed with it.
      *
      * @param securityDomain security domain to be prefixed
      * @return security domain prefixed with jaas JNDI prefix
      */
     protected final String appendJaasPrefix(final String securityDomain) {
         if (securityDomain != null) {
-            final boolean hasJaasPrefix = securityDomain.startsWith(AbstractSecurityMetaDataAccessorEJB.JAAS_JNDI_PREFIX);
-
-            if (!hasJaasPrefix) {
-                return AbstractSecurityMetaDataAccessorEJB.JAAS_JNDI_PREFIX + securityDomain;
-            }
+            SecurityUtil.unprefixSecurityDomain(securityDomain);
+            return SecurityConstants.JAAS_CONTEXT_ROOT + securityDomain;
         }
 
         return securityDomain;
