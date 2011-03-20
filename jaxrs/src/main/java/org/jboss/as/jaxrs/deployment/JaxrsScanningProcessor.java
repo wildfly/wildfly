@@ -285,7 +285,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 try {
                     classLoader.loadClass(JaxrsIntegrationProcessor.CDI_INJECTOR_FACTORY_CLASS);
                     // don't set this param if it is not a CDI deployment
-                    if (WeldDeploymentMarker.isWeldDeployment(du)) {
+                    if (WeldDeploymentMarker.isPartOfWeldDeployment(du)) {
                         JaxrsIntegrationProcessor.setContextParameter(webdata, "resteasy.injector.factory",
                                 JaxrsIntegrationProcessor.CDI_INJECTOR_FACTORY_CLASS);
                     }

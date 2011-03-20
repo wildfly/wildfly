@@ -76,7 +76,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         final WeldDeploymentMetadata cdiDeploymentMetadata = deploymentUnit
                 .getAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY);
 
-        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
 

@@ -22,8 +22,6 @@
 
 package org.jboss.as.jaxrs;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -34,6 +32,7 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.jaxrs.deployment.JaxrsAnnotationProcessor;
+import org.jboss.as.jaxrs.deployment.JaxrsComponentDeployer;
 import org.jboss.as.jaxrs.deployment.JaxrsDependencyProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsIntegrationProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsScanningProcessor;
@@ -41,6 +40,8 @@ import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * The jaxrs subsystem add update handler.
@@ -66,6 +67,7 @@ class JaxrsSubsystemAdd implements ModelAddOperationHandler, BootOperationHandle
                     bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXRS_ANNOTATIONS, new JaxrsAnnotationProcessor());
                     bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS, new JaxrsDependencyProcessor());
                     bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_SCANNING, new JaxrsScanningProcessor());
+                    bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_COMPONENT, new JaxrsComponentDeployer());
                     bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor());
                     resultHandler.handleResultComplete();
                 }

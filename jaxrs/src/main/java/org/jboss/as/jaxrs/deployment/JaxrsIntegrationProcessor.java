@@ -101,7 +101,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         try {
             module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
             // don't set this param if CDI is not in classpath
-            if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 log.debug("Found CDI, adding injector factory class");
                 setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
             }

@@ -305,13 +305,14 @@ public enum Phase {
     public static final int INSTALL_EE_COMPONENT                        = 0x0F00;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1000;
     public static final int INSTALL_JAXRS_SCANNING                      = 0x1100;
-    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1200;
-    public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1300;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1400;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1500;
-    public static final int INSTALL_JDBC_DRIVER                         = 0x1600;
-    public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1700;
-    public static final int INSTALL_PERSISTENTUNIT                      = 0x1800;
+    public static final int INSTALL_JAXRS_COMPONENT                     = 0x1200;
+    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1300;
+    public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1400;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1500;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1600;
+    public static final int INSTALL_JDBC_DRIVER                         = 0x1700;
+    public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1800;
+    public static final int INSTALL_PERSISTENTUNIT                      = 0x1900;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

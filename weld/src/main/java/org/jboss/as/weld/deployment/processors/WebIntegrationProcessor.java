@@ -76,7 +76,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             return; // Skip non web deployments
         }
 
-        if(!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+        if(!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return; // skip non weld deployments
         }
 

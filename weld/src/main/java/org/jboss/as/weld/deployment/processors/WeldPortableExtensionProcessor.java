@@ -53,19 +53,19 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         // for war modules we require a beans.xml to load portable extensions
         if (PrivateSubDeploymentMarker.isPrivate(deploymentUnit)) {
-            if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 return;
             }
         } else if (deploymentUnit.getParent() == null) {
             // if any sub deployments have beans.xml then the top level deployment is
             // marked as a weld deplyment
-            if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 return;
             }
         } else {
             // if any deployments have a beans.xml we need to load portable extensions
             // even if this one does not.
-            if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit.getParent())) {
+            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit.getParent())) {
                 return;
             }
         }

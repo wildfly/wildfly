@@ -57,7 +57,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDepdenency(moduleSpecification, moduleLoader, JAXRS_API);
         addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
 
-        if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             addDepdenency(moduleSpecification, moduleLoader, RESTEASY_CDI);
         }
 

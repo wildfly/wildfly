@@ -50,12 +50,20 @@ public class WeldDeploymentMarker {
     /**
      * retuns true if the {@link DeploymentUnit} is part of a weld deployment
      */
-    public static boolean isWeldDeployment(DeploymentUnit unit) {
+    public static boolean isPartOfWeldDeployment(DeploymentUnit unit) {
         if (unit.getParent() == null) {
             return unit.getAttachment(MARKER) != null;
         } else {
             return unit.getParent().getAttachment(MARKER) != null;
         }
+    }
+
+    /**
+     * retuns true if the {@link DeploymentUnit} has a beans.xml in any of it's resource roots,
+     * or is a top level deployment that contains sub-deployments that are weld deployments.
+     */
+    public static boolean isWeldDeployment(DeploymentUnit unit) {
+        return unit.getAttachment(MARKER) != null;
     }
 
     private WeldDeploymentMarker() {

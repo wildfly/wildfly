@@ -61,7 +61,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return; // Skip if there are no beans.xml files in the deployment
         }
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();

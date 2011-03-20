@@ -82,7 +82,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
         // we only start weld on top level deployments

@@ -61,7 +61,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        if (!WeldDeploymentMarker.isWeldDeployment(topLevelDeployment)) {
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(topLevelDeployment)) {
             return;
         }
         //hack to set up a java:comp binding for jar deployments as well as wars
