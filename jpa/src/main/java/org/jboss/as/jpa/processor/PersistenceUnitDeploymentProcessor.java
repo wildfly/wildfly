@@ -23,9 +23,9 @@
 package org.jboss.as.jpa.processor;
 
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
+import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.jpa.beanvalidation.ValidatorFactoryProvider;
 import org.jboss.as.jpa.classloader.TempClassLoader;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
@@ -51,9 +51,11 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
+import javax.persistence.ValidationMode;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -204,7 +206,13 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
 
                         final HashMap properties = new HashMap();
-                        properties.put("javax.persistence.validation.factory", ValidatorFactoryProvider.getInstance().getValidatorFactory());
+                        if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
+                            ValidatorFactory validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                            if (validatorFactory == null) {
+                                throw new DeploymentUnitProcessingException("ValidatorFactory is null, could not set javax.persistence.validation.factory");
+                            }
+                            properties.put("javax.persistence.validation.factory", validatorFactory);
+                        }
                         addHibernateProps(properties);
                         final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
 

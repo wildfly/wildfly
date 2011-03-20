@@ -113,15 +113,21 @@ public abstract class AbstractEntityManager implements EntityManager {
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
-        return getEntityManager().find(entityClass, primaryKey, properties);
+        T result = getEntityManager().find(entityClass, primaryKey, properties);
+        detachNonTxInvocation();
+        return result;
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode) {
-        return getEntityManager().find(entityClass, primaryKey, lockMode);
+        T result = getEntityManager().find(entityClass, primaryKey, lockMode);
+        detachNonTxInvocation();
+        return result;
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode, Map<String, Object> properties) {
-        return getEntityManager().find(entityClass, primaryKey, lockMode, properties);
+        T result = getEntityManager().find(entityClass, primaryKey, lockMode, properties);
+        detachNonTxInvocation();
+        return result;
     }
 
     public CriteriaBuilder getCriteriaBuilder() {
@@ -202,7 +208,9 @@ public abstract class AbstractEntityManager implements EntityManager {
     }
 
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
-        return getEntityManager().getReference(entityClass, primaryKey);
+        T result = getEntityManager().getReference(entityClass, primaryKey);
+        detachNonTxInvocation();
+        return result;
     }
 
     public EntityTransaction getTransaction() {
@@ -267,7 +275,15 @@ public abstract class AbstractEntityManager implements EntityManager {
         getEntityManager().setFlushMode(flushMode);
     }
 
-    // JPA 7.9.1 f invoked without a JTA transaction and a transaction scoped persistence context is used,
+    // JPA 7.6.1 If the entity manager is invoked outside the scope of a transaction, any entities loaded from the database
+    // will immediately become detached at the end of the method call.
+    private void detachNonTxInvocation() {
+        if ( ! this.isExtendedPersistenceContext() && ! this.isInTx()) {
+            getEntityManager().clear();
+        }
+    }
+
+    // JPA 7.9.1 if invoked without a JTA transaction and a transaction scoped persistence context is used,
     // will throw TransactionRequiredException for any calls to entity manager remove/merge/persist/refresh.
     private void transactionIsRequired() {
         if ( ! this.isExtendedPersistenceContext() && ! this.isInTx()) {
