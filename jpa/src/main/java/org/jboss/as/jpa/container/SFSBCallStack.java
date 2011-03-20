@@ -50,15 +50,15 @@ public class SFSBCallStack {
      * For the current thread, look at the call stack of SFSB invocations and return the first extended
      * persistence context that is based on puName.
      *
-     * @param puName
+     * @param puScopedName Scoped pu name
      * @return the found XPC that matches puName or null if not found
      */
-    public EntityManager findPersistenceContext(String puName) {
+    public static EntityManager findPersistenceContext(String puScopedName) {
         // TODO: arrange for a more optimal datastructure for this
         for (SFSBContextHandle handle : currentSFSBCallStack()) {
             List<EntityManager> xpcs = SFSBXPCMap.getINSTANCE().getXPC(handle);
             for (EntityManager xpc : xpcs) {
-                if (xpc.unwrap(EntityManagerMetadata.class).getPuName().equals(puName)) {
+                if (xpc.unwrap(EntityManagerMetadata.class).getScopedPuName().equals(puScopedName)) {
                     return xpc;
                 }
             }
@@ -71,7 +71,7 @@ public class SFSBCallStack {
      *
      * @return call stack (may be empty but never null)
      */
-    public ArrayList<SFSBContextHandle> currentSFSBCallStack() {
+    public static ArrayList<SFSBContextHandle> currentSFSBCallStack() {
         return SFSBInvocationStack.get();
     }
 
@@ -80,7 +80,7 @@ public class SFSBCallStack {
      *
      * @param beanContextHandle
      */
-    public void pushCall(SFSBContextHandle beanContextHandle) {
+    public static void pushCall(SFSBContextHandle beanContextHandle) {
         currentSFSBCallStack().add(beanContextHandle);
     }
 
@@ -89,7 +89,7 @@ public class SFSBCallStack {
      *
      * @return the popped SFSB context handle
      */
-    public SFSBContextHandle popCall() {
+    public static SFSBContextHandle popCall() {
         ArrayList<SFSBContextHandle> stack = currentSFSBCallStack();
         SFSBContextHandle result = stack.remove(stack.size() - 1);
         stack.trimToSize();

@@ -60,18 +60,19 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
 
         // try to get EM from XPC and return it if puScopedName is found
         // TODO:  look in XPC for specified puScopedName
-        // set isExtendedPersistenceContext if XPC is used
+        if ((result = SFSBCallStack.findPersistenceContext(puScopedName)) != null) {
+            isExtendedPersistenceContext = true;    // using a XPC
+        } else {
+            isExtendedPersistenceContext = false;  // not using a XPC
 
-        isExtendedPersistenceContext = false;  // not using a XPC
-
-        isInTx = TransactionUtil.getInstance().isInTx();
-        if (isInTx) {
-            result = TransactionUtil.getInstance().getTransactionScopedEntityManager(emf, puScopedName, properties);
+            isInTx = TransactionUtil.getInstance().isInTx();
+            if (isInTx) {
+                result = TransactionUtil.getInstance().getTransactionScopedEntityManager(emf, puScopedName, properties);
+            } else {
+                result = EntityManagerUtil.createEntityManager(emf, properties);
+            }
         }
-        else {
-            result = EntityManagerUtil.createEntityManager(emf, properties);
-        }
-        setMetadata(puScopedName,false);    // save metadata if not already set
+        setMetadata(puScopedName, false);    // save metadata if not already set
         return result;
     }
 
