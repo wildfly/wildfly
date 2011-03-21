@@ -229,7 +229,7 @@ public class ServerInModuleStartupTestCase {
 
         try {
             final File target = new File(deployDir, "test-deployment.sar");
-            final File deployed = new File(deployDir, "test-deployment.sar.isdeployed");
+            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
             Assert.assertFalse(target.exists());
 
             testDeployments(new DeploymentExecutor() {

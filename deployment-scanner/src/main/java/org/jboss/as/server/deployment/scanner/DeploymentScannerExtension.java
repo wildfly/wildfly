@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -39,10 +37,12 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -128,29 +128,35 @@ public class DeploymentScannerExtension implements Extension {
                     writer.writeEmptyElement(Element.DEPLOYMENT_SCANNER.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), scanner.getName());
                     ModelNode configuration = scanner.getValue();
-                    if (has(configuration, CommonAttributes.PATH)) {
+                    if (configuration.hasDefined(CommonAttributes.PATH)) {
                         writer.writeAttribute(Attribute.PATH.getLocalName(), configuration.get(CommonAttributes.PATH)
                                 .asString());
                     }
-                    if (has(configuration, CommonAttributes.SCAN_ENABLED)) {
+                    if (configuration.hasDefined(CommonAttributes.SCAN_ENABLED)) {
                         writer.writeAttribute(Attribute.SCAN_ENABLED.getLocalName(),
                                 configuration.get(CommonAttributes.SCAN_ENABLED).asString());
                     }
-                    if (has(configuration, CommonAttributes.SCAN_INTERVAL)) {
+                    if (configuration.hasDefined(CommonAttributes.SCAN_INTERVAL)) {
                         writer.writeAttribute(Attribute.SCAN_INTERVAL.getLocalName(),
                                 configuration.get(CommonAttributes.SCAN_INTERVAL).asString());
                     }
-                    if (configuration.has(CommonAttributes.RELATIVE_TO)) {
+                    if (configuration.hasDefined(CommonAttributes.RELATIVE_TO)) {
                         writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(),
                                 configuration.get(CommonAttributes.RELATIVE_TO).asString());
                     }
+                    if (configuration.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED)) {
+                        if (!configuration.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()) {
+                            writer.writeAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), Boolean.FALSE.toString());
+                        }
+                    }
+                    if (configuration.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED)) {
+                        if (configuration.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()) {
+                            writer.writeAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), Boolean.TRUE.toString());
+                        }
+                    }
                 }
                 writer.writeEndElement();
-  }
-        }
-
-        private boolean has(ModelNode node, String name) {
-            return node.has(name) && node.get(name).isDefined();
+            }
         }
 
         /** {@inheritDoc} */
@@ -190,11 +196,13 @@ public class DeploymentScannerExtension implements Extension {
 
         void parseScanner(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
             // Handle attributes
-            boolean enabled = true;
-            int interval = 0;
+            Boolean enabled = null;
+            Integer interval = null;
             String path = null;
             String name = DEFAULT_SCANNER_NAME;
             String relativeTo = null;
+            Boolean autoDeployZipped = null;
+            Boolean autoDeployExploded = null;
             final int attrCount = reader.getAttributeCount();
             for (int i = 0; i < attrCount; i++) {
                 requireNoNamespaceAttribute(reader, i);
@@ -221,6 +229,14 @@ public class DeploymentScannerExtension implements Extension {
                         enabled = Boolean.parseBoolean(value);
                         break;
                     }
+                    case AUTO_DEPLOY_ZIPPED: {
+                        autoDeployZipped = Boolean.parseBoolean(value);
+                        break;
+                    }
+                    case AUTO_DEPLOY_EXPLODED: {
+                        autoDeployExploded = Boolean.parseBoolean(value);
+                        break;
+                    }
                     default:
                         throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -237,8 +253,10 @@ public class DeploymentScannerExtension implements Extension {
             operation.get(OP).set(ADD);
             operation.get(OP_ADDR).set(address).add("scanner", name);
             operation.get(CommonAttributes.PATH).set(path);
-            operation.get(CommonAttributes.SCAN_INTERVAL).set(interval);
-            operation.get(CommonAttributes.SCAN_ENABLED).set(enabled);
+            if (interval != null) operation.get(CommonAttributes.SCAN_INTERVAL).set(interval.intValue());
+            if (autoDeployZipped != null) operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZipped.booleanValue());
+            if (autoDeployExploded != null) operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExploded.booleanValue());
+            if (enabled != null) operation.get(CommonAttributes.SCAN_ENABLED).set(enabled.booleanValue());
             if(relativeTo != null) operation.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
             list.add(operation);
         }

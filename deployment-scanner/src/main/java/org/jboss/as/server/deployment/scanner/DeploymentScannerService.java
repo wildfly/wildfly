@@ -49,9 +49,12 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class DeploymentScannerService implements Service<DeploymentScanner> {
 
+    private static final int DEFAULT_INTERVAL = 5000;
     private long interval;
     private TimeUnit unit = TimeUnit.MILLISECONDS;
     private boolean enabled;
+    private boolean autoDeployZipped;
+    private boolean autoDeployExploded;
 
     /** The created scanner. */
     private DeploymentScanner scanner;
@@ -76,8 +79,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanEnabled scan enabled
      * @return
      */
-    public static void addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
-        final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, scanEnabled);
+    public static void addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
+            final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled) {
+        final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
 
@@ -98,10 +102,13 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             .install();
     }
 
-    DeploymentScannerService(final long interval, final TimeUnit unit, final boolean enabled) {
-        this.interval = interval;
+    DeploymentScannerService(final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
+            final Boolean autoDeployExploded, final Boolean enabled) {
+        this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
         this.unit = unit;
-        this.enabled = enabled;
+        this.autoDeployZipped = autoDeployZipped == null ? true : autoDeployZipped.booleanValue();
+        this.autoDeployExploded = autoDeployExploded == null ? true : autoDeployExploded.booleanValue();
+        this.enabled = enabled == null ? true : enabled.booleanValue();
     }
 
 
@@ -111,7 +118,10 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         try {
             final String pathName = pathValue.getValue();
 
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(new File(pathName), unit.toMillis(interval), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue());
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(new File(pathName), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue());
+            scanner.setScanInterval(unit.toMillis(interval));
+            scanner.setAutoDeployExplodedContent(autoDeployExploded);
+            scanner.setAutoDeployZippedContent(autoDeployZipped);
 
             if(enabled) {
                 scanner.startScanner();

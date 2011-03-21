@@ -37,6 +37,8 @@ enum Attribute {
     RELATIVE_TO(CommonAttributes.RELATIVE_TO),
     SCAN_ENABLED(CommonAttributes.SCAN_ENABLED),
     SCAN_INTERVAL(CommonAttributes.SCAN_INTERVAL),
+    AUTO_DEPLOY_ZIPPED(CommonAttributes.AUTO_DEPLOY_ZIPPED),
+    AUTO_DEPLOY_EXPLODED(CommonAttributes.AUTO_DEPLOY_EXPLODED),
     ;
 
     private final String name;

@@ -58,6 +58,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -71,15 +72,29 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private static final Random random = new Random(System.currentTimeMillis());
 
-    private static final ScheduledThreadPoolExecutor executor = new DiscardTaskExecutor();
+    private static final DiscardTaskExecutor executor = new DiscardTaskExecutor();
 
+    private static AutoDeployTestSupport testSupport;
     private File tmpDir;
+
+    @BeforeClass
+    public static void createTestSupport() throws Exception {
+        testSupport = new AutoDeployTestSupport(FileSystemDeploymentServiceUnitTestCase.class.getSimpleName());
+    }
+
+    @AfterClass
+    public static void cleanup() throws Exception {
+        if (testSupport != null) {
+            testSupport.cleanupFiles();
+        }
+    }
 
     @Before
     public void setup() throws Exception {
-        File root = new File(System.getProperty("java.io.tmpdir"));
-        root  = new File(root, getClass().getSimpleName());
-        for (int i = 0; i < 100; i++) {
+        executor.clear();
+
+        File root = testSupport.getTempDir();
+        for (int i = 0; i < 200; i++) {
             tmpDir = new File(root, String.valueOf(count++));
             if (!tmpDir.exists() && tmpDir.mkdirs()) {
                 break;
@@ -93,30 +108,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     @After
     public void tearDown() throws Exception {
-        if (tmpDir != null) {
-            cleanFile(tmpDir);
-            tmpDir = null;
-        }
-    }
-
-    private static void cleanFile(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (File child : file.listFiles()) {
-                    cleanFile(child);
-                }
-            }
-            if (!file.delete()) {
-                file.deleteOnExit();
-            }
-        }
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        File root = new File(System.getProperty("java.io.tmpdir"));
-        root  = new File(root, FileSystemDeploymentServiceUnitTestCase.class.getSimpleName());
-        cleanFile(root);
+        testSupport.cleanupChannels();
     }
 
     @Test
@@ -281,16 +273,38 @@ public class FileSystemDeploymentServiceUnitTestCase {
         File f2 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.DEPLOYED);
         File f3 = createFile("ok" + FileSystemDeploymentService.DEPLOYED);
         File f4 = createFile(new File(tmpDir, "nested"), "nested-ok" + FileSystemDeploymentService.DEPLOYED);
+        File f5 = createFile("spurious" + FileSystemDeploymentService.FAILED_DEPLOY);
+        File f6 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.FAILED_DEPLOY);
+        File f7 = createFile("spurious" + FileSystemDeploymentService.DEPLOYING);
+        File f8 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.DEPLOYING);
+        File f9 = createFile("spurious" + FileSystemDeploymentService.UNDEPLOYING);
+        File f10 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.UNDEPLOYING);
+        File f11 = createFile("spurious" + FileSystemDeploymentService.PENDING);
+        File f12 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.PENDING);
 
         // We expect 2 requests for children names due to subdir "nested"
         MockServerController sc = new MockServerController(new MockDeploymentRepository(), "ok", "nested-ok");
 //        sc.responses.add(sc.responses.get(0));
-        createTestee(sc);
+        TesteeSet ts = createTestee(sc);
 
+        // These should get cleaned in start
         Assert.assertFalse(f1.exists());
         Assert.assertFalse(f2.exists());
         Assert.assertTrue(f3.exists());
         Assert.assertTrue(f4.exists());
+
+        // These should get cleaned in a scan
+
+        ts.testee.scan();
+
+        Assert.assertFalse(f5.exists());
+        Assert.assertFalse(f6.exists());
+        Assert.assertFalse(f7.exists());
+        Assert.assertFalse(f8.exists());
+        Assert.assertFalse(f9.exists());
+        Assert.assertFalse(f10.exists());
+        Assert.assertFalse(f11.exists());
+        Assert.assertFalse(f12.exists());
     }
 
     @Test
@@ -583,13 +597,280 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     }
 
+    // FIXME remove this marker used to make it easy to find these tests in the IDE
+
+    /**
+     * Tests that autodeploy does not happen by default.
+     */
+    @Test
+    public void testNoDefaultAutoDeploy() throws Exception {
+
+        File zip = new File(tmpDir, "foo.war");
+        File zipdeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File zippending = new File(tmpDir, "foo.war" + FileSystemDeploymentService.PENDING);
+        testSupport.createZip(zip, 0, false, false, true, false);
+        File exploded = new File(tmpDir, "exploded.ear");
+        exploded.mkdirs();
+        File explodeddeployed = new File(tmpDir, "exploded.war" + FileSystemDeploymentService.DEPLOYED);
+        File explodedpending = new File(tmpDir, "exploded.war" + FileSystemDeploymentService.PENDING);
+
+        TesteeSet ts = createTestee();
+
+        ts.testee.scan();
+
+        assertFalse(zipdeployed.exists());
+        assertFalse(zippending.exists());
+        assertFalse(explodeddeployed.exists());
+        assertFalse(explodedpending.exists());
+
+        assertTrue(zip.exists());
+        assertTrue(exploded.exists());
+    }
+
+    /**
+     * Tests that an incomplete zipped deployment does not
+     * auto-deploy.
+     */
+    @Test
+    public void testIncompleteZipped() throws Exception {
+
+        File incomplete = new File(tmpDir, "foo.war");
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.war" + FileSystemDeploymentService.PENDING);
+        testSupport.createZip(incomplete, 0, false, true, true, false);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertTrue(pending.exists());
+
+        incomplete.delete();
+        testSupport.createZip(incomplete, 0, false, false, false, false);
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(deployed.exists());
+        assertFalse(pending.exists());
+    }
+
+    /**
+     * Tests that an exploded deployment with an incomplete child
+     * does not auto-deploy, but does auto-deploy when the child
+     * is complete.
+     */
+    @Test
+    public void testIncompleteExploded() throws Exception {
+        File deployment = new File(tmpDir, "foo.ear");
+        deployment.mkdirs();
+        File deployed = new File(tmpDir, "foo.ear" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.ear" + FileSystemDeploymentService.PENDING);
+        File incomplete = new File(deployment, "bar.war");
+        testSupport.createZip(incomplete, 0, false, true, true, false);
+
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(true);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertTrue(pending.exists());
+
+        incomplete.delete();
+        testSupport.createZip(incomplete, 0, false, false, true, false);
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(deployed.exists());
+        assertFalse(pending.exists());
+
+    }
+
+    /**
+     * Test that an incomplete deployment prevents changing other items
+     */
+    @Test
+    public void testIncompleteBlocksComplete() throws Exception {
+
+        File incomplete = new File(tmpDir, "foo.war");
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.war" + FileSystemDeploymentService.PENDING);
+        testSupport.createZip(incomplete, 0, false, true, true, false);
+        File complete = new File(tmpDir, "complete.jar");
+        File completeDeployed = new File(tmpDir, "complete.jar" + FileSystemDeploymentService.DEPLOYED);
+        File completePending = new File(tmpDir, "complete.jar" + FileSystemDeploymentService.PENDING);
+        testSupport.createZip(complete, 0, false, false, true, false);
+
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertFalse(completeDeployed.exists());
+        assertTrue(pending.exists());
+        assertTrue(completePending.exists());
+
+        incomplete.delete();
+        testSupport.createZip(incomplete, 0, false, false, false, false);
+
+        ts.controller.addCompositeSuccessResponse(2);
+        ts.testee.scan();
+
+        assertTrue(deployed.exists());
+        assertTrue(completeDeployed.exists());
+        assertFalse(pending.exists());
+        assertFalse(completePending.exists());
+
+    }
+
+    /**
+     * Tests that an incomplete deployment that makes no progress gets a .failed marker
+     */
+    @Test
+    public void testMaxNoProgress() throws Exception {
+
+        File incomplete = new File(tmpDir, "foo.war");
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.war" + FileSystemDeploymentService.PENDING);
+        File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        testSupport.createZip(incomplete, 0, false, true, true, false);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.testee.setMaxNoProgress(-1); // trigger immediate failure
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertTrue(failed.exists());
+        assertFalse(pending.exists());
+
+    }
+
+    /**
+     * Tests that non-archive/non-marker files are ignored
+     */
+    @Test
+    public void testIgnoreNonArchive() throws Exception {
+
+        File txt = createFile("foo.txt");
+        File deployed = new File(tmpDir, "foo.txt" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.txt" + FileSystemDeploymentService.PENDING);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(true);
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.testee.scan();
+
+        assertTrue(txt.exists());
+        assertFalse(pending.exists());
+        assertFalse(deployed.exists());
+    }
+
+    /**
+     * Tests that non-archive files nested in an exploded deployment are ignored
+     */
+    @Test
+    public void testIgnoreNonArchiveInExplodedDeployment() throws Exception {
+        File deployment = new File(tmpDir, "foo.ear");
+        deployment.mkdirs();
+        File deployed = new File(tmpDir, "foo.ear" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.ear" + FileSystemDeploymentService.PENDING);
+        File nonarchive = createFile(deployment, "index.html");
+
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(true);
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(deployed.exists());
+        assertFalse(pending.exists());
+        assertTrue(nonarchive.exists());
+    }
+
+    /**
+     * Tests that the .skipdeploy marker prevents auto-deploy
+     */
+    @Test
+    public void testSkipDeploy() throws Exception {
+        File deployment = new File(tmpDir, "foo.ear");
+        deployment.mkdirs();
+        File deployed = new File(tmpDir, "foo.ear" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.ear" + FileSystemDeploymentService.PENDING);
+        File skip = createFile(tmpDir, "foo.ear" + FileSystemDeploymentService.SKIP_DEPLOY);
+
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployExplodedContent(true);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertFalse(pending.exists());
+
+        skip.delete();
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(deployed.exists());
+        assertFalse(pending.exists());
+
+    }
+
+    /**
+     * Tests that an incompletely copied file with a nested jar
+     * *and* extraneous leading bytes fails cleanly.
+     */
+    @Test
+    public void testNonScannableZipped() throws Exception {
+
+        File incomplete = new File(tmpDir, "foo.war");
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.war" + FileSystemDeploymentService.PENDING);
+        File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        testSupport.createZip(incomplete, 1, false, true, true, false);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertTrue(failed.exists());
+        assertFalse(pending.exists());
+    }
+
+    /**
+     * Tests that a ZIP64 format autodeployed file fails cleanly.
+     * If ZIP 64 support is added, this test should be revised.
+     */
+    @Test
+    public void testZip64Zipped() throws Exception {
+
+        File zip64 = new File(tmpDir, "foo.war");
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File pending = new File(tmpDir, "foo.war" + FileSystemDeploymentService.PENDING);
+        File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        testSupport.createZip(zip64, 0, false, false, true, true);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertTrue(failed.exists());
+        assertFalse(pending.exists());
+    }
+
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
         return createTestee(new MockServerController(new MockDeploymentRepository(), existingContent));
     }
 
     private TesteeSet createTestee(final MockServerController sc) throws OperationFailedException {
         final MockDeploymentRepository repo = new MockDeploymentRepository();
-        final FileSystemDeploymentService testee = new FileSystemDeploymentService(tmpDir, 0, sc, executor, repo);
+        final FileSystemDeploymentService testee = new FileSystemDeploymentService(tmpDir, sc, executor, repo);
         testee.startScanner();
         return new TesteeSet(testee, repo, sc);
     }
@@ -858,13 +1139,19 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private static class DiscardTaskExecutor extends ScheduledThreadPoolExecutor {
 
+        private final List<Runnable> tasks = new ArrayList<Runnable>();
         private DiscardTaskExecutor() {
             super(0);
         }
 
         @Override
         public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+            tasks.add(command);
             return null;
+        }
+
+        void clear() {
+            tasks.clear();
         }
 
 

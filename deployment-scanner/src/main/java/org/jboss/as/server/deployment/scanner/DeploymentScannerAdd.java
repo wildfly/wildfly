@@ -22,21 +22,20 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -58,33 +57,43 @@ class DeploymentScannerAdd implements ModelAddOperationHandler {
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final ModelNode opAddr = operation.require(OP_ADDR);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
         final String path = operation.require(CommonAttributes.PATH).asString();
-        final boolean enabled = operation.get(CommonAttributes.SCAN_ENABLED).asBoolean(true);
-        final int interval = operation.get(CommonAttributes.SCAN_INTERVAL).asInt(5000);
-        final String relativeTo;
-        if(operation.has(CommonAttributes.RELATIVE_TO)) {
-            relativeTo = operation.get(CommonAttributes.RELATIVE_TO).asString();
-        } else {
-            relativeTo = null;
-        }
+        final Boolean enabled = operation.hasDefined(CommonAttributes.SCAN_ENABLED)
+            ? operation.get(CommonAttributes.SCAN_ENABLED).asBoolean()
+            : null;
+        final Integer interval = operation.hasDefined(CommonAttributes.SCAN_INTERVAL)
+            ? operation.get(CommonAttributes.SCAN_INTERVAL).asInt()
+            : null;
+        final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO)
+            ? operation.get(CommonAttributes.RELATIVE_TO).asString()
+            : null;
+        final Boolean autoDeployZip =  operation.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED)
+                    ? operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()
+                    : null;
+        final Boolean autoDeployExp =  operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED)
+                    ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean()
+                    : null;
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
         final ModelNode subModel = context.getSubModel();
         subModel.get(CommonAttributes.PATH).set(path);
-        subModel.get(CommonAttributes.SCAN_ENABLED).set(enabled);
-        subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);
+        if (enabled != null) subModel.get(CommonAttributes.SCAN_ENABLED).set(enabled);
+        if (interval != null) subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);
+        if (autoDeployZip != null) subModel.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZip);
+        if (autoDeployExp != null) subModel.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExp);
         if(relativeTo != null) subModel.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
-                    DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
+                    DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS,
+                                                        autoDeployZip, autoDeployExp, enabled);
                     resultHandler.handleResultComplete();
                 }
             });

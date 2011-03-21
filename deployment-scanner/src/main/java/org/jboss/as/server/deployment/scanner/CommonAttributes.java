@@ -32,6 +32,8 @@ interface CommonAttributes {
     String RELATIVE_TO = "relative-to";
     String SCAN_ENABLED = "scan-enabled";
     String SCAN_INTERVAL = "scan-interval";
+    String AUTO_DEPLOY_ZIPPED = "auto-deploy-zipped";
+    String AUTO_DEPLOY_EXPLODED = "auto-deploy-exploded";
     String DEPLOYMENT_SCANNER = "deployment-scanner";
 
 }

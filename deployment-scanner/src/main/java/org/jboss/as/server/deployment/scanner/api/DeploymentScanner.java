@@ -64,4 +64,40 @@ public interface DeploymentScanner {
      */
     void stopScanner();
 
+    /**
+     * Gets whether the scanner will attempt to deploy zipped content based solely
+     * on detecting a change in the content; i.e. without requiring a
+     * marker file to trigger the deployment.
+     *
+     * @return true if auto-deployment of zipped content is enabled
+     */
+    boolean isAutoDeployZippedContent();
+
+    /**
+     * Sets whether the scanner will attempt to deploy zipped content based solely
+     * on detecting a change in the content; i.e. without requiring a
+     * marker file to trigger the deployment.
+     *
+     * param autoDeployZip true if auto-deployment of zipped content is enabled
+     */
+    void setAutoDeployZippedContent(boolean autoDeployZip);
+
+    /**
+     * Gets whether the scanner will attempt to deploy exploded content based solely
+     * on detecting a change in the content; i.e. without requiring a
+     * marker file to trigger the deployment.
+     *
+     * @return true if auto-deployment of exploded content is enabled
+     */
+    boolean isAutoDeployExplodedContent() ;
+
+    /**
+     * Sets whether the scanner will attempt to deploy exploded content based solely
+     * on detecting a change in the content; i.e. without requiring a
+     * marker file to trigger the deployment.
+     *
+     * param autoDeployZip true if auto-deployment of exploded content is enabled
+     */
+    void setAutoDeployExplodedContent(boolean autoDeployExploded) ;
+
 }

@@ -76,6 +76,25 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute default="true" name="auto-deploy-zipped" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Controls whether zipped deployment content should be automatically deployed by
+                    the scanner without requiring the user to add a .dodeploy marker file.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute default="false" name="auto-deploy-exploded" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Controls whether zipped deployment content should be automatically deployed by
+                    the scanner without requiring the user to add a .dodeploy marker file. Setting
+                    this to 'true' is not recommended for anything but basic development scenarios, 
+                    as there is no way to ensure that deployment will not occur in the middle of
+                    changes to the content.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>
