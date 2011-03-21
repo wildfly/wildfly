@@ -536,4 +536,13 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
             return new ProxyFactory<T>(proxyName, type, type.getClassLoader());
         }
     }
+
+    @Override
+    public String toString() {
+        return "AbstractComponentDescription{" +
+                "applicationName='" + applicationName + '\'' +
+                ", moduleName='" + moduleName + '\'' +
+                ", componentName='" + componentName + '\'' +
+                '}';
+    }
 }
