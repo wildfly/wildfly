@@ -46,10 +46,15 @@ public class OperationRequestCompleter implements Completor {
     /* (non-Javadoc)
      * @see jline.Completor#complete(java.lang.String, int, java.util.List)
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("rawtypes" )
     @Override
     public int complete(String buffer, int cursor, List candidates) {
 
+        return doComplete(buffer, candidates, true);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public int doComplete(String buffer, List candidates, boolean requireSlashOrDotSlash) {
         int firstCharIndex = 0;
         while(firstCharIndex < buffer.length()) {
             if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
@@ -58,15 +63,17 @@ public class OperationRequestCompleter implements Completor {
             ++firstCharIndex;
         }
 
-        if(firstCharIndex == buffer.length()) {
-            return -1;
-        }
+        if(requireSlashOrDotSlash) {
+            if(firstCharIndex == buffer.length()) {
+                return -1;
+            }
 
-        if(!(buffer.startsWith("./", firstCharIndex) ||
-                buffer.charAt(firstCharIndex) == ':' ||
-                buffer.charAt(firstCharIndex) == '/' ||
-                buffer.startsWith("..", firstCharIndex))) {
-            return -1;
+            if (!(buffer.startsWith("./", firstCharIndex)
+                    || buffer.charAt(firstCharIndex) == ':'
+                    || buffer.charAt(firstCharIndex) == '/' || buffer
+                    .startsWith("..", firstCharIndex))) {
+                return -1;
+            }
         }
 
         // if it ends on .. then the completion shouldn't happen
@@ -206,6 +213,7 @@ public class OperationRequestCompleter implements Completor {
         } else {
             names = provider.getNodeTypes(address);
         }
+
         if(names.isEmpty()) {
             return -1;
         }
