@@ -22,19 +22,7 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.resource.spi.IllegalStateException;
-import javax.resource.spi.ResourceAdapter;
-import javax.transaction.TransactionManager;
-
+import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -51,10 +39,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
@@ -76,7 +61,15 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
+import javax.resource.spi.IllegalStateException;
+import javax.resource.spi.ResourceAdapter;
+import javax.transaction.TransactionManager;
+import java.io.File;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.List;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -282,6 +275,9 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
+            // TODO: There is a simple solution to undocumented and untested code... disable it.
+            return true;
+            /*
             if (cmd != null && ijmd != null) {
                 Set<String> raClasses = new HashSet<String>();
                 Set<String> ijClasses = new HashSet<String>();
@@ -326,6 +322,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             }
 
             return false;
+            */
         }
 
         @Override
