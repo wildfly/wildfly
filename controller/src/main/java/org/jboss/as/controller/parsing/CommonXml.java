@@ -22,6 +22,95 @@
 
 package org.jboss.as.controller.parsing;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURE_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
+
+import javax.xml.stream.XMLStreamException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -42,70 +131,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
-import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
-import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
-import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -335,6 +360,475 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        int securityRealmsCount = 0;
+        int connectionsCount = 0;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SECURITY_REALMS: {
+                            if (++securityRealmsCount > 1) {
+                                throw unexpectedElement(reader);
+                            }
+                            parseSecurityRealms(reader, address, list);
+
+                            break;
+                        }
+                        case CONNECTIONS: {
+                            if (++connectionsCount > 1) {
+                                throw unexpectedElement(reader);
+                            }
+                            parseConnections(reader, address, list);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case LDAP: {
+                            parseLdapConnection(reader, address, list);
+
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseLdapConnection(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        String name = null;
+        String url = null;
+        String searchDN = null;
+        String searchCredential = null;
+        String initialContextFactory = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case URL: {
+                        url = value;
+                        break;
+                    }
+                    case SEARCH_DN: {
+                        searchDN = value;
+                        break;
+                    }
+                    case SEARCH_CREDENTIAL: {
+                        searchCredential = value;
+                        break;
+                    }
+                    case INITIAL_CONTEXT_FACTORY: {
+                        initialContextFactory = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        Set<Attribute> missingAttributes = new HashSet<Attribute>();
+        if (name == null)
+            missingAttributes.add(Attribute.NAME);
+        if (url == null)
+            missingAttributes.add(Attribute.URL);
+        if (searchDN == null)
+            missingAttributes.add(Attribute.SEARCH_DN);
+        if (searchCredential == null)
+            missingAttributes.add(Attribute.SEARCH_CREDENTIAL);
+        if (missingAttributes.size() > 0)
+            throw missingRequired(reader, missingAttributes);
+
+        requireNoContent(reader);
+
+        final ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(address).add(MANAGEMENT, CONNECTIONS).add(CONNECTION, name);
+        add.get(OP).set(ADD);
+        add.get(TYPE).set(LDAP);
+        add.get(URL).set(url);
+        add.get(SEARCH_DN).set(searchDN);
+        add.get(SEARCH_CREDENTIAL).set(searchCredential);
+        if (initialContextFactory != null) {
+            add.get(INITIAL_CONTEXT_FACTORY).set(INITIAL_CONTEXT_FACTORY);
+        }
+
+        list.add(add);
+    }
+
+    protected void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SECURITY_REALM: {
+                            parseSecurityRealm(reader, address, list);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseSecurityRealm(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        // TODO - Copy parsePath for attribute reading style.
+        requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+        // After double checking the name of the only attribute we can retrieve it.
+        final String realmName = reader.getAttributeValue(0);
+
+        final ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(address).add(MANAGEMENT, SECURITY_REALMS).add(SECURITY_REALM, realmName);
+        add.get(OP).set(ADD);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SERVER_IDENTITIES:
+                            parseServerIdentities(reader, add);
+                            break;
+                        case AUTHENTICATION: {
+                            parseAuthentication(reader, add);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        list.add(add);
+    }
+
+    protected void parseServerIdentities(final XMLExtendedStreamReader reader, final ModelNode securityRealmAdd) throws XMLStreamException {
+        ModelNode serverIdentities = securityRealmAdd.get(SERVER_IDENTITIES);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SSL: {
+                            parseSSL(reader, serverIdentities);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseSSL(final XMLExtendedStreamReader reader, final ModelNode serverIdentities) throws XMLStreamException {
+        ModelNode ssl = serverIdentities.get(SSL);
+        String protocol = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PROTOCOL: {
+                        protocol = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (protocol != null) {
+            ssl.get(PROTOCOL).set(protocol);
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case KEYSTORE: {
+                            parseKeystore(reader, ssl);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+
+    }
+
+    protected void parseKeystore(final XMLExtendedStreamReader reader, final ModelNode securityRealmAdd) throws XMLStreamException {
+        ModelNode keystore = securityRealmAdd.get(KEYSTORE);
+
+        String file = null;
+        String password = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case FILE: {
+                        file = value;
+                        break;
+                    }
+                    case PASSWORD: {
+                        password = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        Set<Attribute> missingAttributes = new HashSet<Attribute>();
+        if (file == null)
+            missingAttributes.add(Attribute.FILE);
+        if (password == null)
+            missingAttributes.add(Attribute.PASSWORD);
+        if (missingAttributes.size() > 0)
+            throw missingRequired(reader, missingAttributes);
+        requireNoContent(reader);
+
+        keystore.get(FILE).set(file);
+        keystore.get(PASSWORD).set(password);
+    }
+
+    protected void parseAuthentication(final XMLExtendedStreamReader reader, final ModelNode securityRealmAdd) throws XMLStreamException {
+        ModelNode authentication = securityRealmAdd.get(AUTHENTICATION);
+
+        int userCount = 0;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    // Only a single user element within the authentication element is currently supported.
+                    if (++userCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    switch (element) {
+                        case USERS: {
+                            parseUsersAuthentication(reader, authentication);
+                            break;
+                        }
+                        case LDAP: {
+                            parseLdapAuthentication(reader, authentication);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseLdapAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication) throws XMLStreamException {
+        ModelNode ldapAuthentication = authentication.get(LDAP);
+
+        String connection = null;
+        String baseDN = null;
+        String usernameAttribute = null;
+        String recursive = null;
+        String userDN = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case CONNECTION: {
+                        connection = value;
+                        break;
+                    }
+                    case BASE_DN: {
+                        baseDN = value;
+                        break;
+                    }
+                    case USERNAME_ATTRIBUTE: {
+                        usernameAttribute = value;
+                        break;
+                    }
+                    case RECURSIVE: {
+                        recursive = value;
+                        break;
+                    }
+                    case USER_DN: {
+                        userDN = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        Set<Attribute> missingAttributes = new HashSet<Attribute>();
+        if (connection == null)
+            missingAttributes.add(Attribute.CONNECTION);
+        if (baseDN == null)
+            missingAttributes.add(Attribute.BASE_DN);
+        if (usernameAttribute == null)
+            missingAttributes.add(Attribute.USERNAME_ATTRIBUTE);
+        // recursive is optional with a default of false
+        // userDN is optional with a default of "dn"
+
+        if (missingAttributes.size() > 0)
+            throw missingRequired(reader, missingAttributes);
+
+        requireNoContent(reader);
+
+        ldapAuthentication.get(CONNECTION).set(connection);
+        ldapAuthentication.get(BASE_DN).set(baseDN);
+        ldapAuthentication.get(USERNAME_ATTRIBUTE).set(usernameAttribute);
+        if (recursive != null) {
+            ldapAuthentication.get(RECURSIVE).set(Boolean.valueOf(recursive));
+        }
+        if (userDN != null) {
+            ldapAuthentication.get(USER_DN).set(userDN);
+        }
+    }
+
+    // The user domain element defines users within the domain model, it is a simple authentication for some out of the box users.
+    protected void parseUsersAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication) throws XMLStreamException {
+        ModelNode userDomain = authentication.get(USERS);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case USER: {
+                            parseUser(reader, userDomain);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseUser(final XMLExtendedStreamReader reader, final ModelNode userDomain) throws XMLStreamException {
+        // TODO - Copy parsePath for attribute reading style.
+        requireSingleAttribute(reader, Attribute.USERNAME.getLocalName());
+        // After double checking the name of the only attribute we can retrieve it.
+        final String userName = reader.getAttributeValue(0);
+
+        ModelNode user = userDomain.get(USER, userName);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case PASSWORD: {
+                            String password = reader.getElementText();
+                            user.get(PASSWORD).set(password);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -493,8 +987,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseHttpManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String interfaceName = null;
-        int port = 0;
+        int port = -1;
+        int securePort = -1;
         int maxThreads = -1;
+        String securityRealm = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -516,6 +1012,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
                         break;
                     }
+                    case SECURE_PORT: {
+                        securePort = Integer.parseInt(value);
+                        if (securePort < 0) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + securePort + " -- cannot be negative",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    // TODO - Is MAX_THREADS supported?  Not in the xsd !!
                     case MAX_THREADS: {
                         maxThreads = Integer.parseInt(value);
                         if (maxThreads < 1) {
@@ -523,6 +1029,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                     "' value " + maxThreads + " -- must be greater than 0",
                                     reader.getLocation());
                         }
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        securityRealm = value;
                         break;
                     }
                     default:
@@ -536,7 +1046,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         final ModelNode mgmtSocket = new ModelNode();
         mgmtSocket.get(INTERFACE).set(interfaceName);
-        mgmtSocket.get(PORT).set(port);
+        if (port > -1) {
+            mgmtSocket.get(PORT).set(port);
+        }
+        if (securePort > -1) {
+            mgmtSocket.get(SECURE_PORT).set(securePort);
+        }
+        if (securityRealm != null) {
+            mgmtSocket.get(SECURITY_REALM).set(securityRealm);
+        }
+
         mgmtSocket.get(OP).set(ADD);
         ModelNode operationAddress = address.clone();
         operationAddress.add(MANAGEMENT_INTERFACES, HTTP_INTERFACE);
@@ -545,7 +1064,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         list.add(mgmtSocket);
 
         reader.discardRemainder();
-
     }
 
     private void parseNativeManagementSocket(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
@@ -718,7 +1236,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         // Handle elements
         boolean hasJvmOptions = false;
         boolean hasEnvironmentVariables = false;
-        boolean hasSystemProperties = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -1679,15 +2196,128 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         writer.writeEndElement();
     }
 
-    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode serverManagement) throws XMLStreamException {
-        writer.writeStartElement(Element.MANAGEMENT_INTERFACES.getLocalName());
+    protected void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management) throws XMLStreamException {
+        boolean hasSecurityRealm = management.get(SECURITY_REALMS).hasDefined(SECURITY_REALM);
+        boolean hasConnection = management.get(CONNECTIONS).hasDefined(CONNECTION);
 
-        if (serverManagement.hasDefined(NATIVE_INTERFACE)) {
-            writeManagementProtocol(Element.NATIVE_INTERFACE, writer, serverManagement.get(NATIVE_INTERFACE));
+        if ((hasSecurityRealm == false) && (hasConnection == false)) {
+            return;
         }
 
-        if (serverManagement.hasDefined(HTTP_INTERFACE)) {
-            writeManagementProtocol(Element.HTTP_INTERFACE, writer, serverManagement.get(HTTP_INTERFACE));
+        writer.writeStartElement(Element.MANAGEMENT.getLocalName());
+        if (hasSecurityRealm) {
+            ModelNode securityRealms = management.get(SECURITY_REALMS).get(SECURITY_REALM);
+            writer.writeStartElement(Element.SECURITY_REALMS.getLocalName());
+
+            for (Property variable : securityRealms.asPropertyList()) {
+                writer.writeStartElement(Element.SECURITY_REALM.getLocalName());
+                writeAttribute(writer, Attribute.NAME, variable.getName());
+
+                ModelNode realm = variable.getValue();
+                if (realm.has(SERVER_IDENTITIES)) {
+                    writer.writeStartElement(Element.SERVER_IDENTITIES.getLocalName());
+                    ModelNode serverIdentities = realm.get(SERVER_IDENTITIES);
+                    if (serverIdentities.has(SSL)) {
+                        writer.writeStartElement(Element.SSL.getLocalName());
+                        ModelNode ssl = serverIdentities.get(SSL);
+                        if (ssl.has(PROTOCOL)) {
+                            writer.writeAttribute(Attribute.PROTOCOL.getLocalName(), ssl.get(PROTOCOL).asString());
+                        }
+                        if (ssl.has(KEYSTORE)) {
+                            writer.writeStartElement(Element.KEYSTORE.getLocalName());
+                            ModelNode keystore = ssl.get(KEYSTORE);
+                            writer.writeAttribute(Attribute.FILE.getLocalName(), keystore.require(FILE).asString());
+                            writer.writeAttribute(Attribute.PASSWORD.getLocalName(), keystore.require(PASSWORD).asString());
+                            writer.writeEndElement();
+                        }
+                        writer.writeEndElement();
+                    }
+
+                    writer.writeEndElement();
+                }
+
+                if (realm.has(AUTHENTICATION)) {
+                    writer.writeStartElement(Element.AUTHENTICATION.getLocalName());
+                    ModelNode authentication = realm.require(AUTHENTICATION);
+
+                    if (authentication.has(USERS)) {
+                        ModelNode userDomain = authentication.get(USERS);
+                        ModelNode users = userDomain.require(USER);
+                        writer.writeStartElement(Element.USERS.getLocalName());
+                        for (Property userProps : users.asPropertyList()) {
+                            String userName = userProps.getName();
+                            ModelNode currentUser = userProps.getValue();
+                            writer.writeStartElement(Element.USER.getLocalName());
+                            writer.writeAttribute(Attribute.USERNAME.getLocalName(), userName);
+
+                            // TODO - Later different representations of the password will be available.
+                            if (currentUser.has(PASSWORD)) {
+                                writer.writeStartElement(Element.PASSWORD.getLocalName());
+                                writer.writeCharacters(currentUser.get(PASSWORD).asString());
+                                writer.writeEndElement();
+                            }
+                            writer.writeEndElement();
+                        }
+
+                        writer.writeEndElement();
+                    } else if (authentication.has(LDAP)) {
+                        ModelNode userLdap = authentication.get(LDAP);
+                        writer.writeStartElement(Element.LDAP.getLocalName());
+                        writer.writeAttribute(Attribute.CONNECTION.getLocalName(), userLdap.require(CONNECTION).asString());
+                        writer.writeAttribute(Attribute.BASE_DN.getLocalName(), userLdap.require(BASE_DN).asString());
+                        writer.writeAttribute(Attribute.USERNAME_ATTRIBUTE.getLocalName(), userLdap.require(USERNAME_ATTRIBUTE).asString());
+                        if (userLdap.has(RECURSIVE)) {
+                            writer.writeAttribute(Attribute.RECURSIVE.getLocalName(), userLdap.require(RECURSIVE).asString());
+                        }
+                        if (userLdap.has(USER_DN)) {
+                            writer.writeAttribute(Attribute.USER_DN.getLocalName(), userLdap.require(USER_DN).asString());
+                        }
+                        writer.writeEndElement();
+                    }
+
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+
+        if (hasConnection) {
+            writer.writeStartElement(Element.CONNECTIONS.getLocalName());
+            ModelNode connections = management.get(CONNECTIONS).get(CONNECTION);
+
+            for (Property variable : connections.asPropertyList()) {
+                ModelNode connection = variable.getValue();
+                String type = connection.require(TYPE).asString();
+                if (LDAP.equals(type)) {
+                    writer.writeStartElement(Element.LDAP.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
+                    writer.writeAttribute(Attribute.URL.getLocalName(), connection.require(URL).asString());
+                    writer.writeAttribute(Attribute.SEARCH_DN.getLocalName(), connection.require(SEARCH_DN).asString());
+                    writer.writeAttribute(Attribute.SEARCH_CREDENTIAL.getLocalName(), connection.require(SEARCH_CREDENTIAL).asString());
+                    if (connection.has(INITIAL_CONTEXT_FACTORY)) {
+                        writer.writeAttribute(Attribute.INITIAL_CONTEXT_FACTORY.getLocalName(), connection.require(INITIAL_CONTEXT_FACTORY).asString());
+                    }
+                    writer.writeEndElement();
+                }
+
+            }
+            writer.writeEndElement();
+        }
+
+
+        writer.writeEndElement();
+    }
+
+    protected void writeManagementInterfaces(final XMLExtendedStreamWriter writer, final ModelNode managementInterfaces) throws XMLStreamException {
+        writer.writeStartElement(Element.MANAGEMENT_INTERFACES.getLocalName());
+
+        if (managementInterfaces.hasDefined(NATIVE_INTERFACE)) {
+            writeManagementProtocol(Element.NATIVE_INTERFACE, writer, managementInterfaces.get(NATIVE_INTERFACE));
+        }
+
+        if (managementInterfaces.hasDefined(HTTP_INTERFACE)) {
+            writeManagementProtocol(Element.HTTP_INTERFACE, writer, managementInterfaces.get(HTTP_INTERFACE));
         }
 
         writer.writeEndElement();
@@ -1695,12 +2325,19 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     private void writeManagementProtocol(final Element type, final XMLExtendedStreamWriter writer, final ModelNode protocol) throws XMLStreamException {
         String iface = protocol.get(INTERFACE).asString();
-        String port = protocol.get(PORT).asString();
         writer.writeStartElement(type.getLocalName());
         writeAttribute(writer, Attribute.INTERFACE, iface);
-        writeAttribute(writer, Attribute.PORT, port);
+        if (protocol.has(PORT)) {
+            writeAttribute(writer, Attribute.PORT, protocol.get(PORT).asString());
+        }
+        if (protocol.has(SECURE_PORT)) {
+            writeAttribute(writer, Attribute.SECURE_PORT, protocol.get(SECURE_PORT).asString());
+        }
         if (protocol.hasDefined(MAX_THREADS)) {
             writeAttribute(writer, Attribute.MAX_THREADS, protocol.get(MAX_THREADS).asString());
+        }
+        if (protocol.hasDefined(SECURITY_REALM)) {
+            writeAttribute(writer, Attribute.SECURITY_REALM, protocol.get(SECURITY_REALM).asString());
         }
         writer.writeEndElement();
     }
@@ -1722,6 +2359,5 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             writer.writeEndElement();
         }
     }
-
 
 }

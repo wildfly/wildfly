@@ -35,7 +35,7 @@ import org.jboss.com.sun.net.httpserver.HttpExchange;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class TrailingSlashFilter extends Filter {
+class TrailingSlashFilter extends Filter {
 
     private static final String LOCATION = "Location";
 

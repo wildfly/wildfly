@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.security.AccessController;
 import java.util.Locale;
@@ -44,10 +45,12 @@ import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.server.mgmt.HttpManagementService;
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
@@ -81,29 +84,45 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
 
         final String interfaceName = operation.require(ModelDescriptionConstants.INTERFACE).asString();
-        final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
+        final int port = getIntValue(operation, ModelDescriptionConstants.PORT);
+        final int securePort = getIntValue(operation, ModelDescriptionConstants.SECURE_PORT);
+        final String securityRealm = operation.hasDefined(SECURITY_REALM) ? operation.get(SECURITY_REALM).asString() : null;
 
         final ModelNode subModel = context.getSubModel();
         subModel.get(ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        subModel.get(ModelDescriptionConstants.PORT).set(port);
+        if (port > -1) {
+            subModel.get(ModelDescriptionConstants.PORT).set(port);
+        }
+        if (securePort > -1) {
+            subModel.get(ModelDescriptionConstants.SECURE_PORT).set(securePort);
+        }
+        if (securityRealm != null) {
+            subModel.get(ModelDescriptionConstants.SECURITY_REALM).set(securityRealm);
+        }
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                    Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s)", interfaceName, port);
+                    Logger.getLogger("org.jboss.as").infof("creating http management service using network interface (%s) port (%s) securePort (%s)", interfaceName, port, securePort);
 
                     final HttpManagementService service = new HttpManagementService();
-                    serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
+                    ServiceBuilder builder = serviceTarget.addService(HttpManagementService.SERVICE_NAME, service)
                             .addDependency(
                                     NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                                     NetworkInterfaceBinding.class, service.getInterfaceInjector())
                             .addDependency(DomainController.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
                             .addInjection(service.getTempDirInjector(), environment.getDomainTempDir().getAbsolutePath())
                             .addInjection(service.getPortInjector(), port)
-                            .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())))
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .addInjection(service.getSecurePortInjector(), securePort)
+                            .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())));
+
+                    if (securityRealm != null) {
+                        builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+                    }
+
+                    builder.setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
                 }
             });
@@ -117,5 +136,12 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ManagementDescription.getAddHttpManagementDescription(locale);
+    }
+
+    private int getIntValue(ModelNode source, String name) {
+        if (source.has(name)) {
+            return source.require(name).asInt();
+        }
+        return -1;
     }
 }

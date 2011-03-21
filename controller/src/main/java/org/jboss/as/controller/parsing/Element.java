@@ -41,8 +41,11 @@ public enum Element {
     ANY_ADDRESS("any-address"),
     ANY_IPV4_ADDRESS("any-ipv4-address"),
     ANY_IPV6_ADDRESS("any-ipv6-address"),
+    AUTHENTICATION("authentication"),
 
+    CONNECTIONS("connections"),
     CONTENT("content"),
+
 
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
@@ -72,11 +75,15 @@ public enum Element {
     JVMS("jvms"),
     JVM_OPTIONS("jvm-options"),
 
+    KEYSTORE("keystore"),
+
+    LDAP("ldap"),
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
     LOOPBACK("loopback"),
     LOOPBACK_ADDRESS("loopback-address"),
 
+    MANAGEMENT("management"),
     MANAGEMENT_INTERFACES("management-interfaces"),
     MULTICAST("multicast"),
 
@@ -88,6 +95,7 @@ public enum Element {
 
     OPTION("option"),
 
+    PASSWORD("password"),
     PATH("path"),
     PATHS("paths"),
 
@@ -101,7 +109,10 @@ public enum Element {
     REMOTE("remote"),
 
     SCANNING("scanning"),
+    SECURITY_REALM("security-realm"),
+    SECURITY_REALMS("security-realms"),
     SERVER("server"),
+    SERVER_IDENTITIES("server-identities"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),
@@ -109,6 +120,7 @@ public enum Element {
     SOCKET_BINDING("socket-binding"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
+    SSL("ssl"),
     STACK("stack"),
     STANDALONE("standalone"),
     SUBNET_MATCH("subnet-match"),
@@ -116,6 +128,8 @@ public enum Element {
     SYSTEM_PROPERTIES("system-properties"),
 
     UP("up"),
+    USER("user"),
+    USERS("users"),
 
     VARIABLE("variable"),
     VIRTUAL("virtual"),

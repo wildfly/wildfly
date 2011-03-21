@@ -19,25 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.http.server;
-
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
-import org.jboss.com.sun.net.httpserver.HttpServer;
-
+package org.jboss.as.domain.management.connections;
 
 /**
- * An interface to add a couple of additional lifecycle methods to the HttpHandler interface.
- *
- * Note: The start and stop are in the context of the HttpServer passed in, a single ManagementHttpHandler
- * may be started against multiple HttpServers.
+ * A ConnectionManager is responsible for making connections available to the security realms
+ * to perform their operations.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface ManagementHttpHandler extends HttpHandler {
+public interface ConnectionManager {
 
-    void start(HttpServer httpServer, SecurityRealm securityRealm);
+    // TODO - Once both LDAP and DB are implemented create a wrapper exception specific to the ConnectionManager interface.
 
-    void stop(HttpServer httpServer);
+    /**
+     * Obtain a connection based purely on the configuration.
+     *
+     * @return the ready connected connection.
+     */
+    Object getConnection() throws Exception;
 
+    /**
+     * Obtain a connection based on the configuration but override the
+     * principal and credential.
+     *
+     * This allows for verification that the principal and credential work
+     * to connect to the resource.
+     *
+     * @param pricipal - The principal to use when connecting.
+     * @param credential - The credential to use when connecting.
+     * @return the ready connected connection.
+     */
+    Object getConnection(String pricipal, String credential) throws Exception;
 }

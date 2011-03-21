@@ -42,9 +42,11 @@ interface Constants {
 
     String ACCEPT = "Accept";
     String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    String AUTHORIZATION_HEADER = "Authorization";
     String CONTENT_DISPOSITION = "Content-Disposition";
     String CONTENT_TYPE = "Content-Type";
     String LOCATION = "Location";
+    String WWW_AUTHENTICATE_HEADER = "WWW-Authenticate";
 
     /*
      * Content Types

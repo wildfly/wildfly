@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -39,6 +40,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -114,8 +117,10 @@ public class HostXml extends CommonXml {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
         }
 
+        writeManagement(writer, modelNode.get(MANAGEMENT));
+
         if (modelNode.hasDefined(MANAGEMENT_INTERFACES)) {
-            writeManagement(writer, modelNode.get(MANAGEMENT_INTERFACES));
+            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACES));
         }
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
@@ -214,8 +219,12 @@ public class HostXml extends CommonXml {
             parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
-        if (element == Element.MANAGEMENT_INTERFACES) {
+        if (element == Element.MANAGEMENT) {
             parseManagement(reader, address, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.MANAGEMENT_INTERFACES) {
+            parseManagementInterfaces(reader, address, list);
             element = nextElement(reader);
         }
         if (element == Element.DOMAIN_CONTROLLER) {

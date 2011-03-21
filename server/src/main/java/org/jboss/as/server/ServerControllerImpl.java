@@ -187,6 +187,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         boolean rollback = isRollbackOnRuntimeFailure(context, operation.getOperation());
         RollbackAwareResultHandler rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
         final OperationResult result = super.doExecute(context, operation, operationHandler, rollbackAwareHandler, address, operationControllerContext);
+
         if(context instanceof ServerOperationContextImpl) {
             if (rollback) {
                 rollbackAwareHandler.setRollbackOperation(result.getCompensatingOperation());

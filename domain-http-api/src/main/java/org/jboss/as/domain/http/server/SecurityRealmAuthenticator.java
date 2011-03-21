@@ -21,23 +21,13 @@
  */
 package org.jboss.as.domain.http.server;
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
-import org.jboss.com.sun.net.httpserver.HttpServer;
-
+import javax.security.auth.callback.CallbackHandler;
 
 /**
- * An interface to add a couple of additional lifecycle methods to the HttpHandler interface.
- *
- * Note: The start and stop are in the context of the HttpServer passed in, a single ManagementHttpHandler
- * may be started against multiple HttpServers.
+ * Each server side authenticator will implement this interface to make itself
+ * available as a CallbackHandler.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface ManagementHttpHandler extends HttpHandler {
-
-    void start(HttpServer httpServer, SecurityRealm securityRealm);
-
-    void stop(HttpServer httpServer);
-
+public interface SecurityRealmAuthenticator extends CallbackHandler {
 }

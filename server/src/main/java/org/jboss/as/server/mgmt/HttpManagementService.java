@@ -22,12 +22,12 @@
 
 package org.jboss.as.server.mgmt;
 
-import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -42,15 +42,19 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jason T. Greene
  */
-public class HttpManagementService implements Service<HttpManagementService>  {
+public class HttpManagementService implements Service<HttpManagementService> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
+    private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final InjectedValue<String> tempDirValue = new InjectedValue<String>();
+    private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
+
     private ManagementHttpServer serverManagement;
+
 
     /**
      * Starts the service.
@@ -62,11 +66,22 @@ public class HttpManagementService implements Service<HttpManagementService>  {
         final ModelController modelController = modelControllerValue.getValue();
         final ExecutorService executorService = executorServiceValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
-        final Integer port = portValue.getValue();
-        final InetSocketAddress bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
+
+        final int port = portValue.getOptionalValue();
+        InetSocketAddress bindAddress = null;
+        if (port > 0) {
+            bindAddress = new InetSocketAddress(interfaceBinding.getAddress(), port);
+        }
+        final int securePort = securePortValue.getOptionalValue();
+        InetSocketAddress secureBindAddress = null;
+        if (securePort > 0) {
+            secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
+        }
+
+        final SecurityRealmService securityRealmService = securityRealmServiceValue.getOptionalValue();
 
         try {
-            serverManagement = ManagementHttpServer.create(bindAddress, 50, modelController, executorService);
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelController, executorService, securityRealmService);
             serverManagement.start();
         } catch (Exception e) {
             throw new StartException("Failed to start serverManagement socket", e);
@@ -84,7 +99,9 @@ public class HttpManagementService implements Service<HttpManagementService>  {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public HttpManagementService getValue() throws IllegalStateException {
         return this;
     }
@@ -117,6 +134,15 @@ public class HttpManagementService implements Service<HttpManagementService>  {
     }
 
     /**
+     * Get the management secure port injector.
+     *
+     * @return The injector
+     */
+    public Injector<Integer> getSecurePortInjector() {
+        return securePortValue;
+    }
+
+    /**
      * Get the model controller injector to dispatch management requests to
      *
      * @return the injector
@@ -132,6 +158,15 @@ public class HttpManagementService implements Service<HttpManagementService>  {
      */
     public InjectedValue<String> getTempDirInjector() {
         return tempDirValue;
+    }
+
+    /**
+     * Get the security realm injector.
+     *
+     * @return the securityRealmServiceValue
+     */
+    public InjectedValue<SecurityRealmService> getSecurityRealmInjector() {
+        return securityRealmServiceValue;
     }
 
 }

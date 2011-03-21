@@ -19,25 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.management;
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
-import org.jboss.com.sun.net.httpserver.HttpServer;
+import javax.net.ssl.SSLContext;
 
+import org.jboss.as.domain.management.security.DomainCallbackHandler;
 
 /**
- * An interface to add a couple of additional lifecycle methods to the HttpHandler interface.
- *
- * Note: The start and stop are in the context of the HttpServer passed in, a single ManagementHttpHandler
- * may be started against multiple HttpServers.
+ * Interface to the security realm.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface ManagementHttpHandler extends HttpHandler {
+public interface SecurityRealm {
 
-    void start(HttpServer httpServer, SecurityRealm securityRealm);
+    /**
+     * @return The name of this SecurityRealm
+     */
+    String getName();
 
-    void stop(HttpServer httpServer);
+    /**
+     * @return The CallbackHandler for the realm
+     */
+    DomainCallbackHandler getCallbackHandler();
+
+    /**
+     * Used to obtain the SSLContext as configured for this security realm.
+     *
+     * @return the SSLContext server identity for this realm.
+     * @throws IllegalStateException - If no SSL server-identity has been defined.
+     */
+    SSLContext getSSLContext();
 
 }

@@ -53,6 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -61,6 +62,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
@@ -150,8 +153,12 @@ public class StandaloneXml extends CommonXml {
             parsePaths(reader, address, list, true);
             element = nextElement(reader);
         }
-        if (element == Element.MANAGEMENT_INTERFACES) {
+        if (element == Element.MANAGEMENT) {
             parseManagement(reader, address, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.MANAGEMENT_INTERFACES) {
+            parseManagementInterfaces(reader, address, list);
             element = nextElement(reader);
         }
         // Single profile
@@ -356,8 +363,11 @@ public class StandaloneXml extends CommonXml {
         if(modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
+
+        writeManagement(writer, modelNode.get(MANAGEMENT));
+
         if (modelNode.hasDefined(MANAGEMENT_INTERFACES)) {
-            writeManagement(writer, modelNode.get(MANAGEMENT_INTERFACES));
+            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACES));
         }
         writeServerProfile(writer, context);
         if (modelNode.hasDefined(INTERFACE)) {

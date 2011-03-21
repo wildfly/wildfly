@@ -19,25 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.http.server;
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
-import org.jboss.com.sun.net.httpserver.HttpServer;
+package org.jboss.as.domain.management.security;
 
+import javax.security.auth.callback.Callback;
 
 /**
- * An interface to add a couple of additional lifecycle methods to the HttpHandler interface.
- *
- * Note: The start and stop are in the context of the HttpServer passed in, a single ManagementHttpHandler
- * may be started against multiple HttpServers.
+ * A Callback to indicate the password has been verified instead of retrieving the
+ * password.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface ManagementHttpHandler extends HttpHandler {
+public class VerifyPasswordCallback implements Callback {
 
-    void start(HttpServer httpServer, SecurityRealm securityRealm);
+    private final String password;
 
-    void stop(HttpServer httpServer);
+    private boolean verified = false;
+
+    public VerifyPasswordCallback(final String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
 
 }

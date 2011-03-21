@@ -60,6 +60,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.ManagementInterfaceDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

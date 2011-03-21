@@ -1,0 +1,186 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.domain.management.security;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import java.io.IOException;
+
+import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.dmr.ModelNode;
+
+/**
+ * A CallbackHandler for users within an LDAP directory.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ */
+public class UserLdapCallbackHandler implements DomainCallbackHandler {
+
+    private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, VerifyPasswordCallback.class};
+    private static final String DEFAULT_USER_DN = "dn";
+
+    private final ConnectionManager connectionManager;
+
+    private final String baseDn;
+    private final String usernameAttribute;
+    private final boolean recursive;
+    private final String userDn;
+    protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
+
+    public UserLdapCallbackHandler(ConnectionManager connectionManager, ModelNode userLdap) {
+        this.connectionManager = connectionManager;
+        baseDn = userLdap.require(BASE_DN).asString();
+        usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
+        if (userLdap.has(RECURSIVE)) {
+            recursive = userLdap.require(RECURSIVE).asBoolean();
+        } else {
+            recursive = false;
+        }
+        if (userLdap.has(USER_DN)) {
+            userDn = userLdap.require(USER_DN).asString();
+        } else {
+            userDn = DEFAULT_USER_DN;
+        }
+    }
+
+    @Override
+    public Class[] getSupportedCallbacks() {
+        // TODO - For safety this Array should be cloned or should use an unmodifiable collection to ensure
+        // TODO - caller can not modify.
+        return supportedCallbacks;
+    }
+
+    @Override
+    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        String username = null;
+        VerifyPasswordCallback verifyPasswordCallback = null;
+
+        for (Callback current : callbacks) {
+            if (current instanceof NameCallback) {
+                username = ((NameCallback) current).getDefaultName();
+            } else if (current instanceof RealmCallback) {
+                // TODO - Nothing at the moment
+            } else if (current instanceof VerifyPasswordCallback) {
+                verifyPasswordCallback = (VerifyPasswordCallback) current;
+            } else {
+                throw new UnsupportedCallbackException(current);
+            }
+        }
+
+        if (username == null || username.length() == 0) {
+            throw new IOException("No username provided.");
+        }
+        if (verifyPasswordCallback == null) {
+            throw new IOException("No password to verify.");
+        }
+
+        InitialDirContext searchContext = null;
+        InitialDirContext userContext = null;
+        NamingEnumeration<SearchResult> searchEnumeration = null;
+        try {
+            // 1 - Obtain Connection to LDAP
+            searchContext = (InitialDirContext) connectionManager.getConnection();
+            // 2 - Search to identify the DN of the user connecting
+            SearchControls searchControls = new SearchControls();
+            if (recursive) {
+                searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            } else {
+                searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+            }
+            searchControls.setReturningAttributes(new String[]{userDn});
+            searchControls.setTimeLimit(searchTimeLimit);
+
+            Object[] filterArguments = new Object[]{username};
+            String filter = "(" + usernameAttribute + "={0})";
+
+            searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
+            if (searchEnumeration.hasMore() == false) {
+                throw new IOException("User '" + username + "' not found in directory.");
+            }
+
+            String distinguishedUserDN = null;
+
+            SearchResult result = searchEnumeration.next();
+            Attributes attributes = result.getAttributes();
+            if (attributes != null) {
+                Attribute dn = attributes.get(userDn);
+                if (dn != null) {
+                    distinguishedUserDN = (String) dn.get();
+                }
+            }
+            if (distinguishedUserDN == null) {
+                if (result.isRelative() == true)
+                    distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
+                else
+                    throw new NamingException("Can't follow referal for authentication: " + result.getName());
+            }
+
+            // 3 - Connect as user once their DN is identified
+            userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, verifyPasswordCallback.getPassword());
+            if (userContext != null) {
+                verifyPasswordCallback.setVerified(true);
+            }
+
+        } catch (Exception e) {
+            throw new IOException("Unable to perform verification", e);
+        } finally {
+            safeClose(searchEnumeration);
+            safeClose(searchContext);
+            safeClose(userContext);
+        }
+    }
+
+    private void safeClose(Context context) {
+        if (context != null) {
+            try {
+                context.close();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    private void safeClose(NamingEnumeration ne) {
+        if (ne != null) {
+            try {
+                ne.close();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+}

@@ -60,7 +60,10 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.com.sun.net.httpserver.Headers;
+import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.dmr.ModelNode;
@@ -71,7 +74,7 @@ import org.jboss.logging.Logger;
  *
  * @author Jason T. Greene
  */
-public class DomainApiHandler implements ManagementHttpHandler {
+class DomainApiHandler implements ManagementHttpHandler {
 
     private static final String DOMAIN_API_CONTEXT = "/domain-api";
     private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
@@ -418,8 +421,17 @@ public class DomainApiHandler implements ManagementHttpHandler {
         return parameters;
     }
 
-    public void start(HttpServer httpServer) {
-        httpServer.createContext(DOMAIN_API_CONTEXT, this);
+    public void start(HttpServer httpServer, SecurityRealm securityRealm) {
+        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, this);
+        if (securityRealm != null) {
+            DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
+            Class[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
+            if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
+                context.setAuthenticator(new DigestAuthenticator(callbackHandler, securityRealm.getName()));
+            } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
+                context.setAuthenticator(new BasicAuthenticator(callbackHandler, securityRealm.getName()));
+            }
+        }
     }
 
     public void stop(HttpServer httpServer) {

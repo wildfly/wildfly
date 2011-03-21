@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -38,9 +39,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Model descriptions for management protocol elements.
+ * Model description for the management elements.
  *
- * @author Jason T. Greene
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ManagementDescription {
 

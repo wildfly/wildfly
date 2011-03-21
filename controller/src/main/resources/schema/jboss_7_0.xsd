@@ -70,6 +70,7 @@
                 <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
+                <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
@@ -104,6 +105,7 @@
             <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profile" type="standalone-profileType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
@@ -121,7 +123,239 @@
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    
+
+    <xs:complexType name="managementType">
+        <xs:annotation>
+            <xs:documentation>
+                The centralized configuration for the management of standalone servers and the domain.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="security-realms">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="security-realm" type="security-realmType" minOccurs="1"
+                                    maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="connections">
+                <xs:complexType>
+                    <xs:sequence>
+                      <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ldapType"> <!-- TODO - May extend from a common connection type for name -->
+        <xs:annotation>
+            <xs:documentation>
+                The LDAP connection definition.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of this connection.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="url" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The URL to connect to ldap.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <!-- TODO - Later will be optional if we support GSSAPI to connect to LDAP -->
+        <xs:attribute name="search-dn" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The distinguished name to use when connecting to LDAP to perform searches.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="search-credential" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The credential to use when connecting to perform a search.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <!-- TODO - May drop this and just allow free name/value properties for extension. -->
+        <xs:attribute name="initial-context-factory" type="xs:string" default="com.sun.jndi.ldap.LdapCtxFactory">
+            <xs:annotation>
+                <xs:documentation>
+                    The initial context factory to establish the LdapContext.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="security-realmType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a security realm for securing access to the management interfaces.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="server-identities" type="server-identitiesType" />
+            <xs:element name="authentication" type="authenticationType" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of this security-realm, each security-realm must be assigned a unique name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="server-identitiesType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of the identities that represent the server.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="ssl" type="sslType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="sslType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of the SSL identity of this server.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="keystore" type="keystoreType" />
+        </xs:sequence>
+        <xs:attribute name="protocol" type="xs:string" default="TLS">
+            <xs:annotation>
+                <xs:documentation>
+                    The protocol to use when creating the SSLContext.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="keystoreType">
+        <xs:annotation>
+            <xs:documentation>
+                The keystore configuration for the server.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="file" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The file location of the keystore.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="password" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The password to open the keystore.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="authenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of the server side authentication mechanisms.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
+            <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
+        </xs:choice>
+        <xs:attribute name="useDomainController" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Should the request delegate to the domain controller or handle the authentication locally.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="ldapAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Definition to use LDAP as the user repository.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="connection" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the connection to use to connect to LDAP.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="base-dn" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The base distinguished name to commence the search for the user.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username-attribute" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the attribute to search for the user.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="recursive" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Should the search be recursive.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="user-dn" type="xs:string" default="dn">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the attribute which is the users distinguished name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+
+    <xs:complexType name="usersAuthenticationType">
+           <xs:annotation>
+            <xs:documentation>
+                A set of users
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="user" type="userType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="userType">
+        <xs:annotation>
+            <xs:documentation>
+                A single user.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="password" type="xs:string" />
+        </xs:choice>
+        <xs:attribute name="username" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The users username.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
     <xs:complexType name="management-interfaceType">
         <xs:annotation>
             <xs:documentation>
@@ -136,11 +370,35 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="port" type="xs:int" use="required">        
+        <xs:attribute name="port" type="xs:int" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     Port on which the host's socket for
                     management communication should be opened.
+
+                    If not specified the port will not be opened.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="secure-port" type="xs:int" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Secure port on which the host's socket for
+                    management communication should be opened.
+
+                    If not specified the port will not be opened.
+
+                    If specified the security-realm will be required to obtain
+                    the SSL configuration.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="security-realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The security realm to use for this management interface, the capabilities
+                    of the security realm will be queried to identify the authentication mechanism(s) to
+                    offer.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

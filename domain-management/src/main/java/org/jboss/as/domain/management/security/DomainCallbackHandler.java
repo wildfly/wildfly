@@ -19,25 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.http.server;
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.HttpHandler;
-import org.jboss.com.sun.net.httpserver.HttpServer;
+package org.jboss.as.domain.management.security;
 
+import javax.security.auth.callback.CallbackHandler;
 
 /**
- * An interface to add a couple of additional lifecycle methods to the HttpHandler interface.
- *
- * Note: The start and stop are in the context of the HttpServer passed in, a single ManagementHttpHandler
- * may be started against multiple HttpServers.
+ * An extension of CallbackHandler to allow the supported callbacks to be identified.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface ManagementHttpHandler extends HttpHandler {
+public interface DomainCallbackHandler extends CallbackHandler {
 
-    void start(HttpServer httpServer, SecurityRealm securityRealm);
-
-    void stop(HttpServer httpServer);
+    // TODO - Switch to collections to clean up how these are checked and to introduce safety to prevent the 'set' from being modified.
+    Class[] getSupportedCallbacks();
 
 }

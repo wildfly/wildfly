@@ -21,6 +21,7 @@
  */
 package org.jboss.as.domain.http.server;
 
+
 import static org.jboss.as.domain.http.server.Constants.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JAVASCRIPT;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_OCTET_STREAM;
@@ -46,6 +47,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
@@ -106,7 +108,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
             responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
             responseHeaders.add(LOCATION, "http://"+hostName + ":"+port+"/console/index.html");
             http.sendResponseHeaders(FOUND, 0);
-
 
             OutputStream outputStream = http.getResponseBody();
             outputStream.flush();
@@ -185,7 +186,7 @@ public class ConsoleHandler implements ManagementHttpHandler {
     }
 
     @Override
-    public void start(HttpServer httpServer) {
+    public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         httpServer.createContext(CONTEXT, this);
     }
 

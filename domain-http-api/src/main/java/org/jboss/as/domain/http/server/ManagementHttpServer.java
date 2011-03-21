@@ -21,6 +21,8 @@
  */
 package org.jboss.as.domain.http.server;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
@@ -28,7 +30,11 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
+import org.jboss.com.sun.net.httpserver.HttpsParameters;
+import org.jboss.com.sun.net.httpserver.HttpsServer;
 
 /**
  * The general HTTP server for handling management API requests.
@@ -37,12 +43,18 @@ import org.jboss.com.sun.net.httpserver.HttpServer;
  */
 public class ManagementHttpServer {
 
-    private HttpServer httpServer;
+    private final HttpServer httpServer;
+
+    private final HttpServer secureHttpServer;
+
+    private SecurityRealm securityRealm;
 
     private List<ManagementHttpHandler> handlers = new LinkedList<ManagementHttpHandler>();
 
-    private ManagementHttpServer(HttpServer httpServer) {
+    private ManagementHttpServer(HttpServer httpServer, HttpServer secureHttpServer, SecurityRealm securityRealm) {
         this.httpServer = httpServer;
+        this.secureHttpServer = secureHttpServer;
+        this.securityRealm = securityRealm;
     }
 
     private void addHandler(ManagementHttpHandler handler) {
@@ -50,24 +62,99 @@ public class ManagementHttpServer {
     }
 
     public void start() {
+        start(httpServer);
+        start(secureHttpServer);
+    }
+
+    private void start(HttpServer httpServer) {
+        if (httpServer == null)
+            return;
+
         for (ManagementHttpHandler current : handlers) {
-            current.start(httpServer);
+            current.start(httpServer, securityRealm);
         }
         httpServer.start();
     }
 
     public void stop() {
+        stop(httpServer);
+        stop(secureHttpServer);
+    }
+
+    private void stop(HttpServer httpServer) {
+        if (httpServer == null)
+            return;
+
         httpServer.stop(0);
         for (ManagementHttpHandler current : handlers) {
             current.stop(httpServer);
         }
     }
 
-    public static ManagementHttpServer create(InetSocketAddress socket, int backlog, ModelController modelController, Executor executor)
+    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelController modelController, Executor executor, SecurityRealm securityRealm)
             throws IOException {
-        HttpServer server = HttpServer.create(socket, backlog);
-        server.setExecutor(executor);
-        ManagementHttpServer managementHttpServer = new ManagementHttpServer(server);
+        HttpServer httpServer = null;
+        if (bindAddress != null) {
+            httpServer = HttpServer.create(bindAddress, backlog);
+            httpServer.setExecutor(executor);
+        }
+
+        HttpServer secureHttpServer = null;
+        if (secureBindAddress != null) {
+            secureHttpServer = HttpsServer.create(secureBindAddress, backlog);
+            SSLContext context = securityRealm.getSSLContext();
+            ((HttpsServer) secureHttpServer).setHttpsConfigurator(new HttpsConfigurator(context) {
+
+                @Override
+                public void configure(HttpsParameters params) {
+                    super.configure(params);
+                    {
+                        if (true)
+                            return;
+
+                        // TODO - Add propper capture of these values.
+
+                        System.out.println(" * SSLContext * ");
+
+                        SSLContext sslContext = getSSLContext();
+                        SSLParameters sslParams = sslContext.getDefaultSSLParameters();
+                        String[] cipherSuites = sslParams.getCipherSuites();
+                        for (String current : cipherSuites) {
+                            System.out.println("Cipher Suite - " + current);
+                        }
+                        System.out.println("Need Client Auth " + sslParams.getNeedClientAuth());
+                        String[] protocols = sslParams.getProtocols();
+                        for (String current : protocols) {
+                            System.out.println("Protocol " + current);
+                        }
+                        System.out.println("Want Client Auth " + sslParams.getWantClientAuth());
+                    }
+
+                    System.out.println(" * HTTPSParameters * ");
+                    {
+                        System.out.println("Client Address " + params.getClientAddress());
+                        String[] cipherSuites = params.getCipherSuites();
+                        if (cipherSuites != null) {
+                            for (String current : cipherSuites) {
+                                System.out.println("Cipher Suite - " + current);
+                            }
+                        }
+                        System.out.println("Need Client Auth " + params.getNeedClientAuth());
+                        String[] protocols = params.getProtocols();
+                        if (protocols != null) {
+                            for (String current : protocols) {
+                                System.out.println("Protocol " + current);
+                            }
+                        }
+                        System.out.println("Want Client Auth " + params.getWantClientAuth());
+                    }
+                }
+            });
+
+            secureHttpServer.setExecutor(executor);
+        }
+
+        ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
         managementHttpServer.addHandler(new DomainApiHandler(modelController));
         managementHttpServer.addHandler(new ConsoleHandler());
 
