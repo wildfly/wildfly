@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanDependencyProcessor;
+import org.jboss.as.ee.managedbean.processors.ManagedBeanSubDeploymentMarkingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
 import org.jboss.as.ee.structure.ComponentAggregationProcessor;
@@ -85,6 +86,7 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EJB_JAR_IN_EAR, new EjbJarDeploymentProcessor());
+            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_JAR_IN_EAR, new ManagedBeanSubDeploymentMarkingProcessor());
             updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor());
 
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());

@@ -188,6 +188,7 @@ public enum Phase {
     public static final int STRUCTURE_SERVICE_MODULE_LOADER             = 0x0B00;
     public static final int STRUCTURE_ANNOTATION_INDEX                  = 0x0C00;
     public static final int STRUCTURE_EJB_JAR_IN_EAR                    = 0x0D00;
+    public static final int STRUCTURE_MANAGED_BEAN_JAR_IN_EAR           = 0x0D01;
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x0E00;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0F00;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1000;
