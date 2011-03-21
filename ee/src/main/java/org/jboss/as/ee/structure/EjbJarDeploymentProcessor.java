@@ -40,11 +40,10 @@ import org.jboss.vfs.VirtualFile;
 /**
  * Processor that only runs for ear deployments where no application.xml is provided. It examines jars in the ear to determine
  * which are EJB sub-deployments.
- *
+ * <p/>
  * TODO: Move this to the EJB subsystem.
  *
  * @author Stuart Douglas
- *
  */
 public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -52,7 +51,6 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
     private static final DotName STATEFULL = DotName.createSimple("javax.ejb.Stateful");
     private static final DotName MESSAGE_DRIVEN = DotName.createSimple("javax.ejb.MessageDriven");
     private static final DotName SINGLETON = DotName.createSimple("javax.ejb.Singleton");
-    private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -74,11 +72,10 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
             } else {
                 final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
-                    if(!index.getAnnotations(STATEFULL).isEmpty() ||
+                    if (!index.getAnnotations(STATEFULL).isEmpty() ||
                             !index.getAnnotations(STATELESS).isEmpty() ||
                             !index.getAnnotations(MESSAGE_DRIVEN).isEmpty() ||
-                            !index.getAnnotations(SINGLETON).isEmpty() ||
-                            !index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME).isEmpty()) {
+                            !index.getAnnotations(SINGLETON).isEmpty()) {
                         //this is an EJB deployment
                         //TODO: we need to mark EJB sub deployments so the sub deployers know they are EJB deployments
                         SubDeploymentMarker.mark(resourceRoot);
