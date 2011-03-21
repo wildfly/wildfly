@@ -59,6 +59,13 @@ public class ManagementDescription {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
 
+        getManagementDescription(root, locale);
+
+        return root;
+    }
+
+    public static void getManagementDescription(final ModelNode root, final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
         root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface"));
         root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, TYPE).set(ModelType.OBJECT);
         root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
@@ -82,7 +89,6 @@ public class ManagementDescription {
         root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, REQUIRED).set(false);
         root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, HEAD_COMMENT_ALLOWED).set(true);
         root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, TAIL_COMMENT_ALLOWED).set(false);
-
-        return root;
     }
+
 }

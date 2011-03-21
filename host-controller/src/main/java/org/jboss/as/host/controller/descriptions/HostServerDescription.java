@@ -48,6 +48,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -118,6 +119,8 @@ public class HostServerDescription {
         root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).setEmptyObject();
 
         root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server.system-property"));
+        root.get(CHILDREN, SYSTEM_PROPERTY, TYPE).set(ModelType.LIST);
+        root.get(CHILDREN, SYSTEM_PROPERTY, VALUE_TYPE).set(ModelType.PROPERTY);
         root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
         root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();

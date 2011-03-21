@@ -25,9 +25,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
@@ -39,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -54,6 +56,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -85,24 +88,22 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
         root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
 
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, DESCRIPTION).set(bundle.getString("host.management"));
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, TYPE).set(ModelType.OBJECT);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("host.management.interface"));
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("host.management.port"));
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, VALUE_TYPE, PORT, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, REQUIRED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, HEAD_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT_INTERFACES, TAIL_COMMENT_ALLOWED).set(false);
-
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, DESCRIPTION).set(bundle.getString("host.domain-controller"));
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, TYPE).set(ModelType.OBJECT);
-        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE).set("TODO");// FIXME DomainController
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, REQUIRED).set(true);
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, HEAD_COMMENT_ALLOWED).set(true);
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, TAIL_COMMENT_ALLOWED).set(true);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, LOCAL, TYPE).set(ModelType.OBJECT);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, LOCAL, DESCRIPTION).set(bundle.getString("host.domain-controller.local"));
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, LOCAL, REQUIRED).set(false);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, TYPE).set(ModelType.OBJECT);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, DESCRIPTION).set(bundle.getString("host.domain-controller.remote"));
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, HOST, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, HOST, DESCRIPTION).set(bundle.getString("host.domain-controller.remote.host"));
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, HOST, REQUIRED).set(true);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("host.domain-controller.remote.port"));
+        root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, PORT, REQUIRED).set(true);
 
         root.get(OPERATIONS).setEmptyObject();
 
@@ -116,7 +117,11 @@ public class HostRootDescription {
         root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
 
+        ManagementDescription.getManagementDescription(root.get(CHILDREN), locale);
+
         root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("host.system-property"));
+        root.get(CHILDREN, SYSTEM_PROPERTY, TYPE).set(ModelType.LIST);
+        root.get(CHILDREN, SYSTEM_PROPERTY, VALUE_TYPE).set(ModelType.PROPERTY);
         root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
         root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
