@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -36,13 +34,12 @@ public class EjbDeploymentMarker {
 
     private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
 
-    public static void mark(DeploymentUnit deployment) {
+    public static void mark(final DeploymentUnit deployment) {
         deployment.putAttachment(ATTACHMENT_KEY, true);
-        DeploymentTypeMarker.setType(DeploymentType.EJB_JAR, deployment); // TODO: unify
     }
 
-    public static boolean isEjbDeployment(DeploymentUnit deploymentUnit) {
-        Boolean val = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+    public static boolean isEjbDeployment(final DeploymentUnit deploymentUnit) {
+        final Boolean val = deploymentUnit.getAttachment(ATTACHMENT_KEY);
         return val != null && val;
     }
 

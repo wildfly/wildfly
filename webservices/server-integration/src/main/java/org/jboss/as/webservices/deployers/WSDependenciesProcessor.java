@@ -26,6 +26,7 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYME
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -99,7 +100,7 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
     }
 
     private boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        final boolean isEjbDeployment = DeploymentTypeMarker.isType(DeploymentType.EJB_JAR, unit);
+        final boolean isEjbDeployment = EjbDeploymentMarker.isEjbDeployment(unit);
         if (isEjbDeployment) {
             WSEJBAdapterDeployer.internalDeploy(unit); // TODO: refactor this ugly hack
             WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, WEBSERVICE_DEPLOYMENT_KEY);
