@@ -81,6 +81,7 @@ public abstract class AbstractComponent implements Component {
     private final List<ComponentInjector> componentInjectors;
     private Interceptor componentInterceptor;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
+    private final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys;
     private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
     private final Map<Class<?>, ServiceName> viewServices;
     private final Map<Class<?>, ComponentView> views = new HashMap<Class<?>, ComponentView>();
@@ -96,11 +97,12 @@ public abstract class AbstractComponent implements Component {
         componentName = configuration.getComponentName();
         componentClass = configuration.getComponentClass();
         resourceInjections = configuration.getResourceInjections();
-        postConstructMethods = configuration.getPostConstructLifecycles();
-        preDestroyMethods = configuration.getPreDestroyLifecycles();
-        postConstructInterceptorsMethods = configuration.getPostConstructInterceptorLifecycles();
-        preDestroyInterceptorsMethods = configuration.getPreDestroyInterceptorLifecycles();
+        postConstructMethods = configuration.getPostConstructComponentLifecycles();
+        preDestroyMethods = configuration.getPreDestroyComponentLifecycles();
+        postConstructInterceptorsMethods = configuration.getPostConstructLifecycles();
+        preDestroyInterceptorsMethods = configuration.getPreDestroyLifecycles();
         interceptorFactoryMap = configuration.getInterceptorFactoryMap();
+        interceptorPreDestroys = configuration.getInterceptorPreDestroys();
         this.componentInjectors = configuration.getComponentInjectors();
         this.viewServices = new HashMap<Class<?>, ServiceName>(configuration.getViewServices());
     }
@@ -228,38 +230,14 @@ public abstract class AbstractComponent implements Component {
      * @param instance           The bean instance
      * @param interceptorContext
      */
-    protected void performPostConstructLifecycle(final Object instance, InterceptorFactoryContext interceptorContext) {
+    protected void performPostConstructLifecycle(final Object instance, final InterceptorFactoryContext interceptorContext) {
         final List<LifecycleInterceptorFactory> postConstructInterceptorMethods = this.postConstructInterceptorsMethods;
-        if ((postConstructInterceptorMethods != null && !postConstructInterceptorMethods.isEmpty()) ||
-                postConstructMethods != null && !postConstructMethods.isEmpty()) {
-            final ClassLoader contextCl = getContextClassLoader();
-            setContextClassLoader(componentClass.getClassLoader());
-            try {
-                for (final LifecycleInterceptorFactory postConstructMethod : postConstructInterceptorMethods) {
-                    try {
-                        Interceptor interceptor = postConstructMethod.create(interceptorContext);
 
-                        final InterceptorContext context = new InterceptorContext();
-                        context.setTarget(instance);
-                        context.setContextData(new HashMap<String, Object>());
-                        context.setParameters(EMPTY_OBJECT_ARRAY);
-                        interceptor.processInvocation(context);
-                    } catch (Throwable t) {
-                        throw new RuntimeException("Failed to invoke post construct method for class " + getComponentClass(), t);
-                    }
-                }
-
-                for (ComponentLifecycle postConstructMethod : postConstructMethods) {
-                    try {
-                        postConstructMethod.invoke(instance);
-                    } catch (Throwable t) {
-                        throw new RuntimeException("Failed to invoke post construct method for class " + getComponentClass(), t);
-                    }
-                }
-            } finally {
-                setContextClassLoader(contextCl);
-            }
+        final List<Interceptor> postConstructs = new ArrayList<Interceptor>(postConstructInterceptorMethods.size());
+        for (final LifecycleInterceptorFactory postConstructMethod : postConstructInterceptorMethods) {
+            postConstructs.add(postConstructMethod.create(interceptorContext));
         }
+        performLifecycle(instance, postConstructs, postConstructMethods);
     }
 
     /**
@@ -267,6 +245,7 @@ public abstract class AbstractComponent implements Component {
      */
     public void destroyInstance(final ComponentInstance instance) {
         performPreDestroyLifecycle(instance);
+        performInterceptorPreDestroyLifecycle(instance);
     }
 
     protected void createPreDestroyMethods(final InterceptorFactoryContext context, List<Interceptor> interceptors) {
@@ -281,15 +260,41 @@ public abstract class AbstractComponent implements Component {
      * @param instance The bean instance
      */
     protected void performPreDestroyLifecycle(final ComponentInstance instance) {
-        Iterator<Interceptor> preDestroyInterceptors = instance.getPreDestroyInterceptors().iterator();
-        if (preDestroyInterceptors.hasNext() ||
-                (preDestroyMethods != null && !preDestroyMethods.isEmpty())) {
+        performLifecycle(instance, instance.getPreDestroyInterceptors(), preDestroyMethods);
+    }
+
+    /**
+     * Perform any pre-destroy life-cycle routines found on class level interceptors.  By default it will invoke all pre-destroy methods.
+     *
+     * @param instance The bean instance
+     */
+    protected void performInterceptorPreDestroyLifecycle(final ComponentInstance instance) {
+        final InterceptorFactoryContext interceptorFactoryContext = instance.getInterceptorFactoryContext();
+        for (Map.Entry<Class<?>, List<LifecycleInterceptorFactory>> entry : interceptorPreDestroys.entrySet()) {
+            final Class<?> interceptorClass = entry.getKey();
+            final Object interceptorInstance = interceptorFactoryContext.getContextData().get(interceptorClass);
+            if (interceptorInstance == null) {
+                throw new RuntimeException("Failed to perform PreDestroy method.  No instance found for interceptor class " + interceptorClass);
+            }
+
+            final List<Interceptor> preDestroys = new ArrayList<Interceptor>();
+            for (LifecycleInterceptorFactory interceptorFactory : entry.getValue()) {
+                preDestroys.add(interceptorFactory.create(interceptorFactoryContext));
+            }
+            performLifecycle(interceptorInstance, preDestroys, Collections.<ComponentLifecycle>emptyList());
+        }
+    }
+
+
+    private void performLifecycle(final Object instance, final Iterable<Interceptor> lifeCycleInterceptors, final Collection<ComponentLifecycle> componentLifecycles) {
+        Iterator<Interceptor> interceptorIterator = lifeCycleInterceptors.iterator();
+        if (interceptorIterator.hasNext() || (componentLifecycles != null && !componentLifecycles.isEmpty())) {
             final ClassLoader contextCl = getContextClassLoader();
             setContextClassLoader(componentClass.getClassLoader());
             try {
-                while (preDestroyInterceptors.hasNext()) {
+                while (interceptorIterator.hasNext()) {
                     try {
-                        final Interceptor interceptor = preDestroyInterceptors.next();
+                        final Interceptor interceptor = interceptorIterator.next();
                         final InterceptorContext context = new InterceptorContext();
                         //as we use LifecycleInterceptorFactory we do not need to set the method
                         context.setTarget(instance);
@@ -301,12 +306,12 @@ public abstract class AbstractComponent implements Component {
                     }
                 }
 
-                // Execute the post construct life-cycle
-                for (ComponentLifecycle preDestroyMethod : preDestroyMethods) {
+                // Execute the life-cycle
+                for (ComponentLifecycle preDestroyMethod : componentLifecycles) {
                     try {
                         preDestroyMethod.invoke(instance);
                     } catch (Throwable t) {
-                        throw new RuntimeException("Failed to invoke pre destroy method for class " + getComponentClass(), t);
+                        throw new RuntimeException("Failed to invoke method for class " + getComponentClass(), t);
                     }
                 }
             } finally {

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.demos.managedbean.archive;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
@@ -35,13 +37,26 @@ public class InterceptorBean {
 
     private final Logger log = Logger.getLogger(InterceptorBean.class);
 
+    private String name;
+
+    @PostConstruct
+    public void initializeInterceptor(InvocationContext context) {
+        log.info("Post constructing it");
+        name = "#InterceptorBean#";
+    }
+
+    @PreDestroy
+    public void destroyInterceptor(InvocationContext context) {
+        log.info("Pre destroying it");
+    }
+
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         if (!context.getMethod().getName().equals("echo")) {
             return context.proceed();
         }
         log.info("-----> Intercepting call to " + context.getMethod().getDeclaringClass() + "." +  context.getMethod().getName() + "()");
-        return "#InterceptorBean#" + context.proceed();
+        return name + context.proceed();
     }
 
 }

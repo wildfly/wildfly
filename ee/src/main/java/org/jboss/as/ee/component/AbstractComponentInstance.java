@@ -41,6 +41,7 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
     private final AbstractComponent component;
     private final Object instance;
     private final List<Interceptor> preDestroyInterceptors;
+    private final InterceptorFactoryContext factoryContext;
 
     /**
      * This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
@@ -58,6 +59,7 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
         this.component = component;
         this.instance = instance;
         this.preDestroyInterceptors = preDestroyInterceptors;
+        this.factoryContext = factoryContext;
     }
 
     /** {@inheritDoc} */
@@ -82,6 +84,10 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
             throw new IllegalStateException("Method does not exist");
         }
         return interceptor;
+    }
+
+    public InterceptorFactoryContext getInterceptorFactoryContext() {
+        return factoryContext;
     }
 
     void setMethodMap(Map<Method, Interceptor> methodMap) {

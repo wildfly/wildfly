@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.component;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.MethodInterceptorFactory;
@@ -31,63 +33,76 @@ import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 
 /**
- * Utility class for adding lifecycle interceptor configuration to a {@link AbstractComponentConfiguration}.
+ * Utility class for adding creating interceptor configurations.
  *
  * @author Stuart Douglas
+ * @author John Bailey
  */
 public class LifecycleInterceptorBuilder {
 
     /**
+     * Create a list of {@link LifecycleInterceptorFactory} instances from a list of {@link InterceptorMethodDescription}.
      *
-     * @param description The component description
-     * @param componentConfiguration The component configuration to populate
-     * @param module The module for the deployment unit
-     * @param deploymentReflectionIndex The reflection index
-     * @throws DeploymentUnitProcessingException If the lifecycle methods cannot be created
+     * @param lifecycleDescriptions The lifecycle descriptions.
+     * @param module The deployment module
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @return the list of factories
+     * @throws DeploymentUnitProcessingException If the lifecycle interceptor factories cannot be created
      */
-    public static void createLifecycleInterceptors(final AbstractComponentDescription description, final AbstractComponentConfiguration componentConfiguration, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException{
-          final ClassLoader classLoader = module.getClassLoader();
+    public static List<LifecycleInterceptorFactory> createLifecycleInterceptors(final List<InterceptorMethodDescription> lifecycleDescriptions, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        final List<LifecycleInterceptorFactory> lifecycleInterceptors = new ArrayList<LifecycleInterceptorFactory>(lifecycleDescriptions.size());
+        final ClassLoader classLoader = module.getClassLoader();
 
-        // Process the component's PostConstruct methods
         // we assume that the lifecycle methods are already in the correct order
-        for (InterceptorMethodDescription lifecycleConfiguration : description.getPostConstructs()) {
+        for (InterceptorMethodDescription lifecycleConfiguration : lifecycleDescriptions) {
             try {
-                if(lifecycleConfiguration.isDeclaredOnTargetClass() ) {
-                    componentConfiguration.addPostConstructLifecycle(createLifecycle(classLoader, componentConfiguration, lifecycleConfiguration,deploymentReflectionIndex));
-                } else {
-                    componentConfiguration.addPostConstructInterceptorLifecycle(createInterceptorLifecycle(classLoader, componentConfiguration, lifecycleConfiguration,deploymentReflectionIndex));
+                if (!lifecycleConfiguration.isDeclaredOnTargetClass()) {
+                    lifecycleInterceptors.add(createInterceptorLifecycle(classLoader, lifecycleConfiguration, deploymentReflectionIndex));
                 }
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getIdentifier().getName(), e);
             }
         }
-
-        // Process the component's PreDestroy methods
-        for (InterceptorMethodDescription lifecycleConfiguration : description.getPreDestroys()) {
-            try {
-                if(lifecycleConfiguration.isDeclaredOnTargetClass() ) {
-                    componentConfiguration.addPreDestroyLifecycle(createLifecycle(classLoader, componentConfiguration, lifecycleConfiguration,deploymentReflectionIndex));
-                } else {
-                    componentConfiguration.addPreDestroyInterceptorLifecycle(createInterceptorLifecycle(classLoader, componentConfiguration, lifecycleConfiguration,deploymentReflectionIndex));
-                }
-            } catch (Exception e) {
-                throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getIdentifier().getName(), e);
-            }
-        }
+        return lifecycleInterceptors;
     }
 
-    private static ComponentLifecycle createLifecycle(final ClassLoader classLoader, final AbstractComponentConfiguration componentConfiguration, final InterceptorMethodDescription lifecycleConfiguration, DeploymentReflectionIndex deploymentReflectionIndex) throws NoSuchMethodException, ClassNotFoundException {
+    /**
+     * @param descriptions              The lifecycle descriptions
+     * @param module                    The module for the deployment unit
+     * @param deploymentReflectionIndex The reflection index
+     * @return the list of component lifecycles
+     * @throws DeploymentUnitProcessingException If the lifecycle methods cannot be created
+     */
+    public static List<ComponentLifecycle> createLifecycless(final List<InterceptorMethodDescription> descriptions, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        final List<ComponentLifecycle> lifecycles = new ArrayList<ComponentLifecycle>(descriptions.size());
+        final ClassLoader classLoader = module.getClassLoader();
+
+        // we assume that the lifecycle methods are already in the correct order
+        for (InterceptorMethodDescription lifecycleConfiguration : descriptions) {
+            try {
+                if (lifecycleConfiguration.isDeclaredOnTargetClass()) {
+                    lifecycles.add(createLifecycle(classLoader, lifecycleConfiguration, deploymentReflectionIndex));
+                }
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException("Failed to create lifecycle interceptor instance: " + lifecycleConfiguration.getIdentifier().getName(), e);
+            }
+        }
+
+        return lifecycles;
+    }
+
+    private static ComponentLifecycle createLifecycle(final ClassLoader classLoader, final InterceptorMethodDescription lifecycleConfiguration, DeploymentReflectionIndex deploymentReflectionIndex) throws NoSuchMethodException, ClassNotFoundException {
         final Class<?> interceptorClass = classLoader.loadClass(lifecycleConfiguration.getDeclaringClass());
         //This has to be a no-arg method
         final Method lifecycleMethod = deploymentReflectionIndex.getClassIndex(interceptorClass).getMethod(void.class, lifecycleConfiguration.getIdentifier().getName());
         return new ComponentLifecycleMethod(lifecycleMethod);
     }
 
-    private static LifecycleInterceptorFactory createInterceptorLifecycle(final ClassLoader classLoader, final AbstractComponentConfiguration componentConfiguration, final InterceptorMethodDescription lifecycleConfiguration, DeploymentReflectionIndex deploymentReflectionIndex) throws NoSuchMethodException, ClassNotFoundException {
+    private static LifecycleInterceptorFactory createInterceptorLifecycle(final ClassLoader classLoader, final InterceptorMethodDescription lifecycleConfiguration, final DeploymentReflectionIndex deploymentReflectionIndex) throws NoSuchMethodException, ClassNotFoundException {
         final Class<?> declaringClass = classLoader.loadClass(lifecycleConfiguration.getDeclaringClass());
         final Class<?> instanceClass = classLoader.loadClass(lifecycleConfiguration.getInstanceClass());
         final Method lifecycleMethod = deploymentReflectionIndex.getClassIndex(declaringClass).getMethod(void.class, lifecycleConfiguration.getIdentifier().getName(), InvocationContext.class);
-        final MethodInterceptorFactory delegate = new MethodInterceptorFactory(new SimpleInterceptorInstanceFactory(instanceClass),lifecycleMethod);
+        final MethodInterceptorFactory delegate = new MethodInterceptorFactory(new SimpleInterceptorInstanceFactory(instanceClass), lifecycleMethod);
         return new LifecycleInterceptorFactory(delegate, lifecycleMethod);
     }
 }

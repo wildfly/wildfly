@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author John E. Bailey
  */
-public class InterceptorDescription extends AbstractInjectableDescription {
+public class InterceptorDescription extends AbstractLifecycleCapableDescription {
     private final String interceptorClassName;
 
     private final List<InterceptorMethodDescription> aroundInvokeMethods;
@@ -58,6 +58,7 @@ public class InterceptorDescription extends AbstractInjectableDescription {
     /**
      * Adds an AroundInvoke method to the interceptor. Superclass AroundInvoke methods
      * should be added first to maintain the correct ordering as per the interceptor spec
+     *
      * @param aroundInvokeMethod The method to add
      */
     public void addAroundInvokeMethod(InterceptorMethodDescription aroundInvokeMethod) {

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Collection;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
@@ -56,8 +57,10 @@ public abstract class AbstractComponentConfiguration {
     private final List<ComponentInjector> componentInjectors = new ArrayList<ComponentInjector>();
     private final Map<ServiceName, InjectedValue<Object>> dependencyInjections = new HashMap<ServiceName, InjectedValue<Object>>();
     private final Map<Class<?>, ServiceName> viewServices = new HashMap<Class<?>, ServiceName>();
+    private final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys = new HashMap<Class<?>, List<LifecycleInterceptorFactory>>();
     private Class<?> componentClass;
     private List<InterceptorFactory> componentInstanceSystemInterceptorFactories = new LinkedList<InterceptorFactory>();
+
 
     /**
      * Construct a new instance.
@@ -92,35 +95,51 @@ public abstract class AbstractComponentConfiguration {
         this.componentClass = componentClass;
     }
 
-    public void addPostConstructLifecycle(ComponentLifecycle lifecycle) {
+    public void addPostConstructComponentLifecycle(ComponentLifecycle lifecycle) {
         postConstructLifecycles.add(lifecycle);
     }
 
-    List<ComponentLifecycle> getPostConstructLifecycles() {
+    public void addPostConstructComponentLifecycles(final Collection<ComponentLifecycle> lifecycles) {
+        postConstructLifecycles.addAll(lifecycles);
+    }
+
+    List<ComponentLifecycle> getPostConstructComponentLifecycles() {
         return postConstructLifecycles;
     }
 
-    public void addPostConstructInterceptorLifecycle(LifecycleInterceptorFactory lifecycle) {
+    public void addPostConstructLifecycle(LifecycleInterceptorFactory lifecycle) {
         postConstructInterceptorLifecycles.add(lifecycle);
     }
 
-    List<LifecycleInterceptorFactory> getPostConstructInterceptorLifecycles() {
+    public void addPostConstructLifecycles(Collection<LifecycleInterceptorFactory> lifecycles) {
+        postConstructInterceptorLifecycles.addAll(lifecycles);
+    }
+
+    List<LifecycleInterceptorFactory> getPostConstructLifecycles() {
         return postConstructInterceptorLifecycles;
     }
 
-    public void addPreDestroyLifecycle(ComponentLifecycle lifecycle) {
+    public void addPreDestroyComponentLifecycle(ComponentLifecycle lifecycle) {
         preDestroyLifecycles.add(lifecycle);
     }
 
-    List<ComponentLifecycle> getPreDestroyLifecycles() {
+    public void addPreDestroyComponentLifecycles(Collection<ComponentLifecycle> lifecycles) {
+        preDestroyLifecycles.addAll(lifecycles);
+    }
+
+    List<ComponentLifecycle> getPreDestroyComponentLifecycles() {
         return preDestroyLifecycles;
     }
 
-    public void addPreDestroyInterceptorLifecycle(LifecycleInterceptorFactory lifecycle) {
+    public void addPreDestroyLifecycle(LifecycleInterceptorFactory lifecycle) {
         preDestroyInterceptorLifecycles.add(lifecycle);
     }
 
-    List<LifecycleInterceptorFactory> getPreDestroyInterceptorLifecycles() {
+    public void addPreDestroyLifecycles(Collection<LifecycleInterceptorFactory> lifecycles) {
+        preDestroyInterceptorLifecycles.addAll(lifecycles);
+    }
+
+    List<LifecycleInterceptorFactory> getPreDestroyLifecycles() {
         return preDestroyInterceptorLifecycles;
     }
 
@@ -154,6 +173,10 @@ public abstract class AbstractComponentConfiguration {
 
     public List<ComponentInjector> getComponentInjectors() {
         return Collections.unmodifiableList(componentInjectors);
+    }
+
+    public Map<Class<?>, List<LifecycleInterceptorFactory>> getInterceptorPreDestroys() {
+        return interceptorPreDestroys;
     }
 
     /**

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.component.LifecycleInterceptorBuilder.createLifecycleInterceptors;
+import static org.jboss.as.ee.component.LifecycleInterceptorBuilder.createLifecycless;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -57,14 +59,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractComponentDescription extends AbstractInjectableDescription {
+public abstract class AbstractComponentDescription extends AbstractLifecycleCapableDescription {
 
     private final String componentName;
     private final String moduleName;
     private final String applicationName;
     private final String componentClassName;
-    private final List<InterceptorMethodDescription> postConstructs = new ArrayList<InterceptorMethodDescription>();
-    private final List<InterceptorMethodDescription> preDestroys = new ArrayList<InterceptorMethodDescription>();
     private final Map<String, InterceptorMethodDescription> aroundInvokeMethods = new LinkedHashMap<String,InterceptorMethodDescription>();
 
     private final List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
@@ -145,40 +145,6 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
      */
     public String getApplicationName() {
         return applicationName;
-    }
-
-    /**
-     * Adds a post construct method
-     * @param methodDescription The method
-     */
-    public void addPostConstructMethod(InterceptorMethodDescription methodDescription) {
-        postConstructs.add(methodDescription);
-    }
-
-    /**
-     * Get the post-construct lifecycle method configurations.
-     *
-     * @return the post-construct lifecycle method configurations
-     */
-    public List<InterceptorMethodDescription> getPostConstructs() {
-        return postConstructs;
-    }
-
-    /**
-     * Adds a pre destroy method
-     * @param methodDescription The method
-     */
-    public void addPreDestroyMethod(InterceptorMethodDescription methodDescription) {
-        preDestroys.add(methodDescription);
-    }
-
-    /**
-     * Get the pre-destroy lifecycle method configurations.
-     *
-     * @return the pre-destroy lifecycle method configurations
-     */
-    public List<InterceptorMethodDescription> getPreDestroys() {
-        return preDestroys;
     }
 
     /**
@@ -451,7 +417,21 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
         } while (currentClass != null);
 
         //populate lifecycle method information
-        LifecycleInterceptorBuilder.createLifecycleInterceptors(this,configuration,module,index);
+        configuration.addPostConstructComponentLifecycles(createLifecycless(getPostConstructs(), module, index));
+        configuration.addPreDestroyComponentLifecycles(createLifecycless(getPreDestroys(), module, index));
+        configuration.addPostConstructLifecycles(createLifecycleInterceptors(getPostConstructs(), module, index));
+        configuration.addPreDestroyLifecycles(createLifecycleInterceptors(getPreDestroys(), module, index));
+
+        final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys = configuration.getInterceptorPreDestroys();
+        for(InterceptorDescription interceptorDescription : getClassInterceptors()) {
+            final Class<?> interceptorClass;
+            try {
+                interceptorClass = Class.forName(interceptorDescription.getInterceptorClassName(), false, componentClass.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new DeploymentUnitProcessingException("Failed to load interceptor class " + interceptorDescription.getInterceptorClassName(), e);
+            }
+            interceptorPreDestroys.put(interceptorClass, createLifecycleInterceptors(interceptorDescription.getPreDestroys(), module, index));
+        }
 
         // Now create the views
         // Mapping of view methods to corresponding instance interceptor factories
@@ -512,7 +492,10 @@ public abstract class AbstractComponentDescription extends AbstractInjectableDes
             //so we pass in the configuration, as it will have been populated with resource injections by
             //the time the factory is called.
 
-            final InjectingInterceptorInstanceFactory instanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass),interceptorClass,configuration);
+            final List<LifecycleInterceptorFactory> postConstructs = createLifecycleInterceptors(interceptor.getPostConstructs(), module, index);
+            final List<LifecycleInterceptorFactory> preDestroys = createLifecycleInterceptors(interceptor.getPreDestroys(), module, index);
+
+            final InjectingInterceptorInstanceFactory instanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass),interceptorClass,configuration, postConstructs, preDestroys);
             //we need to create an Interceptor for every around invoke method
             for(InterceptorMethodDescription aroundInvoke : interceptor.getAroundInvokeMethods()) {
                 final Class<?> methodDeclaringClass = module.getClassLoader().loadClass(aroundInvoke.getDeclaringClass());

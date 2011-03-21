@@ -26,6 +26,7 @@ import org.jboss.invocation.Interceptor;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * An instance of a Java EE component.
@@ -63,4 +64,11 @@ public interface ComponentInstance extends Serializable {
      * @throws IllegalStateException if the method does not exist
      */
     Interceptor getInterceptor(Method method) throws IllegalStateException;
+
+    /**
+     * Get the {@link InterceptorFactoryContext} associated with this component instance.
+     *
+     * @return the InterceptorFactoryContext for this instance
+     */
+    InterceptorFactoryContext getInterceptorFactoryContext();
 }

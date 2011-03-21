@@ -54,34 +54,35 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
      * {@inheritDoc} *
      */
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-        processClass(index, componentConfiguration, DotName.createSimple(componentConfiguration.getComponentClassName()),componentConfiguration.getComponentClassName(), true);
-        for(InterceptorDescription description : componentConfiguration.getClassInterceptors()) {
-            processClass(index,componentConfiguration,DotName.createSimple(description.getInterceptorClassName()),componentConfiguration.getComponentClassName(),false);
+        processClass(index, componentConfiguration, DotName.createSimple(componentConfiguration.getComponentClassName()), componentConfiguration.getComponentClassName(), true);
+
+        for (InterceptorDescription description : componentConfiguration.getClassInterceptors()) {
+            processClass(index, description, DotName.createSimple(description.getInterceptorClassName()), description.getInterceptorClassName(), false);
         }
     }
 
-    private void processClass(final CompositeIndex index, final AbstractComponentDescription componentDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
+    private void processClass(final CompositeIndex index, final AbstractLifecycleCapableDescription lifecycleCapableDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
         final ClassInfo classInfo = index.getClassByName(className);
-        if(classInfo == null) {
+        if (classInfo == null) {
             return;
         }
 
         final DotName superName = classInfo.superName();
-        if(superName != null) {
-            processClass(index, componentDescription, superName,actualClassName,declaredOnTargetClass);
+        if (superName != null) {
+            processClass(index, lifecycleCapableDescription, superName, actualClassName, declaredOnTargetClass);
         }
 
-        final InterceptorMethodDescription postConstructMethod = getLifeCycle(classInfo,actualClassName, POST_CONSTRUCT_ANNOTATION,declaredOnTargetClass);
+        final InterceptorMethodDescription postConstructMethod = getLifeCycle(classInfo, actualClassName, POST_CONSTRUCT_ANNOTATION, declaredOnTargetClass);
         if (postConstructMethod != null) {
-            componentDescription.addPostConstructMethod(postConstructMethod);
+            lifecycleCapableDescription.addPostConstructMethod(postConstructMethod);
         }
-        final InterceptorMethodDescription preDestroyMethod = getLifeCycle(classInfo,actualClassName, PRE_DESTROY_ANNOTATION,declaredOnTargetClass);
+        final InterceptorMethodDescription preDestroyMethod = getLifeCycle(classInfo, actualClassName, PRE_DESTROY_ANNOTATION, declaredOnTargetClass);
         if (preDestroyMethod != null) {
-            componentDescription.addPreDestroyMethod(preDestroyMethod);
+            lifecycleCapableDescription.addPreDestroyMethod(preDestroyMethod);
         }
     }
 
-    private InterceptorMethodDescription getLifeCycle(final ClassInfo classInfo, final  String actualClass, final DotName annotationType, boolean declaredOnTargetClass) {
+    private InterceptorMethodDescription getLifeCycle(final ClassInfo classInfo, final String actualClass, final DotName annotationType, boolean declaredOnTargetClass) {
         if (classInfo == null) {
             return null; // No index info
         }
@@ -105,17 +106,17 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
 
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final Type[] args = methodInfo.args();
-        if(declaredOnTargetClass) {
+        if (declaredOnTargetClass) {
             if (args.length == 0) {
-                return InterceptorMethodDescription.create(classInfo.name().toString(),actualClass, methodInfo,declaredOnTargetClass);
+                return InterceptorMethodDescription.create(classInfo.name().toString(), actualClass, methodInfo, declaredOnTargetClass);
             } else {
                 throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
             }
         } else {
             if (args.length == 1 && args[0].name().toString().equals(InvocationContext.class.getName())) {
-                return InterceptorMethodDescription.create(classInfo.name().toString(),actualClass, methodInfo,declaredOnTargetClass);
+                return InterceptorMethodDescription.create(classInfo.name().toString(), actualClass, methodInfo, declaredOnTargetClass);
             } else {
-                throw new IllegalArgumentException("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() +", signature must be void methodName(InvocationContext ctx)");
+                throw new IllegalArgumentException("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() + ", signature must be void methodName(InvocationContext ctx)");
             }
         }
     }
