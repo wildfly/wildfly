@@ -24,6 +24,7 @@ package org.jboss.as.cli.completion.address.test;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.jboss.as.cli.completion.mock.MockNode;
 import org.junit.Test;
@@ -41,12 +42,13 @@ public class NodeNameFormattingTestCase extends AbstractAddressCompleterTest {
         root.addChild("colon:");
         root.addChild("slash/");
         root.addChild("both/:");
-        root.addChild("quotes:a/b\"c\"d");
+        root.addChild("all equals= slash/ colon: \"quotes\"");
+        root.addChild("equals=equals");
     }
 
     @Test
     public void testAll() {
-        assertEquals(Arrays.asList("both/:", "colon:", "quotes:a/b\"c\"d", "slash/"), fetchCandidates("/root="));
+        assertEquals(Arrays.asList("all equals= slash/ colon: \"quotes\"", "both/:", "colon:", "equals=equals", "slash/"), fetchCandidates("/root="));
     }
 
     @Test
@@ -66,6 +68,12 @@ public class NodeNameFormattingTestCase extends AbstractAddressCompleterTest {
 
     @Test
     public void testQuotes() {
-        assertEquals(Arrays.asList("\"quotes:a/b\\\"c\\\"d\""), fetchCandidates("/root=q"));
+        assertEquals(Arrays.asList("\"all equals= slash/ colon: \\\"quotes\\\"\""), fetchCandidates("/root=a"));
+    }
+
+    @Test
+    public void testEquals() {
+        assertEquals(Collections.emptyList(), fetchCandidates("/root=equals="));
+        assertEquals(Arrays.asList("\"equals=equals\""), fetchCandidates("/root=\"equals=\""));
     }
 }

@@ -255,7 +255,7 @@ public class OperationRequestCompleter implements Completor {
     private static String formatName(String name) {
         for(int i = 0; i < name.length(); ++i) {
             char ch = name.charAt(i);
-            if(ch == ':' || ch == '/') {
+            if(ch == ':' || ch == '/' || ch == '=') {
                 // now escape the quotes
                 StringBuilder builder = new StringBuilder();
                 builder.append('"');
