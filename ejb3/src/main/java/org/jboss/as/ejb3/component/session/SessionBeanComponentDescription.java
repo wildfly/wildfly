@@ -77,6 +77,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private Map<MethodInfo, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<MethodInfo, AccessTimeout>();
 
     /**
+     * mapped-name of the session bean
+     */
+    private String mappedName;
+
+    /**
      * Construct a new instance.
      *
      * @param componentName      the component name
@@ -223,6 +228,21 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     }
 
+    /**
+     * Returns the mapped-name of this bean
+     * @return
+     */
+    public String getMappedName() {
+        return this.mappedName;
+    }
+
+    /**
+     * Sets the mapped-name for this bean
+     * @param mappedName
+     */
+    public void setMappedName(String mappedName) {
+        this.mappedName = mappedName;
+    }
 
     @Override
     protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
