@@ -99,6 +99,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private final Map<String, DeploymentMarker> deployed = new HashMap<String, DeploymentMarker>();
     private final HashSet<String> noticeLogged = new HashSet<String>();
+    private final HashSet<String> ignoredMissingDeployments = new HashSet<String>();
 
     private final ScheduledExecutorService scheduledExecutor;
     private final ServerController serverController;
@@ -309,11 +310,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 final String deploymentName = fileName.substring(0, fileName.length() - DO_DEPLOY.length());
                 final File deploymentFile = new File(directory, deploymentName);
                 if (!deploymentFile.exists()) {
-                    log.warnf("Deployment of '%s' requested, but the deployment is not present", deploymentFile);
-                    if (!child.delete()) {
-                        log.warnf("Cannot removed extraneous deployment marker file %s", fileName);
+                    if(!ignoredMissingDeployments.contains(deploymentName)) {
+                        log.warnf("Deployment of '%s' requested, but the deployment is not present", deploymentFile);
+                        ignoredMissingDeployments.add(deploymentName);
                     }
                     continue;
+                } else {
+                    ignoredMissingDeployments.remove(deploymentName);
                 }
                 if (registeredDeployments.contains(deploymentName)) {
                     events.add(new ReplaceTask(deploymentName, deploymentFile, child.lastModified()));
