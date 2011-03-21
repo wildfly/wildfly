@@ -47,7 +47,8 @@ public class NodeState extends DefaultParsingState {
                 if(ctx.getCharacter() == '/') {
                     ctx.leaveState();
                 } else {
-                    GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER.handle(ctx);
+                    getHandler(ctx.getCharacter()).handle(ctx);
+                    //GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER.handle(ctx);
                 }
             }});
 
@@ -75,5 +76,7 @@ public class NodeState extends DefaultParsingState {
                 ctx.enterState(opState);
             }};
         putHandler(':', colonHandler);
+
+        enterState('"', QuotesState.QUOTES_EXCLUDED);
     }
 }

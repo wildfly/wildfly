@@ -100,12 +100,12 @@ public class CommandLineMain {
                 operationHandler.handle(cmdCtx);
 
             } else {
-                String cmd = line.toLowerCase();
+                String cmd = line;
                 cmdCtx.cmdArgs = null;
                 for (int i = 0; i < cmd.length(); ++i) {
                     if (Character.isWhitespace(cmd.charAt(i))) {
                         cmdCtx.cmdArgs = cmd.substring(i + 1).trim();
-                        cmd = cmd.substring(0, i);
+                        cmd = cmd.substring(0, i).toLowerCase();
                     }
                 }
 

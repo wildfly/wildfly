@@ -45,12 +45,12 @@ public class PathNavigatorsTestCase extends AbstractAddressCompleterTest {
 
     @Test
     public void testRoot1() {
-        //assertEquals(Arrays.asList("type1"), fetchCandidates("./"));
+        assertEquals(Arrays.asList("type1=name11", "type1=name12"), fetchCandidates("./"));
     }
 
     @Test
     public void testRoot2() {
-        //assertEquals(Arrays.asList("type1"), fetchCandidates("/"));
+        assertEquals(Arrays.asList("type1=name11", "type1=name12"), fetchCandidates("/"));
     }
 
     @Test
