@@ -23,14 +23,14 @@
   -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:structure:1.0"
-            xmlns="urn:jboss:structure:1.0"
+            targetNamespace="urn:jboss:deployment-structure:1.0"
+            xmlns="urn:jboss:deployment-structure:1.0"
             elementFormDefault="unqualified"
             attributeFormDefault="unqualified"
             version="1.0">
 
     <!-- Root element -->
-    <xsd:element name="jboss-structure" type="jbossStructureType">
+    <xsd:element name="jboss-deployment-structure" type="jbossStructureType">
         <xsd:annotation>
             <xsd:documentation>
                 Root element for a a jboss-structure file.

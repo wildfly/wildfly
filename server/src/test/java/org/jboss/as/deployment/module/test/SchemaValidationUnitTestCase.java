@@ -41,7 +41,7 @@ public class SchemaValidationUnitTestCase {
 
     @Test
     public void testJbossStructureSchema() throws Exception {
-        validateXsd("jboss-structure-1_0.xsd");
+        validateXsd("jboss-deployment-structure-1_0.xsd");
      }
 
      private void validateXsd(String xsdName) throws SAXException {

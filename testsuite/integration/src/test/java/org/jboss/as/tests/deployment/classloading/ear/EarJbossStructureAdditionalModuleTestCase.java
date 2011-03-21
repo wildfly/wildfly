@@ -43,7 +43,7 @@ public class EarJbossStructureAdditionalModuleTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
         ear.addManifestResource(new StringAsset(
-                                "<jboss-structure>" +
+                                "<jboss-deployment-structure>" +
                                 "<sub-deployment name=\"test.war\">" +
                                 "<dependencies>" +
                                 "<module name=\"deployment.somemodule\" />" +
@@ -52,8 +52,8 @@ public class EarJbossStructureAdditionalModuleTestCase {
                                 "<module name=\"deployment.somemodule\">" +
                                 "<resources><resource-root path=\"someModule.jar\"/></resources>"+
                                 "</module>" +
-                                "</jboss-structure>"),
-                "jboss-structure.xml");
+                                "</jboss-deployment-structure>"),
+                "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "someModule.jar");
         earLib.addClass(EarLibClass.class);
         ear.addModule(earLib);

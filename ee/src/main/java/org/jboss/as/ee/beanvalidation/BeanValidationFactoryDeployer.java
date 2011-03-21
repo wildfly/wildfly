@@ -80,27 +80,25 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
         //if this is a war we need to bind to the modules comp namespace
         if(DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(), moduleDescription.getModuleName());
-            bindServices(factory,deploymentUnit, serviceTarget,moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
+            bindServices(factory, serviceTarget,moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
         }
 
         for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if(component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getAppName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindServices(factory,deploymentUnit, serviceTarget, moduleDescription, component.getComponentName(), compContextServiceName);
+                bindServices(factory, serviceTarget, moduleDescription, component.getComponentName(), compContextServiceName);
             }
         }
 
     }
 
     /**
-     * Binds the java:comp/UserTransaction service and the java:comp/TransactionSyncronizationService
      *
      * @param factory The ValidatorFactory to bind
-     * @param deploymentUnit The deployment unit
      * @param serviceTarget The service target
      * @param contextServiceName The service name of the context to bind to
      */
-    private void bindServices(LazyValidatorFactory factory, DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
+    private void bindServices(LazyValidatorFactory factory, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
 
         final ServiceName validatorFactoryServiceName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/ValidatorFactory");
         BinderService validatorFactoryBindingService = new BinderService("ValidatorFactory");

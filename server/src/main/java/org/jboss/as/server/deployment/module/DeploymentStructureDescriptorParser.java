@@ -138,10 +138,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     private static final Logger log = Logger
             .getLogger("org.jboss.as.server.deployment.module.deployment-structure-descriptor-processor");
 
-    public static final String[] DEPLOYMENT_STRUCTURE_DESCRIPTOR_LOCATIONS = { "META-INF/jboss-structure.xml",
-            "WEB-INF/jboss-structure.xml" };
+    public static final String[] DEPLOYMENT_STRUCTURE_DESCRIPTOR_LOCATIONS = { "META-INF/jboss-deployment-structure.xml",
+            "WEB-INF/jboss-deployment-structure.xml" };
 
-    private static final String NAMESPACE = "urn:jboss:structure:1.0";
+    private static final String NAMESPACE = "urn:jboss:deployment-structure:1.0";
 
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
@@ -170,7 +170,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
         static {
             Map<QName, Element> elementsMap = new HashMap<QName, Element>();
-            elementsMap.put(new QName(NAMESPACE, "jboss-structure"), Element.JBOSS_STRUCTURE);
+            elementsMap.put(new QName(NAMESPACE, "jboss-deployment-structure"), Element.JBOSS_STRUCTURE);
             elementsMap.put(new QName(NAMESPACE, "deployment"), Element.DEPLOYMENT);
             elementsMap.put(new QName(NAMESPACE, "sub-deployment"), Element.SUB_DEPLOYMENT);
             elementsMap.put(new QName(NAMESPACE, "module"), Element.MODULE);
@@ -269,7 +269,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             return;
         }
         if (deploymentUnit.getParent() != null) {
-            log.warnf("%s in subdeployment ignored. jboss-deployment.xml is only parsed for top level deployments.",
+            log.warnf("%s in subdeployment ignored. jboss-deployment-structure.xml is only parsed for top level deployments.",
                     deploymentFile.getPathName());
             return;
         }

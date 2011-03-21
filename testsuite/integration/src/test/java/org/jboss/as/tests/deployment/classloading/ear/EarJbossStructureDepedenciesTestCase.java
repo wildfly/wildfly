@@ -43,8 +43,8 @@ public class EarJbossStructureDepedenciesTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
         ear.addManifestResource(new StringAsset(
-                                "<jboss-structure><deployment></deployment><sub-deployment name=\"test.war\"><dependencies><module name=\"org.jboss.classfilewriter\" /></dependencies></sub-deployment></jboss-structure>"),
-                "jboss-structure.xml");
+                                "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><dependencies><module name=\"org.jboss.classfilewriter\" /></dependencies></sub-deployment></jboss-deployment-structure>"),
+                "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
         earLib.addClass(EarLibClass.class);
         ear.addLibraries(earLib);
