@@ -38,10 +38,17 @@ import javax.transaction.TransactionManager;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.services.JndiService;
+import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
+import org.jboss.as.connector.services.AdminObjectService;
+import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
+import org.jboss.as.connector.services.ConnectionFactoryService;
 import org.jboss.as.connector.services.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
@@ -56,6 +63,7 @@ import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -181,21 +189,47 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
 
         @Override
-        public String[] bindConnectionFactory(URL url, String deployment, Object cf, String jndi) throws Throwable {
-            JndiStrategy js = jndiStrategy.getValue();
-
-            String[] result = js.bindConnectionFactories(deployment, new Object[] { cf }, new String[] { jndi });
+        public String[] bindConnectionFactory(URL url, String deployment, Object cf, final String jndi) throws Throwable {
 
             mdr.getValue().registerJndiMapping(url.toExternalForm(), cf.getClass().getName(), jndi);
 
-            log.infof("Bound connection factory at %s", jndi);
+            log.infof("Registered connection factory %s on mdr", jndi);
 
-            final JndiService jndiService = new JndiService(cf, jndi);
-            ServiceBuilder<?> serviceBuilder = serviceContainer.addService(JndiService.SERVICE_NAME_BASE.append(jndi),
-                    jndiService).setInitialMode(ServiceController.Mode.ACTIVE);
-            serviceBuilder.install();
+            final ConnectionFactoryService connectionFactoryService = new ConnectionFactoryService(cf);
 
-            return result;
+            final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
+            serviceContainer.addService(connectionFactoryServiceName, connectionFactoryService)
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
+            final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
+                    .append(jndi);
+            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
+                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final BinderService binderService = new BinderService(jndi.substring(6));
+            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
+            serviceContainer
+                    .addService(binderServiceName, binderService)
+                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                            binderService.getManagedObjectInjector())
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                        public void serviceStarted(ServiceController<?> controller) {
+                            log.infof("Bound JCA ConnectionFactory [%s]", jndi);
+                        }
+
+                        public void serviceStopped(ServiceController<?> serviceController) {
+                            log.infof("Unbound JCA ConnectionFactory [%s]", jndi);
+                        }
+
+                        public void serviceRemoved(ServiceController<?> serviceController) {
+                            log.infof("Removed JCA ConnectionFactory [%s]", jndi);
+                            serviceController.removeListener(this);
+                        }
+                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            return new String[] { jndi };
         }
 
         @Override
@@ -204,21 +238,46 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
 
         @Override
-        public String[] bindAdminObject(URL url, String deployment, Object ao, String jndi) throws Throwable {
-            JndiStrategy js = jndiStrategy.getValue();
-
-            String[] result = js.bindAdminObjects(deployment, new Object[] { ao }, new String[] { jndi });
+        public String[] bindAdminObject(URL url, String deployment, Object ao, final String jndi) throws Throwable {
 
             mdr.getValue().registerJndiMapping(url.toExternalForm(), ao.getClass().getName(), jndi);
 
-            log.infof("Bound admin object at %s", jndi);
+            log.infof("Registerred admin object at %s on mdr", jndi);
 
-            final JndiService jndiService = new JndiService(ao, jndi);
-            ServiceBuilder<?> serviceBuilder = serviceContainer.addService(JndiService.SERVICE_NAME_BASE.append(jndi),
-                    jndiService).setInitialMode(ServiceController.Mode.ACTIVE);
-            serviceBuilder.install();
+            final AdminObjectService adminObjectService = new AdminObjectService(ao);
 
-            return result;
+            final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
+            serviceContainer.addService(adminObjectServiceName, adminObjectService)
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
+            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
+            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
+                    .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final BinderService binderService = new BinderService(jndi.substring(6));
+            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
+            serviceContainer
+                    .addService(binderServiceName, binderService)
+                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                            binderService.getManagedObjectInjector())
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                        public void serviceStarted(ServiceController<?> controller) {
+                            log.infof("Bound JCA AdminObject [%s]", jndi);
+                        }
+
+                        public void serviceStopped(ServiceController<?> serviceController) {
+                            log.infof("Unbound JCA AdminObject [%s]", jndi);
+                        }
+
+                        public void serviceRemoved(ServiceController<?> serviceController) {
+                            log.infof("Removed JCA AdminObject [%s]", jndi);
+                            serviceController.removeListener(this);
+                        }
+                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            return new String[] { jndi };
         }
 
         @Override
@@ -346,7 +405,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         @Override
         protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
             /* TODO: We need security context service to implement it! */
-            return null;//throw new DeployException("TODO: We need security context service to implement it!");
+            return null;// throw new
+                        // DeployException("TODO: We need security context service to implement it!");
         }
 
     }

@@ -1,26 +1,26 @@
 package org.jboss.as.connector.services;
 
+import javax.resource.cci.ConnectionFactory;
+
+import org.jboss.jca.core.api.management.AdminObject;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.Service;
 
-public class JndiService implements Service<Object> {
+public class ConnectionFactoryService implements Service<Object> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "jndiname");
+    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "connection-factory");
 
     private final Object value;
 
-    private final String jndiName;
-
     /** create an instance **/
-    public JndiService(Object value, String jndiName) {
+    public ConnectionFactoryService(Object value) {
         super();
         this.value = value;
-        this.jndiName = jndiName;
 
     }
 
@@ -31,13 +31,13 @@ public class JndiService implements Service<Object> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.infof("started JndiService for %s jndi name", jndiName);
+        log.infof("started ConnectionFactoryService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.infof("stopped JndiService for %s jndi name", jndiName);
+        log.infof("stopped ConnectionFactoryService %s", context.getController().getName());
 
     }
 
