@@ -22,28 +22,20 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-
 import org.apache.catalina.connector.Connector;
-import org.apache.tomcat.util.modeler.Registry;
+import org.apache.coyote.RequestGroupInfo;
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -55,8 +47,13 @@ class WebConnectorMetrics implements ModelQueryOperationHandler {
     static WebConnectorMetrics INSTANCE = new WebConnectorMetrics();
 
     static final String[] NO_LOCATION = new String[0];
-    static final String[] ATTRIBUTES = new String[] {"bytesSent", "bytesReceived", "processingTime", "errorCount", "maxTime", "requestCount"};
-    static final String BASE_NAME = "jboss.web:type=GlobalRequestProcessor,name=";
+    private static final String BYTES_SENT = "bytesSent";
+    private static final String BYTES_RECEIVED = "bytesReceived";
+    private static final String PROCESSING_TIME = "processingTime";
+    private static final String ERROR_COUNT = "errorCount";
+    private static final String MAX_TIME = "maxTime";
+    private static final String REQUEST_COUNT = "requestCount";
+    static final String[] ATTRIBUTES = new String[] {BYTES_SENT, BYTES_RECEIVED, PROCESSING_TIME, ERROR_COUNT, MAX_TIME, REQUEST_COUNT};
 
     /** {@inheritDoc} */
     @Override
@@ -74,9 +71,23 @@ class WebConnectorMetrics implements ModelQueryOperationHandler {
                     if (controller != null) {
                         try {
                             final Connector connector = (Connector) controller.getValue();
-                            final int port = connector.getPort();
                             final ModelNode result = new ModelNode();
-                            result.set("" + getAttribute("http-" + port, attributeName));
+                            if (connector.getProtocolHandler() != null && connector.getProtocolHandler().getRequestGroupInfo() != null) {
+                                RequestGroupInfo info = connector.getProtocolHandler().getRequestGroupInfo();
+                                if (BYTES_SENT.equals(attributeName)) {
+                                    result.set("" + info.getBytesSent());
+                                } else if (BYTES_RECEIVED.equals(attributeName)) {
+                                    result.set("" + info.getBytesReceived());
+                                } else if (PROCESSING_TIME.equals(attributeName)) {
+                                    result.set("" + info.getProcessingTime());
+                                } else if (ERROR_COUNT.equals(attributeName)) {
+                                    result.set("" + info.getErrorCount());
+                                } else if (MAX_TIME.equals(attributeName)) {
+                                    result.set("" + info.getMaxTime());
+                                } else if (REQUEST_COUNT.equals(attributeName)) {
+                                    result.set("" + info.getRequestCount());
+                                }
+                            }
                             resultHandler.handleResultFragment(new String[0], result);
                             resultHandler.handleResultComplete();
                         } catch (Exception e) {
@@ -90,20 +101,6 @@ class WebConnectorMetrics implements ModelQueryOperationHandler {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult();
-    }
-
-    static final ObjectName createObjectName(final String name) throws MalformedObjectNameException {
-        return new ObjectName(BASE_NAME + name);
-    }
-
-    static final Object getAttribute(final String name, final String attributeName) throws MalformedObjectNameException, AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
-        final ObjectName connectorName = createObjectName(name);
-        final Object value = getMBeanServer().getAttribute(connectorName, attributeName);
-        return value;
-    }
-
-    static MBeanServer getMBeanServer() {
-        return Registry.getRegistry(null, null).getMBeanServer();
     }
 
 }
