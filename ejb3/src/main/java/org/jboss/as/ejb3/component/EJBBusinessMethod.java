@@ -32,23 +32,23 @@ public class EJBBusinessMethod implements Serializable {
 
     private String methodName;
 
-    private String[] methodParamTypes;
+    private Class<?>[] methodParamTypes;
 
     private MethodIntf viewType;
 
     private int hashCode;
 
 
-    public EJBBusinessMethod(String methodName, String... methodParamTypes) {
+    public EJBBusinessMethod(String methodName, Class<?>... methodParamTypes) {
         this(MethodIntf.BEAN, methodName, methodParamTypes);
     }
 
-    public EJBBusinessMethod(MethodIntf view, String methodName, String... methodParamTypes) {
+    public EJBBusinessMethod(MethodIntf view, String methodName, Class<?>... paramTypes) {
         if (methodName == null) {
             throw new IllegalArgumentException("Method name cannot be null");
         }
         this.methodName = methodName;
-        this.methodParamTypes = methodParamTypes;
+        this.methodParamTypes = paramTypes == null ? new Class<?>[0] : paramTypes;
         this.viewType = view == null ? MethodIntf.BEAN : view;
 
         this.hashCode = this.generateHashCode();
@@ -85,9 +85,10 @@ public class EJBBusinessMethod implements Serializable {
 
     private int generateHashCode() {
         int result = methodName.hashCode();
-        result = 31 * result + (methodParamTypes != null ? Arrays.hashCode(methodParamTypes) : 0);
+        result = 31 * result + Arrays.hashCode(methodParamTypes);
         result = 31 * result + viewType.hashCode();
         return result;
     }
+
 
 }

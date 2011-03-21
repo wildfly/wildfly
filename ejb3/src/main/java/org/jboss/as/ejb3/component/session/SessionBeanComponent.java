@@ -29,15 +29,23 @@ import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.Interceptor;
 
+import javax.ejb.AccessTimeout;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponent extends EJBComponent implements org.jboss.ejb3.context.spi.SessionBeanComponent {
+
+    protected AccessTimeout beanLevelAccessTimeout;
+
     /**
      * Construct a new instance.
      *
@@ -45,6 +53,28 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
      */
     protected SessionBeanComponent(final SessionBeanComponentConfiguration configuration) {
         super(configuration);
+
+        AccessTimeout accessTimeout = configuration.getBeanLevelAccessTimeout();
+        // TODO: the configuration should always have an access timeout
+        if (accessTimeout == null) {
+            accessTimeout = new AccessTimeout() {
+                @Override
+                public long value() {
+                    return 5;
+                }
+
+                @Override
+                public TimeUnit unit() {
+                    return MINUTES;
+                }
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return AccessTimeout.class;
+                }
+            };
+        }
+        this.beanLevelAccessTimeout = accessTimeout;
     }
 
     @Override
@@ -61,8 +91,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         CurrentInvocationContext.push(invocationContext);
         try {
             return super.applyInjections(instance);
-        }
-        finally {
+        } finally {
             CurrentInvocationContext.pop();
         }
     }
@@ -70,7 +99,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     @Override
     public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
         final ComponentView view = getComponentView(businessInterface);
-        if(view == null)
+        if (view == null)
             throw new IllegalStateException("Stateful bean " + getComponentName() + " does not have a view " + businessInterface);
         // see SessionBeanComponentInstance
         Serializable sessionId = ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
@@ -87,4 +116,14 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
         throw new RuntimeException("NYI: org.jboss.as.ejb3.component.session.SessionBeanComponent.getEJBObject");
     }
+
+    /**
+     * Returns the {@link AccessTimeout} applicable to the bean
+     *
+     * @return
+     */
+    public AccessTimeout getAccessTimeout() {
+        return this.beanLevelAccessTimeout;
+    }
+
 }

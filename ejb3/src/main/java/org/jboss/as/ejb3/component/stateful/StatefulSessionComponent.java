@@ -31,13 +31,8 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import javax.ejb.AccessTimeout;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * Stateful Session Bean
@@ -45,39 +40,17 @@ import static java.util.concurrent.TimeUnit.MINUTES;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionComponent extends SessionBeanComponent {
-    private final AccessTimeout accessTimeout;
+
     private Cache<StatefulSessionComponentInstance> cache;
 
     /**
      * Construct a new instance.
      *
-     * @param configuration         the component configuration
+     * @param configuration the component configuration
      */
     protected StatefulSessionComponent(final StatefulSessionComponentConfiguration configuration) {
         super(configuration);
 
-        // TODO: per method
-        AccessTimeout accessTimeout = configuration.getBeanLevelAccessTimeout();
-        // TODO: the configuration should always have an access timeout
-        if (accessTimeout == null) {
-            accessTimeout = new AccessTimeout() {
-                @Override
-                public long value() {
-                    return 5;
-                }
-
-                @Override
-                public TimeUnit unit() {
-                    return MINUTES;
-                }
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return AccessTimeout.class;
-                }
-            };
-        }
-        this.accessTimeout = accessTimeout;
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
@@ -96,7 +69,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     @Override
     public Interceptor createClientInterceptor(Class<?> view) {
         final Serializable sessionId = createSession();
-        return createClientInterceptor(view,sessionId);
+        return createClientInterceptor(view, sessionId);
     }
 
     @Override
@@ -110,8 +83,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
                 context.putPrivateData(Component.class, StatefulSessionComponent.this);
                 try {
                     return context.proceed();
-                }
-                finally {
+                } finally {
                     context.putPrivateData(Serializable.class, null);
                     context.putPrivateData(Component.class, null);
                 }
@@ -132,7 +104,4 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return new StatefulSessionComponentInstance(this, instance, preDestroyInterceptors, context);
     }
 
-    protected AccessTimeout getAccessTimeout() {
-        return accessTimeout;
-    }
 }

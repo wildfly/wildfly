@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
@@ -103,22 +102,9 @@ public class LockAnnotationProcessor extends AbstractAnnotationEJBProcessor<Sess
             } else if (target instanceof MethodInfo) {
                 // method specific lock type
                 final MethodInfo method = (MethodInfo) target;
-                String methodName = method.name();
-                String[] methodParams = toString(method.args());
-                componentDescription.setLockType(lockType, methodName, methodParams);
-                logger.debug("Method " + method.name() + methodParams + " on bean " + componentDescription.getEJBName() + " marked for lock type " + lockType);
+                componentDescription.setLockType(lockType, method);
             }
         }
     }
 
-    private String[] toString(Object[] a) {
-        if (a == null) {
-            return null;
-        }
-        final String[] result = new String[a.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = a[i].toString();
-        }
-        return result;
-    }
 }

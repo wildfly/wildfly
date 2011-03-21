@@ -57,8 +57,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private LockType beanLevelLockType;
 
-    private AccessTimeout beanLevelAccessTimeout;
-
     private Map<EJBBusinessMethod, LockType> methodLockTypes;
 
     private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
@@ -73,7 +71,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.initOnStartup = configuration.isInitOnStartup();
 
         this.beanLevelLockType = configuration.getBeanLevelLockType();
-        this.beanLevelAccessTimeout = configuration.getBeanLevelAccessTimeout();
         this.methodLockTypes = configuration.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = configuration.getMethodApplicableAccessTimeouts();
     }
@@ -140,7 +137,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public LockType getLockType(Method method) {
-        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), toString(method.getParameterTypes()));
+        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), method.getParameterTypes());
         LockType lockType = this.methodLockTypes.get(beanMethod);
         if (lockType != null) {
             return lockType;
@@ -155,7 +152,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public AccessTimeout getAccessTimeout(Method method) {
-        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), toString(method.getParameterTypes()));
+        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), method.getParameterTypes());
         AccessTimeout accessTimeout = this.methodAccessTimeouts.get(beanMethod);
         if (accessTimeout != null) {
             return accessTimeout;
@@ -197,14 +194,4 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
 
-    private static String[] toString(Class<?>[] a) {
-        if (a == null) {
-            return null;
-        }
-        final String[] result = new String[a.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = a[i].getName();
-        }
-        return result;
-    }
 }

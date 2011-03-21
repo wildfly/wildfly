@@ -34,7 +34,6 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 
 import javax.ejb.AccessTimeout;
-import javax.ejb.ConcurrencyManagementType;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +43,6 @@ import java.util.concurrent.TimeUnit;
  * Processes the {@link javax.ejb.AccessTimeout} annotation on a session bean, which allows concurrent access (like @Singleton and @Stateful beans),
  * and its methods and updates the {@link SessionBeanComponentDescription} accordingly.
  * <p/>
- * For optimization, this processor should run after the {@link ConcurrencyManagementAnnotationProcessor} so that {@link javax.ejb.AccessTimeout} processing
- * can be skipped for beans with {@link javax.ejb.ConcurrencyManagementType#BEAN bean managed concurrency}.
  *
  * @author Jaikiran Pai
  */
@@ -65,14 +62,8 @@ public class AccessTimeoutAnnotationProcessor extends AbstractAnnotationEJBProce
 
     @Override
     protected void processAnnotations(ClassInfo beanClass, CompositeIndex compositeIndex, SessionBeanComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        if (!componentDescription.allowsConcurrentAccess()) {
-            return;
-        }
-        if (componentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
-            // skip @AccessTimeout processing for bean managed concurrency.
-            logger.debug("Skipping @AccessTimeout processing for bean: " + componentDescription.getEJBName() + " with BEAN managed concurrency management");
-            return;
-        }
+        // @AccessTimeout applies to all types of bean (since we == JBoss uses it even in case of SLSBs to allow configuring the timeout
+        // while getting an SLSB instance).
         this.processAccessTimeoutAnnotations(beanClass, compositeIndex, componentDescription);
     }
 
@@ -104,23 +95,9 @@ public class AccessTimeoutAnnotationProcessor extends AbstractAnnotationEJBProce
             } else if (target instanceof MethodInfo) {
                 // method specific access timeout
                 final MethodInfo method = (MethodInfo) target;
-                String methodName = method.name();
-                String[] methodParams = toString(method.args());
-                componentDescription.setAccessTimeout(accessTimeout, methodName, methodParams);
-                logger.debug("Method " + method.name() + methodParams + " on bean " + componentDescription.getEJBName() + " marked for access timeout: " + accessTimeout);
+                componentDescription.setAccessTimeout(accessTimeout, method);
             }
         }
-    }
-
-    private String[] toString(Object[] a) {
-        if (a == null) {
-            return null;
-        }
-        final String[] result = new String[a.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = a[i].toString();
-        }
-        return result;
     }
 
     private AccessTimeout getAccessTimeout(AnnotationInstance annotationInstance) {

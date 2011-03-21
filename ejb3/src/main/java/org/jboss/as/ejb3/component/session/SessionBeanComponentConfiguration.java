@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptor;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -37,6 +36,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -61,12 +61,11 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
     public SessionBeanComponentConfiguration(final SessionBeanComponentDescription description) {
         super(description);
 
+        // Bean level @AccessTimeout
         this.beanLevelAccessTimeout = description.getBeanLevelAccessTimeout();
+
         if (description.allowsConcurrentAccess()) {
             this.beanLevelLockType = description.getBeanLevelLockType();
-
-            this.methodLevelLockTypes = description.getMethodApplicableLockTypes();
-            this.methodAccessTimeouts = description.getMethodApplicableAccessTimeouts();
 
             // container managed concurrency interceptor
             if (description.getConcurrencyManagementType() != ConcurrencyManagementType.BEAN) {
@@ -132,13 +131,11 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
         return this.methodAccessTimeouts;
     }
 
-    private boolean isContainerManagedConcurrency(SingletonComponentDescription singletonComponentDescription) {
-        ConcurrencyManagementType concurrencyMgmtType = singletonComponentDescription.getConcurrencyManagementType();
-        if (concurrencyMgmtType == ConcurrencyManagementType.BEAN) {
-            return false;
-        }
-        return true;
+    protected void setMethodApplicableAccessTimeout(Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts) {
+        this.methodAccessTimeouts = methodAccessTimeouts;
     }
 
-
+    protected void setMethodApplicableLockType(Map<EJBBusinessMethod, LockType> methodLockTypes) {
+        this.methodLevelLockTypes = methodLockTypes;
+    }
 }
