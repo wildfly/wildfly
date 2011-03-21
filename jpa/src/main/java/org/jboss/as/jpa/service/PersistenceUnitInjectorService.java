@@ -41,27 +41,23 @@ import javax.validation.ValidatorFactory;
 
 /**
  * Represents the PersistenceUnit injected into a component.
- * TODO:  support injecting into a HibernateSessionFactory.
+ * TODO:  support injecting into a HibernateSessionFactory.  Initially, hack it by checknig injectionTypeName parameter
+ * for HibernateSessionFactory.  If/when JPA supports unwrap on the EMF, switch to that.
  *
  * @author Scott Marlow
  */
 public class PersistenceUnitInjectorService implements Service<ManagedReferenceFactory> {
 
-    private final String name;
-    private final String unitName;
-    private final ServiceName puServiceName;
     private final PersistenceUnitJndiInjectable injectable;
 
-    public PersistenceUnitInjectorService(final AnnotationInstance annotation,
-                                          final ServiceName puServiceName,
-                                          final DeploymentUnit deploymentUnit,
-                                          final String scopedPUName) {
-        AnnotationValue value = annotation.value("name");
-        this.name = value != null ? value.asString(): null;
-        value = annotation.value("unitName");
-        this.unitName = value != null ? value.asString(): null;
-        this.puServiceName = puServiceName;
-        injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, scopedPUName);
+    public PersistenceUnitInjectorService(
+        final AnnotationInstance annotation,
+        final ServiceName puServiceName,
+        final DeploymentUnit deploymentUnit,
+        final String scopedPUName,
+        final String injectionTypeName) {
+
+        injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, scopedPUName, injectionTypeName);
     }
 
     @Override
@@ -83,7 +79,13 @@ public class PersistenceUnitInjectorService implements Service<ManagedReferenceF
 
         final ServiceName puServiceName;
         final DeploymentUnit deploymentUnit;
-        public PersistenceUnitJndiInjectable(final ServiceName puServiceName, final DeploymentUnit deploymentUnit, String scopedPUName) {
+
+        public PersistenceUnitJndiInjectable(
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final String scopedPUName,
+            final String injectionTypeName) {
+
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
         }

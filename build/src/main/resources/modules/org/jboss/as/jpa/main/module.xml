@@ -33,6 +33,7 @@
         <module name="asm.asm"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
+        <module name="javax.ejb.api"/>
         <module name="javax.persistence.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>

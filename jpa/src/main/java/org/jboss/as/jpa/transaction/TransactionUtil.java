@@ -179,13 +179,29 @@ public class TransactionUtil {
             throw new TransactionRequiredException("Transaction must be active to access EntityManager");
     }
 
-    public EntityManager getTransactionScopedEntityManager(EntityManagerFactory emf, String puScopedName, Map properties) {
+    /**
+     * Get current PC.  Only call while a transaction is active in the current thread.
+     * @param puScopedName
+     * @return
+     */
+    public EntityManager getTransactionScopedEntityManager(String puScopedName) {
+        return getPC(puScopedName);
+    }
 
-        Transaction tx = getTransaction();
+    /**
+     * Get current PC or create a Transactional entity manager.
+     * Only call while a transaction is active in the current thread.
+     * @param emf
+     * @param puScopedName
+     * @param properties
+     * @return
+     */
+    public EntityManager getOrCreateTransactionScopedEntityManager(EntityManagerFactory emf, String puScopedName, Map properties) {
+
         EntityManager rtnSession = getPC(puScopedName);
         if (rtnSession == null) {
             rtnSession = EntityManagerUtil.createEntityManager(emf, properties);
-
+            Transaction tx = getTransaction();
             if (log.isDebugEnabled())
                 log.debug(getEntityManagerDetails(rtnSession) + ": created entity managersession " +
                     tx.toString());
@@ -199,9 +215,11 @@ public class TransactionUtil {
             setPC(puScopedName, rtnSession);
             rtnSession.joinTransaction(); // force registration with TX
         } else {
-            if (log.isDebugEnabled())
+            if (log.isDebugEnabled()) {
+                Transaction tx = getTransaction();
                 log.debug(getEntityManagerDetails(rtnSession) + ": reuse entity managersession already in tx" +
                     tx.toString());
+            }
         }
         return rtnSession;
     }

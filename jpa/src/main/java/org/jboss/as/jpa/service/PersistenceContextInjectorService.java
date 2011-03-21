@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceProperty;
@@ -51,41 +52,46 @@ import java.util.Map;
  */
 public class PersistenceContextInjectorService implements Service<ManagedReferenceFactory>{
 
-    private final String name;
-    private final String unitName;
-    private final String scopedPuName;
     private final PersistenceContextType type;
-    private final Map properties;
-    private final ServiceName puServiceName;
+
     private final PersistenceContextJndiInjectable injectable;
 
-    public PersistenceContextInjectorService(final AnnotationInstance annotation,
-                                          final ServiceName puServiceName,
-                                          final DeploymentUnit deploymentUnit,
-                                          final String scopedPuName) {
+    /**
+     * Constructor for the PersistenceContextInjectorService
+     * @param annotation represents the annotation that we are satisfying.
+     * @param puServiceName represents the deployed persistence.xml that we are going to use.
+     * @param deploymentUnit represents the deployment that we are injecting into
+     * @param scopedPuName the fully scoped reference to the persistence.xml
+     * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
+     * for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
+     * the unwrap return value is injected (instead of the EntityManager instance)
+     */
+    public PersistenceContextInjectorService(
+        final AnnotationInstance annotation,
+        final ServiceName puServiceName,
+        final DeploymentUnit deploymentUnit,
+        final String scopedPuName,
+        final String injectionTypeName) {
+
         AnnotationValue value = annotation.value("name");
-        this.name = value != null ? value.asString(): null;
         value = annotation.value("unitName");
-        this.unitName = value != null ? value.asString(): null;
-        this.scopedPuName = scopedPuName;
         value = annotation.value("type");
-        String type = value != null ? value.asEnum(): null;
         this.type = (value == null || PersistenceContextType.TRANSACTION.name().equals(value.asString()))
             ? PersistenceContextType.TRANSACTION: PersistenceContextType.EXTENDED;
         value = annotation.value("properties");
         AnnotationInstance[] props = value != null ? value.asNestedArray() : null;
+        Map properties;
 
         if (props != null) {
-            this.properties = new HashMap();
+            properties = new HashMap();
             for(int source=0; source < props.length; source ++) {
-                this.properties.put(props[source].value("name"), props[source].value("value"));
+                properties.put(props[source].value("name"), props[source].value("value"));
             }
         }
         else {
-            this.properties = null;
+            properties = null;
         }
-        this.puServiceName = puServiceName;
-        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, this.properties, this.scopedPuName);
+        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName);
     }
 
     @Override
@@ -110,30 +116,52 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
         private final PersistenceContextType type;
         private final Map properties;
         private final String unitName;
+        private final String injectionTypeName;
 
-        public PersistenceContextJndiInjectable(final ServiceName puServiceName,
-                                                final DeploymentUnit deploymentUnit,
-                                                final PersistenceContextType type,
-                                                final Map properties,
-                                                final String unitName) {
+        private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
+
+        public PersistenceContextJndiInjectable(
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final PersistenceContextType type,
+            final Map properties,
+            final String unitName,
+            final String injectionTypeName) {
+
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
             this.type = type;
             this.properties = properties;
             this.unitName = unitName;
+            this.injectionTypeName = injectionTypeName;
         }
 
         @Override
         public ManagedReference getReference() {
             PersistenceUnitService service = (PersistenceUnitService)deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
+            EntityManager entityManager;
+
             if (type.equals(PersistenceContextType.TRANSACTION)) {
-                return new ValueManagedReference(new ImmediateValue<Object>(new TransactionScopedEntityManager(unitName, properties, emf)));
+                entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
             }
             else {
                 // TODO: handle XPC search/inherit/create
-                return new ValueManagedReference(new ImmediateValue<Object>(new ExtendedEntityManager(null)));
+                entityManager = new ExtendedEntityManager(null);
             }
+
+            if (! ENTITY_MANAGER_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.Session)
+                Class extensionClass;
+                try {
+                    extensionClass = this.getClass().getClassLoader().loadClass(injectionTypeName);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
+                }
+                Object targetValueToInject = entityManager.unwrap(extensionClass);
+                new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
+            }
+
+            return new ValueManagedReference(new ImmediateValue<Object>(entityManager));
         }
     }
 }

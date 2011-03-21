@@ -138,6 +138,8 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
             resourceConfiguration = processField(deploymentUnit, annotation, FieldInfo.class.cast(annotationTarget), componentDescription, phaseContext);
         } else if (annotationTarget instanceof MethodInfo) {
             resourceConfiguration = processMethod(deploymentUnit, annotation, MethodInfo.class.cast(annotationTarget), componentDescription, phaseContext);
+        } else if (annotationTarget instanceof ClassInfo) {
+            resourceConfiguration = processClassResource(deploymentUnit, annotation, ClassInfo.class.cast(annotationTarget), componentDescription, phaseContext);
         } else {
             resourceConfiguration = null;
         }
@@ -171,7 +173,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
-        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, fieldName);
+        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, fieldName, injectionTypeName );
         bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
 
         // setup the injection target
@@ -194,7 +196,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw new IllegalArgumentException("@PersistenceContext injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+            throw new IllegalArgumentException("injection target is invalid.  Only setter methods are allowed: " + methodInfo);
         }
 
         final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
@@ -215,7 +217,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
-        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, methodName);
+        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, methodName, injectionTypeName);
 
         bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
 
@@ -229,24 +231,48 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         return bindingDescription;
     }
 
+    private BindingDescription processClassResource(
+        final DeploymentUnit deploymentUnit,
+        final AnnotationInstance annotation,
+        final ClassInfo classInfo,
+        final AbstractComponentDescription componentDescription,
+        final DeploymentPhaseContext phaseContext)
+        throws DeploymentUnitProcessingException {
+
+        final AnnotationValue nameValue = annotation.value("name");
+        if (nameValue == null || nameValue.asString().isEmpty()) {
+            throw new IllegalArgumentException("Class level annotations must provide a name.");
+        }
+        final String name = nameValue.asString();
+        final String type = classInfo.name().toString();
+        final BindingDescription bindingDescription = new BindingDescription();
+        bindingDescription.setDependency(true);
+        bindingDescription.setBindingName(name);
+        bindingDescription.setBindingType(type);
+        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, name, type);
+        bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
+        return bindingDescription;
+    }
+
     private ServiceName getInjectorServiceName(
         final DeploymentUnit deploymentUnit,
         final AnnotationInstance annotation,
         final AbstractComponentDescription componentDescription,
         final DeploymentPhaseContext phaseContext,
-        final String targetName)
+        final String targetName,
+        String injectionTypeName)
         throws DeploymentUnitProcessingException {
 
         String scopedPuName = getScopedPuName(deploymentUnit, annotation);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         ServiceName injectorName = ServiceName.of(componentDescription.getModuleName(), componentDescription.getComponentClassName(), targetName);
         if (isPersistenceContext(annotation)) {
-            phaseContext.getServiceTarget().addService(injectorName, new PersistenceContextInjectorService(annotation, puServiceName, deploymentUnit, scopedPuName))
+            phaseContext.getServiceTarget().addService(injectorName, new PersistenceContextInjectorService(annotation, puServiceName, deploymentUnit, scopedPuName, injectionTypeName))
                 .addDependency(puServiceName)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
         } else {
-            phaseContext.getServiceTarget().addService(injectorName, new PersistenceUnitInjectorService(annotation, puServiceName, deploymentUnit, scopedPuName))
+            phaseContext.getServiceTarget().addService(injectorName, new PersistenceUnitInjectorService(annotation, puServiceName, deploymentUnit, scopedPuName, injectionTypeName))
                 .addDependency(puServiceName)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
