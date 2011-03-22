@@ -21,8 +21,12 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor.pooled;
 
@@ -30,6 +34,10 @@ import static org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor.pooled;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponentConfiguration extends EJBComponentConfiguration {
+    private Class<?> messageListenerInterface;
+    private final String resourceAdapterName;
+    private final ServiceName raServiceName;
+
     /**
      * Construct a new instance.
      *
@@ -37,6 +45,16 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
      */
     public MessageDrivenComponentConfiguration(final MessageDrivenComponentDescription description) {
         super(description);
+
+        this.resourceAdapterName = description.getResourceAdapterName();
+
+        // See RaDeploymentParsingProcessor
+        String deploymentName = resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
+        this.raServiceName = ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName);
+//        ServiceName parent = ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName);
+//        // See ResourceAdapterDeploymentService
+//        this.raServiceName = ServiceName.of(deploymentName);
+        description.addDependency(raServiceName, ServiceBuilder.DependencyType.REQUIRED);
 
         addComponentSystemInterceptorFactory(pooled());
     }
@@ -48,6 +66,18 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
 
     @Override
     public MessageDrivenComponent constructComponent() {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentConfiguration.constructComponent");
+        MessageDrivenComponent component = new MessageDrivenComponent(this);
+        // TODO: rely on Service<ResourceAdapter>
+        component.setResourceAdapter(getInjectionValue(raServiceName, ResourceAdapterDeployment.class).getDeployment().getResourceAdapter());
+//        component.setResourceAdapter(getInjectionValue(raServiceName, ResourceAdapter.class));
+        return component;
+    }
+
+    Class<?> getMessageListenerInterface() {
+        return messageListenerInterface;
+    }
+
+    void setMessageListenerInterface(Class<?> messsageListenerInterface) {
+        this.messageListenerInterface = messsageListenerInterface;
     }
 }

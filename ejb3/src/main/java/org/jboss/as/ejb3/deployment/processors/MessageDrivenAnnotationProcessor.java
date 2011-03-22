@@ -71,7 +71,11 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
             final AnnotationValue nameValue = instance.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
 
+            final String messageListenerInterfaceName = instance.value("messageListenerInterface").asClass().name().toString();
+            // TODO: if messageListenerInterface is not set use the implemented interface
+
             MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, moduleName, applicationName);
+            messageDrivenComponentDescription.setMessageListenerInterfaceName(messageListenerInterfaceName);
             moduleDescription.addComponent(messageDrivenComponentDescription);
         }
     }

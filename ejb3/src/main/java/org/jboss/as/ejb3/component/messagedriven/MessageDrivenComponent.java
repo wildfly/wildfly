@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
+import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
+import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.ejb3.context.spi.MessageDrivenBeanComponent;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
@@ -32,15 +34,30 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.TransactionManager;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static javax.ejb.TransactionAttributeType.REQUIRED;
+import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponent extends EJBComponent implements MessageDrivenBeanComponent, PooledComponent<MessageDrivenComponentInstance> {
     private final Pool<MessageDrivenComponentInstance> pool;
+
+    // TODO: implement creation of ActivationSpec
+    private final ActivationSpec activationSpec = null;
+    private final MessageEndpointFactory endpointFactory;
+    private final Class<?> messageListenerInterface;
+    private ResourceAdapter resourceAdapter;
 
     /**
      * Construct a new instance.
@@ -62,6 +79,37 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
             }
         };
         this.pool = new StrictMaxPool<MessageDrivenComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
+
+        this.messageListenerInterface = configuration.getMessageListenerInterface();
+        final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
+            @Override
+            public Class<Object> getMessageListenerInterface() {
+                return (Class<Object>) messageListenerInterface;
+            }
+
+            @Override
+            public TransactionManager getTransactionManager() {
+                return getTransactionManager();
+            }
+
+            @Override
+            public boolean isDeliveryTransacted(Method method) throws NoSuchMethodException {
+                // an MDB doesn't expose a real view
+                return getTransactionAttributeType(BEAN, method) == REQUIRED;
+            }
+
+            @Override
+            public Object obtain(long timeout, TimeUnit unit) {
+                // like this it's a disconnected invocation
+                return getComponentView(messageListenerInterface).getViewForInstance(null);
+            }
+
+            @Override
+            public void release(Object obj) {
+                // do nothing
+            }
+        };
+        this.endpointFactory = new JBossMessageEndpointFactory(service);
     }
 
     @Override
@@ -95,5 +143,27 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     @Override
     public Pool<MessageDrivenComponentInstance> getPool() {
         return pool;
+    }
+
+    protected void setResourceAdapter(ResourceAdapter resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
+    }
+
+    @Override
+    public void start() {
+        super.start();
+
+        try {
+            resourceAdapter.endpointActivation(endpointFactory, activationSpec);
+        } catch (ResourceException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void stop() {
+        resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
+
+        super.stop();
     }
 }

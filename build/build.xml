@@ -575,6 +575,9 @@
 
             <maven-resource group="org.jboss.ejb3" artifact="jboss-ejb3-core-pool"/>
 
+            <!-- TODO: this is not the final API -->
+            <maven-resource group="org.jboss.ejb3" artifact="jboss-ejb3-ext-api"/>
+
             <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-base"/>
             <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-spi"/>
 
