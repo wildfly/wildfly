@@ -1,9 +1,9 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
- *
+  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -19,25 +19,54 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 
-package org.jboss.as.ee.component;
-
-import java.lang.reflect.Method;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.io.Serializable;
 
 /**
- * Lifecycle interceptor which invokes a method upon interception.
- *
- * @author John Bailey
+ * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public class ComponentLifecycleMethod implements ComponentLifecycle {
-    private final Method method;
+@Entity
+public class MyEntity implements Serializable
+{
+   private Integer id;
+   private String name;
+   
+   public MyEntity()
+   {
+      
+   }
+   
+   public MyEntity(String name)
+   {
+      this.name = name;
+   }
 
-    public ComponentLifecycleMethod(final Method method) {
-        this.method = method;
-    }
+   @Id
+   public Integer getId()
+   {
+      return id;
+   }
 
-    public void invoke(final ComponentInstance target) throws Exception {
-        method.invoke(target.getInstance());
-    }
+   public void setId(Integer id)
+   {
+      this.id = id;
+   }
 
+   public String getName()
+   {
+      return name;
+   }
+
+   public void setName(String name)
+   {
+      this.name = name;
+   }   
+   
+   public String toString()
+   {
+      return "MyEntity:id=" + id + ",name=" + name;
+   }
 }

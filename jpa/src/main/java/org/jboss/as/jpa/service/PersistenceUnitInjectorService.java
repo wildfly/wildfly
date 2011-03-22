@@ -27,7 +27,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -36,7 +35,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import javax.persistence.EntityManagerFactory;
-import javax.validation.ValidatorFactory;
 
 
 /**
@@ -79,6 +77,8 @@ public class PersistenceUnitInjectorService implements Service<ManagedReferenceF
 
         final ServiceName puServiceName;
         final DeploymentUnit deploymentUnit;
+        final String injectionTypeName;
+        private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
             final ServiceName puServiceName,
@@ -88,12 +88,26 @@ public class PersistenceUnitInjectorService implements Service<ManagedReferenceF
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
+            this.injectionTypeName = injectionTypeName;
         }
 
         @Override
         public ManagedReference getReference() {
             PersistenceUnitService service = (PersistenceUnitService)deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
+
+            if (! ENTITY_MANAGER_FACTORY_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.SessionFactory)
+                Class extensionClass;
+                try {
+                    // make sure we can access the target class type
+                    extensionClass = this.getClass().getClassLoader().loadClass(injectionTypeName);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
+                }
+                Object targetValueToInject = emf;   // TODO:  test this
+                new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
+            }
+
             return new ValueManagedReference(new ImmediateValue<Object>(emf));
         }
     }

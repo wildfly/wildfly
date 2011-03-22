@@ -1,9 +1,9 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
- *
+  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -19,33 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 
-package org.jboss.as.jpa.spi;
-
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.Local;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
- * Query the current context for extended persistence contexts.
- *
- * @author Scott Marlow (based on code from Carlo de Wolf)
+ * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface XPCResolver {
-    /**
-     * Get an extended persistence context within the current context.
-     * <p/>
-     * Note that the full kernel name must be specified to resolve ambiguity
-     * with persistence units in different modules.
-     *
-     * @param scopedName identification of the persistence context
-     * @return the extended persistence context or null
-     */
-    EntityManager getExtendedPersistenceContext(String scopedName);
+@Stateful
+@Local
+public class IntermediateStatefulBean implements IntermediateStatefulInterface
+{
 
-    /**
-     * Create the extended persistence context (within the current context)
-     *
-     * @param scopedName the identification of the persistence context
-     * @return the extended persistence context or null
-     */
-    EntityManager createExtendedPersistenceContext(String scopedName);
+   @PersistenceContext(unitName="mypc")
+   EntityManager em;
+
+   @Resource
+   SessionContext sessionContext;
+
+   @EJB
+   StatelessInterface cmtBean;
+   
+   public boolean execute(Integer id, String name) throws Exception
+   {
+      MyEntity entity = em.find(MyEntity.class, id);
+      
+      String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
+        
+      return propagatedName.equals(name.toUpperCase());
+   }
 }

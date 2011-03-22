@@ -29,7 +29,9 @@ import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.classloader.TempClassLoader;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -213,7 +215,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             }
                             properties.put("javax.persistence.validation.factory", validatorFactory);
                         }
-                        addHibernateProps(properties);
+                        addProviderProperties(pu, properties);
                         final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
 
                         ServiceBuilder builder = serviceTarget.addService(serviceName, service);
@@ -239,14 +241,9 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    // TODO:  move these to a per provider settings file.
-    private void addHibernateProps(Map properties) {
-        properties.put("hibernate.transaction.manager_lookup_class", "org.jboss.as.jpa.hibernate.TransactionManagerLookup");
-        properties.put("hibernate.jndi.java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-        properties.put("hibernate.jndi.java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-        properties.put("hibernate.id.new_generator_mappings", "true");
-        // properties.put("hibernate.cache.provider_class","org.hibernate.cache.HashtableCacheProvider");
-
+    private void addProviderProperties(PersistenceUnitMetadata pu, Map properties) {
+        PersistenceProviderAdaptor adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
+        adaptor.addProviderProperties(properties);
     }
 
 

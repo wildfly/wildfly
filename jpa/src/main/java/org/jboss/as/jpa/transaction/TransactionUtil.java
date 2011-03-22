@@ -29,6 +29,7 @@ import org.jboss.tm.TxUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
 import javax.persistence.TransactionRequiredException;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -142,11 +143,18 @@ public class TransactionUtil {
     private static String getEntityManagerDetails(EntityManager manager) {
         String result = currentThread() + ":";  // show the thread for correlation with other modules
         EntityManagerMetadata metadata;
-        if ((metadata = (EntityManagerMetadata) manager.unwrap(EntityManagerMetadata.class)) != null) {
-            result += metadata.getPuName() +
-                ((metadata.isTransactionScopedEntityManager()) ? " [XPC]" : " [transactional]"
-                );
+        try {
+            if ((metadata = manager.unwrap(EntityManagerMetadata.class)) != null) {
+                result += metadata.getPuName() +
+                    ((metadata.isTransactionScopedEntityManager()) ? " [XPC]" : " [transactional]"
+                    );
+            }
+        } catch (PersistenceException ignoreUnhandled) {  // TODO:  switch to a different way to lookup EntityManagerMetadata
+                                                          // so that we don't get this error on TransactionalEntityManager
+                                                          // (because the EntityManager is the underlying provider that
+                                                          // doesn't have the metadata.)
         }
+
 
         return result;
     }
@@ -181,6 +189,7 @@ public class TransactionUtil {
 
     /**
      * Get current PC.  Only call while a transaction is active in the current thread.
+     *
      * @param puScopedName
      * @return
      */
@@ -191,6 +200,7 @@ public class TransactionUtil {
     /**
      * Get current PC or create a Transactional entity manager.
      * Only call while a transaction is active in the current thread.
+     *
      * @param emf
      * @param puScopedName
      * @param properties

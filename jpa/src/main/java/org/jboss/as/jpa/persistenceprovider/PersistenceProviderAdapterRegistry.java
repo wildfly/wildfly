@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.jpa.persistenceprovider;
 
-import java.lang.reflect.Method;
+import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Lifecycle interceptor which invokes a method upon interception.
+ * Keeps the registry of Persistence Provider adapters
  *
- * @author John Bailey
+ * @author Scott Marlow
  */
-public class ComponentLifecycleMethod implements ComponentLifecycle {
-    private final Method method;
+public class PersistenceProviderAdapterRegistry {
 
-    public ComponentLifecycleMethod(final Method method) {
-        this.method = method;
+    private static final ConcurrentHashMap<String,PersistenceProviderAdaptor>
+        adapterRegistry = new ConcurrentHashMap<String,PersistenceProviderAdaptor>();
+
+    public static PersistenceProviderAdaptor getPersistenceProviderAdaptor(String persistenceProviderClassName) {
+        return adapterRegistry.get(persistenceProviderClassName);
     }
 
-    public void invoke(final ComponentInstance target) throws Exception {
-        method.invoke(target.getInstance());
+    public static void putPersistenceProviderAdaptor(
+        String persistenceProviderClassName,
+        PersistenceProviderAdaptor persistenceProviderAdaptor) {
+        adapterRegistry.put(persistenceProviderClassName, persistenceProviderAdaptor);
     }
-
 }

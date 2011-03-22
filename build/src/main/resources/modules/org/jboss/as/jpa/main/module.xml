@@ -56,6 +56,7 @@
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.common-core"/>
         <module name="org.jboss.integration.jboss-transaction-spi"/>
+        <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>

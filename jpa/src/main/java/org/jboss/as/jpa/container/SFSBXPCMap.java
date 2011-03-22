@@ -79,6 +79,41 @@ public class SFSBXPCMap {
         return XPCToContextMap.get(entityManager);
     }
 
+    // at injection time, the SFSB that is being created isn't registered right away
+    // that happens later at postConstruct time.
+    //
+    // The deferToPostConstruct is a one item length store (hack)
+    private static ThreadLocal<Object[]> deferToPostConstruct = new ThreadLocal() {
+        protected Object initialValue() {
+                    return new Object[1];
+                }
+
+    };
+
+    /**
+     * At injection time of a XPC, register the XPC (step 1 of 2)
+     * finishRegistrationOfPersistenceContext is step 2
+     *
+     * @param xpc The ExtendedEntityManager
+     *
+     * TODO:  need a way to clear the XPC from ThreadLocal if step 2 doesn't happen (due to error)
+     */
+    public static void RegisterPersistenceContext(EntityManager xpc) {
+        Object[] store = deferToPostConstruct.get();
+        store[0] = xpc;
+    }
+
+    /**
+     * Called by postconstruct interceptor
+     */
+    public void finishRegistrationOfPersistenceContext(SFSBContextHandle current) {
+        Object[] store = deferToPostConstruct.get();
+        if (store !=null && store.length == 1) {
+            register(current, (EntityManager)store[0]);
+            store[0] = null;    // clear store
+        }
+    }
+
     /**
      * Register the specified stateful session bean with the XPC
      * @param beanContextHandle represents the stateful session bean

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.jpa.interceptor;
 
-import java.lang.reflect.Method;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ComponentLifecycle;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
+import org.jboss.as.jpa.container.SFSBXPCMap;
+import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
 
 /**
- * Lifecycle interceptor which invokes a method upon interception.
+ * For SFSB life cycle management.
+ * Handles the closing of XPC after last SFSB using it is destroyed.
  *
- * @author John Bailey
+ * @author Scott Marlow
  */
-public class ComponentLifecycleMethod implements ComponentLifecycle {
-    private final Method method;
+public class SFSBDestroyInterceptor implements ComponentLifecycle {
 
-    public ComponentLifecycleMethod(final Method method) {
-        this.method = method;
+
+    @Override
+    public void invoke(ComponentInstance target) throws Exception {
+        StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance)target;
+        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
+        SFSBXPCMap.getINSTANCE().remove(sfsbContextHandle);
     }
-
-    public void invoke(final ComponentInstance target) throws Exception {
-        method.invoke(target.getInstance());
-    }
-
 }

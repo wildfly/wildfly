@@ -26,6 +26,8 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.jpa.hibernate.HibernatePersistenceProviderAdaptor;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.processor.JPAAnnotationParseProcessor;
 import org.jboss.as.jpa.processor.JPADependencyProcessor;
@@ -66,6 +68,9 @@ class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
             /* set Hibernate persistence provider as the default provider */
             javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
                 new PersistenceProviderResolverImpl());
+
+            PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(
+                "org.hibernate.ejb.HibernatePersistence", new HibernatePersistenceProviderAdaptor());
 
             final BootOperationContext updateContext = (BootOperationContext) context;
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());

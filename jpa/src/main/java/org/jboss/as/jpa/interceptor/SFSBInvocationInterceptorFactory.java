@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.jpa.interceptor;
 
-import java.lang.reflect.Method;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * Lifecycle interceptor which invokes a method upon interception.
+ * Stateful session bean invocation interceptor factory
  *
- * @author John Bailey
+ * @author Scott Marlow
  */
-public class ComponentLifecycleMethod implements ComponentLifecycle {
-    private final Method method;
+public class SFSBInvocationInterceptorFactory implements InterceptorFactory {
 
-    public ComponentLifecycleMethod(final Method method) {
-        this.method = method;
+    private static final SFSBInvocationInterceptorFactory INSTANCE = new SFSBInvocationInterceptorFactory();
+    private static final SFSBInvocationInterceptor SFSB_INVOCATION_INTERCEPTOR = new SFSBInvocationInterceptor();
+
+    @Override
+    public Interceptor create(InterceptorFactoryContext context) {
+        return SFSB_INVOCATION_INTERCEPTOR;
     }
 
-    public void invoke(final ComponentInstance target) throws Exception {
-        method.invoke(target.getInstance());
+    public static SFSBInvocationInterceptorFactory getInstance() {
+        return INSTANCE;
     }
-
 }

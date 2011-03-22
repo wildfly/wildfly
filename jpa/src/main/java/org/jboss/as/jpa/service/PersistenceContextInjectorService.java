@@ -23,6 +23,8 @@
 package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.container.ExtendedEntityManager;
+import org.jboss.as.jpa.container.SFSBCallStack;
+import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -30,7 +32,6 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-import org.jboss.jandex.Type;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -41,7 +42,6 @@ import org.jboss.msc.value.ImmediateValue;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
-import javax.persistence.PersistenceProperty;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,8 +73,7 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
         final String scopedPuName,
         final String injectionTypeName) {
 
-        AnnotationValue value = annotation.value("name");
-        value = annotation.value("unitName");
+        AnnotationValue value;
         value = annotation.value("type");
         this.type = (value == null || PersistenceContextType.TRANSACTION.name().equals(value.asString()))
             ? PersistenceContextType.TRANSACTION: PersistenceContextType.EXTENDED;
@@ -146,8 +145,17 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
             }
             else {
-                // TODO: handle XPC search/inherit/create
-                entityManager = new ExtendedEntityManager(null);
+                EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
+                if (entityManager1 == null) {
+                    entityManager1 = emf.createEntityManager(properties);
+                    entityManager = new ExtendedEntityManager(entityManager1);
+                    // register the XPC for inheritance by others
+                    SFSBXPCMap.RegisterPersistenceContext(entityManager);
+                }
+                else {
+                    entityManager = entityManager1;
+                }
+
             }
 
             if (! ENTITY_MANAGER_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.Session)
@@ -163,5 +171,6 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
 
             return new ValueManagedReference(new ImmediateValue<Object>(entityManager));
         }
+
     }
 }

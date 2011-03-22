@@ -34,6 +34,45 @@ public class AbstractLifecycleCapableDescription extends AbstractInjectableDescr
     private final List<InterceptorMethodDescription> postConstructs = new ArrayList<InterceptorMethodDescription>();
     private final List<InterceptorMethodDescription> preDestroys = new ArrayList<InterceptorMethodDescription>();
 
+    private final List<ComponentLifecycle> postConstructsComponentLifecycles = new ArrayList<ComponentLifecycle>();
+    private final List<ComponentLifecycle> postDestroysComponentLifecycles = new ArrayList<ComponentLifecycle>();
+
+    /**
+     * Adds a post construct ComponentLifecycle
+     *
+     * @param componentLifecycle The ComponentLifecycle
+     */
+    public void addPostConstructComponentLifecycle(ComponentLifecycle componentLifecycle) {
+        postConstructsComponentLifecycles.add(componentLifecycle);
+    }
+
+    /**
+     * Get the post-construct component lifecycles.
+     *
+     * @return the post-construct ComponentLifecycles
+     */
+    public  List<ComponentLifecycle> getPostConstructComponentLifecycles() {
+        return postConstructsComponentLifecycles;
+    }
+
+    /**
+     * Adds a post destroy ComponentLifecycle
+     *
+     * @param componentLifecycle The ComponentLifecycle
+     */
+    public void addPreDestroyComponentLifecycle(ComponentLifecycle componentLifecycle) {
+        postDestroysComponentLifecycles.add(componentLifecycle);
+    }
+
+    /**
+     * Get the post-destroy component lifecycles.
+     *
+     * @return the post-destroy ComponentLifecycles
+     */
+    public  List<ComponentLifecycle> getPreDestroyComponentLifecycles() {
+        return postDestroysComponentLifecycles;
+    }
+
     /**
      * Adds a post construct method
      *

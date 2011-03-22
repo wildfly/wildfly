@@ -1,9 +1,9 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
- *
+  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
@@ -20,24 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
-
-import java.lang.reflect.Method;
+package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 
 /**
- * Lifecycle interceptor which invokes a method upon interception.
- *
- * @author John Bailey
+ * @author Scott Marlow
  */
-public class ComponentLifecycleMethod implements ComponentLifecycle {
-    private final Method method;
-
-    public ComponentLifecycleMethod(final Method method) {
-        this.method = method;
-    }
-
-    public void invoke(final ComponentInstance target) throws Exception {
-        method.invoke(target.getInstance());
-    }
+public abstract class AbstractStatefulInterface implements StatefulInterface
+{
+   public String getPostConstructErrorMessage() throws Exception
+   {
+      return null;
+   }
 
 }

@@ -28,7 +28,11 @@ import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.InjectionTargetDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.ServiceBindingSourceDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
+import org.jboss.as.jpa.interceptor.SFSBCreateInterceptor;
+import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptor;
+import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptorFactory;
 import org.jboss.as.jpa.service.PersistenceContextInjectorService;
 import org.jboss.as.jpa.service.PersistenceUnitInjectorService;
 import org.jboss.as.jpa.service.PersistenceUnitService;
@@ -47,6 +51,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,6 +139,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
 
         final AnnotationTarget annotationTarget = annotation.target();
         final BindingDescription resourceConfiguration;
+        registerInterceptors(componentDescription, annotation);
         if (annotationTarget instanceof FieldInfo) {
             resourceConfiguration = processField(deploymentUnit, annotation, FieldInfo.class.cast(annotationTarget), componentDescription, phaseContext);
         } else if (annotationTarget instanceof MethodInfo) {
@@ -173,7 +179,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
-        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, fieldName, injectionTypeName );
+        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, fieldName, injectionTypeName);
         bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
 
         // setup the injection target
@@ -281,6 +287,13 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         return injectorName;
     }
 
+    private boolean isExtendedPersistenceContext(final AnnotationInstance annotation) {
+        AnnotationValue value = annotation.value("type");
+        return annotation.name().local().equals("PersistenceContext") &&
+            (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
+
+    }
+
     private boolean isPersistenceContext(final AnnotationInstance annotation) {
         return annotation.name().local().equals("PersistenceContext");
     }
@@ -307,5 +320,15 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
 
         return PersistenceUnitService.getPUServiceName(scopedPuName);
     }
+
+    // Register our listeners on SFSB that will be created
+    private void registerInterceptors(AbstractComponentDescription componentDescription, AnnotationInstance annotation) {
+        if (componentDescription instanceof StatefulComponentDescription && isExtendedPersistenceContext(annotation)) {
+            componentDescription.addPostConstructComponentLifecycle(new SFSBCreateInterceptor());
+            componentDescription.addPreDestroyComponentLifecycle(new SFSBDestroyInterceptor());
+            componentDescription.addInterceptorFactory(SFSBInvocationInterceptorFactory.getInstance());
+        }
+    }
+
 }
 

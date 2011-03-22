@@ -36,8 +36,9 @@ public interface ComponentLifecycle {
     /**
      * Invoke a method call.
      *
-     * @param target The object being intercepted
+     * @param componentInstance  represents the target object
      * @throws Exception If any exceptions occur during interception
      */
-    void invoke(final Object target) throws Exception;
+    void invoke(final ComponentInstance componentInstance) throws Exception;
 }
+
