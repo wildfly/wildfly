@@ -22,7 +22,10 @@
 package org.jboss.as.testsuite.integration.common;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -37,34 +40,10 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class HttpRequest implements Callable<String> {
-    private URL url;
-
-    public HttpRequest(String spec) throws MalformedURLException {
-        this.url = new URL(spec);
-    }
-
-    @Override
-    public String call() throws Exception {
-        URLConnection conn = url.openConnection();
-        InputStream in = conn.getInputStream();
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int b;
-            while((b = in.read()) != -1) {
-                out.write(b);
-            }
-            return out.toString();
-        }
-        finally {
-            in.close();
-        }
-    }
-
-    public static String get(String spec, long timeout, TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
-        Callable<String> task = new HttpRequest(spec);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<String> result = executor.submit(task);
+public class HttpRequest {
+    private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, ExecutionException {
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<String> result = executor.submit(task);
         try {
             return result.get(timeout, unit);
         } catch (TimeoutException e) {
@@ -83,5 +62,66 @@ public class HttpRequest implements Callable<String> {
                 // ignore
             }
         }
+    }
+
+    public static String get(final String spec, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+        final URL url = new URL(spec);
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                final URLConnection conn = url.openConnection();
+                conn.setDoInput(true);
+                final InputStream in = conn.getInputStream();
+                try {
+                    return read(in);
+                }
+                finally {
+                    in.close();
+                }
+            }
+        };
+        return execute(task, timeout, unit);
+    }
+
+    private static String read(final InputStream in) throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int b;
+        while((b = in.read()) != -1) {
+            out.write(b);
+        }
+        return out.toString();
+    }
+
+    public static String put(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+        final URL url = new URL(spec);
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                final URLConnection conn = url.openConnection();
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                final OutputStream out = conn.getOutputStream();
+                try {
+                    write(out, message);
+                    final InputStream in = conn.getInputStream();
+                    try {
+                        return read(in);
+                    }
+                    finally {
+                        in.close();
+                    }
+                }
+                finally {
+                    out.close();
+                }
+            }
+        };
+        return execute(task, timeout, unit);
+    }
+
+    private static void write(OutputStream out, String message) throws IOException {
+        final OutputStreamWriter writer = new OutputStreamWriter(out);
+        writer.write(message);
+        writer.flush();
     }
 }
