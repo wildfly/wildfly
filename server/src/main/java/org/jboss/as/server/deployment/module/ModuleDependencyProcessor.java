@@ -22,9 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.util.List;
-import java.util.jar.Manifest;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,6 +32,9 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+
+import java.util.List;
+import java.util.jar.Manifest;
 
 /**
  * Deployment unit processor that will extract module dependencies from an archive.
@@ -83,7 +83,13 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
                 }
                 ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
                 moduleSpecification.addDependency(dependency);
+                deploymentUnit.addToAttachmentList(Attachments.MANIFEST_DEPENDENCIES,dependency);
             }
+        }
+        if(deploymentUnit.getParent() != null) {
+            //add any parent manifest dependencies
+            List<ModuleDependency> dependencies = deploymentUnit.getParent().getAttachmentList(Attachments.MANIFEST_DEPENDENCIES);
+            moduleSpecification.addDependencies(dependencies);
         }
     }
 

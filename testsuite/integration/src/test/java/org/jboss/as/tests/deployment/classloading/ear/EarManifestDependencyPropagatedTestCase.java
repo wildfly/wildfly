@@ -31,30 +31,30 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+/**
+ * tests that dependencies added to items in the ear are propagated to sub deployments.
+ */
 @RunWith(Arquillian.class)
-public class EjbJarCanAccessOtherEjbJarTestCase {
+public class EarManifestDependencyPropagatedTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
 
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class,"eartest.ear");
+        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class,"ejbmodule.jar");
+        ejbJar.addClasses(EarManifestDependencyPropagatedTestCase.class);
+        ejbJar.addManifestResource(emptyEjbJar(), "ejb-jar.xml");
+        ear.addModule(ejbJar);
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "otherjar.jar");
-        jar.addClass(WebInfLibClass.class);
-        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
-
-        ear.addModule(jar);
-        jar = ShrinkWrap.create(JavaArchive.class, "testjar.jar");
-        jar.addClass(EjbJarCanAccessOtherEjbJarTestCase.class);
-        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
-        ear.addModule(jar);
-
+        JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "libjar.jar");
+        earLib.addManifestResource(new StringAsset("Dependencies: org.jboss.classfilewriter\n"),"MANIFEST.MF");
+        ear.addLibraries(earLib);
         return ear;
     }
 
     @Test
-    public void testEjbJarCanAccessOtherEjbJar() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.WebInfLibClass");
+    public void testClassFileWriterAccessible() throws ClassNotFoundException {
+        loadClass("org.jboss.classfilewriter.ClassFile");
     }
 
 

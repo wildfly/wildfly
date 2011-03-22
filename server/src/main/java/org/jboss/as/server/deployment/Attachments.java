@@ -22,14 +22,13 @@
 
 package org.jboss.as.server.deployment;
 
-import java.util.jar.Manifest;
-
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ExtensionInfo;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
+import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -39,6 +38,8 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.jar.Manifest;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -167,6 +168,7 @@ public final class Attachments {
     //
     // DEPENDENCIES
     //
+    public static final AttachmentKey<AttachmentList<ModuleDependency>> MANIFEST_DEPENDENCIES = AttachmentKey.createList(ModuleDependency.class);
 
     //
     // CONFIGURE
