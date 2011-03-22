@@ -3,7 +3,7 @@ connect [host]:[port]	- connect to the specified host and port (default host is 
 help (or h)				- print this message.
 quit (or q)				- quit the command line interface.
 
-cn [node-type [=node-name (,node-type[=node-name])*]] (or /cd)	- change the current node path to the argument.
+cn [node_path] (or cd)	- change the current node path to the argument.
 						The current node path is used as the address for the entered operations.
 						If needed, entered operations can as well specify a relative to the current node path address.
 						The current node path can end on node-type. In that case, to execute an operation
@@ -12,6 +12,14 @@ cn [node-type [=node-name (,node-type[=node-name])*]] (or /cd)	- change the curr
 						To move to the node type from the current node use '.type' (e.g. 'cd .type').
 						The root is specified with '/' (e.g. 'cd /' or 'cd /other=thing').
 						The root can only be referenced at the beginning of the node path (not in the middle).
+
+ls [node_path]			- lists the contents of the node path. If the argument is not specified then
+						the contents of the current node path (indicated in the prompt) will be printed.
+						The node path can end on either node type (in this case the contents will be the child node names)
+						or the node name (in this case the contents will be the child node types).
+						If the node path has no contents, nothing will be printed.
+
+node_path argument in the commands above is optional and follows the format [node-type [=node-name (,node-type[=node-name])*]].
 
 Tab-completion is supported for the commands, just press the tab key to start
 (tab-completion for command's arguments isn't supported yet).

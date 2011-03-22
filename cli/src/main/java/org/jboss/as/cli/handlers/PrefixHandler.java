@@ -44,13 +44,13 @@ public class PrefixHandler implements CommandHandler {
         OperationRequestAddress prefix = ctx.getPrefix();
 
         if(args == null) {
-            ctx.log(ctx.getPrefixFormatter().format(prefix));
+            ctx.printLine(ctx.getPrefixFormatter().format(prefix));
             return;
         }
 
         args = args.trim();
         if(args.isEmpty()) {
-            ctx.log(ctx.getPrefixFormatter().format(prefix));
+            ctx.printLine(ctx.getPrefixFormatter().format(prefix));
             return;
         }
 
@@ -58,7 +58,7 @@ public class PrefixHandler implements CommandHandler {
         try {
             ctx.getOperationRequestParser().parse(args, handler);
         } catch (CommandFormatException e) {
-            ctx.log(e.getLocalizedMessage());
+            ctx.printLine(e.getLocalizedMessage());
         }
     }
 

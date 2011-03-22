@@ -47,7 +47,7 @@ public class OperationRequestHandler implements CommandHandler {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
-            ctx.log("You are disconnected at the moment." +
+            ctx.printLine("You are disconnected at the moment." +
                     " Type 'connect' to connect to the server" +
                     " or 'help' for the list of supported commands.");
             return;
@@ -58,15 +58,15 @@ public class OperationRequestHandler implements CommandHandler {
             ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), builder);
             ModelNode request = builder.buildRequest();
             ModelNode result = client.execute(request);
-            ctx.log(result.toString());
+            ctx.printLine(result.toString());
         } catch(CommandFormatException e) {
-            ctx.log(e.getLocalizedMessage());
+            ctx.printLine(e.getLocalizedMessage());
         } catch(NoSuchElementException e) {
-            ctx.log("ModelNode request is incomplete: " + e.getMessage());
+            ctx.printLine("ModelNode request is incomplete: " + e.getMessage());
         } catch (CancellationException e) {
-            ctx.log("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
+            ctx.printLine("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
         } catch (IOException e) {
-            ctx.log("Communication error: " + e.getLocalizedMessage());
+            ctx.printLine("Communication error: " + e.getLocalizedMessage());
         }
     }
 

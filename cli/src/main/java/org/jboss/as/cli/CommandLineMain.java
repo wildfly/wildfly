@@ -23,11 +23,13 @@ package org.jboss.as.cli;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
+import org.jboss.as.cli.handlers.LsHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
@@ -55,6 +57,7 @@ public class CommandLineMain {
         registerHandler(new QuitHandler(), "quit", "q");
         registerHandler(new ConnectHandler(), "connect");
         registerHandler(new PrefixHandler(), "cd", "cn");
+        registerHandler(new LsHandler(), "ls");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
@@ -83,7 +86,7 @@ public class CommandLineMain {
         console.addCompletor(new CommandCompleter(handlers.keySet(), opCompleter));
         console.addCompletor(opCompleter);
 
-        cmdCtx.log("You are disconnected at the moment." +
+        cmdCtx.printLine("You are disconnected at the moment." +
                 " Type 'connect' to connect to the server or" +
                 " 'help' for the list of supported commands.");
 
@@ -105,15 +108,16 @@ public class CommandLineMain {
                 for (int i = 0; i < cmd.length(); ++i) {
                     if (Character.isWhitespace(cmd.charAt(i))) {
                         cmdCtx.cmdArgs = cmd.substring(i + 1).trim();
-                        cmd = cmd.substring(0, i).toLowerCase();
+                        cmd = cmd.substring(0, i);
+                        break;
                     }
                 }
 
-                CommandHandler handler = handlers.get(cmd);
+                CommandHandler handler = handlers.get(cmd.toLowerCase());
                 if (handler != null) {
                     handler.handle(cmdCtx);
                 } else {
-                    cmdCtx.log("Unexpected command '"
+                    cmdCtx.printLine("Unexpected command '"
                             + line
                             + "'. Type 'help' for the list of supported commands.");
                 }
@@ -167,12 +171,21 @@ public class CommandLineMain {
         }
 
         @Override
-        public void log(String message) {
+        public void printLine(String message) {
             try {
                 console.printString(message);
                 console.printNewline();
             } catch (IOException e) {
                 System.err.println("Failed to print '" + message + "' to the console: " + e.getLocalizedMessage());
+            }
+        }
+
+        @Override
+        public void printColumns(Collection<String> col) {
+            try {
+                console.printColumns(col);
+            } catch (IOException e) {
+                System.err.println("Failed to print columns '" + col + "' to the console: " + e.getLocalizedMessage());
             }
         }
 
@@ -215,12 +228,12 @@ public class CommandLineMain {
         @Override
         public void connectController(String host, int port) {
             if(host == null) {
-                log("Can't connect to the controller: the host hasn't been specified.");
+                printLine("Can't connect to the controller: the host hasn't been specified.");
                 return;
             }
 
             if(port < 0) {
-                log("Can't connect to the controller: invalid port value '" + port + '\'');
+                printLine("Can't connect to the controller: invalid port value '" + port + '\'');
                 return;
             }
 
@@ -229,12 +242,12 @@ public class CommandLineMain {
                 if(this.client != null) {
                     disconnectController();
                 }
-                log("Connected to " + host + ":" + port);
+                printLine("Connected to " + host + ":" + port);
                 client = newClient;
                 this.controllerHost = host;
                 this.controllerPort = port;
             } catch (UnknownHostException e) {
-                log("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+                printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
         }
 
@@ -242,7 +255,7 @@ public class CommandLineMain {
         public void disconnectController() {
             if(this.client != null) {
                 StreamUtils.safeClose(client);
-                log("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+                printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
                 client = null;
                 this.controllerHost = null;
                 this.controllerPort = -1;

@@ -21,52 +21,52 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 
 /**
- * Connect handler.
  *
  * @author Alexey Loubyansky
  */
-public class ConnectHandler implements CommandHandler {
+public class LsHandler implements CommandHandler {
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
-     */
     @Override
     public void handle(CommandContext ctx) {
 
-        int port = 9999;
-        String host = "localhost";
+        final OperationRequestAddress address;
+
         String args = ctx.getCommandArguments();
         if(args != null) {
-            String portStr = null;
-            int colonIndex = args.indexOf(':');
-            if(colonIndex < 0) {
-                // default port
-                host = args;
-            } else if(colonIndex == 0) {
-                // default host
-                portStr = args.substring(1).trim();
-            } else {
-                host = args.substring(0, colonIndex).trim();
-                portStr = args.substring(colonIndex + 1).trim();
-            }
-
-            if(portStr != null) {
+            args = args.trim();
+            if (!args.isEmpty()) {
+                address = new DefaultOperationRequestAddress(ctx.getPrefix());
+                OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(address);
                 try {
-                    port = Integer.parseInt(portStr);
-                } catch(NumberFormatException e) {
-                    ctx.printLine("The port must be a valid non-negative integer: '" + args + "'");
-                    port = -1;
+                    ctx.getOperationRequestParser().parse(args, handler);
+                } catch (CommandFormatException e) {
+                    ctx.printLine(e.getLocalizedMessage());
                 }
+            } else {
+                address = ctx.getPrefix();
             }
+        } else {
+            address = ctx.getPrefix();
         }
 
-        if(port >= 0) {
-            ctx.connectController(host, port);
+        final List<String> names;
+        if(address.endsOnType()) {
+            names = ctx.getOperationCandidatesProvider().getNodeNames(address);
+        } else {
+            names = ctx.getOperationCandidatesProvider().getNodeTypes(address);
         }
+
+        ctx.printColumns(names);
     }
 }

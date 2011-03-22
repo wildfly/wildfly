@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.completion.mock;
 
+import java.util.Collection;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestParser;
@@ -54,10 +56,19 @@ public class MockCommandContext implements CommandContext {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandContext#log(java.lang.String)
+     * @see org.jboss.as.cli.CommandContext#printLine(java.lang.String)
      */
     @Override
-    public void log(String message) {
+    public void printLine(String message) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandContext#printColumns(java.util.Collection<java.lang.String>)
+     */
+    @Override
+    public void printColumns(Collection<String> col) {
         // TODO Auto-generated method stub
 
     }

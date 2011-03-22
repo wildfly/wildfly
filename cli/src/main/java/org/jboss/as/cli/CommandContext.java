@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli;
 
+import java.util.Collection;
+
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -42,10 +44,16 @@ public interface CommandContext {
     String getCommandArguments();
 
     /**
-     * Logs a message to the CLI's output.
-     * @param message the message to log
+     * Prints a string to the CLI's output.
+     * @param message the message to print
      */
-    void log(String message);
+    void printLine(String message);
+
+    /**
+     * Prints a collection of strings as columns to the CLI's output.
+     * @param col  the collection of strings to print as columns.
+     */
+    void printColumns(Collection<String> col);
 
     /**
      * Terminates the command line session.

@@ -48,16 +48,16 @@ public class HelpHandler implements CommandHandler {
             try {
                 String helpLine = reader.readLine();
                 while(helpLine != null) {
-                    ctx.log(helpLine);
+                    ctx.printLine(helpLine);
                     helpLine = reader.readLine();
                 }
             } catch(java.io.IOException e) {
-                ctx.log("Failed to read help/help.txt: " + e.getLocalizedMessage());
+                ctx.printLine("Failed to read help/help.txt: " + e.getLocalizedMessage());
             } finally {
                 StreamUtils.safeClose(reader);
             }
         } else {
-            ctx.log("Failed to locate help/help.txt");
+            ctx.printLine("Failed to locate help/help.txt");
         }
     }
 }
