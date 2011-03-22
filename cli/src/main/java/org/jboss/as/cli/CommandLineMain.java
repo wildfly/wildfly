@@ -21,14 +21,17 @@
  */
 package org.jboss.as.cli;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
+import org.jboss.as.cli.handlers.HistoryHandler;
 import org.jboss.as.cli.handlers.LsHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
@@ -58,6 +61,7 @@ public class CommandLineMain {
         registerHandler(new ConnectHandler(), "connect");
         registerHandler(new PrefixHandler(), "cd", "cn");
         registerHandler(new LsHandler(), "ls");
+        registerHandler(new HistoryHandler(), "history");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
@@ -73,7 +77,6 @@ public class CommandLineMain {
     public static void main(String[] args) throws Exception {
 
         final jline.ConsoleReader console = new jline.ConsoleReader();
-        console.setUseHistory(true);
 
         final CommandContextImpl cmdCtx = new CommandContextImpl(console);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
@@ -133,7 +136,9 @@ public class CommandLineMain {
 
     private static class CommandContextImpl implements CommandContext {
 
-        private jline.ConsoleReader console;
+        private final jline.ConsoleReader console;
+        private final CommandHistory history;
+
         /** whether the session should be terminated*/
         private boolean terminate;
         /** current command's arguments */
@@ -157,6 +162,17 @@ public class CommandLineMain {
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
+
+            console.setUseHistory(true);
+            String userHome = SecurityActions.getSystemProperty("user.home");
+            File historyFile = new File(userHome, ".jboss-cli-history");
+            try {
+                console.getHistory().setHistoryFile(historyFile);
+            } catch (IOException e) {
+                System.err.println("Failed to setup the history file " + historyFile.getAbsolutePath() + ": " + e.getLocalizedMessage());
+            }
+
+            this.history = new HistoryImpl();
             operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
         }
 
@@ -285,6 +301,35 @@ public class CommandLineMain {
             }
             buffer.append(prefixFormatter.format(prefix)).append("] ");
             return buffer.toString();
+        }
+
+        @Override
+        public CommandHistory getHistory() {
+            return history;
+        }
+
+        private class HistoryImpl implements CommandHistory {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public List<String> asList() {
+                return console.getHistory().getHistoryList();
+            }
+
+            @Override
+            public boolean isUseHistory() {
+                return console.getUseHistory();
+            }
+
+            @Override
+            public void setUseHistory(boolean useHistory) {
+                console.setUseHistory(useHistory);
+            }
+
+            @Override
+            public void clear() {
+                console.getHistory().clear();
+            }
         }
     }
 }

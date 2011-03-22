@@ -19,6 +19,15 @@ ls [node_path]			- lists the contents of the node path. If the argument is not s
 						or the node name (in this case the contents will be the child node types).
 						If the node path has no contents, nothing will be printed.
 
+history [disable|enable|clear]	- without arguments prints a history of the commands and operations previously executed
+								and a status whether the history is enabled or disabled.
+								Argument 'disable' will disabled history expansion (but won't clear it).
+								Argument 'enable' will re-enabled the history expansion (re-starting from the last recorded command).
+								Argument 'clear' will clear the in-memory history.
+								The command history is enabled by default, is preserved between the command line sessions and
+								is stored in file '.jboss-cli-history' in the user's home directory. Argument 'clear'
+								does not affect this file. If necessary, this file has to be removed manually by the user.
+
 node_path argument in the commands above is optional and follows the format [node-type [=node-name (,node-type[=node-name])*]].
 
 Tab-completion is supported for the commands, just press the tab key to start

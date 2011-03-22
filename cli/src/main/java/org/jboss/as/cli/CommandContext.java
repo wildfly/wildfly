@@ -134,4 +134,10 @@ public interface CommandContext {
      * @return provider of operation request candidates for tab-completion.
      */
     OperationCandidatesProvider getOperationCandidatesProvider();
+
+    /**
+     * Returns the history of all the commands and operations.
+     * @return  the history of all the commands and operations.
+     */
+    CommandHistory getHistory();
 }

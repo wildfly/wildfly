@@ -24,6 +24,7 @@ package org.jboss.as.cli.completion.mock;
 import java.util.Collection;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -174,5 +175,10 @@ public class MockCommandContext implements CommandContext {
     @Override
     public int getControllerPort() {
         return -1;
+    }
+
+    @Override
+    public CommandHistory getHistory() {
+        throw new UnsupportedOperationException();
     }
 }
