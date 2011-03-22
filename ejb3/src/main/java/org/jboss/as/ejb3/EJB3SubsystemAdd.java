@@ -90,11 +90,11 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     final EJBUtilities utilities = new EJBUtilities();
                     serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
-                        .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
-                        .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
-                        .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, utilities.getUserTransactionInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
+                            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, utilities.getUserTransactionInjector())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
                     resultHandler.handleResultComplete(); // TODO: Listener
                 }
             });
@@ -116,6 +116,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION, new AccessTimeoutAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TRANSACTION_ATTR_ANNOTATION, new TransactionAttributeAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION, new ResourceAdapterAnnotationProcessor());
+
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
 
         }

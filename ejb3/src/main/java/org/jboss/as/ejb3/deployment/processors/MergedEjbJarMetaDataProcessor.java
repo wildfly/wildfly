@@ -62,10 +62,10 @@ import java.util.concurrent.TimeUnit;
  * Processes the {@link EjbJarMetaData} created out a merged view, of ejb-jar.xml deployment descriptor and EJB specific
  * annotations, and converts the bean metadata to appropriate {@link org.jboss.as.ee.component.AbstractComponentDescription component description(s)}.
  * <p/>
- *
+ * <p/>
  * TODO: This currently works on plain ejb-jar.xml metadata. It needs to start using merged view, once we have a DUP which creates the
  * merged view.
- * 
+ *
  * @author Jaikiran Pai
  */
 public class MergedEjbJarMetaDataProcessor implements DeploymentUnitProcessor {
@@ -76,9 +76,9 @@ public class MergedEjbJarMetaDataProcessor implements DeploymentUnitProcessor {
     private static final Logger logger = Logger.getLogger(MergedEjbJarMetaDataProcessor.class);
 
     /**
-     * 
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -115,6 +115,7 @@ public class MergedEjbJarMetaDataProcessor implements DeploymentUnitProcessor {
      * @param sessionBean
      * @param deploymentUnit
      * @throws DeploymentUnitProcessingException
+     *
      */
     private void processSessionBean(SessionBeanMetaData sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         // get the module description
