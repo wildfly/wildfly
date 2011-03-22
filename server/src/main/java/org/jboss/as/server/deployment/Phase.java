@@ -229,7 +229,27 @@ public enum Phase {
     public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1D00;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x1E00;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x1F00;
-    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x2000;
+    public static final int PARSE_ANNOTATION_WAR                        = 0x2000;
+    public static final int PARSE_WEB_COMPONENTS                        = 0x2010;
+    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x2100;
+    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x2200;
+    public static final int PARSE_EJB_LOCAL_VIEW_ANNOTATION             = 0x2300;
+    public static final int PARSE_EJB_NO_INTERFACE_VIEW_ANNOTATION      = 0x2400;
+    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x2500;
+    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x2501;
+    // should be after ConcurrencyManagement annotation processor
+    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x2502;
+    // should be after ConcurrencyManagement annotation processor
+    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x2503;
+    // should be after all views are known
+    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x2504;
+    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x2505;
+    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x2600;
+    public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x2700;
+    public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x2800;
+    public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x2900;
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2A00;
+    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2B00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -254,36 +274,15 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x100;
 
     // POST_MODULE
-    public static final int POST_MODULE_ANNOTATION_WAR                  = 0x0100;
-    public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x0200;
-    public static final int POST_MODULE_EJB_LOCAL_VIEW_ANNOTATION       = 0x0300;
-    public static final int POST_MODULE_EJB_NO_INTERFACE_VIEW_ANNOTATION    = 0x0400;
-    public static final int POST_MODULE_EJB_STARTUP_ANNOTATION          = 0x0500;
-    public static final int POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION   = 0x0501;
-    // should be after ConcurrencyManagement annotation processor
-    public static final int POST_MODULE_EJB_LOCK_ANNOTATION             = 0x0502;
-    // should be after ConcurrencyManagement annotation processor
-    public static final int POST_MODULE_EJB_ACCESS_TIMEOUT_ANNOTATION   = 0x0503;
-    // should be after all views are known
-    public static final int POST_MODULE_EJB_TRANSACTION_ATTR_ANNOTATION = 0x0504;
-    public static final int POST_MODULE_EJB_RESOURCE_ADAPTER_ANNOTATION = 0x0505;
-    public static final int POST_MODULE_ANNOTATION_ARQUILLIAN_JUNIT     = 0x0600;
-    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0700;
-    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0800;
-    public static final int POST_MODULE_WEB_COMPONENTS                  = 0x0900;
-    public static final int POST_MODULE_BEAN_INTERCEPTOR_ANNOTATION     = 0x0A00;
-    public static final int POST_MODULE_LIEFCYCLE_ANNOTATION            = 0x0B00;
-    public static final int POST_MODULE_AROUNDINVOKE_ANNOTATION         = 0x0C00;
-    public static final int POST_MODULE_RESOURCE_INJECTION_ANNOTATION   = 0x0D00;
-    public static final int POST_MODULE_EJB_INJECTION_ANNOTATION        = 0x0E00;
-    public static final int POST_MODULE_WEB_SERVICE_INJECTION_ANNOTATION = 0x0E10;
-    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0F00;
-    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x1000;
-    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x1100;
-    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x1200;
-    public static final int POST_PERSISTENCE_ANNOTATION                 = 0x1F00; // TODO: move back to PARSE when
-                                                                                  // Stuart moves the other POST entries.
-    public static final int POST_INITIALIZE_IN_ORDER                    = 0x2000;
+    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0100;
+    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
+    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
+    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0400;
+    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0500;
+    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0600;
+
+    public static final int POST_INITIALIZE_IN_ORDER                    = 0x0700;
+
 
 
     // INSTALL
