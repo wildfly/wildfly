@@ -23,13 +23,16 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import java.sql.Driver;
+
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.TransactionSupport;
-import org.jboss.as.connector.adapters.jdbc.BaseWrapperManagedConnectionFactory;
-import org.jboss.as.connector.adapters.jdbc.local.LocalManagedConnectionFactory;
+
+import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
+import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
+import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
+import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.JdbcAdapterExtension;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
@@ -42,7 +45,6 @@ import org.jboss.jca.core.connectionmanager.pool.api.PoolStrategy;
 
 /**
  * Local data-source service implementation.
- *
  * @author John Bailey
  */
 public class LocalDataSourceService extends AbstractDataSourceService {
@@ -54,14 +56,24 @@ public class LocalDataSourceService extends AbstractDataSourceService {
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    protected final BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName, final Driver driver) {
+    protected final BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName,
+            final Driver driver) {
         final LocalManagedConnectionFactory managedConnectionFactory = new LocalManagedConnectionFactory();
-        managedConnectionFactory.setDriver(driver);
+        managedConnectionFactory.setClassLoaderPlugin(new ClassLoaderPlugin() {
+
+            @Override
+            public ClassLoader getClassLoader() {
+                return driver.getClass().getClassLoader();
+            }
+        });
+        managedConnectionFactory.setUserTransactionJndiName("java:comp/UserTransaction");
+        managedConnectionFactory.setDriverClass(dataSourceConfig.getDriverClass());
         managedConnectionFactory.setJndiName(jndiName);
         managedConnectionFactory.setSpy(true);
 
         if (dataSourceConfig.getConnectionProperties() != null) {
-            managedConnectionFactory.setConnectionProperties(buildConfigPropsString(dataSourceConfig.getConnectionProperties()));
+            managedConnectionFactory
+                    .setConnectionProperties(buildConfigPropsString(dataSourceConfig.getConnectionProperties()));
         }
         if (dataSourceConfig.getConnectionUrl() != null) {
             managedConnectionFactory.setConnectionURL(dataSourceConfig.getConnectionUrl());
@@ -120,31 +132,34 @@ public class LocalDataSourceService extends AbstractDataSourceService {
             if (validation.getCheckValidConnectionSql() != null) {
                 managedConnectionFactory.setCheckValidConnectionSQL(validation.getCheckValidConnectionSql());
             }
-            final JdbcAdapterExtension validConnectionChecker = validation.getValidConnectionChecker();
+            final Extension validConnectionChecker = validation.getValidConnectionChecker();
             if (validConnectionChecker != null) {
                 if (validConnectionChecker.getClassName() != null) {
                     managedConnectionFactory.setValidConnectionCheckerClassName(validConnectionChecker.getClassName());
                 }
                 if (validConnectionChecker.getConfigPropertiesMap() != null) {
-                    managedConnectionFactory.setValidConnectionCheckerProperties(buildConfigPropsString(validConnectionChecker.getConfigPropertiesMap()));
+                    managedConnectionFactory.setValidConnectionCheckerProperties(buildConfigPropsString(validConnectionChecker
+                            .getConfigPropertiesMap()));
                 }
             }
-            final JdbcAdapterExtension exceptionSorter = validation.getExceptionSorter();
+            final Extension exceptionSorter = validation.getExceptionSorter();
             if (exceptionSorter != null) {
                 if (exceptionSorter.getClassName() != null) {
                     managedConnectionFactory.setExceptionSorterClassName(exceptionSorter.getClassName());
                 }
                 if (exceptionSorter.getConfigPropertiesMap() != null) {
-                    managedConnectionFactory.setExceptionSorterProperties(buildConfigPropsString(exceptionSorter.getConfigPropertiesMap()));
+                    managedConnectionFactory.setExceptionSorterProperties(buildConfigPropsString(exceptionSorter
+                            .getConfigPropertiesMap()));
                 }
             }
-            final JdbcAdapterExtension staleConnectionChecker = validation.getStaleConnectionChecker();
+            final Extension staleConnectionChecker = validation.getStaleConnectionChecker();
             if (staleConnectionChecker != null) {
                 if (staleConnectionChecker.getClassName() != null) {
                     managedConnectionFactory.setStaleConnectionCheckerClassName(staleConnectionChecker.getClassName());
                 }
                 if (staleConnectionChecker.getConfigPropertiesMap() != null) {
-                    managedConnectionFactory.setStaleConnectionCheckerProperties(buildConfigPropsString(staleConnectionChecker.getConfigPropertiesMap()));
+                    managedConnectionFactory.setStaleConnectionCheckerProperties(buildConfigPropsString(staleConnectionChecker
+                            .getConfigPropertiesMap()));
                 }
             }
         }
@@ -153,7 +168,8 @@ public class LocalDataSourceService extends AbstractDataSourceService {
     }
 
     protected Pool createPool(final String jndiName, final ManagedConnectionFactory mcf) {
-        final PoolConfiguration pc = createPoolConfiguration(dataSourceConfig.getPool(), dataSourceConfig.getTimeOut(), dataSourceConfig.getValidation());
+        final PoolConfiguration pc = createPoolConfiguration(dataSourceConfig.getPool(), dataSourceConfig.getTimeOut(),
+                dataSourceConfig.getValidation());
         PoolFactory pf = new PoolFactory();
         final Pool pool = pf.create(PoolStrategy.ONE_POOL, mcf, pc, false);
 
@@ -182,8 +198,8 @@ public class LocalDataSourceService extends AbstractDataSourceService {
         // Select the correct connection manager
         final TransactionSupport.TransactionSupportLevel tsl = TransactionSupport.TransactionSupportLevel.LocalTransaction;
         final ConnectionManagerFactory cmf = new ConnectionManagerFactory();
-        final ConnectionManager cm = cmf.createTransactional(tsl, pool, null, allocationRetry, allocationRetryWaitMillis,
-                getTransactionManager(), null, null, null, null, null);
+        final ConnectionManager cm = cmf.createTransactional(tsl, pool, null, null, allocationRetry, allocationRetryWaitMillis,
+                getTransactionIntegration(), null, null, null, null, null);
 
         cm.setJndiName(jndiName);
         return cm;

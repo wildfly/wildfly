@@ -43,7 +43,7 @@ class Constants {
 
     static final String DRIVER_CLASS = "driver-class";
 
-    static final String MODULE = "module";
+    static final String DRIVER = "driver";
 
     static final String CONNECTION_PROPERTIES = "connection-properties";
 
@@ -152,4 +152,21 @@ class Constants {
     static final String DATA_SOURCE = "data-source";
 
     static final String XA_DATA_SOURCE = "xa-data-source";
+
+    static final String REAUTHPLUGIN_CLASSNAME = "reauth-plugin-class-name";
+
+    static final String REAUTHPLUGIN_PROPERTIES = "reauth-plugin-properties";
+
+    static final String RECOVERY_USERNAME = "recovery-username";
+
+    static final String RECOVERY_PASSWORD = "recovery-password";
+
+    static final String RECOVERY_SECURITY_DOMAIN = "recovery-security-domain";
+
+    static final String RECOVERLUGIN_CLASSNAME = "recovery-plugin-properties";
+
+    static final String RECOVERLUGIN_PROPERTIES = "recovery-plugin-properties";
+
+    static final String NO_RECOVERY = "no-recovery";
+
 }

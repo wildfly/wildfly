@@ -28,27 +28,31 @@ import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALI
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.concurrent.Executor;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
+import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
 import org.jboss.as.connector.workmanager.WorkManagerService;
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -59,6 +63,8 @@ import org.jboss.jca.core.workmanager.WorkManagerImpl;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.TransactionLocalDelegate;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -74,7 +80,8 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         final String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
         final String longRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).asString();
         final boolean beanValidationEnabled = ParamsUtils.parseBooleanParameter(operation, BEAN_VALIDATION_ENABLED, false);
-        final boolean archiveValidationEnabled = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
+        final boolean archiveValidationEnabled = ParamsUtils
+                .parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
         final boolean failOnError = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
         final boolean failOnWarn = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
 
@@ -107,6 +114,24 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceTarget serviceTarget = context.getServiceTarget();
+
+                    TransactionIntegrationService tiService = new TransactionIntegrationService();
+
+                    serviceTarget
+                            .addService(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, tiService)
+                            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class,
+                                    tiService.getTmInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY,
+                                    TransactionSynchronizationRegistry.class, tiService.getTsrInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY,
+                                    org.jboss.tm.usertx.UserTransactionRegistry.class, tiService.getUtrInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                                    tiService.getTerminatorInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class,
+                                    tiService.getRrInjector())
+
+                            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionLocalDelegate.class,
+                                    tiService.getTldInjector()).setInitialMode(Mode.ACTIVE).install();
                     WorkManager wm = new WorkManagerImpl();
 
                     final WorkManagerService wmService = new WorkManagerService(wm);
@@ -142,8 +167,10 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                     final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
                     serviceTarget
                             .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
-                            .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class,
-                                    connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE).install();
+                            .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE,
+                                    CloneableBootstrapContext.class,
+                                    connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE)
+                            .install();
 
                     new RaDeploymentActivator().activate(bootContext, serviceTarget);
                     resultHandler.handleResultComplete(); // TODO: Listener
@@ -160,5 +187,4 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         compensating.get(OP).set("remove");
         return new BasicOperationResult(compensating);
     }
-
 }

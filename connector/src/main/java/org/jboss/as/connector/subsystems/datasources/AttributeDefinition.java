@@ -33,7 +33,7 @@ public enum AttributeDefinition {
     CONNECTION_URL(Constants.CONNECTION_URL, ModelType.STRING, true),
     DRIVER_CLASS(Constants.DRIVER_CLASS, ModelType.STRING, true),
     JNDINAME(Constants.JNDINAME, ModelType.STRING, true),
-    MODULE(Constants.MODULE, ModelType.STRING, true),
+    MODULE(Constants.DRIVER, ModelType.STRING, true),
     NEW_CONNECTION_SQL(Constants.NEW_CONNECTION_SQL, ModelType.STRING, false),
     POOLNAME(Constants.POOLNAME, ModelType.STRING, false),
     URL_DELIMITER(Constants.URL_DELIMITER, ModelType.STRING, false),

@@ -41,10 +41,16 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
@@ -64,6 +70,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -75,6 +82,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -93,6 +101,8 @@ import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterParser;
@@ -121,7 +131,8 @@ public class ResourceAdaptersExtension implements Extension {
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE,
+                ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
     }
 
@@ -292,6 +303,40 @@ public class ResourceAdaptersExtension implements Extension {
                 streamWriter.writeEndElement();
             }
 
+            if (conDef.hasDefined(RECOVERY_USERNAME) || conDef.hasDefined(RECOVERY_PASSWORD)
+                    || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN) || conDef.hasDefined(RECOVERLUGIN_CLASSNAME)
+                    || conDef.hasDefined(RECOVERLUGIN_PROPERTIES) || conDef.hasDefined(NO_RECOVERY)) {
+
+                streamWriter.writeStartElement(CommonConnDef.Tag.RECOVERY.getLocalName());
+                if (conDef.hasDefined(RECOVERY_USERNAME) || conDef.hasDefined(RECOVERY_PASSWORD)
+                        || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN)) {
+                    streamWriter.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
+                    writeElementIfHas(streamWriter, conDef, Credential.Tag.USERNAME.getLocalName(), RECOVERY_USERNAME);
+                    writeElementIfHas(streamWriter, conDef, Credential.Tag.PASSWORD.getLocalName(), RECOVERY_PASSWORD);
+                    writeElementIfHas(streamWriter, conDef, Credential.Tag.SECURITY_DOMAIN.getLocalName(),
+                            RECOVERY_SECURITY_DOMAIN);
+                    streamWriter.writeEndElement();
+                }
+                if (conDef.hasDefined(RECOVERLUGIN_CLASSNAME) || conDef.hasDefined(RECOVERLUGIN_PROPERTIES)) {
+                    streamWriter.writeStartElement(Recovery.Tag.RECOVER_PLUGIN.getLocalName());
+                    writeAttributeIfHas(streamWriter, conDef,
+                            org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                            RECOVERLUGIN_CLASSNAME);
+                    if (conDef.hasDefined(RECOVERLUGIN_PROPERTIES)) {
+                        for (ModelNode property : conDef.get(RECOVERLUGIN_PROPERTIES).asList()) {
+                            streamWriter
+                                    .writeStartElement(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                            .getLocalName());
+                            streamWriter.writeCharacters(property.asString());
+                            streamWriter.writeEndElement();
+                        }
+                    }
+                    streamWriter.writeEndElement();
+                }
+                writeAttributeIfHas(streamWriter, conDef, Recovery.Attribute.NO_RECOVERY.getLocalName(), NO_RECOVERY);
+
+            }
+
             streamWriter.writeEndElement();
 
         }
@@ -343,6 +388,13 @@ public class ResourceAdaptersExtension implements Extension {
                 final CommonAdminObject.Attribute attr, final String identifier) throws XMLStreamException {
             if (has(node, identifier)) {
                 writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
+            }
+        }
+
+        private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node, final String attrName,
+                final String identifier) throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeAttribute(attrName, node.get(identifier).asString());
             }
         }
 
@@ -472,7 +524,43 @@ public class ResourceAdaptersExtension implements Extension {
                 condefModel.get(USE_FAST_FAIL).set(conDef.getValidation().isUseFastFail());
             }
 
+            if (conDef.getRecovery() != null) {
+                final Recovery recovery = conDef.getRecovery();
+                setStringIfNotNull(condefModel, RECOVERY_USERNAME, recovery.getCredential() != null ? recovery.getCredential()
+                        .getUserName() : null);
+                setStringIfNotNull(condefModel, RECOVERY_PASSWORD, recovery.getCredential() != null ? recovery.getCredential()
+                        .getPassword() : null);
+                setStringIfNotNull(condefModel, RECOVERY_SECURITY_DOMAIN, recovery.getCredential() != null ? recovery
+                        .getCredential().getSecurityDomain() : null);
+                setExtensionIfNotNull(condefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES, recovery.getRecoverPlugin());
+                setBooleanIfNotNull(condefModel, NO_RECOVERY, recovery.getNoRecovery());
+            }
+
             return condefModel;
+        }
+    }
+
+    private static void setStringIfNotNull(final ModelNode node, final String identifier, final String value) {
+        if (value != null) {
+            node.get(identifier).set(value);
+        }
+    }
+
+    private static void setExtensionIfNotNull(final ModelNode dsModel, final String extensionclassname,
+            final String extensionProperties, final org.jboss.jca.common.api.metadata.common.Extension extension) {
+        if (extension != null) {
+            setStringIfNotNull(dsModel, extensionclassname, extension.getClassName());
+            if (extension.getConfigPropertiesMap() != null) {
+                for (Map.Entry<String, String> entry : extension.getConfigPropertiesMap().entrySet()) {
+                    dsModel.get(extensionProperties, entry.getKey()).set(entry.getValue());
+                }
+            }
+        }
+    }
+
+    private static void setBooleanIfNotNull(final ModelNode node, final String identifier, final Boolean value) {
+        if (value != null) {
+            node.get(identifier).set(value);
         }
     }
 
@@ -486,7 +574,8 @@ public class ResourceAdaptersExtension implements Extension {
 
             ModelNode model = context.getSubModel();
 
-            // FIXME remove when equivalent workaround in ResourceAdaptersSubsystemAdd is gone
+            // FIXME remove when equivalent workaround in
+            // ResourceAdaptersSubsystemAdd is gone
             boolean workaround = true;
 
             if (workaround) {

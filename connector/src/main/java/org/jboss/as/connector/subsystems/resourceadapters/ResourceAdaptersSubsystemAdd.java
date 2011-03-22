@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATIONMINUTES;
@@ -39,20 +40,22 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IDLET
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.*;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -64,11 +67,16 @@ import java.util.Map;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ResourceAdaptersAttachingProcessor;
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -77,6 +85,9 @@ import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
@@ -87,6 +98,7 @@ import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
 import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
+import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdaptersImpl;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -231,9 +243,17 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             boolean useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL, false);
             CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMinutes,
                     useFastFail);
+            final String recoveryUsername = getStringIfSetOrGetDefault(conDefNode, RECOVERY_USERNAME, null);
+            final String recoveryPassword = getStringIfSetOrGetDefault(conDefNode, RECOVERY_PASSWORD, null);
+            final String recoverySecurityDomain = getStringIfSetOrGetDefault(conDefNode, RECOVERY_SECURITY_DOMAIN, null);
 
+            final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+
+            final Extension recoverPlugin = extractExtension(conDefNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+            final boolean noRecovery = getBooleanIfSetOrGetDefault(conDefNode, NO_RECOVERY, false);
+            Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
             CommonConnDef connectionDefinition = new CommonConnDefImpl(configProperties, className, jndiName, poolName,
-                    enabled, useJavaContext, pool, timeOut, validation, security);
+                    enabled, useJavaContext, pool, timeOut, validation, security, recovery);
 
             connDefs.add(connectionDefinition);
         }
@@ -292,6 +312,27 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             return dataSourceNode.get(key).asString();
         } else {
             return defaultValue;
+        }
+    }
+
+    private Extension extractExtension(final ModelNode node, final String className, final String propertyName)
+            throws ValidateException {
+        if (node.hasDefined(className)) {
+            String exceptionSorterClassName = node.get(className).asString();
+
+            getStringIfSetOrGetDefault(node, className, null);
+
+            Map<String, String> exceptionSorterProperty = null;
+            if (node.hasDefined(propertyName)) {
+                exceptionSorterProperty = new HashMap<String, String>(node.get(propertyName).asList().size());
+                for (ModelNode property : node.get(propertyName).asList()) {
+                    exceptionSorterProperty.put(property.asProperty().getName(), property.asString());
+                }
+            }
+
+            return new Extension(exceptionSorterClassName, exceptionSorterProperty);
+        } else {
+            return null;
         }
     }
 }

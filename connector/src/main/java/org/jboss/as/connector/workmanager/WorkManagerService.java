@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
+import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -69,7 +70,7 @@ public final class WorkManagerService implements Service<WorkManager> {
     public void start(StartContext context) throws StartException {
         this.value.setLongRunningThreadPool((BlockingExecutor) executorLong.getValue());
         this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
-        this.value.setXATerminator(xaTerminator.getValue());
+        this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
         log.debugf("Starting JCA WorkManager");
     }

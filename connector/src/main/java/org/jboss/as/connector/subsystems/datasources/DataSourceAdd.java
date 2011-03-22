@@ -32,7 +32,6 @@ import org.jboss.jca.common.api.validator.ValidateException;
 
 /**
  * Operation handler responsible for adding a DataSource.
- *
  * @author John Bailey
  */
 public class DataSourceAdd extends AbstractDataSourceAdd {
@@ -42,12 +41,15 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
         populateAddModel(operation, model, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);
     }
 
-    protected AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation) throws OperationFailedException {
+    protected AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation)
+            throws OperationFailedException {
         final DataSource dataSource;
         try {
             dataSource = from(operation);
         } catch (ValidateException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Failed to create DataSource instance for [" + operation + "]"));
+            e.printStackTrace();
+            throw new OperationFailedException(e, new ModelNode().set("Failed to create DataSource instance for [" + operation
+                    + "]"));
         }
         return new LocalDataSourceService(jndiName, dataSource);
     }

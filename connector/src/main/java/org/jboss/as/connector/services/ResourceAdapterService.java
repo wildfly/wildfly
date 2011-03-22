@@ -12,7 +12,6 @@ import org.jboss.msc.service.Service;
 public class ResourceAdapterService implements Service<ResourceAdapter> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "jndiname");
 
     private final ResourceAdapter value;
 
@@ -30,13 +29,13 @@ public class ResourceAdapterService implements Service<ResourceAdapter> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.infof("started ResourceAdapterService %s", context.getController().getName());
+        log.debugf("started ResourceAdapterService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.infof("stopped ResourceAdapterService %s", context.getController().getName());
+        log.debugf("stopped ResourceAdapterService %s", context.getController().getName());
 
     }
 

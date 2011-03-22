@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -126,9 +126,9 @@ class DataSourcesSubsystemProviders {
             node.get(HEAD_COMMENT_ALLOWED).set(true);
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-            node.get(ATTRIBUTES, MODULE, DESCRIPTION).set(bundle.getString("jdbc-driver.module"));
-            node.get(ATTRIBUTES, MODULE, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, MODULE, REQUIRED).set(true);
+            node.get(ATTRIBUTES, DRIVER, DESCRIPTION).set(bundle.getString("jdbc-driver.module"));
+            node.get(ATTRIBUTES, DRIVER, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, DRIVER, REQUIRED).set(true);
 
             return node;
         }
@@ -142,9 +142,9 @@ class DataSourcesSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("jdbc-driver.add"));
-            operation.get(REQUEST_PROPERTIES, MODULE, DESCRIPTION).set(bundle.getString("jdbc-driver.module"));
-            operation.get(REQUEST_PROPERTIES, MODULE, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, MODULE, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, DRIVER, DESCRIPTION).set(bundle.getString("jdbc-driver.module"));
+            operation.get(REQUEST_PROPERTIES, DRIVER, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DRIVER, REQUIRED).set(true);
             return operation;
         }
     };

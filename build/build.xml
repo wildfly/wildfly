@@ -632,6 +632,10 @@
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-validator"/>
         </module-def>
 
+        <module-def name="org.jboss.ironjacamar.jdbcadapters">
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-jdbc"/>
+        </module-def>
+        
         <module-def name="org.jboss.jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>

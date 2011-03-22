@@ -44,6 +44,7 @@
         <module name="org.jboss.integration.jboss-transaction-spi"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.ironjacamar.impl"/>
+        <module name="org.jboss.ironjacamar.jdbcadapters"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>

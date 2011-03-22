@@ -22,9 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
@@ -42,9 +39,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVIN
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
@@ -52,6 +50,13 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_PREFI
 import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
@@ -74,12 +79,19 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DA
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.JdbcAdapterExtension;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
@@ -88,6 +100,7 @@ import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
+import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DataSourceImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.StatementImpl;
@@ -96,8 +109,8 @@ import org.jboss.jca.common.metadata.ds.ValidationImpl;
 import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
 
 /**
- * Utility used to help convert between JCA spi data-source instances and model node representations and vice-versa.
- *
+ * Utility used to help convert between JCA spi data-source instances and model
+ * node representations and vice-versa.
  * @author John Bailey
  */
 class DataSourceModelNodeUtil {
@@ -109,7 +122,7 @@ class DataSourceModelNodeUtil {
         setStringIfNotNull(dataSourceModel, CONNECTION_URL, dataSource.getConnectionUrl());
         setStringIfNotNull(dataSourceModel, DRIVER_CLASS, dataSource.getDriverClass());
         setStringIfNotNull(dataSourceModel, JNDINAME, dataSource.getJndiName());
-        setStringIfNotNull(dataSourceModel, MODULE, dataSource.getModule());
+        setStringIfNotNull(dataSourceModel, DRIVER, dataSource.getDriver());
         setStringIfNotNull(dataSourceModel, NEW_CONNECTION_SQL, dataSource.getNewConnectionSql());
         setStringIfNotNull(dataSourceModel, POOLNAME, dataSource.getPoolName());
         setStringIfNotNull(dataSourceModel, URL_DELIMITER, dataSource.getUrlDelimiter());
@@ -129,6 +142,7 @@ class DataSourceModelNodeUtil {
             setStringIfNotNull(dataSourceModel, USERNAME, security.getUserName());
             setStringIfNotNull(dataSourceModel, PASSWORD, security.getPassword());
             setStringIfNotNull(dataSourceModel, SECURITY_DOMAIN, security.getSecurityDomain());
+            setExtensionIfNotNull(dataSourceModel, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES, security.getReauthPlugin());
         }
         Statement statement = dataSource.getStatement();
         if (statement != null) {
@@ -178,7 +192,7 @@ class DataSourceModelNodeUtil {
         }
         setStringIfNotNull(xaDataSourceModel, XADATASOURCECLASS, xaDataSource.getXaDataSourceClass());
         setStringIfNotNull(xaDataSourceModel, JNDINAME, xaDataSource.getJndiName());
-        setStringIfNotNull(xaDataSourceModel, MODULE, xaDataSource.getModule());
+        setStringIfNotNull(xaDataSourceModel, DRIVER, xaDataSource.getDriver());
         setStringIfNotNull(xaDataSourceModel, NEW_CONNECTION_SQL, xaDataSource.getNewConnectionSql());
         setStringIfNotNull(xaDataSourceModel, POOLNAME, xaDataSource.getPoolName());
         setStringIfNotNull(xaDataSourceModel, URL_DELIMITER, xaDataSource.getUrlDelimiter());
@@ -202,6 +216,8 @@ class DataSourceModelNodeUtil {
             setStringIfNotNull(xaDataSourceModel, USERNAME, security.getUserName());
             setStringIfNotNull(xaDataSourceModel, PASSWORD, security.getPassword());
             setStringIfNotNull(xaDataSourceModel, SECURITY_DOMAIN, security.getSecurityDomain());
+            setExtensionIfNotNull(xaDataSourceModel, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES,
+                    security.getReauthPlugin());
         }
         final Statement statement = xaDataSource.getStatement();
         if (statement != null) {
@@ -233,21 +249,36 @@ class DataSourceModelNodeUtil {
         final Validation validation = xaDataSource.getValidation();
         if (xaDataSource.getValidation() != null) {
             setStringIfNotNull(xaDataSourceModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-            setExtensionIfNotNull(xaDataSourceModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES, validation.getExceptionSorter());
-            setExtensionIfNotNull(xaDataSourceModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES, validation.getStaleConnectionChecker());
-            setExtensionIfNotNull(xaDataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES, validation.getValidConnectionChecker());
+            setExtensionIfNotNull(xaDataSourceModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
+                    validation.getExceptionSorter());
+            setExtensionIfNotNull(xaDataSourceModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
+                    validation.getStaleConnectionChecker());
+            setExtensionIfNotNull(xaDataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
+                    validation.getValidConnectionChecker());
             setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMINUTES, validation.getBackgroundValidationMinutes());
             setBooleanIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
             setBooleanIfNotNull(xaDataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
             setBooleanIfNotNull(xaDataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
+        }
+
+        if (xaDataSource.getRecovery() != null) {
+            final Recovery recovery = xaDataSource.getRecovery();
+            setStringIfNotNull(xaDataSourceModel, RECOVERY_USERNAME, recovery.getCredential() != null ? recovery
+                    .getCredential().getUserName() : null);
+            setStringIfNotNull(xaDataSourceModel, RECOVERY_PASSWORD, recovery.getCredential() != null ? recovery
+                    .getCredential().getPassword() : null);
+            setStringIfNotNull(xaDataSourceModel, RECOVERY_SECURITY_DOMAIN, recovery.getCredential() != null ? recovery
+                    .getCredential().getSecurityDomain() : null);
+            setExtensionIfNotNull(xaDataSourceModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES,
+                    recovery.getRecoverPlugin());
+            setBooleanIfNotNull(xaDataSourceModel, NO_RECOVERY, recovery.getNoRecovery());
         }
     }
 
     static DataSource from(final ModelNode dataSourceNode) throws ValidateException {
         final Map<String, String> connectionProperties;
         if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
-            connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList()
-                    .size());
+            connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList().size());
             for (ModelNode property : dataSourceNode.get(CONNECTION_PROPERTIES).asList()) {
                 connectionProperties.put(property.asProperty().getName(), property.asString());
             }
@@ -257,7 +288,7 @@ class DataSourceModelNodeUtil {
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
         final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, MODULE, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
@@ -275,19 +306,18 @@ class DataSourceModelNodeUtil {
         final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
-        final DsSecurity security = new DsSecurityImpl(username, password, securityDomain);
+        final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+
+        final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
         final boolean sharePreparedStatements = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
-        final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE,
-                null);
+        final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
         final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS) ? Statement.TrackStatementsEnum
                 .valueOf(dataSourceNode.get(TRACKSTATEMENTS).asString()) : Statement.TrackStatementsEnum.NOWARN;
-        final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize,
-                trackStatements);
+        final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);
-        final Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS,
-                null);
+        final Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
         final Long blockingTimeoutMillis = getLongIfSetOrGetDefault(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
         final Long idleTimeoutMinutes = getLongIfSetOrGetDefault(dataSourceNode, IDLETIMEOUTMINUTES, null);
         final Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
@@ -300,38 +330,34 @@ class DataSourceModelNodeUtil {
                 .valueOf(dataSourceNode.get(TRANSACTION_ISOLOATION).asString()) : null;
         final String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
-        final JdbcAdapterExtension exceptionSorter = extractJdbcAdapterExtension(dataSourceNode,
-                EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
-        final JdbcAdapterExtension staleConnectionChecker = extractJdbcAdapterExtension(dataSourceNode,
-                STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES);
-        final JdbcAdapterExtension validConnectionChecker = extractJdbcAdapterExtension(dataSourceNode,
-                VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES);
+        final Extension exceptionSorter = extractExtension(dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
+        final Extension staleConnectionChecker = extractExtension(dataSourceNode, STALECONNECTIONCHECKERCLASSNAME,
+                STALECONNECTIONCHECKER_PROPERTIES);
+        final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
+                VALIDCONNECTIONCHECKER_PROPERTIES);
 
-        final Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES,
-                null);
+        final Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
         final boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
-                validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker,
-                exceptionSorter);
+                validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
-        return new DataSourceImpl(connectionUrl, driverClass, module, transactionIsolation,
-                connectionProperties, timeOut, security, statement, validation, urlDelimiter,
-                urlSelectorStrategyClassName, newConnectionSql, useJavaContext, poolName, enabled, jndiName, spy,
-                pool);
+        return new DataSourceImpl(connectionUrl, driverClass, module, transactionIsolation, connectionProperties, timeOut,
+                security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
+                poolName, enabled, jndiName, spy, pool);
     }
 
     static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
-        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(dataSourceNode
-                .get(XADATASOURCEPROPERTIES).asList().size());
+        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(dataSourceNode.get(XADATASOURCEPROPERTIES)
+                .asList().size());
         for (ModelNode property : dataSourceNode.get(XADATASOURCEPROPERTIES).asList()) {
             xaDataSourceProperty.put(property.asProperty().getName(), property.asString());
         }
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, MODULE, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
@@ -348,26 +374,26 @@ class DataSourceModelNodeUtil {
         final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
         final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);
         final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_DATASOURCE, false);
-        final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin,
-                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
+        final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, isSameRmOverride,
+                interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
         final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
-        final DsSecurity security = new DsSecurityImpl(username, password, securityDomain);
+        final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+
+        final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
         final boolean sharePreparedStatements = dataSourceNode.hasDefined(SHAREPREPAREDSTATEMENTS) ? dataSourceNode.get(
                 SHAREPREPAREDSTATEMENTS).asBoolean() : false;
         final Long preparedStatementsCacheSize = dataSourceNode.get(PREPAREDSTATEMENTSCACHESIZE).asLong();
-        final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(dataSourceNode.get(TRACKSTATEMENTS)
-                .asString());
-        final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize,
-                trackStatements);
+        final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(dataSourceNode.get(
+                TRACKSTATEMENTS).asString());
+        final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);
-        final Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS,
-                null);
+        final Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
         final Long blockingTimeoutMillis = getLongIfSetOrGetDefault(dataSourceNode, BLOCKING_TIMEOUT_WAIT_MILLIS, null);
         final Long idleTimeoutMinutes = getLongIfSetOrGetDefault(dataSourceNode, IDLETIMEOUTMINUTES, null);
         final Long queryTimeout = getLongIfSetOrGetDefault(dataSourceNode, QUERYTIMEOUT, null);
@@ -380,25 +406,32 @@ class DataSourceModelNodeUtil {
                 .valueOf(dataSourceNode.get(TRANSACTION_ISOLOATION).asString()) : null;
         final String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
-        final JdbcAdapterExtension exceptionSorter = extractJdbcAdapterExtension(dataSourceNode,
-                EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
-        final JdbcAdapterExtension staleConnectionChecker = extractJdbcAdapterExtension(dataSourceNode,
-                STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES);
-        final JdbcAdapterExtension validConnectionChecker = extractJdbcAdapterExtension(dataSourceNode,
-                VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES);
+        final Extension exceptionSorter = extractExtension(dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
+        final Extension staleConnectionChecker = extractExtension(dataSourceNode, STALECONNECTIONCHECKERCLASSNAME,
+                STALECONNECTIONCHECKER_PROPERTIES);
+        final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
+                VALIDCONNECTIONCHECKER_PROPERTIES);
 
-        final Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES,
-                null);
+        final Long backgroundValidationMinutes = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
         final boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
-                validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker,
-                exceptionSorter);
-        return new XADataSourceImpl(transactionIsolation, timeOut, security, statement, validation,
-                urlDelimiter, urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy,
-                xaDataSourceProperty, xaDataSourceClass, module, newConnectionSql, xaPool);
+                validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
+
+        final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);
+        final String recoveryPassword = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_PASSWORD, null);
+        final String recoverySecurityDomain = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
+
+        final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+
+        final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+        final boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
+        Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
+        return new XADataSourceImpl(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
+                urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, xaDataSourceProperty,
+                xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
     }
 
     private static void setBooleanIfNotNull(final ModelNode node, final String identifier, final Boolean value) {
@@ -425,7 +458,8 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static void setExtensionIfNotNull(final ModelNode dsModel, final String extensionclassname, final String extensionProperties, final JdbcAdapterExtension extension) {
+    private static void setExtensionIfNotNull(final ModelNode dsModel, final String extensionclassname,
+            final String extensionProperties, final Extension extension) {
         if (extension != null) {
             setStringIfNotNull(dsModel, extensionclassname, extension.getClassName());
             if (extension.getConfigPropertiesMap() != null) {
@@ -453,7 +487,8 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static boolean getBooleanIfSetOrGetDefault(final ModelNode dataSourceNode, final String key, final boolean defaultValue) {
+    private static boolean getBooleanIfSetOrGetDefault(final ModelNode dataSourceNode, final String key,
+            final boolean defaultValue) {
         if (dataSourceNode.hasDefined(key)) {
             return dataSourceNode.get(key).asBoolean();
         } else {
@@ -469,7 +504,7 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static JdbcAdapterExtension extractJdbcAdapterExtension(final ModelNode dataSourceNode, final String className, final String propertyName)
+    private static Extension extractExtension(final ModelNode dataSourceNode, final String className, final String propertyName)
             throws ValidateException {
         if (dataSourceNode.hasDefined(className)) {
             String exceptionSorterClassName = dataSourceNode.get(className).asString();
@@ -484,7 +519,7 @@ class DataSourceModelNodeUtil {
                 }
             }
 
-            return new JdbcAdapterExtension(exceptionSorterClassName, exceptionSorterProperty);
+            return new Extension(exceptionSorterClassName, exceptionSorterProperty);
         } else {
             return null;
         }

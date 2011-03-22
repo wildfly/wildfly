@@ -23,14 +23,16 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import java.sql.Driver;
+
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.TransactionSupport;
-import org.jboss.as.connector.adapters.jdbc.BaseWrapperManagedConnectionFactory;
-import org.jboss.as.connector.adapters.jdbc.xa.XAManagedConnectionFactory;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
+
+import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
+import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
+import org.jboss.jca.adapters.jdbc.xa.XAManagedConnectionFactory;
+import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.JdbcAdapterExtension;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
@@ -45,7 +47,6 @@ import org.jboss.msc.service.StartException;
 
 /**
  * XA data-source service implementation.
- *
  * @author John Bailey
  */
 public class XaDataSourceService extends AbstractDataSourceService {
@@ -56,13 +57,20 @@ public class XaDataSourceService extends AbstractDataSourceService {
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    protected final BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName, final Driver driver) throws ResourceException, StartException {
+    protected final BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName,
+            final Driver driver) throws ResourceException, StartException {
         final XAManagedConnectionFactory xaManagedConnectionFactory = new XAManagedConnectionFactory();
 
         try {
-            Class<?> xaDataSourceClass = driver.getClass().getClassLoader().loadClass(dataSourceConfig.getXaDataSourceClass());
-            xaManagedConnectionFactory.setXADataSourceClass(xaDataSourceClass);
-        } catch (ClassNotFoundException e) {
+            xaManagedConnectionFactory.setClassLoaderPlugin(new ClassLoaderPlugin() {
+
+                @Override
+                public ClassLoader getClassLoader() {
+                    return driver.getClass().getClassLoader();
+                }
+            });
+            xaManagedConnectionFactory.setXADataSourceClass(dataSourceConfig.getXaDataSourceClass());
+        } catch (Exception e) {
             throw new StartException("Failed to load XA DataSource class - " + dataSourceConfig.getXaDataSourceClass());
         }
 
@@ -123,31 +131,36 @@ public class XaDataSourceService extends AbstractDataSourceService {
             if (validation.getCheckValidConnectionSql() != null) {
                 xaManagedConnectionFactory.setCheckValidConnectionSQL(validation.getCheckValidConnectionSql());
             }
-            final JdbcAdapterExtension validConnectionChecker = validation.getValidConnectionChecker();
+            final Extension validConnectionChecker = validation.getValidConnectionChecker();
             if (validConnectionChecker != null) {
                 if (validConnectionChecker.getClassName() != null) {
                     xaManagedConnectionFactory.setValidConnectionCheckerClassName(validConnectionChecker.getClassName());
                 }
                 if (validConnectionChecker.getConfigPropertiesMap() != null) {
-                    xaManagedConnectionFactory.setValidConnectionCheckerProperties(buildConfigPropsString(validConnectionChecker.getConfigPropertiesMap()));
+                    xaManagedConnectionFactory
+                            .setValidConnectionCheckerProperties(buildConfigPropsString(validConnectionChecker
+                                    .getConfigPropertiesMap()));
                 }
             }
-            final JdbcAdapterExtension exceptionSorter = validation.getExceptionSorter();
+            final Extension exceptionSorter = validation.getExceptionSorter();
             if (exceptionSorter != null) {
                 if (exceptionSorter.getClassName() != null) {
                     xaManagedConnectionFactory.setExceptionSorterClassName(exceptionSorter.getClassName());
                 }
                 if (exceptionSorter.getConfigPropertiesMap() != null) {
-                    xaManagedConnectionFactory.setExceptionSorterProperties(buildConfigPropsString(exceptionSorter.getConfigPropertiesMap()));
+                    xaManagedConnectionFactory.setExceptionSorterProperties(buildConfigPropsString(exceptionSorter
+                            .getConfigPropertiesMap()));
                 }
             }
-            final JdbcAdapterExtension staleConnectionChecker = validation.getStaleConnectionChecker();
+            final Extension staleConnectionChecker = validation.getStaleConnectionChecker();
             if (staleConnectionChecker != null) {
                 if (staleConnectionChecker.getClassName() != null) {
                     xaManagedConnectionFactory.setStaleConnectionCheckerClassName(staleConnectionChecker.getClassName());
                 }
                 if (staleConnectionChecker.getConfigPropertiesMap() != null) {
-                    xaManagedConnectionFactory.setStaleConnectionCheckerProperties(buildConfigPropsString(staleConnectionChecker.getConfigPropertiesMap()));
+                    xaManagedConnectionFactory
+                            .setStaleConnectionCheckerProperties(buildConfigPropsString(staleConnectionChecker
+                                    .getConfigPropertiesMap()));
                 }
             }
         }
@@ -155,7 +168,8 @@ public class XaDataSourceService extends AbstractDataSourceService {
     }
 
     protected Pool createPool(final String jndiName, final ManagedConnectionFactory mcf) {
-        final PoolConfiguration pc = createPoolConfiguration(dataSourceConfig.getXaPool(), dataSourceConfig.getTimeOut(), dataSourceConfig.getValidation());
+        final PoolConfiguration pc = createPoolConfiguration(dataSourceConfig.getXaPool(), dataSourceConfig.getTimeOut(),
+                dataSourceConfig.getValidation());
 
         Boolean noTxSeparatePool = Boolean.FALSE;
 
@@ -199,11 +213,14 @@ public class XaDataSourceService extends AbstractDataSourceService {
             padXid = dataSourceConfig.getXaPool().isPadXid();
         }
 
+        String securityDomain = dataSourceConfig.getSecurity() != null ? dataSourceConfig.getSecurity().getSecurityDomain()
+                : null;
         // Select the correct connection manager
         TransactionSupport.TransactionSupportLevel tsl = TransactionSupport.TransactionSupportLevel.XATransaction;
         ConnectionManagerFactory cmf = new ConnectionManagerFactory();
-        ConnectionManager cm = cmf.createTransactional(tsl, pool, null, allocationRetry, allocationRetryWaitMillis,
-                getTransactionManager(), interleaving, xaResourceTimeout, isSameRMOverride, wrapXAResource, padXid);
+        ConnectionManager cm = cmf.createTransactional(tsl, pool, null, securityDomain, allocationRetry,
+                allocationRetryWaitMillis, getTransactionIntegration(), interleaving, xaResourceTimeout, isSameRMOverride,
+                wrapXAResource, padXid);
 
         cm.setJndiName(jndiName);
 

@@ -124,7 +124,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
 
                     TransactionManagerService.addService(target);
                     UserTransactionService.addService(target);
-                    target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService());
+                    target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService()).setInitialMode(Mode.ACTIVE).install();
                     TransactionSynchronizationRegistryService.addService(target);
 
                     RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
