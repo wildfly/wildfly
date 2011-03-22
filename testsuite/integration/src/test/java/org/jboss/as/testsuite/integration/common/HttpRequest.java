@@ -26,9 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -69,15 +69,9 @@ public class HttpRequest {
         Callable<String> task = new Callable<String>() {
             @Override
             public String call() throws Exception {
-                final URLConnection conn = url.openConnection();
+                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoInput(true);
-                final InputStream in = conn.getInputStream();
-                try {
-                    return read(in);
-                }
-                finally {
-                    in.close();
-                }
+                return processResponse(conn);
             }
         };
         return execute(task, timeout, unit);
@@ -92,24 +86,38 @@ public class HttpRequest {
         return out.toString();
     }
 
+    private static String processResponse(HttpURLConnection conn) throws IOException {
+        int responseCode = conn.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            final InputStream err = conn.getErrorStream();
+            try {
+                throw new IOException(read(err));
+            }
+            finally {
+                err.close();
+            }
+        }
+        final InputStream in = conn.getInputStream();
+        try {
+            return read(in);
+        }
+        finally {
+            in.close();
+        }
+    }
+
     public static String put(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
             @Override
             public String call() throws Exception {
-                final URLConnection conn = url.openConnection();
+                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
                 final OutputStream out = conn.getOutputStream();
                 try {
                     write(out, message);
-                    final InputStream in = conn.getInputStream();
-                    try {
-                        return read(in);
-                    }
-                    finally {
-                        in.close();
-                    }
+                    return processResponse(conn);
                 }
                 finally {
                     out.close();

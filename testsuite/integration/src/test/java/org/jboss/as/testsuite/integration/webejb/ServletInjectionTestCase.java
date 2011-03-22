@@ -23,6 +23,7 @@ package org.jboss.as.testsuite.integration.webejb;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -30,9 +31,10 @@ import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -43,25 +45,12 @@ public class ServletInjectionTestCase {
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
-        war.addClasses(SimpleServlet.class, SimpleStatelessSessionBean.class);
+        war.addClasses(HttpRequest.class, SimpleServlet.class, SimpleStatelessSessionBean.class);
         return war;
     }
 
     private static String performCall(String urlPattern, String param) throws Exception {
-        URL url = new URL("http://localhost:8080/war-example/" + urlPattern + "?input=" + param);
-        URLConnection conn = url.openConnection();
-        InputStream in = conn.getInputStream();
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int b;
-            while((b = in.read()) != -1) {
-                out.write(b);
-            }
-            return out.toString();
-        }
-        finally {
-            in.close();
-        }
+        return HttpRequest.get("http://localhost:8080/war-example/" + urlPattern + "?input=" + param, 10, SECONDS);
     }
 
     @Test
