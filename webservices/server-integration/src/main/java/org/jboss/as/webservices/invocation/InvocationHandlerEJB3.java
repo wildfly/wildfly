@@ -161,7 +161,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    }
 
    public Context getJNDIContext(final Endpoint ep) throws NamingException {
-      throw new UnsupportedOperationException();
+      return null; // TODO: implement
 //      final EJBContainer ejb3Container = (EJBContainer) getEjb3Container();
 //      return (Context) ejb3Container.getEnc().lookup(EJB3_JNDI_PREFIX);
    }
