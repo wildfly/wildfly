@@ -27,8 +27,11 @@ import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
 import org.jboss.as.demos.ejb3.mbean.ExerciseBMT;
 import org.jboss.as.demos.ejb3.mbean.ExerciseEchoService;
+import org.jboss.as.demos.ejb3.mbean.ExercisePatClifton;
 import org.jboss.as.demos.ejb3.mbean.ExerciseStateful;
 import org.jboss.as.demos.ejb3.mbean.Test;
+import org.jboss.as.demos.ejb3.mdb.PostmanPatMDB;
+import org.jboss.as.demos.ejb3.rar.SimpleQueueResourceAdapter;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -63,8 +66,11 @@ public class ExampleRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = new DeploymentUtils("ejb3-example.jar", SimpleStatelessSessionBean.class.getPackage());
+        DeploymentUtils utils = new DeploymentUtils();
         try {
+            utils.addDeployment("ejb3-rar.rar", SimpleQueueResourceAdapter.class.getPackage());
+            utils.addDeployment("ejb3-mdb.jar", PostmanPatMDB.class.getPackage());
+            utils.addDeployment("ejb3-example.jar", SimpleStatelessSessionBean.class.getPackage());
             utils.addDeployment("ejb3-mbean.sar", Test.class.getPackage());
             utils.deploy();
 
@@ -82,6 +88,8 @@ public class ExampleRunner {
             exec(mbeanServer, ExerciseBMT.class);
 
             exec(mbeanServer, ExerciseEchoService.class);
+
+            exec(mbeanServer, ExercisePatClifton.class);
         } finally {
             utils.undeploy();
             safeClose(utils);
