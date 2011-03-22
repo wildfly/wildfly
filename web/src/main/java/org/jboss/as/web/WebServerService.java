@@ -25,9 +25,8 @@ import javax.management.MBeanServer;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
-import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.core.ServiceMapperListener;
+import org.apache.catalina.core.JasperListener;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
@@ -67,7 +66,7 @@ class WebServerService implements WebServer, Service<WebServer> {
             // Set the MBeanServer
             final MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
             if(mbeanServer != null) {
-                getRegistry().setMBeanServer(mbeanServer);
+                Registry.getRegistry(null, null).setMBeanServer(mbeanServer);
             }
         }
 
@@ -92,7 +91,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         // final AprLifecycleListener apr = new AprLifecycleListener();
         //apr.setSSLEngine("on");
         // server.addLifecycleListener(apr);
-        // server.addLifecycleListener(new JasperListener());
+        server.addLifecycleListener(new JasperListener());
 
         try {
             catalina.create();
@@ -136,24 +135,12 @@ class WebServerService implements WebServer, Service<WebServer> {
     public synchronized void addHost(Host host) {
         final Engine engine = this.engine;
         engine.addChild(host);
-        // FIXME: Hack, remove with next JBW build
-        for (LifecycleListener listener : service.findLifecycleListeners()) {
-            if (listener instanceof ServiceMapperListener) {
-                host.addContainerListener((ServiceMapperListener) listener);
-            }
-        }
     }
 
     /** {@inheritDoc} */
     public synchronized void removeHost(Host host) {
         final Engine engine = this.engine;
         engine.removeChild(host);
-        // FIXME: Hack, remove with next JBW build
-        for (LifecycleListener listener : service.findLifecycleListeners()) {
-            if (listener instanceof ServiceMapperListener) {
-                host.removeContainerListener((ServiceMapperListener) listener);
-            }
-        }
     }
 
     InjectedValue<MBeanServer> getMbeanServer() {
@@ -162,10 +149,6 @@ class WebServerService implements WebServer, Service<WebServer> {
 
     InjectedValue<String> getPathInjector() {
         return pathInjector;
-    }
-
-    Registry getRegistry() {
-        return Registry.getRegistry(null, null);
     }
 
 }

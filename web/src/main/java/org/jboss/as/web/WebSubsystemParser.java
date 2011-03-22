@@ -35,21 +35,30 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.web.Constants.ACCESS_LOG;
 import static org.jboss.as.web.Constants.ALIAS;
+import static org.jboss.as.web.Constants.CA_CERTIFICATE_FILE;
+import static org.jboss.as.web.Constants.CA_REVOCATION_URL;
+import static org.jboss.as.web.Constants.CERTIFICATE_FILE;
+import static org.jboss.as.web.Constants.CERTIFICATE_KEY_FILE;
+import static org.jboss.as.web.Constants.CIPHER_SUITE;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
 import static org.jboss.as.web.Constants.DEFAULT_HOST;
+import static org.jboss.as.web.Constants.DEFAULT_WEB_MODULE;
 import static org.jboss.as.web.Constants.DISABLED;
 import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
 import static org.jboss.as.web.Constants.EXECUTOR;
 import static org.jboss.as.web.Constants.FILE_ENCONDING;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
+import static org.jboss.as.web.Constants.KEY_ALIAS;
 import static org.jboss.as.web.Constants.LISTINGS;
+import static org.jboss.as.web.Constants.MAX_CONNECTIONS;
 import static org.jboss.as.web.Constants.MAX_DEPTH;
 import static org.jboss.as.web.Constants.MAX_POST_SIZE;
 import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
 import static org.jboss.as.web.Constants.NAME;
+import static org.jboss.as.web.Constants.PASSWORD;
 import static org.jboss.as.web.Constants.PROTOCOL;
 import static org.jboss.as.web.Constants.PROXY_NAME;
 import static org.jboss.as.web.Constants.PROXY_PORT;
@@ -60,8 +69,13 @@ import static org.jboss.as.web.Constants.SCHEME;
 import static org.jboss.as.web.Constants.SECRET;
 import static org.jboss.as.web.Constants.SECURE;
 import static org.jboss.as.web.Constants.SENDFILE;
+import static org.jboss.as.web.Constants.SESSION_CACHE_SIZE;
+import static org.jboss.as.web.Constants.SESSION_TIMEOUT;
 import static org.jboss.as.web.Constants.SOCKET_BINDING;
+import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
+import static org.jboss.as.web.Constants.VERIFY_CLIENT;
+import static org.jboss.as.web.Constants.VERIFY_DEPTH;
 import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.Constants.WEBDAV;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
@@ -101,6 +115,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
+        writeAttribute(writer, Attribute.NATIVE.getLocalName(), node);
+        writeAttribute(writer, Attribute.DEFAULT_VIRTUAL_SERVER.getLocalName(), node);
         if(node.hasDefined(DEFAULT_HOST)) {
             writer.writeAttribute(Attribute.DEFAULT_HOST.getLocalName(), node.get(DEFAULT_HOST).asString());
         }
@@ -123,6 +139,31 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writeAttribute(writer, Attribute.EXECUTOR.getLocalName(), config);
                 writeAttribute(writer, Attribute.MAX_POST_SIZE.getLocalName(), config);
                 writeAttribute(writer, Attribute.MAX_SAVE_POST_SIZE.getLocalName(), config);
+                writeAttribute(writer, Attribute.MAX_CONNECTIONS.getLocalName(), config);
+                if (config.hasDefined(SSL)) {
+                    writer.writeStartElement(Element.SSL.getLocalName());
+                    final ModelNode sslConfig = config.get(SSL);
+                    writeAttribute(writer, Attribute.NAME.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.KEY_ALIAS.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.PASSWORD.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CERTIFICATE_KEY_FILE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CIPHER_SUITE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.PROTOCOL.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.VERIFY_CLIENT.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.VERIFY_DEPTH.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CERTIFICATE_FILE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CA_CERTIFICATE_FILE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.CA_REVOCATION_URL.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.SESSION_CACHE_SIZE.getLocalName(), sslConfig);
+                    writeAttribute(writer, Attribute.SESSION_TIMEOUT.getLocalName(), sslConfig);
+                    writer.writeEndElement();
+                }
+                if (config.has(VIRTUAL_SERVER)) {
+                    for(final ModelNode virtualServer : config.get(VIRTUAL_SERVER).asList()) {
+                        writer.writeEmptyElement(VIRTUAL_SERVER);
+                        writer.writeAttribute(NAME, virtualServer.asString());
+                    }
+                }
                 writer.writeEndElement();
             }
         }
@@ -131,6 +172,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 final ModelNode config = host.getValue();
                 writer.writeStartElement(Element.VIRTUAL_SERVER.getLocalName());
                 writer.writeAttribute(NAME, host.getName());
+                writeAttribute(writer, Attribute.DEFAULT_WEB_MODULE.getLocalName(), config);
                 if(config.has(ALIAS)) {
                     for(final ModelNode alias : config.get(ALIAS).asList()) {
                         writer.writeEmptyElement(ALIAS);
@@ -226,6 +268,20 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).set(address);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NATIVE:
+            case DEFAULT_VIRTUAL_SERVER:
+                subsystem.get(attribute.getLocalName()).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
+            }
+        }
         list.add(subsystem);
 
         // elements
@@ -373,18 +429,21 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     static void parseHost(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
         String name = null;
+        String defaultWebModule = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case NAME: {
+                case NAME:
                     name = value;
                     break;
-                } default: {
+                case DEFAULT_WEB_MODULE:
+                    defaultWebModule = value;
+                    break;
+                default:
                     unexpectedAttribute(reader, i);
-                }
             }
         }
         if(name == null) {
@@ -394,6 +453,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         final ModelNode host = new ModelNode();
         host.get(OP).set(ADD);
         host.get(OP_ADDR).set(address).add(VIRTUAL_SERVER, name);
+        if (defaultWebModule != null) {
+            host.get(DEFAULT_WEB_MODULE).set(defaultWebModule);
+        }
         list.add(host);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -447,6 +509,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         String maxSavePostSize = null;
         String secure = null;
         String redirectPort = null;
+        String maxConnections = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -492,6 +555,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             case REDIRECT_PORT:
                 redirectPort = value;
                 break;
+            case MAX_CONNECTIONS:
+                maxConnections = value;
+                break;
             default:
                 unexpectedAttribute(reader, i);
             }
@@ -502,10 +568,30 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         if (protocol == null) {
             missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
         }
-        requireNoContent(reader);
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
         connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+            case WEB_1_0: {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                case SSL:
+                    final ModelNode ssl = parseSsl(reader);
+                    connector.get(SSL).set(ssl);
+                    break;
+                case VIRTUAL_SERVER:
+                    connector.get(VIRTUAL_SERVER).add(readStringAttributeElement(reader, Attribute.NAME.getLocalName()));
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+                }
+                break;
+            }
+            default:
+                throw unexpectedElement(reader);
+            }
+        }
         if(protocol != null) connector.get(PROTOCOL).set(protocol);
         connector.get(SOCKET_BINDING).set(bindingRef);
         if(scheme != null) connector.get(SCHEME).set(scheme);
@@ -518,7 +604,62 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         if(maxSavePostSize != null) connector.get(MAX_SAVE_POST_SIZE).set(maxSavePostSize);
         if(secure != null) connector.get(SECURE).set(secure);
         if(redirectPort != null) connector.get(REDIRECT_PORT).set(redirectPort);
+        if(maxConnections != null) connector.get(MAX_CONNECTIONS).set(maxConnections);
         list.add(connector);
+    }
+
+    static ModelNode parseSsl(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode ssl = new ModelNode();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case NAME:
+                ssl.get(NAME).set(value);
+                break;
+            case KEY_ALIAS:
+                ssl.get(KEY_ALIAS).set(value);
+                break;
+            case PASSWORD:
+                ssl.get(PASSWORD).set(value);
+            case CERTIFICATE_KEY_FILE:
+                ssl.get(CERTIFICATE_KEY_FILE).set(value);
+                break;
+            case CIPHER_SUITE:
+                ssl.get(CIPHER_SUITE).set(value);
+                break;
+            case PROTOCOL:
+                ssl.get(PROTOCOL).set(value);
+                break;
+            case VERIFY_CLIENT:
+                ssl.get(VERIFY_CLIENT).set(value);
+                break;
+            case VERIFY_DEPTH:
+                ssl.get(VERIFY_DEPTH).set(value);
+                break;
+            case CERTIFICATE_FILE:
+                ssl.get(CERTIFICATE_FILE).set(value);
+                break;
+            case CA_CERTIFICATE_FILE:
+                ssl.get(CA_CERTIFICATE_FILE).set(value);
+                break;
+            case CA_REVOCATION_URL:
+                ssl.get(CA_REVOCATION_URL).set(value);
+                break;
+            case SESSION_CACHE_SIZE:
+                ssl.get(SESSION_CACHE_SIZE).set(value);
+                break;
+            case SESSION_TIMEOUT:
+                ssl.get(SESSION_TIMEOUT).set(value);
+                break;
+           default:
+                unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        return ssl;
     }
 
     static void writeAttribute(final XMLExtendedStreamWriter writer, final String name, ModelNode node) throws XMLStreamException {

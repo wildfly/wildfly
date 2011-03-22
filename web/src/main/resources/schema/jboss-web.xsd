@@ -136,7 +136,11 @@
       <xs:complexType>
          <xs:sequence>
            <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
-           <xs:element name="virtual-server" minOccurs="0" maxOccurs="unbounded"/>
+           <xs:element name="virtual-server" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" use="required" />
+               </xs:complexType>
+           </xs:element>
          </xs:sequence>
          <xs:attributeGroup ref="web-connector-attlist" />
       </xs:complexType>
