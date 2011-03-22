@@ -24,29 +24,26 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandHistory;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class HistoryHandler implements CommandHandler {
+public class HistoryHandler extends CommandHandlerWithHelp {
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
-     */
+    public HistoryHandler() {
+        this("history");
+    }
+
+    public HistoryHandler(String command) {
+        super(command);
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    protected void handle(CommandContext ctx, String args) {
 
-        String args = ctx.getCommandArguments();
         if(args == null) {
-            printHistory(ctx);
-            return;
-        }
-
-        args = args.trim();
-        if(args.isEmpty()) {
             printHistory(ctx);
             return;
         }

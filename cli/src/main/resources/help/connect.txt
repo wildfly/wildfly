@@ -1,0 +1,8 @@
+Synopsis: connect [host][:port]
+
+Description: connects to the controller on the specified host and port.
+
+Arguments:
+
+ host - optional, default value is localhost;
+ port - optional, default value is 9999.

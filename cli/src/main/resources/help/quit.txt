@@ -1,0 +1,5 @@
+Synopsis: quit
+
+Description: terminates the command line session.
+
+Arguments: n/a.

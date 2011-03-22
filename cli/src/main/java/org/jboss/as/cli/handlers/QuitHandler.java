@@ -22,21 +22,24 @@
 package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandHandler;
 
 /**
  * Quit handler.
  *
  * @author Alexey Loubyansky
  */
-public class QuitHandler implements CommandHandler {
+public class QuitHandler extends CommandHandlerWithHelp {
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
-     */
-    @Override
-    public void handle(CommandContext ctx) {
-        ctx.terminateSession();
+    public QuitHandler() {
+        this("quit");
     }
 
+    public QuitHandler(String command) {
+        super(command);
+    }
+
+    @Override
+    protected void handle(CommandContext ctx, String args) {
+        ctx.terminateSession();
+    }
 }

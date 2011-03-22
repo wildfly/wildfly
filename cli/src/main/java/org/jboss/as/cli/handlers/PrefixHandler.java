@@ -23,7 +23,6 @@ package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
@@ -32,24 +31,22 @@ import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
  *
  * @author Alexey Loubyansky
  */
-public class PrefixHandler implements CommandHandler {
+public class PrefixHandler extends CommandHandlerWithHelp {
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
-     */
+    public PrefixHandler() {
+        this("cn");
+    }
+
+    public PrefixHandler(String command) {
+        super(command);
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    protected void handle(CommandContext ctx, String args) {
 
-        String args = ctx.getCommandArguments();
         OperationRequestAddress prefix = ctx.getPrefix();
 
         if(args == null) {
-            ctx.printLine(ctx.getPrefixFormatter().format(prefix));
-            return;
-        }
-
-        args = args.trim();
-        if(args.isEmpty()) {
             ctx.printLine(ctx.getPrefixFormatter().format(prefix));
             return;
         }
@@ -61,5 +58,4 @@ public class PrefixHandler implements CommandHandler {
             ctx.printLine(e.getLocalizedMessage());
         }
     }
-
 }

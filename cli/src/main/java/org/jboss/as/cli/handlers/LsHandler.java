@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
@@ -35,26 +34,28 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
  *
  * @author Alexey Loubyansky
  */
-public class LsHandler implements CommandHandler {
+public class LsHandler extends CommandHandlerWithHelp {
+
+    public LsHandler() {
+        this("ls");
+    }
+
+    public LsHandler(String command) {
+        super(command);
+    }
 
     @Override
-    public void handle(CommandContext ctx) {
+    protected void handle(CommandContext ctx, String args) {
 
         final OperationRequestAddress address;
 
-        String args = ctx.getCommandArguments();
-        if(args != null) {
-            args = args.trim();
-            if (!args.isEmpty()) {
-                address = new DefaultOperationRequestAddress(ctx.getPrefix());
-                OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(address);
-                try {
-                    ctx.getOperationRequestParser().parse(args, handler);
-                } catch (CommandFormatException e) {
-                    ctx.printLine(e.getLocalizedMessage());
-                }
-            } else {
-                address = ctx.getPrefix();
+        if (args != null) {
+            address = new DefaultOperationRequestAddress(ctx.getPrefix());
+            OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(address);
+            try {
+                ctx.getOperationRequestParser().parse(args, handler);
+            } catch (CommandFormatException e) {
+                ctx.printLine(e.getLocalizedMessage());
             }
         } else {
             address = ctx.getPrefix();

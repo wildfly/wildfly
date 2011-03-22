@@ -23,24 +23,27 @@ package org.jboss.as.cli.handlers;
 
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandHandler;
 
 /**
  * Connect handler.
  *
  * @author Alexey Loubyansky
  */
-public class ConnectHandler implements CommandHandler {
+public class ConnectHandler extends CommandHandlerWithHelp {
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
-     */
+    public ConnectHandler() {
+        this("connect");
+    }
+
+    public ConnectHandler(String command) {
+        super(command);
+    }
+
     @Override
-    public void handle(CommandContext ctx) {
+    protected void handle(CommandContext ctx, String args) {
 
         int port = 9999;
         String host = "localhost";
-        String args = ctx.getCommandArguments();
         if(args != null) {
             String portStr = null;
             int colonIndex = args.indexOf(':');

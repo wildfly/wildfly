@@ -21,43 +21,32 @@
  */
 package org.jboss.as.cli.handlers;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.CommandLineMain;
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Help command handler. Reads 'help/help.txt' and prints its content to the output stream.
  *
  * @author Alexey Loubyansky
  */
-public class HelpHandler implements CommandHandler {
+public class HelpHandler extends CommandHandlerWithHelp {
+
+    public HelpHandler() {
+        this("help");
+    }
+
+    public HelpHandler(String command) {
+        super(command);
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.Context)
      */
     @Override
     public void handle(CommandContext ctx) {
-        InputStream helpInput = CommandLineMain.class.getClassLoader().getResourceAsStream("help/help.txt");
-        if(helpInput != null) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(helpInput));
-            try {
-                String helpLine = reader.readLine();
-                while(helpLine != null) {
-                    ctx.printLine(helpLine);
-                    helpLine = reader.readLine();
-                }
-            } catch(java.io.IOException e) {
-                ctx.printLine("Failed to read help/help.txt: " + e.getLocalizedMessage());
-            } finally {
-                StreamUtils.safeClose(reader);
-            }
-        } else {
-            ctx.printLine("Failed to locate help/help.txt");
-        }
+        printHelp(ctx);
+    }
+
+    @Override
+    protected void handle(CommandContext ctx, String args) {
     }
 }

@@ -1,44 +1,22 @@
 Supported commands:
-connect [host]:[port]	- connect to the specified host and port (default host is localhost, default port is 9999).
-help (or h)				- print this message.
-quit (or q)				- quit the command line interface.
 
-cn [node_path] (or cd)	- change the current node path to the argument.
-						The current node path is used as the address for the entered operations.
-						If needed, entered operations can as well specify a relative to the current node path address.
-						The current node path can end on node-type. In that case, to execute an operation
-						just a node-name would be sufficient (e.g. logging:read-resource).
-						To move to the parent node from the current one use '..' (e.g. 'cd ..').
-						To move to the node type from the current node use '.type' (e.g. 'cd .type').
-						The root is specified with '/' (e.g. 'cd /' or 'cd /other=thing').
-						The root can only be referenced at the beginning of the node path (not in the middle).
+ connect		- connect to the specified host and port;
+ help (or h)	- print this message;
+ quit (or q)	- quit the command line interface;
+ cn (or cd)		- change the current node path to the argument;
+ ls				- list the contents of the node path;
+ history		- print or disable/enable/clear the history expansion.
 
-ls [node_path]			- lists the contents of the node path. If the argument is not specified then
-						the contents of the current node path (indicated in the prompt) will be printed.
-						The node path can end on either node type (in this case the contents will be the child node names)
-						or the node name (in this case the contents will be the child node types).
-						If the node path has no contents, nothing will be printed.
+For a more detailed description of a specific command, execute the command with '--help' as the argument.
 
-history [disable|enable|clear]	- without arguments prints a history of the commands and operations previously executed
-								and a status whether the history is enabled or disabled.
-								Argument 'disable' will disabled history expansion (but won't clear it).
-								Argument 'enable' will re-enabled the history expansion (re-starting from the last recorded command).
-								Argument 'clear' will clear the in-memory history.
-								The command history is enabled by default, is preserved between the command line sessions and
-								is stored in file '.jboss-cli-history' in the user's home directory. Argument 'clear'
-								does not affect this file. If necessary, this file has to be removed manually by the user.
-
-node_path argument in the commands above is optional and follows the format [node-type [=node-name (,node-type[=node-name])*]].
-
-Tab-completion is supported for the commands, just press the tab key to start
-(tab-completion for command's arguments isn't supported yet).
+Tab-completion is supported for the commands, just press the tab key to start.
 
 To use tab completion for operations requests start with './' or '/' and press the tab key
 which will list the available node types or names.
 If the operation request doesn't require a node path then start with ':' and press the tab key
 ('/:' and './:' are also possible).
 
-Operation requests are expected to follow the following format:
+Operation requests are expected to follow the format:
 
 [node-type=node-name (, node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')']
 

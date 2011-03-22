@@ -1,0 +1,19 @@
+Synopsis:	ls [node_path]
+
+Description:	lists the contents of a node path.
+
+Arguments:
+
+	node-path	- optional, the node path the contents of which should be printed.
+				If not specified, the contents of the current node path (indicated in the prompt) will be printed.
+				The node path can end on either node type (in this case the contents will be the child node names)
+				or the node name (in this case the contents will be the child node types).
+				If the node path has no contents, nothing will be printed.
+				
+				If specified, the node-path is expected to follow the following format:
+				[node-type [=node-name (,node-type[=node-name])*]].
+				
+The following navigation signs are supported in the node-path:
+	/		- the root node (e.g. 'cd /' or 'cd /some=thing');
+	..		- parent node (e.g. 'cd ..');
+	.type	- node type of the current node (e.g. 'cd .type').
