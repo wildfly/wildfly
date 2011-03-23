@@ -437,6 +437,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
         </module-def>
 
+        <module-def name="org.jboss.as.clustering">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-clustering"/>
+        </module-def>
+
         <module-def name="org.jboss.as.connector">
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
@@ -827,6 +831,10 @@
 
         <module-def name="org.jboss.xnio">
             <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        </module-def>
+
+        <module-def name="org.jgroups">
+            <maven-resource group="org.jgroups" artifact="jgroups"/>
         </module-def>
 
         <module-def name="org.junit">
