@@ -12,6 +12,8 @@ import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.NULL_REP
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.createTestNode;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.getOperation;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Executors;
@@ -108,7 +110,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation step2 = getOperation("bad", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("this request is bad") > - 1);
+        final String description = result.get("failure-description").toString();
+        assertTrue(description.contains("this request is bad"));
+        assertTrue(description.contains(" and was rolled back."));
 
         assertTrue(runtimeState.get());
 
@@ -123,8 +127,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation op = getCompositeOperation(null, step1, step2);
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
-        assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("this request is bad") > - 1);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         assertTrue(runtimeState.get());
 
@@ -138,7 +141,10 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation step2 = getOperation("evil", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
+
+        final String description = result.get("failure-description").toString();
+        assertTrue(description.contains("this handler is evil"));
+        assertTrue(description.contains(" and was rolled back."));
 
         assertTrue(runtimeState.get());
 
@@ -153,8 +159,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation op = getCompositeOperation(null, step1, step2);
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
-        assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         assertTrue(runtimeState.get());
 
@@ -177,7 +182,9 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation step2 = getOperation("handleFailed", "attr2", 1, async);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("handleFailed") > - 1);
+        final String description = result.get("failure-description").toString();
+        assertTrue(description.contains("handleFailed"));
+        assertTrue(description.contains(" and was rolled back."));
 
         assertTrue(runtimeState.get());
 
@@ -192,8 +199,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation op = getCompositeOperation(null, step1, step2);
         op.getOperation().get("rollback-on-runtime-failure").set(false);
         ModelNode result = controller.execute(op);
-        assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("handleFailed") > - 1);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         assertTrue(runtimeState.get());
 

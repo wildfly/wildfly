@@ -791,7 +791,7 @@ public class BasicModelController extends AbstractModelController implements Mod
         }
     }
 
-    private static class StepResultHandler implements ResultHandler {
+    protected static class StepResultHandler implements ResultHandler {
 
         private final Integer id;
         private final ModelNode stepResult = new ModelNode();

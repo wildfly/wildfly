@@ -65,6 +65,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
@@ -428,10 +429,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         @Override
         protected void handleFailures() {
-            if (!rollbackOnRuntimeFailure || !modelComplete.get()) {
+            if (!modelComplete.get()) {
                 super.handleFailures();
-            }
-            else {
+            } else if (rollbackOnRuntimeFailure) {
                 final ModelNode compensatingOp = getOverallCompensatingOperation();
                 if (compensatingOp.isDefined()) {
                     final ResultHandler rollbackResultHandler = new RollbackResultHandler();
@@ -444,10 +444,27 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                         }
                     };
                     ServerControllerImpl.this.executorService.execute(r);
-                }
-                else {
+                } else {
                     super.handleFailures();
                 }
+            } else if (resultHandler instanceof StepResultHandler) {
+                // This is a nested compensating op so it needs to correctly record a failure
+
+                resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, resultsNode);
+                final ModelNode failureMsg = new ModelNode();
+                // TODO i18n
+                final String baseMsg = "Composite operation failed. Steps that failed:";
+                for (Property property : resultsNode.asPropertyList()) {
+                    final ModelNode stepResult = property.getValue();
+                    if (stepResult.hasDefined(FAILURE_DESCRIPTION)) {
+                        failureMsg.get(baseMsg, "Operation " + property.getName()).set(stepResult.get(FAILURE_DESCRIPTION));
+                    }
+                }
+                resultHandler.handleFailed(failureMsg);
+            } else {
+                //This is the top level compensating op, which is not going to rollback on runtime failure, so we just return success
+                resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, resultsNode);
+                resultHandler.handleResultComplete();
             }
         }
 
@@ -504,15 +521,12 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                         if (rollbackStepOutcome == null || !rollbackStepOutcome.isDefined()) {
                             stepResult.get(ROLLED_BACK).set(false);
                             stepResult.get(ROLLBACK_FAILURE_DESCRIPTION).set(new ModelNode().set("No compensating operations was available"));
-                        }
-                        else if (CANCELLED.equals(rollbackStepOutcome.asString())) {
+                        } else if (CANCELLED.equals(rollbackStepOutcome.asString())) {
                             stepResult.get(ROLLED_BACK).set(false);
                             stepResult.get(ROLLBACK_FAILURE_DESCRIPTION).set(new ModelNode().set("Execution of the compensating operation was cancelled"));
-                        }
-                        else if (SUCCESS.equals(rollbackStepOutcome.asString())) {
+                        } else if (SUCCESS.equals(rollbackStepOutcome.asString())) {
                             stepResult.get(ROLLED_BACK).set(true);
-                        }
-                        else {
+                        } else {
                             stepResult.get(ROLLED_BACK).set(false);
                             ModelNode rollbackFailureCause = rollbackStepResult.get(FAILURE_DESCRIPTION);
                             if (!rollbackFailureCause.isDefined()) {
@@ -594,6 +608,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private class RollbackResultHandler implements ResultHandler {
 
             private final ModelNode rollbackResult = new ModelNode();
+
             @Override
             public void handleResultFragment(String[] location, ModelNode result) {
                 rollbackResult.get(location).set(result);
@@ -607,13 +622,13 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
             @Override
             public void handleFailed(ModelNode failureDescription) {
-             // TODO add an overall rollback message (needs change in ResultHandler API)
+                // TODO add an overall rollback message (needs change in ResultHandler API)
                 rollbackComplete(rollbackResult);
             }
 
             @Override
             public void handleCancellation() {
-             // TODO add an overall rollback message (needs change in ResultHandler API)
+                // TODO add an overall rollback message (needs change in ResultHandler API)
                 rollbackComplete(rollbackResult);
             }
 
