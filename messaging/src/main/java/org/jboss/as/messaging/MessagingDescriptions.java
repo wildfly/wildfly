@@ -11,7 +11,6 @@ import org.jboss.dmr.ModelType;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 
 /**
@@ -96,8 +95,8 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("queue"));
-        node.get(ATTRIBUTES, CommonAttributes.ADDRESS, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, CommonAttributes.ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
+        node.get(ATTRIBUTES, CommonAttributes.QUEUE_ADDRESS, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, CommonAttributes.QUEUE_ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
         node.get(ATTRIBUTES, CommonAttributes.FILTER, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, CommonAttributes.FILTER, DESCRIPTION).set(bundle.getString("queue.filter"));
         node.get(ATTRIBUTES, CommonAttributes.DURABLE, TYPE).set(ModelType.BOOLEAN);
@@ -112,8 +111,8 @@ public class MessagingDescriptions {
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("queue.add"));
 
-        node.get(REQUEST_PROPERTIES, CommonAttributes.ADDRESS, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
+        node.get(REQUEST_PROPERTIES, CommonAttributes.QUEUE_ADDRESS, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, CommonAttributes.QUEUE_ADDRESS, DESCRIPTION).set(bundle.getString("queue.address"));
         node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, CommonAttributes.FILTER, DESCRIPTION).set(bundle.getString("queue.filter"));
         node.get(REQUEST_PROPERTIES, CommonAttributes.DURABLE, TYPE).set(ModelType.BOOLEAN);
