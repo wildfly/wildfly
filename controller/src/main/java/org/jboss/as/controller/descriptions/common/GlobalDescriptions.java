@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
@@ -144,6 +145,32 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-types.reply"));
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
+
+        node.protect();
+        return node;
+    }
+
+    public static ModelNode getReadChildrenResourcesOperationDescription(Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(READ_CHILDREN_RESOURCES_OPERATION);
+        node.get(DESCRIPTION).set(bundle.getString("global.read-children-resources"));
+
+        node.get(REQUEST_PROPERTIES, CHILD_TYPE, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, CHILD_TYPE, DESCRIPTION).set(bundle.getString("global.read-children-resources.child-type"));
+        node.get(REQUEST_PROPERTIES, CHILD_TYPE, NILLABLE).set(false);
+
+        node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-children-resources.recursive"));
+        node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, "proxies", TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, "proxies", DESCRIPTION).set(bundle.getString("global.read-children-resources.proxies"));
+        node.get(REQUEST_PROPERTIES, "proxies", NILLABLE).set(true);
+
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-resources.reply"));
+        node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
 
         node.protect();
         return node;

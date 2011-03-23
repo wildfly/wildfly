@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MOD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -78,7 +79,8 @@ public class GlobalOperationHandlers {
 
     public static final OperationHandler READ_RESOURCE = new ReadResourceHandler();
     public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
-    public static final OperationHandler READ_CHILDREN_NAMES = new ReadChildrenOperationHandler();
+    public static final OperationHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
+    public static final OperationHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
     public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
@@ -100,19 +102,31 @@ public class GlobalOperationHandlers {
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
                 final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                final ModelNode result;
-                if (operation.get(RECURSIVE).asBoolean(false)) {
+                final ModelNode result = readModel(context, operation, resultHandler, address);
+                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+                resultHandler.handleResultComplete();
+            } catch (final Exception e) {
+                throw new OperationFailedException(Util.createErrorResult(e));
+            }
+            return new BasicOperationResult();
+        }
+
+        protected ModelNode readModel(final OperationContext context, final ModelNode readOperation, final ResultHandler resultHandler, final PathAddress address) throws Exception {
+            final ModelNodeRegistration registry = context.getRegistry();
+            final ModelNode model = context.getSubModel(address);
+            final ModelNode result;
+                if (readOperation.get(RECURSIVE).asBoolean(false)) {
                     // FIXME security checks JBAS-8842
-                    result = context.getSubModel().clone();
-                    if(operation.get(PROXIES).asBoolean(true)) {
-                        addProxyNodes(context, address, operation, result, context.getRegistry());
+                    result = model.clone();
+                    if(readOperation.get(PROXIES).asBoolean(true)) {
+                        addProxyNodes(context, address, readOperation, result, registry);
                     }
                 } else {
                     result = new ModelNode();
 
-                    final Set<String> childNames = context.getRegistry().getChildNames(address);
+                    final Set<String> childNames = registry.getChildNames(address);
 
-                    final ModelNode subModel = context.getSubModel().clone();
+                    final ModelNode subModel = model.clone();
                     for (final String key : subModel.keys()) {
                         final ModelNode child = subModel.get(key);
                         if (childNames.contains(key)) {
@@ -129,10 +143,10 @@ public class GlobalOperationHandlers {
                         }
                     }
                     // Handle attributes
-                    final boolean queryRuntime = operation.get(INCLUDE_RUNTIME).asBoolean(false);
-                    final Set<String> attributeNames = context.getRegistry().getAttributeNames(address);
+                    final boolean queryRuntime = readOperation.get(INCLUDE_RUNTIME).asBoolean(false);
+                    final Set<String> attributeNames = registry.getAttributeNames(address);
                     for(final String attributeName : attributeNames) {
-                        final AttributeAccess access = context.getRegistry().getAttributeAccess(address, attributeName);
+                        final AttributeAccess access = registry.getAttributeAccess(address, attributeName);
                         if(access == null) {
                             continue;
                         } else {
@@ -144,7 +158,7 @@ public class GlobalOperationHandlers {
                             final OperationHandler handler = access.getReadHandler();
                             if(handler != null) {
                                 // Create the attribute operation
-                                final ModelNode attributeOperation = operation.clone();
+                                final ModelNode attributeOperation = readOperation.clone();
                                 attributeOperation.get(NAME).set(attributeName);
                                 handler.execute(context, attributeOperation, new ResultHandler() {
                                     @Override
@@ -170,12 +184,7 @@ public class GlobalOperationHandlers {
                         }
                     }
                 }
-                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete();
-            } catch (final Exception e) {
-                throw new OperationFailedException(Util.createErrorResult(e));
-            }
-            return new BasicOperationResult();
+            return result;
         }
 
         protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) throws Exception {
@@ -278,7 +287,7 @@ public class GlobalOperationHandlers {
     /**
      * {@link OperationHandler} querying the children names of a given "child-type".
      */
-    public static class ReadChildrenOperationHandler implements ModelQueryOperationHandler {
+    public static class ReadChildrenNamesOperationHandler implements ModelQueryOperationHandler {
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
             try {
@@ -305,6 +314,66 @@ public class GlobalOperationHandlers {
                                 final ModelNode node = new ModelNode();
                                 node.set(key);
                                 result.add(node);
+                            }
+                        }
+                        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
+                        resultHandler.handleResultComplete();
+                    }
+                }
+
+            } catch (final Exception e) {
+                throw new OperationFailedException(Util.createErrorResult(e));
+            }
+            return new BasicOperationResult();
+        }
+    };
+
+    /**
+     * {@link OperationHandler} querying the children resources of a given "child-type".
+     */
+    public static class ReadChildrenResourcesOperationHandler extends ReadResourceHandler {
+        @Override
+        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+            try {
+                String childName = operation.require(CHILD_TYPE).asString();
+
+                ModelNode subModel = context.getSubModel().clone();
+                if (!subModel.isDefined()) {
+                    final ModelNode result = new ModelNode();
+                    result.setEmptyList();
+                    resultHandler.handleResultFragment(new String[0], result);
+                    resultHandler.handleResultComplete();
+                } else {
+                    final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+                    final Set<String> childNames = context.getRegistry().getChildNames(address);
+                    if (!childNames.contains(childName)) {
+                        resultHandler.handleFailed(new ModelNode().set("No known child called " + childName)); //TODO i18n
+                    } else {
+                        final ModelNode result = new ModelNode();
+                        subModel = subModel.get(childName);
+                        if (!subModel.isDefined()) {
+                            result.setEmptyList();
+                        } else {
+                            for (final String key : subModel.keys()) {
+                                final PathAddress childAddress = address.append(PathElement.pathElement(childName, key));
+
+                                final ModelNode readOp = operation.clone();
+                                readOp.get(OP_ADDR).set(childAddress.toModelNode());
+                                final ModelNode readResult = readModel(context, operation, new ResultHandler() {
+                                    public void handleResultFragment(String[] location, ModelNode result) {
+                                        // TODO
+                                    }
+                                    public void handleResultComplete() {
+                                        // TODO
+                                    }
+                                    public void handleFailed(ModelNode failureDescription) {
+                                        resultHandler.handleFailed(failureDescription);
+                                    }
+                                    public void handleCancellation() {
+                                        resultHandler.handleCancellation();
+                                    }
+                                }, childAddress);
+                                result.add(key, readResult);
                             }
                         }
                         resultHandler.handleResultFragment(Util.NO_LOCATION, result);

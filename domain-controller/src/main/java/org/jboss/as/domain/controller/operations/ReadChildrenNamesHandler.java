@@ -33,13 +33,14 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Workaround handler to get host proxy names.
  */
-public class ReadChildrenNamesHandler extends org.jboss.as.controller.operations.global.GlobalOperationHandlers.ReadChildrenOperationHandler {
+public class ReadChildrenNamesHandler extends GlobalOperationHandlers.ReadChildrenNamesOperationHandler {
 
     private final DomainModelImpl domainModelImpl;
     public ReadChildrenNamesHandler(final DomainModelImpl domainModelImpl) {
