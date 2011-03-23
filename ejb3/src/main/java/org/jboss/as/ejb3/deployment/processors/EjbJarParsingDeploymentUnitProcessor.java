@@ -249,7 +249,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
         }
         // mapped-name
-        sessionBean.setMappedName(sessionBean.getMappedName());
+        sessionBeanDescription.setMappedName(sessionBean.getMappedName());
         // local business interface views
         BusinessLocalsMetaData businessLocals = sessionBean.getBusinessLocals();
         if (businessLocals != null && !businessLocals.isEmpty()) {
@@ -262,7 +262,9 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             // TODO: Process remote business interfaces
         }
         // tx management type
-        sessionBeanDescription.setTransactionManagementType(sessionBean.getTransactionType());
+        if (sessionBean.getTransactionType() != null) {
+            sessionBeanDescription.setTransactionManagementType(sessionBean.getTransactionType());
+        }
         // CMT Tx attributes
         if (sessionBean.getTransactionType() != TransactionManagementType.BEAN) {
             ContainerTransactionsMetaData containerTransactions = sessionBean.getContainerTransactions();

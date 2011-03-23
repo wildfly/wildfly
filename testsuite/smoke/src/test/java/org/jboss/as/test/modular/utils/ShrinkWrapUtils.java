@@ -21,7 +21,12 @@
  */
 package org.jboss.as.test.modular.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -30,6 +35,7 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.container.ResourceContainer;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
@@ -119,6 +125,41 @@ public class ShrinkWrapUtils {
         } catch (URISyntaxException e) {
             throw new RuntimeException("Could not get file for " + url);
         }
+    }
+
+    /**
+     * Writes out a {@link JavaArchive} to the file system
+     *
+     * @param javaArchive The {@link JavaArchive} which will be written out to the file system
+     * @return Returns the {@link File} corresponding to the {@link JavaArchive} which
+     *         was written out to the file system
+     * @throws java.io.IOException
+     */
+    public static File writeToFileSystem(JavaArchive javaArchive, File destDirectory) throws IOException {
+        InputStream inputStream = javaArchive.as(ZipExporter.class).exportZip();
+        String jarFileName = javaArchive.getName();
+        File jarFile = new File(destDirectory, jarFileName);
+        FileOutputStream fos = new FileOutputStream(jarFile);
+        BufferedOutputStream bos = null;
+        BufferedInputStream bis = null;
+        try {
+            bos = new BufferedOutputStream(fos);
+            bis = new BufferedInputStream(inputStream);
+            byte[] content = new byte[4096];
+            int length;
+            while ((length = bis.read(content)) != -1) {
+                bos.write(content, 0, length);
+            }
+            bos.flush();
+        } finally {
+            if (bos != null) {
+                bos.close();
+            }
+            if (bis != null) {
+                bis.close();
+            }
+        }
+        return jarFile;
     }
 
     public static void addFiles(ResourceContainer<?> archive, File dir, ArchivePath dest) {
