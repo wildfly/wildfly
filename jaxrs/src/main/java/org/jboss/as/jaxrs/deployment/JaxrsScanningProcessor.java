@@ -101,7 +101,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     /**
      * If any servlet/filter classes are declared, then we probably don't want to scan.
      */
-    protected boolean hasBootClasses(DeploymentUnit du, JBossWebMetaData webdata) throws DeploymentUnitProcessingException {
+    protected boolean hasBootClasses(JBossWebMetaData webdata) throws DeploymentUnitProcessingException {
         if (webdata.getServlets() != null) {
             for (ServletMetaData servlet : webdata.getServlets()) {
                 String servletClass = servlet.getServletClass();
@@ -132,7 +132,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
         // If there is a resteasy boot class in web.xml, then the default should be to not scan
         // make sure this call happens before checkDeclaredApplicationClassAsServlet!!!
-        boolean hasBoot = hasBootClasses(du, webdata);
+        boolean hasBoot = hasBootClasses(webdata);
         resteasyDeploymentData.setBootClasses(hasBoot);
 
         // Looked for annotated resources and providers
@@ -254,12 +254,12 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    protected Class<?> checkDeclaredApplicationClassAsServlet(DeploymentUnit du, JBossWebMetaData webdata,
+    protected Class<?> checkDeclaredApplicationClassAsServlet(DeploymentUnit du, JBossWebMetaData webData,
             ClassLoader classLoader) throws DeploymentUnitProcessingException {
-        if (webdata.getServlets() == null)
+        if (webData.getServlets() == null)
             return null;
 
-        for (ServletMetaData servlet : webdata.getServlets()) {
+        for (ServletMetaData servlet : webData.getServlets()) {
             String servletClass = servlet.getServletClass();
             if (servletClass == null)
                 continue;
@@ -286,7 +286,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     classLoader.loadClass(JaxrsIntegrationProcessor.CDI_INJECTOR_FACTORY_CLASS);
                     // don't set this param if it is not a CDI deployment
                     if (WeldDeploymentMarker.isPartOfWeldDeployment(du)) {
-                        JaxrsIntegrationProcessor.setContextParameter(webdata, "resteasy.injector.factory",
+                        JaxrsIntegrationProcessor.setContextParameter(webData, "resteasy.injector.factory",
                                 JaxrsIntegrationProcessor.CDI_INJECTOR_FACTORY_CLASS);
                     }
                 } catch (ClassNotFoundException ignored) {
