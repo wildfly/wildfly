@@ -50,9 +50,9 @@ class WebSubsystemDescriptions {
         node.get(TAIL_COMMENT_ALLOWED).set(true);
         node.get(NAMESPACE).set(Namespace.WEB_1_0.getUriString());
 
-        node.get(ATTRIBUTES, Constants.DEFAULT_HOST, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.DEFAULT_HOST, DESCRIPTION).set(bundle.getString("web.default-host"));
-        node.get(ATTRIBUTES, Constants.DEFAULT_HOST, REQUIRED).set(false);
+        node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
+        node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, REQUIRED).set(false);
 
         node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG, TYPE).set(ModelType.OBJECT);
         node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG, DESCRIPTION).set(bundle.getString("web.configuration"));
@@ -71,9 +71,9 @@ class WebSubsystemDescriptions {
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("web.add"));
 
-        node.get(REQUEST_PROPERTIES, Constants.DEFAULT_HOST, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.DEFAULT_HOST, DESCRIPTION).set(bundle.getString("web.default-host"));
-        node.get(REQUEST_PROPERTIES, Constants.DEFAULT_HOST, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
+        node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, REQUIRED).set(false);
 
         node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG, TYPE).set(ModelType.OBJECT);
         node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG, DESCRIPTION).set(bundle.getString("web.configuration"));

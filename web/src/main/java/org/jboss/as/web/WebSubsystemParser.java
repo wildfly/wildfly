@@ -42,7 +42,6 @@ import static org.jboss.as.web.Constants.CERTIFICATE_KEY_FILE;
 import static org.jboss.as.web.Constants.CIPHER_SUITE;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
-import static org.jboss.as.web.Constants.DEFAULT_HOST;
 import static org.jboss.as.web.Constants.DEFAULT_WEB_MODULE;
 import static org.jboss.as.web.Constants.DISABLED;
 import static org.jboss.as.web.Constants.ENABLED;
@@ -117,9 +116,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         ModelNode node = context.getModelNode();
         writeAttribute(writer, Attribute.NATIVE.getLocalName(), node);
         writeAttribute(writer, Attribute.DEFAULT_VIRTUAL_SERVER.getLocalName(), node);
-        if(node.hasDefined(DEFAULT_HOST)) {
-            writer.writeAttribute(Attribute.DEFAULT_HOST.getLocalName(), node.get(DEFAULT_HOST).asString());
-        }
         if(node.hasDefined(CONTAINER_CONFIG)) {
             writeContainerConfig(writer, node.get(CONTAINER_CONFIG));
         }

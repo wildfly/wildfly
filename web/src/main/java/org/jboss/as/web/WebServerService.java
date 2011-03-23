@@ -26,6 +26,7 @@ import javax.management.MBeanServer;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.core.JasperListener;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardServer;
@@ -48,6 +49,7 @@ class WebServerService implements WebServer, Service<WebServer> {
     private static final String JBOSS_WEB = "jboss.web";
 
     private final String defaultHost;
+    private final boolean useNative;
 
     private Engine engine;
     private Catalina catalina;
@@ -56,8 +58,9 @@ class WebServerService implements WebServer, Service<WebServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
 
-    public WebServerService(final String defaultHost) {
-        this.defaultHost = defaultHost != null ? defaultHost : "localhost";
+    public WebServerService(final String defaultHost, final boolean useNative) {
+        this.defaultHost = defaultHost;
+        this.useNative = useNative;
     }
 
     /** {@inheritDoc} */
@@ -88,9 +91,11 @@ class WebServerService implements WebServer, Service<WebServer> {
 
         service.setContainer(engine);
 
-        // final AprLifecycleListener apr = new AprLifecycleListener();
-        //apr.setSSLEngine("on");
-        // server.addLifecycleListener(apr);
+        if (useNative) {
+            final AprLifecycleListener apr = new AprLifecycleListener();
+            apr.setSSLEngine("on");
+            server.addLifecycleListener(apr);
+        }
         server.addLifecycleListener(new JasperListener());
 
         try {

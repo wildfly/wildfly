@@ -36,8 +36,7 @@ interface Constants {
     String CHECK_INTERVAL = "check-interval";
     String CIPHER_SUITE = "cipher-suite";
     String CONNECTOR = "connector";
-    String CONTAINER_CONFIG = "config";
-    String DEFAULT_HOST = "default-host";
+    String CONTAINER_CONFIG = "configuration";
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     String DEFAULT_WEB_MODULE = "default-web-module";
     String DEVELOPMENT = "development";

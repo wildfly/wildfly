@@ -90,7 +90,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             hostNames = Collections.singleton(defaultHost);
         }
         String hostName = hostNames.iterator().next();
-        // FIXME: Support automagic aliases ?
         if (hostName == null) {
             throw new IllegalStateException("null host name");
         }

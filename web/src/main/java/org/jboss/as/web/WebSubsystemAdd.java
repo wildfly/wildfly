@@ -67,7 +67,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
 
     static final WebSubsystemAdd INSTANCE = new WebSubsystemAdd();
-    private static final String DEFAULT_HOST = "localhost";
+    private static final String DEFAULT_VIRTUAL_SERVER = "localhost";
+    private static final boolean DEFAULT_NATIVE = true;
     private static final String TEMP_DIR = "jboss.server.temp.dir";
 
     private WebSubsystemAdd() {
@@ -88,11 +89,13 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler,
             final BootOperationContext ctx = (BootOperationContext) updateContext;
             updateContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final String defaultHost = operation.has(Constants.DEFAULT_HOST) ?
-                            operation.get(Constants.DEFAULT_HOST).asString() : DEFAULT_HOST;
+                    final String defaultVirtualServer = operation.has(Constants.DEFAULT_VIRTUAL_SERVER) ?
+                            operation.get(Constants.DEFAULT_VIRTUAL_SERVER).asString() : DEFAULT_VIRTUAL_SERVER;
+                    final boolean useNative = operation.has(Constants.NATIVE) ?
+                            operation.get(Constants.NATIVE).asBoolean() : DEFAULT_NATIVE;
 
                     try {
-                        final WebServerService service = new WebServerService(defaultHost);
+                        final WebServerService service = new WebServerService(defaultVirtualServer, useNative);
                         context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
                                 .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
                                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
@@ -117,7 +120,7 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler,
                     ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
                     ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_METADATA, new WarMetaDataProcessor());
                     ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
-                    ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultHost));
+                    ctx.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
                     resultHandler.handleResultComplete();
                 }
             });
