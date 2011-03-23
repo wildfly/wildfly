@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.lang.reflect.Method;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -33,7 +32,9 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Stateful Session Bean
@@ -109,4 +110,19 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return new StatefulSessionComponentInstance(this, instance, preDestroyInterceptors, context);
     }
 
+    @Override
+    public Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method beanMethod, Object[] args) throws Exception {
+        if (sessionId == null)
+            throw new IllegalArgumentException("Session is mandatory on Stateful " + this);
+        if (invokedBusinessInterface != null)
+            throw new UnsupportedOperationException("invokedBusinessInterface != null");
+        InterceptorContext context = new InterceptorContext();
+        context.putPrivateData(Component.class, this);
+        // TODO: attaching as Serializable.class is a bit wicked
+        context.putPrivateData(Serializable.class, sessionId);
+        context.setContextData(contextData);
+        context.setMethod(beanMethod);
+        context.setParameters(args);
+        return getComponentInterceptor().processInvocation(context);
+    }
 }

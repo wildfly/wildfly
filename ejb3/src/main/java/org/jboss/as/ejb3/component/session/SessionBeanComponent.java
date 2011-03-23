@@ -21,13 +21,9 @@
  */
 package org.jboss.as.ejb3.component.session;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.concurrent.Executor;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
-import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.ejb3.context.CurrentInvocationContext;
@@ -35,18 +31,23 @@ import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -167,6 +168,8 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         }
         return false;
     }
+
+    public abstract Object invoke(Serializable sessionId, Map<String,Object> contextData, Class<?> invokedBusinessInterface, Method implMethod, Object[] args) throws Exception;
 
     protected Object invokeAsynchronous(final Method method, final InterceptorContext context) throws Exception {
         if (Void.TYPE.isAssignableFrom(method.getReturnType())) {

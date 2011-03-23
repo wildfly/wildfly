@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import java.lang.reflect.Method;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -36,7 +35,9 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -114,5 +115,19 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     @Override
     public Pool<StatelessSessionComponentInstance> getPool() {
         return pool;
+    }
+
+    @Override
+    public Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method beanMethod, Object[] args) throws Exception {
+        if (sessionId != null)
+            throw new IllegalArgumentException("Stateless " + this + " does not support sessions");
+        if (invokedBusinessInterface != null)
+            throw new UnsupportedOperationException("invokedBusinessInterface != null");
+        InterceptorContext context = new InterceptorContext();
+        context.putPrivateData(Component.class, this);
+        context.setContextData(contextData);
+        context.setMethod(beanMethod);
+        context.setParameters(args);
+        return getComponentInterceptor().processInvocation(context);
     }
 }

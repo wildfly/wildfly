@@ -197,5 +197,17 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         }
     }
 
-
+    @Override
+    public Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method beanMethod, Object[] args) throws Exception {
+        if (sessionId != null)
+            throw new IllegalArgumentException("Singleton " + this + " does not support sessions");
+        if (invokedBusinessInterface != null)
+            throw new UnsupportedOperationException("invokedBusinessInterface != null");
+        InterceptorContext context = new InterceptorContext();
+        context.putPrivateData(Component.class, this);
+        context.setContextData(contextData);
+        context.setMethod(beanMethod);
+        context.setParameters(args);
+        return getComponentInterceptor().processInvocation(context);
+    }
 }
