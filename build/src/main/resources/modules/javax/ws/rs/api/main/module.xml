@@ -26,4 +26,8 @@
     <resources>
         <!-- Insert resources here -->
     </resources>
+
+    <dependencies>
+        <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
+    </dependencies>
 </module>

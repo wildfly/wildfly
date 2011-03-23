@@ -22,38 +22,34 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
-import java.util.List;
-
-import javax.annotation.ManagedBean;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
+import javax.annotation.ManagedBean;
+
 /**
- * Deployment processor which adds a module dependencies for modules needed for managed bean deployments.
+ * Deployment processor which adds the java EE api's to EE deployments
  *
  * @author John E. Bailey
  * @author Jason T. Greene
+ * @author Stuart Douglas
  */
-public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
+public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
 
     /**
-     * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
-     * to the deployment.
+     * Add the EE api's as a dependency to all deployments
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
@@ -63,17 +59,8 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if(compositeIndex == null) {
-            return;
-        }
-        final List<AnnotationInstance> instances = compositeIndex.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME);
-        if (instances == null || instances.isEmpty()) {
-            return;
-        }
-
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, false));
+        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_API_ID, false, false, true));
     }
 
     public void undeploy(final DeploymentUnit context) {

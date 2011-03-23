@@ -42,7 +42,6 @@ import org.jboss.modules.ModuleLoader;
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     public static ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
-    public static ModuleIdentifier JAXRS_API = ModuleIdentifier.create("javax.ws.rs.api");
     public static ModuleIdentifier ASYNC_HTTP_SERVLET_30 = ModuleIdentifier.create("org.jboss.resteasy.async-http-servlet-30");
     public static ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
 
@@ -54,7 +53,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         }
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
-        addDepdenency(moduleSpecification, moduleLoader, JAXRS_API);
         addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
