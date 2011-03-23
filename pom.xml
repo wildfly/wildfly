@@ -171,7 +171,8 @@
         <version.org.jboss.ws.jaxws-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-httpserver-httpspi>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
-        <version.org.mockito>1.8.4</version.org.mockito>
+        <version.org.jgroups>2.12.0.Final</version.org.jgroups>
+        <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.0.Alpha4</version.org.picketbox>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j.jcl-over-slf4j>1.5.10</version.org.slf4j.jcl-over-slf4j>
@@ -191,6 +192,7 @@
         <module>build-config</module>
         <module>arquillian</module>
         <module>cli</module>
+        <module>clustering</module>
         <module>connector</module>
         <module>controller</module>
         <module>controller-client</module>
@@ -468,6 +470,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-clustering</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -3957,6 +3965,12 @@
                 <version>${version.org.hornetq.hornetq-jms}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jgroups</groupId>
+                <artifactId>jgroups</artifactId>
+                <version>${version.org.jgroups}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
