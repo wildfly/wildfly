@@ -82,7 +82,7 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
     public Interceptor getInterceptor(final Method method) throws IllegalStateException {
         Interceptor interceptor = methodMap.get(method);
         if (interceptor == null) {
-            throw new IllegalStateException("Method does not exist");
+            throw new IllegalStateException("Method does not exist " + method);
         }
         return interceptor;
     }
