@@ -101,6 +101,9 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
         root.get(SYSTEM_PROPERTY);
         root.get(INTERFACE);
         root.get(JVM);
+        // JBAS-9123 - always init socket-binding-group and port-offset
+        root.get(SOCKET_BINDING_GROUP);
+        root.get(SOCKET_BINDING_PORT_OFFSET);
     }
 
     @Override
