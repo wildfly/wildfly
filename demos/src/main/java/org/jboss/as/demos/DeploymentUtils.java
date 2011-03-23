@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
@@ -63,9 +65,12 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  */
 public class DeploymentUtils implements Closeable {
 
+    public static final long DEFAULT_TIMEOUT = 15000;
+
     private final List<AbstractDeployment> deployments = new ArrayList<AbstractDeployment>();
     private final ModelControllerClient client;
     private final ServerDeploymentManager manager;
+    private long timeout = DEFAULT_TIMEOUT;
 
     public DeploymentUtils() throws UnknownHostException {
         client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
@@ -103,28 +108,33 @@ public class DeploymentUtils implements Closeable {
         deployments.add(new WarDeployment(archiveName, pkgs, show));
     }
 
-    public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
-        DeploymentPlanBuilder builder = manager.newDeploymentPlan();
+    public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException, TimeoutException  {
+        DeploymentPlanBuilder builder = manager.newDeploymentPlan().withRollback();
         for (AbstractDeployment deployment : deployments) {
             builder = deployment.addDeployment(manager, builder);
         }
+
         try {
-            manager.execute(builder.build()).get();
+            manager.execute(builder.build()).get(timeout, TimeUnit.MILLISECONDS);
         } finally {
-            for (AbstractDeployment deployment : deployments) {
-                deployment.deployed = true;
-            }
+            markDeploymentsDeployed();
         }
     }
 
-    public synchronized void undeploy() throws ExecutionException, InterruptedException {
+    private void markDeploymentsDeployed() {
+        for (AbstractDeployment deployment : deployments) {
+            deployment.deployed = true;
+        }
+    }
+
+    public synchronized void undeploy() throws ExecutionException, InterruptedException, TimeoutException {
         DeploymentPlanBuilder builder = manager.newDeploymentPlan();
         for (AbstractDeployment deployment : deployments) {
             builder = deployment.removeDeployment(builder);
         }
         DeploymentPlan plan = builder.build();
         if (plan.getDeploymentActions().size() > 0) {
-            manager.execute(builder.build()).get();
+            manager.execute(builder.build()).get(timeout, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -135,6 +145,14 @@ public class DeploymentUtils implements Closeable {
 
     public String showJndi() throws Exception {
         return (String)getConnection().invoke(new ObjectName("jboss:type=JNDIView"), "list", new Object[] {true}, new String[] {"boolean"});
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 
     @Override
