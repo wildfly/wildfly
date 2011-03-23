@@ -21,12 +21,12 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import javax.resource.spi.ResourceAdapter;
 
 import static org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor.pooled;
 
@@ -47,13 +47,13 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
         super(description);
 
         this.resourceAdapterName = description.getResourceAdapterName();
+        if (this.resourceAdapterName == null)
+            throw new IllegalArgumentException("No resource adapter name set in " + description);
 
         // See RaDeploymentParsingProcessor
         String deploymentName = resourceAdapterName.substring(0, resourceAdapterName.indexOf(".rar"));
-        this.raServiceName = ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName);
-//        ServiceName parent = ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName);
-//        // See ResourceAdapterDeploymentService
-//        this.raServiceName = ServiceName.of(deploymentName);
+        // See ResourceAdapterDeploymentService
+        this.raServiceName = ServiceName.of(deploymentName);
         description.addDependency(raServiceName, ServiceBuilder.DependencyType.REQUIRED);
 
         addComponentSystemInterceptorFactory(pooled());
@@ -67,9 +67,7 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
     @Override
     public MessageDrivenComponent constructComponent() {
         MessageDrivenComponent component = new MessageDrivenComponent(this);
-        // TODO: rely on Service<ResourceAdapter>
-        component.setResourceAdapter(getInjectionValue(raServiceName, ResourceAdapterDeployment.class).getDeployment().getResourceAdapter());
-//        component.setResourceAdapter(getInjectionValue(raServiceName, ResourceAdapter.class));
+        component.setResourceAdapter(getInjectionValue(raServiceName, ResourceAdapter.class));
         return component;
     }
 

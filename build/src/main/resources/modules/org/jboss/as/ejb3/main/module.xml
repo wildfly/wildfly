@@ -44,11 +44,6 @@
         <module name="org.jboss.ejb3"/>
         <!-- For Interceptor -->
         <module name="org.jboss.invocation"/>
-
-        <!-- TODO: remove once there is a working integration API -->
-        <module name="org.jboss.ironjacamar.api"/>
-        <module name="org.jboss.ironjacamar.impl"/>
-
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <!-- the EE metadata -->
