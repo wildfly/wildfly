@@ -120,7 +120,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         set.add("jboss.server.base.dir");
         set.add("jboss.server.data.dir");
         set.add("jboss.server.log.dir");
-        set.add("jboss.server.tmp.dir");
+        set.add("jboss.server.temp.dir");
         // NOTE we actually don't create services for the following
         // however the names remain restricted for use in the configuration
         set.add("jboss.modules.dir");

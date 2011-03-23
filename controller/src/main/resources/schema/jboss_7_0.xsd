@@ -979,7 +979,7 @@
                                         data file storage                
                 jboss.server.log.dir - directory the server will use for 
                                        log file storage                
-                jboss.server.tmp.dir - directory the server will use for 
+                jboss.server.temp.dir - directory the server will use for 
                                        temporary file storage
                 jboss.domain.servers.dir - directory under which a host controller
                                            will create the working area for
@@ -1073,7 +1073,7 @@
                                         data file storage                
                 jboss.server.log.dir - directory the server will use for 
                                        log file storage                
-                jboss.server.tmp.dir - directory the server will use for 
+                jboss.server.temp.dir - directory the server will use for 
                                        temporary file storage
                 jboss.domain.servers.dir - directory under which a host controller
                                            will create the working area for
