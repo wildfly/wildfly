@@ -128,12 +128,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final String deploymentName = deploymentUnit.getName();
         String pathName = null;
         if (metaData.getContextRoot() == null) {
-            pathName = deploymentRoot.getName();
-            if (pathName.equals("ROOT.war")) {
-                pathName = "";
-            } else {
-                pathName = "/" + pathName.substring(0, pathName.length() - 4);
-            }
+            pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
         } else {
             pathName = metaData.getContextRoot();
             if ("/".equals(pathName)) {

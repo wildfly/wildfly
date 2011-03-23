@@ -21,10 +21,13 @@
  */
 package org.jboss.as.web;
 
+import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -49,6 +52,7 @@ class WebConnectorService implements Service<Connector> {
     private Boolean secure = null;
     private Integer maxPostSize = null;
     private Integer maxSavePostSize = null;
+    private Integer maxConnections = null;
 
     private Connector connector;
 
@@ -70,11 +74,11 @@ class WebConnectorService implements Service<Connector> {
     public synchronized void start(StartContext context) throws StartException {
         final SocketBinding binding = this.binding.getValue();
         final InetSocketAddress address = binding.getSocketAddress();
+        final Executor executor = this.executor.getOptionalValue();
         try {
             // Create connector
-            final Connector connector = new Connector();
+            final Connector connector = new Connector(protocol);
             connector.setPort(address.getPort());
-            connector.setProtocol(protocol);
             connector.setScheme(scheme);
             if(enableLookups != null) connector.setEnableLookups(enableLookups);
             if(maxPostSize != null) connector.setMaxPostSize(maxPostSize);
@@ -83,10 +87,30 @@ class WebConnectorService implements Service<Connector> {
             if(proxyPort != null) connector.setProxyPort(proxyPort);
             if(redirectPort != null) connector.setRedirectPort(redirectPort);
             if(secure != null) connector.setSecure(secure);
-            // TODO set Executor on ProtocolHandler
-            // TODO use server socket factory - or integrate with {@code ManagedBinding}
-
-            // Register connector, starts the connector automatically?
+            if (executor != null) {
+                Method m = connector.getProtocolHandler().getClass().getMethod("setExecutor", Executor.class);
+                m.invoke(connector.getProtocolHandler(), executor);
+            }
+            if (address != null && address.getAddress() != null)  {
+                Method m = connector.getProtocolHandler().getClass().getMethod("setAddress", InetAddress.class);
+                m.invoke(connector.getProtocolHandler(), address.getAddress());
+            }
+            if (maxConnections != null) {
+                try {
+                    Method m = connector.getProtocolHandler().getClass().getMethod("setPollerSize", Integer.TYPE);
+                    m.invoke(connector.getProtocolHandler(), maxConnections);
+                } catch (NoSuchMethodException e) {
+                 // Not all connectors will have this
+                }
+                try {
+                    Method m = connector.getProtocolHandler().getClass().getMethod("setSendfileSize", Integer.TYPE);
+                    m.invoke(connector.getProtocolHandler(), maxConnections);
+                } catch (NoSuchMethodException e) {
+                 // Not all connectors will have this
+                }
+            }
+            // FIXME: virtual-server (= list of allowed virtual hosts for the connector)
+            // FIXME: SSL configuration
             getWebServer().addConnector(connector);
             this.connector = connector;
         } catch (Exception e) {
@@ -164,6 +188,14 @@ class WebConnectorService implements Service<Connector> {
 
     protected void setMaxSavePostSize(int maxSavePostSize) {
         this.maxSavePostSize = maxSavePostSize;
+    }
+
+    protected int getMaxConnections() {
+        return maxConnections;
+    }
+
+    protected void setMaxConnections(int maxConnections) {
+        this.maxConnections = maxConnections;
     }
 
     InjectedValue<Executor> getExecutor() {

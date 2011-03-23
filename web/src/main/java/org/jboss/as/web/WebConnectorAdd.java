@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
 import static org.jboss.as.web.Constants.EXECUTOR;
+import static org.jboss.as.web.Constants.MAX_CONNECTIONS;
 import static org.jboss.as.web.Constants.MAX_POST_SIZE;
 import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
 import static org.jboss.as.web.Constants.PROTOCOL;
@@ -130,6 +131,8 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
                         service.setMaxPostSize(operation.get(MAX_POST_SIZE).asInt());
                     if (operation.hasDefined(MAX_SAVE_POST_SIZE))
                         service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
+                    if (operation.hasDefined(MAX_CONNECTIONS))
+                        service.setMaxConnections(operation.get(MAX_CONNECTIONS).asInt());
                     final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
                             .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
                             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())

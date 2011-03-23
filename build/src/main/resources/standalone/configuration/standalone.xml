@@ -300,7 +300,7 @@
             </topic>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:web:1.0">
-            <connector name="http" protocol="http" scheme="http" socket-binding="http"/>
+            <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
             <virtual-server name="localhost">
                <alias name="example.com" />
             </virtual-server>

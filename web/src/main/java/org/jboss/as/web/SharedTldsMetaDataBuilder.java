@@ -49,11 +49,12 @@ class SharedTldsMetaDataBuilder {
     private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
     final List<TldMetaData> tlds = new ArrayList<TldMetaData>();
 
+    // Not used right now due to hardcoding
     /** The common container config. */
-    private final ModelNode containerConfig;
+    //private final ModelNode containerConfig;
 
     SharedTldsMetaDataBuilder(final ModelNode containerConfig) {
-        this.containerConfig = containerConfig;
+        //this.containerConfig = containerConfig;
         init();
     }
 
