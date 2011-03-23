@@ -390,7 +390,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         // Create the table of component class methods
         final Map<MethodIdentifier, Method> componentMethods = new HashMap<MethodIdentifier, Method>();
         final Map<Method, InterceptorFactory> componentToInterceptorFactory = new IdentityHashMap<Method, InterceptorFactory>();
-        Class<?> componentClass = configuration.getComponentClass();
+        final Class<?> componentClass = configuration.getComponentClass();
         Class<?> currentClass = componentClass;
         do {
             final ClassReflectionIndex<?> classIndex = index.getClassIndex(currentClass);
@@ -472,9 +472,21 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         }
 
         // Now create the views
+        final Map<Method, InterceptorFactory> viewToInterceptorFactory = configuration.getInterceptorFactoryMap();
+        // A special view for 'direct' invocation on the component (e.g. JAX-WS Message Endpoint)
+        final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
+        for (Method componentMethod : classIndex.getMethods()) {
+            if (componentMethod.getDeclaringClass().equals(Object.class))
+                continue;
+            final int modifiers = componentMethod.getModifiers();
+            if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers))
+                continue;
+            final InterceptorFactory interceptorFactory = componentToInterceptorFactory.get(componentMethod);
+            assert interceptorFactory != null : "Can't find interceptor factory for " + componentMethod;
+            viewToInterceptorFactory.put(componentMethod, interceptorFactory);
+        }
         // Mapping of view methods to corresponding instance interceptor factories
         final Map<Class<?>, ProxyFactory<?>> proxyFactories = configuration.getProxyFactories();
-        final Map<Method, InterceptorFactory> viewToInterceptorFactory = configuration.getInterceptorFactoryMap();
         for (String viewClassName : viewClassNames) {
             final Class<?> viewClass;
             try {
@@ -484,10 +496,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
             }
             final ProxyFactory<?> factory = getProxyFactory(viewClass);
             proxyFactories.put(viewClass, factory);
-            // acquire the complete list of possible invoked methods for this view
-            final List<Method> methods = new ArrayList<Method>();
             for (Method viewMethod : factory.getCachedMethods()) {
-                methods.add(viewMethod);
                 Method componentMethod = componentMethods.get(MethodIdentifier.getIdentifierForMethod(viewMethod));
                 // todo - it's probably an error if the view has more methods than the component
                 if (componentMethod != null) {
