@@ -61,6 +61,7 @@ public abstract class AbstractComponentConfiguration {
     private final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys = new HashMap<Class<?>, List<LifecycleInterceptorFactory>>();
     private Class<?> componentClass;
     private List<InterceptorFactory> componentInstanceSystemInterceptorFactories = new LinkedList<InterceptorFactory>();
+    private Collection<Method> componentMethods;
 
 
     /**
@@ -220,5 +221,15 @@ public abstract class AbstractComponentConfiguration {
 
     List<? extends InterceptorFactory> getComponentInstanceSystemInterceptorFactories() {
         return componentInstanceSystemInterceptorFactories;
+    }
+
+    @Deprecated
+    Collection<Method> getComponentMethods() {
+        return componentMethods;
+    }
+
+    @Deprecated
+    void setComponentMethods(Collection<Method> componentMethods) {
+        this.componentMethods = componentMethods;
     }
 }

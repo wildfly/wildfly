@@ -84,6 +84,8 @@ public abstract class AbstractComponent implements Component {
     private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
     private final Map<Class<?>, ServiceName> viewServices;
     private final Map<Class<?>, ComponentView> views = new HashMap<Class<?>, ComponentView>();
+    @Deprecated
+    private final Collection<Method> componentMethods;
 
     private volatile boolean gate;
 
@@ -102,8 +104,9 @@ public abstract class AbstractComponent implements Component {
         preDestroyInterceptorsMethods = configuration.getPreDestroyLifecycles();
         interceptorFactoryMap = configuration.getInterceptorFactoryMap();
         interceptorPreDestroys = configuration.getInterceptorPreDestroys();
-        componentInjectors = configuration.getComponentInjectors();
-        viewServices = new HashMap<Class<?>, ServiceName>(configuration.getViewServices());
+        this.componentInjectors = configuration.getComponentInjectors();
+        this.viewServices = new HashMap<Class<?>, ServiceName>(configuration.getViewServices());
+        this.componentMethods = configuration.getComponentMethods();
     }
 
     /**
@@ -477,6 +480,23 @@ public abstract class AbstractComponent implements Component {
 
     void addComponentView(ComponentView view) {
         views.put(view.getViewClass(), view);
+    }
+
+    /**
+     * Because interceptors are bound to a methods identity, you need the exact method
+     * so find the interceptor. This should really be done during deployment via
+     * reflection index and not during runtime operations.
+     *
+     * @param other     another method with the exact same signature
+     * @return the method to which interceptors have been bound
+     */
+    @Deprecated
+    public Method getComponentMethod(Method other) {
+        for (Method id : componentMethods) {
+            if (other.equals(id))
+                return id;
+        }
+        throw new IllegalArgumentException("Can't find method " + other);
     }
 
     public ComponentView getComponentView(Class<?> viewClass) {

@@ -485,6 +485,8 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
             assert interceptorFactory != null : "Can't find interceptor factory for " + componentMethod;
             viewToInterceptorFactory.put(componentMethod, interceptorFactory);
         }
+        // TODO: we should not need the componentMethods during runtime operation
+        configuration.setComponentMethods(classIndex.getMethods());
         // Mapping of view methods to corresponding instance interceptor factories
         final Map<Class<?>, ProxyFactory<?>> proxyFactories = configuration.getProxyFactories();
         for (String viewClassName : viewClassNames) {

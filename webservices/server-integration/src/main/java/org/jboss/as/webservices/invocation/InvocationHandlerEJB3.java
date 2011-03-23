@@ -121,14 +121,13 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
 
          final SessionBeanComponent ejbContainer = this.getEjb3Container();
 
-         final Class<?> implClass = ejbContainer.getComponentClass();
          final Method seiMethod = wsInvocation.getJavaMethod();
          final Serializable sessionId = null; // Not applicable
          // Interceptors 1.1 / EJB 3.1 FR 12.6
          final Map<String, Object> contextData = getWebServiceContext(wsInvocation).getMessageContext();
          // TODO: should we know it is MethodIntf.SERVICE_ENDPOINT?
          final Class<?> invokedBusinessInterface = null;
-         final Method implMethod = this.getImplMethod(implClass, seiMethod);
+         final Method implMethod = ejbContainer.getComponentMethod(seiMethod);
          final Object[] args = wsInvocation.getArgs();
          // invoke method
          final Object retObj = ejbContainer.invoke(sessionId, contextData, invokedBusinessInterface, implMethod, args);
