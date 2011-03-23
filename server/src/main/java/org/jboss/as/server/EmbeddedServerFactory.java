@@ -187,8 +187,8 @@ public class EmbeddedServerFactory {
             return;
         }
 
-        File originalConfigDir = getFileUnderAsRoot(jbossHomeDir, props, ServerEnvironment.SERVER_CONFIG_DIR, "configuration");
-        File orginalDataDir = getFileUnderAsRoot(jbossHomeDir, props, ServerEnvironment.SERVER_DATA_DIR, "data");
+        File originalConfigDir = getFileUnderAsRoot(jbossHomeDir, props, ServerEnvironment.SERVER_CONFIG_DIR, "configuration", true);
+        File originalDataDir = getFileUnderAsRoot(jbossHomeDir, props, ServerEnvironment.SERVER_DATA_DIR, "data", false);
 
         File configDir = new File(tempRoot, "config");
         configDir.mkdir();
@@ -196,7 +196,9 @@ public class EmbeddedServerFactory {
         dataDir.mkdir();
 
         copyDirectory(originalConfigDir, configDir);
-        copyDirectory(orginalDataDir, dataDir);
+        if (originalDataDir.exists()) {
+            copyDirectory(originalDataDir, dataDir);
+        }
 
         props.put(ServerEnvironment.SERVER_BASE_DIR, tempRoot.getAbsolutePath());
         props.put(ServerEnvironment.SERVER_CONFIG_DIR, configDir.getAbsolutePath());
@@ -204,13 +206,13 @@ public class EmbeddedServerFactory {
 
     }
 
-    private static File getFileUnderAsRoot(File jbossHomeDir, Properties props, String propName, String relativeLocation) {
+    private static File getFileUnderAsRoot(File jbossHomeDir, Properties props, String propName, String relativeLocation, boolean mustExist) {
         String prop = props.getProperty(propName, null);
         if (prop == null) {
             prop = props.getProperty(ServerEnvironment.SERVER_BASE_DIR, null);
             if (prop == null) {
                 File dir = new File(jbossHomeDir, "standalone/" + relativeLocation);
-                if (!dir.exists() && !dir.isDirectory()) {
+                if (mustExist && (!dir.exists() || !dir.isDirectory())) {
                     throw new IllegalArgumentException("No directory called 'standalone/' " + relativeLocation + " under " + jbossHomeDir.getAbsolutePath());
                 }
                 return dir;
