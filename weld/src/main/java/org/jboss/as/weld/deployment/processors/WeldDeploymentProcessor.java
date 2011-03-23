@@ -28,7 +28,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.UserTransactionService;
 import org.jboss.as.weld.WeldContainer;
@@ -48,6 +49,7 @@ import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
 import org.jboss.as.weld.services.bootstrap.WeldValidationServices;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -63,8 +65,10 @@ import javax.enterprise.inject.spi.Extension;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 import javax.validation.ValidatorFactory;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -93,20 +97,24 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         log.info("Starting Services for CDI deployment: " + phaseContext.getDeploymentUnit().getName());
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final Set<BeanDeploymentModule> beanDeploymentModules = new HashSet<BeanDeploymentModule>();
-        final Set<BeanDeploymentModule> globalBeanDeploymentModules = new HashSet<BeanDeploymentModule>();
         final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
+        final Map<ModuleIdentifier,BeanDeploymentModule> bdmsByIdentifier = new HashMap<ModuleIdentifier,BeanDeploymentModule>();
+        final Map<ModuleIdentifier,ModuleSpecification> moduleSpecByIdentifier = new HashMap<ModuleIdentifier,ModuleSpecification>();
 
         // the root module only has access to itself. For most deployments this will be the only module
         // for ear deployments this represents the ear/lib directory.
-        // ejb jar sub deployments have access to the root module and other ejb jars.
-        // war deployments have access to the root level and all ejb jars
+        // war and jar deployment visibility will depend on the dependencies that
+        // exist in the application, and mirror inter module dependencies
         final BeanDeploymentModule rootBeanDeploymentModule = deploymentUnit.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
-        globalBeanDeploymentModules.add(rootBeanDeploymentModule);
+        bdmsByIdentifier.put(module.getIdentifier(), rootBeanDeploymentModule);
+        moduleSpecByIdentifier.put(module.getIdentifier(),moduleSpecification);
+
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
 
@@ -114,31 +122,35 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         for (DeploymentUnit subDeployment : subDeployments) {
             final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
-            if(module != null) {
-                subDeploymentLoaders.add(subDeploymentModule.getClassLoader());
+            if(subDeploymentModule == null) {
+                continue;
             }
+            subDeploymentLoaders.add(subDeploymentModule.getClassLoader());
 
+            final ModuleSpecification subDeploymentModuleSpec = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
             final BeanDeploymentModule bdm = subDeployment.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
             if(bdm == null) {
                 continue;
             }
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
-            if (bdm != null) {
-                beanDeploymentModules.add(bdm);
-                if (!PrivateSubDeploymentMarker.isPrivate(subDeployment)) {
-                    globalBeanDeploymentModules.add(bdm);
-                }
-            }
+            beanDeploymentModules.add(bdm);
+            bdmsByIdentifier.put(subDeploymentModule.getIdentifier(),bdm);
+            moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(),subDeploymentModuleSpec);
         }
 
-        for (BeanDeploymentModule bdm : beanDeploymentModules) {
+        for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
+            final ModuleSpecification bdmSpec = moduleSpecByIdentifier.get(entry.getKey());
+            final BeanDeploymentModule bdm = entry.getValue();
             if (bdm == rootBeanDeploymentModule) {
                 continue; // the root module only has access to itself
             }
-            // otherwise add all globally accessible modules to the module
-            // this will include the root module and ejb jars
-            bdm.addBeanDeploymentModules(globalBeanDeploymentModules);
+            for(ModuleDependency dependency : bdmSpec.getDependencies()) {
+                BeanDeploymentModule other = bdmsByIdentifier.get(dependency.getIdentifier());
+                if(other != null && other != bdm) {
+                    bdm.addBeanDeploymentModule(other);
+                }
+            }
         }
 
         final List<Metadata<Extension>> extensions = deploymentUnit.getAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS);

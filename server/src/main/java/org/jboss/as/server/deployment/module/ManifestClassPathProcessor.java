@@ -82,6 +82,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
         final List<AdditionalModuleSpecification> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
         final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final List<DeploymentUnit> subDeployments;
         if(deploymentUnit.getParent() == null) {
             subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
@@ -124,6 +125,9 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
             // if this is an ear/lib resource root it has already been handled
             if (deploymentUnit.getParent() == null && ModuleRootMarker.isModuleRoot(resourceRoot)
                     && !SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                continue;
+            }
+            if(SubDeploymentMarker.isSubDeployment(resourceRoot) && resourceRoot != deploymentRoot) {
                 continue;
             }
             // if this resource root represents an additional module then we need

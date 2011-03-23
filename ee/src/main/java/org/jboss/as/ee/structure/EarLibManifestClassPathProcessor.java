@@ -97,9 +97,8 @@ public final class EarLibManifestClassPathProcessor implements DeploymentUnitPro
                         log.warnf("Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.",item,resourceRoot.getRoot());
                     } else {
                         final ResourceRoot target = files.get(classPathFile);
-
                         if (SubDeploymentMarker.isSubDeployment(target)) {
-                            // for now we do not allow Class-Path references to subdeployments
+                            // for now we do not allow ear Class-Path references to subdeployments
                             log.warnf("Class Path entry  in "
                                     + resourceRoot.getRoot() + "  may not point to a sub deployment.");
                         } else if (!ModuleRootMarker.isModuleRoot(target)) {

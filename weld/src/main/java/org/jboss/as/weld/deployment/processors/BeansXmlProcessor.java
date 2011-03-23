@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldDeploymentMarker;
@@ -74,7 +75,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
 
         if (structure != null) {
             for (ResourceRoot resourceRoot : structure) {
-                if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
+                if (ModuleRootMarker.isModuleRoot(resourceRoot) && !SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                     if (resourceRoot.getRootName().equals("classes")) {
                         // hack for dealing with war modules
                         classesRoot = resourceRoot;

@@ -108,10 +108,12 @@ public class DeploymentUtils implements Closeable {
         for (AbstractDeployment deployment : deployments) {
             builder = deployment.addDeployment(manager, builder);
         }
-        manager.execute(builder.build()).get();
-
-        for (AbstractDeployment deployment : deployments) {
-            deployment.deployed = true;
+        try {
+            manager.execute(builder.build()).get();
+        } finally {
+            for (AbstractDeployment deployment : deployments) {
+                deployment.deployed = true;
+            }
         }
     }
 
