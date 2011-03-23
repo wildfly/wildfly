@@ -24,9 +24,6 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
-import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -40,7 +37,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.Local;
 import java.util.Collection;
@@ -53,7 +49,6 @@ import java.util.Map;
  * Processes {@link Local @Local} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
  * out of it.
  * <p/>
- * This processor also sets up the necessary local view jndi bindings.
  *
  * @author Jaikiran Pai
  */
@@ -93,50 +88,6 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         }
         // add it to the component description
         sessionBeanComponentDescription.addLocalBusinessInterfaceViews(localBusinessInterfaces);
-
-        // In case of EJB bindings, appname == .ear file name (if it's an .ear deployment)
-        String applicationName = this.getEarName(deploymentUnit);
-        String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
-        String appJNDIBaseName = "java:app/" + sessionBeanComponentDescription.getModuleName() + "/" + sessionBeanComponentDescription.getEJBName();
-        String moduleJNDIBaseName = "java:module/" + sessionBeanComponentDescription.getEJBName();
-
-        // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
-        ServiceName baseServiceName = deploymentUnit.getServiceName().append("component").append(sessionBeanComponentDescription.getComponentName());
-        // now create the bindings
-        for (String viewClassName : localBusinessInterfaces) {
-            final BindingDescription globalBinding = new BindingDescription();
-            globalBinding.setAbsoluteBinding(true);
-            String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
-            globalBinding.setBindingName(globalJNDIName);
-            globalBinding.setBindingType(viewClassName);
-            globalBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
-            // add the binding to the component description
-            componentDescription.getBindings().add(globalBinding);
-            logger.debug("Added java:global jndi binding at " + globalJNDIName + " for local view: " + viewClassName + " of session bean: " + sessionBeanComponentDescription.getEJBName());
-
-            // java:app bindings
-            final BindingDescription appBinding = new BindingDescription();
-            appBinding.setAbsoluteBinding(true);
-            String appJNDIName = appJNDIBaseName + "!" + viewClassName;
-            appBinding.setBindingName(appJNDIName);
-            appBinding.setBindingType(viewClassName);
-            appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
-            // add the binding to the component description
-            componentDescription.getBindings().add(appBinding);
-            logger.debug("Added java:app jndi binding at " + appJNDIName + " for local view: " + viewClassName + " of session bean: " + sessionBeanComponentDescription.getEJBName());
-
-            // java:module bindings
-            final BindingDescription moduleBinding = new BindingDescription();
-            moduleBinding.setAbsoluteBinding(true);
-            String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
-            moduleBinding.setBindingName(moduleJNDIName);
-            moduleBinding.setBindingType(viewClassName);
-            moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
-            // add the binding to the component description
-            componentDescription.getBindings().add(moduleBinding);
-            logger.debug("Added java:module jndi binding at " + moduleJNDIName + " for local view: " + viewClassName + " of session bean: " + sessionBeanComponentDescription.getEJBName());
-
-        }
 
     }
 
@@ -199,30 +150,4 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         return interfaces[0].toString();
     }
 
-    /**
-     * Returns the name (stripped off the .ear suffix) of the top level .ear deployment for the passed <code>deploymentUnit</code>.
-     * Returns null if the passed <code>deploymentUnit</code> doesn't belong to a .ear deployment.
-     *
-     * @param deploymentUnit
-     * @return TODO: Move this method to some common place
-     */
-    private String getEarName(DeploymentUnit deploymentUnit) {
-        DeploymentUnit parentDU = deploymentUnit.getParent();
-        if (parentDU == null) {
-            String duName = deploymentUnit.getName();
-            if (duName.endsWith(".ear")) {
-                return duName.substring(0, duName.length() - ".ear".length());
-            }
-            return null;
-        }
-        // traverse to top level DU
-        while (parentDU.getParent() != null) {
-            parentDU = parentDU.getParent();
-        }
-        String duName = parentDU.getName();
-        if (duName.endsWith(".ear")) {
-            return duName.substring(0, duName.length() - ".ear".length());
-        }
-        return null;
-    }
 }
