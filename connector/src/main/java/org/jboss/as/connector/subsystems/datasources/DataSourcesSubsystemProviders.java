@@ -107,7 +107,7 @@ class DataSourcesSubsystemProviders {
             final ModelNode operation = new ModelNode();
 
             operation.get(OPERATION_NAME).set("add");
-            operation.get(DESCRIPTION).set(bundle.getString("datasources.add"));
+            operation.get(DESCRIPTION).set(bundle.getString("data-source.add"));
             operation.get(REQUEST_PROPERTIES).setEmptyObject();
             operation.get(REPLY_PROPERTIES).setEmptyObject();
 

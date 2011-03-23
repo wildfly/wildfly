@@ -134,6 +134,14 @@ public class ServerInModuleStartupTestCase {
             ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
 
             Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
+
+            request = new ModelNode();
+            request.get("operation").set("read-resource-description");
+            request.get("address").setEmptyList();
+            request.get("recursive").set(true);
+            r = client.execute(OperationBuilder.Factory.create(request).build());
+
+            Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
         } finally {
             StreamUtils.safeClose(client);
         }
