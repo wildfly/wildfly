@@ -27,7 +27,7 @@ import junit.framework.Assert;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.tests.deployment.classloading.ear.EarLibClass;
+import org.jboss.as.tests.deployment.classloading.ear.TestBB;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -47,7 +47,7 @@ public class WarInEarChildFirstClassLoadingTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
-        earLib.addClasses(EarLibClass.class, WebInfLibClass.class);
+        earLib.addClasses(TestBB.class, WebInfLibClass.class);
         ear.addLibrary(earLib);
         return ear;
     }
@@ -59,7 +59,7 @@ public class WarInEarChildFirstClassLoadingTestCase {
 
     @Test
     public void testMultipleClasses() throws ClassNotFoundException {
-        Class<?> clazz = loadClass(WebInfLibClass.class.getName(), EarLibClass.class.getClassLoader());
+        Class<?> clazz = loadClass(WebInfLibClass.class.getName(), TestBB.class.getClassLoader());
         Assert.assertNotSame(WebInfLibClass.class, clazz);
     }
 

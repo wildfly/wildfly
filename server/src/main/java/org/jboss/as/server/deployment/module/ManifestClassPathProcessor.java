@@ -82,6 +82,21 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         final ExternalModuleService externalModuleService = topLevelDeployment.getAttachment(Attachments.EXTERNAL_MODULE_SERVICE);
         final List<AdditionalModuleSpecification> additionalModuleList = topLevelDeployment.getAttachment(Attachments.ADDITIONAL_MODULES);
         final List<ResourceRoot> topLevelResourceRoots = topLevelDeployment.getAttachment(Attachments.RESOURCE_ROOTS);
+        final List<DeploymentUnit> subDeployments;
+        if(deploymentUnit.getParent() == null) {
+            subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+        } else {
+            subDeployments = deploymentUnit.getParent().getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+        }
+        final Map<VirtualFile,ModuleIdentifier> subDeploymentModules = new HashMap<VirtualFile,ModuleIdentifier>();
+        for(DeploymentUnit deployment : subDeployments) {
+            final ResourceRoot root = deployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            final ModuleIdentifier identifier = deployment.getAttachment(Attachments.MODULE_IDENTIFIER);
+            if(root == null || identifier == null) {
+                continue;
+            }
+            subDeploymentModules.put(root.getRoot(),identifier);
+        }
 
         // build a map of the additional module locations
         final Map<VirtualFile, AdditionalModuleSpecification> additionalModules;
@@ -127,9 +142,11 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
                         log.debugf("Class-Path entry %s in %s ignored, as target is in or referenced by /lib", classPathFile,
                                 resourceRoot.getRoot());
                         continue; // we already have access to ear/lib
-                    } else if(additionalModules.containsKey(classPathFile)) {
+                    } else if (additionalModules.containsKey(classPathFile)) {
                         target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, additionalModules.get(classPathFile)
                                 .getModuleIdentifier());
+                    } else if (subDeploymentModules.containsKey(classPathFile)) {
+                        target.addToAttachmentList(Attachments.CLASS_PATH_ENTRIES, subDeploymentModules.get(classPathFile));
                     } else {
                         log.warn("Class Path entry " + item + " in "
                                 + resourceRoot.getRoot() + "  does not point to a valid jar for a Class-Path reference.");

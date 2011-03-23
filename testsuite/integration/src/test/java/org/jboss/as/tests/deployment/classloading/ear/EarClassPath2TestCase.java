@@ -40,26 +40,26 @@ public class EarClassPath2TestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
-        libJar.addClasses(WebInfLibClass.class, EarClassPath2TestCase.class);
+        libJar.addClasses(TestAA.class, EarClassPath2TestCase.class);
         libJar.addManifestResource(new ByteArrayAsset("Class-Path: ../../../cp.jar\n".getBytes()), "MANIFEST.MF");
         war.addLibraries(libJar);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
-        earLib.addClass(EarLibClass.class);
+        earLib.addClass(TestBB.class);
         ear.addModule(earLib);
         return ear;
     }
 
     @Test
     public void testWebInfLibAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.WebInfLibClass");
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
     }
 
     @Test
     public void testClassPathEntryAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.EarLibClass");
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestBB");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

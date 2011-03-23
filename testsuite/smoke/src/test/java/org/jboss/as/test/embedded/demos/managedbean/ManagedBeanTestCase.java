@@ -51,11 +51,7 @@ public class ManagedBeanTestCase {
     @Deployment
     public static EnterpriseArchive createDeployment() throws Exception {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "managedbean-example.ear");
-        JavaArchive sar = ShrinkWrap.create(JavaArchive.class,"managedbean-mbean.sar");
-        sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/MANIFEST.MF", "MANIFEST.MF");
-        sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/jboss-service.xml", "jboss-service.xml");
-        sar.addPackage(TestMBean.class.getPackage());
-        ear.add(sar,"/");
+
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
         jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");

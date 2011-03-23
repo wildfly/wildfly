@@ -40,13 +40,14 @@ public class EjbJarCanAccessOtherEjbJarTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "otherjar.jar");
-        jar.addClass(WebInfLibClass.class);
+        jar.addClass(TestAA.class);
         jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
 
         ear.addModule(jar);
         jar = ShrinkWrap.create(JavaArchive.class, "testjar.jar");
         jar.addClass(EjbJarCanAccessOtherEjbJarTestCase.class);
         jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
+        jar.addManifestResource(new StringAsset("Class-Path: otherjar.jar\n"),"MANIFEST.MF");
         ear.addModule(jar);
 
         return ear;
@@ -54,7 +55,7 @@ public class EjbJarCanAccessOtherEjbJarTestCase {
 
     @Test
     public void testEjbJarCanAccessOtherEjbJar() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.WebInfLibClass");
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
     }
 
 

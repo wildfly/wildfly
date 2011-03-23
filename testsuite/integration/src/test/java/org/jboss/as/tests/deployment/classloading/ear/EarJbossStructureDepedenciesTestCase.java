@@ -38,7 +38,7 @@ public class EarJbossStructureDepedenciesTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
-        war.addClasses(WebInfLibClass.class, EarJbossStructureDepedenciesTestCase.class);
+        war.addClasses(TestAA.class, EarJbossStructureDepedenciesTestCase.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
@@ -46,14 +46,14 @@ public class EarJbossStructureDepedenciesTestCase {
                                 "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><dependencies><module name=\"org.jboss.classfilewriter\" /></dependencies></sub-deployment></jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
-        earLib.addClass(EarLibClass.class);
+        earLib.addClass(TestBB.class);
         ear.addLibraries(earLib);
         return ear;
     }
 
     @Test(expected = ClassNotFoundException.class)
     public void testEarDoesNotHaveAccessToClassfilewriter() throws ClassNotFoundException {
-        loadClass("org.jboss.classfilewriter.ClassFile", EarLibClass.class.getClassLoader());
+        loadClass("org.jboss.classfilewriter.ClassFile", TestBB.class.getClassLoader());
     }
 
     @Test

@@ -39,7 +39,7 @@ public class WarCannotAccessOtherWarTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addClass(WebInfLibClass.class);
+        war.addClass(TestAA.class);
 
         ear.addModule(war);
         war = ShrinkWrap.create(WebArchive.class);
@@ -51,7 +51,7 @@ public class WarCannotAccessOtherWarTestCase {
 
     @Test(expected = ClassNotFoundException.class)
     public void testWarCannotAccessOtherWar() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.WebInfLibClass");
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
     }
 
 

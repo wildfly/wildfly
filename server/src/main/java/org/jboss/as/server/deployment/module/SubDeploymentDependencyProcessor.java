@@ -21,19 +21,17 @@
  */
 package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
 /**
- * Processor that set up module dependencies between sub deployments
+ * Processor that set up a module dependency on the parent module
  *
  * @author Stuart Douglas
  *
@@ -49,7 +47,6 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             return;
         }
         final ModuleSpecification moduleSpec=deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final AttachmentList<DeploymentUnit> subDeployments = parent.getAttachment(Attachments.SUB_DEPLOYMENTS);
         final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (parentModule != null) {
@@ -59,17 +56,6 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             moduleSpec.addDependency(moduleDependency);
         }
 
-        for(DeploymentUnit subDeployment : subDeployments){
-            if(subDeployment.getServiceName().equals(deploymentUnit.getServiceName())) {
-                continue;
-            }
-            if(PrivateSubDeploymentMarker.isPrivate(subDeployment)) {
-                continue;
-            }
-            ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER), false, false, true);
-            moduleDependency.addImportFilter(PathFilters.acceptAll(),true);
-            moduleSpec.addDependency(moduleDependency);
-        }
     }
 
     @Override

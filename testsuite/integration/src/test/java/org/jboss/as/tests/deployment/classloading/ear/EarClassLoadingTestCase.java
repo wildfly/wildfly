@@ -39,13 +39,13 @@ public class EarClassLoadingTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
-        libJar.addClass(WebInfLibClass.class);
+        libJar.addClass(TestAA.class);
         war.addLibraries(libJar);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class);
-        earLib.addClass(EarLibClass.class);
+        earLib.addClass(TestBB.class);
         earLib.addClass(EarClassLoadingTestCase.class);
         ear.addLibraries(earLib);
         return ear;
@@ -53,12 +53,12 @@ public class EarClassLoadingTestCase {
 
     @Test(expected = ClassNotFoundException.class)
     public void testWebInfLibNotAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.WebInfLibClass");
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
     }
 
     @Test
     public void testLibAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.EarLibClass");
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestBB");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

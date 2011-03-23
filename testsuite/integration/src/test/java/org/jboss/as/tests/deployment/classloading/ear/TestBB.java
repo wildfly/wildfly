@@ -21,6 +21,6 @@
  */
 package org.jboss.as.tests.deployment.classloading.ear;
 
-public class EarLibClass {
+public class TestBB {
 
 }

@@ -38,7 +38,7 @@ public class EarJbossStructureAdditionalModuleTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
-        war.addClasses(WebInfLibClass.class, EarJbossStructureAdditionalModuleTestCase.class);
+        war.addClasses(TestAA.class, EarJbossStructureAdditionalModuleTestCase.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
@@ -55,14 +55,14 @@ public class EarJbossStructureAdditionalModuleTestCase {
                                 "</jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "someModule.jar");
-        earLib.addClass(EarLibClass.class);
+        earLib.addClass(TestBB.class);
         ear.addModule(earLib);
         return ear;
     }
 
     @Test
     public void testWarHassAccessToAdditionalModule() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.EarLibClass", getClass().getClassLoader());
+        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestBB", getClass().getClassLoader());
     }
 
     private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {

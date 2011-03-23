@@ -41,7 +41,7 @@ public class EarJbossStructureChildFirstTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"test.war");
-        war.addClasses(WebInfLibClass.class, EarJbossStructureChildFirstTestCase.class, Stateless.class);
+        war.addClasses(TestAA.class, EarJbossStructureChildFirstTestCase.class, Stateless.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
@@ -49,7 +49,7 @@ public class EarJbossStructureChildFirstTestCase {
         "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><child-first>false</child-first></sub-deployment></jboss-deployment-structure>"),
         "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
-        earLib.addClasses(EarLibClass.class, WebInfLibClass.class);
+        earLib.addClasses(TestBB.class, TestAA.class);
         ear.addLibrary(earLib);
         return ear;
     }
@@ -61,8 +61,8 @@ public class EarJbossStructureChildFirstTestCase {
 
     @Test
     public void testMultipleClasses() throws ClassNotFoundException {
-        Class<?> clazz = loadClass(WebInfLibClass.class.getName(), EarLibClass.class.getClassLoader());
-        Assert.assertSame(WebInfLibClass.class, clazz);
+        Class<?> clazz = loadClass(TestAA.class.getName(), TestBB.class.getClassLoader());
+        Assert.assertSame(TestAA.class, clazz);
     }
 
     private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {
