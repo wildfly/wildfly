@@ -23,8 +23,6 @@
 package org.jboss.as.ee.component;
 
 
-import java.util.Collection;
-import java.util.Set;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
@@ -33,18 +31,19 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
-
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.jboss.as.ee.component.SecurityActions.getContextClassLoader;
 import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
@@ -149,7 +148,9 @@ public abstract class AbstractComponent implements Component {
         for (Map.Entry<Method, InterceptorFactory> entry : factoryMap.entrySet()) {
             Method method = entry.getKey();
             PerViewMethodInterceptorFactory.populate(interceptorContext, this, instance, method);
-            methodMap.put(method, entry.getValue().create(interceptorContext));
+            InterceptorFactory interceptorFactory = entry.getValue();
+            assert interceptorFactory != null : "Can't find interceptor factory for " + method;
+            methodMap.put(method, interceptorFactory.create(interceptorContext));
         }
         instance.setMethodMap(methodMap);
         return instance;
@@ -445,7 +446,7 @@ public abstract class AbstractComponent implements Component {
         throw new UnsupportedOperationException("One thing at a time!");
     }
 
-    Interceptor getComponentInterceptor() {
+    protected Interceptor getComponentInterceptor() {
         assert componentInterceptor != null : "componentInterceptor is null";
         return componentInterceptor;
     }
