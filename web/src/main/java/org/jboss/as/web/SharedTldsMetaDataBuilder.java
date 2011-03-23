@@ -21,11 +21,22 @@
  */
 package org.jboss.as.web;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.dmr.ModelNode;
+import org.jboss.metadata.parser.jsp.TldMetaDataParser;
+import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * Internal helper creating a shared TLD metadata list based on the domain configuration.
@@ -34,7 +45,9 @@ import org.jboss.metadata.web.spec.TldMetaData;
  */
 class SharedTldsMetaDataBuilder {
 
-    static final List<TldMetaData> tlds = new ArrayList<TldMetaData>();
+    private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld" };
+    private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
+    final List<TldMetaData> tlds = new ArrayList<TldMetaData>();
 
     /** The common container config. */
     private final ModelNode containerConfig;
@@ -45,13 +58,58 @@ class SharedTldsMetaDataBuilder {
     }
 
     private void init() {
-        // FIXME: Parse shared TLDs
+        try {
+            ModuleClassLoader jsf = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("com.sun.jsf-impl")).getClassLoader();
+            for (String tld : JSF_TAGLIBS) {
+                InputStream is = jsf.getResourceAsStream("META-INF/" + tld);
+                if (is != null) {
+                    TldMetaData tldMetaData = parseTLD(tld, is);
+                    tlds.add(tldMetaData);
+                }
+            }
+        } catch (ModuleLoadException e) {
+            // Ignore
+        } catch (Exception e) {
+            // Ignore
+        }
+        try {
+            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
+            for (String tld : JSTL_TAGLIBS) {
+                InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
+                if (is != null) {
+                    TldMetaData tldMetaData = parseTLD(tld, is);
+                    tlds.add(tldMetaData);
+                }
+            }
+        } catch (ModuleLoadException e) {
+            // Ignore
+        } catch (Exception e) {
+            // Ignore
+        }
     }
 
     List<TldMetaData> create() {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
         metadata.addAll(tlds);
         return metadata;
+    }
+
+    private TldMetaData parseTLD(String tld, InputStream is)
+    throws Exception {
+        try {
+            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            inputFactory.setXMLResolver(NoopXmlResolver.create());
+            XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
+            return TldMetaDataParser.parse(xmlReader);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                // Ignore
+            }
+        }
     }
 
 }

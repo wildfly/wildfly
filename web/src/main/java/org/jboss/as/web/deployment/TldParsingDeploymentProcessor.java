@@ -23,7 +23,6 @@ package org.jboss.as.web.deployment;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +38,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -60,14 +55,8 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String LIB = "lib";
     private static final String IMPLICIT_TLD = "implicit.tld";
 
-    private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld" };
-    private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
-
-    private static List<TldMetaData> sharedTlds = null;
-
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ServiceModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
@@ -76,37 +65,6 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         if (tldsMetaData == null) {
             tldsMetaData = new TldsMetaData();
             deploymentUnit.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
-        }
-        // Find the TLDs for JSP and JSTL
-        synchronized (JSF_TAGLIBS) {
-            if (sharedTlds == null) {
-                sharedTlds = new ArrayList<TldMetaData>();
-                try {
-                    ModuleClassLoader jsf = loader.loadModule(ModuleIdentifier.create("com.sun.jsf-impl")).getClassLoader();
-                    for (String tld : JSF_TAGLIBS) {
-                        InputStream is = jsf.getResourceAsStream("META-INF/" + tld);
-                        if (is != null) {
-                            TldMetaData tldMetaData = parseTLD(tld, is);
-                            sharedTlds.add(tldMetaData);
-                        }
-                    }
-                } catch (ModuleLoadException e) {
-                    // Ignore
-                }
-                try {
-                    ModuleClassLoader jstl = loader.loadModule(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
-                    for (String tld : JSTL_TAGLIBS) {
-                        InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
-                        if (is != null) {
-                            TldMetaData tldMetaData = parseTLD(tld, is);
-                            sharedTlds.add(tldMetaData);
-                        }
-                    }
-                } catch (ModuleLoadException e) {
-                    // Ignore
-                }
-            }
-            tldsMetaData.setSharedTlds(sharedTlds);
         }
         Map<String, TldMetaData> tlds = new HashMap<String, TldMetaData>();
         tldsMetaData.setTlds(tlds);
@@ -157,26 +115,6 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         InputStream is = null;
         try {
             is = tld.openStream();
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLResolver(NoopXmlResolver.create());
-            XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-            return TldMetaDataParser.parse(xmlReader);
-        } catch (Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse " + tld, e);
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException e) {
-                // Ignore
-            }
-        }
-    }
-
-    private TldMetaData parseTLD(String tld, InputStream is)
-    throws DeploymentUnitProcessingException {
-        try {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXmlResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
