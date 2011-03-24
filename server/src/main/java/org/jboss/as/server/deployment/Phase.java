@@ -219,7 +219,6 @@ public enum Phase {
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x0C07;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x0C08;
-    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x0C09;
     // should be after all views are known
     public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x0C0A;
     public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x0C0B;
@@ -249,6 +248,8 @@ public enum Phase {
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x2700;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x2800;
     public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x2900;
+    // should be after all components are known
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2A00;
     public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2B00;
 
     // DEPENDENCIES
