@@ -26,6 +26,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Valve;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.valves.AccessLogValve;
+import org.apache.catalina.valves.ExtendedAccessLogValve;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -119,13 +120,25 @@ class WebVirtualHostService implements Service<Host> {
     }
 
     static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
-        final AccessLogValve log = new AccessLogValve();
+        boolean extended = false;
+        if (element.hasDefined(Constants.EXTENDED)) {
+            extended = element.get(Constants.EXTENDED).asBoolean();
+        }
+        final AccessLogValve log;
+        if (extended) {
+            log = new ExtendedAccessLogValve();
+        } else {
+            log = new AccessLogValve();
+        }
         log.setDirectory(logDirectory);
-        log.setResolveHosts(element.get(Constants.RESOLVE_HOSTS).asBoolean());
-        log.setRotatable(element.get(Constants.ROTATE).asBoolean());
-        log.setPattern(element.get(Constants.PATTERN).asString());
-        log.setPrefix(element.get(Constants.PREFIX).asString());
-        // TODO extended?
+        if (element.hasDefined(Constants.RESOLVE_HOSTS)) log.setResolveHosts(element.get(Constants.RESOLVE_HOSTS).asBoolean());
+        if (element.hasDefined(Constants.ROTATE)) log.setRotatable(element.get(Constants.ROTATE).asBoolean());
+        if (element.hasDefined(Constants.PATTERN)) {
+            log.setPattern(element.get(Constants.PATTERN).asString());
+        } else {
+            log.setPattern("common");
+        }
+        if (element.hasDefined(Constants.PREFIX)) log.setPrefix(element.get(Constants.PREFIX).asString());
         return log;
     }
 

@@ -35,6 +35,7 @@ interface Constants {
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CHECK_INTERVAL = "check-interval";
     String CIPHER_SUITE = "cipher-suite";
+    String CONDITION = "condition";
     String CONNECTOR = "connector";
     String CONTAINER_CONFIG = "configuration";
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
@@ -50,6 +51,7 @@ interface Constants {
     String EXECUTOR = "executor";
     String EXTENDED = "extended";
     String FILE_ENCONDING = "file-encoding";
+    String FLAGS = "flags";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
     String JAVA_ENCODING = "java-encoding";
     String JSP_CONFIGURATION = "jsp-configuration";
@@ -91,9 +93,11 @@ interface Constants {
     String SOURCE_VM = "source-vm";
     String SSL = "ssl";
     String STATIC_RESOURCES = "static-resources";
+    String SUBSTITUTION = "substitution";
     String SUBSYSTEM = "subsystem";
     String TAG_POOLING = "tag-pooling";
     String TARGET_VM = "target-vm";
+    String TEST = "test";
     String TRIM_SPACES = "trim-spaces";
     String VALUE = "value";
     String VERIFY_CLIENT = "verify-client";

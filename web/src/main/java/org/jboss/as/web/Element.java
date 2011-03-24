@@ -33,6 +33,7 @@ enum Element {
 
     ACCESS_LOG(Constants.ACCESS_LOG),
     ALIAS(Constants.ALIAS),
+    CONDITION(Constants.CONDITION),
     CONNECTOR(Constants.CONNECTOR),
     CONTAINER_CONFIG(Constants.CONTAINER_CONFIG),
     DIRECTORY(Constants.DIRECTORY),

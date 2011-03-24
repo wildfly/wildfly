@@ -41,13 +41,17 @@ import static org.jboss.as.web.Constants.CERTIFICATE_FILE;
 import static org.jboss.as.web.Constants.CERTIFICATE_KEY_FILE;
 import static org.jboss.as.web.Constants.CIPHER_SUITE;
 import static org.jboss.as.web.Constants.CONNECTOR;
+import static org.jboss.as.web.Constants.CONDITION;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
 import static org.jboss.as.web.Constants.DEFAULT_WEB_MODULE;
+import static org.jboss.as.web.Constants.DIRECTORY;
 import static org.jboss.as.web.Constants.DISABLED;
 import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
 import static org.jboss.as.web.Constants.EXECUTOR;
+import static org.jboss.as.web.Constants.EXTENDED;
 import static org.jboss.as.web.Constants.FILE_ENCONDING;
+import static org.jboss.as.web.Constants.FLAGS;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
 import static org.jboss.as.web.Constants.KEY_ALIAS;
 import static org.jboss.as.web.Constants.LISTINGS;
@@ -58,12 +62,18 @@ import static org.jboss.as.web.Constants.MAX_SAVE_POST_SIZE;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
 import static org.jboss.as.web.Constants.NAME;
 import static org.jboss.as.web.Constants.PASSWORD;
+import static org.jboss.as.web.Constants.PATH;
+import static org.jboss.as.web.Constants.PATTERN;
+import static org.jboss.as.web.Constants.PREFIX;
 import static org.jboss.as.web.Constants.PROTOCOL;
 import static org.jboss.as.web.Constants.PROXY_NAME;
 import static org.jboss.as.web.Constants.PROXY_PORT;
 import static org.jboss.as.web.Constants.READ_ONLY;
 import static org.jboss.as.web.Constants.REDIRECT_PORT;
+import static org.jboss.as.web.Constants.RELATIVE_TO;
+import static org.jboss.as.web.Constants.RESOLVE_HOSTS;
 import static org.jboss.as.web.Constants.REWRITE;
+import static org.jboss.as.web.Constants.ROTATE;
 import static org.jboss.as.web.Constants.SCHEME;
 import static org.jboss.as.web.Constants.SECRET;
 import static org.jboss.as.web.Constants.SECURE;
@@ -73,6 +83,8 @@ import static org.jboss.as.web.Constants.SESSION_TIMEOUT;
 import static org.jboss.as.web.Constants.SOCKET_BINDING;
 import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
+import static org.jboss.as.web.Constants.SUBSTITUTION;
+import static org.jboss.as.web.Constants.TEST;
 import static org.jboss.as.web.Constants.VERIFY_CLIENT;
 import static org.jboss.as.web.Constants.VERIFY_DEPTH;
 import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
@@ -175,7 +187,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         writer.writeAttribute(NAME, alias.asString());
                     }
                 }
-                // TODO other config elements
+                // TODO write access-log element
+                // TODO write rewrite elements
                 writer.writeEndElement();
             }
         }
@@ -468,7 +481,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case REWRITE:
                     final ModelNode rewrite = parseHostRewrite(reader);
-                    host.get(REWRITE).set(rewrite);
+                    host.get(REWRITE).add(rewrite);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -483,11 +496,128 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     static ModelNode parseHostRewrite(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode rewrite = new ModelNode();
+        rewrite.setEmptyObject();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case PATTERN:
+                rewrite.get(PATTERN).set(value);
+                break;
+            case SUBSTITUTION:
+                rewrite.get(SUBSTITUTION).set(value);
+                break;
+            case FLAGS:
+                rewrite.get(REWRITE).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
+            }
+        }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+            case WEB_1_0: {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                case CONDITION:
+                    final ModelNode condition = new ModelNode();
+                    final int count2 = reader.getAttributeCount();
+                    for (int i = 0; i < count2; i++) {
+                        requireNoNamespaceAttribute(reader, i);
+                        final String value = reader.getAttributeValue(i);
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                        case TEST:
+                            condition.get(TEST).set(value);
+                            break;
+                        case PATTERN:
+                            condition.get(PATTERN).set(value);
+                            break;
+                        case FLAGS:
+                            condition.get(FLAGS).set(value);
+                            break;
+                        default:
+                            unexpectedAttribute(reader, i);
+                        }
+                    }
+                    rewrite.get(CONDITION).add(condition);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+                }
+                break;
+            }
+            default:
+                throw unexpectedElement(reader);
+            }
+        }
         return rewrite;
     }
 
     static ModelNode parseHostAccessLog(XMLExtendedStreamReader reader)  throws XMLStreamException {
         final ModelNode log = new ModelNode();
+        log.setEmptyObject();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case PATTERN:
+                log.get(PATTERN).set(value);
+                break;
+            case RESOLVE_HOSTS:
+                log.get(RESOLVE_HOSTS).set(value);
+                break;
+            case EXTENDED:
+                log.get(EXTENDED).set(value);
+                break;
+            case PREFIX:
+                log.get(PREFIX).set(value);
+                break;
+            case ROTATE:
+                log.get(ROTATE).set(value);
+                break;
+            default:
+                unexpectedAttribute(reader, i);
+            }
+        }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+            case WEB_1_0: {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                case DIRECTORY:
+                    final ModelNode directory = new ModelNode();
+                    log.get(DIRECTORY).set(directory);
+                    final int count2 = reader.getAttributeCount();
+                    for (int i = 0; i < count2; i++) {
+                        requireNoNamespaceAttribute(reader, i);
+                        final String value = reader.getAttributeValue(i);
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                        case PATH:
+                            directory.get(PATH).set(value);
+                            break;
+                        case RELATIVE_TO:
+                            directory.get(RELATIVE_TO).set(value);
+                            break;
+                        default:
+                            unexpectedAttribute(reader, i);
+                        }
+                    }
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+                }
+                break;
+            }
+            default:
+                throw unexpectedElement(reader);
+            }
+        }
         return log;
     }
 
@@ -606,6 +736,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     static ModelNode parseSsl(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode ssl = new ModelNode();
+        ssl.setEmptyObject();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
