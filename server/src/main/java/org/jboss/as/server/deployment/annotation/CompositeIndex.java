@@ -22,6 +22,11 @@
 
 package org.jboss.as.server.deployment.annotation;
 
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,11 +35,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
 
 /**
  * Composite annotation index.  Represents an annotation index for an entire deployment.
@@ -114,7 +114,7 @@ public class CompositeIndex {
         for (Index index : indexes) {
             final List<ClassInfo> list = index.getKnownDirectSubclasses(name);
             if (list != null) {
-                for (final ClassInfo clazz : allKnown) {
+                for (final ClassInfo clazz : list) {
                     final DotName className = clazz.name();
                     if (!processedClasses.contains(className)) {
                         allKnown.add(clazz);
@@ -169,7 +169,7 @@ public class CompositeIndex {
         for (Index index : indexes) {
             final List<ClassInfo> list = index.getKnownDirectImplementors(name);
             if (list != null) {
-                for (final ClassInfo clazz : allKnown) {
+                for (final ClassInfo clazz : list) {
                     final DotName className = clazz.name();
                     if (!processedClasses.contains(className)) {
                         if (Modifier.isInterface(clazz.flags())) {
