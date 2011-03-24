@@ -84,8 +84,6 @@ class SharedWebMetaDataBuilder {
         enableStaticResouces(metadata);
         // Add JSPServlet
         enableJsp(metadata);
-        // Add JSF
-        enableJsf(metadata);
 
         // Session config
         final SessionConfigMetaData sessionConfig = new SessionConfigMetaData();
@@ -265,31 +263,6 @@ class SharedWebMetaDataBuilder {
         servlet.setInitParam(initParams);
         metadata.getServlets().add(servlet);
         addServletMapping("jsp", metadata, "*.jsp", "*.jspx");
-    }
-
-    /**
-     * Enable JSF by adding the Mojarra ConfigureListener.  Also override
-     * Mojarra's default expressionFactory to use the one we ship.
-     *
-     * @param metadata the shared jboss web metadata
-     *
-     */
-    void enableJsf(final WebMetaData metadata) {
-       List<ParamValueMetaData> contextParams = metadata.getContextParams();
-       if (contextParams == null) {
-          contextParams = new ArrayList<ParamValueMetaData>();
-          metadata.setContextParams(contextParams);
-       }
-       contextParams.add(createParameter("com.sun.faces.expressionFactory", "org.apache.el.ExpressionFactoryImpl"));
-
-       ListenerMetaData jsfInitListener = new ListenerMetaData();
-       jsfInitListener.setListenerClass("com.sun.faces.config.ConfigureListener");
-       List<ListenerMetaData> listeners = metadata.getListeners();
-       if (listeners == null) {
-          listeners = new ArrayList<ListenerMetaData>();
-          metadata.setListeners(listeners);
-       }
-       listeners.add(jsfInitListener);
     }
 
     static ParamValueMetaData createParameter(String name, String value) {
