@@ -39,11 +39,15 @@ import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
 import javax.ejb.Local;
+import javax.ejb.Remote;
+import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Processes {@link Local @Local} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
@@ -53,6 +57,9 @@ import java.util.Map;
  * @author Jaikiran Pai
  */
 public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProcessor {
+
+    private static final DotName LOCAL = DotName.createSimple(Local.class.getName());
+    private static final DotName REMOTE = DotName.createSimple(Remote.class.getName());
 
     /**
      * Logger
@@ -91,33 +98,26 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
 
     }
 
-    // TODO: This isn't yet completely implemented. This currently only takes into account @Local annotation on the
-    // bean implementation class. This further has to check for @Local on the interfaces implemented by the bean
     private Collection<String> getLocalBusinessInterfaces(SessionBeanComponentDescription description, CompositeIndex compositeIndex, ClassInfo sessionBeanClass) throws DeploymentUnitProcessingException {
         Map<DotName, List<AnnotationInstance>> annotationsOnBean = sessionBeanClass.annotations();
-        if (annotationsOnBean == null || annotationsOnBean.isEmpty()) {
-            String defaultLocalBusinessInterface = this.getDefaultLocalInterface(sessionBeanClass);
-            if (defaultLocalBusinessInterface != null) {
-                logger.debug("Session bean class: " + sessionBeanClass + " has no explicit local business interfaces, marking " + defaultLocalBusinessInterface + " as the (implicit) default local business interface");
-                return Collections.singleton(defaultLocalBusinessInterface);
-            }
-
-            return Collections.emptySet();
-        }
-        List<AnnotationInstance> ejbLocalAnnotations = annotationsOnBean.get(DotName.createSimple(Local.class.getName()));
+        List<AnnotationInstance> ejbLocalAnnotations = annotationsOnBean.get(LOCAL);
         if (ejbLocalAnnotations == null || ejbLocalAnnotations.isEmpty()) {
-            String defaultLocalBusinessInterface = this.getDefaultLocalInterface(sessionBeanClass);
+
+            Collection<String> localInterfaces = this.getLocalInterfacesFromInterfaceAnnotations(sessionBeanClass,compositeIndex);
+            if(!localInterfaces.isEmpty()) {
+                return localInterfaces;
+            }
+            String defaultLocalBusinessInterface = this.getDefaultLocalInterface(sessionBeanClass,compositeIndex);
             if (defaultLocalBusinessInterface != null) {
                 logger.debug("Session bean class: " + sessionBeanClass + " has no explicit local business interfaces, marking " + defaultLocalBusinessInterface + " as the (implicit) default local business interface");
                 return Collections.singleton(defaultLocalBusinessInterface);
             }
-
             return Collections.emptySet();
         }
         if (ejbLocalAnnotations.size() > 1) {
             throw new RuntimeException("@Local appears more than once in EJB class: " + sessionBeanClass.name());
         }
-        final Collection<String> localBusinessInterfaces = new HashSet<String>();
+
 
         AnnotationInstance ejbLocalAnnotation = ejbLocalAnnotations.get(0);
         AnnotationTarget target = ejbLocalAnnotation.target();
@@ -126,12 +126,12 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         }
         AnnotationValue ejbLocalAnnValue = ejbLocalAnnotation.value();
         if (ejbLocalAnnValue == null) {
-            DotName[] interfaces = sessionBeanClass.interfaces();
-            if (interfaces.length != 1)
+            Set<DotName> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
+            if (interfaces.size() != 1)
                 throw new DeploymentUnitProcessingException("Bean " + description + " specifies @Local, but does not implement 1 interface");
-            localBusinessInterfaces.add(interfaces[0].toString());
-            return localBusinessInterfaces;
+            return Collections.singleton(interfaces.iterator().next().toString());
         }
+        final Collection<String> localBusinessInterfaces = new HashSet<String>();
         Type[] localInterfaceTypes = ejbLocalAnnValue.asClassArray();
         for (Type localInterface : localInterfaceTypes) {
             localBusinessInterfaces.add(localInterface.name().toString());
@@ -139,15 +139,75 @@ public class LocalEjbViewAnnotationProcessor extends AbstractComponentConfigProc
         return localBusinessInterfaces;
     }
 
-    private String getDefaultLocalInterface(ClassInfo sessionBeanClass) {
-        DotName[] interfaces = sessionBeanClass.interfaces();
-        // TODO: Needs better implementation. For now, we are just checking for a single interface on the
-        // bean implementation class. The EJB spec mandates skipping some specific interfaces like java.io.Serializable
-        // and such. All such rules need to be applied here.
-        if (interfaces == null || interfaces.length != 1) {
+    private Collection<String> getLocalInterfacesFromInterfaceAnnotations(ClassInfo sessionBeanClass, CompositeIndex compositeIndex) {
+        Set<DotName> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
+        Set<String> localInterfaces = new HashSet<String>();
+        for(DotName iface : interfaces) {
+            final ClassInfo ifaceClass = compositeIndex.getClassByName(iface);
+            final List<AnnotationInstance> annotations = ifaceClass.annotations().get(LOCAL);
+            if(annotations != null) {
+                for(AnnotationInstance annotation : annotations) {
+                    if(annotation.target() instanceof ClassInfo) {
+                        localInterfaces.add(iface.toString());
+                        break;
+                    }
+                }
+            }
+        }
+        return localInterfaces;
+    }
+
+    /**
+     * Gets a beans implicit local interface
+     * @param sessionBeanClass The bean class
+     * @return The implicit business interface, or null if one is not found
+     */
+    private String getDefaultLocalInterface(ClassInfo sessionBeanClass,CompositeIndex index) {
+        final Set<DotName> names = getPotentialBusinessInterfaces(sessionBeanClass);
+        if(names.size() != 1) {
             return null;
         }
-        return interfaces[0].toString();
+        //now we have an interface, but it is not an implicit local interface
+        //if it is annotated @Remote
+        final DotName iface = names.iterator().next();
+        final ClassInfo classInfo = index.getClassByName(iface);
+        List<AnnotationInstance> annotations = classInfo.annotations().get(REMOTE);
+        if(annotations == null || annotations.isEmpty()) {
+            return iface.toString();
+        }
+        for(AnnotationInstance annotation : annotations) {
+            if(annotation.target() instanceof ClassInfo) {
+                return null;
+            }
+        }
+
+        return iface.toString();
     }
+
+    /**
+     * Returns all interfaces implemented by a bean that are eligable to be business interfaces
+     *
+     * @param sessionBeanClass The bean class
+     * @return A collection of all potential business interfaces
+     */
+    private Set<DotName> getPotentialBusinessInterfaces(ClassInfo sessionBeanClass) {
+        DotName[] interfaces = sessionBeanClass.interfaces();
+        if (interfaces == null) {
+            return Collections.emptySet();
+        }
+        Set<DotName> names = new HashSet<DotName>();
+        for(DotName dotName : interfaces) {
+            String name = dotName.toString();
+            if(name.equals(Serializable.class.getName()) ||
+                    name.equals(Externalizable.class.getName()) ||
+                    name.startsWith("javax.ejb.")) {
+                continue;
+            }
+            names.add(dotName);
+        }
+        return names;
+    }
+
+
 
 }
