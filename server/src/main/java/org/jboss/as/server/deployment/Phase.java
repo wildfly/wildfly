@@ -229,6 +229,7 @@ public enum Phase {
     // should be after all views are known
     public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x110A;
     public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x110B;
+    public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x110C;
     public static final int PARSE_TLD_DEPLOYMENT                        = 0x1200;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x1201;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x1300;
@@ -251,6 +252,7 @@ public enum Phase {
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x2400;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x2500;
     public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x2600;
+
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2700;
     public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2800;
