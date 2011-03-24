@@ -1200,7 +1200,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                         attribute.getLocalName() + " is not a valid multicast address",
                                         reader.getLocation());
                             }
-                            binding.get(MULTICAST_ADDRESS).set(mcastAddr.toString());
+                            binding.get(MULTICAST_ADDRESS).set(value);
                             break;
                         } catch (final UnknownHostException e) {
                             throw new XMLStreamException("Value " + value + " for attribute " +
@@ -1354,7 +1354,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 attr = binding.get(MULTICAST_PORT);
                 if (attr.isDefined()) {
-                    writeAttribute(writer, Attribute.FIXED_PORT, attr.asString());
+                    writeAttribute(writer, Attribute.MULTICAST_PORT, attr.asString());
                 }
                 writer.writeEndElement();
             }
