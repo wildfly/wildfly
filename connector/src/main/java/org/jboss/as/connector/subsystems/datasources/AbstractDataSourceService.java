@@ -22,19 +22,17 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.sql.Driver;
 import java.util.Map;
+
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
-import org.jboss.as.connector.adapters.jdbc.BaseWrapperManagedConnectionFactory;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ValueManagedReference;
+
+import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
@@ -48,12 +46,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+
+import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
 
 /**
  * Base service for managing a data-source.
- *
  * @author John Bailey
  */
 public abstract class AbstractDataSourceService implements Service<DataSource> {
@@ -100,16 +98,15 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         return driverValue;
     }
 
-    protected abstract BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName, final Driver driver) throws ResourceException, StartException;
+    protected abstract BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName,
+            final Driver driver) throws ResourceException, StartException;
 
     protected abstract Pool createPool(final String jndiName, final ManagedConnectionFactory mcf);
 
     protected abstract ConnectionManager createConnectionManager(final String jndiName, final Pool pool);
 
-
     /**
      * Create an instance of the pool configuration based on the input
-     *
      * @param pp The pool parameters
      * @param tp The timeout parameters
      * @param vp The validation parameters

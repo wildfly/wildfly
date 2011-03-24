@@ -2699,6 +2699,12 @@
                 <artifactId>ironjacamar-deployers-common</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-jdbc</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>

@@ -112,6 +112,10 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-validator</artifactId>
         </dependency>
         <dependency>

@@ -77,6 +77,7 @@ import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
@@ -231,9 +232,10 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             boolean useFastFail = getBooleanIfSetOrGetDefault(conDefNode, USE_FAST_FAIL, false);
             CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMinutes,
                     useFastFail);
-
+            // TODO
+            Recovery recovery = null;
             CommonConnDef connectionDefinition = new CommonConnDefImpl(configProperties, className, jndiName, poolName,
-                    enabled, useJavaContext, pool, timeOut, validation, security);
+                    enabled, useJavaContext, pool, timeOut, validation, security, recovery);
 
             connDefs.add(connectionDefinition);
         }
