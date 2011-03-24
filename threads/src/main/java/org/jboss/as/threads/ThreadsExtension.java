@@ -858,7 +858,7 @@ public class ThreadsExtension implements Extension {
             writer.writeStartElement(Element.QUEUELESS_THREAD_POOL.getLocalName());
 
             if (node.hasDefined(NAME)) {
-                writeAttribute(writer, Attribute.BLOCKING, node.get(NAME));
+                writeAttribute(writer, Attribute.NAME, node.get(NAME));
             }
             if (node.hasDefined(BLOCKING)) {
                 writeAttribute(writer, Attribute.BLOCKING, node.get(BLOCKING));
