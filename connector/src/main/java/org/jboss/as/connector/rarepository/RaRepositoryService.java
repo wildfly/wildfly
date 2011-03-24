@@ -30,10 +30,12 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A MdrService. it provide access to IronJacamar's metadata repository
@@ -43,6 +45,8 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
 
     private final ResourceAdapterRepository value;
 
+    private final InjectedValue<MetadataRepository> mdrValue = new InjectedValue<MetadataRepository>();
+
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
 
     /**
@@ -50,6 +54,7 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
      */
     public RaRepositoryService() {
         this.value = new SimpleResourceAdapterRepository();
+
     }
 
     @Override
@@ -59,12 +64,17 @@ public final class RaRepositoryService implements Service<ResourceAdapterReposit
 
     @Override
     public void start(StartContext context) throws StartException {
+        ((SimpleResourceAdapterRepository) value).setMetadataRepository(mdrValue.getValue());
         log.debugf("Starting sevice RaRepositoryService");
     }
 
     @Override
     public void stop(StopContext context) {
 
+    }
+
+    public Injector<MetadataRepository> getMdrInjector() {
+        return mdrValue;
     }
 
 }

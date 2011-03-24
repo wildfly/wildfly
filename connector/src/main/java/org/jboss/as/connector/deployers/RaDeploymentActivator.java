@@ -36,6 +36,7 @@ import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -54,7 +55,10 @@ public class RaDeploymentActivator {
         serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();
 
         RaRepositoryService raRepositoryService = new RaRepositoryService();
-        serviceTarget.addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService).install();
+        serviceTarget
+                .addService(ConnectorServices.RA_REPOSISTORY_SERVICE, raRepositoryService)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class,
+                        raRepositoryService.getMdrInjector()).install();
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
         serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
