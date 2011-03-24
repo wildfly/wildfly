@@ -49,8 +49,8 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
     }
 
     @Override
-    protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry)
-            throws Exception {
+    protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation,
+            final ModelNode result, final ModelNodeRegistration registry) {
 
         super.addProxyNodes(context, address, originalOperation, result, registry);
 
@@ -70,6 +70,7 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
         }
     }
 
+    @Override
     protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
         PathAddress addr = !domainModelImpl.isMaster() && address.size() > 0 && address.getElement(0).getKey().equals(HOST) ?
                 address.subAddress(1) : address;
