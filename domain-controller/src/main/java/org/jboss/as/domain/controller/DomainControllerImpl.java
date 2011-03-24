@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -91,12 +90,12 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
 import org.jboss.as.domain.controller.plan.RolloutPlanController;
 import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
-import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
-import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
