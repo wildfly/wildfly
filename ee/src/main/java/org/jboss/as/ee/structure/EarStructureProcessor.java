@@ -121,8 +121,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 if (libDir.exists()) {
                     List<VirtualFile> libArchives = libDir.getChildren(CHILD_ARCHIVE_FILTER);
                     for (final VirtualFile child : libArchives) {
-                        final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
-                                .provider()) : null;
+                        final Closeable closable = child.isFile() ? mount(child, false) : null;
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         if (child.getName().toLowerCase().endsWith(JAR_EXTENSION)) {
@@ -161,12 +160,13 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             // if there is no application.xml then look in the ear root for modules
             if (earMetaData == null) {
                 for (final VirtualFile child : childArchives) {
-                    final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider())
+                    final boolean war = child.getName().toLowerCase().endsWith(WAR_EXTENSION);
+                    final Closeable closable = child.isFile() ? mount(child, war)
                             : null;
                     final MountHandle mountHandle = new MountHandle(closable);
                     final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
-                    if (child.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
+                    if (war) {
                         SubDeploymentMarker.mark(childResource);
                         childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
                     }
@@ -181,15 +181,15 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         throw new DeploymentUnitProcessingException("Unable to process modules in application.xml for EAR ["
                                 + virtualFile + "], module file " + module.getFileName() + " not found");
                     }
-                    final Closeable closable = moduleFile.isFile() ? VFS.mountZip(moduleFile, moduleFile,
-                            TempFileProviderService.provider()) : null;
+                    boolean war = module.getType() == ModuleType.Web;
+                    final Closeable closable = moduleFile.isFile() ? mount(moduleFile, war) : null;
                     final MountHandle mountHandle = new MountHandle(closable);
                     final ResourceRoot childResource = new ResourceRoot(moduleFile, mountHandle);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
                     childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
                     subDeploymentFiles.add(moduleFile);
                     SubDeploymentMarker.mark(childResource);
-                    if (module.getType() == ModuleType.Web) {
+                    if (war) {
                         childResource.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
                     }
                 }
@@ -199,8 +199,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         continue;
                     }
                     if (child.getLowerCaseName().toLowerCase().endsWith(JAR_EXTENSION)) {
-                        final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
-                                .provider()) : null;
+                        final Closeable closable = child.isFile() ? mount(child, false) : null;
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, childResource);
@@ -211,6 +210,11 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException("Failed to process children for EAR [" + virtualFile + "]", e);
         }
+    }
+
+    private static Closeable mount(VirtualFile moduleFile, boolean explode) throws IOException {
+        return explode ? VFS.mountZipExpanded(moduleFile, moduleFile, TempFileProviderService.provider())
+                       : VFS.mountZip(moduleFile, moduleFile, TempFileProviderService.provider());
     }
 
     public void undeploy(DeploymentUnit context) {
