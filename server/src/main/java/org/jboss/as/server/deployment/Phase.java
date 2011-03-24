@@ -205,52 +205,53 @@ public enum Phase {
     public static final int PARSE_EXTENSION_NAME                        = 0x0800;
     public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0900;
     public static final int PARSE_OSGI_PROPERTIES                       = 0x0A00;
+    public static final int PARSE_WEB_DEPLOYMENT                        = 0x0B00;
+    public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0C00;
+    public static final int PARSE_ANNOTATION_WAR                        = 0x0D00;
+    public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0E00;
+    public static final int PARSE_WEB_COMPONENTS                        = 0x0F00;
     // create and attach EJB metadata for EJB deployments
-    public static final int PARSE_EJB_DEPLOYMENT                        = 0x0B00;
+    public static final int PARSE_EJB_DEPLOYMENT                        = 0x1000;
     // create and attach the component description out of EJB annotations
-    public static final int PARSE_EJB_ANNOTATION                        = 0x0C00;
-    public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x0C01;
-    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x0C02;
-    public static final int PARSE_EJB_LOCAL_VIEW_ANNOTATION             = 0x0C03;
-    public static final int PARSE_EJB_NO_INTERFACE_VIEW_ANNOTATION      = 0x0C04;
-    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x0C05;
-    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x0C06;
+    public static final int PARSE_EJB_ANNOTATION                        = 0x1100;
+    public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1101;
+    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1102;
+    public static final int PARSE_EJB_LOCAL_VIEW_ANNOTATION             = 0x1103;
+    public static final int PARSE_EJB_NO_INTERFACE_VIEW_ANNOTATION      = 0x1104;
+    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1105;
+    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1106;
     // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x0C07;
+    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1107;
     // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x0C08;
+    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1108;
     // should be after all views are known
-    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x0C0A;
-    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x0C0B;
-    public static final int PARSE_WEB_DEPLOYMENT                        = 0x0D00;
-    public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0E00;
-    public static final int PARSE_ANNOTATION_WAR                        = 0x0F00;
-    public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x1000;
-    public static final int PARSE_TLD_DEPLOYMENT                        = 0x1100;
-    public static final int PARSE_RA_DEPLOYMENT                         = 0x1200;
-    public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x1300;
-    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x1400;
-    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x1500;
-    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x1600;
-    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x1700;
-    public static final int PARSE_DATA_SOURCES                          = 0x1800;
-    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1900;
-    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1A00;
-    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1B00;
-    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1C00;
-    public static final int PARSE_WEBSERVICES_XML                       = 0x1D00;
-    public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1E00;
-    public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x1F00;
-    public static final int PARSE_PERSISTENCE_UNIT                      = 0x2000;
-    public static final int PARSE_WEB_COMPONENTS                        = 0x2010;
-    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x2100;
-    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x2600;
-    public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x2700;
-    public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x2800;
-    public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x2900;
+    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x1109;
+    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x110A;
+    public static final int PARSE_TLD_DEPLOYMENT                        = 0x1200;
+    public static final int PARSE_RA_DEPLOYMENT                         = 0x1300;
+    public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x1400;
+    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x1500;
+    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x1600;
+    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x1700;
+    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x1800;
+    public static final int PARSE_DATA_SOURCES                          = 0x1900;
+    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1A00;
+    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1B00;
+    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1C00;
+    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1D00;
+    public static final int PARSE_WEBSERVICES_XML                       = 0x1E00;
+    public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1F00;
+    public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2000;
+    public static final int PARSE_PERSISTENCE_UNIT                      = 0x2100;
+    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x2200;
+    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x2300;
+    public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x2400;
+    public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x2500;
+    public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x2600;
     // should be after all components are known
-    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2A00;
-    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2B00;
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2700;
+    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2800;
+
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
