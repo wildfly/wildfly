@@ -29,7 +29,7 @@ import java.util.List;
 public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
     public static final String CDI_INJECTOR_FACTORY_CLASS = "org.jboss.resteasy.cdi.CdiInjectorFactory";
-    private static final String JAVA_RS_SERVLET_NAME = "javax.ws.rs.core.Application";
+    private static final String JAX_RS_SERVLET_NAME = "javax.ws.rs.core.Application";
     private static final String SERVLET_INIT_PARAM = "javax.ws.rs.Application";
 
     @Override
@@ -117,13 +117,15 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 && resteasy.getScannedResourceClasses().isEmpty()) return;
 
         boolean useScannedClass = false;
+        String servletName;
         if (resteasy.getScannedApplicationClass() == null) {
             //if there is no scanned application we must add a servlet with a name of
             //javax.ws.rs.core.Application
             JBossServletMetaData servlet = new JBossServletMetaData();
-            servlet.setName(JAVA_RS_SERVLET_NAME);
+            servlet.setName(JAX_RS_SERVLET_NAME);
             servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
             addServlet(webdata, servlet);
+            servletName = JAX_RS_SERVLET_NAME;
 
         } else {
             //now there are two options.
@@ -135,16 +137,24 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             ParamValueMetaData param = findInitParam(webdata, SERVLET_INIT_PARAM);
             if (param != null) {
                 //we need to promote the init param to a context param
-                setContextParameter(webdata, "javax.ws.rs.Application", param.getParamValue());
-            } else if (findContextParam(webdata, "javax.ws.rs.Application") == null) {
-                setContextParameter(webdata, "javax.ws.rs.Application", resteasy.getScannedApplicationClass().getName());
-                useScannedClass = true;
+                servletName = param.getParamValue();
+                setContextParameter(webdata, "javax.ws.rs.Application", servletName);
+            } else {
+                ParamValueMetaData contextParam = findContextParam(webdata, "javax.ws.rs.Application");
+                if (contextParam == null) {
+                    setContextParameter(webdata, "javax.ws.rs.Application", resteasy.getScannedApplicationClass().getName());
+                    useScannedClass = true;
+                    servletName = resteasy.getScannedApplicationClass().getName();
+                } else {
+                    servletName = contextParam.getParamValue();
+                }
             }
         }
 
+        boolean mappingSet = false;
+
         if (useScannedClass) {
             //add a servlet named after the application class
-            final String servletName = resteasy.getScannedApplicationClass().getName();
             JBossServletMetaData servlet = new JBossServletMetaData();
             servlet.setName(servletName);
             servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
@@ -167,6 +177,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                     }
                     patterns.add(pathValue);
                     setContextParameter(webdata, "resteasy.servlet.mapping.prefix", prefix);
+                    mappingSet = true;
                 } else {
                     throw new DeploymentUnitProcessingException("No Servlet mappings found for JAX-RS application: " + servletName + " either annotate it with @ApplicationPath or add a servlet-mapping in web.xml");
                 }
@@ -178,8 +189,33 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
                 webdata.getServletMappings().add(mapping);
             }
-
         }
+
+        if(!mappingSet) {
+            //now we need tell resteasy it's relative path
+            final List<ServletMappingMetaData> mappings = webdata.getServletMappings();
+            if(mappings != null) {
+                for(final ServletMappingMetaData mapping : mappings) {
+                    if(mapping.getServletName().equals(servletName)) {
+                        if(mapping.getUrlPatterns() != null) {
+                            for(String pattern : mapping.getUrlPatterns()) {
+                                if(mappingSet) {
+                                    log.errorf("More than one mapping found for JAX-RS servlet: %s the second mapping %s will not work",servletName,pattern);
+                                } else {
+                                    mappingSet = true;
+                                    String realPattern = pattern;
+                                    if(realPattern.endsWith("*")) {
+                                        realPattern = realPattern.substring(0,realPattern.length()-1);
+                                    }
+                                    setContextParameter(webdata, "resteasy.servlet.mapping.prefix",realPattern);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     private void addServlet(JBossWebMetaData webdata, JBossServletMetaData servlet) {
