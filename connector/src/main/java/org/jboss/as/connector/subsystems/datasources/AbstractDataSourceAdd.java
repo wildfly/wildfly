@@ -106,14 +106,12 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
 
                     final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
                     final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
-                    serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
-                            .addDependency(dataSourceServiceName, DataSource.class, referenceFactoryService.getDataSourceInjector())
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
+                    final ServiceBuilder<?> referenceBuilder = serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
+                            .addDependency(dataSourceServiceName, DataSource.class, referenceFactoryService.getDataSourceInjector());
 
                     final BinderService binderService = new BinderService(jndiName.substring(6));
                     final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
-                    serviceTarget.addService(binderServiceName, binderService)
+                    final ServiceBuilder<?> binderBuilder = serviceTarget.addService(binderServiceName, binderService)
                             .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
                             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
                             .addListener(new AbstractServiceListener<Object>() {
@@ -129,17 +127,23 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                                     log.infof("Removed JDBC Data-source [%s]", jndiName);
                                     serviceController.removeListener(this);
                                 }
-                            })
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
+                            });
 
                     if (enabled) {
                         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                                 .install();
+                        referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
+                        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
+                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                            .install();
                     } else {
                         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER)
                                 .install();
+                        referenceBuilder.setInitialMode(ServiceController.Mode.NEVER)
+                            .install();
+                        binderBuilder.setInitialMode(ServiceController.Mode.NEVER)
+                            .install();
                         resultHandler.handleResultComplete();
                     }
                 }

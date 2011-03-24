@@ -83,12 +83,25 @@ public class DataSourceDisable implements ModelUpdateOperationHandler {
                                 }
                             });
                         } else {
-                            resultHandler.handleResultComplete();
+                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not enabled"));
                         }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source service for [" + jndiName + "] is not available"));
+                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not available"));
+                    }
+
+                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceController<?> referenceController = registry.getService(referenceServiceName);
+                    if (referenceController != null && ServiceController.State.UP.equals(referenceController.getState())) {
+                        referenceController.setMode(ServiceController.Mode.NEVER);
+                    }
+
+                    final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+                    final ServiceController<?> binderController = registry.getService(binderServiceName);
+                    if (binderController != null && ServiceController.State.UP.equals(binderController.getState())) {
+                        binderController.setMode(ServiceController.Mode.NEVER);
                     }
                 }
+
             });
         } else {
             resultHandler.handleResultComplete();
