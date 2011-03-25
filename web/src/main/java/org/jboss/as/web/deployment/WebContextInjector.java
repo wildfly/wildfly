@@ -49,7 +49,7 @@ class WebContextInjector implements Injector<Host> {
     public void inject(final Host host) throws InjectionException {
         final Context context = this.context.getValue();
         // Check if this is the default webapp for the host
-        if (("/" + "ROOT").equals(context.getPath())) {
+        if (("/" + host.getDefaultWebapp()).equals(context.getPath())) {
             context.setPath("");
         }
         // Add the context to host

@@ -458,6 +458,8 @@ class SharedWebMetaDataBuilder {
         mappings.add(createMimeMapping("wmlscriptc", "application/vnd.wap.wmlscriptc"));
         mappings.add(createMimeMapping("wmv", "video/x-ms-wmv"));
         mappings.add(createMimeMapping("wrl", "x-world/x-vrml"));
+        mappings.add(createMimeMapping("wsdl", "text/xml"));
+        mappings.add(createMimeMapping("xsd", "text/xml"));
         mappings.add(createMimeMapping("Z", "application/x-compress"));
         mappings.add(createMimeMapping("z", "application/x-compress"));
         mappings.add(createMimeMapping("zip", "application/zip"));

@@ -74,7 +74,7 @@ class WebVirtualHostService implements Service<Host> {
             host.addValve(createRewriteValve(rewrite));
         }
         if (defaultWebModule != null) {
-        // FIXME: host.setDefaultWebapp(defaultWebModule);
+            host.setDefaultWebapp(defaultWebModule);
         }
         try {
             final WebServer server = webServer.getValue();

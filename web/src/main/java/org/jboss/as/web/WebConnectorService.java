@@ -24,11 +24,12 @@ package org.jboss.as.web;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11AprProtocol;
+import org.apache.coyote.http11.Http11Protocol;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -114,17 +115,17 @@ class WebConnectorService implements Service<Connector> {
                 }
             }
             if (virtualServers != null) {
-                ArrayList<String> virtualServersList = new ArrayList<String>();
+                HashSet<String> virtualServersList = new HashSet<String>();
                 for (final ModelNode virtualServer : virtualServers.asList()) {
                     virtualServersList.add(virtualServer.asString());
                 }
-                // FIXME: connector.setAllowedHosts(virtualServersList);
+                connector.setAllowedHosts(virtualServersList);
             }
             if (ssl != null) {
                 boolean nativeSSL = false;
                 if (connector.getProtocolHandler() instanceof Http11AprProtocol) {
                     nativeSSL = true;
-                } else if (!(connector.getProtocolHandler() instanceof Http11AprProtocol)) {
+                } else if (!(connector.getProtocolHandler() instanceof Http11Protocol)) {
                     throw new StartException("Non HTTP connectors dor not support SSL");
                 }
                 // Enable SSL

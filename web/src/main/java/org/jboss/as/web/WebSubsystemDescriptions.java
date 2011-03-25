@@ -25,7 +25,6 @@ package org.jboss.as.web;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -54,10 +53,11 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
         node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, REQUIRED).set(false);
 
-        node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG, DESCRIPTION).set(bundle.getString("web.configuration"));
-        node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG, REQUIRED).set(false);
+        node.get(ATTRIBUTES, Constants.NATIVE, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, Constants.NATIVE, DESCRIPTION).set(bundle.getString("web.native"));
+        node.get(ATTRIBUTES, Constants.NATIVE, REQUIRED).set(false);
 
+        getConfigurationCommonDescription(node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG), bundle);
         getConnectorCommonDescription(node.get(CHILDREN, Constants.CONNECTOR), bundle);
         getVirtualServerCommonDescription(node.get(CHILDREN, Constants.VIRTUAL_SERVER), bundle);
 
@@ -75,9 +75,7 @@ class WebSubsystemDescriptions {
         node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
         node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, REQUIRED).set(false);
 
-        node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG, TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG, DESCRIPTION).set(bundle.getString("web.configuration"));
-        node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG, REQUIRED).set(false);
+        getConfigurationCommonDescription(node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG), bundle);
 
         return node;
     }
@@ -90,6 +88,15 @@ class WebSubsystemDescriptions {
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
         return getConnectorCommonDescription(node, bundle);
+    }
+
+    static ModelNode getConfigurationCommonDescription(final ModelNode node, final ResourceBundle bundle) {
+
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
+        node.get(REQUIRED).set(false);
+
+        return node;
     }
 
     static ModelNode getConnectorCommonDescription(final ModelNode node, final ResourceBundle bundle) {
