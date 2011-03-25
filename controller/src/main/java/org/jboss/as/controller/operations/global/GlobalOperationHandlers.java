@@ -354,7 +354,11 @@ public class GlobalOperationHandlers {
 
                             final ModelNode readOp = operation.clone();
                             readOp.get(OP_ADDR).set(childAddress.toModelNode());
-                            final ModelNode readResult = readModel(context, operation, new ResultHandler() {
+
+                            if(operation.has(INCLUDE_RUNTIME))
+                                readOp.get(INCLUDE_RUNTIME).set(operation.get(INCLUDE_RUNTIME).asBoolean());
+
+                            final ModelNode readResult = readModel(context, readOp, new ResultHandler() {
                                 public void handleResultFragment(String[] location, ModelNode result) {
                                     // TODO
                                 }
