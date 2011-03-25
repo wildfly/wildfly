@@ -59,23 +59,22 @@ public final class RemoteDeployer implements Deployer {
         final DeploymentPlan plan = builder.build();
         final DeploymentAction deployAction = builder.getLastAction();
         final String uniqueId = deployAction.getDeploymentUnitUniqueName();
-        try {
-            executeDeploymentPlan(plan, deployAction);
-        } finally {
-            url2Id.put(archiveURL, uniqueId);
-        }
+        executeDeploymentPlan(plan, deployAction);
+        url2Id.put(archiveURL, uniqueId);
     }
 
     @Override
     public void undeploy(final URL archiveURL) throws Exception {
         final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
         final String uniqueName = url2Id.get(archiveURL);
-        final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
-        final DeploymentAction deployAction = builder.getLastAction();
-        try {
-            executeDeploymentPlan(plan, deployAction);
-        } finally {
-            url2Id.remove(archiveURL);
+        if (uniqueName != null) {
+            final DeploymentPlan plan = builder.undeploy(uniqueName).remove(uniqueName).build();
+            final DeploymentAction deployAction = builder.getLastAction();
+            try {
+                executeDeploymentPlan(plan, deployAction);
+            } finally {
+                url2Id.remove(archiveURL);
+            }
         }
     }
 
