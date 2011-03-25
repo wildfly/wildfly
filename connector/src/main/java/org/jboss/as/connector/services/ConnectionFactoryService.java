@@ -31,13 +31,13 @@ public class ConnectionFactoryService implements Service<Object> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.infof("started ConnectionFactoryService %s", context.getController().getName());
+        log.debugf("started ConnectionFactoryService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.infof("stopped ConnectionFactoryService %s", context.getController().getName());
+        log.debugf("stopped ConnectionFactoryService %s", context.getController().getName());
 
     }
 

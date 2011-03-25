@@ -29,13 +29,13 @@ public class AdminObjectService implements Service<Object> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.infof("started AdminObjectService %s", context.getController().getName());
+        log.debugf("started AdminObjectService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.infof("stopped AdminObjectService %s", context.getController().getName());
+        log.debugf("stopped AdminObjectService %s", context.getController().getName());
 
     }
 

@@ -30,13 +30,13 @@ public class ResourceAdapterService implements Service<ResourceAdapter> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.infof("started ResourceAdapterService %s", context.getController().getName());
+        log.debugf("started ResourceAdapterService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.infof("stopped ResourceAdapterService %s", context.getController().getName());
+        log.debugf("stopped ResourceAdapterService %s", context.getController().getName());
 
     }
 
