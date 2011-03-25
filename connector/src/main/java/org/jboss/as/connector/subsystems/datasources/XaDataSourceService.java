@@ -213,8 +213,8 @@ public class XaDataSourceService extends AbstractDataSourceService {
             padXid = dataSourceConfig.getXaPool().isPadXid();
         }
 
-        // TODO
-        String securityDomain = null;
+        String securityDomain = dataSourceConfig.getSecurity() != null ? dataSourceConfig.getSecurity().getSecurityDomain()
+                : null;
         // Select the correct connection manager
         TransactionSupport.TransactionSupportLevel tsl = TransactionSupport.TransactionSupportLevel.XATransaction;
         ConnectionManagerFactory cmf = new ConnectionManagerFactory();

@@ -128,4 +128,16 @@ class Constants {
     static final String SAME_RM_OVERRIDE = "same-rm-override";
 
     static final String WRAP_XA_DATASOURCE = "wrap-xa-datasource";
+
+    static final String RECOVERY_USERNAME = "recovery-username";
+
+    static final String RECOVERY_PASSWORD = "recovery-password";
+
+    static final String RECOVERY_SECURITY_DOMAIN = "recovery-security-domain";
+
+    static final String RECOVERLUGIN_CLASSNAME = "recovery-plugin-properties";
+
+    static final String RECOVERLUGIN_PROPERTIES = "recovery-plugin-properties";
+
+    static final String NO_RECOVERY = "no-recovery";
 }
