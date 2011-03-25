@@ -93,6 +93,9 @@ class WebConnectorMetrics implements ModelQueryOperationHandler {
                         } catch (Exception e) {
                             throw new OperationFailedException(new ModelNode().set("failed to get metrics" + e.getMessage()));
                         }
+                    } else {
+                        resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
+                        resultHandler.handleResultComplete();
                     }
                 }
             });

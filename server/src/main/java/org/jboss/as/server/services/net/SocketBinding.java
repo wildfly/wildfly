@@ -159,7 +159,7 @@ public class SocketBinding {
      * @throws SocketException
      */
     public DatagramSocket createDatagramSocket() throws SocketException {
-        return new ManagedDatagramSocketBinding(socketBindings, getSocketAddress());
+        return socketBindings.createDatagramSocket(name, getSocketAddress());
     }
 
     /**
@@ -170,7 +170,7 @@ public class SocketBinding {
      */
     // TODO JBAS-8470 automatically joingGroup
     public MulticastSocket createMulticastSocket() throws IOException {
-        return new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
+        return socketBindings.createMulticastSocket(name, getSocketAddress());
     }
 
     SocketFactory getSocketFactory() {
