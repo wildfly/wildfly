@@ -24,14 +24,15 @@ package org.jboss.as.ee.managedbean.component;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ManagedBeanComponentDescription extends AbstractComponentDescription {
 
-    public ManagedBeanComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        super(componentName, componentClassName, moduleName, applicationName);
+    public ManagedBeanComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
+        super(componentName, componentClassName, moduleDescription);
     }
 
     protected AbstractComponentConfiguration constructComponentConfiguration() {

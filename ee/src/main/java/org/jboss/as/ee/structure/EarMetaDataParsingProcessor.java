@@ -22,21 +22,22 @@
 
 package org.jboss.as.ee.structure;
 
-import java.io.InputStream;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.metadata.ear.spec.Ear6xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.parser.spec.EarMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import java.io.InputStream;
 
 /**
  * Deployment processor responsible for parsing the applicaiton.xml file of an ear.
@@ -67,6 +68,13 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
             final EarMetaData earMetaData = EarMetaDataParser.parse(xmlReader);
             if (earMetaData != null) {
                 deploymentUnit.putAttachment(Attachments.EAR_METADATA, earMetaData);
+                if(earMetaData instanceof Ear6xMetaData) {
+                    Ear6xMetaData metaData = (Ear6xMetaData)earMetaData;
+                    if(metaData.getEarEnvironmentRefsGroup() != null) {
+                        final DeploymentDescriptorEnvironment bindings = new DeploymentDescriptorEnvironment("java:app/env/", ((Ear6xMetaData) earMetaData).getEarEnvironmentRefsGroup());
+                        deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, bindings);
+                    }
+                }
             }
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse " + applicationXmlFile, e);

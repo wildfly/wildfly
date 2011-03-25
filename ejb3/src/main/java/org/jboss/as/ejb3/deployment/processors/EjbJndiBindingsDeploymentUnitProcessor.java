@@ -79,7 +79,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
      * @param sessionBean    The session bean
      * @param deploymentUnit The deployment unit containing the session bean
      */
-    private void setupJNDIBindings(SessionBeanComponentDescription sessionBean, DeploymentUnit deploymentUnit) {
+    private void setupJNDIBindings(SessionBeanComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
 
         Set<String> views = sessionBean.getViewClassNames();
         if (views == null || views.isEmpty()) {
@@ -98,36 +98,30 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
         // now create the bindings for each view under the java:global, java:app and java:module namespaces
         for (String viewClassName : views) {
-            final BindingDescription globalBinding = new BindingDescription();
-            globalBinding.setAbsoluteBinding(true);
             String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
-            globalBinding.setBindingName(globalJNDIName);
+            final BindingDescription globalBinding = new BindingDescription(globalJNDIName);
             globalBinding.setBindingType(viewClassName);
             globalBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
             // add the binding to the component description
-            sessionBean.getBindings().add(globalBinding);
+            sessionBean.addBinding(globalBinding);
             logger.debug("Added java:global jndi binding at " + globalJNDIName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
             // java:app bindings
-            final BindingDescription appBinding = new BindingDescription();
-            appBinding.setAbsoluteBinding(true);
             String appJNDIName = appJNDIBaseName + "!" + viewClassName;
-            appBinding.setBindingName(appJNDIName);
+            final BindingDescription appBinding = new BindingDescription(appJNDIName);
             appBinding.setBindingType(viewClassName);
             appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
             // add the binding to the component description
-            sessionBean.getBindings().add(appBinding);
+            sessionBean.addBinding(appBinding);
             logger.debug("Added java:app jndi binding at " + appJNDIName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
             // java:module bindings
-            final BindingDescription moduleBinding = new BindingDescription();
-            moduleBinding.setAbsoluteBinding(true);
             String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
-            moduleBinding.setBindingName(moduleJNDIName);
+            final BindingDescription moduleBinding = new BindingDescription(moduleJNDIName);
             moduleBinding.setBindingType(viewClassName);
             moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
             // add the binding to the component description
-            sessionBean.getBindings().add(moduleBinding);
+            sessionBean.addBinding(moduleBinding);
             logger.debug("Added java:module jndi binding at " + moduleJNDIName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
         }
@@ -142,34 +136,28 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         // Note that this also applies to java:app and java:module bindings
         // as can be seen by the examples in 4.4.2.1
         if (views.size() == 1) {
-            final BindingDescription globalBinding = new BindingDescription();
-            globalBinding.setAbsoluteBinding(true);
-            globalBinding.setBindingName(globalJNDIBaseName);
+            final BindingDescription globalBinding = new BindingDescription(globalJNDIBaseName);
             String viewClassName = views.iterator().next();
             globalBinding.setBindingType(viewClassName);
             globalBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
             // add the binding to the component description
-            sessionBean.getBindings().add(globalBinding);
+            sessionBean.addBinding(globalBinding);
             logger.debug("Added java:global jndi binding at " + globalJNDIBaseName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
             // java:app bindings
-            final BindingDescription appBinding = new BindingDescription();
-            appBinding.setAbsoluteBinding(true);
-            appBinding.setBindingName(appJNDIBaseName);
+            final BindingDescription appBinding = new BindingDescription(appJNDIBaseName);
             appBinding.setBindingType(viewClassName);
             appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
             // add the binding to the component description
-            sessionBean.getBindings().add(appBinding);
+            sessionBean.addBinding(appBinding);
             logger.debug("Added java:app jndi binding at " + appJNDIBaseName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
             // java:module bindings
-            final BindingDescription moduleBinding = new BindingDescription();
-            moduleBinding.setAbsoluteBinding(true);
-            moduleBinding.setBindingName(moduleJNDIBaseName);
+            final BindingDescription moduleBinding = new BindingDescription(moduleJNDIBaseName);
             moduleBinding.setBindingType(viewClassName);
             moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseServiceName.append("VIEW").append(viewClassName)));
             // add the binding to the component description
-            sessionBean.getBindings().add(moduleBinding);
+            sessionBean.addBinding(moduleBinding);
             logger.debug("Added java:module jndi binding at " + moduleJNDIBaseName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
         }
 

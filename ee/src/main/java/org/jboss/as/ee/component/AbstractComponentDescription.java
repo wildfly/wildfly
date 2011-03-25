@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.component.LifecycleInterceptorBuilder.createLifecycleInterceptors;
-import static org.jboss.as.ee.component.LifecycleInterceptorBuilder.createLifecycless;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -45,14 +43,19 @@ import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.jboss.as.ee.component.LifecycleInterceptorBuilder.createLifecycleInterceptors;
+import static org.jboss.as.ee.component.LifecycleInterceptorBuilder.createLifecycless;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -65,6 +68,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     private final String moduleName;
     private final String applicationName;
     private final String componentClassName;
+    private final EEModuleDescription moduleDescription;
     private final Map<String, InterceptorMethodDescription> aroundInvokeMethods = new LinkedHashMap<String,InterceptorMethodDescription>();
 
     private final List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
@@ -85,25 +89,27 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     private final Set<String> viewClassNames = new HashSet<String>();
     private ComponentNamingMode namingMode = ComponentNamingMode.NONE;
     private boolean excludeDefaultInterceptors = false;
+    private final BindingsContainer bindingsContainer;
+    private DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
 
     /**
      * Construct a new instance.
      *
      * @param componentName the component name
      * @param componentClassName the component instance class name
-     * @param moduleName the module name
-     * @param applicationName the application name
+     * @param module
      */
-    protected AbstractComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        this.moduleName = moduleName;
-        this.applicationName = applicationName;
+    protected AbstractComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription module) {
+        this.moduleName = module.getModuleName();
+        this.applicationName = module.getAppName();
+        this.moduleDescription = module;
         if (componentName == null) {
             throw new IllegalArgumentException("name is null");
         }
         if (componentClassName == null) {
             throw new IllegalArgumentException("className is null");
         }
-        if (moduleName == null) {
+        if (module == null) {
             throw new IllegalArgumentException("moduleName is null");
         }
         if (applicationName == null) {
@@ -111,6 +117,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         }
         this.componentName = componentName;
         this.componentClassName = componentClassName;
+        this.bindingsContainer = new BindingsContainer();
     }
 
     /**
@@ -212,11 +219,9 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
      */
     public boolean addClassInterceptor(InterceptorDescription description) {
         String name = description.getInterceptorClassName();
-        //TODO: this is O(n)
         if (classInterceptorsSet.contains(name)) {
             return false;
         }
-        //TODO: so is this
         if(!allInterceptors.containsKey(name)) {
             allInterceptors.put(name,description);
         }
@@ -524,6 +529,72 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         }
     }
 
+    /**
+     * Adds bindings from annotations. If this component does not have a naming mode of CREATE,
+     * or the binding is not for the java:comp namespace, the binding will be passed up to the module
+     * rather than being held by the component.
+     *
+     * @param binding The binding to add
+     */
+    public void addAnnotationBinding(BindingDescription binding) {
+        //for JNDI bindings where the naming mode is not CREATE
+        //the module is responsible for installing the binding
+        if(this.getNamingMode() != ComponentNamingMode.CREATE ||
+                !(binding.getBindingName() != null &&
+                        binding.getBindingName().startsWith("java:comp"))) {
+            moduleDescription.getBindingsContainer().addAnnotationBinding(binding);
+        } else {
+            bindingsContainer.addAnnotationBinding(binding);
+        }
+    }
+
+    /**
+     * Adds a binding from a deployment descriptor or other source. If this component does not have a
+     * naming mode of CREATE, or the binding is not for the java:comp namespace, the binding will be
+     * passed up to the module rather than being held by the component.
+     *
+     * @param binding The binding to add
+     */
+    public void addBinding(BindingDescription binding) {
+        if(this.getNamingMode() != ComponentNamingMode.CREATE ||
+                !(binding.getBindingName() != null &&
+                        binding.getBindingName().startsWith("java:comp"))) {
+            moduleDescription.getBindingsContainer().addBinding(binding);
+        } else {
+            bindingsContainer.addBinding(binding);
+        }
+    }
+
+    /**
+     * Adds multiple bindings
+     *
+     * @see #addBinding(BindingDescription)
+     * @param bindings The bindings to add
+     */
+    public void addBindings(Iterable<BindingDescription> bindings) {
+        final Iterator<BindingDescription> iterator = bindings.iterator();
+        while(iterator.hasNext()) {
+            addBinding(iterator.next());
+        }
+    }
+
+    /**
+     * Gets a list of the components merged binding descriptions. Bindings
+     * added through {@link #addBinding(BindingDescription)} will override
+     * annotation bindings with the same name.
+     *
+     * @return The merged bindings
+     */
+    public List<BindingDescription> getMergedBindings() {
+        return bindingsContainer.getMergedBindings();
+    }
+
+    public void addAnnotationBindings(Collection<BindingDescription> bindings) {
+        for(BindingDescription binding : bindings) {
+            addAnnotationBinding(binding);
+        }
+    }
+
     private static final AtomicInteger seq = new AtomicInteger();
 
     private static <T> ProxyFactory<?> getProxyFactory(Class<T> type) {
@@ -533,6 +604,14 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         } else {
             return new ProxyFactory<T>(proxyName, type, type.getClassLoader());
         }
+    }
+
+    public DeploymentDescriptorEnvironment getDeploymentDescriptorEnvironment() {
+        return deploymentDescriptorEnvironment;
+    }
+
+    public void setDeploymentDescriptorEnvironment(DeploymentDescriptorEnvironment deploymentDescriptorEnvironment) {
+        this.deploymentDescriptorEnvironment = deploymentDescriptorEnvironment;
     }
 
     @Override

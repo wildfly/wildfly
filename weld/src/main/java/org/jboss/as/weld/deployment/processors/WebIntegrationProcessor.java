@@ -21,10 +21,6 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -34,11 +30,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
-import org.jboss.metadata.web.spec.WebMetaData;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Deployment processor that integrates weld into the web tier
@@ -85,7 +85,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             log.info("Not installing Weld web tier integration as no war metadata found");
             return;
         }
-        WebMetaData webMetaData = warMetaData.getWebMetaData();
+        JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {
             log.info("Not installing Weld web tier integration as no web metadata found");
             return;

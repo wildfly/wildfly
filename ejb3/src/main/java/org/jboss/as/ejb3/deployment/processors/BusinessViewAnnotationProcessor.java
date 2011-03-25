@@ -144,14 +144,19 @@ public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProces
         Set<String> localInterfaces = new HashSet<String>();
         for(DotName iface : interfaces) {
             final ClassInfo ifaceClass = compositeIndex.getClassByName(iface);
-            final List<AnnotationInstance> annotations = ifaceClass.annotations().get(annotationType);
-            if(annotations != null) {
-                for(AnnotationInstance annotation : annotations) {
-                    if(annotation.target() instanceof ClassInfo) {
-                        localInterfaces.add(iface.toString());
-                        break;
+
+            if(ifaceClass != null) {
+                final List<AnnotationInstance> annotations = ifaceClass.annotations().get(annotationType);
+                if(annotations != null) {
+                    for(AnnotationInstance annotation : annotations) {
+                        if(annotation.target() instanceof ClassInfo) {
+                            localInterfaces.add(iface.toString());
+                            break;
+                        }
                     }
                 }
+            } else {
+                logger.warnf("Could not read annotations on EJB interface %s", iface.toString());
             }
         }
         return localInterfaces;
@@ -171,6 +176,10 @@ public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProces
         //if it is annotated @Remote
         final DotName iface = names.iterator().next();
         final ClassInfo classInfo = index.getClassByName(iface);
+        if(classInfo == null) {
+            logger.warnf("Could not read annotations in interface %s when determining local interfaces for %s",iface, sessionBeanClass.name());
+            return null;
+        }
         List<AnnotationInstance> annotations = classInfo.annotations().get(REMOTE);
         if(annotations == null || annotations.isEmpty()) {
             return iface.toString();

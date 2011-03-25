@@ -23,14 +23,8 @@
 package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ejb3.component.EJBBusinessMethod;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.LockType;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Component description for a singleton bean
@@ -49,11 +43,10 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param moduleName         the module name
-     * @param applicationName    the application name
+     * @param moduleDescription  the module description
      */
-    public SingletonComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        super(componentName, componentClassName, moduleName, applicationName);
+    public SingletonComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
+        super(componentName, componentClassName, moduleDescription);
     }
 
     @Override

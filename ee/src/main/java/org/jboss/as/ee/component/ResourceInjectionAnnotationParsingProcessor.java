@@ -24,6 +24,7 @@ package org.jboss.as.ee.component;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -69,39 +70,39 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
 
 
     /** {@inheritDoc} **/
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
         if(classInfo == null) {
             return; // We can't continue without the annotation index info.
         }
 
-        componentDescription.getBindings().addAll(getResourceConfigurations(classInfo));
+        componentDescription.addAnnotationBindings(getResourceConfigurations(classInfo, componentDescription));
         final Collection<InterceptorDescription> interceptorConfigurations = componentDescription.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
             if(interceptorClassInfo == null) {
                 continue;
             }
-            interceptorConfiguration.getBindings().addAll(getResourceConfigurations(interceptorClassInfo));
+            componentDescription.addAnnotationBindings(getResourceConfigurations(interceptorClassInfo, componentDescription));
         }
     }
 
-    private List<BindingDescription> getResourceConfigurations(final ClassInfo classInfo) {
+    private List<BindingDescription> getResourceConfigurations(final ClassInfo classInfo,AbstractComponentDescription componentDescription) {
         final List<BindingDescription> configurations = new ArrayList<BindingDescription>();
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
         if (classAnnotations != null) {
             final List<AnnotationInstance> resourceAnnotations = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
             if (resourceAnnotations != null) for (AnnotationInstance annotation : resourceAnnotations) {
-                configurations.add(getResourceConfiguration(annotation));
+                configurations.add(getResourceConfiguration(annotation,componentDescription));
             }
-            configurations.addAll(processClassResources(classAnnotations));
+            configurations.addAll(processClassResources(classAnnotations,componentDescription));
         }
 
         return configurations;
     }
 
-    private BindingDescription getResourceConfiguration(final AnnotationInstance annotation) {
+    private BindingDescription getResourceConfiguration(final AnnotationInstance annotation,AbstractComponentDescription componentDescription) {
         final AnnotationTarget annotationTarget = annotation.target();
         final BindingDescription resourceConfiguration;
 
@@ -111,11 +112,11 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         final String type = typeValue != null ? typeValue.asClass().name().toString() : null;
 
         if (annotationTarget instanceof FieldInfo) {
-            resourceConfiguration = processFieldResource(FieldInfo.class.cast(annotationTarget), name, type);
+            resourceConfiguration = processFieldResource(FieldInfo.class.cast(annotationTarget), name, type, componentDescription);
         } else if (annotationTarget instanceof MethodInfo) {
-            resourceConfiguration = processMethodResource(MethodInfo.class.cast(annotationTarget), name, type);
+            resourceConfiguration = processMethodResource(MethodInfo.class.cast(annotationTarget), name, type, componentDescription);
         } else if (annotationTarget instanceof ClassInfo) {
-            resourceConfiguration = processClassResource(name, type);
+            resourceConfiguration = processClassResource(name, type, componentDescription);
         } else {
             resourceConfiguration = null;
         }
@@ -129,9 +130,9 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
             final String bindingType = resourceConfiguration.getBindingType();
             final AnnotationValue lookupValue = annotation.value("lookup");
             if (lookupValue != null) {
-                resourceConfiguration.setReferenceSourceDescription(new LookupBindingSourceDescription(lookupValue.asString()));
+                resourceConfiguration.setReferenceSourceDescription(new LookupBindingSourceDescription(lookupValue.asString(),componentDescription));
             } else if(FIXED_LOCATIONS.containsKey(bindingType)) {
-                resourceConfiguration.setReferenceSourceDescription(new LookupBindingSourceDescription(FIXED_LOCATIONS.get(bindingType)));
+                resourceConfiguration.setReferenceSourceDescription(new LookupBindingSourceDescription(FIXED_LOCATIONS.get(bindingType),componentDescription));
             } else {
                 resourceConfiguration.setReferenceSourceDescription(new LazyBindingSourceDescription());
             }
@@ -139,7 +140,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return resourceConfiguration;
     }
 
-    private BindingDescription processFieldResource(final FieldInfo fieldInfo, final String name, final String type) {
+    private BindingDescription processFieldResource(final FieldInfo fieldInfo, final String name, final String type, final AbstractComponentDescription componentDescription) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName;
@@ -148,7 +149,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         } else {
             localContextName = name;
         }
-        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType);
+        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType, componentDescription);
 
         final InjectionTargetDescription targetDescription = new InjectionTargetDescription();
         targetDescription.setName(fieldName);
@@ -159,7 +160,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return bindingDescription;
     }
 
-    private BindingDescription processMethodResource(final MethodInfo methodInfo, final String name, final String type) {
+    private BindingDescription processMethodResource(final MethodInfo methodInfo, final String name, final String type, final AbstractComponentDescription componentDescription) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -174,7 +175,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         }
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
-        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType);
+        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType, componentDescription);
 
         final InjectionTargetDescription targetDescription = new InjectionTargetDescription();
         targetDescription.setName(methodName);
@@ -185,17 +186,17 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         return bindingDescription;
     }
 
-    private BindingDescription processClassResource(final String name, final String type) {
+    private BindingDescription processClassResource(final String name, final String type, final AbstractComponentDescription componentDescription) {
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
         }
         if (isEmpty(type)|| type.equals(Object.class.getName())) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a type.");
         }
-        return createBindingDescription(name, type);
+        return createBindingDescription(name, type, componentDescription);
     }
 
-    private List<BindingDescription> processClassResources(final Map<DotName, List<AnnotationInstance>> classAnnotations) {
+    private List<BindingDescription> processClassResources(final Map<DotName, List<AnnotationInstance>> classAnnotations,AbstractComponentDescription abstractComponentDescription) {
         final List<AnnotationInstance> resourcesAnnotations = classAnnotations.get(RESOURCES_ANNOTATION_NAME);
         if (resourcesAnnotations == null || resourcesAnnotations.isEmpty()) {
             return Collections.emptyList();
@@ -206,15 +207,14 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
 
         final List<BindingDescription> resourceConfigurations = new ArrayList<BindingDescription>(resourceAnnotations.length);
         for (AnnotationInstance resource : resourceAnnotations) {
-            resourceConfigurations.add(getResourceConfiguration(resource));
+            resourceConfigurations.add(getResourceConfiguration(resource,abstractComponentDescription));
         }
         return resourceConfigurations;
     }
 
-    private BindingDescription createBindingDescription(final String name, final String beanInterface) {
-        final BindingDescription bindingDescription = new BindingDescription();
+    private BindingDescription createBindingDescription(final String name, final String beanInterface, final AbstractComponentDescription componentDescription) {
+        final BindingDescription bindingDescription = new BindingDescription(name, componentDescription);
         bindingDescription.setDependency(true);
-        bindingDescription.setBindingName(name);
         bindingDescription.setBindingType(beanInterface);
         return bindingDescription;
     }

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.LazyBindingSourceDescription;
@@ -62,7 +61,7 @@ public class WebServiceContextDeploymentUnitProcessor implements DeploymentUnitP
         }
 
         @Override
-        public boolean getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
+        public boolean getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
             if(referenceDescription.getBindingType().equals("javax.xml.ws.WebServiceContext")) {
                 injector.inject(new ValueManagedObject(new ImmediateValue<Object>(ThreadLocalAwareWebServiceContext.getInstance())));
                 return true;

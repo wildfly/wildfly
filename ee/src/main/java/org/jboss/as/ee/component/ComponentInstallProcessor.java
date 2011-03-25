@@ -73,12 +73,21 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     protected void deployComponent(final DeploymentPhaseContext phaseContext, final AbstractComponentDescription description) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final ModuleClassLoader classLoader = module.getClassLoader();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+
+        final JndiInjectionPointStore moduleInjectionPointStore = deploymentUnit.getAttachment(Attachments.MODULE_INJECTIONS);
+        final JndiInjectionPointStore injectionPointStore;
+        if(moduleInjectionPointStore != null) {
+            injectionPointStore = new JndiInjectionPointStore(moduleInjectionPointStore);
+        } else {
+            injectionPointStore = new JndiInjectionPointStore();
+        }
 
         final String className = description.getComponentClassName();
         final Class<?> componentClass;
@@ -173,17 +182,15 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
 
         // Iterate through each binding/injection, creating the JNDI binding and wiring dependencies for each
-        final List<BindingDescription> bindingDescriptions = description.getBindings();
-        final List<ResourceInjection> instanceResourceInjections = configuration.getResourceInjections();
+        final List<BindingDescription> bindingDescriptions = description.getMergedBindings();
         for (BindingDescription bindingDescription : bindingDescriptions) {
-            addJndiDependency(classLoader, serviceTarget, description, componentClass, deploymentReflectionIndex, applicationName, moduleName, componentName, createServiceName, startBuilder, instanceResourceInjections, bindingDescription, phaseContext);
+            addJndiBinding(classLoader, serviceTarget, applicationName, moduleName, componentName, createServiceName, startBuilder, bindingDescription, phaseContext, injectionPointStore);
         }
 
         // Now iterate the interceptors and their bindings
         final Collection<InterceptorDescription> interceptorClasses = description.getAllInterceptors().values();
 
         for (InterceptorDescription interceptorDescription : interceptorClasses) {
-            final List<ResourceInjection> interceptorResourceInjections = new ArrayList<ResourceInjection>();
             String interceptorClassName = interceptorDescription.getInterceptorClassName();
             final Class<?> interceptorClass;
             try {
@@ -192,15 +199,20 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 throw new DeploymentUnitProcessingException("Component interceptor class not found", e);
             }
 
-            for (BindingDescription bindingDescription : interceptorDescription.getBindings()) {
-                addJndiDependency(classLoader, serviceTarget, description, interceptorClass, deploymentReflectionIndex, applicationName, moduleName, componentName, createServiceName, startBuilder, interceptorResourceInjections, bindingDescription, phaseContext);
-            }
+            List<ResourceInjection> injectionList = injectionPointStore.applyInjections(interceptorClass, deploymentReflectionIndex);
+
+            configuration.addInterceptorResourceInjection(interceptorClass,injectionList);
         }
+        List<ResourceInjection> injectionList = injectionPointStore.applyInjections(componentClass, deploymentReflectionIndex);
+        //we want to make sure that all JNDI entries are available when the component is created.
+        startBuilder.addDependencies(injectionPointStore.getServiceNames());
+        configuration.getResourceInjections().addAll(injectionList);
+
         createBuilder.install();
         startBuilder.install();
     }
 
-    private static void addJndiDependency(final ModuleClassLoader classLoader, final ServiceTarget serviceTarget, final AbstractComponentDescription description, final Class<?> injecteeClass, final DeploymentReflectionIndex deploymentReflectionIndex, final String applicationName, final String moduleName, final String componentName, final ServiceName createServiceName, final ServiceBuilder<Component> startBuilder, final List<ResourceInjection> instanceResourceInjections, final BindingDescription bindingDescription, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private static void addJndiBinding(final ModuleClassLoader classLoader, final ServiceTarget serviceTarget, final String applicationName, final String moduleName, final String componentName, final ServiceName createServiceName, final ServiceBuilder<Component> startBuilder, final BindingDescription bindingDescription, final DeploymentPhaseContext phaseContext, final JndiInjectionPointStore injectionPointStore) throws DeploymentUnitProcessingException {
         // Gather information about the dependency
         final String bindingName = bindingDescription.getBindingName();
         final String bindingType = bindingDescription.getBindingType();
@@ -222,51 +234,42 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         // Check to see if this entry should actually be bound into JNDI.
         if (bindingName != null) {
             // bind into JNDI
-            // The binding depends on the bound resource, the creation of this component, and the scope naming store.
-            ComponentNamingMode namingMode = description.getNamingMode();
-            final String fullBindingName;
             final String serviceBindingName;
-            if (bindingName.startsWith("java:") || bindingDescription.isAbsoluteBinding()) {
-                fullBindingName = bindingName;
-                int idx = fullBindingName.indexOf('/');
-                if (idx == -1) {
-                    serviceBindingName = fullBindingName;
-                } else {
-                    serviceBindingName = fullBindingName.substring(idx + 1);
-                }
 
-            } else if (namingMode == ComponentNamingMode.CREATE) {
-                fullBindingName = "java:comp/env/" + bindingName;
-                serviceBindingName = "env/" + bindingName;
+            int idx = bindingName.indexOf('/');
+            if (idx == -1) {
+                serviceBindingName = bindingName;
             } else {
-                fullBindingName = "java:module/env/" + bindingName;
-                serviceBindingName = "env/" + bindingName;
+                serviceBindingName = bindingName.substring(idx + 1);
             }
             final BinderService service = new BinderService(serviceBindingName);
-            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, fullBindingName);
+            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName);
             if (bindingServiceName == null) {
                 throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
             }
             // The service builder for the binding
             ServiceBuilder<ManagedReferenceFactory> sourceServiceBuilder = serviceTarget.addService(bindingServiceName, service);
             // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
-            bindingDescription.getReferenceSourceDescription().getResourceValue(description, bindingDescription, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
+            bindingDescription.getReferenceSourceDescription().getResourceValue(bindingDescription, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
             resourceValue = sourceServiceBuilder
                     .addDependency(createServiceName)
                     .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
                     .install();
             // Start service depends on the binding if the binding is a dependency
             if (bindingDescription.isDependency()) startBuilder.addDependency(bindingServiceName);
+
+            for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
+                injectionPointStore.addInjectedValue(new JndiInjectedValue(injectionTarget,resourceValue,bindingServiceName));
+            }
         } else {
             // do not bind into JNDI
             // The resource value comes from the reference source, which may add a dependency on the original value to the start service
             final InjectedValue<ManagedReferenceFactory> injectedValue = new InjectedValue<ManagedReferenceFactory>();
-            bindingDescription.getReferenceSourceDescription().getResourceValue(description, bindingDescription, startBuilder, phaseContext, injectedValue);
+            bindingDescription.getReferenceSourceDescription().getResourceValue(bindingDescription, startBuilder, phaseContext, injectedValue);
             resourceValue = injectedValue;
-        }
-        // Create injectors for the binding
-        for (InjectionTargetDescription targetDescription : bindingDescription.getInjectionTargetDescriptions()) {
-            instanceResourceInjections.add(ResourceInjection.Factory.create(targetDescription, injecteeClass, deploymentReflectionIndex, resourceValue));
+            for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
+                injectionPointStore.addInjectedValue(new JndiInjectedValue(injectionTarget,resourceValue,null));
+            }
         }
     }
 

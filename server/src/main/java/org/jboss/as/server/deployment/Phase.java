@@ -230,6 +230,7 @@ public enum Phase {
     public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x110A;
     public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x110B;
     public static final int PARSE_TLD_DEPLOYMENT                        = 0x1200;
+    public static final int PARSE_WEB_MERGE_METADATA                    = 0x1201;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x1300;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x1400;
     public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x1500;
@@ -299,7 +300,7 @@ public enum Phase {
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0300;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0400;
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0500;
-    public static final int INSTALL_WAR_METADATA                        = 0x0600;
+    public static final int INSTALL_WAR_METADATA                        = 0x0600; //this needs to be removed, however WSDeploymentActivator still uses it
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0700;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0800;
     public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0900;
@@ -308,7 +309,10 @@ public enum Phase {
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x0C00;
     public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0D00;
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0E00;
-    public static final int INSTALL_EE_COMPONENT                        = 0x0F00;
+    public static final int INSTALL_ENV_ENTRY                           = 0x0F00;
+    public static final int INSTALL_EJB_REF                             = 0x0F01;
+    public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x0F02;
+    public static final int INSTALL_EE_COMPONENT                        = 0x0F03;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1000;
     public static final int INSTALL_JAXRS_SCANNING                      = 0x1100;
     public static final int INSTALL_JAXRS_COMPONENT                     = 0x1200;

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -71,7 +72,8 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         index(indexer, MyBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), moduleDescription);
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -90,12 +92,13 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         index(indexer, ViewB.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), moduleDescription);
         Collection<String> views = new HashSet<String>();
         views.add(ViewA.class.getName());
         views.add(ViewB.class.getName());
         componentDescription.addLocalBusinessInterfaceViews(views);
-        
+
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 

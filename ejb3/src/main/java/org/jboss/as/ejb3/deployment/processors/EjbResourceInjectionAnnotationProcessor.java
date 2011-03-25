@@ -22,11 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import javax.ejb.EJB;
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.BindingDescription;
@@ -48,6 +43,12 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.msc.service.ServiceName;
 
+import javax.ejb.EJB;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Deployment processor responsible for processing @EJB annotations within components.  Each @EJB annotation will be registered
  * as an injection binding for the component.
@@ -63,18 +64,18 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
             return; // We can't continue without the annotation index info.
         }
 
-        description.getBindings().addAll(getEjbInjectionConfigurations(index, classInfo, deploymentUnit));
+        description.addAnnotationBindings(getEjbInjectionConfigurations(index, classInfo, deploymentUnit, description));
         final Collection<InterceptorDescription> interceptorConfigurations = description.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
             if (interceptorClassInfo == null) {
                 continue;
             }
-            interceptorConfiguration.getBindings().addAll(getEjbInjectionConfigurations(index, interceptorClassInfo, deploymentUnit));
+            description.addAnnotationBindings(getEjbInjectionConfigurations(index, interceptorClassInfo, deploymentUnit, description));
         }
     }
 
-    private List<BindingDescription> getEjbInjectionConfigurations(final CompositeIndex index, final ClassInfo classInfo, final DeploymentUnit deploymentUnit) {
+    private List<BindingDescription> getEjbInjectionConfigurations(final CompositeIndex index, final ClassInfo classInfo, final DeploymentUnit deploymentUnit, final AbstractComponentDescription componentDescription) {
         final List<BindingDescription> configurations = new ArrayList<BindingDescription>();
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
@@ -82,7 +83,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
             final List<AnnotationInstance> ejbAnnotations = classAnnotations.get(EJB_ANNOTATION_NAME);
             if (ejbAnnotations != null) {
                 for (AnnotationInstance annotation : ejbAnnotations) {
-                    configurations.add(getEjbInjectionConfiguration(annotation, deploymentUnit));
+                    configurations.add(getEjbInjectionConfiguration(annotation, deploymentUnit,componentDescription));
                 }
             }
         }
@@ -91,13 +92,13 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
         if (superName != null && !superName.toString().equals(Object.class.getName())) {
             ClassInfo superClass = index.getClassByName(superName);
             if (superClass != null) {
-                configurations.addAll(this.getEjbInjectionConfigurations(index, superClass, deploymentUnit));
+                configurations.addAll(this.getEjbInjectionConfigurations(index, superClass, deploymentUnit,componentDescription));
             }
         }
         return configurations;
     }
 
-    private BindingDescription getEjbInjectionConfiguration(final AnnotationInstance annotation, final DeploymentUnit deploymentUnit) {
+    private BindingDescription getEjbInjectionConfiguration(final AnnotationInstance annotation, final DeploymentUnit deploymentUnit, final AbstractComponentDescription componentDescription) {
         final AnnotationTarget annotationTarget = annotation.target();
 
         final AnnotationValue nameValue = annotation.value("name");
@@ -121,11 +122,11 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
 
         final BindingDescription bindingDescription;
         if (annotationTarget instanceof FieldInfo) {
-            bindingDescription = processFieldInjection(FieldInfo.class.cast(annotationTarget), name, beanInterface);
+            bindingDescription = processFieldInjection(FieldInfo.class.cast(annotationTarget), name, beanInterface, componentDescription);
         } else if (annotationTarget instanceof MethodInfo) {
-            bindingDescription = processMethodInjection(MethodInfo.class.cast(annotationTarget), name, beanInterface);
+            bindingDescription = processMethodInjection(MethodInfo.class.cast(annotationTarget), name, beanInterface, componentDescription);
         } else if (annotationTarget instanceof ClassInfo) {
-            bindingDescription = processClassInjection(name, beanInterface);
+            bindingDescription = processClassInjection(name, beanInterface, componentDescription);
         } else {
             bindingDescription = null;
         }
@@ -134,7 +135,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
                 bindingDescription.setDescription(description);
             }
             if (!isEmpty(lookup)) {
-                bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookup));
+                bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookup,componentDescription));
             } else if (!isEmpty(beanName)) {
                 final ServiceName beanServiceName = deploymentUnit.getServiceName()
                         .append("component").append(beanName).append("VIEW").append(bindingDescription.getBindingType());
@@ -146,7 +147,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
         return bindingDescription;
     }
 
-    private BindingDescription processFieldInjection(final FieldInfo fieldInfo, final String name, final String beanInterface) {
+    private BindingDescription processFieldInjection(final FieldInfo fieldInfo, final String name, final String beanInterface, final AbstractComponentDescription componentDescription) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(beanInterface) || beanInterface.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : beanInterface;
 
@@ -156,7 +157,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
         } else {
             localContextName = name;
         }
-        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType);
+        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType, componentDescription);
 
         final InjectionTargetDescription targetDescription = new InjectionTargetDescription();
         targetDescription.setName(fieldName);
@@ -167,7 +168,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
         return bindingDescription;
     }
 
-    private BindingDescription processMethodInjection(final MethodInfo methodInfo, final String name, final String beanInterface) {
+    private BindingDescription processMethodInjection(final MethodInfo methodInfo, final String name, final String beanInterface, final AbstractComponentDescription componentDescription) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@EJB injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -181,7 +182,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
             localContextName = name;
         }
         final String injectionType = isEmpty(beanInterface) || beanInterface.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : beanInterface;
-        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType);
+        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType, componentDescription);
 
         final InjectionTargetDescription targetDescription = new InjectionTargetDescription();
         targetDescription.setName(methodName);
@@ -192,20 +193,19 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
         return bindingDescription;
     }
 
-    private BindingDescription processClassInjection(final String name, final String beanInterface) {
+    private BindingDescription processClassInjection(final String name, final String beanInterface, final AbstractComponentDescription componentDescription) {
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Class level @EJB annotations must provide a name.");
         }
         if (isEmpty(beanInterface) || beanInterface.equals(Object.class.getName())) {
             throw new IllegalArgumentException("Class level @EJB annotations must provide a 'beanInterface'.");
         }
-        return createBindingDescription(name, beanInterface);
+        return createBindingDescription(name, beanInterface, componentDescription);
     }
 
-    private BindingDescription createBindingDescription(final String name, final String beanInterface) {
-        final BindingDescription bindingDescription = new BindingDescription();
+    private BindingDescription createBindingDescription(final String name, final String beanInterface,final AbstractComponentDescription componentDescription) {
+        final BindingDescription bindingDescription = new BindingDescription(name,componentDescription);
         bindingDescription.setDependency(true);
-        bindingDescription.setBindingName(name);
         bindingDescription.setBindingType(beanInterface);
         return bindingDescription;
     }

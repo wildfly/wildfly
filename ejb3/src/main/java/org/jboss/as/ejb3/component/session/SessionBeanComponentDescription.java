@@ -23,7 +23,10 @@
 package org.jboss.as.ejb3.component.session;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
+
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
@@ -93,11 +96,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param moduleName         the module name
-     * @param applicationName    the application name
+     * @param moduleDescription the module description
      */
-    public SessionBeanComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        super(componentName, componentClassName, moduleName, applicationName);
+    public SessionBeanComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
+        super(componentName, componentClassName, moduleDescription);
     }
 
     /**

@@ -41,6 +41,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProces
 import org.jboss.as.ejb3.deployment.processors.EjbDependsOnAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProcessor;
+import org.jboss.as.ejb3.deployment.processors.EjbRefProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
 import org.jboss.as.ejb3.deployment.processors.LockAnnotationProcessor;
@@ -125,6 +126,8 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW, new ImplicitLocalViewProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_JNDI_BINDINGS, new EjbJndiBindingsDeploymentUnitProcessor());
+
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_REF, new EjbRefProcessor());
 
 
             // add the real deployment processor

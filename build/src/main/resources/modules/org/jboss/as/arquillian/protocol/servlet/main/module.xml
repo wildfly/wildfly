@@ -29,6 +29,7 @@
     </resources>
 
     <dependencies>
+        <module name="net.sourceforge.htmlunit"/>
         <module name="org.jboss.arquillian.spi"/>
         <module name="org.jboss.jsfunit.core"/>
         <module name="org.jboss.shrinkwrap.api"/>

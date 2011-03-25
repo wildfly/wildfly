@@ -36,21 +36,36 @@ import org.jboss.msc.service.ServiceName;
  */
 public final class LookupBindingSourceDescription extends BindingSourceDescription {
     private final String lookupName;
+    private final ServiceName sourceServiceName;
 
-    public LookupBindingSourceDescription(final String lookupName) {
+    public LookupBindingSourceDescription(final String lookupName, AbstractComponentDescription componentDescription) {
         this.lookupName = lookupName;
-    }
-
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         if (lookupName.startsWith("java:")) {
             // Comes from a scoped dependency item
             final String compName = componentDescription.getNamingMode() == ComponentNamingMode.CREATE ? componentDescription.getComponentName() : componentDescription.getModuleName();
             final String moduleName = componentDescription.getModuleName();
             final String appName = componentDescription.getApplicationName();
-            final ServiceName sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
-            serviceBuilder.addDependency(sourceServiceName, ManagedReferenceFactory.class, injector);
-        }else {
+            sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
+        } else {
             throw new RuntimeException("lookup name " + lookupName + " not supported, lookup in @Resource annotation must start with java in " + componentDescription.getComponentClassName());
         }
     }
+
+    public LookupBindingSourceDescription(final String lookupName, EEModuleDescription moduleDescription) {
+        this.lookupName = lookupName;
+        if (lookupName.startsWith("java:")) {
+            // Comes from a scoped dependency item
+            final String compName = moduleDescription.getModuleName();
+            final String moduleName = moduleDescription.getModuleName();
+            final String appName = moduleDescription.getAppName();
+            sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
+        } else {
+            throw new RuntimeException("lookup name " + lookupName + " not supported, lookup in @Resource annotation must start with java in " + moduleDescription.getModuleName());
+        }
+    }
+
+    public void getResourceValue(final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+        serviceBuilder.addDependency(sourceServiceName, ManagedReferenceFactory.class, injector);
+    }
+
 }

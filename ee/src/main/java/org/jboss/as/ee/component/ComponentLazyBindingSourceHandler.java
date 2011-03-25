@@ -48,7 +48,7 @@ public class ComponentLazyBindingSourceHandler implements LazyBindingSourceDescr
      *
      * {@inheritDoc}
      */
-    public boolean getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public boolean getResourceValue(final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         final String bindingType = referenceDescription.getBindingType();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationComponentDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);

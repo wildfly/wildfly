@@ -44,11 +44,11 @@ public abstract class BindingSourceDescription {
      * Get the value to use as the injection source.  The value will be yield an injectable which is dereferenced once
      * for every time the reference source is injected.
      *
-     * @param componentDescription the component upon whose behalf this reference value is being acquired
      * @param referenceDescription the reference description describing the reference
      * @param serviceBuilder the service builder to append dependencies to, if any
      * @param phaseContext the deployment phase context
      * @param injector the injector into which the value should be placed
      */
-    public abstract void getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector);
+    public abstract void getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector);
+
 }

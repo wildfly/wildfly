@@ -47,7 +47,8 @@ public final class EnvEntryReferenceSourceDescription extends BindingSourceDescr
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         injector.inject(new ValueManagedObject(Values.immediateValue(value)));
     }
+
 }

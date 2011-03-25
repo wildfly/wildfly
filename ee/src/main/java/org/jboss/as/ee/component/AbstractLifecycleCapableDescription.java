@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author John Bailey
  */
-public class AbstractLifecycleCapableDescription extends AbstractInjectableDescription {
+public class AbstractLifecycleCapableDescription  {
     private final List<InterceptorMethodDescription> postConstructs = new ArrayList<InterceptorMethodDescription>();
     private final List<InterceptorMethodDescription> preDestroys = new ArrayList<InterceptorMethodDescription>();
 

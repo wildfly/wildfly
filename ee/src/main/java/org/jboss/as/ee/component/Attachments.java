@@ -33,4 +33,6 @@ public class Attachments {
     public static final AttachmentKey<EEApplicationDescription> EE_APPLICATION_DESCRIPTION = AttachmentKey.create(EEApplicationDescription.class);
     public static final AttachmentKey<EEModuleDescription> EE_MODULE_DESCRIPTION = AttachmentKey.create(EEModuleDescription.class);
     public static final AttachmentKey<AttachmentList<LazyBindingSourceDescription.LazyBingingSourceDescriptionHandler>> LAZY_BINDING_SOURCES_HANDLERS = AttachmentKey.createList(LazyBindingSourceDescription.LazyBingingSourceDescriptionHandler.class);
+    public static final AttachmentKey<JndiInjectionPointStore> MODULE_INJECTIONS = AttachmentKey.create(JndiInjectionPointStore.class);
+    public static final AttachmentKey<DeploymentDescriptorEnvironment> MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT = AttachmentKey.create(DeploymentDescriptorEnvironment.class);
 }

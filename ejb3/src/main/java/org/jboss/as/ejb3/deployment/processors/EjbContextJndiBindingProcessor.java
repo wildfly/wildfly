@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import javax.ejb.EJBContext;
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.BindingDescription;
@@ -39,6 +38,8 @@ import org.jboss.ejb3.context.CurrentEJBContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
+import javax.ejb.EJBContext;
+
 /**
  * Deployment processor responsible for detecting EJB components and adding a {@link BindingDescription} for the
  * java:comp/EJBContext entry.
@@ -51,12 +52,10 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
             return;  // Only process EJB deployments
         }
 
-        final BindingDescription ejbContextBinding = new BindingDescription();
-        ejbContextBinding.setAbsoluteBinding(true);
-        ejbContextBinding.setBindingName("java:comp/EJBContext");
+        final BindingDescription ejbContextBinding = new BindingDescription("java:comp/EJBContext");
         ejbContextBinding.setBindingType(EJBContext.class.getName());
         ejbContextBinding.setReferenceSourceDescription(directEjbContextReferenceSourceDescription);
-        componentDescription.getBindings().add(ejbContextBinding);
+        componentDescription.addBinding(ejbContextBinding);
     }
 
     private static final ManagedReference ejbContextManagedReference = new ManagedReference() {
@@ -75,8 +74,9 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
     };
 
     private final BindingSourceDescription directEjbContextReferenceSourceDescription = new BindingSourceDescription() {
-        public void getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
+        public void getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
             injector.inject(ejbContextManagedReferenceFactory);
         }
+
     };
 }

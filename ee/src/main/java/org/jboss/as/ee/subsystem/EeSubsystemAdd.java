@@ -33,11 +33,13 @@ import org.jboss.as.ee.component.ComponentInterceptorAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ComponentLazyBindingSourceProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.EEModuleNameProcessor;
+import org.jboss.as.ee.component.EnvEntryProcessor;
 import org.jboss.as.ee.component.InterceptorAnnotationParsingProcessor;
 import org.jboss.as.ee.component.LifecycleAnnotationParsingProcessor;
+import org.jboss.as.ee.component.ModuleJndiBindingProcessor;
 import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
-import org.jboss.as.ee.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
+import org.jboss.as.ee.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanSubDeploymentMarkingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
@@ -104,9 +106,11 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_INITIALIZE_IN_ORDER, new InitalizeInOrderProcessor());
 
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ENV_ENTRY, new EnvEntryProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER, new ComponentLazyBindingSourceProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EAR_AGGREGATE_COMPONENT_INDEX, new ComponentAggregationProcessor());
         }

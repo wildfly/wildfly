@@ -22,44 +22,28 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.DATABASE_NAME_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.DESCRIPTION_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.INITIAL_POOL_SIZE_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.ISOLATION_LEVEL_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.LOGIN_TIMEOUT_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.MAX_IDLE_TIME_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.MAX_POOL_SIZE_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.MAX_STATEMENTS_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.MIN_POOL_SIZE_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.PASSWORD_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.PORT_NUMBER_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.PROPERTIES_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.SERVER_NAME_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.TRANSACTIONAL_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.URL_PROP;
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.USER_PROP;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.sql.DataSourceDefinition;
-import javax.annotation.sql.DataSourceDefinitions;
-
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+
+import javax.annotation.sql.DataSourceDefinition;
+import javax.annotation.sql.DataSourceDefinitions;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescription.*;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link AbstractComponentDescription} instance to configure
@@ -74,12 +58,12 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
     private static final DotName DATASOURCE_DEFINITIONS = DotName.createSimple(DataSourceDefinitions.class.getName());
 
     /** {@inheritDoc} **/
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription description) {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription description) throws DeploymentUnitProcessingException {
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(description.getComponentClassName()));
         if(classInfo == null) {
             return; // We can't continue without the annotation index info.
         }
-        description.getBindings().addAll(getDatasourceDefinitions(classInfo));
+        description.addAnnotationBindings(getDatasourceDefinitions(classInfo));
 
         final Collection<InterceptorDescription> interceptorConfigurations = description.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
@@ -87,7 +71,7 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
             if(interceptorClassInfo == null) {
                 continue;
             }
-            interceptorConfiguration.getBindings().addAll(getDatasourceDefinitions(interceptorClassInfo));
+            description.addAnnotationBindings(getDatasourceDefinitions(interceptorClassInfo));
         }
     }
 
@@ -142,11 +126,9 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
         desc.setUser(asString(annotation, USER_PROP));
 
 
-        final BindingDescription bindingDescription = new BindingDescription();
+        final BindingDescription bindingDescription = new BindingDescription(name);
         bindingDescription.setDependency(true);
-        bindingDescription.setBindingName(name);
         bindingDescription.setBindingType(type);
-        bindingDescription.setAbsoluteBinding(true);
         bindingDescription.setReferenceSourceDescription(desc);
         return bindingDescription;
     }

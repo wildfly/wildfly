@@ -55,7 +55,8 @@ public final class ServiceBindingSourceDescription extends BindingSourceDescript
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
+
 }

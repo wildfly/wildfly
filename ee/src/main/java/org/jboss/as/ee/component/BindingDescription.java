@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,13 +34,50 @@ import java.util.List;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class BindingDescription {
+
+    private static final String JAVA = "java:";
+
     private BindingSourceDescription referenceSourceDescription;
-    private boolean absoluteBinding;
     private boolean dependency;
-    private String bindingName;
+    private final String bindingName;
     private String bindingType;
     private String description;
+    private Resource.AuthenticationType authenticationType = Resource.AuthenticationType.CONTAINER;
+    private boolean sharable = false;
+
     private List<InjectionTargetDescription> injectionTargetDescriptions = new ArrayList<InjectionTargetDescription>(1);
+
+    /**
+     * Creates a binding description for an absolute name.
+     * @param bindingName The jndi name to bind. Must start with <code>java:</code>
+     */
+    public BindingDescription(String bindingName) {
+        if(!bindingName.startsWith("java:")) {
+            throw new RuntimeException("Absolute binding name " + bindingName + " must start with java:");
+        }
+        this.bindingName = bindingName;
+    }
+
+    /**
+     * Creates a binding description for an absolute or relative name.
+     * If the name does not start with <code>java:</code> it is assumed to be a relative
+     * name, as will have either <code>java:comp/env</code> or <code>java:module/env</code>
+     * appended to it, depending on the naming mode of the component.
+     *
+     * @param bindingName The JNDI name to bind
+     * @param componentDescription The component that defined the binding
+     */
+    public BindingDescription(String bindingName, AbstractComponentDescription componentDescription) {
+        if(!bindingName.startsWith(JAVA)) {
+            if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
+                this.bindingName = "java:comp/env/" + bindingName;
+            } else {
+                this.bindingName = "java:module/env/" + bindingName;
+            }
+        } else {
+            this.bindingName = bindingName;
+        }
+    }
 
     /**
      * Get the description of the reference.
@@ -71,24 +109,6 @@ public class BindingDescription {
     }
 
     /**
-     * Determine whether this binding is an absolute name or whether it's relative to the component environment base.
-     *
-     * @return {@code true} if the binding is absolute
-     */
-    public boolean isAbsoluteBinding() {
-        return absoluteBinding;
-    }
-
-    /**
-     * Set whether this binding is an absolute name or whether it's relative to the component environment base.
-     *
-     * @param absoluteBinding {@code true} if the binding is absolute
-     */
-    public void setAbsoluteBinding(final boolean absoluteBinding) {
-        this.absoluteBinding = absoluteBinding;
-    }
-
-    /**
      * Determine whether this binding is a dependency of the component.
      *
      * @return {@code true} if the component start depends on this binding, {@code false} otherwise
@@ -113,15 +133,6 @@ public class BindingDescription {
      */
     public String getBindingName() {
         return bindingName;
-    }
-
-    /**
-     * The JNDI name into which this reference will be bound, or {@code null} if no binding should take place.
-     *
-     * @param bindingName the JNDI binding name
-     */
-    public void setBindingName(final String bindingName) {
-        this.bindingName = bindingName;
     }
 
     /**
@@ -167,6 +178,38 @@ public class BindingDescription {
         this.referenceSourceDescription = referenceSourceDescription;
     }
 
+    /**
+     * The authentication type for the resource. Will not be used in most cases
+     * @return The authentication type
+     */
+    public Resource.AuthenticationType getAuthenticationType() {
+        return authenticationType;
+    }
+
+    /**
+     * Sets the authentication type
+     * @param authenticationType The authentication type
+     */
+    public void setAuthenticationType(Resource.AuthenticationType authenticationType) {
+        this.authenticationType = authenticationType;
+    }
+
+    /**
+     * If this resource can be shared between components.
+     * @return The sharable attribute
+     */
+    public boolean isSharable() {
+        return sharable;
+    }
+
+    /**
+     * Sets if this resource can be shared between components.
+     * @param sharable If this resource is shareable
+     */
+    public void setSharable(boolean sharable) {
+        this.sharable = sharable;
+    }
+
     @Override
     public String toString() {
         return "BindingDescription{" +
@@ -175,4 +218,5 @@ public class BindingDescription {
                 ", referenceSourceDescription=" + referenceSourceDescription +
                 '}';
     }
+
 }

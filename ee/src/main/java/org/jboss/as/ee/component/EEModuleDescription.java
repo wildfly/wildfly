@@ -41,6 +41,7 @@ public final class EEModuleDescription {
     private final Map<String, AbstractComponentDescription> componentsByClassName = new HashMap<String, AbstractComponentDescription>();
     private final List<InjectionFactory> injectionFactories = new ArrayList<InjectionFactory>();
     private final Map<String, Set<AbstractComponentDescription>> componentsByViewName = new HashMap<String, Set<AbstractComponentDescription>>();
+    private final BindingsContainer bindingsContainer;
 
     /**
      * Construct a new instance.
@@ -51,6 +52,7 @@ public final class EEModuleDescription {
     public EEModuleDescription(final String appName, final String moduleName) {
         this.appName = appName;
         this.moduleName = moduleName;
+        this.bindingsContainer = new BindingsContainer();
     }
 
     /**
@@ -123,5 +125,9 @@ public final class EEModuleDescription {
 
     public Set<AbstractComponentDescription> getComponentsForViewName(final String name) {
         return componentsByViewName.get(name);
+    }
+
+    public BindingsContainer getBindingsContainer() {
+        return bindingsContainer;
     }
 }

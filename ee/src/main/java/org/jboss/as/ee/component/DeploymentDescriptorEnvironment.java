@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,27 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.ee.component;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.metadata.javaee.spec.Environment;
 
 /**
- * A description of a Java EE object which can accept injections, such as an interceptor or an EE component type.
+ * The environment as read from a deployment descriptor
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
-public abstract class AbstractInjectableDescription {
+public class DeploymentDescriptorEnvironment {
 
-    private final List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+    private final String defaultContext;
 
-    /**
-     * Get the JNDI bindings and dependencies for this component.
-     *
-     * @return the binding descriptions
-     */
-    public List<BindingDescription> getBindings() {
-        return bindings;
+    private final Environment environment;
+
+    public DeploymentDescriptorEnvironment(String defaultContext, Environment environment) {
+        this.defaultContext = defaultContext;
+        this.environment = environment;
+    }
+
+    public String getDefaultContext() {
+        return defaultContext;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
     }
 }

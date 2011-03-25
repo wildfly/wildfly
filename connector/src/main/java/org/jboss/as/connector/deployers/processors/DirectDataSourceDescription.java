@@ -21,7 +21,6 @@
  */
 package org.jboss.as.connector.deployers.processors;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -86,8 +85,8 @@ public class DirectDataSourceDescription extends BindingSourceDescription {
 
 
     @Override
-    public void getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription,
-            ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(BindingDescription referenceDescription,
+                                 ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
         final Module module = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex index = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 

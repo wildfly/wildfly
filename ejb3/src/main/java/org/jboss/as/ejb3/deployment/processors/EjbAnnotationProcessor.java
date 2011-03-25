@@ -132,13 +132,13 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             SessionBeanComponentDescription sessionBeanDescription = null;
             switch (sessionBeanType) {
                 case STATELESS:
-                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription);
                     break;
                 case STATEFUL:
-                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription);
                     break;
                 case SINGLETON:
-                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, moduleDescription.getModuleName(), applicationName);
+                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, moduleDescription);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);

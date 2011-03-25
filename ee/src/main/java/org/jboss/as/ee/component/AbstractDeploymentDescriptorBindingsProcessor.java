@@ -1,0 +1,127 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.ee.component;
+
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
+import org.jboss.metadata.javaee.support.ResourceInjectionMetaDataWithDescriptions;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
+
+/**
+ * Class that provides common functionality required by processors that process environment information from deployment descriptors.
+ *
+ * @author Stuart Douglas
+ */
+public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements DeploymentUnitProcessor {
+
+
+    /**
+     * Processes the injection targets of a resource binding
+     *
+     * @param classLoader The module class loader
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param entry The resource with injection targets
+     * @param description The binding description
+     * @param classType The expected type of the injection point, may be null if this is to be inferred from the injection target
+     * @return The actual class type of the injection point
+     * @throws DeploymentUnitProcessingException If the injection points could not be resolved
+     */
+    protected Class<?> processInjectionTargets(ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, BindingDescription description, Class<?> classType) throws DeploymentUnitProcessingException {
+        if(entry.getInjectionTargets() != null) {
+            for(ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
+
+                final Class<?> injectionTargetClass;
+                try {
+                    injectionTargetClass = classLoader.loadClass(injectionTarget.getInjectionTargetClass());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load " + injectionTarget.getInjectionTargetClass() + " referenced in env-entry injection point ",e);
+                }
+                final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
+                String methodName = "set" + injectionTarget.getInjectionTargetName().substring(0,1).toUpperCase() + injectionTarget.getInjectionTargetName().substring(1);
+
+                boolean methodFound = false;
+                Method method = null;
+                Field field = null;
+                Class<?> injectionTargetType = null;
+                String memberName = injectionTarget.getInjectionTargetName();
+                Class<?> current = injectionTargetClass;
+                while(current != Object.class && current != null && !methodFound) {
+                    final Collection<Method> methods = index.getAllMethods(methodName);
+                    for(Method m : methods) {
+                        if(m.getParameterTypes().length == 1) {
+                            if(m.isBridge() || m.isSynthetic()) {
+                                continue;
+                            }
+                            if(methodFound) {
+                                throw new DeploymentUnitProcessingException("Two setter methods for " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " found when applying <injection-target> for env-entry");
+                            }
+                            methodFound = true;
+                            method = m;
+                            injectionTargetType = m.getParameterTypes()[0];
+                            memberName = methodName;
+                        }
+                    }
+                    current = current.getSuperclass();
+                }
+                if(method == null) {
+                    current = injectionTargetClass;
+                    while(current != Object.class && current != null && field == null) {
+                        field = index.getField(injectionTarget.getInjectionTargetName());
+                        if(field != null) {
+                            injectionTargetType = field.getType();
+                            memberName = injectionTarget.getInjectionTargetName();
+                            break;
+                        }
+                        current = current.getSuperclass();
+                    }
+                }
+                if(field == null && method == null) {
+                    throw new DeploymentUnitProcessingException("Could not resolve injection point " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " specified in web.xml");
+                }
+                if(classType != null) {
+                    if(!classType.isAssignableFrom(injectionTargetType)) {
+                         throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection");
+                    }
+                } else {
+                    classType = injectionTargetType;
+                }
+                final InjectionTargetDescription injectionTargetDescription = new InjectionTargetDescription();
+                injectionTargetDescription.setClassName(injectionTarget.getInjectionTargetClass());
+                if(method == null) {
+                    injectionTargetDescription.setType(InjectionTargetDescription.Type.FIELD);
+                } else {
+                    injectionTargetDescription.setType(InjectionTargetDescription.Type.METHOD);
+                }
+                injectionTargetDescription.setName(memberName);
+                injectionTargetDescription.setValueClassName(classType.getName());
+                description.getInjectionTargetDescriptions().add(injectionTargetDescription);
+            }
+        }
+        return classType;
+    }
+}

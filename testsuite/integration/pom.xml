@@ -48,6 +48,11 @@
             <artifactId>jboss-as-server</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Needed for @Resource(lookup=) -->
+        <dependency>
+           <groupId>org.jboss.spec.javax.annotation</groupId>
+           <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -56,7 +61,36 @@
     </dependencies>
 
     <build>
+        <!-- Big complex hack just to get @Resource(lookup="foo") -->
+
         <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jboss.spec.javax.annotation</groupId>
+                                    <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

@@ -84,7 +84,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName,beanClassName,moduleDescription.getModuleName(),applicationName);
+            final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName, beanClassName, moduleDescription);
             final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(beanName);
 
             // Add the view
@@ -92,18 +92,14 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             // Bind the view to its two JNDI locations
             // TODO - this should be a bit more elegant
-            final BindingDescription moduleBinding = new BindingDescription();
-            moduleBinding.setAbsoluteBinding(true);
-            moduleBinding.setBindingName("java:module/" + beanName);
+            final BindingDescription moduleBinding = new BindingDescription("java:module/" + beanName);
             moduleBinding.setBindingType(beanClassName);
             moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseName.append("VIEW").append(beanClassName)));
-            componentDescription.getBindings().add(moduleBinding);
-            final BindingDescription appBinding = new BindingDescription();
-            appBinding.setAbsoluteBinding(true);
-            appBinding.setBindingName("java:app/" + moduleDescription.getModuleName() + "/" + beanName);
+            componentDescription.addBinding(moduleBinding);
+            final BindingDescription appBinding = new BindingDescription("java:app/" + moduleDescription.getModuleName() + "/" + beanName);
             appBinding.setBindingType(beanClassName);
             appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseName.append("VIEW").append(beanClassName)));
-            componentDescription.getBindings().add(appBinding);
+            componentDescription.addBinding(appBinding);
             moduleDescription.addComponent(componentDescription);
         }
     }

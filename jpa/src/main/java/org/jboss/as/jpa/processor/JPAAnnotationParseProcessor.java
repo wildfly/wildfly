@@ -87,14 +87,14 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         if (classInfo == null) {
             return; // We can't continue without the annotation index info.
         }
-        componentDescription.getBindings().addAll(getConfigurations(deploymentUnit, classInfo, componentDescription, phaseContext));
+        componentDescription.addAnnotationBindings(getConfigurations(deploymentUnit, classInfo, componentDescription, phaseContext));
         final Collection<InterceptorDescription> interceptorConfigurations = componentDescription.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = compositeIndex.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
             if (interceptorClassInfo == null) {
                 continue;
             }
-            interceptorConfiguration.getBindings().addAll(getConfigurations(deploymentUnit, interceptorClassInfo, componentDescription, phaseContext));
+            componentDescription.addAnnotationBindings(getConfigurations(deploymentUnit, interceptorClassInfo, componentDescription, phaseContext));
         }
     }
 
@@ -173,9 +173,8 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final DotName declaredType = fieldInfo.type().name();
         final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? fieldInfo.type().name() : declaredType;
 
-        BindingDescription bindingDescription = new BindingDescription();
+        BindingDescription bindingDescription = new BindingDescription(localContextName,componentDescription);
         bindingDescription.setDependency(true);
-        bindingDescription.setBindingName(localContextName);
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
@@ -217,9 +216,8 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
 
         final DotName declaredType = methodInfo.returnType().name();
         final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? methodInfo.returnType().name() : declaredType;
-        final BindingDescription bindingDescription = new BindingDescription();
+        final BindingDescription bindingDescription = new BindingDescription(localContextName,componentDescription);
         bindingDescription.setDependency(true);
-        bindingDescription.setBindingName(localContextName);
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
@@ -251,9 +249,8 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         }
         final String name = nameValue.asString();
         final String type = classInfo.name().toString();
-        final BindingDescription bindingDescription = new BindingDescription();
+        final BindingDescription bindingDescription = new BindingDescription(name,componentDescription);
         bindingDescription.setDependency(true);
-        bindingDescription.setBindingName(name);
         bindingDescription.setBindingType(type);
         ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, name, type);
         bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));

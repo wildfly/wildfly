@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.junit.Test;
 
 import javax.ejb.TransactionManagementType;
@@ -46,7 +47,10 @@ public class EJBComponentDescriptionTestCase {
     public void testNoTxAttrs() throws Exception {
         final EJBComponentConfiguration configuration = mock(EJBComponentConfiguration.class);
         when(configuration.getTransactionManagementType()).thenReturn(TransactionManagementType.BEAN);
-        final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", "TestModule", "TestApp") {
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp","TestModule");
+
+        final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", moduleDescription) {
             @Override
             public MethodIntf getMethodIntf(String viewClassName) {
                 return MethodIntf.LOCAL;

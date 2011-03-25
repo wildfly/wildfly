@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
@@ -68,7 +69,8 @@ public class TransactionManagementAnnotationProcessorTestCase {
         index(indexer, SubBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), moduleDescription);
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -80,7 +82,8 @@ public class TransactionManagementAnnotationProcessorTestCase {
      */
     @Test
     public void testDefault() {
-        EJBComponentDescription componentDescription = new StatelessComponentDescription("TestBean", "TestClass", "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription("TestBean", "TestClass", moduleDescription);
         assertEquals(TransactionManagementType.CONTAINER, componentDescription.getTransactionManagementType());
     }
 
@@ -98,7 +101,8 @@ public class TransactionManagementAnnotationProcessorTestCase {
         index(indexer, SubBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), moduleDescription);
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 

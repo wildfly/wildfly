@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.EEModuleDescription;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
@@ -79,11 +80,11 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param moduleName         the module name
-     * @param applicationName    the application name
+     * @param moduleDescription the module
      */
-    public EJBComponentDescription(final String componentName, final String componentClassName, final String moduleName, final String applicationName) {
-        super(componentName, componentClassName, moduleName, applicationName);
+    public EJBComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
+        super(componentName, componentClassName, moduleDescription);
+        //TODO: This should not be create for EJB's in a war
         setNamingMode(ComponentNamingMode.CREATE);
     }
 

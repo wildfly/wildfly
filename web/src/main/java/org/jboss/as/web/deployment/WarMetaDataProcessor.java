@@ -22,16 +22,7 @@
 
 package org.jboss.as.web.deployment;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -53,6 +44,16 @@ import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Merge all metadata into a main JBossWebMetaData.
@@ -322,6 +323,11 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);
 
+        //now attach any JNDI binding related information to the deployment
+        if(mergedMetaData.getJndiEnvironmentRefsGroup() != null) {
+            final DeploymentDescriptorEnvironment bindings = new DeploymentDescriptorEnvironment("java:module/env/", mergedMetaData.getJndiEnvironmentRefsGroup());
+            deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, bindings);
+        }
     }
 
     public void undeploy(final DeploymentUnit context) {

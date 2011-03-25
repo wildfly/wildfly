@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.List;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+
+import java.util.List;
 
 /**
  * {@link BindingSourceDescription} that will lazily determine the resource value as new mechanisms for determining resouce values
@@ -38,10 +39,10 @@ public class LazyBindingSourceDescription extends BindingSourceDescription {
     /**
      * {@inheritDoc}
      */
-    public void getResourceValue(final AbstractComponentDescription componentDescription, final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(final BindingDescription referenceDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         final List<LazyBingingSourceDescriptionHandler> handlers = phaseContext.getAttachment(Attachments.LAZY_BINDING_SOURCES_HANDLERS);
         if (handlers != null) for (LazyBingingSourceDescriptionHandler handler : handlers) {
-            if (handler.getResourceValue(componentDescription, referenceDescription, serviceBuilder, phaseContext, injector)) {
+            if (handler.getResourceValue(referenceDescription, serviceBuilder, phaseContext, injector)) {
                 return;
             }
         }
@@ -57,13 +58,13 @@ public class LazyBindingSourceDescription extends BindingSourceDescription {
          * Get the resouce value for a {@link LazyBindingSourceDescription}.  Implementations of this method should return the
          * correct boolean value determining whether or not they handled the binding source.
          *
-         * @param componentDescription the component upon whose behalf this reference value is being acquired
+         *
          * @param referenceDescription the reference description describing the reference
          * @param serviceBuilder       the service builder to append dependencies to, if any
          * @param phaseContext         the deployment phase context
          * @param injector             the injector into which the value should be placed
          * @return true if the handler was able to provide a value, false otherwise.
          */
-        boolean getResourceValue(AbstractComponentDescription componentDescription, BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector);
+        boolean getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector);
     }
 }
