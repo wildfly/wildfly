@@ -213,6 +213,8 @@ public enum Phase {
     public static final int PARSE_EAR_CONTEXT_ROOT                      = 0x0F01;
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1000;
+    public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1001;
+    public static final int PARSE_EJB_MDB_DD                            = 0x1002;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_ANNOTATION                        = 0x1100;
     public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1101;
