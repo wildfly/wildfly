@@ -46,9 +46,9 @@ import java.util.List;
  *
  * @author Jaikiran Pai
  */
-public class ImplicitNoInterfaceViewProcessor extends AbstractComponentConfigProcessor {
+public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor {
 
-    private static Logger logger = Logger.getLogger(ImplicitNoInterfaceViewProcessor.class);
+    private static Logger logger = Logger.getLogger(ImplicitLocalViewProcessor.class);
 
     @Override
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex index, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
