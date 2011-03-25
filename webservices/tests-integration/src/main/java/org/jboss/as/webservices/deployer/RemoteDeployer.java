@@ -55,7 +55,7 @@ public final class RemoteDeployer implements Deployer {
 
     @Override
     public void deploy(final URL archiveURL) throws Exception {
-        final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().add(archiveURL).andDeploy();
+        final DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().withRollback().add(archiveURL).andDeploy();
         final DeploymentPlan plan = builder.build();
         final DeploymentAction deployAction = builder.getLastAction();
         final String uniqueId = deployAction.getDeploymentUnitUniqueName();
