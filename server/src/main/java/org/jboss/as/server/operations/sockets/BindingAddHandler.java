@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations;
+package org.jboss.as.server.operations.sockets;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -56,14 +56,14 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerSocketBindingAddHandler extends SocketBindingAddHandler {
+public class BindingAddHandler extends SocketBindingAddHandler {
 
-    public static final ServerSocketBindingAddHandler INSTANCE = new ServerSocketBindingAddHandler();
+    public static final BindingAddHandler INSTANCE = new BindingAddHandler();
 
 
     private final ParametersValidator runtimeValidator = new ParametersValidator();
 
-    private ServerSocketBindingAddHandler() {
+    private BindingAddHandler() {
         runtimeValidator.registerValidator(INTERFACE, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         runtimeValidator.registerValidator(PORT, new IntRangeValidator(0, 65535, false, false));
         runtimeValidator.registerValidator(FIXED_PORT, new ModelTypeValidator(ModelType.BOOLEAN, true, false));

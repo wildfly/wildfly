@@ -93,6 +93,13 @@ public final class DomainDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider SOCKET_BINDING_GROUP_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return SocketBindingGroupDescription.getSocketBindingGroupRemoveOperation(locale);
+        }
+    };
+
     public static final DescriptionProvider SOCKET_BINDING = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

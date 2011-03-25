@@ -22,6 +22,8 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -31,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ListValdidator;
@@ -50,16 +53,22 @@ public class WriteAttributeHandlers {
     public static class WriteAttributeOperationHandler implements ModelUpdateOperationHandler {
         public static OperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
-        final ParameterValidator validator;
+        final ParameterValidator valueValidator;
 
-        private WriteAttributeOperationHandler() {
+        /**
+         * Creates a WriteAttributeOperationHandler that doesn't validate values.
+         */
+        protected WriteAttributeOperationHandler() {
             this(null);
         }
 
-        protected WriteAttributeOperationHandler(ParameterValidator validator) {
-            this.validator = validator;
+        /**
+         * Creates a WriteAttributeOperationHandler that users the given {@code valueValidator}
+         * to validate values before applying them to the model.
+         */
+        protected WriteAttributeOperationHandler(ParameterValidator valueValidator) {
+            this.valueValidator = valueValidator;
         }
-
 
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
@@ -71,16 +80,41 @@ public class WriteAttributeHandlers {
 
             validateValue(name, value);
 
-            context.getSubModel().get(name).set(value);
-            // FIXME there should be a compensating operation generated
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            final ModelNode submodel = context.getSubModel();
+            final ModelNode currentValue = submodel.get(name).clone();
+
+            final ModelNode compensating = Util.getEmptyOperation(operation.require(OP).asString(), operation.require(OP_ADDR));
+            compensating.get(NAME).set(name);
+            compensating.get(VALUE).set(currentValue);
+
+            submodel.get(name).set(value);
+
+            modelChanged(context, operation, resultHandler, name, value, currentValue);
+
+            return new BasicOperationResult(compensating);
         }
 
+        /**
+         * If a validator was passed to the constructor, uses it to validate the value.
+         * Subclasses can alter this behavior.
+         */
         protected void validateValue(String name, ModelNode value) throws OperationFailedException {
-            if (validator != null) {
-                validator.validateParameter(name, value);
+            if (valueValidator != null) {
+                valueValidator.validateParameter(name, value);
             }
+        }
+
+        /**
+         * Notification that the model has been changed. Subclasses can override
+         * to apply additional processing. Any subclass that overrides MUST ensure
+         * one of the 3 terminating methods on {@code resultHandler} is invoked.
+         * This default implementation simply invokes {@link ResultHandler#handleResultComplete()}.
+         * @throws OperationFailedException
+         */
+        protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
+                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+
+            resultHandler.handleResultComplete();
         }
     }
 
@@ -120,6 +154,10 @@ public class WriteAttributeHandlers {
 
         public StringLengthValidatingHandler(final int min, final boolean nullable) {
             this(min, Integer.MAX_VALUE, nullable, true);
+        }
+
+        public StringLengthValidatingHandler(final int min, final boolean nullable, final boolean allowExpressions) {
+            this(min, Integer.MAX_VALUE, nullable, allowExpressions);
         }
 
         public StringLengthValidatingHandler(final int min, final int max, final boolean nullable, final boolean allowExpressions) {

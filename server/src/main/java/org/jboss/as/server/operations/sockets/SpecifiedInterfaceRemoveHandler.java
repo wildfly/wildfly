@@ -16,48 +16,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations;
+package org.jboss.as.server.operations.sockets;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceController;
 
 /**
- * Handler for adding a fully specified interface.
+ * Handler for removing a fully-specified interface.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
+public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
 
-    public static SpecifiedInterfaceAddHandler INSTANCE = new SpecifiedInterfaceAddHandler();
-
-    private SpecifiedInterfaceAddHandler() {
-        super(true);
-    }
+    public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
 
     @Override
-    protected OperationResult installInterface(final String name, final ParsedInterfaceCriteria criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
+    protected OperationResult uninstallInterface(final String name, final ModelNode criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    ServiceBuilder<NetworkInterfaceBinding> builder = target.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService(name, criteria));
-                    builder.setInitialMode(Mode.ON_DEMAND)
-                            .install();
-                    resultHandler.handleResultComplete();
+                    RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
+                    final ServiceController<?> controller = context.getServiceRegistry()
+                            .getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
+                    }
                 }
             });
         } else {
@@ -65,15 +60,4 @@ public class SpecifiedInterfaceAddHandler extends InterfaceAddHandler {
         }
         return new BasicOperationResult(compensatingOp);
     }
-
-    /**
-     * Create a {@link NetworkInterfaceService}.
-     *
-     * @return the interface service
-     */
-    Service<NetworkInterfaceBinding> createInterfaceService(String name, ParsedInterfaceCriteria criteria) {
-        return NetworkInterfaceService.create(name, criteria);
-    }
-
-
 }

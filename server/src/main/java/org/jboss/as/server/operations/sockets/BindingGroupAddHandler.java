@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations;
+package org.jboss.as.server.operations.sockets;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
@@ -50,10 +50,11 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler {
+public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler {
 
     private static final ParametersValidator VALIDATOR = new ParametersValidator();
     static {
+        VALIDATOR.registerValidator(DEFAULT_INTERFACE, new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
         VALIDATOR.registerValidator(PORT_OFFSET, new IntRangeValidator(0, 65535, true, true));
     }
 
@@ -64,11 +65,11 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
         return op;
     }
 
-    public static final SocketBindingGroupAddHandler INSTANCE = new SocketBindingGroupAddHandler();
+    public static final BindingGroupAddHandler INSTANCE = new BindingGroupAddHandler();
 
     private final ParametersValidator runtimeValidator = new ParametersValidator();
 
-    private SocketBindingGroupAddHandler() {
+    private BindingGroupAddHandler() {
         super(VALIDATOR);
         runtimeValidator.registerValidator(DEFAULT_INTERFACE, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         runtimeValidator.registerValidator(PORT_OFFSET, new IntRangeValidator(0, 65535, true, false));

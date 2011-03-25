@@ -62,7 +62,7 @@ import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.operations.SocketBindingGroupAddHandler;
+import org.jboss.as.server.operations.sockets.BindingGroupAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -337,7 +337,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             throw new IllegalArgumentException("undefined socket binding group " + bindingRef);
         }
         final ModelNode groupAddress = pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, bindingRef));
-        final ModelNode groupAdd = SocketBindingGroupAddHandler.getOperation(groupAddress, group);
+        final ModelNode groupAdd = BindingGroupAddHandler.getOperation(groupAddress, group);
         groupAdd.get(PORT_OFFSET).set(portOffSet);
         updates.add(groupAdd);
         mergeBindingGroups(updates, groups, bindingRef, group, processed, group.get(INTERFACE));

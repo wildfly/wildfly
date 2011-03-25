@@ -16,37 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations;
+package org.jboss.as.server.operations.sockets;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupRemoveHandler;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 
 /**
- * Handler for the domain socket-binding-group resource's remove operation.
- * This class implements {@link BootOperationHandler} as its runtime effect
- * can only take place at restart.
+ * Handler for changing the port or multicast-port on a socket binding.
+ *
+ * TODO see comment on JBAS-9100 re: only requiring restart if there is an actual
+ * active socket associated with the binding.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
-public class SocketBindingGroupRemoveHandler
-    extends AbstractSocketBindingGroupRemoveHandler
-    implements BootOperationHandler {
+public class BindingPortHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
 
-    public static final SocketBindingGroupRemoveHandler INSTANCE = new SocketBindingGroupRemoveHandler();
+    public static final BindingPortHandler INSTANCE = new BindingPortHandler();
 
-    private SocketBindingGroupRemoveHandler() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected ModelNode getCompensatingOperation(ModelNode model, ModelNode operation) {
-        return SocketBindingGroupAddHandler.getOperation(operation.get(OP_ADDR), model);
+    private BindingPortHandler() {
+        super(new IntRangeValidator(0, 65535, false, true));
     }
 
 }
