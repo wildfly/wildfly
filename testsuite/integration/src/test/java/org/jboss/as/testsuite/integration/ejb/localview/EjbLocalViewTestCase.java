@@ -30,8 +30,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import java.io.Serializable;
+
+import static org.junit.Assert.fail;
 
 /**
  * Tests that local views of SLSF's are handled properly, as per EE 3.1 4.9.7
@@ -49,38 +52,44 @@ public class EjbLocalViewTestCase {
     }
 
     @Test
-    public void testSingleImplicitInterface() {
+    public void testImplicitNoInterface() throws NamingException {
+        ensureExists(ImplicitNoInterfaceBean.class, ImplicitNoInterfaceBean.class, true);
+        ensureDoesNotExist(ImplicitNoInterfaceBean.class, Serializable.class);
+    }
+
+    @Test
+    public void testSingleImplicitInterface() throws NamingException {
         ensureExists(SimpleImplicitLocalInterfaceBean.class,ImplicitLocalInterface.class,true);
         ensureDoesNotExist(SimpleImplicitLocalInterfaceBean.class, Serializable.class);
     }
 
     @Test
-    public void testSingleImplicitInterfaceWithSerializable()  {
+    public void testSingleImplicitInterfaceWithSerializable() throws NamingException {
         ensureExists(ImplicitLocalInterfaceBean.class,ImplicitLocalInterface.class,true);
     }
 
     @Test
-    public void testSingleLocalDeclaredOnBean()  {
+    public void testSingleLocalDeclaredOnBean() throws NamingException {
         ensureExists(SingleLocalDeclaredOnBean.class,OtherInterface.class,true);
         ensureDoesNotExist(SingleLocalDeclaredOnBean.class,LocalInterface.class);
     }
 
     @Test
-    public void testSingleLocalDeclaredOnInterface()  {
+    public void testSingleLocalDeclaredOnInterface() throws NamingException {
         ensureExists(SingleLocalDeclaredOnInterface.class,LocalInterface.class,true);
         ensureDoesNotExist(SingleLocalDeclaredOnInterface.class,NotViewInterface.class);
         ensureDoesNotExist(SingleLocalDeclaredOnInterface.class,Serializable.class);
     }
 
     @Test
-    public void testTwoLocalsDeclaredOnBean() {
+    public void testTwoLocalsDeclaredOnBean() throws NamingException {
         ensureExists(TwoLocalsDeclaredOnBean.class,OtherInterface.class,false);
         ensureExists(TwoLocalsDeclaredOnBean.class,OtherInterface.class,false);
         ensureDoesNotExist(TwoLocalsDeclaredOnBean.class);
     }
 
     @Test
-    public void testTwoLocalsDeclaredOnInterface() {
+    public void testTwoLocalsDeclaredOnInterface() throws NamingException {
         ensureExists(TwoLocalsDeclaredOnInterface.class,LocalInterface.class,false);
         ensureExists(TwoLocalsDeclaredOnInterface.class,OtherLocalInterface.class,false);
         ensureDoesNotExist(TwoLocalsDeclaredOnInterface.class);
@@ -89,7 +98,7 @@ public class EjbLocalViewTestCase {
     }
 
     //TODO: add java:global lookups
-    private void ensureExists(Class<?> bean, Class<?> iface, boolean single) {
+    private void ensureExists(Class<?> bean, Class<?> iface, boolean single) throws NamingException {
         try {
             InitialContext ctx = new InitialContext();
             ctx.lookup("java:global/testlocal/" + bean.getSimpleName() + "!" + iface.getName());
@@ -100,29 +109,29 @@ public class EjbLocalViewTestCase {
                 ctx.lookup("java:app/testlocal/" + bean.getSimpleName());
                 ctx.lookup("java:module/" + bean.getSimpleName());
             }
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
+        } catch (NameNotFoundException e) {
+            fail(e.getMessage());
         }
     }
 
-    private void ensureDoesNotExist(Class<?> bean, Class<?> iface) {
+    private void ensureDoesNotExist(Class<?> bean, Class<?> iface) throws NamingException {
             lookupAndFailIfExists("java:global/testlocal/" + bean.getSimpleName() + "!" + iface.getName());
             lookupAndFailIfExists("java:app/testlocal/" + bean.getSimpleName() + "!" + iface.getName());
             lookupAndFailIfExists("java:module/" + bean.getSimpleName() + "!" + iface.getName());
     }
 
-    private void ensureDoesNotExist(Class<?> bean) {
+    private void ensureDoesNotExist(Class<?> bean) throws NamingException {
             lookupAndFailIfExists("java:global/testlocal/" + bean.getSimpleName());
             lookupAndFailIfExists("java:app/testlocal/" + bean.getSimpleName());
             lookupAndFailIfExists("java:module/" + bean.getSimpleName());
     }
 
-    private void lookupAndFailIfExists(String name) {
+    private void lookupAndFailIfExists(String name) throws NamingException {
         try {
             InitialContext ctx = new InitialContext();
             ctx.lookup(name);
-            throw new RuntimeException("Entry " + name + " was bound to JNDI when it should not be");
-        } catch (NamingException e) {
+            fail("Entry " + name + " was bound to JNDI when it should not be");
+        } catch (NameNotFoundException e) {
 
         }
     }

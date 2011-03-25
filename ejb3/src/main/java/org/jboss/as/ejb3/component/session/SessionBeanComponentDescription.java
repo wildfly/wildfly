@@ -34,6 +34,7 @@ import org.jboss.jandex.Type;
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,10 +110,21 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         }
     }
 
+    public void addLocalBusinessInterfaceViews(final String... classNames) {
+        addLocalBusinessInterfaceViews(Arrays.asList(classNames));
+    }
+
     public void addNoInterfaceView() {
         this.noInterfaceViewPresent = true;
         this.getViewClassNames().add(this.getEJBClassName());
         viewTypes.put(getEJBClassName(), MethodIntf.LOCAL);
+    }
+
+    public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
+        this.getViewClassNames().addAll(classNames);
+        for (String viewClassName : classNames) {
+            viewTypes.put(viewClassName, MethodIntf.REMOTE);
+        }
     }
 
     @Override

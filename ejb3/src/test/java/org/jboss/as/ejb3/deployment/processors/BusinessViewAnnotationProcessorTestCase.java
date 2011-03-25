@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -40,12 +41,21 @@ import java.util.Set;
 import static org.jboss.as.ejb3.TestHelper.index;
 import static org.jboss.as.ejb3.TestHelper.mockDeploymentUnit;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class LocalEjbViewAnnotationProcessorTestCase {
+public class BusinessViewAnnotationProcessorTestCase {
+    private static class ImplicitLocalBusinessInterfaceBean implements MyInterface {
+
+    }
+
+    private static class ImplicitNoInterfaceBean {
+
+    }
+
     @Local
     private static class MyBean implements MyInterface {
 
@@ -76,10 +86,52 @@ public class LocalEjbViewAnnotationProcessorTestCase {
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
         EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
-        LocalEjbViewAnnotationProcessor processor = new LocalEjbViewAnnotationProcessor();
+        BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
         assertEquals(asSet(MyInterface.class.getName()), componentDescription.getViewClassNames());
         assertEquals(MethodIntf.LOCAL, componentDescription.getMethodIntf(MyInterface.class.getName()));
+    }
+
+    @Test
+    public void testImplicitLocalBusinessInterface() throws Exception {
+        DeploymentUnit deploymentUnit = mockDeploymentUnit();
+        when(deploymentUnit.getServiceName()).thenReturn(ServiceName.parse("test"));
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
+        DeploymentPhaseContext phaseContext = null;
+        Indexer indexer = new Indexer();
+        Class<?> ejbClass = ImplicitLocalBusinessInterfaceBean.class;
+        index(indexer, ejbClass);
+        index(indexer, MyInterface.class);
+        CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
+
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ejbClass.getSimpleName(), ejbClass.getName(), "TestModule", "TestApp");
+        BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
+        processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
+
+        assertEquals(asSet(MyInterface.class.getName()), componentDescription.getViewClassNames());
+        assertEquals(MethodIntf.LOCAL, componentDescription.getMethodIntf(MyInterface.class.getName()));
+    }
+
+    @Test
+    public void testImplicitNoInterface() throws Exception {
+        DeploymentUnit deploymentUnit = mockDeploymentUnit();
+        when(deploymentUnit.getServiceName()).thenReturn(ServiceName.parse("test"));
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
+        DeploymentPhaseContext phaseContext = null;
+        Indexer indexer = new Indexer();
+        Class<?> ejbClass = ImplicitNoInterfaceBean.class;
+        index(indexer, ejbClass);
+        CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
+
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ImplicitNoInterfaceBean.class.getSimpleName(), ImplicitNoInterfaceBean.class.getName(), "TestModule", "TestApp");
+        BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
+        processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
+
+        assertTrue("Bean should have no-interface view (EJB 3.1 FR 4.9.8 bullet 1.1)", componentDescription.hasNoInterfaceView());
+        assertEquals(asSet(ImplicitNoInterfaceBean.class.getName()), componentDescription.getViewClassNames());
+        assertEquals(MethodIntf.LOCAL, componentDescription.getMethodIntf(ImplicitNoInterfaceBean.class.getName()));
     }
 }
