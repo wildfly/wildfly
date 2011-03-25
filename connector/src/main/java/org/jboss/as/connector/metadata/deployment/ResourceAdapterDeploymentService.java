@@ -114,7 +114,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         value = new ResourceAdapterDeployment(module.getIdentifier(), raDeployment);
         registry.getValue().registerResourceAdapterDeployment(value);
-
+        managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
         log.debugf("Starting sevice %s",
                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
@@ -132,6 +132,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     public void stop(StopContext context) {
         log.debugf("Stopping sevice %s",
                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
     }
 
@@ -275,54 +276,34 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
-            // TODO: There is a simple solution to undocumented and untested code... disable it.
+            // TODO: There is a simple solution to undocumented and untested
+            // code... disable it.
             return true;
             /*
-            if (cmd != null && ijmd != null) {
-                Set<String> raClasses = new HashSet<String>();
-                Set<String> ijClasses = new HashSet<String>();
-
-                if (cmd.getVersion() == Connector.Version.V_10) {
-                    ResourceAdapter10 ra10 = (ResourceAdapter10) cmd.getResourceadapter();
-                    raClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
-                } else {
-                    ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
-                    if (ra != null && ra.getOutboundResourceadapter() != null
-                            && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
-                        List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
-                        if (cdMetas.size() > 0) {
-                            for (ConnectionDefinition cdMeta : cdMetas) {
-                                raClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
-                            }
-                        }
-                    }
-                }
-
-                if (raClasses.size() == 0)
-                    return false;
-
-                if (ijmd.getConnectionDefinitions() != null) {
-                    for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
-                        String clz = def.getClassName();
-
-                        if (clz == null && raClasses.size() == 1)
-                            return true;
-
-                        if (clz != null)
-                            ijClasses.add(clz);
-                    }
-                }
-
-                for (String clz : raClasses) {
-                    if (!ijClasses.contains(clz))
-                        return false;
-                }
-
-                return true;
-            }
-
-            return false;
-            */
+             * if (cmd != null && ijmd != null) { Set<String> raClasses = new
+             * HashSet<String>(); Set<String> ijClasses = new HashSet<String>();
+             * if (cmd.getVersion() == Connector.Version.V_10) {
+             * ResourceAdapter10 ra10 = (ResourceAdapter10)
+             * cmd.getResourceadapter();
+             * raClasses.add(ra10.getManagedConnectionFactoryClass
+             * ().getValue()); } else { ResourceAdapter1516 ra =
+             * (ResourceAdapter1516) cmd.getResourceadapter(); if (ra != null &&
+             * ra.getOutboundResourceadapter() != null &&
+             * ra.getOutboundResourceadapter().getConnectionDefinitions() !=
+             * null) { List<ConnectionDefinition> cdMetas =
+             * ra.getOutboundResourceadapter().getConnectionDefinitions(); if
+             * (cdMetas.size() > 0) { for (ConnectionDefinition cdMeta :
+             * cdMetas) {
+             * raClasses.add(cdMeta.getManagedConnectionFactoryClass()
+             * .getValue()); } } } } if (raClasses.size() == 0) return false; if
+             * (ijmd.getConnectionDefinitions() != null) { for
+             * (org.jboss.jca.common.api.metadata.common.CommonConnDef def :
+             * ijmd.getConnectionDefinitions()) { String clz =
+             * def.getClassName(); if (clz == null && raClasses.size() == 1)
+             * return true; if (clz != null) ijClasses.add(clz); } } for (String
+             * clz : raClasses) { if (!ijClasses.contains(clz)) return false; }
+             * return true; } return false;
+             */
         }
 
         @Override

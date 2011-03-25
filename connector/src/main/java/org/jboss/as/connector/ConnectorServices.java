@@ -50,6 +50,8 @@ public final class ConnectorServices {
 
     public static final ServiceName RA_REPOSISTORY_SERVICE = ServiceName.JBOSS.append("rarepository");
 
+    public static final ServiceName MANAGEMENT_REPOSISTORY_SERVICE = ServiceName.JBOSS.append("management_repository");
+
     public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");
 
     public static final ServiceName DATASOURCES_SERVICE = ServiceName.JBOSS.append("datasources");

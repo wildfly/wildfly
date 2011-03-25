@@ -24,6 +24,7 @@ package org.jboss.as.connector.metadata.deployment;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -52,6 +53,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
 
     protected final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<ResourceAdapterDeploymentRegistry>();
+
+    protected final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<ManagementRepository>();
 
     protected final InjectedValue<JndiStrategy> jndiStrategy = new InjectedValue<JndiStrategy>();
 
@@ -138,6 +141,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<ResourceAdapterRepository> getRaRepositoryInjector() {
         return raRepository;
+    }
+
+    public Injector<ManagementRepository> getManagementRepositoryInjector() {
+        return managementRepository;
     }
 
     public Injector<ResourceAdapterDeploymentRegistry> getRegistryInjector() {

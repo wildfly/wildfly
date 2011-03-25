@@ -123,6 +123,8 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         value = new ResourceAdapterDeployment(module.getIdentifier(), raxmlDeployment);
 
         registry.getValue().registerResourceAdapterDeployment(value);
+        managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
+
     }
 
     /**
@@ -132,6 +134,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     public void stop(StopContext context) {
         log.debugf("Stopping sevice %s",
                 ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
     }
 
