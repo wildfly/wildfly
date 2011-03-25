@@ -59,12 +59,12 @@ public class ComponentInterceptorAnnotationParsingProcessor extends AbstractComp
     /**
      * {@inheritDoc} *
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-        final ClassInfo classInfo = index.getClassByName(DotName.createSimple(componentConfiguration.getComponentClassName()));
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        final ClassInfo classInfo = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
         if (classInfo == null) {
             return; // We can't continue without the annotation index info.
         }
-        processInterceptorConfigs(classInfo,classInfo.name().toString(), index, componentConfiguration,true);
+        processInterceptorConfigs(classInfo,classInfo.name().toString(), index, componentDescription,true);
     }
 
     private void processInterceptorConfigs(final ClassInfo classInfo, final String actualClassName, final CompositeIndex index, final AbstractComponentDescription componentConfiguration, boolean actualClass) throws DeploymentUnitProcessingException {

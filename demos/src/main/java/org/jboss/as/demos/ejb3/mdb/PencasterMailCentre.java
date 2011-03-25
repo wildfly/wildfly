@@ -31,7 +31,6 @@ import javax.resource.spi.work.WorkException;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Singleton
-@LocalBean // TODO: is not needed, a bug
 public class PencasterMailCentre {
     public void specialDelivery(String message) throws WorkException {
         SimpleQueueResourceAdapter.deliver(message);

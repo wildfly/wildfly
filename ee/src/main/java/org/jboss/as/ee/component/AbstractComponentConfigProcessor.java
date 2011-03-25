@@ -61,10 +61,10 @@ public abstract class AbstractComponentConfigProcessor implements DeploymentUnit
      * @param deploymentUnit         The deployment unit
      * @param phaseContext           The phase context
      * @param index                  The annotation index
-     * @param componentConfiguration The component configuration
+     * @param componentDescription The component configuration
      * @throws DeploymentUnitProcessingException if any problems occur
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
     }
 
 

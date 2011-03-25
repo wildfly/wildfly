@@ -53,10 +53,10 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
     /**
      * {@inheritDoc} *
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-        processClass(index, componentConfiguration, DotName.createSimple(componentConfiguration.getComponentClassName()), componentConfiguration.getComponentClassName(), true);
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        processClass(index, componentDescription, DotName.createSimple(componentDescription.getComponentClassName()), componentDescription.getComponentClassName(), true);
 
-        for (InterceptorDescription description : componentConfiguration.getClassInterceptors()) {
+        for (InterceptorDescription description : componentDescription.getClassInterceptors()) {
             processClass(index, description, DotName.createSimple(description.getInterceptorClassName()), description.getInterceptorClassName(), false);
         }
     }

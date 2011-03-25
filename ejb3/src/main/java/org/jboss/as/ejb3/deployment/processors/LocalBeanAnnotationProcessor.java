@@ -24,8 +24,6 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
-import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -36,7 +34,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.LocalBean;
 import java.util.List;
@@ -48,12 +45,12 @@ import java.util.Map;
  *
  * @author Jaikiran Pai
  */
-public class NoInterfaceViewAnnotationProcessor extends AbstractComponentConfigProcessor {
+public class LocalBeanAnnotationProcessor extends AbstractComponentConfigProcessor {
 
     /**
      * Logger
      */
-    private static final Logger logger = Logger.getLogger(NoInterfaceViewAnnotationProcessor.class);
+    private static final Logger logger = Logger.getLogger(LocalBeanAnnotationProcessor.class);
 
     @Override
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex compositeIndex, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {

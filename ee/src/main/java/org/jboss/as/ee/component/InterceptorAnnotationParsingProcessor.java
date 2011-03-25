@@ -53,10 +53,10 @@ public class InterceptorAnnotationParsingProcessor extends AbstractComponentConf
     /**
      * {@inheritDoc} *
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-        processClass(index, componentConfiguration, DotName.createSimple(componentConfiguration.getComponentClassName()),componentConfiguration.getComponentClassName(), true);
-        for(InterceptorDescription descriptor : componentConfiguration.getAllInterceptors().values()) {
-            processClass(index,DotName.createSimple(descriptor.getInterceptorClassName()),descriptor,componentConfiguration.getComponentClassName());
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        processClass(index, componentDescription, DotName.createSimple(componentDescription.getComponentClassName()), componentDescription.getComponentClassName(), true);
+        for(InterceptorDescription descriptor : componentDescription.getAllInterceptors().values()) {
+            processClass(index,DotName.createSimple(descriptor.getInterceptorClassName()),descriptor, componentDescription.getComponentClassName());
         }
     }
 
