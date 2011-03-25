@@ -43,6 +43,8 @@ import static org.jboss.as.web.Constants.REDIRECT_PORT;
 import static org.jboss.as.web.Constants.SCHEME;
 import static org.jboss.as.web.Constants.SECURE;
 import static org.jboss.as.web.Constants.SOCKET_BINDING;
+import static org.jboss.as.web.Constants.SSL;
+import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -80,6 +82,9 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
         if (existing.hasDefined(REDIRECT_PORT)) op.get(REDIRECT_PORT).set(existing.get(REDIRECT_PORT).asInt());
         if (existing.hasDefined(MAX_POST_SIZE)) op.get(MAX_POST_SIZE).set(existing.get(MAX_POST_SIZE).asInt());
         if (existing.hasDefined(MAX_SAVE_POST_SIZE)) op.get(MAX_SAVE_POST_SIZE).set(existing.get(MAX_SAVE_POST_SIZE).asInt());
+        if (existing.hasDefined(MAX_CONNECTIONS)) op.get(Constants.MAX_CONNECTIONS).set(existing.get(Constants.MAX_CONNECTIONS).asInt());
+        op.get(Constants.VIRTUAL_SERVER).set(existing.get(Constants.VIRTUAL_SERVER));
+        op.get(Constants.SSL).set(existing.get(Constants.SSL));
 
         return op;
     }
@@ -114,6 +119,9 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
         if(operation.hasDefined(REDIRECT_PORT)) subModel.get(REDIRECT_PORT).set(operation.get(REDIRECT_PORT).asInt());
         if(operation.hasDefined(MAX_POST_SIZE)) subModel.get(MAX_POST_SIZE).set(operation.get(MAX_POST_SIZE).asInt());
         if(operation.hasDefined(MAX_SAVE_POST_SIZE)) subModel.get(MAX_SAVE_POST_SIZE).set(operation.get(MAX_SAVE_POST_SIZE).asInt());
+        if(operation.hasDefined(MAX_CONNECTIONS)) subModel.get(Constants.MAX_CONNECTIONS).set(operation.get(Constants.MAX_CONNECTIONS).asInt());
+        subModel.get(Constants.VIRTUAL_SERVER).set(operation.get(Constants.VIRTUAL_SERVER));
+        subModel.get(Constants.SSL).set(operation.get(Constants.SSL));
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -133,6 +141,11 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
                         service.setMaxSavePostSize(operation.get(MAX_SAVE_POST_SIZE).asInt());
                     if (operation.hasDefined(MAX_CONNECTIONS))
                         service.setMaxConnections(operation.get(MAX_CONNECTIONS).asInt());
+                    if (operation.hasDefined(VIRTUAL_SERVER))
+                        service.setVirtualServers(operation.get(VIRTUAL_SERVER).clone());
+                    if (operation.hasDefined(SSL)) {
+                        service.setSsl(operation.get(SSL).clone());
+                    }
                     final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
                             .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
                             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())

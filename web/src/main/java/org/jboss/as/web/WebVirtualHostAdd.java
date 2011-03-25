@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.web.Constants.PROXY_NAME;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -97,6 +98,7 @@ public class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionP
                     if (operation.hasDefined(Constants.REWRITE)) {
                         service.setRewrite(operation.get(Constants.REWRITE).clone());
                     }
+                    if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
                     serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     serviceBuilder.install();
                 }

@@ -24,11 +24,12 @@ package org.jboss.as.web;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
-import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -53,6 +54,8 @@ class WebConnectorService implements Service<Connector> {
     private Integer maxPostSize = null;
     private Integer maxSavePostSize = null;
     private Integer maxConnections = null;
+    private ModelNode ssl;
+    private ModelNode virtualServers;
 
     private Connector connector;
 
@@ -109,8 +112,16 @@ class WebConnectorService implements Service<Connector> {
                  // Not all connectors will have this
                 }
             }
-            // FIXME: virtual-server (= list of allowed virtual hosts for the connector)
-            // FIXME: SSL configuration
+            if (virtualServers != null) {
+                ArrayList<String> virtualServersList = new ArrayList<String>();
+                for (final ModelNode virtualServer : virtualServers.asList()) {
+                    virtualServersList.add(virtualServer.asString());
+                }
+                // FIXME: connector.setAllowedHosts(virtualServersList);
+            }
+            if (ssl != null) {
+             // FIXME: SSL configuration
+            }
             getWebServer().addConnector(connector);
             this.connector = connector;
         } catch (Exception e) {
@@ -132,6 +143,14 @@ class WebConnectorService implements Service<Connector> {
             throw new IllegalStateException();
         }
         return connector;
+    }
+
+    void setSsl(final ModelNode ssl) {
+        this.ssl = ssl;
+    }
+
+    void setVirtualServers(ModelNode virtualServers) {
+        this.virtualServers = virtualServers;
     }
 
     protected boolean isEnableLookups() {

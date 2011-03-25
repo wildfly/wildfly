@@ -44,6 +44,7 @@ class WebVirtualHostService implements Service<Host> {
 
     private final String name;
     private final String[] aliases;
+    private String defaultWebModule;
     private ModelNode accessLog;
     private ModelNode rewrite;
 
@@ -72,7 +73,9 @@ class WebVirtualHostService implements Service<Host> {
         if(rewrite != null) {
             host.addValve(createRewriteValve(rewrite));
         }
-        // FIXME: default webapp
+        if (defaultWebModule != null) {
+        // FIXME: host.setDefaultWebapp(defaultWebModule);
+        }
         try {
             final WebServer server = webServer.getValue();
             server.addHost(host);
@@ -105,6 +108,14 @@ class WebVirtualHostService implements Service<Host> {
 
     void setRewrite(ModelNode rewrite) {
         this.rewrite = rewrite;
+    }
+
+    protected String getDefaultWebModule() {
+        return defaultWebModule;
+    }
+
+    protected void setDefaultWebModule(String defaultWebModule) {
+        this.defaultWebModule = defaultWebModule;
     }
 
     InjectedValue<String> getAccessLogPathInjector() {
@@ -142,10 +153,29 @@ class WebVirtualHostService implements Service<Host> {
         return log;
     }
 
-    static Valve createRewriteValve(final ModelNode element) {
-        final RewriteValve rewrite = new RewriteValve();
-        // TODO
-        return rewrite;
+    static Valve createRewriteValve(final ModelNode element) throws StartException {
+        final RewriteValve rewriteValve = new RewriteValve();
+        StringBuffer configuration = new StringBuffer();
+        for (final ModelNode rewrite : element.asList()) {
+            if (rewrite.has(Constants.CONDITION)) {
+                for (final ModelNode condition : rewrite.get(Constants.CONDITION).asList()) {
+                    configuration.append("RewriteCond ")
+                    .append(condition.get(Constants.TEST).asString())
+                    .append(" ").append(condition.get(Constants.PATTERN).asString())
+                    .append(" [").append(condition.get(Constants.FLAGS).asString()).append("]\r\n");
+                }
+                configuration.append("RewriteRule ")
+                .append(rewrite.get(Constants.PATTERN).asString())
+                .append(" ").append(rewrite.get(Constants.SUBSTITUTION).asString())
+                .append(" [").append(rewrite.get(Constants.FLAGS).asString()).append("]\r\n");
+            }
+        }
+        try {
+            rewriteValve.setConfiguration(configuration.toString());
+        } catch(Exception e) {
+            throw new StartException(e);
+        }
+        return rewriteValve;
     }
 
 }

@@ -166,7 +166,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     writeAttribute(writer, Attribute.SESSION_TIMEOUT.getLocalName(), sslConfig);
                     writer.writeEndElement();
                 }
-                if (config.has(VIRTUAL_SERVER)) {
+                if (config.hasDefined(VIRTUAL_SERVER)) {
                     for(final ModelNode virtualServer : config.get(VIRTUAL_SERVER).asList()) {
                         writer.writeEmptyElement(VIRTUAL_SERVER);
                         writer.writeAttribute(NAME, virtualServer.asString());
@@ -181,14 +181,45 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.VIRTUAL_SERVER.getLocalName());
                 writer.writeAttribute(NAME, host.getName());
                 writeAttribute(writer, Attribute.DEFAULT_WEB_MODULE.getLocalName(), config);
-                if(config.has(ALIAS)) {
+                if(config.hasDefined(ALIAS)) {
                     for(final ModelNode alias : config.get(ALIAS).asList()) {
                         writer.writeEmptyElement(ALIAS);
                         writer.writeAttribute(NAME, alias.asString());
                     }
                 }
-                // TODO write access-log element
-                // TODO write rewrite elements
+                if(config.hasDefined(ACCESS_LOG)) {
+                    writer.writeStartElement(Element.ACCESS_LOG.getLocalName());
+                    final ModelNode accessLog = config.get(ACCESS_LOG);
+                    if(accessLog.has(DIRECTORY)) {
+                        writer.writeEmptyElement(DIRECTORY);
+                        writeAttribute(writer, Attribute.PATH.getLocalName(), accessLog);
+                        writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), accessLog);
+                    }
+                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), config);
+                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), config);
+                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), config);
+                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), config);
+                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), config);
+                    writer.writeEndElement();
+                }
+                if (config.hasDefined(REWRITE)) {
+                    for (final ModelNode rewrite : config.get(REWRITE).asList()) {
+                        writer.writeStartElement(REWRITE);
+                        if (rewrite.hasDefined(CONDITION)) {
+                            for (final ModelNode condition : rewrite.get(CONDITION).asList()) {
+                                writer.writeStartElement(CONDITION);
+                                writeAttribute(writer, Attribute.TEST.getLocalName(), condition);
+                                writeAttribute(writer, Attribute.PATTERN.getLocalName(), condition);
+                                writeAttribute(writer, Attribute.FLAGS.getLocalName(), condition);
+                                writer.writeEndElement();
+                            }
+                        }
+                        writeAttribute(writer, Attribute.PATTERN.getLocalName(), rewrite);
+                        writeAttribute(writer, Attribute.SUBSTITUTION.getLocalName(), rewrite);
+                        writeAttribute(writer, Attribute.FLAGS.getLocalName(), rewrite);
+                        writer.writeEndElement();
+                    }
+                }
                 writer.writeEndElement();
             }
         }
@@ -523,6 +554,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 switch (element) {
                 case CONDITION:
                     final ModelNode condition = new ModelNode();
+                    condition.setEmptyObject();
                     final int count2 = reader.getAttributeCount();
                     for (int i = 0; i < count2; i++) {
                         requireNoNamespaceAttribute(reader, i);
