@@ -228,8 +228,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     private void writeContainerConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
-
-
         if(config.hasDefined(STATIC_RESOURCES)) {
             writeStaticResources(writer, config.get(STATIC_RESOURCES));
         }
@@ -796,7 +794,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(VERIFY_CLIENT).set(value);
                 break;
             case VERIFY_DEPTH:
-                ssl.get(VERIFY_DEPTH).set(value);
+                ssl.get(VERIFY_DEPTH).set(Integer.valueOf(value));
                 break;
             case CERTIFICATE_FILE:
                 ssl.get(CERTIFICATE_FILE).set(value);

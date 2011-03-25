@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.coyote.http11.Http11AprProtocol;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -120,7 +121,103 @@ class WebConnectorService implements Service<Connector> {
                 // FIXME: connector.setAllowedHosts(virtualServersList);
             }
             if (ssl != null) {
-             // FIXME: SSL configuration
+                boolean nativeSSL = false;
+                if (connector.getProtocolHandler() instanceof Http11AprProtocol) {
+                    nativeSSL = true;
+                } else if (!(connector.getProtocolHandler() instanceof Http11AprProtocol)) {
+                    throw new StartException("Non HTTP connectors dor not support SSL");
+                }
+                // Enable SSL
+                try {
+                    Method m = connector.getProtocolHandler().getClass().getMethod("setSSLEnabled", Boolean.TYPE);
+                    m.invoke(connector.getProtocolHandler(), true);
+                } catch (NoSuchMethodException e) {
+                    // No SSL support
+                    throw new StartException(e);
+                }
+                if (nativeSSL) {
+                    // OpenSSL configuration
+                    try {
+                        if (ssl.hasDefined(Constants.PASSWORD)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLPassword", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PASSWORD).asString());
+                        }
+                        if (ssl.hasDefined(Constants.CERTIFICATE_KEY_FILE)) {
+                            String certificateKeyFiles = ssl.get(Constants.CERTIFICATE_KEY_FILE).asString();
+                            // FIXME: parse for multiple files and identify types (?)
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCertificateKeyFile", String.class);
+                            m.invoke(connector.getProtocolHandler(), certificateKeyFiles);
+                        }
+                        if (ssl.hasDefined(Constants.CIPHER_SUITE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCipherSuite", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CIPHER_SUITE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.PROTOCOL)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLProtocol", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PROTOCOL).asString());
+                        }
+                        if (ssl.hasDefined(Constants.VERIFY_CLIENT)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLVerifyClient", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.VERIFY_CLIENT).asString());
+                        }
+                        if (ssl.hasDefined(Constants.VERIFY_DEPTH)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLVerifyDepth", Integer.TYPE);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.VERIFY_DEPTH).asInt());
+                        }
+                        if (ssl.hasDefined(Constants.CERTIFICATE_FILE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCertificateFile", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_FILE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.CA_CERTIFICATE_FILE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCACertificateFile", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CA_CERTIFICATE_FILE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.CA_REVOCATION_URL)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCARevocationFile", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CA_REVOCATION_URL).asString());
+                        }
+                   } catch (NoSuchMethodException e) {
+                        throw new StartException(e);
+                    }
+                } else {
+                    // JSSE configuration
+                    try {
+                        if (ssl.hasDefined(Constants.KEY_ALIAS)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setKeyAlias", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.KEY_ALIAS).asString());
+                        }
+                        if (ssl.hasDefined(Constants.PASSWORD)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setKeypass", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PASSWORD).asString());
+                        }
+                        if (ssl.hasDefined(Constants.CERTIFICATE_KEY_FILE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setKeystore", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_KEY_FILE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.CIPHER_SUITE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setCiphers", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CIPHER_SUITE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.PROTOCOL)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setProtocols", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PROTOCOL).asString());
+                        }
+                        if (ssl.hasDefined(Constants.VERIFY_CLIENT)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setClientauth", String.class);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.VERIFY_CLIENT).asString());
+                        }
+                        if (ssl.hasDefined(Constants.SESSION_CACHE_SIZE)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "sessionCacheSize", ssl.get(Constants.SESSION_CACHE_SIZE).asString());
+                        }
+                        if (ssl.hasDefined(Constants.SESSION_TIMEOUT)) {
+                            Method m = connector.getProtocolHandler().getClass().getMethod("setAttribute", String.class, Object.class);
+                            m.invoke(connector.getProtocolHandler(), "sessionCacheTimeout", ssl.get(Constants.SESSION_TIMEOUT).asString());
+                        }
+                    } catch (NoSuchMethodException e) {
+                        throw new StartException(e);
+                    }
+                }
             }
             getWebServer().addConnector(connector);
             this.connector = connector;
