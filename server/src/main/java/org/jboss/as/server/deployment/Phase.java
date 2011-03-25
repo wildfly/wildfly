@@ -210,6 +210,7 @@ public enum Phase {
     public static final int PARSE_ANNOTATION_WAR                        = 0x0D00;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0E00;
     public static final int PARSE_WEB_COMPONENTS                        = 0x0F00;
+    public static final int PARSE_EAR_CONTEXT_ROOT                      = 0x0F01;
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1000;
     // create and attach the component description out of EJB annotations
