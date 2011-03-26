@@ -69,7 +69,7 @@ public class PathAddress implements Iterable<PathElement> {
             String key = null;
             for (ModelNode element : node.asList()) {
                 Property prop = null;
-                if (element.getType() == ModelType.PROPERTY) {
+                if (element.getType() == ModelType.PROPERTY || element.getType() == ModelType.OBJECT) {
                     prop = element.asProperty();
                 }
                 else if (key == null) {
