@@ -349,6 +349,11 @@
             <maven-resource group="org.apache.ws.security" artifact="wss4j"/>
         </module-def>
 
+        <module-def name="org.codehaus.woodstox">
+            <maven-resource group="org.codehaus.woodstox" artifact="woodstox-core-asl" />
+            <maven-resource group="org.codehaus.woodstox" artifact="stax2-api" />
+        </module-def>
+
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
