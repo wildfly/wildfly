@@ -35,6 +35,8 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
+import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
+import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionsMetaData;
 import org.jboss.metadata.ejb.spec.MethodMetaData;
@@ -53,7 +55,7 @@ import java.lang.annotation.Annotation;
 import java.util.concurrent.TimeUnit;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
 public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorProcessor<SessionBeanMetaData> {
 
@@ -173,6 +175,11 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         LockType lockType = singletonBeanMetaData.getLockType();
         singletonComponentDescription.setBeanLevelLockType(lockType);
         // TODO: Add method level lock type to the description
+        ConcurrentMethodsMetaData concurrentMethods = singletonBeanMetaData.getConcurrentMethods();
+        for (ConcurrentMethodMetaData concurrentMethod : concurrentMethods) {
+            LockType methodLockType = concurrentMethod.getLockType();
+            concurrentMethod.getMethod();
+        }
 
         // concurrency management type
         ConcurrencyManagementType concurrencyManagementType = singletonBeanMetaData.getConcurrencyManagementType();

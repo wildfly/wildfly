@@ -25,11 +25,10 @@ package org.jboss.as.ejb3.component.session;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
@@ -70,12 +69,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     /**
      * The {@link LockType} applicable for a specific bean methods.
      */
-    private Map<MethodInfo, LockType> methodLockTypes = new ConcurrentHashMap<MethodInfo, LockType>();
+    private Map<EJBMethodDescription, LockType> methodLockTypes = new ConcurrentHashMap<EJBMethodDescription, LockType>();
 
     /**
      * The {@link AccessTimeout} applicable for a specific bean methods.
      */
-    private Map<MethodInfo, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<MethodInfo, AccessTimeout>();
+    private Map<EJBMethodDescription, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<EJBMethodDescription, AccessTimeout>();
 
     /**
      * mapped-name of the session bean
@@ -163,11 +162,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     /**
      * Sets the {@link LockType} for the specific bean method represented by the <code>methodName</code> and <code>methodParamTypes</code>
      *
-     * @param lockType   The applicable lock type for the method
-     * @param methodInfo The method
+     * @param lockType The applicable lock type for the method
+     * @param method   The method
      */
-    public void setLockType(LockType lockType, MethodInfo methodInfo) {
-        this.methodLockTypes.put(methodInfo, lockType);
+    public void setLockType(LockType lockType, EJBMethodDescription method) {
+        this.methodLockTypes.put(method, lockType);
     }
 
     /**
@@ -196,10 +195,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * Sets the {@link AccessTimeout} for the specific bean method represented by the <code>methodName</code> and <code>methodParamTypes</code>
      *
      * @param accessTimeout The applicable access timeout for the method
-     * @param methodInfo    The method
+     * @param method        The method
      */
-    public void setAccessTimeout(AccessTimeout accessTimeout, MethodInfo methodInfo) {
-        this.methodAccessTimeouts.put(methodInfo, accessTimeout);
+    public void setAccessTimeout(AccessTimeout accessTimeout, EJBMethodDescription method) {
+        this.methodAccessTimeouts.put(method, accessTimeout);
     }
 
     /**
@@ -242,6 +241,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     /**
      * Returns the mapped-name of this bean
+     *
      * @return
      */
     public String getMappedName() {
@@ -250,6 +250,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     /**
      * Sets the mapped-name for this bean
+     *
      * @param mappedName
      */
     public void setMappedName(String mappedName) {
@@ -271,10 +272,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private void prepareAccessTimeoutConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
         Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts = new HashMap();
-        for (Map.Entry<MethodInfo, AccessTimeout> entry : this.methodAccessTimeouts.entrySet()) {
-            MethodInfo methodInfo = entry.getKey();
+        for (Map.Entry<EJBMethodDescription, AccessTimeout> entry : this.methodAccessTimeouts.entrySet()) {
+            EJBMethodDescription method = entry.getKey();
             try {
-                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(methodInfo, beanClassLoader);
+                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
                 methodApplicableAccessTimeouts.put(ejbMethod, entry.getValue());
             } catch (ClassNotFoundException cnfe) {
                 throw new DeploymentUnitProcessingException("Could not process @AccessTimeout configurations due to exception: ", cnfe);
@@ -289,10 +290,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private void prepareLockConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
         Map<EJBBusinessMethod, LockType> methodApplicableLockTypes = new HashMap();
-        for (Map.Entry<MethodInfo, LockType> entry : this.methodLockTypes.entrySet()) {
-            MethodInfo methodInfo = entry.getKey();
+        for (Map.Entry<EJBMethodDescription, LockType> entry : this.methodLockTypes.entrySet()) {
+            EJBMethodDescription method = entry.getKey();
             try {
-                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(methodInfo, beanClassLoader);
+                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
                 methodApplicableLockTypes.put(ejbMethod, entry.getValue());
 
             } catch (ClassNotFoundException cnfe) {
@@ -304,15 +305,15 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     }
 
-    private EJBBusinessMethod getEJBBusinessMethod(MethodInfo methodInfo, ClassLoader classLoader) throws ClassNotFoundException {
-        String methodName = methodInfo.name();
-        Type[] types = methodInfo.args();
+    private EJBBusinessMethod getEJBBusinessMethod(EJBMethodDescription method, ClassLoader classLoader) throws ClassNotFoundException {
+        String methodName = method.getMethodName();
+        String[] types = method.getMethodParams();
         if (types == null || types.length == 0) {
             return new EJBBusinessMethod(methodName, new Class<?>[0]);
         }
         Class<?>[] paramTypes = new Class<?>[types.length];
         int i = 0;
-        for (Type type : types) {
+        for (String type : types) {
             paramTypes[i++] = classLoader.loadClass(type.toString());
         }
         return new EJBBusinessMethod(methodName, paramTypes);

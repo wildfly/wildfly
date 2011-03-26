@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -95,7 +96,7 @@ public class AccessTimeoutAnnotationProcessor extends AbstractAnnotationEJBProce
             } else if (target instanceof MethodInfo) {
                 // method specific access timeout
                 final MethodInfo method = (MethodInfo) target;
-                componentDescription.setAccessTimeout(accessTimeout, method);
+                componentDescription.setAccessTimeout(accessTimeout, new EJBMethodDescription(method));
             }
         }
     }
@@ -122,4 +123,5 @@ public class AccessTimeoutAnnotationProcessor extends AbstractAnnotationEJBProce
         };
 
     }
+
 }
