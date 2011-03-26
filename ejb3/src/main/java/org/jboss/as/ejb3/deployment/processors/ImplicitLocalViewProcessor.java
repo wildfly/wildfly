@@ -34,13 +34,16 @@ import org.jboss.modules.Module;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Processes a {@link SessionBeanComponentDescription}'s bean class and checks whether it exposes an implicit no-interface
- * view, as specified by EJB3.1 spec, section 4.9.8. If an implicit no-interface view is identified then the
- * {@link SessionBeanComponentDescription} is updated with this info accordingly.
+ * Processes a {@link SessionBeanComponentDescription}'s bean class and checks whether it exposes:
+ * <ul>
+ * <li>An implicit no-interface, as specified by EJB3.1 spec, section 4.9.8.</li>
+ * <li>A default local business interface view, as specified by EJB3.1 spec, section 4.9.7.</li>
+ * </ul>
+ * The {@link SessionBeanComponentDescription} is updated with this info accordingly.
  * <p/>
  * This processor MUST run <b>before</b> the {@link EjbJndiBindingsDeploymentUnitProcessor EJB jndi binding} processor is run.
  *
@@ -72,16 +75,25 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
             throw new IllegalStateException("Module hasn't yet been attached to deployment unit: " + deploymentUnit);
         }
         ClassLoader cl = module.getClassLoader();
+        Class<?> ejbClass = null;
         try {
-            Class<?> ejbClass = cl.loadClass(ejbClassName);
-            // check whether it's eligible for implicit no-interface view
-            if (this.exposesNoInterfaceView(ejbClass)) {
-                logger.debug("Bean: " + sessionBeanComponentDescription.getEJBName() + " will be marked for (implicit) no-interface view");
-                sessionBeanComponentDescription.addNoInterfaceView();
-            }
-
+            ejbClass = cl.loadClass(ejbClassName);
         } catch (ClassNotFoundException cnfe) {
             throw new DeploymentUnitProcessingException(cnfe);
+        }
+        // check whether it's eligible for implicit no-interface view
+        if (this.exposesNoInterfaceView(ejbClass)) {
+            logger.debug("Bean: " + sessionBeanComponentDescription.getEJBName() + " will be marked for (implicit) no-interface view");
+            sessionBeanComponentDescription.addNoInterfaceView();
+            return;
+        }
+
+        // check for default local view
+        Class<?> defaultLocalView = this.getDefaultLocalView(ejbClass);
+        if (defaultLocalView != null) {
+            logger.debug("Bean: " + sessionBeanComponentDescription.getEJBName() + " will be marked for default local view: " + defaultLocalView.getName());
+            sessionBeanComponentDescription.addLocalBusinessInterfaceViews(Collections.singleton(defaultLocalView.getName()));
+            return;
         }
 
 
@@ -109,17 +121,56 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         // are excluded from interface check
 
         List<Class<?>> implementedInterfaces = new ArrayList<Class<?>>(Arrays.asList(interfaces));
-        Iterator<Class<?>> implementedInterfacesIterator = implementedInterfaces.iterator();
-        while (implementedInterfacesIterator.hasNext()) {
-            Class<?> implementedInterface = implementedInterfacesIterator.next();
-            if (implementedInterface.equals(java.io.Serializable.class)
-                    || implementedInterface.equals(java.io.Externalizable.class)
-                    || implementedInterface.getName().startsWith("javax.ejb.")) {
-                implementedInterfacesIterator.remove();
-            }
-        }
+        List<Class<?>> filteredInterfaces = this.filterInterfaces(implementedInterfaces);
         // Now that we have removed the interfaces that should be excluded from the check,
-        // if the implementedInterfaces collection is empty then this bean can be considered for no-interface view
-        return implementedInterfaces.isEmpty();
+        // if the filtered interfaces collection is empty then this bean can be considered for no-interface view
+        return filteredInterfaces.isEmpty();
+    }
+
+    /**
+     * Returns the default local view class of the {@link Class beanClass}, if one is present.
+     * EJB3.1 spec, section 4.9.7 specifies the rules for a default local view of a bean. If the bean implements
+     * just one interface, then that interface is returned as the default local view by this method.
+     * If no such, interface is found, then this method returns null.
+     *
+     * @param beanClass The bean class
+     * @return
+     */
+    private Class<?> getDefaultLocalView(Class<?> beanClass) {
+        Class<?>[] interfaces = beanClass.getInterfaces();
+        if (interfaces.length == 0) {
+            return null;
+        }
+        List<Class<?>> implementedInterfaces = new ArrayList<Class<?>>(Arrays.asList(interfaces));
+        List<Class<?>> filteredInterfaces = this.filterInterfaces(implementedInterfaces);
+        if (filteredInterfaces.isEmpty() || filteredInterfaces.size() > 1) {
+            return null;
+        }
+        return filteredInterfaces.get(0);
+
+    }
+
+    /**
+     * Returns a filtered list for the passed <code>interfaces</code> list, excluding the
+     * {@link java.io.Serializable}, {@link java.io.Externalizable} and any interfaces belonging to <code>javax.ejb</code>
+     * package.
+     *
+     * @param interfaces The list of interfaces
+     * @return
+     */
+    private List<Class<?>> filterInterfaces(List<Class<?>> interfaces) {
+        if (interfaces == null) {
+            return null;
+        }
+        List<Class<?>> filteredInterfaces = new ArrayList<Class<?>>();
+        for (Class<?> intf : interfaces) {
+            if (intf.equals(java.io.Serializable.class)
+                    || intf.equals(java.io.Externalizable.class)
+                    || intf.getName().startsWith("javax.ejb.")) {
+                continue;
+            }
+            filteredInterfaces.add(intf);
+        }
+        return filteredInterfaces;
     }
 }
