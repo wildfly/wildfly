@@ -24,6 +24,9 @@ package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
+import org.jboss.as.jpa.hibernate.HibernateAnnotationScanner;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
+import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
@@ -222,19 +225,30 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     /**
      * Attempt Hack around JBTM-828 by setting the TCCL to include arjuna.
-     * After the jira is fixed, just inline the call to
-     * provider.createContainerEntityManagerFactory(pu, properties.getValue().
      *
      * @param provider
-     * @return
+     * @return EntityManagerFactory
      */
     private EntityManagerFactory createContainerEntityManagerFactory(PersistenceProvider provider) {
+
+        PersistenceProviderAdaptor adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
+        adaptor.beforeCreateContainerEntityManagerFactory(pu);
         AccessController.doPrivileged(new SetContextLoaderAction(com.arjuna.ats.jbossatx.jta.TransactionManagerService.class
             .getClassLoader()));
         try {
             return provider.createContainerEntityManagerFactory(pu, properties.getValue());
         } finally {
-            AccessController.doPrivileged(CLEAR_ACTION);
+            try {
+                AccessController.doPrivileged(CLEAR_ACTION);
+            } finally {
+                try {
+                    adaptor.afterCreateContainerEntityManagerFactory(pu);
+                } finally {
+                    pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
+                    pu.setTempClassloader(null);    // close reference to temp classloader (only needed during call to createEntityManagerFactory)
+
+                }
+            }
         }
     }
 

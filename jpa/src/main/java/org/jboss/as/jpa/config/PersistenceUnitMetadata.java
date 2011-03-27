@@ -23,6 +23,8 @@
 
 package org.jboss.as.jpa.config;
 
+import org.jboss.jandex.Index;
+
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.ClassTransformer;
@@ -101,6 +103,7 @@ public class PersistenceUnitMetadata implements PersistenceUnitInfo {
 
     private ClassLoader tempClassloader;
 
+    private Index annotationIndex;
 
     public void setPersistenceUnitName(String name) {
         this.name = name;
@@ -177,6 +180,14 @@ public class PersistenceUnitMetadata implements PersistenceUnitInfo {
     @Override
     public URL getPersistenceUnitRootUrl() {
         return persistenceUnitRootUrl;
+    }
+
+    public void setAnnotationIndex(Index index) {
+        annotationIndex = index;
+    }
+
+    public Index getAnnotationIndex() {
+        return annotationIndex;
     }
 
     @Override

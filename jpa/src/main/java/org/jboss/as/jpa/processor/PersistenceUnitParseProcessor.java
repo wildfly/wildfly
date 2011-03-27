@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
@@ -94,7 +95,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
-            parse(persistence_xml, listPUHolders, deploymentUnit);
+            parse(persistence_xml, listPUHolders, deploymentUnit, deploymentRoot);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             // save the persistent unit definitions
             // deploymentUnit.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
@@ -113,7 +114,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // handle WEB-INF/classes/META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(WEB_PERSISTENCE_XML);
-            parse(persistence_xml, listPUHolders, deploymentUnit);
+            parse(persistence_xml, listPUHolders, deploymentUnit, deploymentRoot);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
@@ -126,7 +127,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
-                    parse(persistence_xml, listPUHolders, deploymentUnit);
+                    parse(persistence_xml, listPUHolders, deploymentUnit, resourceRoot);
                     holder = normalize(listPUHolders);
                     resourceRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
                     markDU(holder, deploymentUnit);
@@ -144,7 +145,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
-            parse(persistence_xml, listPUHolders, deploymentUnit);
+            parse(persistence_xml, listPUHolders, deploymentUnit, deploymentRoot);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
@@ -156,8 +157,13 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void parse(VirtualFile persistence_xml, List<PersistenceUnitMetadataHolder> listPUHolders, DeploymentUnit deploymentUnit) throws
-        DeploymentUnitProcessingException {
+    private void parse(
+        final VirtualFile persistence_xml,
+        final List<PersistenceUnitMetadataHolder> listPUHolders,
+        final DeploymentUnit deploymentUnit,
+        final ResourceRoot deploymentRoot)
+        throws DeploymentUnitProcessingException {
+
         if (persistence_xml.exists() && persistence_xml.isFile()) {
             InputStream is = null;
             try {
@@ -166,7 +172,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 inputFactory.setXMLResolver(NoopXmlResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 PersistenceUnitMetadataHolder puHolder = PersistenceUnitXmlParser.parse(xmlReader);
-                postParseSteps(persistence_xml, puHolder, deploymentUnit);
+                postParseSteps(persistence_xml, puHolder, deploymentUnit, deploymentRoot);
                 listPUHolders.add(puHolder);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + persistence_xml, e);
@@ -188,7 +194,13 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
      * @param persistence_xml
      * @param puHolder
      */
-    private void postParseSteps(VirtualFile persistence_xml, PersistenceUnitMetadataHolder puHolder, DeploymentUnit deploymentUnit) {
+    private void postParseSteps(
+        final VirtualFile persistence_xml,
+        final PersistenceUnitMetadataHolder puHolder,
+        final DeploymentUnit deploymentUnit,
+        final ResourceRoot resourceRoot) {
+
+        final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
 
@@ -203,7 +215,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
             pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit,pu.getPersistenceUnitName()));
-
+            pu.setAnnotationIndex(index);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
 

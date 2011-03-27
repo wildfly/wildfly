@@ -20,39 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.spi;
+package org.jboss.as.jpa.hibernate;
 
-import org.jboss.as.jpa.config.PersistenceUnitMetadata;
-
-import java.util.Map;
+import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFileFilter;
 
 /**
- * PersistenceProvider adaptor
+ * Mock work of NativeScanner matching.
  *
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author Scott Marlow
  */
-public interface PersistenceProviderAdaptor {
+public class HibernatePatternFilter implements VirtualFileFilter {
+    private String pattern;
+    private boolean exact = true;
 
-    /**
-     * Adds any provider specific properties (e.g. hibernate.transaction.manager_lookup_class)
-     *
-     * @param properties
-     */
-    void addProviderProperties(Map properties);
+    public HibernatePatternFilter(String pattern) {
+        if (pattern == null)
+            throw new IllegalArgumentException("Null pattern");
 
-    /**
-     * Called right before persistence provider is invoked to create container entity manager factory.
-     * afterCreateContainerEntityManagerFactory() will always be called after the container entity manager factory
-     * is created.
-     *
-     * @param pu
-     */
-    void beforeCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
-    /**
-     * Called right after persistence provider is invoked to create container entity manager factory.
-     *
-     */
-    void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
+        exact = pattern.contains("/") == false; // no path split or glob
+        if (exact == false && (pattern.startsWith("**/*"))) {
+            this.pattern = pattern.substring(4);
+        } else {
+            this.pattern = pattern;
+        }
+    }
+
+    protected boolean accepts(String name) {
+        return exact ? name.equals(pattern) : name.endsWith(pattern);
+    }
+
+    public boolean accepts(VirtualFile file) {
+        String name = exact ? file.getName() : file.getPathName();
+        return accepts(name);
+    }
 
 }
-

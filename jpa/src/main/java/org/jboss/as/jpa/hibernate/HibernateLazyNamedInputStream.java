@@ -20,39 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.spi;
+package org.jboss.as.jpa.hibernate;
 
-import org.jboss.as.jpa.config.PersistenceUnitMetadata;
+import org.hibernate.ejb.packaging.NamedInputStream;
 
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * PersistenceProvider adaptor
+ * Lazy named input stream.
  *
- * @author Scott Marlow
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ *         Scott Marlow
  */
-public interface PersistenceProviderAdaptor {
+public abstract class HibernateLazyNamedInputStream extends NamedInputStream {
+    public HibernateLazyNamedInputStream(String name) {
+        super(name, null);
+    }
 
     /**
-     * Adds any provider specific properties (e.g. hibernate.transaction.manager_lookup_class)
+     * Get lazy input stream.
      *
-     * @param properties
+     * @return the input stream
+     * @throws java.io.IOException for any I/O error
      */
-    void addProviderProperties(Map properties);
+    protected abstract InputStream getLazyStream() throws IOException;
 
-    /**
-     * Called right before persistence provider is invoked to create container entity manager factory.
-     * afterCreateContainerEntityManagerFactory() will always be called after the container entity manager factory
-     * is created.
-     *
-     * @param pu
-     */
-    void beforeCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
-    /**
-     * Called right after persistence provider is invoked to create container entity manager factory.
-     *
-     */
-    void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
+    @Override
+    public InputStream getStream() {
+        try {
+            return getLazyStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    @Override
+    public void setStream(InputStream stream) {
+        throw new IllegalArgumentException("Cannot change input stream reference.");
+    }
 }
-

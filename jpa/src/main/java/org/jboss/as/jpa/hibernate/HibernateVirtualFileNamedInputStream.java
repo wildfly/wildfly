@@ -22,31 +22,32 @@
 
 package org.jboss.as.jpa.hibernate;
 
-import org.hibernate.HibernateException;
-import org.hibernate.transaction.JNDITransactionManagerLookup;
-import org.jboss.as.jpa.transaction.TransactionUtil;
+import org.jboss.vfs.VirtualFile;
 
-import javax.transaction.TransactionManager;
-import java.util.Properties;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * Provide the transaction manager to Hibernate
+ * VFS named input stream.
  *
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author Scott Marlow
  */
-public class TransactionManagerLookup extends JNDITransactionManagerLookup {
+public class HibernateVirtualFileNamedInputStream extends HibernateLazyNamedInputStream {
+    private VirtualFile file;
 
-
-    protected String getName() {
-        return "java:/TransactionManager";
+    private static String name(VirtualFile file) {
+        if (file == null)
+            throw new IllegalArgumentException("Null file");
+        return file.getName();
     }
 
-    public String getUserTransactionName() {
-        return "UserTransaction";
+    public HibernateVirtualFileNamedInputStream(VirtualFile file) {
+        super(name(file));
+        this.file = file;
     }
 
-    public TransactionManager getTransactionManager(Properties props) throws HibernateException {
-        return TransactionUtil.getTransactionManager();
+    protected InputStream getLazyStream() throws IOException {
+        return file.openStream();
     }
-
 }
