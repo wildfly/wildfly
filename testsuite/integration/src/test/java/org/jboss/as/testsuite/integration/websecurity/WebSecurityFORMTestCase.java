@@ -44,9 +44,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -56,56 +54,22 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.AS_CLIENT)
-public class WebSecurityFORMTestCase {
-
-    private static final String URL = "http://localhost:8080/web-secure/secured/";
+public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
     public static WebArchive deployment() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure.war/web.xml");
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
-        war.addClass(SecuredServlet.class);
+        WebArchive war = WebSecurityPasswordBasedBase.create("web-secure.war", SecuredServlet.class, true, webxml);
 
-        File userProp = new File(tccl.getResource("web-secure.war/users.properties").getPath());
-        File roleProp = new File(tccl.getResource("web-secure.war/roles.properties").getPath());
         File loginJSP = new File(tccl.getResource("web-secure.war/login.jsp").getPath());
         File errorJSP = new File(tccl.getResource("web-secure.war/error.jsp").getPath());
 
         war.addResource(loginJSP);
         war.addResource(errorJSP);
 
-        war.addResource(userProp, "/WEB-INF/classes/users.properties");
-        war.addResource(roleProp, "/WEB-INF/classes/roles.properties");
-
-        war.setWebXML(webxml);
-
+        WebSecurityPasswordBasedBase.printWar(war);
         return war;
-    }
-
-    /**
-     * Test with user "anil" who has the right password and the right role to access the servlet
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testSuccessfulAuth() throws Exception {
-        makeCall("anil", "anil", 200);
-    }
-
-    /**
-     * <p>
-     * Test with user "marcus" who has the right password but does not have the right role
-     * </p>
-     * <p>
-     * Should be a HTTP/403
-     * </p>
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testUnsuccessfulAuth() throws Exception {
-        makeCall("marcus", "marcus", 403);
     }
 
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
@@ -181,5 +145,10 @@ public class WebSecurityFORMTestCase {
             // immediate deallocation of all system resources
             httpclient.getConnectionManager().shutdown();
         }
+    }
+
+    @Override
+    public String getContextPath() {
+        return "web-secure";
     }
 }
