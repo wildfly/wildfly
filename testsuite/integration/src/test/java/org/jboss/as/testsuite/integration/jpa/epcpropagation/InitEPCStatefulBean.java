@@ -38,7 +38,7 @@ import javax.transaction.UserTransaction;
  */
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
-@Local
+@Local(StatefulInterface.class)
 public class InitEPCStatefulBean extends AbstractStatefulInterface
 {
 

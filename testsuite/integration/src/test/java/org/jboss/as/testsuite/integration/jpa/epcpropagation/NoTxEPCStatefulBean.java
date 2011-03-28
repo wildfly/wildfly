@@ -37,7 +37,7 @@ import javax.persistence.PersistenceContextType;
  */
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
-@Local
+@Local(StatefulInterface.class)
 public class NoTxEPCStatefulBean extends AbstractStatefulInterface
 {
    @PersistenceContext(type=PersistenceContextType.EXTENDED, unitName="mypc")

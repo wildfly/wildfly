@@ -34,7 +34,7 @@ import javax.persistence.PersistenceContextType;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 @Stateful
-@Local
+@Local(StatefulInterface.class)
 public class CMTEPCStatefulBean extends AbstractStatefulInterface
 {
    @PersistenceContext(type=PersistenceContextType.EXTENDED, unitName="mypc")
