@@ -70,13 +70,19 @@ public class EarContextRootProcessor implements DeploymentUnitProcessor {
         final ModulesMetaData modulesMetaData = earMetaData.getModules();
         if(modulesMetaData != null) for(ModuleMetaData moduleMetaData : modulesMetaData) {
             if(Web.equals(moduleMetaData.getType()) && moduleMetaData.getFileName().equals(deploymentRoot.getRootName())) {
-                final String contextRoot = WebModuleMetaData.class.cast(moduleMetaData.getValue()).getContextRoot();
+                String contextRoot = WebModuleMetaData.class.cast(moduleMetaData.getValue()).getContextRoot();
+
+                if(contextRoot == null && (warMetaData.getJbossWebMetaData() == null || warMetaData.getJbossWebMetaData().getContextRoot() == null)) {
+                    contextRoot = "/" + parent.getName().substring(0, parent.getName().length() - 4) + "/"
+                            + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);
+                }
+
                 if(contextRoot != null) {
                     JBossWebMetaData jBossWebMetaData = warMetaData.getJbossWebMetaData();
-                    if(jBossWebMetaData == null) {
-                        jBossWebMetaData = new JBoss70WebMetaData();
-                        warMetaData.setJbossWebMetaData(jBossWebMetaData);
-                    }
+                        if(jBossWebMetaData == null) {
+                            jBossWebMetaData = new JBoss70WebMetaData();
+                            warMetaData.setJbossWebMetaData(jBossWebMetaData);
+                        }
                     jBossWebMetaData.setContextRoot(contextRoot);
                 }
                 return;
