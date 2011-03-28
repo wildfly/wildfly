@@ -82,6 +82,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      */
     private String mappedName;
 
+    public enum SessionBeanType {
+        STATELESS,
+        STATEFUL,
+        SINGLETON
+    }
+
     /**
      * Construct a new instance.
      *
@@ -257,6 +263,13 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void setMappedName(String mappedName) {
         this.mappedName = mappedName;
     }
+
+    /**
+     * Returns the type of the session bean
+     *
+     * @return
+     */
+    public abstract SessionBeanType getSessionBeanType();
 
     @Override
     protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

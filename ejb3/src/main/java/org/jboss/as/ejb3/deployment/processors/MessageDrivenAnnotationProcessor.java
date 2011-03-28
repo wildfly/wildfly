@@ -22,7 +22,9 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.EjbJarDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,11 +50,14 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        // attach the EjbJarDescription based off annotations
+        this.attachEjbJarDescriptionIfAbsent(deploymentUnit);
+
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final String moduleName = moduleDescription.getModuleName();
         final String applicationName = moduleDescription.getAppName();
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if(compositeIndex == null) {
+        if (compositeIndex == null) {
             return;
         }
         final List<AnnotationInstance> instances = compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME);
@@ -76,7 +81,9 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
 
             MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, moduleName, applicationName);
             messageDrivenComponentDescription.setMessageListenerInterfaceName(messageListenerInterfaceName);
-            moduleDescription.addComponent(messageDrivenComponentDescription);
+
+            // add the mdb description to the EjbJarDescription
+            deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION).addMessageDrivenBean(messageDrivenComponentDescription);
         }
     }
 
@@ -84,4 +91,18 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
     public void undeploy(DeploymentUnit context) {
         // do nothing
     }
+
+    /**
+     * Attaches a new {@link org.jboss.as.ejb3.EjbJarDescription} at {@link org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys#ANNOTATION_EJB_JAR_DESCRIPTION}, to the
+     * deployment unit, if the attachment is absent
+     *
+     * @param deploymentUnit
+     */
+    private void attachEjbJarDescriptionIfAbsent(DeploymentUnit deploymentUnit) {
+        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION);
+        if (ejbJarDescription == null) {
+            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION, new EjbJarDescription());
+        }
+    }
+
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ejb3.EjbJarDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -47,10 +48,15 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
 
         // get the deployment unit
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        // find the EJB jar metadata and start processing it
         EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData == null) {
             return;
         }
+        // attach the EjbJarDescription (based off ejb-jar.xml) if absent
+        this.attachEjbJarDescriptionIfAbsent(deploymentUnit);
+
 
         EnterpriseBeansMetaData ejbs = ejbJarMetaData.getEnterpriseBeans();
         if (ejbs == null || ejbs.isEmpty()) {
@@ -97,5 +103,17 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
     @Override
     public void undeploy(DeploymentUnit context) {
 
+    }
+
+    /**
+     * Attaches a new {@link EjbJarDescription} at {@link EjbDeploymentAttachmentKeys#DD_EJB_JAR_DESCRIPTION}, to the
+     * deployment unit, if the attachment is absent
+     * @param deploymentUnit
+     */
+    private void attachEjbJarDescriptionIfAbsent(DeploymentUnit deploymentUnit) {
+        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION);
+        if (ejbJarDescription == null) {
+            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION, new EjbJarDescription());
+        }
     }
 }

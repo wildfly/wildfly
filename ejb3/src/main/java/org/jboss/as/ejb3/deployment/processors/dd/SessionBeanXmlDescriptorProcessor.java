@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -151,8 +152,8 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             this.processSessionBean31((SessionBean31MetaData) sessionBean, sessionBeanDescription);
         }
 
-        // Add this component description to the module description
-        moduleDescription.addComponent(sessionBeanDescription);
+        // Add this component description to the ejb jar description
+        deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION).addSessionBean(sessionBeanDescription);
 
     }
 

@@ -218,17 +218,19 @@ public enum Phase {
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_ANNOTATION                        = 0x1100;
     public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1101;
-    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1102;
-    public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1103;
-    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1105;
-    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1106;
+    // the merged view of EJB
+    public static final int PARSE_EJB_MERGED_VIEW                       = 0x1102;
+    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1103;
+    public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1104;
+    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1106;
+    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1107;
     // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1107;
+    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1108;
     // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1108;
+    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1109;
     // should be after all views are known
-    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x1109;
-    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x110A;
+    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x110A;
+    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x110B;
     public static final int PARSE_TLD_DEPLOYMENT                        = 0x1200;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x1300;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x1400;
@@ -253,6 +255,7 @@ public enum Phase {
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2700;
     public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2800;
+
 
 
     // DEPENDENCIES

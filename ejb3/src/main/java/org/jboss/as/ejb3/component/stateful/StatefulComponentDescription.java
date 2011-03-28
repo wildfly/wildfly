@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 /**
@@ -51,5 +50,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     @Override
     public boolean allowsConcurrentAccess() {
         return true;
+    }
+
+    @Override
+    public SessionBeanType getSessionBeanType() {
+        return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
     }
 }

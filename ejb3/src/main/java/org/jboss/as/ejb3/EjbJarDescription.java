@@ -22,10 +22,10 @@
 
 package org.jboss.as.ejb3;
 
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,6 +35,8 @@ import java.util.List;
 public class EjbJarDescription {
 
     private List<SessionBeanComponentDescription> sessionBeans = new ArrayList<SessionBeanComponentDescription>();
+
+    private List<MessageDrivenComponentDescription> messageDrivenBeans = new ArrayList<MessageDrivenComponentDescription>();
 
     /**
      * Returns the {@link SessionBeanComponentDescription session beans} belonging to this {@link EjbJarDescription}.
@@ -47,11 +49,24 @@ public class EjbJarDescription {
         return this.sessionBeans;
     }
 
+    public void addSessionBean(SessionBeanComponentDescription sessionBean) {
+        this.sessionBeans.add(sessionBean);
+    }
+
     /**
      * Adds the passed <code>sessionBeans</code> to this {@link EjbJarDescription}
+     *
      * @param sessionBeans
      */
-    public void addSessionBeans(SessionBeanComponentDescription... sessionBeans) {
-        this.sessionBeans.addAll(Arrays.asList(sessionBeans));
+    public void addSessionBeans(Collection<SessionBeanComponentDescription> sessionBeans) {
+        this.sessionBeans.addAll(sessionBeans);
+    }
+
+    public void addMessageDrivenBean(MessageDrivenComponentDescription mdb) {
+        this.messageDrivenBeans.add(mdb);
+    }
+
+    public Collection<MessageDrivenComponentDescription> getMessageDrivenBeans() {
+        return this.messageDrivenBeans;
     }
 }

@@ -44,6 +44,7 @@ import org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProc
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
 import org.jboss.as.ejb3.deployment.processors.LockAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.MergingEjbJarDescriptionProcessor;
 import org.jboss.as.ejb3.deployment.processors.MessageDrivenAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.ResourceAdapterAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
@@ -120,6 +121,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION, new AccessTimeoutAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TRANSACTION_ATTR_ANNOTATION, new TransactionAttributeAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION, new ResourceAdapterAnnotationProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_MERGED_VIEW, new MergingEjbJarDescriptionProcessor());
 
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
 

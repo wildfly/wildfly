@@ -25,10 +25,12 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ejb3.EjbJarDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -68,7 +70,7 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         // get hold of the deployment unit
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(DeploymentTypeMarker.isType(DeploymentType.EAR,deploymentUnit) ) {
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
         // get the module description
@@ -81,6 +83,10 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             }
             return;
         }
+        // attach the EjbJarDescription based off annotations
+        this.attachEjbJarDescriptionIfAbsent(deploymentUnit);
+
+
         // Find any @Stateless bean annotations
         final List<AnnotationInstance> slsbAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Stateless.class.getName()));
         if (slsbAnnotations != null && !slsbAnnotations.isEmpty()) {
@@ -141,12 +147,25 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
 
-            // Add this component description to the module description
-            moduleDescription.addComponent(sessionBeanDescription);
+            // Add this component description to EjbJarDescription
+            deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION).addSessionBean(sessionBeanDescription);
         }
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
+    }
+
+    /**
+     * Attaches a new {@link org.jboss.as.ejb3.EjbJarDescription} at {@link org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys#ANNOTATION_EJB_JAR_DESCRIPTION}, to the
+     * deployment unit, if the attachment is absent
+     *
+     * @param deploymentUnit
+     */
+    private void attachEjbJarDescriptionIfAbsent(DeploymentUnit deploymentUnit) {
+        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION);
+        if (ejbJarDescription == null) {
+            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION, new EjbJarDescription());
+        }
     }
 }

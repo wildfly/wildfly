@@ -23,10 +23,6 @@
 package org.jboss.as.ejb3;
 
 /**
- * User: jpai
- */
-
-/**
  * PrimitiveClassLoaderUtil
  * <p/>
  * Util for centralizing the logic for handling primitive types

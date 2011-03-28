@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -50,6 +51,9 @@ public class MessageDrivenBeanXmlDescriptorProcessor extends AbstractEjbXmlDescr
         MessageDrivenComponentDescription mdbDescription = new MessageDrivenComponentDescription(ejbName, ejbClassName, moduleDescription.getModuleName(), applicationName);
 
         mdbDescription.setMessageListenerInterfaceName(mdb.getMessagingType());
+
+        // Add this component description to the ejb jar description
+        deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION).addMessageDrivenBean(mdbDescription);
 
     }
 }

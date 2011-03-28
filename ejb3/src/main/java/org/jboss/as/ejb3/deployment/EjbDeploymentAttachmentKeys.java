@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ejb3.EjbJarDescription;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
@@ -34,8 +35,27 @@ import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 public class EjbDeploymentAttachmentKeys {
 
     /**
-     * Attachment key to the {@link EjbJarMetaData} attachment in a {@link org.jboss.as.server.deployment.DeploymentUnit}
+     * Attachment key to the {@link EjbJarMetaData} attachment representing the metadata created out of the ejb-jar.xml
+     * deployment descriptor
      */
     public static final AttachmentKey<EjbJarMetaData> EJB_JAR_METADATA = AttachmentKey.create(EjbJarMetaData.class);
+
+    /**
+     * Attachment key to the {@link EjbJarDescription} attachment representing a the description created out of ejb-jar.xml
+     * deployment descriptor of EJBs.
+     */
+    public static final AttachmentKey<EjbJarDescription> DD_EJB_JAR_DESCRIPTION = AttachmentKey.create(EjbJarDescription.class);
+
+    /**
+     * Attachment key to the {@link EjbJarDescription} attachment representing a the description created out of annotated
+     * EJBs
+     */
+    public static final AttachmentKey<EjbJarDescription> ANNOTATION_EJB_JAR_DESCRIPTION = AttachmentKey.create(EjbJarDescription.class);
+
+    /**
+     * Attachment key to the {@link EjbJarDescription} attachment representing a merged annotation and ejb-jar.xml based
+     * description of EJBs
+     */
+    public static final AttachmentKey<EjbJarDescription> MERGED_EJB_JAR_DESCRIPTION = AttachmentKey.create(EjbJarDescription.class);
 }
 

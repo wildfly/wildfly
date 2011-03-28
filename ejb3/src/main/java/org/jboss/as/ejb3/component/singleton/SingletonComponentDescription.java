@@ -84,4 +84,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     public boolean allowsConcurrentAccess() {
         return true;
     }
+
+    @Override
+    public SessionBeanType getSessionBeanType() {
+        return SessionBeanComponentDescription.SessionBeanType.SINGLETON;
+    }
 }
