@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component.session;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
@@ -314,7 +315,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         Class<?>[] paramTypes = new Class<?>[types.length];
         int i = 0;
         for (String type : types) {
-            paramTypes[i++] = classLoader.loadClass(type.toString());
+            paramTypes[i++] = PrimitiveClassLoaderUtil.loadClass(type.toString(), classLoader);
         }
         return new EJBBusinessMethod(methodName, paramTypes);
     }
