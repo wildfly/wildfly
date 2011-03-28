@@ -152,7 +152,7 @@
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.1_spec>
-        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
+        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.registry.jboss-jaxr-api_1.0_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.0.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.0.Alpha1</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
