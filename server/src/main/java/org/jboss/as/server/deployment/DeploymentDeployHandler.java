@@ -44,7 +44,7 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
 
     public static final String OPERATION_NAME = DEPLOY;
 
-    static final ModelNode getOperation(ModelNode address) {
+    static ModelNode getOperation(ModelNode address) {
         return Util.getEmptyOperation(OPERATION_NAME, address);
     }
 

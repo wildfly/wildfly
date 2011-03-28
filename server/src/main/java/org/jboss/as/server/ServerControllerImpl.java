@@ -32,10 +32,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -69,10 +74,15 @@ import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -90,17 +100,19 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     private final ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final DeploymentRepository deploymentRepository;
     private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
+    private final ServerStateMonitorListener serverStateMonitorListener;
 
     ServerControllerImpl(final ServiceContainer container, final ServiceTarget serviceTarget, final ServerEnvironment serverEnvironment,
             final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepository,
             final ExecutorService executorService) {
         super(ServerControllerModelUtil.createCoreModel(), configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
         this.serviceTarget = serviceTarget;
-        this.extensibleConfigurationPersister = configurationPersister;
+        extensibleConfigurationPersister = configurationPersister;
         this.serverEnvironment = serverEnvironment;
         this.deploymentRepository = deploymentRepository;
-        this.serviceRegistry = new DelegatingServiceRegistry(container);
+        serviceRegistry = new DelegatingServiceRegistry(container);
         this.executorService = executorService;
+        serverStateMonitorListener = new ServerStateMonitorListener(container);
     }
 
     void init() {
@@ -150,6 +162,10 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     @Override
     public State getState() {
         return state.getReference();
+    }
+
+    ServiceListener<Object> getServerStateMonitorListener() {
+        return serverStateMonitorListener;
     }
 
     /** {@inheritDoc} */
@@ -238,6 +254,195 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                     || operation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
     }
 
+    private static <T> Set<T> identitySet() {
+        return Collections.newSetFromMap(new IdentityHashMap<T, Boolean>());
+    }
+
+    /**
+     * A service listener to track container status.  Must be present when the service is created, or results will
+     * be unpredictable.
+     */
+    private class ServerStateMonitorListener extends AbstractServiceListener<Object> {
+        private final ServiceRegistry serviceRegistry;
+        private final AtomicInteger busyServiceCount = new AtomicInteger();
+
+        // protected by "this"
+        private final Map<ServiceController<?>, String> failedControllers = new IdentityHashMap<ServiceController<?>, String>();
+        private final Set<ServiceController<?>> servicesWithMissingDeps = identitySet();
+        private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
+
+        public ServerStateMonitorListener(final ServiceRegistry registry) {
+            serviceRegistry = registry;
+        }
+
+        public void listenerAdded(final ServiceController<?> serviceController) {
+            untick();
+        }
+
+        public void serviceWaiting(final ServiceController<?> controller) {
+            tick();
+        }
+
+        public void serviceWaitingCleared(final ServiceController<?> controller) {
+            untick();
+        }
+
+        public void serviceWontStart(final ServiceController<?> controller) {
+            tick();
+        }
+
+        public void serviceWontStartCleared(final ServiceController<?> controller) {
+            untick();
+        }
+
+        public void dependencyProblem(final ServiceController<?> serviceController) {
+            tick();
+        }
+
+        public void dependencyProblemCleared(final ServiceController<?> serviceController) {
+            untick();
+        }
+
+        public void serviceStarting(final ServiceController<?> controller) {
+            // no tick
+        }
+
+        public void serviceStarted(final ServiceController<?> controller) {
+            tick();
+        }
+
+        public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
+            synchronized (this) {
+                failedControllers.put(controller, reason.toString());
+            }
+            tick();
+        }
+
+        public void serviceRemoved(final ServiceController<?> controller) {
+            synchronized (this) {
+                failedControllers.remove(controller);
+                servicesWithMissingDeps.remove(controller);
+            }
+            tick();
+        }
+
+        public void serviceStopRequested(final ServiceController<?> controller) {
+            untick();
+        }
+
+        public void serviceStopRequestCleared(final ServiceController<?> controller) {
+            tick();
+        }
+
+        public void serviceStopping(final ServiceController<?> controller) {
+            // no tick
+        }
+
+        public void failedServiceStarting(final ServiceController<?> controller) {
+            synchronized (this) {
+                failedControllers.remove(controller);
+            }
+            untick();
+        }
+
+        public void failedServiceStopped(final ServiceController<?> controller) {
+            synchronized (this) {
+                failedControllers.remove(controller);
+            }
+            untick();
+        }
+
+        public void immediateDependencyAvailable(final ServiceController<?> controller) {
+            synchronized (this) {
+                servicesWithMissingDeps.remove(controller);
+            }
+        }
+
+        public void immediateDependencyUnavailable(final ServiceController<?> controller) {
+            synchronized (this) {
+                servicesWithMissingDeps.add(controller);
+            }
+        }
+
+        /**
+         * Tick down the count, triggering a deployment status report when the count is zero.
+         */
+        private void tick() {
+            int tick = busyServiceCount.decrementAndGet();
+            if (tick == 0) {
+                synchronized (this) {
+                    final Set<ServiceName> missingDeps = new HashSet<ServiceName>();
+                    for (ServiceController<?> controller : servicesWithMissingDeps) {
+                        missingDeps.addAll(controller.getImmediateUnavailableDependencies());
+                    }
+
+                    final Set<ServiceName> previousMissing = previousMissingDepSet;
+
+                    // no longer missing deps...
+                    final Set<ServiceName> noLongerMissing = new TreeSet<ServiceName>();
+                    for (ServiceName name : previousMissing) {
+                        if (! missingDeps.contains(name)) {
+                            noLongerMissing.add(name);
+                        }
+                    }
+
+                    // newly missing deps
+                    final Set<ServiceName> newlyMissing = new TreeSet<ServiceName>();
+                    for (ServiceName name : missingDeps) {
+                        if (! previousMissing.contains(name)) {
+                            newlyMissing.add(name);
+                        }
+                    }
+
+                    previousMissingDepSet = missingDeps;
+
+                    final StringBuilder msg = new StringBuilder();
+                    msg.append("Service status report\n");
+                    boolean print = false;
+                    if (! newlyMissing.isEmpty()) {
+                        print = true;
+                        msg.append("   New missing/unsatisfied dependencies:\n");
+                        for (ServiceName name : newlyMissing) {
+                            ServiceController<?> controller = serviceRegistry.getService(name);
+                            if (controller == null) {
+                                msg.append("      ").append(name).append(" (missing)\n");
+                            } else {
+                                msg.append("      ").append(name).append(" (unavailable)\n");
+                            }
+                        }
+                    }
+                    if (! noLongerMissing.isEmpty()) {
+                        print = true;
+                        msg.append("   Newly corrected services:\n");
+                        for (ServiceName name : noLongerMissing) {
+                            ServiceController<?> controller = serviceRegistry.getService(name);
+                            if (controller == null) {
+                                msg.append("      ").append(name).append(" (no longer required)\n");
+                            } else {
+                                msg.append("      ").append(name).append(" (now available)\n");
+                            }
+                        }
+                    }
+                    if (! failedControllers.isEmpty()) {
+                        print = true;
+                        msg.append("  Services which failed to start:\n");
+                        for (Map.Entry<ServiceController<?>, String> entry : failedControllers.entrySet()) {
+                            msg.append("      ").append(entry.getKey().getName()).append(": ").append(entry.getValue()).append('\n');
+                        }
+                        failedControllers.clear();
+                    }
+                    if (print) {
+                        log.info(msg);
+                    }
+                }
+            }
+        }
+
+        private void untick() {
+            busyServiceCount.incrementAndGet();
+        }
+    }
+
     private class ServerOperationContextImpl extends OperationContextImpl implements ServerOperationContext, RuntimeOperationContext {
         // -1 as initial value ensures the CAS in revertRestartRequired()
         // will never succeed unless restartRequired() is called
@@ -255,8 +460,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         @Override
         public synchronized void restartRequired() {
-            AtomicStampedReference<State> stateRef = ServerControllerImpl.this.state;
-            int newStamp = ServerControllerImpl.this.stamp.incrementAndGet();
+            AtomicStampedReference<State> stateRef = state;
+            int newStamp = stamp.incrementAndGet();
             int[] receiver = new int[1];
             // Keep trying until stateRef is RESTART_REQUIRED with our stamp
             for (;;) {
@@ -274,8 +479,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         @Override
         public synchronized void revertRestartRequired() {
             // If 'state' still has the state we last set in restartRequired(), change to RUNNING
-            ServerControllerImpl.this.state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING,
-                    ourStamp, ServerControllerImpl.this.stamp.incrementAndGet());
+            state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING, ourStamp, stamp.incrementAndGet());
         }
 
         @Override
@@ -348,7 +552,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private ModelNode rollbackOperation;
 
         public RollbackAwareResultHandler(ResultHandler resultHandler) {
-            this.delegate = resultHandler;
+            delegate = resultHandler;
         }
 
         @Override
@@ -422,7 +626,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         }
 
         private void setRollbackOperation(ModelNode compensatingOperation) {
-            this.rollbackOperation = compensatingOperation;
+            rollbackOperation = compensatingOperation;
         }
     }
 
@@ -453,10 +657,10 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
-                            ServerControllerImpl.this.execute(OperationBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
+                            execute(OperationBuilder.Factory.create(compensatingOp).build(), rollbackResultHandler);
                         }
                     };
-                    ServerControllerImpl.this.executorService.execute(r);
+                    executorService.execute(r);
                 } else {
                     super.handleFailures();
                 }

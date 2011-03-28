@@ -22,9 +22,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResultHandler;
@@ -37,7 +34,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartException;
 
 /**
  * Utility methods used by operation handlers involved with deployment.
@@ -55,7 +51,7 @@ public class DeploymentHandlerUtil {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext runtimeContext) throws OperationFailedException {
-                    deploy(deploymentModel, resultHandler, runtimeContext);
+                    deploy(deploymentModel, runtimeContext);
                 }
             });
         } else {
@@ -63,8 +59,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    private static void deploy(final ModelNode deploymentModel, final ResultHandler resultHandler,
-                               RuntimeTaskContext context) {
+    private static void deploy(final ModelNode deploymentModel, RuntimeTaskContext context) {
         String deploymentUnitName = deploymentModel.require(NAME).asString();
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry();
@@ -75,24 +70,7 @@ public class DeploymentHandlerUtil {
             final ServiceTarget serviceTarget = context.getServiceTarget();
             final String runtimeName = deploymentModel.require(RUNTIME_NAME).asString();
             final byte[] hash = deploymentModel.require(HASH).asBytes();
-            final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, hash, null, new AbstractDeploymentUnitService.DeploymentCompletionCallback() {
-                @Override
-                public void handleComplete() {
-                    resultHandler.handleResultComplete();
-                }
-
-                @Override
-                public void handleFailure(Map<ServiceName, StartException> startExceptions, Set<ServiceName> failedDependencies) {
-                    final StringBuilder failure = new StringBuilder("Deployment failed.  ");
-                    if (!startExceptions.isEmpty()) {
-                        failure.append("Service failures: ").append(startExceptions.values());
-                    }
-                    if (!failedDependencies.isEmpty()) {
-                        failure.append("Failed Dependencies: ").append(failedDependencies);
-                    }
-                    resultHandler.handleFailed(new ModelNode().set(failure.toString()));
-                }
-            });
+            final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, hash, null);
             serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
@@ -111,18 +89,19 @@ public class DeploymentHandlerUtil {
                         controller.addListener(new AbstractServiceListener<Object>() {
 
                             @Override
-                            public void listenerAdded(ServiceController<? extends Object> serviceController) {
-                                controller.setMode(ServiceController.Mode.NEVER);
+                            public void listenerAdded(ServiceController<?> controller) {
+                                if (! controller.compareAndSetMode(ServiceController.Mode.ACTIVE, ServiceController.Mode.NEVER)) {
+                                    controller.removeListener(this);
+                                }
                             }
 
-                            public void serviceStopped(ServiceController<? extends Object> serviceController) {
+                            public void serviceStopping(ServiceController<?> controller) {
                                 controller.removeListener(this);
-                                controller.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                                controller.setMode(ServiceController.Mode.ACTIVE);
+                                controller.compareAndSetMode(ServiceController.Mode.NEVER, ServiceController.Mode.ACTIVE);
                             }
                         });
                     } else {
-                        deploy(deploymentModel, resultHandler, context);
+                        deploy(deploymentModel, context);
                     }
                 }
             });
@@ -149,11 +128,11 @@ public class DeploymentHandlerUtil {
                             @Override
                             public void serviceRemoved(ServiceController<? extends Object> serviceController) {
                                 controller.removeListener(this);
-                                deploy(deploymentModel, resultHandler, runtimeContext);
+                                deploy(deploymentModel, runtimeContext);
                             }
                         });
                     } else {
-                        deploy(deploymentModel, resultHandler, runtimeContext);
+                        deploy(deploymentModel, runtimeContext);
                     }
                 }
             });

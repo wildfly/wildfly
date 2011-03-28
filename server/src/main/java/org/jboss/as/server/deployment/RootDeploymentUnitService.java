@@ -46,10 +46,8 @@ public final class RootDeploymentUnitService extends AbstractDeploymentUnitServi
      * @param runtimeName the deployment runtime name
      * @param deploymentHash the deployment hash
      * @param parent the parent deployment unit
-     * @param callback the deployment complete callback
      */
-    public RootDeploymentUnitService(final String name, final String runtimeName, final byte[] deploymentHash, final DeploymentUnit parent, final DeploymentCompletionCallback callback) {
-        super(callback);
+    public RootDeploymentUnitService(final String name, final String runtimeName, final byte[] deploymentHash, final DeploymentUnit parent) {
         this.name = name;
         this.parent = parent;
         this.runtimeName = runtimeName;
