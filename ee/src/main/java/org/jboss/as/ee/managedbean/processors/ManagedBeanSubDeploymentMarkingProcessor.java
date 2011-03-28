@@ -57,6 +57,9 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
         }
         // TODO: deal with application clients, we need the manifest information
         List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+        if(potentialSubDeployments == null) {
+            return;
+        }
         for (ResourceRoot resourceRoot : potentialSubDeployments) {
             if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
                 // module roots cannot be managed bean jars
