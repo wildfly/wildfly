@@ -31,16 +31,21 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.web.deployment.TldsMetaData;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.web.deployment.WebAttachments;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.metadata.web.spec.TagMetaData;
+import org.jboss.metadata.web.spec.TldMetaData;
+import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,7 +87,8 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         }
 
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        final Set<String> classes  = getAllComponentClasses(warMetaData);
+        final TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
+        final Set<String> classes  = getAllComponentClasses(warMetaData, tldsMetaData);
         for(String clazz : classes) {
             AbstractComponentDescription description = componentByClass.get(clazz);
             if(description != null) {
@@ -112,7 +118,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
      * @param metaData
      * @return
      */
-    private Set<String> getAllComponentClasses(WarMetaData metaData) {
+    private Set<String> getAllComponentClasses(WarMetaData metaData, TldsMetaData tldsMetaData) {
         final Set<String> classes = new HashSet<String>();
         if(metaData.getAnnotationsMetaData() != null)
             for(Map.Entry<String, WebMetaData> webMetaData : metaData.getAnnotationsMetaData().entrySet()) {
@@ -126,10 +132,20 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             }
         if(metaData.getWebMetaData() != null)
             getAllComponentClasses(metaData.getWebMetaData(),classes);
+        if (tldsMetaData == null)
+            return classes;
+        if (tldsMetaData.getSharedTlds() != null)
+            for (TldMetaData tldMetaData : tldsMetaData.getSharedTlds()) {
+                getAllComponentClasses(tldMetaData,classes);
+            }
+        if (tldsMetaData.getTlds() != null)
+            for(Map.Entry<String, TldMetaData> tldMetaData : tldsMetaData.getTlds().entrySet()) {
+                getAllComponentClasses(tldMetaData.getValue(),classes);
+            }
         return classes;
     }
 
-     private void getAllComponentClasses(WebMetaData metaData,Set<String> classes) {
+     private void getAllComponentClasses(WebCommonMetaData metaData,Set<String> classes) {
          if(metaData.getServlets() != null)
              for(ServletMetaData servlet : metaData.getServlets()) {
                  if (servlet.getServletClass() != null) {
@@ -146,21 +162,17 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
              }
      }
 
-     private void getAllComponentClasses(WebFragmentMetaData metaData,Set<String> classes) {
-         if(metaData.getServlets() != null)
-             for(ServletMetaData servlet : metaData.getServlets()) {
-                 if (servlet.getServletClass() != null) {
-                     classes.add(servlet.getServletClass());
-                 }
-             }
-         if(metaData.getFilters() != null)
-             for(FilterMetaData filter : metaData.getFilters()) {
-                 classes.add(filter.getFilterClass());
-             }
+     private void getAllComponentClasses(TldMetaData metaData,Set<String> classes) {
+         if (metaData.getValidator() != null) {
+             classes.add(metaData.getValidator().getValidatorClass());
+         }
          if(metaData.getListeners() != null)
              for(ListenerMetaData listener : metaData.getListeners()) {
                  classes.add(listener.getListenerClass());
              }
+         if(metaData.getTags() != null)
+             for(TagMetaData tag : metaData.getTags()) {
+                 classes.add(tag.getTagClass());
+             }
      }
-
 }
