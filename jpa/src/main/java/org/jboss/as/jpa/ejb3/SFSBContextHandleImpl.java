@@ -34,13 +34,30 @@ import java.io.Serializable;
  */
 public class SFSBContextHandleImpl implements SFSBContextHandle {
 
-    private Serializable SFSBid;
+    private Serializable idSFSB;
 
     public SFSBContextHandleImpl(StatefulSessionComponentInstance sfsb) {
-        this.SFSBid = sfsb.getId();
+        this.idSFSB = sfsb.getId();
     }
     @Override
     public Object getBeanContextHandle() {
-        return SFSBid;
+        return idSFSB;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SFSBContextHandleImpl that = (SFSBContextHandleImpl) o;
+
+        if (idSFSB != null ? !idSFSB.equals(that.idSFSB) : that.idSFSB != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return idSFSB != null ? idSFSB.hashCode() : 0;
     }
 }
