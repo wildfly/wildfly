@@ -49,7 +49,7 @@ public class InitEPCStatefulBean extends AbstractStatefulInterface
    SessionContext sessionContext;
 
    @EJB(beanName="IntermediateStatefulBean")
-   StatefulInterface cmtBean;
+   IntermediateStatefulInterface cmtBean;
    
    public boolean execute(Integer id, String name) throws Exception
    {
