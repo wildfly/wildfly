@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import org.jboss.as.controller.BasicTransactionalModelController;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -46,19 +46,23 @@ import org.jboss.logging.Logger;
 /**
  * @author Emanuel Muckenhuber
  */
-public class HostControllerImpl extends BasicTransactionalModelController implements HostController {
+public class HostControllerImpl implements HostController {
 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     private final String name;
     private final ServerInventory serverInventory;
+    private final ModelNode model;
+    private final ModelNodeRegistration registry;
 
     private volatile DomainController domainController;
 
+    // FIXME do not leak the model and registry like this!!!!
     HostControllerImpl(final String name, final ModelNode model, final ExtensibleConfigurationPersister configurationPersister,
             final ModelNodeRegistration registry, final ServerInventory serverInventory) {
-        super(model, configurationPersister, registry);
+        this.model = model;
+        this.registry = registry;
         this.name = name;
         this.serverInventory = serverInventory;
     }
@@ -119,15 +123,15 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
     public void registerRunningServer(String serverName, Connection connection) {
         final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
         final ProxyController serverController = RemoteProxyController.create(connection, PathAddress.pathAddress(PathElement.pathElement(HOST, name), element));
-        getRegistry().registerProxyController(element, serverController);
-        getModel().get(element.getKey(), element.getValue());
+        registry.registerProxyController(element, serverController);
+        model.get(element.getKey(), element.getValue());
     }
 
     @Override
     public void unregisterRunningServer(String serverName) {
         PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
-        getModel().get(element.getKey()).remove(element.getValue());
-        getRegistry().unregisterProxyController(element);
+        model.get(element.getKey()).remove(element.getValue());
+        registry.unregisterProxyController(element);
     }
 
     @Override
@@ -175,14 +179,10 @@ public class HostControllerImpl extends BasicTransactionalModelController implem
         return domainController.getDomainAndHostModel().get(HOST, name);
     }
 
-    @Override
     protected void registerInternalOperations() {
-        super.registerInternalOperations();
-
         ServerStartHandler startHandler = new ServerStartHandler(this);
         ServerRestartHandler restartHandler = new ServerRestartHandler(this);
         ServerStopHandler stopHandler = new ServerStopHandler(this);
-        ModelNodeRegistration registry = getRegistry();
         // Register server runtime operation handlers
         ModelNodeRegistration servers = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(SERVER_CONFIG)));
         servers.registerMetric(ServerStatusHandler.ATTRIBUTE_NAME, new ServerStatusHandler(this));
