@@ -57,6 +57,8 @@ public class SFSBCallStack {
         // TODO: arrange for a more optimal datastructure for this
         for (SFSBContextHandle handle : currentSFSBCallStack()) {
             List<EntityManager> xpcs = SFSBXPCMap.getINSTANCE().getXPC(handle);
+            if (xpcs == null)
+                continue;
             for (EntityManager xpc : xpcs) {
                 if (xpc.unwrap(EntityManagerMetadata.class).getScopedPuName().equals(puScopedName)) {
                     return xpc;
