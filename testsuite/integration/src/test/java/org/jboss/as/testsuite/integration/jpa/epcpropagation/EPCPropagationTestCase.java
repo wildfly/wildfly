@@ -37,11 +37,11 @@ import javax.naming.NamingException;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
 /**
- *
  * For managed debugging:
  * -Djboss.options="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"
- *
+ * <p/>
  * For embedded debugging:
  * -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787"
  *
@@ -49,8 +49,7 @@ import static org.junit.Assert.assertTrue;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-public class EPCPropagationTestCase
-{
+public class EPCPropagationTestCase {
     private static final String ARCHIVE_NAME = "epc-propagation";
 
     private static final String persistence_xml =
@@ -63,8 +62,7 @@ public class EPCPropagationTestCase
             "  <class>org.jboss.as.testsuite.integration.jpa.epcpropagation.MyEntity</class>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/></properties>" +
             "  </persistence-unit>" +
-            "</persistence>"
-        ;
+            "</persistence>";
 
     private static InitialContext iniCtx;
 
@@ -73,7 +71,7 @@ public class EPCPropagationTestCase
         iniCtx = new InitialContext();
     }
 
-  @Deployment
+    @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
@@ -94,96 +92,88 @@ public class EPCPropagationTestCase
         return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
-   @Test
-   public void testBMTPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(1, "EntityName");
-      
-      StatefulInterface stateful = lookup("StatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(1, "EntityName");
-      
-      assertTrue("Name changes should propagate", equal);
-   }
-   
-   @Test
-   public void testBMTEPCPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(2, "EntityName");
-      
-      StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(2, "EntityName");
-      
-      assertTrue("Name changes should propagate", equal);
-   }
-   
-   @Test
-   public void testCMTPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(3, "EntityName");
-      
-      StatefulInterface stateful = lookup("CMTStatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(3, "EntityName");
-      
-      assertTrue("Name changes should propagate", equal);
-   }
-   
-   @Test
-   public void testCMTEPCPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(4, "EntityName");
-      
-      StatefulInterface stateful = lookup("CMTEPCStatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(4, "EntityName");
-      
-      assertTrue("Name changes should propagate", equal);
-   }
-   
-   @Test
-   public void testNoTxPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(5, "EntityName");
-      
-      StatefulInterface stateful = lookup("NoTxStatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(5, "EntityName");
-      
-      assertFalse("Name changes should not propagate", equal);
-   }
-   
-   @Test
-   public void testNoTxEPCPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(6, "EntityName");
-      
-      StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(6, "EntityName");
-      
-      assertTrue("Name changes should propagate", equal);
-   }
-   
-   @Test
-   public void testIntermediateEPCPropagation() throws Exception
-   {
-      StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
-      stateless.createEntity(7, "EntityName");
-      
-      StatefulInterface stateful = lookup("InitEPCStatefulBean", StatefulInterface.class);
-      boolean equal = stateful.execute(7, "EntityName");
-      
-      assertTrue("Name changes should propagate", equal);
-   }
+    @Test
+    public void testBMTPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(1, "EntityName");
 
-   @Test
-   public void testXPCPostConstruct() throws Exception
-   {
-      StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
-      assertNull("stateful postConstruct operation should success: " + stateful.getPostConstructErrorMessage(), stateful.getPostConstructErrorMessage());
-   }
+        StatefulInterface stateful = lookup("StatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(1, "EntityName");
+
+        assertTrue("Name changes should propagate", equal);
+    }
+
+    @Test
+    public void testBMTEPCPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(2, "EntityName");
+
+        StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(2, "EntityName");
+
+        assertTrue("Name changes should propagate", equal);
+    }
+
+    @Test
+    public void testCMTPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(3, "EntityName");
+
+        StatefulInterface stateful = lookup("CMTStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(3, "EntityName");
+
+        assertTrue("Name changes should propagate", equal);
+    }
+
+    @Test
+    public void testCMTEPCPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(4, "EntityName");
+
+        StatefulInterface stateful = lookup("CMTEPCStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(4, "EntityName");
+
+        assertTrue("Name changes should propagate", equal);
+    }
+
+    @Test
+    public void testNoTxPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(5, "EntityName");
+
+        StatefulInterface stateful = lookup("NoTxStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(5, "EntityName");
+
+        assertFalse("Name changes should not propagate", equal);
+    }
+
+    @Test
+    public void testNoTxEPCPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(6, "EntityName");
+
+        StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(6, "EntityName");
+
+        assertTrue("Name changes should propagate", equal);
+    }
+
+    @Test
+    public void testIntermediateEPCPropagation() throws Exception {
+        StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);
+        stateless.createEntity(7, "EntityName");
+
+        StatefulInterface stateful = lookup("InitEPCStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.execute(7, "EntityName");
+
+        assertTrue("Name changes should propagate", equal);
+    }
+
+    @Test
+    public void testXPCPostConstruct() throws Exception {
+        StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
+        assertNull("stateful postConstruct operation should success: " + stateful.getPostConstructErrorMessage(), stateful.getPostConstructErrorMessage());
+    }
 
 
 }

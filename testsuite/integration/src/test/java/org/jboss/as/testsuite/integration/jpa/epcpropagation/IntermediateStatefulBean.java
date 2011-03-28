@@ -34,24 +34,22 @@ import javax.persistence.PersistenceContext;
  */
 @Stateful
 @Local
-public class IntermediateStatefulBean implements IntermediateStatefulInterface
-{
+public class IntermediateStatefulBean implements IntermediateStatefulInterface {
 
-   @PersistenceContext(unitName="mypc")
-   EntityManager em;
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
 
-   @Resource
-   SessionContext sessionContext;
+    @Resource
+    SessionContext sessionContext;
 
-   @EJB
-   StatelessInterface cmtBean;
-   
-   public boolean execute(Integer id, String name) throws Exception
-   {
-      MyEntity entity = em.find(MyEntity.class, id);
-      
-      String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
-        
-      return propagatedName.equals(name.toUpperCase());
-   }
+    @EJB
+    StatelessInterface cmtBean;
+
+    public boolean execute(Integer id, String name) throws Exception {
+        MyEntity entity = em.find(MyEntity.class, id);
+
+        String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
+
+        return propagatedName.equals(name.toUpperCase());
+    }
 }

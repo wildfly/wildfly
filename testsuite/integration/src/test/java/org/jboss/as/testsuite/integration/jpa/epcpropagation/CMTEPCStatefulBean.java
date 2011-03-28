@@ -35,24 +35,22 @@ import javax.persistence.PersistenceContextType;
  */
 @Stateful
 @Local(StatefulInterface.class)
-public class CMTEPCStatefulBean extends AbstractStatefulInterface
-{
-   @PersistenceContext(type=PersistenceContextType.EXTENDED, unitName="mypc")
-   EntityManager em;
+public class CMTEPCStatefulBean extends AbstractStatefulInterface {
+    @PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "mypc")
+    EntityManager em;
 
-   @Resource
-   SessionContext sessionContext;
+    @Resource
+    SessionContext sessionContext;
 
-   @EJB
-   StatelessInterface cmtBean;
-   
-   public boolean execute(Integer id, String name) throws Exception
-   {
-      MyEntity eb = em.find(MyEntity.class, id);
-      eb.setName(name.toUpperCase());
-   
-      String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
-      
-      return propagatedName.equals(name.toUpperCase());
-   }
+    @EJB
+    StatelessInterface cmtBean;
+
+    public boolean execute(Integer id, String name) throws Exception {
+        MyEntity eb = em.find(MyEntity.class, id);
+        eb.setName(name.toUpperCase());
+
+        String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
+
+        return propagatedName.equals(name.toUpperCase());
+    }
 }

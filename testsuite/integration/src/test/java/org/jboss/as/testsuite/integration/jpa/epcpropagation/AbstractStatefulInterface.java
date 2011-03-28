@@ -25,11 +25,9 @@ package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 /**
  * @author Scott Marlow
  */
-public abstract class AbstractStatefulInterface implements StatefulInterface
-{
-   public String getPostConstructErrorMessage() throws Exception
-   {
-      return null;
-   }
+public abstract class AbstractStatefulInterface implements StatefulInterface {
+    public String getPostConstructErrorMessage() throws Exception {
+        return null;
+    }
 
 }

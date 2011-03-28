@@ -38,43 +38,35 @@ import javax.transaction.UserTransaction;
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
 @Local(StatefulInterface.class)
-public class StatefulBean extends AbstractStatefulInterface
-{
-   @PersistenceContext(unitName="mypc")
-   EntityManager em;
+public class StatefulBean extends AbstractStatefulInterface {
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
 
-   @Resource
-   SessionContext sessionContext;
+    @Resource
+    SessionContext sessionContext;
 
-   @EJB
-   StatelessInterface cmtBean;
-   
-   public boolean execute(Integer id, String name) throws Exception
-   {
-      try
-      {
-         UserTransaction tx1 = sessionContext.getUserTransaction();
-         tx1.begin();
-         em.joinTransaction();
-         MyEntity entity = em.find(MyEntity.class, id);
-         entity.setName(name.toUpperCase());
-      
-         String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
-         tx1.commit();
-         
-         return propagatedName.equals(name.toUpperCase());
-      }
-      catch (Exception e)
-      {
-         try
-         {
-            sessionContext.getUserTransaction().rollback();
-         }
-         catch (Exception e1)
-         {
-            System.out.println("ROLLBACK: "+e1);
-         }
-         throw e;
-      }
-   }
+    @EJB
+    StatelessInterface cmtBean;
+
+    public boolean execute(Integer id, String name) throws Exception {
+        try {
+            UserTransaction tx1 = sessionContext.getUserTransaction();
+            tx1.begin();
+            em.joinTransaction();
+            MyEntity entity = em.find(MyEntity.class, id);
+            entity.setName(name.toUpperCase());
+
+            String propagatedName = cmtBean.updateEntity(id, name.toLowerCase());
+            tx1.commit();
+
+            return propagatedName.equals(name.toUpperCase());
+        } catch (Exception e) {
+            try {
+                sessionContext.getUserTransaction().rollback();
+            } catch (Exception e1) {
+                System.out.println("ROLLBACK: " + e1);
+            }
+            throw e;
+        }
+    }
 }

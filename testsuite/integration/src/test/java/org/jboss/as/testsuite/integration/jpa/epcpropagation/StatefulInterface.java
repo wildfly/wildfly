@@ -27,8 +27,8 @@ import javax.ejb.Local;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 @Local
-public interface StatefulInterface
-{
-   public boolean execute(Integer id, String name) throws Exception;
-   public String getPostConstructErrorMessage() throws Exception;
+public interface StatefulInterface {
+    public boolean execute(Integer id, String name) throws Exception;
+
+    public String getPostConstructErrorMessage() throws Exception;
 }

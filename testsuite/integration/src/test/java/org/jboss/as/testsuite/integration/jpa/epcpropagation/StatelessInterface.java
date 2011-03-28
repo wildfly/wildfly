@@ -24,9 +24,8 @@ package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface StatelessInterface
-{
-   public void createEntity(Integer id, String name);
-   
-   public String updateEntity(Integer id, String name);
+public interface StatelessInterface {
+    public void createEntity(Integer id, String name);
+
+    public String updateEntity(Integer id, String name);
 }

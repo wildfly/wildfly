@@ -39,44 +39,36 @@ import javax.transaction.UserTransaction;
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
 @Local(StatefulInterface.class)
-public class InitEPCStatefulBean extends AbstractStatefulInterface
-{
+public class InitEPCStatefulBean extends AbstractStatefulInterface {
 
-   @PersistenceContext(type=PersistenceContextType.EXTENDED, unitName="mypc")
-   EntityManager em;
+    @PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "mypc")
+    EntityManager em;
 
-   @Resource
-   SessionContext sessionContext;
+    @Resource
+    SessionContext sessionContext;
 
-   @EJB(beanName="IntermediateStatefulBean")
-   IntermediateStatefulInterface cmtBean;
-   
-   public boolean execute(Integer id, String name) throws Exception
-   {
-      try
-      {
-         UserTransaction tx1 = sessionContext.getUserTransaction();
-         tx1.begin();
-         em.joinTransaction();
-         MyEntity entity = em.find(MyEntity.class, id);
-         entity.setName(name.toUpperCase());
-         
-         boolean result = cmtBean.execute(id, name.toLowerCase());
-         tx1.commit();
-         
-         return result;
-      }
-      catch (Exception e)
-      {
-         try
-         {
-            sessionContext.getUserTransaction().rollback();
-         }
-         catch (Exception e1)
-         {
-            System.out.println("ROLLBACK: "+e1);
-         }
-         throw e;
-      }
-   }
+    @EJB(beanName = "IntermediateStatefulBean")
+    IntermediateStatefulInterface cmtBean;
+
+    public boolean execute(Integer id, String name) throws Exception {
+        try {
+            UserTransaction tx1 = sessionContext.getUserTransaction();
+            tx1.begin();
+            em.joinTransaction();
+            MyEntity entity = em.find(MyEntity.class, id);
+            entity.setName(name.toUpperCase());
+
+            boolean result = cmtBean.execute(id, name.toLowerCase());
+            tx1.commit();
+
+            return result;
+        } catch (Exception e) {
+            try {
+                sessionContext.getUserTransaction().rollback();
+            } catch (Exception e1) {
+                System.out.println("ROLLBACK: " + e1);
+            }
+            throw e;
+        }
+    }
 }

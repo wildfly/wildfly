@@ -38,39 +38,35 @@ import javax.transaction.TransactionManager;
  */
 @Stateless
 @Local
-public class StatelessBean implements StatelessInterface
-{
-   @PersistenceContext(unitName="mypc")
-   EntityManager em;
-   
-   @Resource
-   SessionContext sessionContext;
-   
-   @JndiInject(jndiName="java:/TransactionManager")
-   TransactionManager tm;
-   
-   @TransactionAttribute(TransactionAttributeType.REQUIRED)
-   public void createEntity(Integer id, String name)
-   {
-      MyEntity entity = em.find(MyEntity.class, id);
-      if (entity == null)
-      {
-         entity = new MyEntity();
-         entity.setId(id);
-         em.persist(entity);
-      }
-      entity.setName(name);
-   }
+public class StatelessBean implements StatelessInterface {
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
 
-   @TransactionAttribute(TransactionAttributeType.REQUIRED)
-   public String updateEntity(Integer id, String name)
-   {
-      MyEntity entity = em.find(MyEntity.class, id);
-      String propagatedName = entity.getName();
-      
-      entity.setName(name);
-      
-      return propagatedName;
-   }
+    @Resource
+    SessionContext sessionContext;
+
+    @JndiInject(jndiName = "java:/TransactionManager")
+    TransactionManager tm;
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void createEntity(Integer id, String name) {
+        MyEntity entity = em.find(MyEntity.class, id);
+        if (entity == null) {
+            entity = new MyEntity();
+            entity.setId(id);
+            em.persist(entity);
+        }
+        entity.setName(name);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public String updateEntity(Integer id, String name) {
+        MyEntity entity = em.find(MyEntity.class, id);
+        String propagatedName = entity.getName();
+
+        entity.setName(name);
+
+        return propagatedName;
+    }
 
 }
