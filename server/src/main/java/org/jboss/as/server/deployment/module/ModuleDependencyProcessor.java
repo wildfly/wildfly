@@ -40,8 +40,14 @@ import java.util.jar.Manifest;
  * Deployment unit processor that will extract module dependencies from an archive.
  *
  * @author John E. Bailey
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
+public final class ModuleDependencyProcessor implements DeploymentUnitProcessor {
+
+    private static final String DEPENDENCIES_ATTR = "Dependencies";
+    private static final String EXPORT_PARAM = "export";
+    private static final String OPTIONAL_PARAM = "optional";
+    private static final String SERVICES_PARAM = "services";
 
     /**
      * Process the deployment root for module dependency information.
@@ -49,63 +55,60 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ServiceModuleLoader deploymentModuleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+        final List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
 
-        List<ResourceRoot> allResourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
-        for (ResourceRoot resourceRoot : allResourceRoots) {
+        for (final ResourceRoot resourceRoot : allResourceRoots) {
             final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
             if (manifest == null)
                 continue;
 
-            final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
+            final String dependencyString = manifest.getMainAttributes().getValue(DEPENDENCIES_ATTR);
             if (dependencyString == null)
                 continue;
 
             final String[] dependencyDefs = dependencyString.split(",");
-            for (String dependencyDef : dependencyDefs) {
+            for (final String dependencyDef : dependencyDefs) {
                 final String[] dependencyParts = dependencyDef.split(" ");
-                final int dependencyPartsLength = dependencyParts.length;
-                if (dependencyPartsLength == 0)
+                if (dependencyParts.length == 0) {
                     throw new RuntimeException("Invalid dependency: " + dependencyString);
+                }
 
                 final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
-                boolean export = parseOptionalExportParams(dependencyParts, "export");
-                boolean optional = parseOptionalExportParams(dependencyParts, "optional");
-                boolean services = parseOptionalExportParams(dependencyParts, "services");
+                final boolean export = containsParam(dependencyParts, EXPORT_PARAM);
+                final boolean optional = containsParam(dependencyParts, OPTIONAL_PARAM);
+                final boolean services = containsParam(dependencyParts, SERVICES_PARAM);
                 final ModuleLoader dependencyLoader;
                 if (dependencyId.getName().startsWith("deployment.")) {
                     dependencyLoader = deploymentModuleLoader;
                 } else {
                     dependencyLoader = Module.getBootModuleLoader();
                 }
-                ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
+                final ModuleDependency dependency = new ModuleDependency(dependencyLoader, dependencyId, optional, export, services);
                 moduleSpecification.addDependency(dependency);
-                deploymentUnit.addToAttachmentList(Attachments.MANIFEST_DEPENDENCIES,dependency);
+                deploymentUnit.addToAttachmentList(Attachments.MANIFEST_DEPENDENCIES, dependency);
             }
         }
-        if(deploymentUnit.getParent() != null) {
-            //add any parent manifest dependencies
-            List<ModuleDependency> dependencies = deploymentUnit.getParent().getAttachmentList(Attachments.MANIFEST_DEPENDENCIES);
-            moduleSpecification.addDependencies(dependencies);
+        if (deploymentUnit.getParent() != null) {
+            // propagate parent manifest dependencies
+            final List<ModuleDependency> parentDependencies = deploymentUnit.getParent().getAttachmentList(Attachments.MANIFEST_DEPENDENCIES);
+            moduleSpecification.addDependencies(parentDependencies);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private boolean parseOptionalExportParams(final String[] parts, final String expected) {
-        if(parts.length > 1) {
-            final String part = parts[1];
-            if(expected.equals(part))
-                return true;
-        }
-        if(parts.length > 2) {
-            final String part = parts[2];
-            if(expected.equals(part))
-                return true;
+    private boolean containsParam(final String[] parts, final String expected) {
+        if (parts.length > 1) {
+            for (int i = 1; i < parts.length; i++) {
+                if (expected.equals(parts[i])) {
+                    return true;
+                }
+            }
         }
         return false;
     }
