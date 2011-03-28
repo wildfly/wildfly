@@ -38,17 +38,17 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>networkInterface</code and
+     * @return <code>address</code> if <code>networkInterface</code and
      *         <code>address</code> satisfy <i>none</i> of a contained set of criteria.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         for (InterfaceCriteria ic : criteria) {
-            if (ic.isAcceptable(networkInterface, address))
-                return false;
+            if (ic.isAcceptable(networkInterface, address) != null)
+                return null;
         }
-        return true;
+        return address;
     }
 
 

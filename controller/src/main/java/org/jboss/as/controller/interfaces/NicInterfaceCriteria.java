@@ -22,7 +22,7 @@ public class NicInterfaceCriteria implements InterfaceCriteria {
     /**
      * Creates a new AnyInterfaceCriteria
      *
-     * @param criteria the criteria to check to see if any are satisfied.
+     * @param name the criteria to check to see if any are satisfied.
      *                 Cannot be <code>null</code>
      *
      * @throws IllegalArgumentException if <code>criteria</code> is <code>null</code>
@@ -40,13 +40,15 @@ public class NicInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if the {@link #getAcceptableName() acceptable name}
+     * @return <code>address</code> if the {@link #getAcceptableName() acceptable name}
      *          equals <code>networkInterface</code>'s {@link NetworkInterface#getName() name}.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return name.equals(networkInterface.getName());
+        if( name.equals(networkInterface.getName()) )
+            return address;
+        return null;
     }
 
 

@@ -193,6 +193,10 @@ public final class ParsedInterfaceCriteria {
                 checkStringType(prop.getValue(), element.getLocalName());
                 return new InetAddressMatchInterfaceCriteria(prop.getValue().asString());
             }
+            case LOOPBACK_ADDRESS: {
+                checkStringType(prop.getValue(), element.getLocalName());
+                return new LoopbackAddressInterfaceCriteria(prop.getValue().asString());
+            }
             case NIC: {
                 checkStringType(prop.getValue(), element.getLocalName());
                 return new NicInterfaceCriteria(prop.getValue().asString());

@@ -38,17 +38,18 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>networkInterface</code and
-     *         <code>address</code> satisfy <i>any</i> of a contained set of criteria.
+     * @return the first criteria {@link #isAcceptable(java.net.NetworkInterface, java.net.InetAddress)}
+     * result that is non-null, or null if no criteria apply
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         for (InterfaceCriteria ic : criteria) {
-            if (ic.isAcceptable(networkInterface, address))
-                return true;
+            InetAddress bindAddress = ic.isAcceptable(networkInterface, address);
+            if (bindAddress != null)
+                return bindAddress;
         }
-        return false;
+        return null;
     }
 
 

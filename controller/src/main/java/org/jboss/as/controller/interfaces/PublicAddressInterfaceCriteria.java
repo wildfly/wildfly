@@ -27,15 +27,17 @@ public class PublicAddressInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>address</code> is not
+     * @return <code>address</code> if <code>address</code> is not
      *         {@link InetAddress#isSiteLocalAddress() site-local},
      *         {@link InetAddress#isLinkLocalAddress() link-local}
      *         or a {@link InetAddress#isAnyLocalAddress() wildcard address}.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return !address.isSiteLocalAddress() && !address.isLinkLocalAddress() && !address.isAnyLocalAddress();
+        if( !address.isSiteLocalAddress() && !address.isLinkLocalAddress() && !address.isAnyLocalAddress() )
+            return address;
+        return null;
     }
 
     private Object readResolve() throws ObjectStreamException {

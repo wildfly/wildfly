@@ -56,10 +56,10 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if the <code>address</code> is the same as the one returned by {@link #getAddress()}.
+     * @return <code>getAddress()</code> if the <code>address</code> is the same as the one returned by {@link #getAddress()}.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         try {
             InetAddress toMatch = getAddress();
@@ -73,17 +73,27 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
                 anyLocalLogged = true;
             }
 
-            return getAddress().equals(address);
+            if( getAddress().equals(address) )
+                return getAddress();
         } catch (UnknownHostException e) {
             // One time only log a warning
             if (!unknownHostLogged) {
                 log.warnf("Cannot resolve address %s, so cannot match it to any InetAddress", this.address);
                 unknownHostLogged = true;
             }
-            return false;
+            return null;
         }
+        return null;
     }
 
-
+    public String toString() {
+        StringBuilder sb = new StringBuilder("InetAddressMatchInterfaceCriteria(");
+        sb.append("address=");
+        sb.append(address);
+        sb.append(",resolved=");
+        sb.append(resolved);
+        sb.append(')');
+        return sb.toString();
+    }
 
 }

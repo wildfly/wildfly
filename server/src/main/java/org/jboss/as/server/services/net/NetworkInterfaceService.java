@@ -31,10 +31,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -46,8 +48,10 @@ import org.jboss.msc.service.StopContext;
  * interfaces in the domain model.
  *
  * @author Emanuel Muckenhuber
+ * Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 public class NetworkInterfaceService implements Service<NetworkInterfaceBinding> {
+    private static Logger log = Logger.getLogger("org.jboss.as.server.net");
 
     /** The service base name. */
     public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
@@ -81,6 +85,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     }
 
     public synchronized void start(StartContext arg0) throws StartException {
+        log.debug("Starting NetworkInterfaceService\n");
         try {
             if (anyLocalV4) {
                 this.interfaceBinding = getNetworkInterfaceBinding(IPV4_ANYLOCAL);
@@ -100,6 +105,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         if(this.interfaceBinding == null) {
             throw new StartException("failed to resolve interface " + name);
         }
+        log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
     }
 
     public synchronized void stop(StopContext arg0) {
@@ -116,8 +122,10 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria) throws SocketException {
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        log.tracef("resolveInterface, checking criteria: %s\n", criteria);
         while (networkInterfaces.hasMoreElements()) {
             final NetworkInterface networkInterface = networkInterfaces.nextElement();
+            log.tracef("resolveInterface, checking NetworkInterface: %s\n", toString(networkInterface));
             final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
             while (interfaceAddresses.hasMoreElements()) {
                 final InetAddress address = interfaceAddresses.nextElement();
@@ -126,8 +134,11 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
                 } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
                     continue;
                 }
-                if (criteria.isAcceptable(networkInterface, address)) {
-                    return new NetworkInterfaceBinding(Collections.singleton(networkInterface), address);
+                log.tracef("Checking interface(name=%s,address=%s), criteria=%s\n", networkInterface.getName(), address, criteria);
+                InetAddress bindAddress = criteria.isAcceptable(networkInterface, address);
+                if (bindAddress != null) {
+                    log.tracef("Criteria provided bind address: %s\n", bindAddress);
+                    return new NetworkInterfaceBinding(Collections.singleton(networkInterface), bindAddress);
                 }
             }
         }
@@ -153,16 +164,84 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             interfaceCriteria = criteria;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * Loop through associated criteria and build a unique address as follows:
+         * 1. Iterate through all criteria, returning null if any criteria return a null result
+         * from {@linkplain #isAcceptable(java.net.NetworkInterface, java.net.InetAddress)}.
+         * 2. Collect the accepted addressed into a Set.
+         * 3. If the set contains a single address, this is returned as the criteria match.
+         * 4. If there are more than 2 addresses, log a warning and return null to indicate no
+         *  match was agreed on.
+         * 5. If there are 2 addresses, remove the input address and if the resulting set
+         *  has only one address, return it as the criteria match. Otherwise, log a warning
+         *  indicating 2 unique criteria addresses were seen and return null to indicate no
+         *  match was agreed on.
+         * @return the unique address determined by the all criteria, null if no such address
+         * was found
+         * @throws SocketException
+         */
         @Override
-        public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+        public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+            // Build up a set of unique addresses from the criteria
+            HashSet<InetAddress> addresses = new HashSet<InetAddress>();
             for (InterfaceCriteria criteria : interfaceCriteria) {
-                if (! criteria.isAcceptable(networkInterface, address))
-                    return false;
+                InetAddress bindAddress = criteria.isAcceptable(networkInterface, address);
+                if (bindAddress == null) {
+                    log.debugf("Criteria(%s) failed to accept input\n", criteria);
+                    return null;
+                }
+                log.tracef("%s accepted input, provided bind address: %s", criteria, bindAddress);
+                addresses.add(bindAddress);
             }
-            return true;
+            log.debugf("Candidate accepted addresses are: %s\n", addresses);
+            // Determine which address to return
+            InetAddress bindAddress = null;
+            if(addresses.size() > 0) {
+                log.tracef("Determining unique address from among: %s\n", addresses.toString());
+                if(addresses.size() == 1)
+                    bindAddress = addresses.iterator().next();
+                else {
+                    // Remove the input address and see if non-unique addresses exist
+                    if(addresses.size() > 2)
+                        log.warnf("More than two unique criteria addresses were seen: %s\n", addresses.toString());
+                    else {
+                        log.warnf("Checking two unique criteria addresses were seen: %s\n", addresses.toString());
+                        addresses.remove(address);
+                        if(addresses.size() == 1)
+                            bindAddress = addresses.iterator().next();
+                        else
+                            log.warnf("Two unique criteria addresses were seen: %s\n", addresses.toString());
+                    }
+                }
+            }
+            return bindAddress;
+        }
+        public String toString() {
+            StringBuilder sb = new StringBuilder("OverallInterfaceCriteria(");
+            for (InterfaceCriteria criteria : interfaceCriteria) {
+                sb.append(criteria.toString());
+                sb.append(",");
+            }
+            sb.setLength(sb.length()-1);
+            sb.append(")");
+            return sb.toString();
         }
     }
 
+    /**
+     * A little toString utility for NetworkInterface since its version
+     * seems to add the hardware address and this corrupts logging output.
+     * @param iface
+     * @return toSring for NetworkInterface
+     */
+    static String toString(NetworkInterface iface) {
+       StringBuilder sb = new StringBuilder("NetworkInterface(");
+       sb.append("name:");
+       sb.append(iface.getName());
+       sb.append("(");
+       sb.append(iface.getDisplayName());
+       sb.append("), addresses:");
+       sb.append(iface.getInterfaceAddresses());
+       return sb.toString();
+    }
 }
-

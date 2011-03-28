@@ -25,13 +25,14 @@ public class LoopbackInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>networkInterface</code> is a
-     *         {@link NetworkInterface#isLoopback() loopback interface}.
+     * @return <code>address</code> if {@link NetworkInterface#isLoopback()} is true, null otherwise.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return networkInterface.isLoopback();
+        if( networkInterface.isLoopback() )
+            return address;
+        return null;
     }
 
     private Object readResolve() throws ObjectStreamException {

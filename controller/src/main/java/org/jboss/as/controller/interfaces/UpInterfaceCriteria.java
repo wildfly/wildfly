@@ -25,13 +25,15 @@ public class UpInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>networkInterface</code> is
+     * @return <code>address</code> if <code>networkInterface</code> is
      *         {@link NetworkInterface#isUp() up}
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return networkInterface.isUp();
+        if( networkInterface.isUp() )
+            return address;
+        return null;
     }
 
     private Object readResolve() throws ObjectStreamException {

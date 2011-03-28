@@ -41,23 +41,23 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if the <code>address</code> is on the correct subnet.
+     * @return <code>address</code> if the <code>address</code> is on the correct subnet.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
         byte[] addr = address.getAddress();
         if (addr.length != network.length) {
             // different address type TODO translate?
-            return false;
+            return null;
         }
         int last = addr.length - mask;
         for (int i = 0; i < last; i++) {
             if (addr[i] != network[i]) {
-                return false;
+                return null;
             }
         }
-        return true;
+        return address;
     }
 
 

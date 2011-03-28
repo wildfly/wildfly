@@ -70,6 +70,7 @@ public enum Element {
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
     LOOPBACK("loopback"),
+    LOOPBACK_ADDRESS("loopback-address"),
 
     MANAGEMENT_INTERFACES("management-interfaces"),
     MULTICAST("multicast"),

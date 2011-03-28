@@ -23,7 +23,7 @@ public class NicMatchInterfaceCriteria implements InterfaceCriteria {
     /**
      * Creates a new AnyInterfaceCriteria
      *
-     * @param criteria the criteria to check to see if any are satisfied.
+     * @param pattern the criteria to check to see if any are satisfied.
      *                 Cannot be <code>null</code>
      *
      * @throws IllegalArgumentException if <code>criteria</code> is <code>null</code>
@@ -41,13 +41,15 @@ public class NicMatchInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if the {@link #getAcceptablePattern() acceptable pattern}
+     * @return <code>address</code> if the {@link #getAcceptablePattern() acceptable pattern}
      *          matches <code>networkInterface</code>'s {@link NetworkInterface#getName() name}.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return pattern.matcher(networkInterface.getName()).matches();
+        if( pattern.matcher(networkInterface.getName()).matches() )
+            return address;
+        return null;
     }
 
 

@@ -25,13 +25,15 @@ public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>address</code> is
+     * @return <code>address</code> if <code>address</code> is
      *         {@link InetAddress#isLinkLocalAddress() link-local}.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return address.isSiteLocalAddress();
+        if( address.isSiteLocalAddress() )
+            return address;
+        return null;
     }
 
     private Object readResolve() throws ObjectStreamException {

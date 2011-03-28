@@ -1010,6 +1010,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 criteria.set(localName, value);
                 break;
             }
+            case LOOPBACK_ADDRESS: {
+                requireSingleAttribute(reader, Attribute.VALUE.getLocalName());
+                final String value = reader.getAttributeValue(0);
+                requireNoContent(reader);
+                // todo: validate IP address
+                criteria.set(localName, value);
+                break;
+            }
             case LINK_LOCAL_ADDRESS:
             case LOOPBACK:
             case MULTICAST:

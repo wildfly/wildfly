@@ -25,13 +25,15 @@ public class SupportsMulticastInterfaceCriteria implements InterfaceCriteria {
     /**
      * {@inheritDoc}
      *
-     * @return <code>true</code> if <code>networkInterface</code>
+     * @return <code>address</code> if <code>networkInterface</code>
      *         {@link NetworkInterface#supportsMulticast() supports multicast}.
      */
     @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+    public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        return networkInterface.supportsMulticast();
+        if( networkInterface.supportsMulticast() )
+            return address;
+        return null;
     }
 
     private Object readResolve() throws ObjectStreamException {
