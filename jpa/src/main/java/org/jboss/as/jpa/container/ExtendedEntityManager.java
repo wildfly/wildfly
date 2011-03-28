@@ -46,16 +46,19 @@ import java.io.Serializable;
  */
 public class ExtendedEntityManager extends AbstractEntityManager implements Serializable {
 
-    private static final long serialVersionUID = 432432L;
+    private static final long serialVersionUID = 432435L;
 
     /**
      * EntityManager obtained from the persistence provider that represents the XPC.
      */
-    EntityManager underlyingEntityManager;
+    private EntityManager underlyingEntityManager;
+
+    private String puScopedName;
 
     public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
         super(puScopedName, true);
         this.underlyingEntityManager = underlyingEntityManager;
+        this.puScopedName = puScopedName;
     }
 
     /**
@@ -90,4 +93,10 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
             "(will happen when @remove method is invoked on containing SFSB)");
 
     }
+
+    @Override
+    public String toString() {
+        return "ExtendedEntityManager [" + puScopedName +"]";
+    }
+
 }
