@@ -8,6 +8,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,8 +59,27 @@ public class ConsoleHandler implements HttpHandler {
         String resource = path.substring(CONTEXT.length(), path.length());
         if(resource.startsWith("/")) resource = resource.substring(1);
 
-        // respond 404 directory request
-        if(resource.equals("") || resource.indexOf(".")==-1) respond404(http);
+
+        if(resource.equals("")) {
+            // "/console" request redirect to "/console/index.html"
+
+            InetSocketAddress address = http.getHttpContext().getServer().getAddress();
+            String hostName = address.getHostName();
+            int port = address.getPort();
+            final Headers responseHeaders = http.getResponseHeaders();
+            responseHeaders.add("Content-Type", "text/html");
+            responseHeaders.add("Location", "http://"+hostName + ":"+port+"/console/index.html");
+            http.sendResponseHeaders(302, 0);
+
+
+            OutputStream outputStream = http.getResponseBody();
+            outputStream.flush();
+            safeClose(outputStream);
+
+            return;
+        } else if(resource.indexOf(".")==-1) {
+            respond404(http);
+        }
 
         // load resource
         InputStream inputStream = getLoader().getResourceAsStream(resource);
