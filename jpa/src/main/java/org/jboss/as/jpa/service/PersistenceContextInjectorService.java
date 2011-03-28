@@ -148,7 +148,7 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
                 EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
-                    entityManager = new ExtendedEntityManager(entityManager1);
+                    entityManager = new ExtendedEntityManager(unitName, entityManager1);
                     // register the XPC for inheritance by others
                     SFSBXPCMap.RegisterPersistenceContext(entityManager);
                 }

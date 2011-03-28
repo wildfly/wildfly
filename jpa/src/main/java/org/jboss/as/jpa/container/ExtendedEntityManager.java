@@ -26,7 +26,6 @@ import org.jboss.as.jpa.transaction.TransactionUtil;
 
 import javax.persistence.EntityManager;
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * Extended lifetime scoped (XPC) entity manager will only be injected into SFSB beans.  At bean invocation time, they
@@ -54,7 +53,8 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     EntityManager underlyingEntityManager;
 
-    public ExtendedEntityManager(EntityManager underlyingEntityManager) {
+    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
+        super(puScopedName, true);
         this.underlyingEntityManager = underlyingEntityManager;
     }
 

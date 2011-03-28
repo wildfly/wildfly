@@ -47,6 +47,10 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     private final Map<Class, Object> extensions = new HashMap<Class, Object>();
 
+    protected AbstractEntityManager(final String puScopedName, final boolean isExtendedPersistenceContext) {
+        setMetadata(puScopedName, isExtendedPersistenceContext);
+    }
+
     protected abstract EntityManager getEntityManager();
 
     /**
@@ -67,7 +71,7 @@ public abstract class AbstractEntityManager implements EntityManager {
      * @param puScopedName
      * @param isExtendedPersistenceContext
      */
-    protected void setMetadata(
+    private void setMetadata(
         String puScopedName,
         boolean isExtendedPersistenceContext) {
         if (extensions.get(EntityManagerMetadata.class) == null) {

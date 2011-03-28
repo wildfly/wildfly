@@ -27,8 +27,6 @@ import org.jboss.as.jpa.transaction.TransactionUtil;
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.LockModeType;
-import javax.persistence.TransactionRequiredException;
 import java.util.Map;
 
 /**
@@ -49,10 +47,10 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     private boolean isInTx;
 
     public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
+        super(puScopedName, false);
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
-        setMetadata(puScopedName, false);
     }
 
     @Override
@@ -87,7 +85,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
                 result = EntityManagerUtil.createEntityManager(emf, properties);
             }
         }
-        setMetadata(puScopedName, false);    // save metadata if not already set
+        //setMetadata(puScopedName, false);    // save metadata if not already set
         return result;
     }
 
