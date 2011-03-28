@@ -28,7 +28,6 @@
     <enterprise-beans>
         <session>
             <ejb-name>DDBasedSLSB</ejb-name>
-            <local>org.jboss.as.test.embedded.demos.ejb3.dd.Echo</local>
             <ejb-class>org.jboss.as.test.embedded.demos.ejb3.dd.DDBasedSLSB</ejb-class>
             <session-type>Stateless</session-type>
         </session>
