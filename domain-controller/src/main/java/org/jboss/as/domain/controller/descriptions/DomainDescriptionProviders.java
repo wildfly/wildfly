@@ -145,21 +145,21 @@ public final class DomainDescriptionProviders {
     public static final DescriptionProvider SERVER_GROUP = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            return ServerGroupDescription.getServerGroupDescription(locale);
         }
     };
 
     public static final DescriptionProvider SERVER_GROUP_ADD = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            return ServerGroupDescription.getServerGroupAdd(locale);
         }
     };
 
     public static final DescriptionProvider SERVER_GROUP_REMOVE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            return ServerGroupDescription.getServerGroupRemove(locale);
         }
     };
 
