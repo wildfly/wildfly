@@ -51,6 +51,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     /**
      * EntityManager obtained from the persistence provider that represents the XPC.
      */
+
     private EntityManager underlyingEntityManager;
 
     private String puScopedName;
@@ -97,6 +98,26 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     @Override
     public String toString() {
         return "ExtendedEntityManager [" + puScopedName +"]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ExtendedEntityManager that = (ExtendedEntityManager) o;
+
+        if (!puScopedName.equals(that.puScopedName)) return false;
+        if (!underlyingEntityManager.equals(that.underlyingEntityManager)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = underlyingEntityManager.hashCode();
+        result = 31 * result + puScopedName.hashCode();
+        return result;
     }
 
 }
