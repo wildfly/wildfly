@@ -21,17 +21,7 @@
  */
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import org.jboss.as.controller.SynchronousOperationSupport.AsynchronousOperationController;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
@@ -41,103 +31,29 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelController implements ModelController {
+public abstract class AbstractModelController<T> implements ModelController, AsynchronousOperationController<T> {
 
 
     /** {@inheritDoc} */
     @Override
     public ModelNode execute(final Operation operation) {
-        final ControllerTransactionContext transaction = null;
-        return execute(operation, transaction);
+        return SynchronousOperationSupport.execute(operation, getOperationControllerContext(operation), this);
     }
 
-    protected ModelNode execute(final Operation operation, final ControllerTransactionContext transaction) {
-        final AtomicInteger status = new AtomicInteger();
-        final ModelNode finalResult = new ModelNode();
-        // Make the "outcome" child come first
-        finalResult.get(OUTCOME);
-        // Ensure there is a "result" child even if we receive no fragments
-        finalResult.get(RESULT);
-        ResultHandler resultHandler = new ResultHandler() {
-            @Override
-            public void handleResultFragment(final String[] location, final ModelNode fragment) {
-                synchronized (finalResult) {
-                    if (status.get() == 0) {
-                        finalResult.get(RESULT).get(location).set(fragment);
-                    }
-                }
-            }
-
-            @Override
-            public void handleResultComplete() {
-                synchronized (finalResult) {
-                    status.compareAndSet(0, 1);
-                    finalResult.notify();
-                }
-            }
-
-            @Override
-            public void handleFailed(final ModelNode failureDescription) {
-                synchronized (finalResult) {
-                    if (status.compareAndSet(0, 3)) {
-                        if (failureDescription != null && failureDescription.isDefined()) {
-                            finalResult.get(FAILURE_DESCRIPTION).set(failureDescription);
-                        }
-                    }
-                    finalResult.notify();
-                }
-            }
-
-            @Override
-            public void handleCancellation() {
-                synchronized (finalResult) {
-                    if (status.compareAndSet(0, 2)) {
-                        finalResult.remove(RESULT);
-                    }
-                    finalResult.notify();
-                }
-            }
-        };
-        final OperationResult handlerResult = transaction == null ? execute(operation, resultHandler) : execute(operation, resultHandler, transaction);
-        boolean intr = false;
-        try {
-            synchronized (finalResult) {
-                for (;;) {
-                    try {
-                        final int s = status.get();
-                        switch (s) {
-                            case 1: finalResult.get(OUTCOME).set(SUCCESS);
-                                if(handlerResult.getCompensatingOperation() != null) {
-                                   finalResult.get(COMPENSATING_OPERATION).set(handlerResult.getCompensatingOperation());
-                                }
-                                return finalResult;
-                            case 2: finalResult.get(OUTCOME).set(CANCELLED);
-                                throw new CancellationException();
-                            case 3: finalResult.get(OUTCOME).set(FAILED);
-                                if (!finalResult.hasDefined(RESULT)) {
-                                    // Remove the undefined node
-                                    finalResult.remove(RESULT);
-                                }
-                                return finalResult;
-                        }
-                        finalResult.wait();
-                    } catch (final InterruptedException e) {
-                        intr = true;
-                        handlerResult.getCancellable().cancel();
-                    }
-                }
-            }
-        } finally {
-            if (intr) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
+    /** {@inheritDoc} */
+    @Override
+    public OperationResult execute(final Operation operation, final ResultHandler handler) {
+        return execute(operation, handler, getOperationControllerContext(operation));
     }
 
-    protected OperationResult execute(final Operation operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
-        throw new UnsupportedOperationException("Transactional operations are not supported");
-    }
+    /**
+     * Gets the handback object to pass to {@link #execute(Operation, ResultHandler, Object)}
+     *
+     * @param operation the operation being executed
+     *
+     * @return the handback
+     */
+    protected abstract T getOperationControllerContext(Operation operation);
 
     /**
      * Get a failure result from a throwable exception.

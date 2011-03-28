@@ -48,20 +48,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.BasicTransactionalModelController;
+import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelProvider;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContextFactory;
+import org.jboss.as.controller.OperationControllerContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.SynchronousOperationSupport;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -82,7 +86,7 @@ import org.jboss.modules.ModuleLoadException;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainModelImpl extends BasicTransactionalModelController implements DomainModel {
+public class DomainModelImpl extends BasicModelController implements DomainModel {
 
     private final ExtensionContext extensionContext;
     private final ServerOperationResolver serverOperationResolver;
@@ -189,21 +193,82 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         return hosts;
     }
 
-    @Override
-    protected MultiStepOperationController getMultiStepOperationController(Operation executionContext, ResultHandler handler,
-            ModelProvider modelSource, final ConfigurationPersisterProvider persisterProvider, ControllerTransactionContext transaction) throws OperationFailedException {
 
-        DualRootConfigurationPersisterProvider confPerstProvider = (DualRootConfigurationPersisterProvider) persisterProvider;
-        return new TransactionalMultiStepOperationController(executionContext, handler, modelSource, confPerstProvider, transaction);
+
+    @Override
+    protected OperationControllerContext getOperationControllerContext(Operation operation) {
+        return getOperationControllerContext(operation, null);
+    }
+
+    protected OperationControllerContext getOperationControllerContext(final Operation operation, final ControllerTransactionContext transaction) {
+        boolean forHost = isOperationForHost(operation.getOperation());
+        final ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(getConfigurationPersisterProvider(), hostPersisterProvider, forHost);
+        return new OperationControllerContext() {
+
+            @Override
+            public ModelProvider getModelProvider() {
+                return DomainModelImpl.this.getModelProvider();
+            }
+
+            @Override
+            public OperationContextFactory getOperationContextFactory() {
+                return DomainModelImpl.this.getOperationContextFactory();
+            }
+
+            @Override
+            public ConfigurationPersisterProvider getConfigurationPersisterProvider() {
+                return persisterProvider;
+            }
+
+            @Override
+            public ControllerTransactionContext getControllerTransactionContext() {
+                return transaction;
+            }
+        };
+    }
+
+
+    @Override
+    protected OperationResult doExecute(final OperationContext operationHandlerContext, final Operation operation,
+            final OperationHandler operationHandler, final ResultHandler resultHandler,
+            final PathAddress address, final OperationControllerContext operationControllerContext) throws OperationFailedException {
+
+        ControllerTransactionContext transaction = operationControllerContext.getControllerTransactionContext();
+        if (transaction == null) {
+            return super.doExecute(operationHandlerContext, operation, operationHandler, resultHandler, address, operationControllerContext);
+        }
+
+        try {
+            ModelNode opNode = operation.getOperation();
+            final OperationResult result = operationHandler.execute(operationHandlerContext, opNode, resultHandler);
+            ControllerResource txResource = getControllerResource(operationHandlerContext, opNode, operationHandler, resultHandler,
+                                                                  address, operationControllerContext);
+            if (txResource != null) {
+                transaction.registerResource(txResource);
+            }
+            return result;
+        } catch (OperationFailedException e) {
+            transaction.setRollbackOnly();
+            throw e;
+        }
     }
 
     @Override
+    protected MultiStepOperationController getMultiStepOperationController(Operation executionContext, ResultHandler handler,
+            final OperationControllerContext operationControllerContext) throws OperationFailedException {
+
+        DualRootConfigurationPersisterProvider confPerstProvider =
+            (DualRootConfigurationPersisterProvider) operationControllerContext.getConfigurationPersisterProvider();
+        return new TransactionalMultiStepOperationController(executionContext, handler, operationControllerContext.getModelProvider(),
+                confPerstProvider, operationControllerContext.getControllerTransactionContext());
+    }
+
     protected ControllerResource getControllerResource(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler,
-            final ResultHandler resultHandler, final PathAddress address, final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
+            final ResultHandler resultHandler, final PathAddress address, final OperationControllerContext operationControllerContext) {
         ControllerResource resource = null;
 
         if (operationHandler instanceof ModelUpdateOperationHandler) {
-            resource = new DomainModelControllerResource(operationHandler, address, context.getSubModel(), modelProvider, persisterProvider);
+            resource = new DomainModelControllerResource(operationHandler, address, context.getSubModel(), operationControllerContext);
         }
 
         return resource;
@@ -235,14 +300,6 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         initializeExtensions(domainModel);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final Operation operation, final ResultHandler handler, final ControllerTransactionContext transaction) {
-        boolean forHost = isOperationForHost(operation.getOperation());
-        ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(getConfigurationPersisterProvider(), hostPersisterProvider, forHost);
-        return execute(operation, handler, getModelProvider(), getOperationContextFactory(), persisterProvider, transaction);
-    }
-
     private static boolean isOperationForHost(ModelNode operation) {
         if (operation.hasDefined(OP_ADDR)) {
             ModelNode address = operation.get(OP_ADDR);
@@ -261,7 +318,7 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
         ModelNode overallResult = null;
         if (domainOp != null) {
             DelegatingControllerTransactionContext delegateTx = new DelegatingControllerTransactionContext(transaction);
-            ModelNode opResult = super.execute(operation.clone(domainOp), delegateTx);
+            ModelNode opResult = SynchronousOperationSupport.execute(operation.clone(domainOp), getOperationControllerContext(operation, delegateTx), this);
             overallResult = createOverallResult(opResult, parsedOp, delegateTx);
         }
         else {
@@ -696,9 +753,34 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
 
         @Override
         protected OperationResult executeStep(final ModelNode step, final ResultHandler stepResultHandler) {
-            boolean forHost = isOperationForHost(operationContext.getOperation());
-            ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(this, localHostConfigPersisterProvider, forHost);
-            return DomainModelImpl.this.execute(operationContext.clone(step), stepResultHandler, this, this, persisterProvider, resolve);
+            boolean forHost = isOperationForHost(operation.getOperation());
+            return DomainModelImpl.this.execute(operation.clone(step), stepResultHandler, getOperationControllerContext(forHost), resolve);
+        }
+
+        private OperationControllerContext getOperationControllerContext(boolean forHost) {
+            final ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(this, localHostConfigPersisterProvider, forHost);
+            return new OperationControllerContext() {
+
+                @Override
+                public OperationContextFactory getOperationContextFactory() {
+                    return TransactionalMultiStepOperationController.this;
+                }
+
+                @Override
+                public ModelProvider getModelProvider() {
+                    return TransactionalMultiStepOperationController.this;
+                }
+
+                @Override
+                public ControllerTransactionContext getControllerTransactionContext() {
+                    return null;
+                }
+
+                @Override
+                public ConfigurationPersisterProvider getConfigurationPersisterProvider() {
+                    return persisterProvider;
+                }
+            };
         }
 
         @Override
@@ -746,18 +828,54 @@ public class DomainModelImpl extends BasicTransactionalModelController implement
 
     }
 
-    private class DomainModelControllerResource extends UpdateModelControllerResource implements UncommittedModelProviderControllerResource {
+    private class DomainModelControllerResource implements UncommittedModelProviderControllerResource {
+
+        private final PathAddress address;
+        private final ModelNode subModel;
+        private final boolean isRemove;
+        private final OperationControllerContext operationControllerContext;
 
         public DomainModelControllerResource(final OperationHandler handler, final PathAddress address, final ModelNode subModel,
-                final ModelProvider modelProvider, final ConfigurationPersisterProvider persisterProvider) {
-            super(handler, address, subModel, modelProvider, persisterProvider);
+                final OperationControllerContext operationControllerContext) {
+            if (handler instanceof ModelUpdateOperationHandler) {
+                this.address = address;
+                this.subModel = subModel;
+                this.isRemove = (handler instanceof ModelRemoveOperationHandler);
+                this.operationControllerContext = operationControllerContext;
+            }
+            else {
+                this.address = null;
+                this.subModel = null;
+                this.isRemove = false;
+                this.operationControllerContext = null;
+            }
+        }
+
+        @Override
+        public void commit() {
+            if (address != null) {
+                final ModelNode model = operationControllerContext.getModelProvider().getModel();
+                synchronized (model) {
+                    if (isRemove) {
+                        address.remove(model);
+                    } else {
+                        address.navigate(model, true).set(subModel);
+                    }
+                    persistConfiguration(model, operationControllerContext.getConfigurationPersisterProvider());
+                }
+            }
+        }
+
+        @Override
+        public void rollback() {
+            // no-op
         }
 
         @Override
         public ModelNode getUncommittedModel() {
             ModelNode model = null;
             if (address != null) {
-                model = modelProvider.getModel();
+                model = operationControllerContext.getModelProvider().getModel();
                 synchronized (model) {
                     model = model.clone();
                 }

@@ -22,14 +22,14 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.controller.TransactionalModelController;
+import org.jboss.as.controller.ModelController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface DomainController extends TransactionalModelController {
+public interface DomainController extends ModelController {
 
     /**
      * {@link ServiceName} under which a DomainController instance should be registered

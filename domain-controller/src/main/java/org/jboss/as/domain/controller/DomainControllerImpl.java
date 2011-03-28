@@ -107,7 +107,7 @@ import org.jboss.logging.Logger;
  *
  * @author Emanuel Muckenhuber
  */
-public class DomainControllerImpl extends AbstractModelController implements DomainController, DomainControllerSlave {
+public class DomainControllerImpl extends AbstractModelController<Void> implements DomainController, DomainControllerSlave {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
 
@@ -207,17 +207,6 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         }
     }
 
-    /**
-     * Routes the request to {@link #execute(Operation, ResultHandler)}
-     *
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode execute(final Operation operation) {
-        final ControllerTransactionContext transaction = null;
-        // Use the superclass method to avoid treating this as a "executeOnDomain" call
-        return super.execute(operation, transaction);
-    }
 
     /**
      * Routes the request to {@link DomainModel#executeForDomain(Operation, ControllerTransactionContext)}
@@ -236,14 +225,14 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
     }
 
     @Override
-    public OperationResult execute(Operation operationContext, ResultHandler handler) {
+    public OperationResult execute(final Operation operation, final ResultHandler handler, Void handback) {
 
-        ModelNode operation = operationContext.getOperation();
+        ModelNode operationNode = operation.getOperation();
 
         // System.out.println("------ operation " + operation);
 
         // See who handles this op
-        OperationRouting routing = determineRouting(operation);
+        OperationRouting routing = determineRouting(operationNode);
         if ((routing.isRouteToMaster() || !routing.isLocalOnly()) && masterDomainControllerClient != null) {
             // System.out.println("------ route to master ");
             // Per discussion on 2011/03/07, routing requests from a slave to the
@@ -251,7 +240,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             // the ability to do this is being disabled until it's clear that it's
             // not a problem
 //            return masterDomainControllerClient.execute(operationContext, handler);
-            PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
+            PathAddress addr = PathAddress.pathAddress(operationNode.get(OP_ADDR));
             handler.handleFailed(new ModelNode().set("Operations for address " + addr +
                     " can only handled by the master Domain Controller; this host is not the master Domain Controller"));
             return new BasicOperationResult();
@@ -261,7 +250,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             // either of which a single host client can handle directly
             String host = routing.getSingleHost();
             // System.out.println("------ route to host " + host);
-            return executeOnHost(host, operationContext, handler);
+            return executeOnHost(host, operation, handler);
         }
 
         // System.out.println("---- Push to hosts");
@@ -269,13 +258,13 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         // -- apply to DomainController models across domain and then push to servers
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
-        ModelNode rolloutPlan = operation.has(ROLLOUT_PLAN) ? operation.remove(ROLLOUT_PLAN) : null;
+        ModelNode rolloutPlan = operationNode.has(ROLLOUT_PLAN) ? operationNode.remove(ROLLOUT_PLAN) : null;
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
         Map<String, ModelNode> hostResults = null;
         try {
-            hostResults = pushToHosts(operationContext, routing, transaction);
+            hostResults = pushToHosts(operation, routing, transaction);
         }
         catch (Exception e) {
             transaction.setRollbackOnly();
@@ -346,7 +335,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
             }
 
             // System.out.println(rolloutPlan);
-            ModelNode compensatingOperation = getCompensatingOperation(operation, hostResults);
+            ModelNode compensatingOperation = getCompensatingOperation(operationNode, hostResults);
             // System.out.println(compensatingOperation);
 
             if(opsByGroup.size() == 0) {
@@ -387,6 +376,11 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
                     throw new IllegalStateException("Unknown result " + controllerResult);
             }
         }
+    }
+
+    @Override
+    protected Void getOperationControllerContext(Operation operation) {
+        return null;
     }
 
     private OperationRouting determineRouting(ModelNode operation) {
@@ -475,6 +469,7 @@ public class DomainControllerImpl extends AbstractModelController implements Dom
         return ro;
     }
 
+    @Override
     public ModelNode getDomainAndHostModel() {
         return ((DomainModelImpl) localDomainModel).getDomainAndHostModel();
     }
