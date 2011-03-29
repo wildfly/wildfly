@@ -138,7 +138,7 @@ public class ResourceAdaptersExtension implements Extension {
 
         final ModelNodeRegistration dataSources = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
                 RESOURCEADAPTER_DESC);
-        dataSources.registerOperationHandler(ADD, DataSourceAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
