@@ -83,4 +83,20 @@ public class DDBasedSLSBTestCase {
         String echo = bean.echo(msg);
         Assert.assertEquals("Unexpected return message from bean", msg, echo);
     }
+
+    @Test
+    public void testPartialDDSLSB() throws Exception {
+        Context ctx = new InitialContext();
+        String ejbName = PartialDDSLSB.class.getSimpleName();
+        String localBusinessInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName();
+        Echo localBusinessIntfView = (Echo) ctx.lookup(localBusinessInterfaceViewJndiName);
+        String msgOne = "This is message one!";
+        Assert.assertEquals("Unexpected return message from bean", msgOne, localBusinessIntfView.echo(msgOne));
+
+        String noInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + PartialDDSLSB.class.getName();
+        PartialDDSLSB noInterfaceView = (PartialDDSLSB) ctx.lookup(noInterfaceViewJndiName);
+        String msgTwo = "Yet another message!";
+        Assert.assertEquals("Unexpected return message from no-interface view of bean", msgTwo, noInterfaceView.echo(msgTwo));
+
+    }
 }
