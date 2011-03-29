@@ -156,17 +156,17 @@ public class ServerInModuleStartupTestCase {
 
             @Override
             public void initialDeploy() {
-                manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar").build());
+                manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar").build());
             }
 
             @Override
             public void fullReplace() {
-                manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
+                manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
             }
 
             @Override
             public void undeploy() {
-                manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
             }
         });
     }
@@ -184,17 +184,17 @@ public class ServerInModuleStartupTestCase {
 
             @Override
             public void initialDeploy() throws IOException{
-                manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file).deploy("test-deployment.sar").build());
+                manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", file).deploy("test-deployment.sar").build());
             }
 
             @Override
             public void fullReplace() throws IOException {
-                manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", file).build());
+                manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", file).build());
             }
 
             @Override
             public void undeploy() {
-                manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
             }
         });
     }

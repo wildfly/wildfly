@@ -16,6 +16,19 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
+
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
@@ -36,18 +49,6 @@ import org.jboss.msc.service.management.ServiceContainerMXBean;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
 
 /**
  * A JBossAS server connector
@@ -90,7 +91,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException {
         try {
             InputStream input = archive.as(ZipExporter.class).exportZip();
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().withRollback();
             builder = builder.add(archive.getName(), input).andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction deployAction = builder.getLastAction();
@@ -107,7 +108,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         String runtimeName = registry.remove(archive);
         if (runtimeName != null) {
             try {
-                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().withRollback();
                 DeploymentPlan plan = builder.undeploy(runtimeName).remove(runtimeName).build();
                 Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
                 future.get();
