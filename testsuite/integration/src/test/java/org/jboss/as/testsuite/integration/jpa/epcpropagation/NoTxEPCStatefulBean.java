@@ -24,6 +24,7 @@ package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Local;
+import javax.ejb.Remove;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
@@ -56,4 +57,48 @@ public class NoTxEPCStatefulBean extends AbstractStatefulInterface {
 
         return propagatedName.equals(name.toUpperCase());
     }
+
+
+    public boolean createEntity(Integer id, String name) throws Exception {
+        boolean result = true;
+
+        cmtBean.createEntity(id, name);  // entity is created in XPC (will not be persisted to DB)
+
+        // first test is that created entity propagated to stateful_2ndSFSBInvocation that inherits XPC from calling SFSB
+        StatefulInterface stateful_2ndSFSBInvocation = EPCPropagationTestCase.lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        stateful_2ndSFSBInvocation.execute(8, "EntityName");
+        // NPE Exception will occur if entity isn't found.  success is making it the next line
+
+        // repeat same test once more
+        StatefulInterface stateful_3rdSFSBInvocation = EPCPropagationTestCase.lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        stateful_3rdSFSBInvocation.execute(8, "EntityName");
+        // NPE Exception will occur if entity isn't found.  success is making it the next line
+
+        stateful_2ndSFSBInvocation.finishUp();
+        stateful_3rdSFSBInvocation.finishUp();
+
+        // transaction entity manager should still be able to find/update the entity
+        cmtBean.updateEntity(id,name + " and Emma Peel");
+
+        MyEntity eb = em.find(MyEntity.class, id);
+
+        result = (eb != null);      // true if we find the entity in our XPC, false otherwise
+
+        return result;
+    }
+
+    public StatefulInterface createSFSBOnInvocation() throws Exception {
+        return EPCPropagationTestCase.lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+    }
+
+    public StatelessInterface createSLSBOnInvocation() throws Exception {
+        return EPCPropagationTestCase.lookup("StatelessBean", StatelessInterface.class);
+    }
+
+
+    @Remove
+    public void finishUp() {
+    }
+
+
 }

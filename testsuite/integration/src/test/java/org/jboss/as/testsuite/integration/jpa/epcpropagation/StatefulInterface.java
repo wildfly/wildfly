@@ -31,4 +31,19 @@ public interface StatefulInterface {
     public boolean execute(Integer id, String name) throws Exception;
 
     public String getPostConstructErrorMessage() throws Exception;
+
+    /**
+     *
+     * @param id
+     * @param name
+     * @return true for success
+     * @throws Exception
+     */
+    boolean createEntity(Integer id, String name) throws Exception;
+
+    StatefulInterface createSFSBOnInvocation() throws Exception;
+
+    StatelessInterface createSLSBOnInvocation() throws Exception;
+
+    void finishUp() throws Exception;
 }

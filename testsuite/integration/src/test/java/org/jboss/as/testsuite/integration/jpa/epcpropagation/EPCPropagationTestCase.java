@@ -87,7 +87,7 @@ public class EPCPropagationTestCase {
         return jar;
     }
 
-    private static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+    protected static <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
@@ -172,6 +172,35 @@ public class EPCPropagationTestCase {
     public void testXPCPostConstruct() throws Exception {
         StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
         assertNull("stateful postConstruct operation should success: " + stateful.getPostConstructErrorMessage(), stateful.getPostConstructErrorMessage());
+    }
+
+    /**
+     * JPA 7.6.2 XPC is closed when dependent session bean(s) are closed/destroyed.
+     *
+     * During this test, an entity (X) will be created in the XPC but not persisted to the database.
+     * When the last SFSB referencing the XPC is closed, the entity (X) will no longer be found.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testNoTxEPCRemoveOperation() throws Exception {
+
+        StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
+        boolean equal = stateful.createEntity(8, "EntityName Master X");
+
+        assertTrue("XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
+
+        // stateful should be the only SFSB left
+
+        // create another sfsb on the invocation to stateful (should inherit the same XPC used above.
+        StatefulInterface anotherStateful = stateful.createSFSBOnInvocation();
+        stateful.finishUp();  // destroy SFSB
+        stateful = null;      // clear reference to avoid using it by accident
+                              // both entities (8,9) should still be in XPC
+        // TODO: uncomment the following two lines after figuring out why we get stuck in StrictMaxPool
+        // See http://pastie.org/1729396
+        // equal = anotherStateful.createEntity(9,"John Steed");
+        // assertTrue("again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
     }
 
 

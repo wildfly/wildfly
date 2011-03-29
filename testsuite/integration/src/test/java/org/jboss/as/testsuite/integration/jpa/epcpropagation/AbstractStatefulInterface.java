@@ -30,4 +30,19 @@ public abstract class AbstractStatefulInterface implements StatefulInterface {
         return null;
     }
 
+    public boolean createEntity(Integer id, String name) throws Exception {
+        return true;
+    }
+
+    public StatefulInterface createSFSBOnInvocation() throws Exception {
+        return null;
+    }
+
+    public StatelessInterface createSLSBOnInvocation() throws Exception {
+        return null;
+    }
+
+    public void finishUp() {
+
+    }
 }

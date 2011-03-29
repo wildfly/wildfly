@@ -59,6 +59,16 @@ public class StatelessBean implements StatelessInterface {
         entity.setName(name);
     }
 
+    /**
+     * can only be called from a SFSB with an extended persistence context
+     * @param id
+     * @param name
+     */
+    @TransactionAttribute(TransactionAttributeType.NEVER)
+    public void createEntityNoTx(Integer id, String name) {
+
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public String updateEntity(Integer id, String name) {
         MyEntity entity = em.find(MyEntity.class, id);

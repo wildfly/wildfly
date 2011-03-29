@@ -89,4 +89,14 @@ public class EPCStatefulBean implements StatefulInterface {
         return constructError;
     }
 
+    @Override
+    public boolean createEntity(Integer id, String name) throws Exception {
+        return false;
+    }
+
+    @Override
+    public void finishUp() throws Exception {
+
+    }
+
 }

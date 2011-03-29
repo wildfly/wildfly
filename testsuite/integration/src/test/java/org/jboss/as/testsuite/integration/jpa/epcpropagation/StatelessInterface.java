@@ -27,5 +27,7 @@ package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 public interface StatelessInterface {
     public void createEntity(Integer id, String name);
 
+    public void createEntityNoTx(Integer id, String name);
+
     public String updateEntity(Integer id, String name);
 }
