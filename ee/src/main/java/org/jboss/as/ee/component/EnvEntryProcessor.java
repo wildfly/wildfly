@@ -27,6 +27,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntryMetaData;
+import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
+import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
+import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
+import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
 import org.jboss.modules.Module;
 
 import java.util.ArrayList;
@@ -50,17 +54,110 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             return;
         }
         if(environment != null) {
-            final List<BindingDescription> bindings = getEnvironmentEntries(environment, module.getClassLoader(), deploymentReflectionIndex);
+            List<BindingDescription> bindings = getEnvironmentEntries(environment, module.getClassLoader(), deploymentReflectionIndex);
+            description.getBindingsContainer().addBindings(bindings);
+            bindings = getResourceEnvRefEntries(environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
+            description.getBindingsContainer().addBindings(bindings);
+            bindings = getResourceRefEntries(environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
             description.getBindingsContainer().addBindings(bindings);
         }
         for(final AbstractComponentDescription componentDescription : description.getComponentDescriptions()) {
             if(componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                final List<BindingDescription> bindings = getEnvironmentEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex);
+                List<BindingDescription> bindings = getEnvironmentEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex);
+                componentDescription.addBindings(bindings);
+                bindings = getResourceEnvRefEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
+                componentDescription.addBindings(bindings);
+                bindings = getResourceRefEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
                 componentDescription.addBindings(bindings);
             }
         }
     }
 
+    private List<BindingDescription> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+        final ResourceEnvironmentReferencesMetaData entries = environment.getEnvironment().getResourceEnvironmentReferences();
+        if(entries == null) {
+            return bindings;
+        }
+        for(ResourceEnvironmentReferenceMetaData envEntry : entries) {
+            final String name;
+            if(envEntry.getName().startsWith("java:")) {
+                name = envEntry.getName();
+            } else {
+                name = environment.getDefaultContext() + envEntry.getName();
+            }
+            BindingDescription description  = new BindingDescription(name);
+
+            Class<?> classType = null;
+            if(envEntry.getType() != null) {
+                try {
+                    classType = classLoader.loadClass(envEntry.getType());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ",e);
+                }
+            }
+
+            description.setDependency(true);
+            classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
+            description.setBindingType(classType.getName());
+
+            if(!isEmpty(envEntry.getLookupName())) {
+                if(componentDescription != null) {
+                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),componentDescription));
+                } else {
+                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),moduleDescription));
+                }
+            } else {
+                //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
+                description.setReferenceSourceDescription(new LazyBindingSourceDescription());
+            }
+            bindings.add(description);
+        }
+        return bindings;
+    }
+
+    private List<BindingDescription> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+        final ResourceReferencesMetaData entries = environment.getEnvironment().getResourceReferences();
+        if(entries == null) {
+            return bindings;
+        }
+        for(ResourceReferenceMetaData envEntry : entries) {
+            final String name;
+            if(envEntry.getName().startsWith("java:")) {
+                name = envEntry.getName();
+            } else {
+                name = environment.getDefaultContext() + envEntry.getName();
+            }
+            BindingDescription description  = new BindingDescription(name);
+
+            Class<?> classType = null;
+            if(envEntry.getType() != null) {
+                try {
+                    classType = classLoader.loadClass(envEntry.getType());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ",e);
+                }
+            }
+
+            description.setDependency(true);
+            classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
+            description.setBindingType(classType.getName());
+
+            if(!isEmpty(envEntry.getLookupName())) {
+                if(componentDescription != null) {
+                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),componentDescription));
+                } else {
+                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),moduleDescription));
+                }
+            } else {
+                //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
+                description.setReferenceSourceDescription(new LazyBindingSourceDescription());
+            }
+            bindings.add(description);
+        }
+        return bindings;
+    }
 
     private List<BindingDescription> getEnvironmentEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         List<BindingDescription> bindings = new ArrayList<BindingDescription>();
@@ -68,7 +165,6 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
         if(entries == null) {
             return bindings;
         }
-
         for(EnvironmentEntryMetaData envEntry : entries) {
             final String name;
             if(envEntry.getName().startsWith("java:")) {
@@ -92,8 +188,16 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
 
             final String value = envEntry.getValue();
+
+            if(isEmpty(value) ) {
+                //if no value is provided then it is not an error
+                //this reference should simply be ignored
+                // (Java ee platform spec 6.0 fr pg 80)
+                continue;
+            }
+
             final String type = classType.getName();
-            description.setBindingType(type);
+            description.setBindingType(classType.getName());
 
             if(type.equals(String.class.getName())) {
                 description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(value));
@@ -132,6 +236,9 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
         return bindings;
     }
 
+    private boolean isEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
 
     @Override
     public void undeploy(DeploymentUnit context) {

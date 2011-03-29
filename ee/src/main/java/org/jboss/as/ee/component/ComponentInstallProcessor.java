@@ -259,7 +259,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             if (bindingDescription.isDependency()) startBuilder.addDependency(bindingServiceName);
 
             for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
-                injectionPointStore.addInjectedValue(new JndiInjectedValue(injectionTarget,resourceValue,bindingServiceName));
+                injectionPointStore.addInjectedValue(injectionTarget,resourceValue,bindingServiceName);
             }
         } else {
             // do not bind into JNDI
@@ -268,7 +268,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             bindingDescription.getReferenceSourceDescription().getResourceValue(bindingDescription, startBuilder, phaseContext, injectedValue);
             resourceValue = injectedValue;
             for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
-                injectionPointStore.addInjectedValue(new JndiInjectedValue(injectionTarget,resourceValue,null));
+                injectionPointStore.addInjectedValue(injectionTarget,resourceValue,null);
             }
         }
     }

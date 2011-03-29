@@ -84,7 +84,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
                     .install();
             for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
-                injectionPointStore.addInjectedValue(new JndiInjectedValue(injectionTarget,resourceValue,bindingServiceName));
+                injectionPointStore.addInjectedValue(injectionTarget, resourceValue, bindingServiceName);
             }
         } else {
             throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingDescription);

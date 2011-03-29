@@ -21,8 +21,10 @@
  */
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Value;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,9 +62,12 @@ class JndiInjectionPointStore {
     /**
      * Adds an injected value to store
      *
-     * @param value The value to add
+     * @param injectionTarget The injection target
+     * @param referenceFactory The managed reference factory that creates the value
+     * @param serviceName The service name that represents the managed value. May be null
      */
-    public void addInjectedValue(JndiInjectedValue value ) {
+    public void addInjectedValue(InjectionTargetDescription injectionTarget, Value<ManagedReferenceFactory> referenceFactory, ServiceName serviceName) {
+        final JndiInjectedValue value = new JndiInjectedValue(injectionTarget, referenceFactory, serviceName);
         String clazz = value.getInjectionTarget().getClassName();
         if(!injectionPoints.containsKey(clazz)) {
             injectionPoints.put(clazz,new ArrayList<JndiInjectedValue>());
@@ -105,5 +110,37 @@ class JndiInjectionPointStore {
     public Set<ServiceName> getServiceNames() {
         return Collections.unmodifiableSet(serviceNames);
     }
+
+
+    /**
+     * An Injection Point and the {@link org.jboss.as.naming.ManagedReferenceFactory} that creates the injected value.
+     *
+     * @author Stuart Douglas
+     */
+    private class JndiInjectedValue {
+
+        private final InjectionTargetDescription injectionTarget;
+        private final Value<ManagedReferenceFactory> referenceFactory;
+        private final ServiceName serviceName;
+
+        public JndiInjectedValue(InjectionTargetDescription injectionTarget, Value<ManagedReferenceFactory> referenceFactory, ServiceName serviceName) {
+            this.referenceFactory = referenceFactory;
+            this.injectionTarget = injectionTarget;
+            this.serviceName = serviceName;
+        }
+
+        public InjectionTargetDescription getInjectionTarget() {
+            return injectionTarget;
+        }
+
+        public Value<ManagedReferenceFactory> getReferenceFactory() {
+            return referenceFactory;
+        }
+
+        public ServiceName getServiceName() {
+            return serviceName;
+        }
+    }
+
 
 }
