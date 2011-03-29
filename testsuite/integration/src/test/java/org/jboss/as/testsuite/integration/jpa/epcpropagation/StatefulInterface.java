@@ -43,7 +43,5 @@ public interface StatefulInterface {
 
     StatefulInterface createSFSBOnInvocation() throws Exception;
 
-    StatelessInterface createSLSBOnInvocation() throws Exception;
-
     void finishUp() throws Exception;
 }

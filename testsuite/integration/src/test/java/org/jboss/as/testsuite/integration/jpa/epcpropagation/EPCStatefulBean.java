@@ -95,6 +95,11 @@ public class EPCStatefulBean implements StatefulInterface {
     }
 
     @Override
+    public StatefulInterface createSFSBOnInvocation() throws Exception {
+        return null;
+    }
+
+    @Override
     public void finishUp() throws Exception {
 
     }

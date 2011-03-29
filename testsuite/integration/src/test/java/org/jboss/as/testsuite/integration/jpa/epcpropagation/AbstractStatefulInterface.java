@@ -38,10 +38,6 @@ public abstract class AbstractStatefulInterface implements StatefulInterface {
         return null;
     }
 
-    public StatelessInterface createSLSBOnInvocation() throws Exception {
-        return null;
-    }
-
     public void finishUp() {
 
     }
