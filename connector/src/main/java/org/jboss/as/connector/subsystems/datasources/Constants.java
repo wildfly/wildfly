@@ -43,7 +43,7 @@ class Constants {
 
     static final String DRIVER_CLASS = "driver-class";
 
-    static final String MODULE = "module";
+    static final String DRIVER = "driver";
 
     static final String CONNECTION_PROPERTIES = "connection-properties";
 

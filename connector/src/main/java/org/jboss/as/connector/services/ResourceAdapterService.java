@@ -12,7 +12,6 @@ import org.jboss.msc.service.Service;
 public class ResourceAdapterService implements Service<ResourceAdapter> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "jndiname");
 
     private final ResourceAdapter value;
 

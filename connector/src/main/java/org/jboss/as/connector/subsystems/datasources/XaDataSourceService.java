@@ -219,7 +219,7 @@ public class XaDataSourceService extends AbstractDataSourceService {
         TransactionSupport.TransactionSupportLevel tsl = TransactionSupport.TransactionSupportLevel.XATransaction;
         ConnectionManagerFactory cmf = new ConnectionManagerFactory();
         ConnectionManager cm = cmf.createTransactional(tsl, pool, null, securityDomain, allocationRetry,
-                allocationRetryWaitMillis, getTransactionManager(), interleaving, xaResourceTimeout, isSameRMOverride,
+                allocationRetryWaitMillis, getTransactionIntegration(), interleaving, xaResourceTimeout, isSameRMOverride,
                 wrapXAResource, padXid);
 
         cm.setJndiName(jndiName);

@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import java.sql.Driver;
 import java.util.ServiceLoader;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -62,12 +62,12 @@ public class JdbcDriverAdd implements ModelAddOperationHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final PathAddress pathAddress = PathAddress.pathAddress(address);
 
-        final String moduleName = operation.require(MODULE).asString();
+        final String moduleName = operation.require(DRIVER).asString();
 
         //Apply to the model
         final ModelNode model = context.getSubModel();
         model.get(NAME).set(pathAddress.getLastElement().getValue());
-        model.get(MODULE).set(moduleName);
+        model.get(DRIVER).set(moduleName);
 
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(address);

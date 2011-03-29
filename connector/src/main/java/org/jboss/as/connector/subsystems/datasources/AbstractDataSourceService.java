@@ -39,6 +39,7 @@ import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.connectionmanager.pool.api.Pool;
+import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -59,7 +60,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerValue = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
 
     private final String jndiName;
@@ -90,8 +91,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         return sqlDataSource;
     }
 
-    public Injector<TransactionManagerService> getTransactionManagerInjector() {
-        return transactionManagerValue;
+    public Injector<TransactionIntegration> getTransactionIntegrationInjector() {
+        return transactionIntegrationValue;
     }
 
     public Injector<Driver> getDriverInjector() {
@@ -162,11 +163,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         return valueBuf.toString();
     }
 
-    protected TransactionManager getTransactionManager() {
-        AccessController.doPrivileged(new SetContextLoaderAction(com.arjuna.ats.jbossatx.jta.TransactionManagerService.class
-                .getClassLoader()));
+    protected TransactionIntegration getTransactionIntegration() {
+        AccessController.doPrivileged(new SetContextLoaderAction(TransactionIntegration.class.getClassLoader()));
         try {
-            return transactionManagerValue.getValue().getTransactionManager();
+            return transactionIntegrationValue.getValue();
         } finally {
             AccessController.doPrivileged(CLEAR_ACTION);
         }

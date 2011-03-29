@@ -167,7 +167,7 @@
                 <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
                     <driver-class>org.h2.Driver</driver-class>
-                    <module>org.h2.Driver#1.2</module>
+                    <driver>org.h2.Driver#1.2</driver>
                     <pool></pool>
                     <security>
                         <user-name>sa</user-name>

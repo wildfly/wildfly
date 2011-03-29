@@ -42,6 +42,7 @@ import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
+import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
@@ -87,7 +88,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final IronJacamar ijmd;
 
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txm = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
 
     public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
             final IronJacamar ijmd, final Module module) {
@@ -140,12 +141,12 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         return config;
     }
 
-    public InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxm() {
-        return txm;
+    public InjectedValue<TransactionIntegration> getTxIntegration() {
+        return txInt;
     }
 
-    public Injector<TransactionManagerService> getTxmInjector() {
-        return txm;
+    public Injector<TransactionIntegration> getTxIntegrationInjector() {
+        return txInt;
     }
 
     public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
@@ -301,7 +302,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             AccessController.doPrivileged(new SetContextLoaderAction(
                     com.arjuna.ats.jbossatx.jta.TransactionManagerService.class.getClassLoader()));
             try {
-                return getTxm().getValue().getTransactionManager();
+                return getTxIntegration().getValue().getTransactionManager();
             } finally {
                 AccessController.doPrivileged(CLEAR_ACTION);
             }
@@ -358,6 +359,11 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             /* TODO: We need security context service to implement it! */
             return null;// throw new
                         // DeployException("TODO: We need security context service to implement it!");
+        }
+
+        @Override
+        protected TransactionIntegration getTransactionIntegration() {
+            return getTxIntegration().getValue();
         }
 
     }

@@ -199,7 +199,7 @@ public class LocalDataSourceService extends AbstractDataSourceService {
         final TransactionSupport.TransactionSupportLevel tsl = TransactionSupport.TransactionSupportLevel.LocalTransaction;
         final ConnectionManagerFactory cmf = new ConnectionManagerFactory();
         final ConnectionManager cm = cmf.createTransactional(tsl, pool, null, null, allocationRetry, allocationRetryWaitMillis,
-                getTransactionManager(), null, null, null, null, null);
+                getTransactionIntegration(), null, null, null, null, null);
 
         cm.setJndiName(jndiName);
         return cm;

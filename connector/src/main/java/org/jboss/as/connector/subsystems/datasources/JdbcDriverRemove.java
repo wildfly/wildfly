@@ -61,8 +61,8 @@ public class JdbcDriverRemove implements ModelRemoveOperationHandler {
         // Compensating is add
         final ModelNode model = context.getSubModel();
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
-        final String moduleName = model.get(MODULE).asString();
-        compensating.get(MODULE).set(model.get(MODULE));
+        final String moduleName = model.get(DRIVER).asString();
+        compensating.get(DRIVER).set(model.get(DRIVER));
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {

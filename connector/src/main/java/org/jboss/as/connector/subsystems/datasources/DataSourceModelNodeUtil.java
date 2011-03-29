@@ -39,7 +39,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVIN
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
@@ -122,7 +122,7 @@ class DataSourceModelNodeUtil {
         setStringIfNotNull(dataSourceModel, CONNECTION_URL, dataSource.getConnectionUrl());
         setStringIfNotNull(dataSourceModel, DRIVER_CLASS, dataSource.getDriverClass());
         setStringIfNotNull(dataSourceModel, JNDINAME, dataSource.getJndiName());
-        setStringIfNotNull(dataSourceModel, MODULE, dataSource.getModule());
+        setStringIfNotNull(dataSourceModel, DRIVER, dataSource.getDriver());
         setStringIfNotNull(dataSourceModel, NEW_CONNECTION_SQL, dataSource.getNewConnectionSql());
         setStringIfNotNull(dataSourceModel, POOLNAME, dataSource.getPoolName());
         setStringIfNotNull(dataSourceModel, URL_DELIMITER, dataSource.getUrlDelimiter());
@@ -192,7 +192,7 @@ class DataSourceModelNodeUtil {
         }
         setStringIfNotNull(xaDataSourceModel, XADATASOURCECLASS, xaDataSource.getXaDataSourceClass());
         setStringIfNotNull(xaDataSourceModel, JNDINAME, xaDataSource.getJndiName());
-        setStringIfNotNull(xaDataSourceModel, MODULE, xaDataSource.getModule());
+        setStringIfNotNull(xaDataSourceModel, DRIVER, xaDataSource.getDriver());
         setStringIfNotNull(xaDataSourceModel, NEW_CONNECTION_SQL, xaDataSource.getNewConnectionSql());
         setStringIfNotNull(xaDataSourceModel, POOLNAME, xaDataSource.getPoolName());
         setStringIfNotNull(xaDataSourceModel, URL_DELIMITER, xaDataSource.getUrlDelimiter());
@@ -288,7 +288,7 @@ class DataSourceModelNodeUtil {
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
         final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, MODULE, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
@@ -357,7 +357,7 @@ class DataSourceModelNodeUtil {
         }
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, MODULE, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
