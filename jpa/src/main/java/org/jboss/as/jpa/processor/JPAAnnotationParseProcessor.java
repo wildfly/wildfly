@@ -25,16 +25,16 @@ package org.jboss.as.jpa.processor;
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.BindingDescription;
+import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.ee.component.InjectionTargetDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.interceptor.SFSBCreateInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptorFactory;
-import org.jboss.as.jpa.service.PersistenceContextInjectorService;
-import org.jboss.as.jpa.service.PersistenceUnitInjectorService;
+import org.jboss.as.jpa.service.PersistenceContextBindingSourceDescription;
+import org.jboss.as.jpa.service.PersistenceUnitBindingSourceDescription;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -47,7 +47,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.persistence.PersistenceContext;
@@ -178,8 +177,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
-        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, fieldName, injectionTypeName);
-        bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
+        bindingDescription.setReferenceSourceDescription(getBindingSource(deploymentUnit,annotation,injectionTypeName));
 
         // setup the injection target
         final InjectionTargetDescription targetDescription = new InjectionTargetDescription();
@@ -221,9 +219,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final String injectionTypeName = injectionType.toString();
         bindingDescription.setBindingType(injectionTypeName);
 
-        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, methodName, injectionTypeName);
-
-        bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
+        bindingDescription.setReferenceSourceDescription(getBindingSource(deploymentUnit,annotation,injectionTypeName));
 
         // setup the injection target
         final InjectionTargetDescription targetDescription = new InjectionTargetDescription();
@@ -252,36 +248,23 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final BindingDescription bindingDescription = new BindingDescription(name,componentDescription);
         bindingDescription.setDependency(true);
         bindingDescription.setBindingType(type);
-        ServiceName injectorName = getInjectorServiceName(deploymentUnit, annotation, componentDescription, phaseContext, name, type);
-        bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(injectorName));
+        bindingDescription.setReferenceSourceDescription(getBindingSource(deploymentUnit,annotation,type));
         return bindingDescription;
     }
 
-    private ServiceName getInjectorServiceName(
+    private BindingSourceDescription getBindingSource(
         final DeploymentUnit deploymentUnit,
         final AnnotationInstance annotation,
-        final AbstractComponentDescription componentDescription,
-        final DeploymentPhaseContext phaseContext,
-        final String targetName,
         String injectionTypeName)
         throws DeploymentUnitProcessingException {
 
         String scopedPuName = getScopedPuName(deploymentUnit, annotation);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        ServiceName injectorName = ServiceName.of(componentDescription.getModuleName(), componentDescription.getComponentClassName(), targetName);
         if (isPersistenceContext(annotation)) {
-            phaseContext.getServiceTarget().addService(injectorName, new PersistenceContextInjectorService(annotation, puServiceName, deploymentUnit, scopedPuName, injectionTypeName))
-                .addDependency(puServiceName)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+            return new PersistenceContextBindingSourceDescription(annotation, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         } else {
-            phaseContext.getServiceTarget().addService(injectorName, new PersistenceUnitInjectorService(annotation, puServiceName, deploymentUnit, scopedPuName, injectionTypeName))
-                .addDependency(puServiceName)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-
+            return new PersistenceUnitBindingSourceDescription(puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         }
-        return injectorName;
     }
 
     private boolean isExtendedPersistenceContext(final AnnotationInstance annotation) {

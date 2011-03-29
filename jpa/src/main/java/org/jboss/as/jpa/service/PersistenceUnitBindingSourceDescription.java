@@ -22,16 +22,16 @@
 
 package org.jboss.as.jpa.service;
 
+import org.jboss.as.ee.component.BindingDescription;
+import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import javax.persistence.EntityManagerFactory;
@@ -44,33 +44,25 @@ import javax.persistence.EntityManagerFactory;
  *
  * @author Scott Marlow
  */
-public class PersistenceUnitInjectorService implements Service<ManagedReferenceFactory> {
+public class PersistenceUnitBindingSourceDescription extends BindingSourceDescription {
 
     private final PersistenceUnitJndiInjectable injectable;
+    private final ServiceName puServiceName;
 
-    public PersistenceUnitInjectorService(
-        final AnnotationInstance annotation,
-        final ServiceName puServiceName,
-        final DeploymentUnit deploymentUnit,
-        final String scopedPUName,
-        final String injectionTypeName) {
+    public PersistenceUnitBindingSourceDescription(
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final String scopedPUName,
+            final String injectionTypeName) {
 
         injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, scopedPUName, injectionTypeName);
+        this.puServiceName=puServiceName;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-
-    }
-
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
-    @Override
-    public ManagedReferenceFactory getValue() throws IllegalStateException, IllegalArgumentException {
-        return injectable;
+    public void getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
+        serviceBuilder.addDependencies(puServiceName);
+        injector.inject(injectable);
     }
 
     private static final class PersistenceUnitJndiInjectable implements ManagedReferenceFactory {

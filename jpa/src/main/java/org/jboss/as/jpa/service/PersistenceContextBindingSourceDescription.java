@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.service;
 
+import org.jboss.as.ee.component.BindingDescription;
+import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.SFSBCallStack;
 import org.jboss.as.jpa.container.SFSBXPCMap;
@@ -29,15 +31,18 @@ import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
+
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import javax.persistence.EntityManager;
@@ -51,11 +56,13 @@ import java.util.Map;
  *
  * @author Scott Marlow
  */
-public class PersistenceContextInjectorService implements Service<ManagedReferenceFactory>{
+public class PersistenceContextBindingSourceDescription extends BindingSourceDescription {
 
     private final PersistenceContextType type;
 
     private final PersistenceContextJndiInjectable injectable;
+
+    private final ServiceName puServiceName;
 
     /**
      * Constructor for the PersistenceContextInjectorService
@@ -67,12 +74,12 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
      * for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
      * the unwrap return value is injected (instead of the EntityManager instance)
      */
-    public PersistenceContextInjectorService(
-        final AnnotationInstance annotation,
-        final ServiceName puServiceName,
-        final DeploymentUnit deploymentUnit,
-        final String scopedPuName,
-        final String injectionTypeName) {
+    public PersistenceContextBindingSourceDescription(
+            final AnnotationInstance annotation,
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final String scopedPuName,
+            final String injectionTypeName) {
 
         AnnotationValue value;
         value = annotation.value("type");
@@ -92,21 +99,13 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
             properties = null;
         }
         injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName);
+        this.puServiceName=puServiceName;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-
-    }
-
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
-    @Override
-    public ManagedReferenceFactory getValue() throws IllegalStateException, IllegalArgumentException {
-        return injectable;
+    public void getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
+        serviceBuilder.addDependencies(puServiceName);
+        injector.inject(injectable);
     }
 
     private static final class PersistenceContextJndiInjectable implements ManagedReferenceFactory {
