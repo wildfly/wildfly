@@ -32,6 +32,7 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -118,7 +119,7 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
         private final String injectionTypeName;
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
-
+        private static final Logger log = Logger.getLogger("org.jboss.jpa");
         public PersistenceContextJndiInjectable(
             final ServiceName puServiceName,
             final DeploymentUnit deploymentUnit,
@@ -143,18 +144,27 @@ public class PersistenceContextInjectorService implements Service<ManagedReferen
 
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
+                if (log.isDebugEnabled())
+                    log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
             }
             else {
                 EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
                     entityManager = new ExtendedEntityManager(unitName, entityManager1);
-                    // register the XPC for inheritance by others
-                    SFSBXPCMap.RegisterPersistenceContext(entityManager);
+                    if (log.isDebugEnabled())
+                        log.debug("created new ExtendedEntityManager for unit name=" + unitName);
+
                 }
                 else {
                     entityManager = entityManager1;
+                    if (log.isDebugEnabled())
+                        log.debug("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=" + unitName);
                 }
+
+                // register the EntityManager on TL so that SFSBCreateInterceptor will see it.
+                // this is important for creating a new XPC or inheriting existing XPC from SFSBCallStack
+                SFSBXPCMap.RegisterPersistenceContext(entityManager);
 
             }
 

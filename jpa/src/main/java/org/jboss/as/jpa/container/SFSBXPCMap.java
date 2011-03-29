@@ -95,10 +95,17 @@ public class SFSBXPCMap {
      * finishRegistrationOfPersistenceContext is step 2
      *
      * @param xpc The ExtendedEntityManager
-     *
-     * TODO:  need a way to clear the XPC from ThreadLocal if step 2 doesn't happen (due to error)
      */
     public static void RegisterPersistenceContext(EntityManager xpc) {
+
+        if(xpc == null) {
+            throw new RuntimeException("internal SFSBXPCMap.RegisterPersistenceContext error, null EntityManager passed in");
+        }
+
+        if (! (xpc instanceof AbstractEntityManager)) {
+            throw new RuntimeException("internal error, XPC needs to be a AbstractEntityManager so that we can get metadata");
+        }
+
         Object[] store = deferToPostConstruct.get();
         store[0] = xpc;
     }
@@ -109,6 +116,9 @@ public class SFSBXPCMap {
     public void finishRegistrationOfPersistenceContext(SFSBContextHandle current) {
         Object[] store = deferToPostConstruct.get();
         if (store !=null && store.length == 1) {
+            if(store[0] == null) {
+                throw new RuntimeException("internal SFSBXPCMap.finishRegistrationOfPersistenceContext error, null EntityManager passed in");
+            }
             register(current, (EntityManager)store[0]);
             store[0] = null;    // clear store
         }
