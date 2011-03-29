@@ -22,19 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import static java.util.jar.Attributes.Name.EXTENSION_LIST;
-import static java.util.jar.Attributes.Name.EXTENSION_NAME;
-import static java.util.jar.Attributes.Name.IMPLEMENTATION_URL;
-import static java.util.jar.Attributes.Name.IMPLEMENTATION_VENDOR_ID;
-import static java.util.jar.Attributes.Name.IMPLEMENTATION_VERSION;
-import static java.util.jar.Attributes.Name.SPECIFICATION_VERSION;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -43,6 +30,14 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
+import static java.util.jar.Attributes.Name.*;
 
 /**
  * A processor which adds class path entries for each manifest entry.
@@ -68,7 +63,7 @@ public final class ManifestExtensionListProcessor implements DeploymentUnitProce
             final String extensionListString = mainAttributes.getValue(EXTENSION_LIST);
             if (extensionListString == null) {
                 // no entry
-                return;
+                continue;
             }
             final String[] items = extensionListString.split("\\s+");
             boolean added = false;

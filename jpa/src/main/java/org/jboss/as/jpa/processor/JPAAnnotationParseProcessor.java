@@ -164,7 +164,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         final String declaredName = declaredNameValue != null ? declaredNameValue.asString() : null;
         final String localContextName;
         if (declaredName == null || declaredName.isEmpty()) {
-            localContextName = "java:comp/env/persistence" + "/" + fieldName;
+            localContextName = fieldName;
         } else {
             localContextName = declaredName;
         }
@@ -264,7 +264,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         if (isPersistenceContext(annotation)) {
             AnnotationValue pcType = annotation.value("type");
             PersistenceContextType type = (pcType == null || PersistenceContextType.TRANSACTION.name().equals(pcType.asString()))
-            ? PersistenceContextType.TRANSACTION: PersistenceContextType.EXTENDED;
+            ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
 
             Map properties;
             AnnotationValue value = annotation.value("properties");

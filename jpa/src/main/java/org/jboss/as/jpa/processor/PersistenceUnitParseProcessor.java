@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
@@ -113,8 +114,19 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             // handle WEB-INF/classes/META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            //find the resource root for WEB-INF/classes
+            ResourceRoot classesRoot = deploymentRoot;
+            for(ResourceRoot resourceRoot : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
+                if(ModuleRootMarker.isModuleRoot(resourceRoot)) {
+                    if(resourceRoot.getRoot().getPathName().contains("WEB-INF/classes")) {
+                        classesRoot = resourceRoot;
+                        break;
+                    }
+                }
+            }
+
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(WEB_PERSISTENCE_XML);
-            parse(persistence_xml, listPUHolders, deploymentUnit, deploymentRoot);
+            parse(persistence_xml, listPUHolders, deploymentUnit, classesRoot);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);

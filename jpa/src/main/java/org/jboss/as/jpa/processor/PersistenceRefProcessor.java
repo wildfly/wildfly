@@ -51,9 +51,7 @@ import org.jboss.msc.service.ServiceName;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
-import javax.persistence.PersistenceUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -131,8 +129,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
 
                 //add any injection targets
-                processInjectionTargets(classLoader, deploymentReflectionIndex, puRef, bindingDescription, PersistenceUnit.class);
-                bindingDescription.setBindingType(PersistenceUnit.class.getName());
+                processInjectionTargets(classLoader, deploymentReflectionIndex, puRef, bindingDescription, EntityManagerFactory.class);
+                bindingDescription.setBindingType(EntityManagerFactory.class.getName());
 
                 if (!isEmpty(lookup)) {
                     if (componentDescription != null) {
@@ -183,8 +181,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 bindingDescriptions.add(bindingDescription);
 
                 //add any injection targets
-                processInjectionTargets(classLoader, deploymentReflectionIndex, puRef, bindingDescription, PersistenceContext.class);
-                bindingDescription.setBindingType(PersistenceContext.class.getName());
+                processInjectionTargets(classLoader, deploymentReflectionIndex, puRef, bindingDescription, EntityManager.class);
+                bindingDescription.setBindingType(EntityManager.class.getName());
 
                 if (!isEmpty(lookup)) {
                     if (componentDescription != null) {
@@ -200,7 +198,8 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                             map.put(prop.getKey(),prop.getValue());
                         }
                     }
-                    bindingDescription.setReferenceSourceDescription(getPersistenceContextBindingSource(deploymentUnit, persistenceUnitName,puRef.getPersistenceContextType(), map));
+                    PersistenceContextType type = puRef.getPersistenceContextType() == null ? PersistenceContextType.TRANSACTION : puRef.getPersistenceContextType();
+                    bindingDescription.setReferenceSourceDescription(getPersistenceContextBindingSource(deploymentUnit, persistenceUnitName, type, map));
                 } else {
                     bindingDescription.setReferenceSourceDescription(new LazyBindingSourceDescription());
                 }

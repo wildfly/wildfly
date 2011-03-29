@@ -188,7 +188,15 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     break;
 
                 case EXCLUDEUNLISTEDCLASSES:
-                    pu.setExcludeUnlistedClasses(Boolean.getBoolean(reader.getElementText()));
+                    String text = reader.getElementText();
+                    if(text == null || text.isEmpty()) {
+                        //the spec has examples where an empty
+                        //exclude-unlisted-classes element has the same
+                        //effect as setting it to true
+                        pu.setExcludeUnlistedClasses(true);
+                    } else {
+                        pu.setExcludeUnlistedClasses(Boolean.valueOf(text));
+                    }
                     break;
 
                 case JARFILE:

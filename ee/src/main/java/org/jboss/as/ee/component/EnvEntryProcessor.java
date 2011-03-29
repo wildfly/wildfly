@@ -186,6 +186,9 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             description.setDependency(true);
 
             classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
+            if(classType == null) {
+                throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>. Component");
+            }
 
             final String value = envEntry.getValue();
 

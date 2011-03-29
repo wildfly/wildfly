@@ -33,7 +33,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
 import org.jboss.logging.Logger;
@@ -48,7 +47,6 @@ import org.jboss.msc.value.ImmediateValue;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -66,7 +64,8 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
 
     /**
      * Constructor for the PersistenceContextInjectorService
-     * @param annotation represents the annotation that we are satisfying.
+     * @param type The persistence context type
+     * @param properties The persistence context properties
      * @param puServiceName represents the deployed persistence.xml that we are going to use.
      * @param deploymentUnit represents the deployment that we are injecting into
      * @param scopedPuName the fully scoped reference to the persistence.xml
