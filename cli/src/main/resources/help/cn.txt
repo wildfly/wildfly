@@ -10,7 +10,7 @@ Description:	changes the current node path to the argument.
 
 Arguments:
 
-	node-path	- the new value for the current node path following the format
+	node_path	- the new value for the current node path following the format
 				[node-type [=node-name (,node-type[=node-name])*]].
 				
 The following navigation signs are supported in the node-path:

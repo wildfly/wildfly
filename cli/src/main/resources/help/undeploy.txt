@@ -1,0 +1,5 @@
+Synopsis:	undeploy deployment_name
+
+Description:	undeploys the application with the given name.
+
+Arguments:	deployment_name	- the application to undeploy.

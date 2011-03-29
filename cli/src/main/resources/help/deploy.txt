@@ -1,0 +1,9 @@
+Synopsis:	deploy file_path
+
+Description:	deploys the application designated by the file_path.
+				The argument can be an absolute or a relative to the current directory path.
+				File name tab-completion is supported for the argument.
+
+Arguments:
+
+	file_path	- the application to deploy.

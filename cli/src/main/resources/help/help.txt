@@ -1,11 +1,13 @@
 Supported commands:
 
- connect		- connect to the specified host and port;
- help (or h)	- print this message;
- quit (or q)	- quit the command line interface;
  cn (or cd)		- change the current node path to the argument;
- ls				- list the contents of the node path;
+ connect		- connect to the specified host and port;
+ deploy			- deploy an application; 
+ help (or h)	- print this message;
  history		- print or disable/enable/clear the history expansion.
+ quit (or q)	- quit the command line interface;
+ ls				- list the contents of the node path;
+ undeploy		- undeploy an application.
 
 For a more detailed description of a specific command, execute the command with '--help' as the argument.
 

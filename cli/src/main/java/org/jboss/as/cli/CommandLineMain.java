@@ -30,12 +30,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
 import org.jboss.as.cli.handlers.LsHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
+import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
@@ -62,6 +64,8 @@ public class CommandLineMain {
         registerHandler(new PrefixHandler(), "cd", "cn");
         registerHandler(new LsHandler(), "ls");
         registerHandler(new HistoryHandler(), "history");
+        registerHandler(new DeployHandler(), "deploy");
+        registerHandler(new UndeployHandler(), "undeploy");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {

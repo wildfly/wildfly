@@ -28,6 +28,7 @@ import java.util.Set;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 
 import jline.Completor;
+import jline.FileNameCompletor;
 
 /**
  * Tab-completer for commands starting with '/'.
@@ -36,6 +37,7 @@ import jline.Completor;
  */
 public class CommandCompleter implements Completor {
 
+    private final FileNameCompletor fnCompleter = new FileNameCompletor();
     private final OperationRequestCompleter opCompleter;
     private final Set<String> commands;
 
@@ -75,6 +77,14 @@ public class CommandCompleter implements Completor {
             int result = opCompleter.doComplete(opBuffer, candidates, false);
             if(result >= 0) {
                 return firstCharIndex + 3 + result;
+            } else {
+                return result;
+            }
+        } else if(buffer.startsWith("deploy ", firstCharIndex)) {
+            String opBuffer = buffer.substring(firstCharIndex + 7);
+            int result = fnCompleter.complete(opBuffer, cursor, candidates);
+            if(result >= 0) {
+                return firstCharIndex + 7 + result;
             } else {
                 return result;
             }

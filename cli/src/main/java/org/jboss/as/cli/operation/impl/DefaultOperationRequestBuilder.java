@@ -26,16 +26,21 @@ import java.util.Iterator;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
+import org.jboss.as.cli.operation.OperationRequestBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackHandler {
+public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackHandler implements OperationRequestBuilder {
 
     private ModelNode request = new ModelNode();
     private OperationRequestAddress prefix;
+
+    public DefaultOperationRequestBuilder() {
+        this.prefix = new DefaultOperationRequestAddress();
+    }
 
     public DefaultOperationRequestBuilder(OperationRequestAddress prefix) {
         if(prefix == null) {
@@ -94,7 +99,7 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
      */
     @Override
     public void validatedOperationName(String operationName) {
-        request.get("operation").set(operationName);
+        this.setOperationName(operationName);
     }
 
     /* (non-Javadoc)
@@ -128,13 +133,13 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
     @Override
     protected void validatedNodeType(String nodeType)
             throws OperationFormatException {
-        prefix.toNodeType(nodeType);
+        this.addNodeType(nodeType);
     }
 
     @Override
     protected void validatedNodeName(String nodeName)
             throws OperationFormatException {
-        prefix.toNode(nodeName);
+        this.addNodeName(nodeName);
     }
 
     @Override
@@ -146,29 +151,17 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
     @Override
     protected void validatedProperty(String name, String value,
             int nameValueSeparatorIndex) throws OperationFormatException {
-
-        if(name == null || name.trim().isEmpty())
-            throw new IllegalArgumentException("The argument name is not specified: '" + name + "'");
-        if(value == null || value.trim().isEmpty())
-            throw new IllegalArgumentException("The argument value is not specified: '" + value + "'");
-        ModelNode toSet = null;
-        try {
-            toSet = ModelNode.fromString(value);
-        } catch (Exception e) {
-            // just use the string
-            toSet = new ModelNode().set(value);
-        }
-        request.get(name).set(toSet);
-     }
+        this.addProperty(name, value);
+    }
 
     @Override
     public void nodeTypeOrName(String typeOrName)
             throws OperationFormatException {
 
         if(prefix.endsOnType()) {
-            nodeName(typeOrName);
+            this.addNodeName(typeOrName);
         } else {
-            nodeType(typeOrName);
+            this.addNodeType(typeOrName);
         }
     }
 
@@ -199,6 +192,47 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
             throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
         }
 
+        return request;
+    }
+
+    @Override
+    public void setOperationName(String name) {
+        request.get("operation").set(name);
+    }
+
+    @Override
+    public void addNode(String type, String name) {
+        prefix.toNode(type, name);
+    }
+
+    @Override
+    public void addNodeType(String type) {
+        prefix.toNodeType(type);
+    }
+
+    @Override
+    public void addNodeName(String name) {
+        prefix.toNode(name);
+    }
+
+    @Override
+    public void addProperty(String name, String value) {
+
+        if(name == null || name.trim().isEmpty())
+            throw new IllegalArgumentException("The argument name is not specified: '" + name + "'");
+        if(value == null || value.trim().isEmpty())
+            throw new IllegalArgumentException("The argument value is not specified: '" + value + "'");
+        ModelNode toSet = null;
+        try {
+            toSet = ModelNode.fromString(value);
+        } catch (Exception e) {
+            // just use the string
+            toSet = new ModelNode().set(value);
+        }
+        request.get(name).set(toSet);
+    }
+
+    public ModelNode getModelNode() {
         return request;
     }
 }

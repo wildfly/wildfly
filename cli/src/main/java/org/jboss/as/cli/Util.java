@@ -42,6 +42,19 @@ public class Util {
         return false;
     }
 
+    public static String getFailureDescription(ModelNode operationResult) {
+        if(operationResult == null) {
+            return null;
+        }
+
+        ModelNode descr = operationResult.get("failure-description");
+        if(descr == null) {
+            return null;
+        }
+
+        return descr.asString();
+    }
+
     public static List<String> getList(ModelNode operationResult) {
         if(!operationResult.hasDefined("result"))
             return Collections.emptyList();
@@ -55,6 +68,12 @@ public class Util {
             list.add(node.asString());
         }
         return list;
+    }
+
+    public static byte[] getHash(ModelNode operationResult) {
+        if(!operationResult.hasDefined("result"))
+            return null;
+        return operationResult.get("result").asBytes();
     }
 
     public static List<String> getRequestPropertyNames(ModelNode operationResult) {

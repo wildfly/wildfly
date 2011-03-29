@@ -65,12 +65,13 @@ public interface OperationRequestBuilder {
      * @param name the name of the argument
      * @param value the value of the argument
      */
-    void addArgument(String name, String value);
+    void addProperty(String name, String value);
 
     /**
      * Builds the operation request based on the collected operation name, address and arguments.
      *
      * @return an instance of ModelNode representing the operation request
+     * @throws OperationFormatException
      */
-    ModelNode buildRequest();
+    ModelNode buildRequest() throws OperationFormatException;
 }
