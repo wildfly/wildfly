@@ -27,8 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -41,24 +42,27 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class DeploymentScannerSubsystemRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
-    static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
+    static final String OPERATION_NAME = ModelDescriptionConstants.REMOVE;
 
-    static final DeploymentScannerSubsystemAdd INSTANCE = new DeploymentScannerSubsystemAdd();
+    static final DeploymentScannerSubsystemRemove INSTANCE = new DeploymentScannerSubsystemRemove();
 
-    private DeploymentScannerSubsystemAdd() {
+    private DeploymentScannerSubsystemRemove() {
         //
     }
 
-    /** {@inheritDoc} */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
-        // Initialize the scanner
-        context.getSubModel().get(CommonAttributes.SCANNER).setEmptyObject();
+        ModelNode subsystem = context.getSubModel();
+        if (subsystem.hasDefined(CommonAttributes.SCANNER)
+                && subsystem.get(CommonAttributes.SCANNER).asInt() > 0) {
+            throw new OperationFailedException(new ModelNode().set("Cannot remove subsystem while it still has scanners configured. Remove all scanners first."));
+        }
 
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getEmptyOperation(DeploymentScannerSubsystemAdd.OPERATION_NAME,
+                                                                       operation.get(OP_ADDR));
 
         resultHandler.handleResultComplete();
 
@@ -67,7 +71,7 @@ public class DeploymentScannerSubsystemAdd implements ModelAddOperationHandler, 
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentSubsystemDescriptions.getSubsystemAdd(locale);
+        return DeploymentSubsystemDescriptions.getSubsystemRemove(locale);
     }
 
 }

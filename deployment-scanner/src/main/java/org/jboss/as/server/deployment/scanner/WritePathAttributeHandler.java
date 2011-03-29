@@ -22,19 +22,32 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
+
 /**
- * @author Emanuel Muckenhuber
+ * Update the 'path' attribute on a {@code DeploymentScanner}.
+ *
+ * @author Brian Stansberry
  */
-interface CommonAttributes {
+class WritePathAttributeHandler extends ServerWriteAttributeOperationHandler {
 
-    String AUTO_DEPLOY_ZIPPED = "auto-deploy-zipped";
-    String AUTO_DEPLOY_EXPLODED = "auto-deploy-exploded";
-    String DEPLOYMENT_SCANNER = "deployment-scanner";
-    String NAME = "name";
-    String PATH = "path";
-    String RELATIVE_TO = "relative-to";
-    String SCANNER = "scanner";
-    String SCAN_ENABLED = "scan-enabled";
-    String SCAN_INTERVAL = "scan-interval";
+    static final WritePathAttributeHandler INSTANCE = new WritePathAttributeHandler();
 
+    private WritePathAttributeHandler() {
+        super(new StringLengthValidator(1));
+    }
+
+    @Override
+    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
+            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+
+        resultHandler.handleResultComplete();
+
+        return true;
+    }
 }

@@ -29,7 +29,7 @@
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-
+                The filesystem deployment scanner subsystem configuration.
                 ]]>
             </xs:documentation>
         </xs:annotation>

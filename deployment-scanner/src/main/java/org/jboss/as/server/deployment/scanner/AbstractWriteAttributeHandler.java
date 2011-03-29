@@ -22,83 +22,59 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * Update disabling a {@code DeploymentScanner}.
+ * Base class for write-attribute handlers that change an installed {@code DeploymentScanner}.
  *
- * @author Emanuel Muckenhuber
+ * @author Brian Stansberry
  */
-class DeploymentScannerDisable implements ModelUpdateOperationHandler {
+abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
 
-    static final DeploymentScannerDisable INSTANCE = new DeploymentScannerDisable();
-
-    private DeploymentScannerDisable() {
-        //
+    AbstractWriteAttributeHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
+        super(valueValidator, resolvedValueValidator);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set("enable");
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        // update the model
-        context.getSubModel().get(CommonAttributes.SCAN_ENABLED).set(false);
+    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
+            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
+
+                    final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                    final String name = address.getLastElement().getValue();
                     final ServiceController<?> controller = context.getServiceRegistry()
                             .getService(DeploymentScannerService.getServiceName(name));
                     if (controller == null) {
                         throw new OperationFailedException(new ModelNode().set("scanner not configured"));
                     } else {
-                        try {
-                            final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-                            scanner.stopScanner();
-                            resultHandler.handleResultComplete();
-                        } catch (Throwable t) {
-                            throw new OperationFailedException(getFailureResult(t));
-                        }
+                        final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
+
+                        updateScanner(scanner, newValue);
+
+                        resultHandler.handleResultComplete();
                     }
                 }
             });
         } else {
             resultHandler.handleResultComplete();
         }
-        return new BasicOperationResult(compensatingOperation);
+        return false;
     }
 
-    protected ModelNode getFailureResult(Throwable t) {
-        final ModelNode node = new ModelNode();
-        // todo - define this structure
-        node.get("success").set(false);
-        do {
-            final String message = t.getLocalizedMessage();
-            node.get("cause").add(t.getClass().getName(), message != null ? message : "");
-            t = t.getCause();
-        } while (t != null);
-        return node;
-    }
-
+    protected abstract void updateScanner(DeploymentScanner scanner, ModelNode newValue);
 }

@@ -22,19 +22,29 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
- * @author Emanuel Muckenhuber
+ * Toggle the 'auto-deploy-exploded' attribute on a {@code DeploymentScanner}.
+ *
+ * @author Brian Stansberry
  */
-interface CommonAttributes {
+class WriteAutoDeployExplodedAttributeHandler extends AbstractWriteAttributeHandler {
 
-    String AUTO_DEPLOY_ZIPPED = "auto-deploy-zipped";
-    String AUTO_DEPLOY_EXPLODED = "auto-deploy-exploded";
-    String DEPLOYMENT_SCANNER = "deployment-scanner";
-    String NAME = "name";
-    String PATH = "path";
-    String RELATIVE_TO = "relative-to";
-    String SCANNER = "scanner";
-    String SCAN_ENABLED = "scan-enabled";
-    String SCAN_INTERVAL = "scan-interval";
+    static final WriteAutoDeployExplodedAttributeHandler INSTANCE = new WriteAutoDeployExplodedAttributeHandler();
 
+    private WriteAutoDeployExplodedAttributeHandler() {
+        super(new ModelTypeValidator(ModelType.BOOLEAN, false, true), new ModelTypeValidator(ModelType.BOOLEAN, false, false));
+    }
+
+    @Override
+    protected void updateScanner(final DeploymentScanner scanner, final ModelNode newValue) {
+
+        boolean enable = newValue.resolve().asBoolean();
+
+        scanner.setAutoDeployExplodedContent(enable);
+    }
 }

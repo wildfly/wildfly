@@ -22,19 +22,28 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
- * @author Emanuel Muckenhuber
+ * Update the 'scanInterval' attribute on a {@code DeploymentScanner}.
+ *
+ * @author Brian Stansberry
  */
-interface CommonAttributes {
+class WriteScanIntervalAttributeHandler extends AbstractWriteAttributeHandler {
 
-    String AUTO_DEPLOY_ZIPPED = "auto-deploy-zipped";
-    String AUTO_DEPLOY_EXPLODED = "auto-deploy-exploded";
-    String DEPLOYMENT_SCANNER = "deployment-scanner";
-    String NAME = "name";
-    String PATH = "path";
-    String RELATIVE_TO = "relative-to";
-    String SCANNER = "scanner";
-    String SCAN_ENABLED = "scan-enabled";
-    String SCAN_INTERVAL = "scan-interval";
+    static final WriteScanIntervalAttributeHandler INSTANCE = new WriteScanIntervalAttributeHandler();
 
+    private WriteScanIntervalAttributeHandler() {
+        super(new ModelTypeValidator(ModelType.INT, false, true), new ModelTypeValidator(ModelType.INT, false, false));
+    }
+
+    @Override
+    protected void updateScanner(final DeploymentScanner scanner, final ModelNode newValue) {
+
+        int interval = newValue.resolve().asInt();
+        scanner.setScanInterval(interval);
+    }
 }

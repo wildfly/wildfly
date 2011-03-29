@@ -355,7 +355,7 @@ public class GlobalOperationHandlers {
                             final ModelNode readOp = operation.clone();
                             readOp.get(OP_ADDR).set(childAddress.toModelNode());
 
-                            if(operation.has(INCLUDE_RUNTIME))
+                            if(operation.hasDefined(INCLUDE_RUNTIME))
                                 readOp.get(INCLUDE_RUNTIME).set(operation.get(INCLUDE_RUNTIME).asBoolean());
 
                             final ModelNode readResult = readModel(context, readOp, new ResultHandler() {
@@ -513,7 +513,7 @@ public class GlobalOperationHandlers {
                 }
             }
 
-            if (result.has(ATTRIBUTES)) {
+            if (result.hasDefined(ATTRIBUTES)) {
                 for (final String attr : result.require(ATTRIBUTES).keys()) {
                      final AttributeAccess access = registry.getAttributeAccess(address, attr);
                      // If there is metadata for an attribute but no AttributeAccess, assume RO. Can't
@@ -528,7 +528,7 @@ public class GlobalOperationHandlers {
                      result.get(ATTRIBUTES, attr, STORAGE).set(storage.toString());
                 }
             }
-            if (recursive && result.has(CHILDREN)) {
+            if (recursive && result.hasDefined(CHILDREN)) {
                 for (final PathElement element : registry.getChildAddresses(address)) {
                     final PathAddress childAddress = address.append(element);
                     final DescriptionProvider provider = registry.getModelDescription(childAddress);
@@ -669,7 +669,7 @@ public class GlobalOperationHandlers {
     }
 
     private static Locale getLocale(final ModelNode operation) {
-        if (!operation.has(LOCALE)) {
+        if (!operation.hasDefined(LOCALE)) {
             return null;
         }
         return new Locale(operation.get(LOCALE).asString());

@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment.scanner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -35,6 +36,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
@@ -45,7 +48,9 @@ import org.jboss.msc.service.ServiceTarget;
  * @author John E. Bailey
  * @author Emanuel Muckenhuber
  */
-class DeploymentScannerAdd implements ModelAddOperationHandler {
+class DeploymentScannerAdd implements ModelAddOperationHandler, DescriptionProvider {
+
+    static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     static final DeploymentScannerAdd INSTANCE = new DeploymentScannerAdd();
 
@@ -80,6 +85,7 @@ class DeploymentScannerAdd implements ModelAddOperationHandler {
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
         final ModelNode subModel = context.getSubModel();
+        subModel.get(CommonAttributes.NAME).set(name);
         subModel.get(CommonAttributes.PATH).set(path);
         if (enabled != null) subModel.get(CommonAttributes.SCAN_ENABLED).set(enabled);
         if (interval != null) subModel.get(CommonAttributes.SCAN_INTERVAL).set(interval);
@@ -101,6 +107,11 @@ class DeploymentScannerAdd implements ModelAddOperationHandler {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return DeploymentSubsystemDescriptions.getScannerAdd(locale);
     }
 
 }

@@ -25,7 +25,6 @@ package org.jboss.as.server.deployment.scanner;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
@@ -33,23 +32,21 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -70,6 +67,20 @@ public class DeploymentScannerExtension implements Extension {
     private static final DeploymentScannerParser parser = new DeploymentScannerParser();
     private static final String DEFAULT_SCANNER_NAME = "default"; // we actually need a scanner name to make it addressable
 
+    private static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return DeploymentSubsystemDescriptions.getSubsystemDescription(locale);
+        }
+    };
+
+    private static final DescriptionProvider SCANNER = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return DeploymentSubsystemDescriptions.getScannerDescription(locale);
+        }
+    };
+
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
@@ -77,40 +88,27 @@ public class DeploymentScannerExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER);
         subsystem.registerXMLElementWriter(parser);
-        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(DeploymentSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, SubsystemAdd.INSTANCE, DeploymentSubsystemProviders.SUBSYSTEM_ADD, false);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SUBSYSTEM);
+        registration.registerOperationHandler(DeploymentScannerSubsystemAdd.OPERATION_NAME, DeploymentScannerSubsystemAdd.INSTANCE,
+                DeploymentScannerSubsystemAdd.INSTANCE, false);
+        registration.registerOperationHandler(DeploymentScannerSubsystemRemove.OPERATION_NAME, DeploymentScannerSubsystemRemove.INSTANCE,
+                DeploymentScannerSubsystemRemove.INSTANCE, false);
         // Register operation handlers
-        final ModelNodeRegistration scanners = registration.registerSubModel(scannersPath, DeploymentSubsystemProviders.SCANNER);
-        scanners.registerOperationHandler(ADD, DeploymentScannerAdd.INSTANCE, DeploymentSubsystemProviders.SCANNER_ADD, false);
-        scanners.registerOperationHandler(REMOVE, DeploymentScannerRemove.INSTANCE, DeploymentSubsystemProviders.SCANNER_REMOVE, false);
-        scanners.registerOperationHandler("enable", DeploymentScannerEnable.INSTANCE, DeploymentSubsystemProviders.SCANNER_ENABLE, false);
-        scanners.registerOperationHandler("disable", DeploymentScannerDisable.INSTANCE, DeploymentSubsystemProviders.SCANNER_DISABLE, false);
+        final ModelNodeRegistration scanners = registration.registerSubModel(scannersPath, SCANNER);
+        scanners.registerOperationHandler(DeploymentScannerAdd.OPERATION_NAME, DeploymentScannerAdd.INSTANCE, DeploymentScannerAdd.INSTANCE, false);
+        scanners.registerOperationHandler(DeploymentScannerRemove.OPERATION_NAME, DeploymentScannerRemove.INSTANCE, DeploymentScannerRemove.INSTANCE, false);
+        scanners.registerReadWriteAttribute(Attribute.PATH.getLocalName(), null, WritePathAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        scanners.registerReadWriteAttribute(Attribute.RELATIVE_TO.getLocalName(), null, WriteRelativeToAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        scanners.registerReadWriteAttribute(Attribute.SCAN_ENABLED.getLocalName(), null, WriteEnabledAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        scanners.registerReadWriteAttribute(Attribute.SCAN_INTERVAL.getLocalName(), null, WriteScanIntervalAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), null, WriteAutoDeployZipAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_EXPLODED.getLocalName(), null, WriteAutoDeployExplodedAttributeHandler.INSTANCE, Storage.CONFIGURATION);
     }
 
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
-    }
-
-    /**
-     * Add handler creating the subsystem
-     */
-    static class SubsystemAdd implements ModelAddOperationHandler {
-
-        static final SubsystemAdd INSTANCE = new SubsystemAdd();
-
-        /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.set(OP).set(REMOVE);
-            compensatingOperation.set(OP_ADDR).set(operation.get(OP_ADDR));
-            // create the scanner root
-            context.getSubModel().get("scanner");
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensatingOperation);
-        }
     }
 
     static class DeploymentScannerParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
@@ -242,16 +240,16 @@ public class DeploymentScannerExtension implements Extension {
                 }
             }
             if (name == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton("name"));
+                ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.NAME));
             }
             if (path == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton("path"));
+                ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.PATH));
             }
             requireNoContent(reader);
 
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
-            operation.get(OP_ADDR).set(address).add("scanner", name);
+            operation.get(OP_ADDR).set(address).add(CommonAttributes.SCANNER, name);
             operation.get(CommonAttributes.PATH).set(path);
             if (interval != null) operation.get(CommonAttributes.SCAN_INTERVAL).set(interval.intValue());
             if (autoDeployZipped != null) operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZipped.booleanValue());
