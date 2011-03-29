@@ -53,5 +53,6 @@
         <module name="org.jboss.ws.jaxws-client" services="import"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-server" services="import"/>
         <module name="org.jboss.ws.spi" />
+        <module name="org.springframework.spring" optional="true" />
     </dependencies>
 </module>

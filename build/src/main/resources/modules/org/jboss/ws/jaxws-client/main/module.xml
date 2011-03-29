@@ -51,5 +51,6 @@
         </module>
         <module name="org.apache.neethi" />
         <module name="org.jboss.logging" />
+        <module name="org.springframework.spring" optional="true" />
     </dependencies>
 </module>
