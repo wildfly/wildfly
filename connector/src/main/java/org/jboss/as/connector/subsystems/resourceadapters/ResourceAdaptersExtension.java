@@ -124,7 +124,7 @@ public class ResourceAdaptersExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         log.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTER);
+        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTERS);
 
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
 
@@ -133,6 +133,20 @@ public class ResourceAdaptersExtension implements Extension {
         subsystem.registerOperationHandler(ADD, ResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE,
                 ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        final ModelNodeRegistration dataSources = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
+                DATA_SOURCE_DESC);
+        dataSources.registerOperationHandler(ADD, DataSourceAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
+
+        final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
+                XA_DATA_SOURCE_DESC);
+        xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(REMOVE, XaDataSourceRemove.INSTANCE, REMOVE_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
 
     }
 
