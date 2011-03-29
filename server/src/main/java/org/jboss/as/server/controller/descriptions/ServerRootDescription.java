@@ -55,6 +55,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -143,6 +144,18 @@ public class ServerRootDescription {
         // TODO details of the reply
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("composite.result"));
         return root;
+    }
+
+    /** {@inheritDoc} */
+    public static ModelNode getShutdownOperationDescription(final Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("shutdown");
+        node.get(DESCRIPTION).set(bundle.getString("shutdown"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
     }
 
     private static ResourceBundle getResourceBundle(Locale locale) {

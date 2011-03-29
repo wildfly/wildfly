@@ -107,7 +107,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         registerInternalOperations();
 
         // Build up the core model registry
-        ServerControllerModelUtil.initOperations(getRegistry(), deploymentRepository, extensibleConfigurationPersister);
+        ServerControllerModelUtil.initOperations(getRegistry(), deploymentRepository, extensibleConfigurationPersister, serverEnvironment);
 
         deployers.clear();
         for (Phase phase : Phase.values()) {

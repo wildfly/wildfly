@@ -25,6 +25,7 @@ package org.jboss.as.protocol.mgmt;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -217,6 +218,19 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
                 future.setException(e);
             }
         }
+
+        @Override
+        public void handleFinished(Connection connection) throws IOException {
+            super.handleFinished(connection);
+
+            future.setException(new EOFException("Connection closed"));
+        }
+
+        @Override
+        public void handleFailure(Connection connection, IOException e) throws IOException {
+            super.handleFailure(connection, e);
+            future.setException(e);
+        }
     };
 
     private MessageHandler responseEndHandler = new AbstractMessageHandler() {
@@ -235,6 +249,19 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
             finally {
                 connectionStrategy.complete();
             }
+        }
+
+        @Override
+        public void handleFinished(Connection connection) throws IOException {
+            super.handleFinished(connection);
+
+            future.setException(new EOFException("Connection closed"));
+        }
+
+        @Override
+        public void handleFailure(Connection connection, IOException e) throws IOException {
+            super.handleFailure(connection, e);
+            future.setException(e);
         }
     };
 

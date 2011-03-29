@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -61,6 +62,7 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostModel;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.server.ServerControllerModelUtil;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -394,7 +396,7 @@ public class ParseAndMarshalModelsTestCase {
                             return null;
                         }
                     },
-                    configurationPersister);
+                    configurationPersister, null);
         }
 
         @Override

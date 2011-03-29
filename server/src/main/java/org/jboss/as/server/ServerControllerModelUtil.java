@@ -78,6 +78,7 @@ import org.jboss.as.server.operations.HttpManagementAddHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
 import org.jboss.as.server.operations.ServerOperationHandlers;
 import org.jboss.as.server.operations.ServerReloadHandler;
+import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.SpecifiedPathAddHandler;
 import org.jboss.as.server.operations.SpecifiedPathRemoveHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
@@ -120,7 +121,7 @@ public class ServerControllerModelUtil {
         return root;
     }
 
-    public static void initOperations(final ModelNodeRegistration root, final DeploymentRepository deploymentRepository, final ExtensibleConfigurationPersister extensibleConfigurationPersister) {
+    public static void initOperations(final ModelNodeRegistration root, final DeploymentRepository deploymentRepository, final ExtensibleConfigurationPersister extensibleConfigurationPersister, ServerEnvironment serverEnvironment) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
         // Global operations
@@ -154,6 +155,9 @@ public class ServerControllerModelUtil {
 
         // Runtime operations
         root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
+
+        if (serverEnvironment != null && serverEnvironment.isStandalone())
+            root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, ServerShutdownHandler.INSTANCE, ServerShutdownHandler.INSTANCE, false);
 
         // Management API protocols
         ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACES, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_PROVIDER);
