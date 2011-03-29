@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -31,7 +30,6 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
-import org.jboss.modules.Module;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,33 +42,12 @@ import java.util.List;
 public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if(description == null) {
-            return;
-        }
-        if(environment != null) {
-            List<BindingDescription> bindings = getEnvironmentEntries(environment, module.getClassLoader(), deploymentReflectionIndex);
-            description.getBindingsContainer().addBindings(bindings);
-            bindings = getResourceEnvRefEntries(environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
-            description.getBindingsContainer().addBindings(bindings);
-            bindings = getResourceRefEntries(environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
-            description.getBindingsContainer().addBindings(bindings);
-        }
-        for(final AbstractComponentDescription componentDescription : description.getComponentDescriptions()) {
-            if(componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                List<BindingDescription> bindings = getEnvironmentEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex);
-                componentDescription.addBindings(bindings);
-                bindings = getResourceEnvRefEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
-                componentDescription.addBindings(bindings);
-                bindings = getResourceRefEntries(componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
-                componentDescription.addBindings(bindings);
-            }
-        }
+    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+        bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex));
+        bindings.addAll(getResourceEnvRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
+        bindings.addAll(getResourceRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
+        return bindings;
     }
 
     private List<BindingDescription> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
@@ -242,6 +219,8 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
     private boolean isEmpty(String string) {
         return string == null || string.isEmpty();
     }
+
+
 
     @Override
     public void undeploy(DeploymentUnit context) {

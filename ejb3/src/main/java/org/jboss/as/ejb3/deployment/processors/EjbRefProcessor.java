@@ -24,21 +24,17 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.LazyBindingSourceDescription;
 import org.jboss.as.ee.component.LookupBindingSourceDescription;
 import org.jboss.as.ee.component.ServiceBindingSourceDescription;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.EJBLocalReferenceMetaData;
 import org.jboss.metadata.javaee.spec.EJBLocalReferencesMetaData;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.ArrayList;
@@ -51,41 +47,16 @@ import java.util.List;
  */
 public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
-
-    @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if(description == null) {
-            return;
-        }
-        if(environment != null) {
-            final List<BindingDescription> bindings = getEjbRefs(deploymentUnit, environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
-            description.getBindingsContainer().addBindings(bindings);
-        }
-        for(final AbstractComponentDescription componentDescription : description.getComponentDescriptions()) {
-            if(componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                final List<BindingDescription> bindings = getEjbRefs(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
-                componentDescription.addBindings(bindings);
-            }
-        }
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Resolves ejb-ref and ejb-local-ref elements
+     *
+     * @param deploymentUnit
      * @param environment The environment to resolve the elements for
      * @param classLoader The deployment class loader
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-    private List<BindingDescription> getEjbRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ModuleClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex,EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+     protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         EJBLocalReferencesMetaData ejbLocalRefs = environment.getEnvironment().getEjbLocalReferences();
         List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
         //TODO: this needs a lot more work

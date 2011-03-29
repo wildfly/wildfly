@@ -24,7 +24,6 @@ package org.jboss.as.jpa.processor;
 
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -35,7 +34,6 @@ import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.service.PersistenceContextBindingSourceDescription;
 import org.jboss.as.jpa.service.PersistenceUnitBindingSourceDescription;
 import org.jboss.as.jpa.service.PersistenceUnitService;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -45,8 +43,6 @@ import org.jboss.metadata.javaee.spec.PersistenceUnitReferenceMetaData;
 import org.jboss.metadata.javaee.spec.PersistenceUnitReferencesMetaData;
 import org.jboss.metadata.javaee.spec.PropertiesMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceName;
 
 import javax.persistence.EntityManager;
@@ -66,34 +62,13 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if (description == null) {
-            return;
-        }
-        if (environment != null) {
-            List<BindingDescription> bindings = getPersistenceUnitRefs(deploymentUnit, environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
-            description.getBindingsContainer().addBindings(bindings);
-            bindings = getPersistenceContextRefs(deploymentUnit, environment, module.getClassLoader(), deploymentReflectionIndex, description, null);
-            description.getBindingsContainer().addBindings(bindings);
-        }
-        for (final AbstractComponentDescription componentDescription : description.getComponentDescriptions()) {
-            if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                List<BindingDescription> bindings = getPersistenceUnitRefs(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
-                componentDescription.addBindings(bindings);
-                bindings = getPersistenceContextRefs(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), module.getClassLoader(), deploymentReflectionIndex, description, componentDescription);
-                componentDescription.addBindings(bindings);
-            }
-        }
+    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+        bindings.addAll(getPersistenceUnitRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
+        bindings.addAll(getPersistenceContextRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
+        return bindings;
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 
     /**
      * Resolves persistence-unit-ref
@@ -103,7 +78,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-    private List<BindingDescription> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ModuleClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private List<BindingDescription> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
 
         List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
         if (environment.getEnvironment() == null) {
@@ -156,7 +131,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-    private List<BindingDescription> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ModuleClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private List<BindingDescription> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
 
         List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
         if (environment.getEnvironment() == null) {

@@ -21,16 +21,20 @@
  */
 package org.jboss.as.ee.component;
 
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.metadata.javaee.support.ResourceInjectionMetaDataWithDescriptions;
+import org.jboss.modules.Module;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Class that provides common functionality required by processors that process environment information from deployment descriptors.
@@ -39,6 +43,33 @@ import java.util.Collection;
  */
 public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements DeploymentUnitProcessor {
 
+    @Override
+    public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        if(description == null) {
+            return;
+        }
+        if(environment != null) {
+            List<BindingDescription> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
+            description.getBindingsContainer().addBindings(bindings);
+        }
+        for(final AbstractComponentDescription componentDescription : description.getComponentDescriptions()) {
+            if(componentDescription.getDeploymentDescriptorEnvironment() != null) {
+                List<BindingDescription> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, null, module.getClassLoader(), deploymentReflectionIndex);
+                componentDescription.addBindings(bindings);
+            }
+        }
+    }
+
+    protected abstract List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException;
+
+    @Override
+    public void undeploy(DeploymentUnit context) {
+    }
 
     /**
      * Processes the injection targets of a resource binding
