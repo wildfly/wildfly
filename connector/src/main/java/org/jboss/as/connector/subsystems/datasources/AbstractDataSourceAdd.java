@@ -51,6 +51,7 @@ import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -100,6 +101,8 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                             .addService(dataSourceServiceName, dataSourceService)
                             .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                                     dataSourceService.getTransactionIntegrationInjector())
+                            .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
+                                    dataSourceService.getmanagementRepositoryInjector())
                             .addDependency(NamingService.SERVICE_NAME);
 
                     final String driverName = operation.require(DRIVER).asString();

@@ -181,6 +181,10 @@ public class DataSourcesExtension implements Extension {
         dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
 
+        for (final String attributeName : DataSourcesMetrics.ATTRIBUTES) {
+            dataSources.registerMetric(attributeName, DataSourcesMetrics.INSTANCE);
+        }
+
         final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
                 XA_DATA_SOURCE_DESC);
         xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);

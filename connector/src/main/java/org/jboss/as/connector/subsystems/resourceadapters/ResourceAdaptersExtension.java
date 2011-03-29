@@ -63,7 +63,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -136,12 +136,17 @@ public class ResourceAdaptersExtension implements Extension {
         subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE,
                 ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        final ModelNodeRegistration dataSources = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
-                RESOURCEADAPTER_DESC);
-        dataSources.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
+        // final ModelNodeRegistration dataSources =
+        // subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
+        // RESOURCEADAPTER_DESC);
+        // dataSources.registerOperationHandler(ADD, RaAdd.INSTANCE,
+        // ADD_DATA_SOURCE_DESC, false);
+        // dataSources.registerOperationHandler(REMOVE,
+        // DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
+        // dataSources.registerOperationHandler(ENABLE,
+        // DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
+        // dataSources.registerOperationHandler(DISABLE,
+        // DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
 
     }
 
@@ -615,7 +620,4 @@ public class ResourceAdaptersExtension implements Extension {
         }
     }
 
-    
-    
-    
 }

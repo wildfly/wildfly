@@ -167,9 +167,12 @@ public class XaDataSourceService extends AbstractDataSourceService {
         return xaManagedConnectionFactory;
     }
 
-    protected Pool createPool(final String jndiName, final ManagedConnectionFactory mcf) {
-        final PoolConfiguration pc = createPoolConfiguration(dataSourceConfig.getXaPool(), dataSourceConfig.getTimeOut(),
+    protected PoolConfiguration createPoolConfig() {
+        return createPoolConfiguration(dataSourceConfig.getXaPool(), dataSourceConfig.getTimeOut(),
                 dataSourceConfig.getValidation());
+    }
+
+    protected Pool createPool(final String jndiName, final ManagedConnectionFactory mcf, PoolConfiguration pc) {
 
         Boolean noTxSeparatePool = Boolean.FALSE;
 
