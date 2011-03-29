@@ -72,6 +72,12 @@ public class DDBasedSLSBTestCase {
 
     }
 
+    /**
+     * Tests that the overrides in the ejb-jar.xml for a SLSB are honoured, and the bean is invokable through
+     * its exposed views
+     *
+     * @throws Exception
+     */
     @Test
     public void testDDOverrideOfSLSB() throws Exception {
         Context ctx = new InitialContext();
@@ -84,6 +90,12 @@ public class DDBasedSLSBTestCase {
         Assert.assertEquals("Unexpected return message from bean", msg, echo);
     }
 
+    /**
+     * Tests that the ejb-jar.xml and annotations are merged correctly for a SLSB, and the bean is invokable through
+     * its exposed views
+     *
+     * @throws Exception
+     */
     @Test
     public void testPartialDDSLSB() throws Exception {
         Context ctx = new InitialContext();
