@@ -64,7 +64,23 @@ public class BindingsContainer {
             //add the injection targets
             existingBinding.getInjectionTargetDescriptions().addAll(binding.getInjectionTargetDescriptions());
         } else if (annotationBindingDescriptions.containsKey(bindingName)) {
-                throw new RuntimeException("Duplicate binding of JNDI name " + bindingName);
+            //first we need to check if this is a duplicate of the same class
+            //at the moment the same class can be scanned twice for bindings, if it is
+            //an interceptor for multiple components or a common superclass.
+            //TODO: These classes should only be scanned once
+            if(binding.getInjectionTargetDescriptions().size() == 1) {
+                final BindingDescription existingBinding = annotationBindingDescriptions.get(bindingName);
+                if(existingBinding.getInjectionTargetDescriptions().size() == 1) {
+                    InjectionTargetDescription existingTarget = existingBinding.getInjectionTargetDescriptions().get(0);
+                    InjectionTargetDescription newTarget = binding.getInjectionTargetDescriptions().get(0);
+                    if(newTarget.getClassName().equals(existingTarget.getClassName()) &&
+                            newTarget.getType().equals(existingTarget.getType()) &&
+                            newTarget.getName().equals(existingTarget.getName())) {
+                        return;
+                    }
+                }
+            }
+            throw new RuntimeException("Duplicate binding of JNDI name " + bindingName);
         } else {
             annotationBindingDescriptions.put(bindingName, binding);
         }
