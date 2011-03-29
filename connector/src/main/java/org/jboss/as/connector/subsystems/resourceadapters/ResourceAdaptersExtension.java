@@ -63,7 +63,11 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_RESOURCEADAPTER_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_RESOURCEADAPTER_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -72,6 +76,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -90,10 +95,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
@@ -124,32 +131,26 @@ public class ResourceAdaptersExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         log.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTER);
+        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTERS);
 
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
 
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
-        subsystem.registerOperationHandler(ADD, ResourceAdaptersSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(ADD, ResourceAdaptersSubSystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE,
                 ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        final ModelNodeRegistration resourceadapter = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
+                RESOURCEADAPTER_DESC);
+        resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
+        resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
 
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
-    }
-
-    private static ModelNode createAddSubsystemOperation() {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTER);
-        address.protect();
-
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
-        return subsystem;
     }
 
     static final class ResourceAdapterSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -164,10 +165,14 @@ public class ResourceAdaptersExtension implements Extension {
             boolean hasChildren = node.hasDefined(RESOURCEADAPTER) && node.get(RESOURCEADAPTER).asInt() > 0;
 
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), !hasChildren);
+            Logger.getLogger(ResourceAdaptersExtension.class).infof("###########node=%s", node);
 
             if (hasChildren) {
                 writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
-                for (ModelNode ra : node.get(RESOURCEADAPTER).asList()) {
+                for (Property property : node.get(RESOURCEADAPTER).asPropertyList()) {
+                    final ModelNode ra = property.getValue();
+                    Logger.getLogger(ResourceAdaptersExtension.class).infof("************ra node=%s", ra);
+
                     writeRaElement(writer, ra);
                 }
                 writer.writeEndElement();
@@ -344,6 +349,8 @@ public class ResourceAdaptersExtension implements Extension {
         private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, String localName, String identifier)
                 throws XMLStreamException {
             if (has(node, identifier)) {
+                Logger.getLogger(ResourceAdaptersExtension.class).infof("###########Writing=%s", localName);
+
                 writer.writeStartElement(localName);
                 writer.writeCharacters(node.get(identifier).asString());
                 writer.writeEndElement();
@@ -381,6 +388,9 @@ public class ResourceAdaptersExtension implements Extension {
         }
 
         private boolean has(ModelNode node, String name) {
+            Logger.getLogger(ResourceAdaptersExtension.class).infof("^^^^^^^^^^^node=%s", node);
+            Logger.getLogger(ResourceAdaptersExtension.class).infof("^^^^^^^^^^^name=%s", name);
+
             return node.has(name) && node.get(name).isDefined();
         }
 
@@ -408,7 +418,14 @@ public class ResourceAdaptersExtension implements Extension {
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
 
-            ModelNode subsystem = createAddSubsystemOperation();
+            final ModelNode address = new ModelNode();
+            address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTERS);
+            address.protect();
+
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(address);
+
             list.add(subsystem);
 
             ResourceAdapters ras = null;
@@ -423,6 +440,7 @@ public class ResourceAdaptersExtension implements Extension {
                             case SUBSYSTEM: {
                                 ResourceAdapterParser parser = new ResourceAdapterParser();
                                 ras = parser.parse(reader);
+                                ParseUtils.requireNoContent(reader);
                                 break;
                             }
                         }
@@ -432,31 +450,46 @@ public class ResourceAdaptersExtension implements Extension {
                 throw new XMLStreamException(e);
             }
 
-            if (ras != null) {
-                ModelNode rasNode = subsystem.get(RESOURCEADAPTERS);
+            if (ras != null && ras.getResourceAdapters() != null) {
                 for (ResourceAdapter ra : ras.getResourceAdapters()) {
-                    ModelNode raModel = new ModelNode();
-                    for (Entry<String, String> entry : ra.getConfigProperties().entrySet()) {
-                        raModel.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
+                    final ModelNode raAddress = address.clone();
+                    raAddress.add(RESOURCEADAPTER, ra.getArchive());
+                    raAddress.protect();
+
+                    final ModelNode operation = new ModelNode();
+                    operation.get(OP_ADDR).set(raAddress);
+                    operation.get(OP).set(ADD);
+                    if (ra.getConfigProperties() != null) {
+                        for (Entry<String, String> entry : ra.getConfigProperties().entrySet()) {
+                            operation.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
+                        }
                     }
-                    raModel.get(ARCHIVE).set(ra.getArchive());
-                    raModel.get(TRANSACTIONSUPPORT).set(ra.getTransactionSupport().name());
-                    raModel.get(BOOTSTRAPCONTEXT).set(ra.getBootstrapContext());
-                    for (String beanValidationGroup : ra.getBeanValidationGroups()) {
-                        raModel.get(BEANVALIDATIONGROUPS).add(beanValidationGroup);
+                    setStringIfNotNull(operation, ARCHIVE, ra.getArchive());
+                    setStringIfNotNull(operation, TRANSACTIONSUPPORT, ra.getTransactionSupport() != null ? ra
+                            .getTransactionSupport().name() : null);
+                    setStringIfNotNull(operation, BOOTSTRAPCONTEXT, ra.getBootstrapContext());
+
+                    if (ra.getBeanValidationGroups() != null) {
+                        for (String beanValidationGroup : ra.getBeanValidationGroups()) {
+                            operation.get(BEANVALIDATIONGROUPS).add(beanValidationGroup);
+                        }
                     }
 
-                    for (CommonConnDef conDef : ra.getConnectionDefinitions()) {
-                        raModel.get(CONNECTIONDEFINITIONS).add(createConnectionDefinitionModel(conDef));
+                    if (ra.getConnectionDefinitions() != null) {
+                        for (CommonConnDef conDef : ra.getConnectionDefinitions()) {
+                            operation.get(CONNECTIONDEFINITIONS).add(createConnectionDefinitionModel(conDef));
 
+                        }
                     }
 
-                    for (CommonAdminObject adminObject : ra.getAdminObjects()) {
-                        raModel.get(ADMIN_OBJECTS).add(createAdminObjectModel(adminObject));
+                    if (ra.getAdminObjects() != null) {
+                        for (CommonAdminObject adminObject : ra.getAdminObjects()) {
+                            operation.get(ADMIN_OBJECTS).add(createAdminObjectModel(adminObject));
 
+                        }
                     }
 
-                    rasNode.add(raModel);
+                    list.add(operation);
                 }
             }
 
@@ -467,11 +500,11 @@ public class ResourceAdaptersExtension implements Extension {
             for (Entry<String, String> entry : adminObject.getConfigProperties().entrySet()) {
                 adminObjectModel.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
             }
-            adminObjectModel.get(CLASS_NAME).set(adminObject.getClassName());
-            adminObjectModel.get(JNDI_NAME).set(adminObject.getJndiName());
-            adminObjectModel.get(POOL_NAME).set(adminObject.getPoolName());
-            adminObjectModel.get(ENABLED).set(adminObject.isEnabled());
-            adminObjectModel.get(USE_JAVA_CONTEXT).set(adminObject.isUseJavaContext());
+            setStringIfNotNull(adminObjectModel, CLASS_NAME, adminObject.getClassName());
+            setStringIfNotNull(adminObjectModel, JNDI_NAME, adminObject.getJndiName());
+            setStringIfNotNull(adminObjectModel, POOL_NAME, adminObject.getPoolName());
+            setBooleanIfNotNull(adminObjectModel, ENABLED, adminObject.isEnabled());
+            setBooleanIfNotNull(adminObjectModel, USE_JAVA_CONTEXT, adminObject.isUseJavaContext());
 
             return adminObjectModel;
         }
@@ -481,47 +514,53 @@ public class ResourceAdaptersExtension implements Extension {
             for (Entry<String, String> entry : conDef.getConfigProperties().entrySet()) {
                 condefModel.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
             }
-            condefModel.get(CLASS_NAME).set(conDef.getClassName());
-            condefModel.get(JNDI_NAME).set(conDef.getJndiName());
-            condefModel.get(POOL_NAME).set(conDef.getPoolName());
-            condefModel.get(ENABLED).set(conDef.isEnabled());
-            condefModel.get(USE_JAVA_CONTEXT).set(conDef.isUseJavaContext());
+            setStringIfNotNull(condefModel, CLASS_NAME, conDef.getClassName());
+            setStringIfNotNull(condefModel, JNDI_NAME, conDef.getJndiName());
+            setStringIfNotNull(condefModel, POOL_NAME, conDef.getPoolName());
+            setBooleanIfNotNull(condefModel, ENABLED, conDef.isEnabled());
+            setBooleanIfNotNull(condefModel, USE_JAVA_CONTEXT, conDef.isUseJavaContext());
 
             if (conDef.getPool() != null) {
+                setIntegerIfNotNull(condefModel, MAX_POOL_SIZE, conDef.getPool().getMaxPoolSize());
+                setIntegerIfNotNull(condefModel, MIN_POOL_SIZE, conDef.getPool().getMinPoolSize());
+                setBooleanIfNotNull(condefModel, POOL_PREFILL, conDef.getPool().isPrefill());
+                setBooleanIfNotNull(condefModel, POOL_USE_STRICT_MIN, conDef.getPool().isUseStrictMin());
                 condefModel.get(MAX_POOL_SIZE).set(conDef.getPool().getMaxPoolSize());
                 condefModel.get(MIN_POOL_SIZE).set(conDef.getPool().getMinPoolSize());
                 condefModel.get(POOL_PREFILL).set(conDef.getPool().isPrefill());
                 condefModel.get(POOL_USE_STRICT_MIN).set(conDef.getPool().isUseStrictMin());
                 if (conDef.isXa()) {
                     CommonXaPool xaPool = (CommonXaPool) conDef.getPool();
-                    condefModel.get(INTERLIVING).set(xaPool.isInterleaving());
-                    condefModel.get(PAD_XID).set(xaPool.isPadXid());
-                    condefModel.get(SAME_RM_OVERRIDE).set(xaPool.isSameRmOverride());
-                    condefModel.get(NOTXSEPARATEPOOL).set(xaPool.isNoTxSeparatePool());
-                    condefModel.get(WRAP_XA_DATASOURCE).set(xaPool.isWrapXaDataSource());
+                    setBooleanIfNotNull(condefModel, INTERLIVING, xaPool.isInterleaving());
+                    setBooleanIfNotNull(condefModel, PAD_XID, xaPool.isPadXid());
+                    setBooleanIfNotNull(condefModel, SAME_RM_OVERRIDE, xaPool.isSameRmOverride());
+                    setBooleanIfNotNull(condefModel, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
+                    setBooleanIfNotNull(condefModel, WRAP_XA_DATASOURCE, xaPool.isWrapXaDataSource());
 
                 }
             }
 
             if (conDef.getTimeOut() != null) {
-                condefModel.get(ALLOCATION_RETRY).set(conDef.getTimeOut().getAllocationRetry());
-                condefModel.get(ALLOCATION_RETRY_WAIT_MILLIS).set(conDef.getTimeOut().getAllocationRetryWaitMillis());
-                condefModel.get(BLOCKING_TIMEOUT_WAIT_MILLIS).set(conDef.getTimeOut().getBlockingTimeoutMillis());
-                condefModel.get(IDLETIMEOUTMINUTES).set(conDef.getTimeOut().getIdleTimeoutMinutes());
-                condefModel.get(XA_RESOURCE_TIMEOUT).set(conDef.getTimeOut().getXaResourceTimeout());
+                setIntegerIfNotNull(condefModel, ALLOCATION_RETRY, conDef.getTimeOut().getAllocationRetry());
+                setLongIfNotNull(condefModel, ALLOCATION_RETRY_WAIT_MILLIS, conDef.getTimeOut().getAllocationRetryWaitMillis());
+                setLongIfNotNull(condefModel, BLOCKING_TIMEOUT_WAIT_MILLIS, conDef.getTimeOut().getBlockingTimeoutMillis());
+                setLongIfNotNull(condefModel, IDLETIMEOUTMINUTES, conDef.getTimeOut().getIdleTimeoutMinutes());
+                setIntegerIfNotNull(condefModel, XA_RESOURCE_TIMEOUT, conDef.getTimeOut().getXaResourceTimeout());
             }
 
             if (conDef.getSecurity() != null) {
-                condefModel.get(APPLICATION).set(conDef.getSecurity().isApplication());
-                condefModel.get(SECURITY_DOMAIN).set(conDef.getSecurity().getSecurityDomain());
-                condefModel.get(SECURITY_DOMAIN_AND_APPLICATION).set(conDef.getSecurity().getSecurityDomainAndApplication());
+                setBooleanIfNotNull(condefModel, APPLICATION, conDef.getSecurity().isApplication());
+                setStringIfNotNull(condefModel, SECURITY_DOMAIN, conDef.getSecurity().getSecurityDomain());
+                setStringIfNotNull(condefModel, SECURITY_DOMAIN_AND_APPLICATION, conDef.getSecurity()
+                        .getSecurityDomainAndApplication());
 
             }
 
             if (conDef.getValidation() != null) {
-                condefModel.get(BACKGROUNDVALIDATIONMINUTES).set(conDef.getValidation().getBackgroundValidationMinutes());
-                condefModel.get(BACKGROUNDVALIDATION).set(conDef.getValidation().isBackgroundValidation());
-                condefModel.get(USE_FAST_FAIL).set(conDef.getValidation().isUseFastFail());
+                setLongIfNotNull(condefModel, BACKGROUNDVALIDATIONMINUTES, conDef.getValidation()
+                        .getBackgroundValidationMinutes());
+                setBooleanIfNotNull(condefModel, BACKGROUNDVALIDATION, conDef.getValidation().isBackgroundValidation());
+                setBooleanIfNotNull(condefModel, USE_FAST_FAIL, conDef.getValidation().isUseFastFail());
             }
 
             if (conDef.getRecovery() != null) {
@@ -564,13 +603,31 @@ public class ResourceAdaptersExtension implements Extension {
         }
     }
 
+    private static void setIntegerIfNotNull(final ModelNode node, final String identifier, final Integer value) {
+        if (value != null) {
+            node.get(identifier).set(value);
+        }
+    }
+
+    private static void setLongIfNotNull(final ModelNode node, final String identifier, final Long value) {
+        if (value != null) {
+            node.get(identifier).set(value);
+        }
+    }
+
     private static class ResourceAdaptersSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
 
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
 
-            ModelNode add = createAddSubsystemOperation();
+            final ModelNode address = new ModelNode();
+            address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTERS);
+            address.protect();
+
+            final ModelNode add = new ModelNode();
+            add.get(OP).set(ADD);
+            add.get(OP_ADDR).set(address);
 
             ModelNode model = context.getSubModel();
 
@@ -600,4 +657,5 @@ public class ResourceAdaptersExtension implements Extension {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
+
 }

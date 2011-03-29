@@ -27,7 +27,6 @@ import org.jboss.dmr.Property;
 
 /**
  * An element of a path specification for matching operations with addresses.
- *
  * @author Brian Stansberry
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -41,8 +40,8 @@ public class PathElement {
     private final int hashCode;
 
     /**
-     * A valid key contains alphanumerics and underscores, cannot start with a number, and cannot start or end with
-     * {@code -}.
+     * A valid key contains alphanumerics and underscores, cannot start with a
+     * number, and cannot start or end with {@code -}.
      */
     private static final Pattern VALID_KEY_PATTERN = Pattern.compile("[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
 
@@ -50,7 +49,6 @@ public class PathElement {
 
     /**
      * Construct a new instance with a wildcard value.
-     *
      * @param key the path key to match
      * @return the new path element
      */
@@ -60,7 +58,6 @@ public class PathElement {
 
     /**
      * Construct a new instance.
-     *
      * @param key the path key to match
      * @param value the path value or wildcard to match
      * @return the new path element
@@ -71,7 +68,6 @@ public class PathElement {
 
     /**
      * Construct a new instance with a wildcard value.
-     *
      * @param key the path key to match
      */
     PathElement(final String key) {
@@ -80,7 +76,6 @@ public class PathElement {
 
     /**
      * Construct a new instance.
-     *
      * @param key the path key to match
      * @param value the path value or wildcard to match
      */
@@ -92,11 +87,11 @@ public class PathElement {
             throw new IllegalArgumentException("Invalid value specification");
         }
         this.key = key;
-        if(value.equals(WILDCARD_VALUE)) {
+        if (value.equals(WILDCARD_VALUE)) {
             this.value = WILDCARD_VALUE;
             this.multiTarget = true;
-        } else if (value.charAt(0) == '[' && value.charAt(value.length() -1) == ']') {
-            this.value = value.substring(1, value.length() -1);
+        } else if (value.charAt(0) == '[' && value.charAt(value.length() - 1) == ']') {
+            this.value = value.substring(1, value.length() - 1);
             this.multiTarget = value.indexOf(',') != -1;
         } else {
             this.value = value;
@@ -107,7 +102,6 @@ public class PathElement {
 
     /**
      * Get the path key.
-     *
      * @return the path key
      */
     public String getKey() {
@@ -116,7 +110,6 @@ public class PathElement {
 
     /**
      * Get the path value.
-     *
      * @return the path value
      */
     public String getValue() {
@@ -125,9 +118,7 @@ public class PathElement {
 
     /**
      * Determine whether the given property matches this element.
-     *
      * @param property the property to check
-     *
      * @return {@code true} if the property matches
      */
     public boolean matches(Property property) {
@@ -136,7 +127,6 @@ public class PathElement {
 
     /**
      * Determine whether the value is the wildcard value.
-     *
      * @return {@code true} if the value is the wildcard value
      */
     public boolean isWildcard() {
@@ -158,9 +148,7 @@ public class PathElement {
 
     /**
      * Determine whether this object is equal to another.
-     *
      * @param other the other object
-     *
      * @return {@code true} if they are equal, {@code false} otherwise
      */
     public boolean equals(Object other) {
@@ -169,9 +157,7 @@ public class PathElement {
 
     /**
      * Determine whether this object is equal to another.
-     *
      * @param other the other object
-     *
      * @return {@code true} if they are equal, {@code false} otherwise
      */
     public boolean equals(PathElement other) {

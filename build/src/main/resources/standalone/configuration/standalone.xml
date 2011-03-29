@@ -188,8 +188,19 @@
                 <driver module="com.h2database.h2"/>
             </drivers>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
-        <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0">
+                <!--  <resource-adapters>
+				  <resource-adapter>
+				    <archive>ra16out.rar</archive>
+				    <connection-definitions>
+				      <connection-definition jndi-name="java:/eis/ra16out-raxml"
+				                             class-name="org.jboss.jca.test.deployers.spec.rars.ra16out.TestManagedConnectionFactory">
+				      </connection-definition>
+				    </connection-definitions>
+				  </resource-adapter>
+				</resource-adapters>-->
+       </subsystem>
+<subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
             </configuration>

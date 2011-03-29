@@ -30,6 +30,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.BLOCKING_T
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
@@ -39,7 +40,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVIN
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
@@ -388,9 +388,9 @@ class DataSourceModelNodeUtil {
 
         final boolean sharePreparedStatements = dataSourceNode.hasDefined(SHAREPREPAREDSTATEMENTS) ? dataSourceNode.get(
                 SHAREPREPAREDSTATEMENTS).asBoolean() : false;
-        final Long preparedStatementsCacheSize = dataSourceNode.get(PREPAREDSTATEMENTSCACHESIZE).asLong();
-        final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(dataSourceNode.get(
-                TRACKSTATEMENTS).asString());
+        final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
+        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS) ? Statement.TrackStatementsEnum
+                .valueOf(dataSourceNode.get(TRACKSTATEMENTS).asString()) : Statement.TrackStatementsEnum.NOWARN;
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);

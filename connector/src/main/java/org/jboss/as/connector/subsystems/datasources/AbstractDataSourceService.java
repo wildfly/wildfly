@@ -37,6 +37,7 @@ import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
+import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -62,6 +63,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
     private final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
+    private final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<ManagementRepository>();
 
     private final String jndiName;
 
@@ -74,9 +76,20 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     public synchronized void start(StartContext startContext) throws StartException {
         try {
             final ManagedConnectionFactory mcf = createManagedConnectionFactory(jndiName, driverValue.getValue());
-            final Pool pool = createPool(jndiName, mcf);
+            final PoolConfiguration pc = createPoolConfig();
+            final Pool pool = createPool(jndiName, mcf, pc);
             final ConnectionManager cm = createConnectionManager(jndiName, pool);
             sqlDataSource = (javax.sql.DataSource) mcf.createConnectionFactory(cm);
+
+            org.jboss.jca.core.api.management.DataSource mgtDs = new org.jboss.jca.core.api.management.DataSource(false);// Register
+                                                                                                                         // data
+                                                                                                                         // sources
+            mgtDs.setJndiName(jndiName);
+            mgtDs.setPoolConfiguration(pc);
+            mgtDs.setPool(pool);
+
+            log.debugf("Adding management datasource: %s", mgtDs);
+            managementRepository.getValue().getDataSources().add(mgtDs);
         } catch (Throwable t) {
             throw new StartException("Error during the deployment of " + jndiName, t);
         }
@@ -99,12 +112,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         return driverValue;
     }
 
+    public Injector<ManagementRepository> getmanagementRepositoryInjector() {
+        return managementRepository;
+    }
+
     protected abstract BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName,
             final Driver driver) throws ResourceException, StartException;
 
-    protected abstract Pool createPool(final String jndiName, final ManagedConnectionFactory mcf);
+    protected abstract Pool createPool(final String jndiName, final ManagedConnectionFactory mcf, final PoolConfiguration pc);
 
     protected abstract ConnectionManager createConnectionManager(final String jndiName, final Pool pool);
+
+    protected abstract PoolConfiguration createPoolConfig();
 
     /**
      * Create an instance of the pool configuration based on the input

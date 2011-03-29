@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import static org.jboss.as.connector.deployers.processors.ResourceAdapterAttachment.getResourceAdaptersAttachment;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
@@ -33,13 +31,12 @@ import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentSe
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
@@ -51,6 +48,7 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
@@ -80,12 +78,18 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
-        if(connectorXmlDescriptor == null) {
-            return;  // Skip non ra deployments
+        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
+                .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        if (connectorXmlDescriptor == null) {
+            return; // Skip non ra deployments
         }
 
-        final ResourceAdapters raxmls = getResourceAdaptersAttachment(deploymentUnit);
+        ResourceAdapters raxmls = null;
+        // getResourceAdaptersAttachment(deploymentUnit);
+        final ServiceController<?> raService = phaseContext.getServiceRegistry().getService(
+                ConnectorServices.RESOURCEADAPTERS_SERVICE);
+        if (raService != null)
+            raxmls = ((ResourceAdapters) raService.getValue());
         if (raxmls == null)
             return;
 

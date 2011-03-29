@@ -21,7 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.util.Collections;
 import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
@@ -33,6 +32,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
@@ -42,7 +42,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVE
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
@@ -69,9 +68,9 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_DATASOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.fillFrom;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
@@ -83,16 +82,14 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
@@ -100,7 +97,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -113,6 +115,8 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -120,10 +124,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -181,12 +181,20 @@ public class DataSourcesExtension implements Extension {
         dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
 
+        for (final String attributeName : DataSourcesMetrics.ATTRIBUTES) {
+            dataSources.registerMetric(attributeName, DataSourcesMetrics.INSTANCE);
+        }
+
         final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
                 XA_DATA_SOURCE_DESC);
         xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler(REMOVE, XaDataSourceRemove.INSTANCE, REMOVE_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
+
+        for (final String attributeName : XaDataSourcesMetrics.ATTRIBUTES) {
+            xaDataSources.registerMetric(attributeName, XaDataSourcesMetrics.INSTANCE);
+        }
     }
 
     @Override
@@ -457,7 +465,7 @@ public class DataSourcesExtension implements Extension {
                     case DATASOURCES_1_0: {
                         localName = reader.getLocalName();
                         Element element = Element.forName(reader.getLocalName());
-                        log.tracef("%s -> %s", localName, element);
+                        log.infof("%s -> %s", localName, element);
                         switch (element) {
                             case SUBSYSTEM: {
 

@@ -58,6 +58,7 @@ public class LocalDataSourceService extends AbstractDataSourceService {
 
     protected final BaseWrapperManagedConnectionFactory createManagedConnectionFactory(final String jndiName,
             final Driver driver) {
+
         final LocalManagedConnectionFactory managedConnectionFactory = new LocalManagedConnectionFactory();
         managedConnectionFactory.setClassLoaderPlugin(new ClassLoaderPlugin() {
 
@@ -167,9 +168,13 @@ public class LocalDataSourceService extends AbstractDataSourceService {
         return managedConnectionFactory;
     }
 
-    protected Pool createPool(final String jndiName, final ManagedConnectionFactory mcf) {
-        final PoolConfiguration pc = createPoolConfiguration(dataSourceConfig.getPool(), dataSourceConfig.getTimeOut(),
+    protected PoolConfiguration createPoolConfig() {
+        return createPoolConfiguration(dataSourceConfig.getPool(), dataSourceConfig.getTimeOut(),
                 dataSourceConfig.getValidation());
+    }
+
+    protected Pool createPool(final String jndiName, final ManagedConnectionFactory mcf, PoolConfiguration pc) {
+
         PoolFactory pf = new PoolFactory();
         final Pool pool = pf.create(PoolStrategy.ONE_POOL, mcf, pc, false);
 

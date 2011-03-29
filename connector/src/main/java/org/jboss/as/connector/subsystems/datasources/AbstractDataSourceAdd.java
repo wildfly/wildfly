@@ -22,15 +22,15 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.sql.Driver;
-import javax.sql.DataSource;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.sql.Driver;
+
+import javax.sql.DataSource;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.BasicOperationResult;
@@ -41,16 +41,15 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -100,6 +99,8 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                             .addService(dataSourceServiceName, dataSourceService)
                             .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                                     dataSourceService.getTransactionIntegrationInjector())
+                            .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
+                                    dataSourceService.getmanagementRepositoryInjector())
                             .addDependency(NamingService.SERVICE_NAME);
 
                     final String driverName = operation.require(DRIVER).asString();
@@ -124,14 +125,17 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                                     binderService.getManagedObjectInjector())
                             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
                                     binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                                @Override
                                 public void serviceStarted(ServiceController<?> controller) {
                                     log.infof("Bound JDBC Data-source [%s]", jndiName);
                                 }
 
+                                @Override
                                 public void serviceStopped(ServiceController<?> serviceController) {
                                     log.infof("Unbound JDBC Data-source [%s]", jndiName);
                                 }
 
+                                @Override
                                 public void serviceRemoved(ServiceController<?> serviceController) {
                                     log.infof("Removed JDBC Data-source [%s]", jndiName);
                                     serviceController.removeListener(this);

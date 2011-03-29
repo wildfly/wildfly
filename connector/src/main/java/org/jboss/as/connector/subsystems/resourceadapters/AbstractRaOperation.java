@@ -1,25 +1,3 @@
-/*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
-
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
@@ -56,28 +34,16 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.deployers.processors.ResourceAdaptersAttachingProcessor;
-import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdapeters;
 import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
@@ -90,7 +56,6 @@ import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonAdminObjectImpl;
 import org.jboss.jca.common.metadata.common.CommonConnDefImpl;
@@ -100,78 +65,12 @@ import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
-import org.jboss.jca.common.metadata.resourceadapter.ResourceAdaptersImpl;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.logging.Logger;
 
-/**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
- */
-class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+public abstract class AbstractRaOperation {
 
-    static final ResourceAdaptersSubsystemAdd INSTANCE = new ResourceAdaptersSubsystemAdd();
-
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        // Populate subModel
-        final ModelNode subModel = context.getSubModel();
-        subModel.setEmptyObject();
-
-        // Workaround to populate domain model.
-
-        boolean workaround = true;
-
-        if (workaround) {
-            if (operation.has(RESOURCEADAPTERS)) {
-                ModelNode datasources = operation.get(RESOURCEADAPTERS);
-                subModel.get(RESOURCEADAPTERS).set(datasources);
-            }
-        } else {
-            if (operation.hasDefined(RESOURCEADAPTERS)) {
-                for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
-                    for (ModelNode property : raNode.get(CONFIG_PROPERTIES).asList()) {
-                        subModel.get(CONFIG_PROPERTIES, property.asProperty().getName()).set(property.asString());
-                    }
-                    for (final String attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
-                        if (raNode.get(attribute).isDefined()) {
-                            subModel.get(attribute).set(raNode.get(attribute));
-                        }
-                    }
-                }
-            }
-        }
-
-        if (context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-
-                    ResourceAdapters resourceAdapters = buildResourceAdaptersObject(operation);
-                    serviceTarget
-                            .addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
-                                    new ResourceAdaptersService(resourceAdapters)).setInitialMode(Mode.ACTIVE).install();
-
-                    updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_ADAPTERS,
-                            new ResourceAdaptersAttachingProcessor(resourceAdapters));
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        return new BasicOperationResult(compensatingOperation);
-    }
-
-    private ResourceAdapters buildResourceAdaptersObject(ModelNode operation) throws OperationFailedException {
+    protected ModifiableResourceAdapeters buildResourceAdaptersObject(ModelNode operation) throws OperationFailedException {
         List<ResourceAdapter> resourceAdapters = new ArrayList<ResourceAdapter>();
-
         if (operation.hasDefined(RESOURCEADAPTERS)) {
             for (ModelNode raNode : operation.get(RESOURCEADAPTERS).asList()) {
                 Map<String, String> configProperties = new HashMap<String, String>(raNode.get(CONFIG_PROPERTIES).asList()
@@ -200,7 +99,7 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             }
         }
 
-        return new ResourceAdaptersImpl(resourceAdapters);
+        return new ModifiableResourceAdapeters(resourceAdapters);
 
     }
 
@@ -335,4 +234,5 @@ class ResourceAdaptersSubsystemAdd implements ModelAddOperationHandler, BootOper
             return null;
         }
     }
+
 }
