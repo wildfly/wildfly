@@ -197,10 +197,8 @@ public class EPCPropagationTestCase {
         stateful.finishUp();  // destroy SFSB
         stateful = null;      // clear reference to avoid using it by accident
                               // both entities (8,9) should still be in XPC
-        // TODO: uncomment the following two lines after figuring out why we get stuck in StrictMaxPool
-        // See http://pastie.org/1729396
-        // equal = anotherStateful.createEntity(9,"John Steed");
-        // assertTrue("again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
+        equal = anotherStateful.createEntity(9,"John Steed");
+        assertTrue("again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
     }
 
 
