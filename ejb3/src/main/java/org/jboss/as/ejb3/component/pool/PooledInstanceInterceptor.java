@@ -52,6 +52,7 @@ public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
         }
         finally {
             context.putPrivateData(ComponentInstance.class, null);
+            component.getPool().release(instance);
         }
     }
 }
