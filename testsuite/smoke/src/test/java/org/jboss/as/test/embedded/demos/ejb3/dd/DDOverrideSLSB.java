@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.deployment;
+package org.jboss.as.test.embedded.demos.ejb3.dd;
 
-import org.jboss.as.ejb3.EjbJarDescription;
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import javax.ejb.Stateless;
 
 /**
- * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} attachment keys specific to EJB3 deployment
- * unit processors
- * <p/>
- * Author: Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class EjbDeploymentAttachmentKeys {
+@Stateless
+public class DDOverrideSLSB implements Echo {
 
-    /**
-     * Attachment key to the {@link EjbJarMetaData} attachment representing the metadata created out of the ejb-jar.xml
-     * deployment descriptor
-     */
-    public static final AttachmentKey<EjbJarMetaData> EJB_JAR_METADATA = AttachmentKey.create(EjbJarMetaData.class);
-
+    @Override
+    public String echo(String msg) {
+        return msg;
+    }
 }
-

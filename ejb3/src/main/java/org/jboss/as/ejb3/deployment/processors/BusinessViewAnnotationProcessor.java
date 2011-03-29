@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Processes {@link Local @Local} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
+ * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
  * out of it.
  * <p/>
  *
@@ -69,8 +69,8 @@ public class BusinessViewAnnotationProcessor extends AbstractAnnotationEJBProces
     }
 
     /**
-     * Creates bindings for each of the business interface views of a session bean.
-     * Adds the local business interface views to the component description.
+     * Processes the session bean for remote and local views and updates the {@link SessionBeanComponentDescription}
+     * accordingly
      *
      * @param sessionBeanClass     The bean class
      * @param compositeIndex       The composite annotation index

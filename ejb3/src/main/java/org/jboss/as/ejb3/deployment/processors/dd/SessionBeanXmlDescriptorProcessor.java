@@ -117,8 +117,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         // remote business interface views
         BusinessRemotesMetaData businessRemotes = sessionBean.getBusinessRemotes();
         if (businessRemotes != null && !businessRemotes.isEmpty()) {
-            logger.debug("Remote business interface processing isn't yet implemented");
-            // TODO: Process remote business interfaces
+            sessionBeanDescription.addRemoteBusinessInterfaceViews(businessRemotes);
         }
         // tx management type
         if (sessionBean.getTransactionType() != null) {
@@ -152,8 +151,8 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             this.processSessionBean31((SessionBean31MetaData) sessionBean, sessionBeanDescription);
         }
 
-        // Add this component description to the ejb jar description
-        deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION).addSessionBean(sessionBeanDescription);
+        // Add this component description to the module description
+        moduleDescription.addComponent(sessionBeanDescription);
 
     }
 

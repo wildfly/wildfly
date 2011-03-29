@@ -83,9 +83,6 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             }
             return;
         }
-        // attach the EjbJarDescription based off annotations
-        this.attachEjbJarDescriptionIfAbsent(deploymentUnit);
-
 
         // Find any @Stateless bean annotations
         final List<AnnotationInstance> slsbAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Stateless.class.getName()));
@@ -147,8 +144,10 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
 
-            // Add this component description to EjbJarDescription
-            deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION).addSessionBean(sessionBeanDescription);
+            // Add this component description to module description
+            if (moduleDescription.getComponentByName(sessionBeanDescription.getComponentName()) == null) {
+                moduleDescription.addComponent(sessionBeanDescription);
+            }
         }
     }
 
@@ -156,16 +155,4 @@ public class EjbAnnotationProcessor implements DeploymentUnitProcessor {
     public void undeploy(DeploymentUnit context) {
     }
 
-    /**
-     * Attaches a new {@link org.jboss.as.ejb3.EjbJarDescription} at {@link org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys#ANNOTATION_EJB_JAR_DESCRIPTION}, to the
-     * deployment unit, if the attachment is absent
-     *
-     * @param deploymentUnit
-     */
-    private void attachEjbJarDescriptionIfAbsent(DeploymentUnit deploymentUnit) {
-        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION);
-        if (ejbJarDescription == null) {
-            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.ANNOTATION_EJB_JAR_DESCRIPTION, new EjbJarDescription());
-        }
-    }
 }

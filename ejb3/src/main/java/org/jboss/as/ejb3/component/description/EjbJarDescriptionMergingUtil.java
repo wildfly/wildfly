@@ -266,6 +266,9 @@ public class EjbJarDescriptionMergingUtil {
                     sessionBean.addLocalBusinessInterfaceViews(Collections.singleton(viewClassName));
                 }
                 return;
+            case REMOTE:
+                sessionBean.addRemoteBusinessInterfaceViews(Collections.singleton(viewClassName));
+                return;
             // TODO: Handle other types
         }
     }

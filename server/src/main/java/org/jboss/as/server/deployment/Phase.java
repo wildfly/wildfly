@@ -218,8 +218,6 @@ public enum Phase {
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_ANNOTATION                        = 0x1100;
     public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1101;
-    // the merged view of EJB
-    public static final int PARSE_EJB_MERGED_VIEW                       = 0x1102;
     public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1103;
     public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1104;
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1106;

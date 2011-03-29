@@ -54,9 +54,6 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
         if (ejbJarMetaData == null) {
             return;
         }
-        // attach the EjbJarDescription (based off ejb-jar.xml) if absent
-        this.attachEjbJarDescriptionIfAbsent(deploymentUnit);
-
 
         EnterpriseBeansMetaData ejbs = ejbJarMetaData.getEnterpriseBeans();
         if (ejbs == null || ejbs.isEmpty()) {
@@ -105,15 +102,4 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
 
     }
 
-    /**
-     * Attaches a new {@link EjbJarDescription} at {@link EjbDeploymentAttachmentKeys#DD_EJB_JAR_DESCRIPTION}, to the
-     * deployment unit, if the attachment is absent
-     * @param deploymentUnit
-     */
-    private void attachEjbJarDescriptionIfAbsent(DeploymentUnit deploymentUnit) {
-        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION);
-        if (ejbJarDescription == null) {
-            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION, new EjbJarDescription());
-        }
-    }
 }

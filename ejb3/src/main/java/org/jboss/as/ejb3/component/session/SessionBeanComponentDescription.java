@@ -112,6 +112,15 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void addLocalBusinessInterfaceViews(Collection<String> classNames) {
         this.getViewClassNames().addAll(classNames);
         for (String viewClassName : classNames) {
+            // EJB 3.1 spec, section 4.9.7:
+            // The same business interface cannot be both a local and a remote business interface of the bean.
+
+            // if the view class is already marked as Remote, then throw an error
+            if (this.viewTypes.get(viewClassName) == MethodIntf.REMOTE) {
+                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
+                        + " as local view since it's already marked as remote view for bean: " + this.getEJBName());
+            }
+
             viewTypes.put(viewClassName, MethodIntf.LOCAL);
         }
     }
@@ -129,6 +138,14 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
         this.getViewClassNames().addAll(classNames);
         for (String viewClassName : classNames) {
+            // EJB 3.1 spec, section 4.9.7:
+            // The same business interface cannot be both a local and a remote business interface of the bean.
+
+            // if the view class is already marked as Local, then throw an error
+            if (this.viewTypes.get(viewClassName) == MethodIntf.LOCAL) {
+                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
+                        + " as remote view since it's already marked as local view for bean: " + this.getEJBName());
+            }
             viewTypes.put(viewClassName, MethodIntf.REMOTE);
         }
     }
@@ -332,5 +349,4 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         }
         return new EJBBusinessMethod(methodName, paramTypes);
     }
-
 }

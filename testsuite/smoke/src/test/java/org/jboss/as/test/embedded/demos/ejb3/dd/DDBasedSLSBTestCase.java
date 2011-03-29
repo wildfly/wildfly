@@ -71,4 +71,16 @@ public class DDBasedSLSBTestCase {
         Assert.assertEquals("Unexpected return message from bean", msg, echo);
 
     }
+
+    @Test
+    public void testDDOverrideOfSLSB() throws Exception {
+        Context ctx = new InitialContext();
+        String ejbName = DDOverrideSLSB.class.getSimpleName();
+        String jndiName = "java:global/" + MODULE_NAME + "/" + ejbName;
+        Echo bean = (Echo) ctx.lookup(jndiName);
+
+        String msg = "Another simple echo!";
+        String echo = bean.echo(msg);
+        Assert.assertEquals("Unexpected return message from bean", msg, echo);
+    }
 }

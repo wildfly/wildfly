@@ -52,8 +52,8 @@ public class MessageDrivenBeanXmlDescriptorProcessor extends AbstractEjbXmlDescr
 
         mdbDescription.setMessageListenerInterfaceName(mdb.getMessagingType());
 
-        // Add this component description to the ejb jar description
-        deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.DD_EJB_JAR_DESCRIPTION).addMessageDrivenBean(mdbDescription);
+        // Add this component description to the module description
+        moduleDescription.addComponent(mdbDescription);
 
     }
 }
