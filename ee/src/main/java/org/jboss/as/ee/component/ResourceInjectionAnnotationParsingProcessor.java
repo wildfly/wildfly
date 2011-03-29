@@ -76,27 +76,32 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
             return; // We can't continue without the annotation index info.
         }
 
-        componentDescription.addAnnotationBindings(getResourceConfigurations(classInfo, componentDescription));
+        componentDescription.addAnnotationBindings(getResourceConfigurations(classInfo, componentDescription, index));
         final Collection<InterceptorDescription> interceptorConfigurations = componentDescription.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
             if(interceptorClassInfo == null) {
                 continue;
             }
-            componentDescription.addAnnotationBindings(getResourceConfigurations(interceptorClassInfo, componentDescription));
+            componentDescription.addAnnotationBindings(getResourceConfigurations(interceptorClassInfo, componentDescription, index));
         }
     }
 
-    private List<BindingDescription> getResourceConfigurations(final ClassInfo classInfo,AbstractComponentDescription componentDescription) {
+    private List<BindingDescription> getResourceConfigurations(final ClassInfo classInfo, AbstractComponentDescription componentDescription, final CompositeIndex index) {
         final List<BindingDescription> configurations = new ArrayList<BindingDescription>();
+
+        final ClassInfo superClass = index.getClassByName(classInfo.superName());
+        if(superClass != null) {
+            configurations.addAll(getResourceConfigurations(superClass, componentDescription, index));
+        }
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
         if (classAnnotations != null) {
             final List<AnnotationInstance> resourceAnnotations = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
             if (resourceAnnotations != null) for (AnnotationInstance annotation : resourceAnnotations) {
-                configurations.add(getResourceConfiguration(annotation,componentDescription));
+                configurations.add(getResourceConfiguration(annotation, componentDescription));
             }
-            configurations.addAll(processClassResources(classAnnotations,componentDescription));
+            configurations.addAll(processClassResources(classAnnotations, componentDescription));
         }
 
         return configurations;
