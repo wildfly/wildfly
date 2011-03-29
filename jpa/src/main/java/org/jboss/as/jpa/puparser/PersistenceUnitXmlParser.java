@@ -70,7 +70,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             String versionString = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
-                if (reader.getAttributeNamespace(i) != null) {
+                final String attributeNamespace = reader.getAttributeNamespace(i);
+                if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                     continue;
                 }
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -92,7 +93,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            final String attributeNamespace = reader.getAttributeNamespace(i);
+            if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                 continue;
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -155,7 +157,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
+            final String attributeNamespace = reader.getAttributeNamespace(i);
+            if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                 continue;
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -245,7 +248,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     String name = null, value = null;
                     for (int i = 0; i < count; i++) {
                         final String attributeValue = reader.getAttributeValue(i);
-                        if (reader.getAttributeNamespace(i) != null) {
+                        final String attributeNamespace = reader.getAttributeNamespace(i);
+                        if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                             continue;
                         }
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
