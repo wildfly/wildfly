@@ -60,9 +60,10 @@ class WebServerService implements WebServer, Service<WebServer> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
+        MBeanServer mbeanServer = null;
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             // Set the MBeanServer
-            final MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
+            mbeanServer = this.mbeanServer.getOptionalValue();
             if(mbeanServer != null) {
                 Registry.getRegistry(null, null).setMBeanServer(mbeanServer);
             }
@@ -73,10 +74,12 @@ class WebServerService implements WebServer, Service<WebServer> {
 
         final StandardServer server = new StandardServer();
         catalina.setServer(server);
-        registerObject(mbeanServer, "jboss.web:type=Server", server,  "org.apache.catalina.startup.StandardServer");
+        if (mbeanServer != null)
+            registerObject(mbeanServer, "jboss.web:type=Server", server,  "org.apache.catalina.startup.StandardServer");
 
         final StandardService service = new StandardService();
-        registerObject(mbeanServer, "jboss.web:service=WebServer", service, "org.apache.catalina.core.StandardService");
+        if (mbeanServer != null)
+            registerObject(mbeanServer, "jboss.web:service=WebServer", service, "org.apache.catalina.core.StandardService");
         service.setName(JBOSS_WEB);
         service.setServer(server);
         server.addService(service);

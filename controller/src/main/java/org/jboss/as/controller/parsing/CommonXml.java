@@ -1864,7 +1864,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                                         reader.getLocation());
                             }
                             binding.get(MULTICAST_ADDRESS).set(value);
-                            break;
                         } catch (final UnknownHostException e) {
                             throw new XMLStreamException("Value " + value + " for attribute " +
                                     attribute.getLocalName() + " is not a valid multicast address",
