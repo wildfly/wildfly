@@ -63,6 +63,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -72,6 +73,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ResourceBundle;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -135,18 +137,11 @@ public class ResourceAdaptersExtension implements Extension {
                 ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         final ModelNodeRegistration dataSources = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER),
-                DATA_SOURCE_DESC);
+                RESOURCEADAPTER_DESC);
         dataSources.registerOperationHandler(ADD, DataSourceAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
-
-        final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
-                XA_DATA_SOURCE_DESC);
-        xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(REMOVE, XaDataSourceRemove.INSTANCE, REMOVE_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
 
     }
 
@@ -447,9 +442,14 @@ public class ResourceAdaptersExtension implements Extension {
             }
 
             if (ras != null) {
-                ModelNode rasNode = subsystem.get(RESOURCEADAPTERS);
                 for (ResourceAdapter ra : ras.getResourceAdapters()) {
-                    ModelNode raModel = new ModelNode();
+                    final ModelNode raModel = subsystem.clone();
+                    raModel.add(RESOURCEADAPTER, ra.getArchive());
+                    raModel.protect();
+
+                    final ModelNode operation = new ModelNode();
+                    operation.get(OP_ADDR).set(raModel);
+                    operation.get(OP).set(ADD);
                     for (Entry<String, String> entry : ra.getConfigProperties().entrySet()) {
                         raModel.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
                     }
@@ -470,7 +470,7 @@ public class ResourceAdaptersExtension implements Extension {
 
                     }
 
-                    rasNode.add(raModel);
+                    list.add(raModel);
                 }
             }
 
@@ -614,4 +614,8 @@ public class ResourceAdaptersExtension implements Extension {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
+
+    
+    
+    
 }

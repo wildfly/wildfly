@@ -62,6 +62,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.connector.subsystems.datasources.AttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -240,6 +241,63 @@ class ResourceAdaptersSubsystemProviders {
 
             return subsystem;
 
+        }
+    };
+
+    static DescriptionProvider RESOURCEADAPTER_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode resourceAdaptersNode = new ModelNode();
+            resourceAdaptersNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            resourceAdaptersNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            resourceAdaptersNode.get(DESCRIPTION).set(RESOURCEADAPTERS);
+
+            final ModelNode connectionDefinitionsNode = new ModelNode();
+            connectionDefinitionsNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            connectionDefinitionsNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            connectionDefinitionsNode.get(DESCRIPTION).set(CONNECTIONDEFINITIONS);
+
+            for (NodeAttribute attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
+                connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), DESCRIPTION).set(
+                        bundle.getString(attribute.getName()));
+                connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), TYPE).set(attribute.getModelType());
+                connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), REQUIRED).set(attribute.isRequired());
+
+            }
+            resourceAdaptersNode.get(CONNECTIONDEFINITIONS).set(connectionDefinitionsNode);
+
+            final ModelNode adminObjectNode = new ModelNode();
+            adminObjectNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            adminObjectNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            resourceAdaptersNode.get(DESCRIPTION).set(ADMIN_OBJECTS);
+
+            for (NodeAttribute attribute : ADMIN_OBJECTS_NODEATTRIBUTE) {
+                adminObjectNode.get(ATTRIBUTES, attribute.getName(), DESCRIPTION).set(bundle.getString(attribute.getName()));
+                adminObjectNode.get(ATTRIBUTES, attribute.getName(), TYPE).set(attribute.getModelType());
+                adminObjectNode.get(ATTRIBUTES, attribute.getName(), REQUIRED).set(attribute.isRequired());
+
+            }
+            resourceAdaptersNode.get(ADMIN_OBJECTS).set(adminObjectNode);
+
+            resourceAdaptersNode.get(ATTRIBUTES, ARCHIVE, DESCRIPTION).set(bundle.getString(ARCHIVE));
+            resourceAdaptersNode.get(ATTRIBUTES, ARCHIVE, TYPE).set(ModelType.STRING);
+            resourceAdaptersNode.get(ATTRIBUTES, ARCHIVE, REQUIRED).set(true);
+
+            resourceAdaptersNode.get(ATTRIBUTES, TRANSACTIONSUPPORT, DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT));
+            resourceAdaptersNode.get(ATTRIBUTES, TRANSACTIONSUPPORT, TYPE).set(ModelType.STRING);
+            resourceAdaptersNode.get(ATTRIBUTES, TRANSACTIONSUPPORT, REQUIRED).set(false);
+
+            resourceAdaptersNode.get(ATTRIBUTES, CONFIG_PROPERTIES, TYPE).set(ModelType.STRING);
+            resourceAdaptersNode.get(ATTRIBUTES, CONFIG_PROPERTIES, REQUIRED).set(false);
+
+            resourceAdaptersNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS, DESCRIPTION).set(bundle.getString(BEANVALIDATIONGROUPS));
+            resourceAdaptersNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS, TYPE).set(ModelType.STRING);
+            resourceAdaptersNode.get(ATTRIBUTES, BEANVALIDATIONGROUPS, REQUIRED).set(false);
+
+            return resourceAdaptersNode;
         }
     };
 
