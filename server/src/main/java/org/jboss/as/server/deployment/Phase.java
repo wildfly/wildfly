@@ -311,8 +311,9 @@ public enum Phase {
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0E00;
     public static final int INSTALL_ENV_ENTRY                           = 0x0F00;
     public static final int INSTALL_EJB_REF                             = 0x0F01;
-    public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x0F02;
-    public static final int INSTALL_EE_COMPONENT                        = 0x0F03;
+    public static final int INSTALL_PERSISTENCE_REF                     = 0x0F02;
+    public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x0F03;
+    public static final int INSTALL_EE_COMPONENT                        = 0x0F04;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1000;
     public static final int INSTALL_JAXRS_SCANNING                      = 0x1100;
     public static final int INSTALL_JAXRS_COMPONENT                     = 0x1200;

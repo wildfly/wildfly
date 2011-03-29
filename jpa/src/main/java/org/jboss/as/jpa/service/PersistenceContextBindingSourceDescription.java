@@ -75,29 +75,17 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
      * the unwrap return value is injected (instead of the EntityManager instance)
      */
     public PersistenceContextBindingSourceDescription(
-            final AnnotationInstance annotation,
+            final PersistenceContextType type,
+            final Map properties,
             final ServiceName puServiceName,
             final DeploymentUnit deploymentUnit,
             final String scopedPuName,
             final String injectionTypeName) {
 
         AnnotationValue value;
-        value = annotation.value("type");
-        this.type = (value == null || PersistenceContextType.TRANSACTION.name().equals(value.asString()))
-            ? PersistenceContextType.TRANSACTION: PersistenceContextType.EXTENDED;
-        value = annotation.value("properties");
-        AnnotationInstance[] props = value != null ? value.asNestedArray() : null;
-        Map properties;
+        this.type = type;
 
-        if (props != null) {
-            properties = new HashMap();
-            for(int source=0; source < props.length; source ++) {
-                properties.put(props[source].value("name"), props[source].value("value"));
-            }
-        }
-        else {
-            properties = null;
-        }
+
         injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName);
         this.puServiceName=puServiceName;
     }

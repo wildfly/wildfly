@@ -54,6 +54,7 @@ import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -261,7 +262,24 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         String scopedPuName = getScopedPuName(deploymentUnit, annotation);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
-            return new PersistenceContextBindingSourceDescription(annotation, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
+            AnnotationValue pcType = annotation.value("type");
+            PersistenceContextType type = (pcType == null || PersistenceContextType.TRANSACTION.name().equals(pcType.asString()))
+            ? PersistenceContextType.TRANSACTION: PersistenceContextType.EXTENDED;
+
+            Map properties;
+            AnnotationValue value = annotation.value("properties");
+            AnnotationInstance[] props = value != null ? value.asNestedArray() : null;
+            if (props != null) {
+                properties = new HashMap();
+                for(int source=0; source < props.length; source ++) {
+                    properties.put(props[source].value("name"), props[source].value("value"));
+                }
+            }
+            else {
+                properties = null;
+            }
+
+            return new PersistenceContextBindingSourceDescription(type,properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         } else {
             return new PersistenceUnitBindingSourceDescription(puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         }

@@ -31,6 +31,7 @@ import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.processor.JPAAnnotationParseProcessor;
 import org.jboss.as.jpa.processor.JPADependencyProcessor;
+import org.jboss.as.jpa.processor.PersistenceRefProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitDeploymentProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitParseProcessor;
 import org.jboss.as.server.BootOperationContext;
@@ -76,6 +77,7 @@ class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_ANNOTATION, new JPAAnnotationParseProcessor());
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_REF, new PersistenceRefProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor());
         }
 
