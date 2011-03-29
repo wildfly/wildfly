@@ -139,7 +139,7 @@
         <version.org.jboss.osgi.framework>1.0.0.Alpha23</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.jmx>1.0.9</version.org.jboss.osgi.jmx>
         <version.org.jboss.osgi.resolver>1.0.9</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.spi>1.0.25</version.org.jboss.osgi.spi>
+        <version.org.jboss.osgi.spi>1.0.26</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>

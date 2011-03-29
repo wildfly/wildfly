@@ -35,12 +35,8 @@ class OSGiSubsystemProviders {
     static final String RESOURCE_NAME = OSGiSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
-
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
             final ModelNode node = new ModelNode();
-            // TODO
             return node;
         }
     };
@@ -48,10 +44,8 @@ class OSGiSubsystemProviders {
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
+            getResourceBundle(locale);
             final ModelNode node = new ModelNode();
-            // TODO
             return node;
         }
     };

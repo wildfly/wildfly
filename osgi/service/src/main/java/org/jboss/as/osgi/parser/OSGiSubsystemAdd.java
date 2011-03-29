@@ -21,11 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -40,14 +35,19 @@ import static org.jboss.as.osgi.parser.CommonAttributes.START;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.osgi.deployment.DeployerServiceIntegration;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.osgi.service.BundleContextService;
-import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
@@ -83,25 +83,25 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         populateSubModel(context.getSubModel(), operation);
 
         if (context instanceof BootOperationContext) {
-            log.infof("Activating OSGi Subsystem");
             final BootOperationContext updateContext = (BootOperationContext) context;
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-
+                    log.infof("Activating OSGi Subsystem");
+                    long begin = System.currentTimeMillis();
                     SubsystemState subsystemState = createSubsystemState(operation);
 
                     // TODO: Hack, which registers the framework module with the {@link ModularURLStreamHandlerFactory}
-                    // TODO - use an actually secure sys prop security action method
                     String value = SecurityActions.getSystemProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
-                    if (!value.equals("org.jboss.osgi.framework"))
+                    if (!value.equals("org.jboss.osgi.framework")) {
                         value = value + "|org.jboss.osgi.framework";
+                    }
                     SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
 
+                    ServiceTarget target = context.getServiceTarget();
                     Activation policy = subsystemState.getActivationPolicy();
-                    BundleManagerService.addService(target, subsystemState);
-                    FrameworkService.addService(target, subsystemState);
                     BundleContextService.addService(target, policy);
+                    DeployerServiceIntegration.addService(target);
+                    FrameworkService.addService(target, subsystemState);
                     PackageAdminService.addService(target);
                     StartLevelService.addService(target);
 
@@ -109,6 +109,9 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
 
                     new OSGiDeploymentActivator().activate(updateContext);
                     resultHandler.handleResultComplete();
+
+                    long end = System.currentTimeMillis();
+                    log.debugf("Activated OSGi Subsystem in %dms", end - begin);
                 }
             });
         } else {

@@ -102,31 +102,36 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         assertNotNull("Deployment name not null", apiDeploymentName);
         try {
             // Register the API module with the OSGi layer
-            registerModule(ModuleIdentifier.create("deployment." + apiDeploymentName));
-
-            // Install the bundle that contains the target service
-            InputStream input = deploymentProvider.getClientDeploymentAsStream(TARGET_BUNDLE_NAME);
-            Bundle targetBundle = context.installBundle(TARGET_BUNDLE_NAME, input);
-            assertEquals("Bundle INSTALLED", Bundle.INSTALLED, targetBundle.getState());
-            try {
-                // Start the target service bundle
-                targetBundle.start();
-                assertEquals("Bundle ACTIVE", Bundle.ACTIVE, targetBundle.getState());
-
-                // Deploy the non-osgi client module
-                Archive<?> clientArchive = deploymentProvider.getClientDeployment(CLIENT_MODULE_NAME);
-                String clientDeploymentName = archiveDeployer.deploy(clientArchive);
-                assertNotNull("Deployment name not null", clientDeploymentName);
+            Bundle apiBundle = registerModule(ModuleIdentifier.create("deployment." + apiDeploymentName));
+            try
+            {
+                // Install the bundle that contains the target service
+                InputStream input = deploymentProvider.getClientDeploymentAsStream(TARGET_BUNDLE_NAME);
+                Bundle targetBundle = context.installBundle(TARGET_BUNDLE_NAME, input);
+                assertEquals("Bundle INSTALLED", Bundle.INSTALLED, targetBundle.getState());
                 try {
-                    // Wait for the client service to come up
-                    assertServiceState(ServiceName.parse("jboss.osgi.xservice.invoker"), State.UP, 5000);
+                    // Start the target service bundle
+                    targetBundle.start();
+                    assertEquals("Bundle ACTIVE", Bundle.ACTIVE, targetBundle.getState());
+
+                    // Deploy the non-osgi client module
+                    Archive<?> clientArchive = deploymentProvider.getClientDeployment(CLIENT_MODULE_NAME);
+                    String clientDeploymentName = archiveDeployer.deploy(clientArchive);
+                    assertNotNull("Deployment name not null", clientDeploymentName);
+                    try {
+                        // Wait for the client service to come up
+                        assertServiceState(ServiceName.parse("jboss.osgi.xservice.invoker"), State.UP, 5000);
+                    } finally {
+                        // Undeploy the client module
+                        archiveDeployer.undeploy(clientDeploymentName);
+                    }
                 } finally {
-                    // Undeploy the client module
-                    archiveDeployer.undeploy(clientDeploymentName);
+                    // Uninstall the target bundle
+                    targetBundle.uninstall();
                 }
-            } finally {
-                // Uninstall the target bundle
-                targetBundle.uninstall();
+            }
+            finally {
+                apiBundle.uninstall();
             }
         } finally {
             // Undeploy the API module

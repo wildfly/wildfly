@@ -28,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.osgi.service.BundleContextService;
-import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
@@ -37,7 +36,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-import org.jboss.osgi.framework.bundle.BundleManager;
+import org.jboss.osgi.framework.FrameworkExt;
 import org.osgi.framework.Bundle;
 
 /**
@@ -50,7 +49,7 @@ abstract class AbstractXServiceTestCase {
 
     abstract ServiceContainer getServiceContainer();
 
-    long registerModule(ModuleIdentifier moduleId) throws Exception {
+    Bundle registerModule(ModuleIdentifier moduleId) throws Exception {
         final ServiceController<?> bundleContextService = getServiceContainer().getRequiredService(BundleContextService.SERVICE_NAME);
         if (bundleContextService.getMode() == Mode.ON_DEMAND && bundleContextService.getState() == State.DOWN) {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -75,13 +74,12 @@ abstract class AbstractXServiceTestCase {
                 throw new IllegalStateException("BundleContextService not started");
         }
 
-        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(BundleManagerService.SERVICE_NAME);
-        BundleManager bundleManager = (BundleManager) bundleManagerService.getValue();
+        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(FrameworkExt.SERVICE_NAME);
+        FrameworkExt bundleManager = (FrameworkExt) bundleManagerService.getValue();
         if (bundleManager == null)
-            throw new IllegalStateException("BundleManagerService not started");
+            throw new IllegalStateException("FrameworkExt not started");
 
-        Bundle bundle = bundleManager.installBundle(moduleId);
-        return bundle.getBundleId();
+        return bundleManager.installBundle(moduleId);
     }
 
     void assertServiceState(ServiceName serviceName, State expState, long timeout) throws Exception {

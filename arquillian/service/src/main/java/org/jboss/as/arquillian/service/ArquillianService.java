@@ -269,7 +269,7 @@ public class ArquillianService implements Service<ArquillianService> {
                 ServiceController<?> controller = serviceContainer.getRequiredService(BundleContextService.SERVICE_NAME);
                 if (controller.getState() != State.UP) {
                     controller.setMode(Mode.ACTIVE);
-                    assertServiceState(BundleContextService.SERVICE_NAME, State.UP, 5000);
+                    assertServiceState(BundleContextService.SERVICE_NAME, State.UP, 10000);
                 }
                 BundleContextAssociation.setBundleContext((BundleContext) controller.getValue());
             }

@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.osgi.service.BundleContextService;
-import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
@@ -48,7 +47,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.bundle.BundleManager;
+import org.jboss.osgi.framework.FrameworkExt;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -70,7 +69,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
 
     private final Deployment deployment;
     private InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    private InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
+    private InjectedValue<FrameworkExt> injectedBundleManager = new InjectedValue<FrameworkExt>();
 
     private OSGiDeploymentService(Deployment deployment) {
         this.deployment = deployment;
@@ -84,7 +83,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
-        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
+        serviceBuilder.addDependency(FrameworkExt.SERVICE_NAME, FrameworkExt.class, service.injectedBundleManager);
         serviceBuilder.addDependency(Services.deploymentUnitName(contextName));
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
@@ -127,7 +126,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         try {
             boolean autoStart = deployment.isAutoStart();
             deployment.setAutoStart(false);
-            BundleManager bundleManager = injectedBundleManager.getValue();
+            FrameworkExt bundleManager = injectedBundleManager.getValue();
             bundleManager.installBundle(deployment);
             deployment.setAutoStart(autoStart);
         } catch (Throwable t) {
@@ -143,7 +142,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
     public synchronized void stop(StopContext context) {
         log.tracef("Uninstalling deployment: %s", deployment);
         try {
-            BundleManager bundleManager = injectedBundleManager.getValue();
+            FrameworkExt bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);

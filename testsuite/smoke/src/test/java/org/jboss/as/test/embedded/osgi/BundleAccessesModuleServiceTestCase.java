@@ -87,7 +87,6 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     @Inject
     public BundleContext context;
 
-
     @Override
     ServiceContainer getServiceContainer() {
         return serviceContainer;
@@ -105,19 +104,22 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
             assertServiceState(targetService, State.UP, 5000);
 
             // Register the target module with the OSGi layer
-            registerModule(ModuleIdentifier.create("deployment." + targetDeploymentName));
-
-            // Install the client bundle
-            InputStream input = deploymentProvider.getClientDeploymentAsStream(CLIENT_BUNDLE_NAME);
-            Bundle clientBundle = context.installBundle(CLIENT_BUNDLE_NAME, input);
-            assertEquals("Bundle INSTALLED", Bundle.INSTALLED, clientBundle.getState());
+            Bundle targetBundle = registerModule(ModuleIdentifier.create("deployment." + targetDeploymentName));
             try {
-                // Start the client bundle, which calls the target service.
-                clientBundle.start();
-                assertEquals("Bundle ACTIVE", Bundle.ACTIVE, clientBundle.getState());
+                // Install the client bundle
+                InputStream input = deploymentProvider.getClientDeploymentAsStream(CLIENT_BUNDLE_NAME);
+                Bundle clientBundle = context.installBundle(CLIENT_BUNDLE_NAME, input);
+                assertEquals("Bundle INSTALLED", Bundle.INSTALLED, clientBundle.getState());
+                try {
+                    // Start the client bundle, which calls the target service.
+                    clientBundle.start();
+                    assertEquals("Bundle ACTIVE", Bundle.ACTIVE, clientBundle.getState());
+                } finally {
+                    // Uninstall the client bundle
+                    clientBundle.uninstall();
+                }
             } finally {
-                // Uninstall the client bundle
-                clientBundle.uninstall();
+                targetBundle.uninstall();
             }
         } finally {
             // Undeploy the target module

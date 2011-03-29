@@ -22,31 +22,17 @@
 
 package org.jboss.as.osgi.service;
 
-import org.jboss.as.osgi.deployment.DeploymentHolderService;
-import org.jboss.as.osgi.deployment.ModuleRegistrationService;
-import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.as.server.deployment.Services;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceNotFoundException;
-import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.bundle.AbstractUserBundle;
-import org.jboss.osgi.framework.bundle.BundleManager;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 import org.osgi.framework.launch.Framework;
 
 /**
@@ -59,78 +45,28 @@ public class BundleContextService implements Service<BundleContext> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "context");
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
-
-    private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<Framework> injectedFramework = new InjectedValue<Framework>();
-    private BundleContext sysContext;
+    private BundleContext systemContext;
 
     public static void addService(final ServiceTarget target, Activation policy) {
         BundleContextService service = new BundleContextService();
         ServiceBuilder<?> serviceBuilder = target.addService(BundleContextService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, Framework.class, service.injectedFramework);
         serviceBuilder.setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE);
         serviceBuilder.install();
     }
 
-    public static BundleContext getServiceValue(ServiceContainer container) {
-        try {
-            ServiceController<?> controller = container.getRequiredService(SERVICE_NAME);
-            return (BundleContext) controller.getValue();
-        } catch (ServiceNotFoundException ex) {
-            throw new IllegalStateException("Cannot obtain required service: " + SERVICE_NAME);
-        }
-    }
-
     public synchronized void start(final StartContext context) throws StartException {
-        sysContext = injectedFramework.getValue().getBundleContext();
-
-        // Register a {@link BundleListener} that installs a {@link ServiceListener}
-        // with every Non-OSGi {@link DeploymentService}
-        BundleListener bundleListener = new BundleListener() {
-
-            @Override
-            public void bundleChanged(BundleEvent event) {
-                if (event.getType() == BundleEvent.INSTALLED) {
-
-                    AbstractUserBundle userBundle;
-                    try {
-                        userBundle = AbstractUserBundle.assertBundleState(event.getBundle());
-                    } catch (RuntimeException ex) {
-                        // ignore
-                        return;
-                    }
-
-                    Deployment dep = userBundle.getDeployment();
-                    String contextName = DeploymentHolderService.getContextName(dep);
-
-                    // Check if we have an {@link OSGiDeploymentService}
-                    ServiceContainer container = context.getController().getServiceContainer();
-                    ServiceName osgiDeploymentService = OSGiDeploymentService.getServiceName(contextName);
-                    ServiceName deploymentService = Services.deploymentUnitName(contextName);
-                    if (container.getService(deploymentService) != null && container.getService(osgiDeploymentService) == null) {
-                        ServiceName serviceName = ModuleRegistrationService.getServiceName(contextName);
-                        try {
-                            log.tracef("Register service: %s", serviceName);
-                            ServiceTarget serviceTarget = container.subTarget();
-                            ModuleRegistrationService.addService(serviceTarget, dep, contextName);
-                        } catch (ServiceRegistryException ex) {
-                            throw new IllegalStateException("Cannot register service: " + serviceName, ex);
-                        }
-                    }
-                }
-            }
-        };
-        sysContext.addBundleListener(bundleListener);
+        Framework framework = injectedFramework.getValue();
+        systemContext = framework.getBundleContext();
     }
 
     public synchronized void stop(StopContext context) {
-        sysContext = null;
+        systemContext = null;
     }
 
     @Override
     public BundleContext getValue() throws IllegalStateException {
-        return sysContext;
+        return systemContext;
     }
 }

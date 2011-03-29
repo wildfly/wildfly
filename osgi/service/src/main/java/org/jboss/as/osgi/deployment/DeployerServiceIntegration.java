@@ -22,6 +22,7 @@
 package org.jboss.as.osgi.deployment;
 
 import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,9 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.server.ServerController;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -42,42 +46,58 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.SystemDeployerService;
-import org.jboss.osgi.framework.bundle.BundleManager;
-import org.jboss.osgi.framework.plugin.AbstractDeployerServicePlugin;
-import org.jboss.osgi.framework.plugin.DeployerServicePlugin;
-import org.jboss.osgi.framework.plugin.ServiceManagerPlugin;
+import org.jboss.osgi.framework.DeployerServiceProvider;
+import org.jboss.osgi.framework.FrameworkExt;
+import org.jboss.osgi.framework.FrameworkModuleProvider;
+import org.jboss.osgi.framework.SystemBundleProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 
 /**
- * The {@link DeployerServicePlugin} that delegates to the {@link ServerDeploymentManager}.
+ * The {@link DeployerService} that delegates to the {@link ServerDeploymentManager}.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class DeployerServicePluginIntegration extends AbstractDeployerServicePlugin {
+public class DeployerServiceIntegration implements DeployerServiceProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
+    private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
+    private final InjectedValue<FrameworkExt> injectedBundleManager = new InjectedValue<FrameworkExt>();
+    private final InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
     private ServerDeploymentManager deploymentManager;
-    private ServiceContainer serviceContainer;
+    private DeployerService delegate;
 
-    public DeployerServicePluginIntegration(BundleManager bundleManager, ServiceContainer serviceContainer, ServerDeploymentManager deploymentManager) {
-        super(bundleManager);
-        this.deploymentManager = deploymentManager;
-        this.serviceContainer = serviceContainer;
+    public static void addService(final ServiceTarget target) {
+        DeployerServiceIntegration service = new DeployerServiceIntegration();
+        ServiceBuilder<?> serviceBuilder = target.addService(SERVICE_NAME, service);
+        serviceBuilder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
+        serviceBuilder.addDependency(SystemBundleProvider.SERVICE_NAME, Bundle.class, service.injectedSystemBundle);
+        serviceBuilder.addDependency(FrameworkExt.SERVICE_NAME, FrameworkExt.class, service.injectedBundleManager);
+        serviceBuilder.addDependency(FrameworkModuleProvider.SERVICE_NAME);
+        serviceBuilder.setInitialMode(Mode.PASSIVE);
+        serviceBuilder.install();
+    }
+
+    private DeployerServiceIntegration() {
     }
 
     @Override
-    protected DeployerService getDeployerService(final BundleContext context) {
-
-        return new SystemDeployerService(context) {
+    public void start(final StartContext context) throws StartException {
+        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        final BundleContext systemContext = injectedSystemBundle.getValue().getBundleContext();
+        deploymentManager = new ModelControllerServerDeploymentManager(injectedServerController.getValue());
+        delegate = new SystemDeployerService(systemContext) {
 
             @Override
             protected Bundle installBundle(Deployment dep) throws BundleException {
@@ -147,8 +167,7 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                     throw ex;
                 } catch (Exception ex) {
                     throw new BundleException("Cannot deploy bundle: " + dep, ex);
-                }
-                finally {
+                } finally {
                     DeploymentHolderService.removeService(serviceContainer, contextName);
                 }
 
@@ -167,7 +186,8 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                     ServiceName serviceName = OSGiDeploymentService.getServiceName(contextName);
                     ServiceController<?> controller = serviceContainer.getService(serviceName);
                     if (controller == null) {
-                        getBundleManager().uninstallBundle(dep);
+                        FrameworkExt bundleManager = injectedBundleManager.getValue();
+                        bundleManager.uninstallBundle(dep);
                         return;
                     }
 
@@ -220,6 +240,20 @@ public class DeployerServicePluginIntegration extends AbstractDeployerServicePlu
                 }
             }
         };
+
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
+        systemContext.registerService(DeployerService.class.getName(), delegate, props);
+    }
+
+    @Override
+    public void stop(StopContext arg0) {
+        delegate = null;
+    }
+
+    @Override
+    public DeployerService getValue() throws IllegalStateException, IllegalArgumentException {
+        return delegate;
     }
 
     private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction action) throws Exception {
