@@ -1,5 +1,6 @@
-Synopsis:	undeploy deployment_name
+Synopsis:	undeploy name
 
 Description:	undeploys the application with the given name.
 
-Arguments:	deployment_name	- the application to undeploy.
+Arguments:	name	- the application to undeploy. The name here is equivalent to the name argument
+					in the deploy command.

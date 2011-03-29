@@ -49,21 +49,49 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(args == null) {
-            ctx.printLine("The argument is missing.");
+            ctx.printLine("Required argument is missing.");
             return;
         }
 
-        File f = new File(args);
+        final String filePath;
+        final String name;
+        final String runtimeName;
+
+        int spaceInd = args.indexOf(' ');
+        if(spaceInd < 0) {
+            filePath = args;
+        } else {
+            filePath = args.substring(0, spaceInd);
+        }
+
+        File f = new File(filePath);
         if(!f.exists()) {
             ctx.printLine("The path doesn't exist: " + f.getAbsolutePath());
             return;
         }
 
-        final String name = f.getName();
-        if(name.isEmpty()) {
-            ctx.printLine("The path is empty.");
+        if(spaceInd < 0) {
+            name = f.getName();
+            runtimeName = null;
+        } else {
+            char ch = args.charAt(spaceInd++);
+            while(spaceInd < args.length() && Character.isWhitespace(ch)) {
+                ch = args.charAt(spaceInd++);
+            }
+            if(spaceInd == args.length()) {
+                name = f.getName();
+                runtimeName = null;
+            } else {
+                int nextSpace = args.indexOf(' ', spaceInd + 1);
+                if(nextSpace < 0) {
+                    name = args.substring(spaceInd - 1, args.length());
+                    runtimeName = null;
+                } else {
+                    name = args.substring(spaceInd - 1, nextSpace);
+                    runtimeName = args.substring(nextSpace).trim();
+                }
+            }
         }
-        final String runtimeName = name;
 
         final String url;
         try {
@@ -78,7 +106,9 @@ public class DeployHandler extends CommandHandlerWithHelp {
         // upload
         builder.setOperationName("upload-deployment-url");
         builder.addProperty("name", name);
-        builder.addProperty("runtime-name", runtimeName);
+        if(runtimeName != null) {
+            builder.addProperty("runtime-name", runtimeName);
+        }
         builder.addProperty("url", url);
         ModelNode result;
         try {

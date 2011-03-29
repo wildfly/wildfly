@@ -1,9 +1,14 @@
-Synopsis:	deploy file_path
+Synopsis:	deploy file_path [name] [runtime_name]
 
 Description:	deploys the application designated by the file_path.
-				The argument can be an absolute or a relative to the current directory path.
-				File name tab-completion is supported for the argument.
+				File name tab-completion is supported for the file_path.
 
 Arguments:
 
-	file_path	- the application to deploy.
+	file_path		- the path to the application to deploy.
+					The path can be either absolute or relative to the current directory.
+
+	name			- optional, the unique name for the deployment. If not provided,
+					the file name will be used.
+				
+	runtime_name	- optional, the runtime name for the deployment.
