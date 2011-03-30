@@ -22,19 +22,30 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
-import org.jboss.as.ejb3.EjbJarDescription;
+import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.component.InterceptorMethodDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
+import org.jboss.metadata.ejb.spec.AroundInvokesMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
+import org.jboss.metadata.ejb.spec.InterceptorMetaData;
+import org.jboss.metadata.ejb.spec.InterceptorsMetaData;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
+import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
+import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
+
+import javax.interceptor.InvocationContext;
 
 /**
  * User: jpai
@@ -95,6 +106,56 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
             return null;
         }
         return methodParametersMetaData.toArray(new String[0]);
+    }
+
+    protected void processInterceptors(EnterpriseBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription) {
+
+        EjbJarMetaData ejbJarMetaData = enterpriseBean.getEjbJarMetaData();
+        String ejbName = enterpriseBean.getEjbName();
+        InterceptorsMetaData applicableInterceptors = EjbJarMetaData.getInterceptors(ejbName, ejbJarMetaData);
+        if (applicableInterceptors != null) {
+            for (InterceptorMetaData interceptor : applicableInterceptors) {
+                // apply the interceptor
+                ejbComponentDescription.addClassInterceptor(new InterceptorDescription(interceptor.getInterceptorClass()));
+
+                // around-invoke(s) of the interceptor configured (if any) in the deployment descriptor
+                AroundInvokesMetaData aroundInvokes = interceptor.getAroundInvokes();
+                if (aroundInvokes != null) {
+                    for (AroundInvokeMetaData aroundInvoke : aroundInvokes) {
+                        String methodName = aroundInvoke.getMethodName();
+                        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, new Class<?>[]{InvocationContext.class});
+                        InterceptorMethodDescription aroundInvokeIntereptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // add it to the session bean description
+                        ejbComponentDescription.addAroundInvokeMethod(aroundInvokeIntereptor);
+                    }
+                }
+
+                // post-construct(s) of the interceptor configured (if any) in the deployment descriptor
+                LifecycleCallbacksMetaData postConstructs = interceptor.getPostConstructs();
+                if (postConstructs != null) {
+                    for (LifecycleCallbackMetaData postConstruct : postConstructs) {
+                        String methodName = postConstruct.getMethodName();
+                        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
+                        InterceptorMethodDescription postConstructInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // add it to the session bean description
+                        ejbComponentDescription.addPostConstructMethod(postConstructInterceptor);
+                    }
+                }
+
+                // pre-destroy(s) of the interceptor configured (if any) in the deployment descriptor
+                LifecycleCallbacksMetaData preDestroys = interceptor.getPreDestroys();
+                if (preDestroys != null) {
+                    for (LifecycleCallbackMetaData preDestroy : preDestroys) {
+                        String methodName = preDestroy.getMethodName();
+                        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
+                        InterceptorMethodDescription preDestroyInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // add it to the session bean description
+                        ejbComponentDescription.addPreDestroyMethod(preDestroyInterceptor);
+                    }
+                }
+            }
+        }
+
     }
 
     @Override

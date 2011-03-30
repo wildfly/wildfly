@@ -46,6 +46,20 @@
             <session-type>Stateless</session-type>
         </session>
     </enterprise-beans>
+    
+    <interceptors>
+        <interceptor>
+            <interceptor-class>org.jboss.as.test.embedded.demos.ejb3.dd.SimpleInterceptor</interceptor-class>
+        </interceptor>
+    </interceptors>
+
+    <assembly-descriptor>
+        <interceptor-binding>
+            <ejb-name>PartialDDSLSB</ejb-name>
+            <interceptor-class>org.jboss.as.test.embedded.demos.ejb3.dd.SimpleInterceptor</interceptor-class>
+        </interceptor-binding>
+    </assembly-descriptor>
+    
 </ejb-jar>
 
 
