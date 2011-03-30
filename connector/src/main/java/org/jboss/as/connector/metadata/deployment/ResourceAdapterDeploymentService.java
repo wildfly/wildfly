@@ -38,8 +38,13 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
+import org.jboss.jca.common.api.metadata.ra.AdminObject;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
+import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.ra.Connector.Version;
 import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
+import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -70,7 +75,10 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -282,7 +290,99 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
-            return true;
+            if (cmd != null) {
+                Set<String> raMcfClasses = new HashSet<String>();
+                Set<String> raAoClasses = new HashSet<String>();
+
+                if (cmd.getVersion() == Version.V_10) {
+                    ResourceAdapter10 ra10 = (ResourceAdapter10) cmd.getResourceadapter();
+                    raMcfClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
+                } else {
+                    ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
+                    if (ra != null && ra.getOutboundResourceadapter() != null &&
+                        ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
+                        List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
+                        if (cdMetas.size() > 0) {
+                            for (ConnectionDefinition cdMeta : cdMetas) {
+                               raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
+                            }
+                        }
+                    }
+
+                    if (ra != null && ra.getAdminObjects() != null) {
+                        List<AdminObject> aoMetas = ra.getAdminObjects();
+                        if (aoMetas.size() > 0) {
+                           for (AdminObject aoMeta : aoMetas) {
+                              raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
+                           }
+                        }
+                    }
+
+                    // Pure inflow
+                    if (raMcfClasses.size() == 0 && raAoClasses.size() == 0)
+                       return true;
+                }
+
+                if (ijmd != null) {
+                    Set<String> ijMcfClasses = new HashSet<String>();
+                    Set<String> ijAoClasses = new HashSet<String>();
+
+                    boolean mcfSingle = false;
+                    boolean aoSingle = false;
+
+                    boolean mcfOk = true;
+                    boolean aoOk = true;
+
+                    if (ijmd.getConnectionDefinitions() != null) {
+                        for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
+                            String clz = def.getClassName();
+
+                            if (clz == null) {
+                               if (raMcfClasses.size() == 1) {
+                                  mcfSingle = true;
+                               }
+                            } else {
+                               ijMcfClasses.add(clz);
+                            }
+                        }
+                    }
+
+                    if (!mcfSingle) {
+                       Iterator<String> it = raMcfClasses.iterator();
+                       while (mcfOk && it.hasNext()) {
+                          String clz = it.next();
+                          if (!ijMcfClasses.contains(clz))
+                             mcfOk = false;
+                       }
+                    }
+
+                    if (ijmd.getAdminObjects() != null) {
+                        for (org.jboss.jca.common.api.metadata.common.CommonAdminObject def : ijmd.getAdminObjects()) {
+                           String clz = def.getClassName();
+                           if (clz == null) {
+                              if (raAoClasses.size() == 1) {
+                                 aoSingle = true;
+                              }
+                           } else {
+                              ijAoClasses.add(clz);
+                           }
+                        }
+                    }
+
+                    if (!aoSingle) {
+                        Iterator<String> it = raAoClasses.iterator();
+                        while (aoOk && it.hasNext()) {
+                           String clz = it.next();
+                           if (!ijAoClasses.contains(clz))
+                              aoOk = false;
+                        }
+                    }
+
+                    return mcfOk && aoOk;
+                }
+            }
+
+            return false;
         }
 
         @Override
