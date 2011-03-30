@@ -23,28 +23,25 @@
 package org.jboss.as.server.deployment.scanner;
 
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Toggle the 'auto-deploy-zipped' attribute on a {@code DeploymentScanner}.
+ * Update the 'deployment-timeout' attribute on a {@code DeploymentScanner}.
  *
- * @author Brian Stansberry
+ * @author John Bailey
  */
-class WriteAutoDeployZipAttributeHandler extends AbstractWriteAttributeHandler {
+public class WriteDeploymentTimeoutAttributeHandler extends AbstractWriteAttributeHandler {
+    static final WriteDeploymentTimeoutAttributeHandler INSTANCE = new WriteDeploymentTimeoutAttributeHandler();
 
-    static final WriteAutoDeployZipAttributeHandler INSTANCE = new WriteAutoDeployZipAttributeHandler();
-
-    private WriteAutoDeployZipAttributeHandler() {
-        super(new ModelTypeValidator(ModelType.BOOLEAN, false, true), new ModelTypeValidator(ModelType.BOOLEAN, false, false));
+    public WriteDeploymentTimeoutAttributeHandler() {
+        super(new ModelTypeValidator(ModelType.LONG, false, true), new ModelTypeValidator(ModelType.LONG, false, false));
     }
 
-    @Override
     protected void updateScanner(final DeploymentScanner scanner, final ModelNode newValue) {
-
-        boolean enable = newValue.resolve().asBoolean();
-
-        scanner.setAutoDeployZippedContent(enable);
+        final long timeout = newValue.resolve().asLong();
+        scanner.setDeploymentTimeout(timeout);
     }
 }

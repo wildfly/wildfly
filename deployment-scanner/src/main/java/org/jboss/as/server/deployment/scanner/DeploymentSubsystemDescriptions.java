@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -132,6 +132,10 @@ public class DeploymentSubsystemDescriptions {
         root.get(ATTRIBUTES, AUTO_DEPLOY_EXPLODED, DESCRIPTION).set(bundle.getString("scanner.auto.deploy.exploded"));
         root.get(ATTRIBUTES, AUTO_DEPLOY_EXPLODED, REQUIRED).set(false);
         root.get(ATTRIBUTES, AUTO_DEPLOY_EXPLODED, DEFAULT).set(false);
+        root.get(ATTRIBUTES, DEPLOYMENT_TIMEOUT, TYPE).set(ModelType.LONG);
+        root.get(ATTRIBUTES, DEPLOYMENT_TIMEOUT, DESCRIPTION).set(bundle.getString("scanner.deployment.timeout"));
+        root.get(ATTRIBUTES, DEPLOYMENT_TIMEOUT, REQUIRED).set(false);
+        root.get(ATTRIBUTES, DEPLOYMENT_TIMEOUT, DEFAULT).set(60L);
 
         root.get(OPERATIONS);
 
@@ -169,6 +173,11 @@ public class DeploymentSubsystemDescriptions {
         operation.get(REQUEST_PROPERTIES, AUTO_DEPLOY_EXPLODED, DESCRIPTION).set(bundle.getString("scanner.auto.deploy.exploded"));
         operation.get(REQUEST_PROPERTIES, AUTO_DEPLOY_EXPLODED, REQUIRED).set(false);
         operation.get(REQUEST_PROPERTIES, AUTO_DEPLOY_EXPLODED, DEFAULT).set(false);
+        operation.get(REQUEST_PROPERTIES, DEPLOYMENT_TIMEOUT, TYPE).set(ModelType.LONG);
+        operation.get(REQUEST_PROPERTIES, DEPLOYMENT_TIMEOUT, DESCRIPTION).set(bundle.getString("scanner.deployment.timeout"));
+        operation.get(REQUEST_PROPERTIES, DEPLOYMENT_TIMEOUT, REQUIRED).set(false);
+        operation.get(REQUEST_PROPERTIES, DEPLOYMENT_TIMEOUT, DEFAULT).set(60L);
+
         operation.get(REPLY_PROPERTIES).setEmptyObject();
 
         return operation;

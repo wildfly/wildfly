@@ -81,6 +81,9 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, DescriptionProvi
         final Boolean autoDeployExp =  operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED)
                     ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean()
                     : null;
+        final Long deploymentTimeout =  operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT)
+                    ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong()
+                    : null;
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
@@ -92,6 +95,7 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, DescriptionProvi
         if (autoDeployZip != null) subModel.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(autoDeployZip);
         if (autoDeployExp != null) subModel.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExp);
         if(relativeTo != null) subModel.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
+        if (deploymentTimeout != null) subModel.get(CommonAttributes.DEPLOYMENT_TIMEOUT).set(deploymentTimeout);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -99,7 +103,7 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, DescriptionProvi
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS,
-                                                        autoDeployZip, autoDeployExp, enabled);
+                                                        autoDeployZip, autoDeployExp, enabled, deploymentTimeout);
                     resultHandler.handleResultComplete();
                 }
             });

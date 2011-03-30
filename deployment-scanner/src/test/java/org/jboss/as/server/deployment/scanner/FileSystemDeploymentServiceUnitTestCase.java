@@ -3,6 +3,12 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeoutException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -864,11 +870,41 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(pending.exists());
     }
 
+    @Test
+    public void testDeploymentTimeout() throws Exception {
+        File deployment = new File(tmpDir, "foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        testSupport.createZip(deployment, 0, false, false, true, true);
+
+        TesteeSet ts = createTestee(new DiscardTaskExecutor() {
+            public <T> Future<T> submit(Callable<T> tCallable) {
+                return new TimeOutFuture<T>(5, tCallable);
+            }
+        });
+
+        ts.testee.setDeploymentTimeout(5);
+
+        ts.testee.scan();
+
+        assertFalse(deployed.exists());
+        assertTrue(failed.exists());
+    }
+
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
         return createTestee(new MockServerController(new MockDeploymentRepository(), existingContent));
     }
 
+    private TesteeSet createTestee(final ScheduledExecutorService executorService, final String... existingContent) throws OperationFailedException {
+        return createTestee(new MockServerController(new MockDeploymentRepository(), existingContent), executorService);
+    }
+
     private TesteeSet createTestee(final MockServerController sc) throws OperationFailedException {
+        return createTestee(sc, executor);
+    }
+
+    private TesteeSet createTestee(final MockServerController sc, final ScheduledExecutorService executor) throws OperationFailedException {
         final MockDeploymentRepository repo = new MockDeploymentRepository();
         final FileSystemDeploymentService testee = new FileSystemDeploymentService(tmpDir, sc, executor, repo);
         testee.startScanner();
@@ -1150,10 +1186,81 @@ public class FileSystemDeploymentServiceUnitTestCase {
             return null;
         }
 
+        public <T> Future<T> submit(Callable<T> tCallable) {
+            return new CallOnGetFuture<T>(tCallable);
+        }
+
         void clear() {
             tasks.clear();
         }
+    }
 
+    private static class CallOnGetFuture<T> implements Future<T> {
+        final Callable<T> callable;
 
+        private CallOnGetFuture(Callable<T> callable) {
+            this.callable = callable;
+        }
+
+        public boolean cancel(boolean b) {
+            return false;
+        }
+
+        public boolean isCancelled() {
+            return false;
+        }
+
+        public boolean isDone() {
+            return false;
+        }
+
+        public T get() throws InterruptedException, ExecutionException {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                // Ignore
+                return null;
+            }
+        }
+
+        public T get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+            return get();
+        }
+    }
+
+    private static class TimeOutFuture<T> implements Future<T> {
+        final long expectedTimeout;
+        final Callable<T> callable;
+
+        private TimeOutFuture(long expectedTimeout, Callable<T> callable) {
+            this.expectedTimeout = expectedTimeout;
+            this.callable = callable;
+        }
+
+        public boolean cancel(boolean b) {
+            return false;
+        }
+
+        public boolean isCancelled() {
+            return false;
+        }
+
+        public boolean isDone() {
+            return false;
+        }
+
+        public T get() throws InterruptedException, ExecutionException {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                // Ignore
+                return null;
+            }
+        }
+
+        public T get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+            assertEquals( "Should use the configured timeout", expectedTimeout, l);
+            throw new TimeoutException();
+        }
     }
 }

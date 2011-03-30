@@ -100,4 +100,10 @@ public interface DeploymentScanner {
      */
     void setAutoDeployExplodedContent(boolean autoDeployExploded) ;
 
+    /**
+     * Set the timeout used for deployments.
+     *
+     * @param timeout The deployment timeout
+     */
+    void setDeploymentTimeout(long timeout);
 }

@@ -22,10 +22,14 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import org.jboss.as.controller.client.Operation;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -96,6 +100,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
     /** Max period an incomplete auto-deploy file can have no change in content */
     static final long MAX_NO_PROGRESS = 60000;
 
+    /** Default timeout for deployments to execute in seconds*/
+    static final long DEFAULT_DEPLOYMENT_TIMEOUT = 60;
+
     private File deploymentDir;
     private long scanInterval = 0;
     private volatile boolean scanEnabled = false;
@@ -117,6 +124,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private volatile boolean autoDeployZip;
     private volatile boolean autoDeployExploded;
     private volatile long maxNoProgress = MAX_NO_PROGRESS;
+
+    private volatile long deploymentTimeout = DEFAULT_DEPLOYMENT_TIMEOUT;
 
     private final Runnable scanRunnable = new Runnable() {
         @Override
@@ -203,6 +212,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         this.scanInterval = scanInterval;
         startScan();
+    }
+
+    public void setDeploymentTimeout(long deploymentTimeout) {
+        this.deploymentTimeout = deploymentTimeout;
     }
 
     /**
@@ -326,7 +339,23 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
                     while (!updates.isEmpty()) {
                         ModelNode composite = getCompositeUpdate(updates);
-                        final ModelNode results = serverController.execute(OperationBuilder.Factory.create(composite).build());
+
+                        final DeploymentTask deploymentTask = new DeploymentTask(OperationBuilder.Factory.create(composite).build());
+                        final Future<ModelNode> futureResults = scheduledExecutor.submit(deploymentTask);
+                        final ModelNode results;
+                        try {
+                            results = futureResults.get(deploymentTimeout, TimeUnit.SECONDS);
+                        } catch (Exception e) {
+                            futureResults.cancel(true);
+                            final ModelNode failure = new ModelNode();
+                            failure.get(OUTCOME).set(FAILED);
+                            failure.get(FAILURE_DESCRIPTION).set("Failed to execute deployment operation in allowed timeout [" + deploymentTimeout + "]");
+                            for (ScannerTask task : scannerTasks) {
+                                task.handleFailureResult(failure);
+                            }
+                            break;
+                        }
+
                         final List<Property> resultList = results.get(RESULT).asPropertyList();
                         final List<ModelNode> toRetry = new ArrayList<ModelNode>();
                         final List<ScannerTask> retryTasks = new ArrayList<ScannerTask>();
@@ -407,6 +436,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 boolean autoDeployable = child.isDirectory() ? autoDeployExploded : autoDeployZip;
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
+                        final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
+                        if(failedMarker.exists()) {// && child.lastModified() <= failedMarker.lastModified()) {
+                            continue;  // Don't auto-retry failed deployments
+                        }
+
                         DeploymentMarker marker = deployed.get(fileName);
                         long timestamp = getDeploymentTimestamp(child);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -1004,5 +1038,18 @@ class FileSystemDeploymentService implements DeploymentScanner {
     /** Possible overall scan behaviors following return from handling auto-deploy failures */
     private enum ScanStatus {
         ABORT, RETRY, PROCEED
+    }
+
+    private class DeploymentTask implements Callable<ModelNode> {
+        private final Operation deploymentOp;
+
+        private DeploymentTask(final Operation deploymentOp) {
+            this.deploymentOp = deploymentOp;
+        }
+
+        @Override
+        public ModelNode call() {
+            return serverController.execute(deploymentOp);
+        }
     }
 }

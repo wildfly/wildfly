@@ -89,9 +89,17 @@
                 <xs:documentation>
                     Controls whether zipped deployment content should be automatically deployed by
                     the scanner without requiring the user to add a .dodeploy marker file. Setting
-                    this to 'true' is not recommended for anything but basic development scenarios, 
+                    this to 'true' is not recommended for anything but basic development scenarios,
                     as there is no way to ensure that deployment will not occur in the middle of
                     changes to the content.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute default="60" name="deployment-timeout" type="xs:int" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                   Timout used. in seconds, for deployment operations.  If an individual deployment operation
+                   takes longer than this timeout it will be canceled and marked as failed.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

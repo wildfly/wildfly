@@ -103,6 +103,7 @@ public class DeploymentScannerExtension implements Extension {
         scanners.registerReadWriteAttribute(Attribute.SCAN_INTERVAL.getLocalName(), null, WriteScanIntervalAttributeHandler.INSTANCE, Storage.CONFIGURATION);
         scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), null, WriteAutoDeployZipAttributeHandler.INSTANCE, Storage.CONFIGURATION);
         scanners.registerReadWriteAttribute(Attribute.AUTO_DEPLOY_EXPLODED.getLocalName(), null, WriteAutoDeployExplodedAttributeHandler.INSTANCE, Storage.CONFIGURATION);
+        scanners.registerReadWriteAttribute(Attribute.DEPLOYMENT_TIMEOUT.getLocalName(), null, WriteDeploymentTimeoutAttributeHandler.INSTANCE, Storage.CONFIGURATION);
     }
 
     /** {@inheritDoc} */
@@ -151,6 +152,9 @@ public class DeploymentScannerExtension implements Extension {
                         if (configuration.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()) {
                             writer.writeAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), Boolean.TRUE.toString());
                         }
+                    }
+                    if (configuration.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT)) {
+                        writer.writeAttribute(Attribute.DEPLOYMENT_TIMEOUT.getLocalName(), configuration.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asString());
                     }
                 }
                 writer.writeEndElement();
@@ -201,6 +205,7 @@ public class DeploymentScannerExtension implements Extension {
             String relativeTo = null;
             Boolean autoDeployZipped = null;
             Boolean autoDeployExploded = null;
+            Long deploymentTimeout = null;
             final int attrCount = reader.getAttributeCount();
             for (int i = 0; i < attrCount; i++) {
                 requireNoNamespaceAttribute(reader, i);
@@ -235,6 +240,10 @@ public class DeploymentScannerExtension implements Extension {
                         autoDeployExploded = Boolean.parseBoolean(value);
                         break;
                     }
+                    case DEPLOYMENT_TIMEOUT: {
+                        deploymentTimeout = Long.parseLong(value);
+                        break;
+                    }
                     default:
                         throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -256,6 +265,7 @@ public class DeploymentScannerExtension implements Extension {
             if (autoDeployExploded != null) operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(autoDeployExploded.booleanValue());
             if (enabled != null) operation.get(CommonAttributes.SCAN_ENABLED).set(enabled.booleanValue());
             if(relativeTo != null) operation.get(CommonAttributes.RELATIVE_TO).set(relativeTo);
+            if(deploymentTimeout != null) operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).set(deploymentTimeout);
             list.add(operation);
         }
 

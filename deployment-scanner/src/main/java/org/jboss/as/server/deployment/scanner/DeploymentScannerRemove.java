@@ -80,6 +80,9 @@ class DeploymentScannerRemove implements ModelRemoveOperationHandler, Descriptio
             compensatingOperation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).set(subModel.get(CommonAttributes.AUTO_DEPLOY_ZIPPED));
         if (subModel.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED))
             compensatingOperation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).set(subModel.get(CommonAttributes.AUTO_DEPLOY_EXPLODED));
+        if (subModel.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT))
+            compensatingOperation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).set(subModel.get(CommonAttributes.DEPLOYMENT_TIMEOUT));
+
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {

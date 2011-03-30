@@ -55,6 +55,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private boolean enabled;
     private boolean autoDeployZipped;
     private boolean autoDeployExploded;
+    private Long deploymentTimeout;
 
     /** The created scanner. */
     private DeploymentScanner scanner;
@@ -77,11 +78,12 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param path the path
      * @param scanInterval the scan interval
      * @param scanEnabled scan enabled
+     * @param deploymentTimeout the deployment timeout
      * @return
      */
     public static void addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
-            final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled) {
-        final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled);
+            final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout) {
+        final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
 
@@ -103,12 +105,13 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
     DeploymentScannerService(final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
-            final Boolean autoDeployExploded, final Boolean enabled) {
+            final Boolean autoDeployExploded, final Boolean enabled, final Long deploymentTimeout) {
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
         this.unit = unit;
         this.autoDeployZipped = autoDeployZipped == null ? true : autoDeployZipped.booleanValue();
         this.autoDeployExploded = autoDeployExploded == null ? true : autoDeployExploded.booleanValue();
         this.enabled = enabled == null ? true : enabled.booleanValue();
+        this.deploymentTimeout = deploymentTimeout;
     }
 
 
@@ -122,6 +125,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);
+            if(deploymentTimeout != null) {
+                scanner.setDeploymentTimeout(deploymentTimeout);
+            }
 
             if(enabled) {
                 scanner.startScanner();
