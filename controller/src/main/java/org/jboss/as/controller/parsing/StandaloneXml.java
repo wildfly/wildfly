@@ -22,6 +22,26 @@
 
 package org.jboss.as.controller.parsing;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
@@ -38,7 +58,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
@@ -49,28 +68,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A mapper between {@code standalone.xml} and a model.
@@ -360,11 +357,6 @@ public class StandaloneXml extends CommonXml {
             deploymentAdd.get(HASH).set(hash);
             if(startInput != null) deploymentAdd.get(ENABLED).set(startInput);
             list.add(deploymentAdd);
-
-            if (enabled) {
-                final ModelNode deployDeployment = Util.getEmptyOperation("deploy", deploymentAddress);
-                list.add(deployDeployment);
-            }
         }
     }
 

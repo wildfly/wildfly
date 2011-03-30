@@ -18,17 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -47,6 +36,18 @@ import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
 /**
  * Handles addition of a deployment to the model.
@@ -109,24 +110,29 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             } finally {
                 StreamUtils.safeClose(in);
             }
-        } else if (operation.hasDefined(HASH)){
+        } else if (operation.hasDefined(HASH)) {
             hash = operation.get(HASH).asBytes();
         } else {
             throw new OperationFailedException(new ModelNode().set("Neither an attachment nor a hash were passed in"));
         }
 
+        boolean isResultComplete = false;
         if (deploymentRepository.hasDeploymentContent(hash)) {
             ModelNode subModel = context.getSubModel();
             subModel.get(NAME).set(name);
             subModel.get(RUNTIME_NAME).set(runtimeName);
             subModel.get(HASH).set(hash);
             subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
-        }
-        else {
+            if (context.getRuntimeContext() != null && subModel.get(ENABLED).asBoolean()) {
+                DeploymentHandlerUtil.deploy(subModel, context, resultHandler);
+                isResultComplete = true;
+            }
+        } else {
             throw new OperationFailedException(new ModelNode().set(String.format("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash))));
         }
-
-        resultHandler.handleResultComplete();
+        if (!isResultComplete) {
+            resultHandler.handleResultComplete();
+        }
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
     }
 

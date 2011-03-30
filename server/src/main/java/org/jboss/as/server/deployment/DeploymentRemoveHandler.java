@@ -19,22 +19,13 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
@@ -42,6 +33,12 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 /**
  * Handles removal of a deployment from the model.
@@ -70,29 +67,22 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode model = context.getSubModel();
         final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
-
-        if (model.get(ENABLED).asBoolean()) {
-            String msg = String.format("Deployment %s must be undeployed before being removed", model.get(NAME).asString());
-            throw new OperationFailedException(new ModelNode().set(msg));
-        }
-        else {
-            if (context.getRuntimeContext() != null) {
-                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                    public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                        String deploymentUnitName = model.require(NAME).asString();
-                        final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                        final ServiceRegistry serviceRegistry = context.getServiceRegistry();
-                        final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                        if (controller != null) {
-                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                        } else {
-                            resultHandler.handleResultComplete();
-                        }
+        if (context.getRuntimeContext() != null) {
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    String deploymentUnitName = model.require(NAME).asString();
+                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
+                    if (controller != null) {
+                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
                     }
-                });
-            } else {
-                resultHandler.handleResultComplete();
-            }
+                }
+            });
+        } else {
+            resultHandler.handleResultComplete();
         }
 
         return new BasicOperationResult(compensatingOp);
