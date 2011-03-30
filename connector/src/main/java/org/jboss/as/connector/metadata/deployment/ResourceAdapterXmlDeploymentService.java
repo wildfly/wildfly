@@ -90,6 +90,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
     private final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
+    private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
             Connector cmd, IronJacamar ijmd, Module module, String deploymentName, File root) {
@@ -153,6 +154,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
         return config;
+    }
+
+    public Injector<SubjectFactory> getSubjectFactoryInjector() {
+        return subjectFactory;
     }
 
     private class AS7RaDeployer extends AbstractResourceAdapterDeployer {
@@ -353,8 +358,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
         @Override
         protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            /* TODO: We need security context service to implement it! */
-            throw new DeployException("TODO: We need security context service to implement it!");
+            return subjectFactory.getValue();
         }
 
         @Override

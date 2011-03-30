@@ -53,7 +53,8 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
-
+import org.jboss.security.SubjectFactory;
+import org.jboss.as.security.service.SubjectFactoryService;
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
@@ -129,6 +130,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, service.getJndiInjector())
                         .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, service.getTxIntegrationInjector())
                         .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class, service.getConfigInjector())
+                        .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, service.getSubjectFactoryInjector())
                         .addDependency(NamingService.SERVICE_NAME)
                         .setInitialMode(Mode.ACTIVE)
                         .install();
