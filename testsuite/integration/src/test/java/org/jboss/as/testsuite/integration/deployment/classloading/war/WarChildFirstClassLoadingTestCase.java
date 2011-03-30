@@ -19,8 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.rar;
+package org.jboss.as.testsuite.integration.deployment.classloading.war;
 
-public class RarSupportClass {
+import javax.ejb.Stateless;
+
+import junit.framework.Assert;
+
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(Arquillian.class)
+public class WarChildFirstClassLoadingTestCase {
+
+    @Deployment
+    public static Archive<?> deploy() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        war.addClasses(WarChildFirstClassLoadingTestCase.class, Stateless.class);
+        return war;
+    }
+
+    @Test
+    public void testChildFirst() throws ClassNotFoundException {
+        Assert.assertEquals(Stateless.class.getClassLoader(), getClass().getClassLoader());
+    }
 
 }

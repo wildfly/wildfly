@@ -19,12 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.ear;
+package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -32,36 +33,39 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class EarClassPath1TestCase {
+public class EarJbossStructureAdditionalModuleTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class);
-        // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
-        JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
-        libJar.addClasses(TestAA.class, EarClassPath1TestCase.class);
-        war.addLibraries(libJar);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
+        war.addClasses(TestAA.class, EarJbossStructureAdditionalModuleTestCase.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
-        JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
+        ear.addManifestResource(new StringAsset(
+                "<jboss-deployment-structure>" +
+                        "<sub-deployment name=\"test.war\">" +
+                        "<dependencies>" +
+                        "<module name=\"deployment.somemodule\" />" +
+                        "</dependencies>" +
+                        "</sub-deployment>" +
+                        "<module name=\"deployment.somemodule\">" +
+                        "<resources><resource-root path=\"someModule.jar\"/></resources>" +
+                        "</module>" +
+                        "</jboss-deployment-structure>"),
+                "jboss-deployment-structure.xml");
+        JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "someModule.jar");
         earLib.addClass(TestBB.class);
         ear.addModule(earLib);
         return ear;
     }
 
     @Test
-    public void testWebInfLibAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
+    public void testWarHassAccessToAdditionalModule() throws ClassNotFoundException {
+        loadClass("org.jboss.as.testsuite.integration.deployment.classloading.ear.TestBB", getClass().getClassLoader());
     }
 
-    @Test(expected = ClassNotFoundException.class)
-    public void testEarJarNotAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestBB");
-    }
-
-    private static Class<?> loadClass(String name) throws ClassNotFoundException {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {
         if (cl != null) {
             return Class.forName(name, false, cl);
         } else

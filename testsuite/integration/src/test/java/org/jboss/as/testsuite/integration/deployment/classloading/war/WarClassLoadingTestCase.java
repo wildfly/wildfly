@@ -19,53 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.war;
-
-import javax.ejb.Stateless;
-
-import junit.framework.Assert;
+package org.jboss.as.testsuite.integration.deployment.classloading.war;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.tests.deployment.classloading.ear.TestBB;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class WarInEarChildFirstClassLoadingTestCase {
+public class WarClassLoadingTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addClasses(WebInfLibClass.class, WarInEarChildFirstClassLoadingTestCase.class, Stateless.class);
-
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addModule(war);
-        JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
-        earLib.addClasses(TestBB.class, WebInfLibClass.class);
-        ear.addLibrary(earLib);
-        return ear;
+        war.addClass(WarClassLoadingTestCase.class);
+        war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
+        libJar.addClass(WebInfLibClass.class);
+        war.addLibraries(libJar);
+        return war;
     }
 
     @Test
-    public void testChildFirst() throws ClassNotFoundException {
-        Assert.assertEquals(Stateless.class.getClassLoader(), getClass().getClassLoader());
+    public void testWebInfLibAccessible() throws ClassNotFoundException {
+        loadClass("org.jboss.as.testsuite.integration.deployment.classloading.war.WebInfLibClass");
     }
 
-    @Test
-    public void testMultipleClasses() throws ClassNotFoundException {
-        Class<?> clazz = loadClass(WebInfLibClass.class.getName(), TestBB.class.getClassLoader());
-        Assert.assertNotSame(WebInfLibClass.class, clazz);
-    }
-
-    private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {
+    private static Class<?> loadClass(String name) throws ClassNotFoundException {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         if (cl != null) {
-            return Class.forName(name, false, cl);
+            try {
+                return Class.forName(name, false, cl);
+            } catch (ClassNotFoundException ex) {
+                return Class.forName(name);
+            }
         } else
             return Class.forName(name);
     }

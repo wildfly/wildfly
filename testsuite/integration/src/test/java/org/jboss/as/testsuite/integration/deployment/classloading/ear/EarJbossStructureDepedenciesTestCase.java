@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.ear;
+package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -33,47 +33,35 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class EarLibClassPathTransitiveClosureTestCase {
+public class EarJbossStructureDepedenciesTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class);
-        // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
-        JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
-        libJar.addClasses(TestAA.class, EarLibClassPathTransitiveClosureTestCase.class);
-        war.addLibraries(libJar);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
+        war.addClasses(TestAA.class, EarJbossStructureDepedenciesTestCase.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
+        ear.addManifestResource(new StringAsset(
+                "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><dependencies><module name=\"org.jboss.classfilewriter\" /></dependencies></sub-deployment></jboss-deployment-structure>"),
+                "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
-        earLib.addManifestResource(new ByteArrayAsset("Class-Path: ../cp1.jar\n".getBytes()), "MANIFEST.MF");
-        ear.addLibraries(earLib);
-
-        earLib = ShrinkWrap.create(JavaArchive.class, "cp1.jar");
-        earLib.addManifestResource(new ByteArrayAsset("Class-Path: cp2.jar\n".getBytes()), "MANIFEST.MF");
-        ear.addModule(earLib);
-
-        earLib = ShrinkWrap.create(JavaArchive.class, "cp2.jar");
         earLib.addClass(TestBB.class);
-        ear.addModule(earLib);
+        ear.addLibraries(earLib);
         return ear;
     }
 
-    @Test
-    public void testWebInfLibAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
+    @Test(expected = ClassNotFoundException.class)
+    public void testEarDoesNotHaveAccessToClassfilewriter() throws ClassNotFoundException {
+        loadClass("org.jboss.classfilewriter.ClassFile", TestBB.class.getClassLoader());
     }
 
     @Test
-    public void testClassPathEntryAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestBB");
+    public void testWarHasAccessToClassFileWriter() throws ClassNotFoundException {
+        loadClass("org.jboss.classfilewriter.ClassFile", getClass().getClassLoader());
     }
 
-    private static Class<?> loadClass(String name) throws ClassNotFoundException {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        if (cl != null) {
-            return Class.forName(name, false, cl);
-        } else
-            return Class.forName(name);
+    private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {
+        return Class.forName(name, false, cl);
     }
 }

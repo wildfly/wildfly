@@ -19,46 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.rar;
-
-import junit.framework.Assert;
+package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/**
- * Tests that nesteled jars in a rar are picked up as resource roots and loaded from the same class loader.
- *
- * @author Stuart Douglas
- *
- */
 @RunWith(Arquillian.class)
-public class RarClassLoadingTestCase {
+public class WarCannotAccessOtherWarTestCase {
 
     @Deployment
-    public static Archive<?> deployment() {
-        ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "rarClassLoadingTest.rar");
-        JavaArchive jar1 = ShrinkWrap.create(JavaArchive.class, "main.jar");
-        jar1.addClasses(RarClassLoadingTestCase.class, RarMainClass.class);
-        rar.add(jar1, "/");
-        JavaArchive jar2 = ShrinkWrap.create(JavaArchive.class, "support.jar");
-        jar2.addClasses(RarSupportClass.class);
-        rar.add(jar2, "some/random/directory");
+    public static Archive<?> deploy() {
 
-        return rar;
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
+
+        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        war.addClass(TestAA.class);
+
+        ear.addModule(war);
+        war = ShrinkWrap.create(WebArchive.class);
+        war.addClass(WarCannotAccessOtherWarTestCase.class);
+        ear.addModule(war);
+
+        return ear;
     }
 
-    @Test
-    public void testRarClassLoading() {
-        RarMainClass cl = new RarMainClass();
-        RarSupportClass cl2 = new RarSupportClass();
-        Assert.assertEquals(cl.getClass().getClassLoader(), cl2.getClass().getClassLoader());
+    @Test(expected = ClassNotFoundException.class)
+    public void testWarCannotAccessOtherWar() throws ClassNotFoundException {
+        loadClass("org.jboss.as.testsuite.integration.deployment.classloading.ear.TestAA");
     }
 
+
+    private static Class<?> loadClass(String name) throws ClassNotFoundException {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl != null) {
+            return Class.forName(name, false, cl);
+        } else
+            return Class.forName(name);
+    }
 }

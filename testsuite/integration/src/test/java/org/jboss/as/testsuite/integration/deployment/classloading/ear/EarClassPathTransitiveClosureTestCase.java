@@ -19,45 +19,55 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.ear;
+package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class EjbJarCanAccessOtherEjbJarTestCase {
+public class EarClassPathTransitiveClosureTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
+        libJar.addClasses(TestAA.class, EarClassPathTransitiveClosureTestCase.class);
+        war.addLibraries(libJar);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
+        ear.addModule(war);
+        JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
+        earLib.addManifestResource(new ByteArrayAsset("Class-Path: ../cp1.jar\n".getBytes()), "MANIFEST.MF");
+        ear.addLibraries(earLib);
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "otherjar.jar");
-        jar.addClass(TestAA.class);
-        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
+        earLib = ShrinkWrap.create(JavaArchive.class, "cp1.jar");
+        earLib.addManifestResource(new ByteArrayAsset("Class-Path: cp2.jar\n".getBytes()), "MANIFEST.MF");
+        ear.addModule(earLib);
 
-        ear.addModule(jar);
-        jar = ShrinkWrap.create(JavaArchive.class, "testjar.jar");
-        jar.addClass(EjbJarCanAccessOtherEjbJarTestCase.class);
-        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
-        jar.addManifestResource(new StringAsset("Class-Path: otherjar.jar\n"),"MANIFEST.MF");
-        ear.addModule(jar);
-
+        earLib = ShrinkWrap.create(JavaArchive.class, "cp2.jar");
+        earLib.addClass(TestBB.class);
+        ear.addModule(earLib);
         return ear;
     }
 
     @Test
-    public void testEjbJarCanAccessOtherEjbJar() throws ClassNotFoundException {
-        loadClass("org.jboss.as.tests.deployment.classloading.ear.TestAA");
+    public void testWebInfLibAccessible() throws ClassNotFoundException {
+        loadClass("org.jboss.as.testsuite.integration.deployment.classloading.ear.TestAA");
     }
 
+    @Test
+    public void testClassPathEntryAccessible() throws ClassNotFoundException {
+        loadClass("org.jboss.as.testsuite.integration.deployment.classloading.ear.TestBB");
+    }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -65,16 +75,5 @@ public class EjbJarCanAccessOtherEjbJarTestCase {
             return Class.forName(name, false, cl);
         } else
             return Class.forName(name);
-    }
-
-    private static StringAsset emptyEjbJar() {
-        return new StringAsset(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
-                "         version=\"3.0\">\n" +
-                "   \n" +
-                "</ejb-jar>");
     }
 }

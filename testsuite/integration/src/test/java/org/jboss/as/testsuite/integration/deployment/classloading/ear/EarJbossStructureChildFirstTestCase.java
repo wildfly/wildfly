@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.tests.deployment.classloading.ear;
+package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
 import junit.framework.Assert;
 import org.jboss.arquillian.api.Deployment;
@@ -46,8 +46,8 @@ public class EarJbossStructureChildFirstTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addModule(war);
         ear.addManifestResource(new StringAsset(
-        "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><child-first>false</child-first></sub-deployment></jboss-deployment-structure>"),
-        "jboss-deployment-structure.xml");
+                "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><child-first>false</child-first></sub-deployment></jboss-deployment-structure>"),
+                "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
         earLib.addClasses(TestBB.class, TestAA.class);
         ear.addLibrary(earLib);
