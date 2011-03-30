@@ -57,6 +57,8 @@ public class SFSBXPCMap {
     /**
      * Track the stateful session beans that are referencing a XPC.
      *
+     * TODO: this reverse lookup (by SFSB id), might be needed for clustering.
+     * If not, remove XPCToContextMap for better performance...
      */
     private ConcurrentHashMap<EntityManager, List<SFSBContextHandle>> XPCToContextMap =
         new ConcurrentHashMap<EntityManager, List<SFSBContextHandle>>();

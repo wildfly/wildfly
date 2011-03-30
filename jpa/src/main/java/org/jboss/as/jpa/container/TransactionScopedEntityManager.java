@@ -87,7 +87,6 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
                 result = EntityManagerUtil.createEntityManager(emf, properties);
             }
         }
-        //setMetadata(puScopedName, false);    // save metadata if not already set
         return result;
     }
 
