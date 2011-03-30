@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
@@ -36,7 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -470,15 +470,11 @@ public class DomainXml extends CommonXml {
             ParseUtils.requireNoContent(reader);
 
             final ModelNode deploymentAdd = new ModelNode();
-            // TODO decide whether deployments are an attribute of list type or a child
-//          deploymentAdd.get(OP_ADDR).set(address).add(DEPLOYMENT, uniqueName);
-//          deploymentAdd.get(OP).set(ADD);
-            deploymentAdd.get(OP_ADDR).set(address);
-            deploymentAdd.get(OP).set("add-deployment");
-            deploymentAdd.get(REQUEST_PROPERTIES, "unique-name").set(uniqueName);
-            deploymentAdd.get(REQUEST_PROPERTIES, "runtime-name").set(runtimeName);
-            deploymentAdd.get(REQUEST_PROPERTIES, "sha1").set(hash);
-            deploymentAdd.get(REQUEST_PROPERTIES, "enabled").set(toStart);
+            deploymentAdd.get(OP).set(ADD);
+            deploymentAdd.get(OP_ADDR).set(address).add(DEPLOYMENT, uniqueName);
+            deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
+            deploymentAdd.get(HASH).set(hash);
+            deploymentAdd.get(ENABLED).set(toStart);
             list.add(deploymentAdd);
         }
     }

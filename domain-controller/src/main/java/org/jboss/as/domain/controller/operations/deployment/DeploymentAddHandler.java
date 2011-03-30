@@ -19,7 +19,6 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -60,7 +59,6 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         op.get(RUNTIME_NAME).set(state.get(RUNTIME_NAME));
         op.get(HASH).set(state.get(HASH));
-        op.get(ENABLED).set(state.get(ENABLED));
         return op;
     }
 
