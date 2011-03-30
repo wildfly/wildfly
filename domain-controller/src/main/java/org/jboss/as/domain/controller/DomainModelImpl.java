@@ -791,25 +791,30 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         /** Instead of updating and persisting, we register a resource that does it at commit */
         @Override
         protected void updateModelAndPersist() {
-            ControllerResource resource = new UncommittedModelProviderControllerResource() {
+            if (transaction == null) {
+                TransactionalMultiStepOperationController.this.commit();
+            }
+            else {
+                ControllerResource resource = new UncommittedModelProviderControllerResource() {
 
-                @Override
-                public void commit() {
-                    TransactionalMultiStepOperationController.this.commit();
-                }
+                    @Override
+                    public void commit() {
+                        TransactionalMultiStepOperationController.this.commit();
+                    }
 
-                @Override
-                public void rollback() {
-                    // no-op
-                }
+                    @Override
+                    public void rollback() {
+                        // no-op
+                    }
 
-                @Override
-                public ModelNode getUncommittedModel() {
-                    return localModel;
-                }
+                    @Override
+                    public ModelNode getUncommittedModel() {
+                        return localModel;
+                    }
 
-            };
-            transaction.registerResource(resource);
+                };
+                transaction.registerResource(resource);
+            }
         }
 
         private void commit() {
