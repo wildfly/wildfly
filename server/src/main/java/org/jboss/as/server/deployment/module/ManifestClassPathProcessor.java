@@ -74,6 +74,12 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        //if this has already been handled by the ear class path processor
+        if(deploymentUnit.getAttachment(Attachments.CLASS_PATH_ENTRIES) != null) {
+            return;
+        }
+
         final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
 
         final DeploymentUnit parent = deploymentUnit.getParent();
@@ -122,11 +128,6 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
         }
 
         for (ResourceRoot resourceRoot : resourceRoots) {
-            // if this is an ear/lib resource root it has already been handled
-            if (deploymentUnit.getParent() == null && ModuleRootMarker.isModuleRoot(resourceRoot)
-                    && !SubDeploymentMarker.isSubDeployment(resourceRoot)) {
-                continue;
-            }
             if(SubDeploymentMarker.isSubDeployment(resourceRoot) && resourceRoot != deploymentRoot) {
                 continue;
             }
