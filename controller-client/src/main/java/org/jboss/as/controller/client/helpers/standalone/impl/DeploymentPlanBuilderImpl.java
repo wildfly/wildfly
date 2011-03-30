@@ -59,7 +59,7 @@ class DeploymentPlanBuilderImpl
 
     DeploymentPlanBuilderImpl() {
         this.shutdown = false;
-        this.globalRollback = false;
+        this.globalRollback = true;
         this.gracefulShutdownPeriod = -1;
     }
 
@@ -297,6 +297,16 @@ class DeploymentPlanBuilderImpl
             throw new IllegalStateException("Global rollback is not compatible with a server restart");
         }
         return new DeploymentPlanBuilderImpl(this, true);
+    }
+
+    @Override
+    public DeploymentPlanBuilder withoutRollback() {
+        if (deploymentActions.size() > 0) {
+            // Someone has cast to this impl class
+            cleanup();
+            throw new IllegalStateException(InitialDeploymentPlanBuilder.class.getSimpleName() + " operations are not allowed after content and deployment modifications");
+        }
+        return new DeploymentPlanBuilderImpl(this, false);
     }
 
     @Override

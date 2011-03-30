@@ -53,7 +53,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
 
     DeploymentSetPlanImpl() {
         this.uuid = UUID.randomUUID();
-        this.rollback = false;
+        this.rollback = true;
         this.shutdown = false;
         this.gracefulShutdownPeriod = -1;
         this.serverGroupPlans.add(new LinkedHashSet<ServerGroupDeploymentPlan>());
@@ -145,6 +145,11 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
 
     DeploymentSetPlanImpl setRollback() {
         DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, true, this.shutdown, this.gracefulShutdownPeriod);
+        return result;
+    }
+
+    DeploymentSetPlanImpl setNoRollback() {
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, false, this.shutdown, this.gracefulShutdownPeriod);
         return result;
     }
 

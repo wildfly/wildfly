@@ -53,9 +53,22 @@ public interface InitialDeploymentPlanBuilder extends InitialDeploymentSetBuilde
      * rollback across servers.
      *
      * @return a builder that can continue building the overall deployment plan
+     *
+     * @deprecated single server rollback is the default behavior for a deployment plan and doesn't need to be enabled
      */
+    @Deprecated
     @Override
     InitialDeploymentSetBuilder withSingleServerRollback();
+
+    /**
+     * Indicates that on a given server all <code>deploy</code>, <code>undeploy</code> or
+     * <code>replace</code> operations associated with the deployment set
+     * should <strong>not</strong> be rolled back in case of a failure in any of them.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    @Override
+    InitialDeploymentSetBuilder withoutSingleServerRollback();
 
     /**
      * Indicates actions specified subsequent to this call should be organized

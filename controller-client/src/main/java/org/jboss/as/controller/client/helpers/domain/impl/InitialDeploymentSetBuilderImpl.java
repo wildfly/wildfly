@@ -78,4 +78,11 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
         DeploymentSetPlanImpl newSet = currentSet.setRollback();
         return new InitialDeploymentSetBuilderImpl(this, newSet);
     }
+
+    @Override
+    public InitialDeploymentSetBuilder withoutSingleServerRollback() {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        DeploymentSetPlanImpl newSet = currentSet.setNoRollback();
+        return new InitialDeploymentSetBuilderImpl(this, newSet);
+    }
 }

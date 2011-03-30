@@ -38,8 +38,20 @@ public interface InitialDeploymentPlanBuilder extends DeploymentPlanBuilder {
      * should be rolled back in case of a failure in any of them.
      *
      * @return a builder that can continue building the overall deployment plan
+     *
+     * @deprecated rollback is the default behavior for a deployment plan and doesn't need to be enabled
      */
+    @Deprecated
     DeploymentPlanBuilder withRollback();
+
+    /**
+     * Indicates all <code>deploy</code>, <code>undeploy</code>, <code>replace</code>
+     * or <code>remove</code> operations associated with the deployment plan
+     * should <strong>not</strong> be rolled back in case of a failure in any of them.
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    DeploymentPlanBuilder withoutRollback();
 
     /**
      * Indicates actions specified subsequent to this call should be organized
@@ -52,6 +64,11 @@ public interface InitialDeploymentPlanBuilder extends DeploymentPlanBuilder {
      * actions, the new content will not be deployed until the server is restarted.
      * For any <code>undeploy</code> or <code>replace</code> actions, the old content
      * will be undeployed as part of normal server shutdown processing.</p>
+     * <p>
+     * <strong>NOTE: In order to organize a deployment plan around a server
+     * shutdown, {@link #withoutRollback() rollback of the plan must be disabled}.
+     * A rollback is not compatible with a server restart.</strong>
+     * </p>
      * <p>
      * <strong>NOTE:</strong> A Standalone JBoss AS instance is not able to restart
      * itself; it can only shut itself down, and requires external action to
@@ -71,6 +88,11 @@ public interface InitialDeploymentPlanBuilder extends DeploymentPlanBuilder {
      * actions, the new content will not be deployed until the server is restarted.
      * For any <code>undeploy</code> or <code>replace</code> actions, the old content
      * will be undeployed as part of normal server shutdown processing.
+     * <p>
+     * <strong>NOTE: In order to organize a deployment plan around a server
+     * shutdown, {@link #withoutRollback() rollback of the plan must be disabled}.
+     * A rollback is not compatible with a server restart.</strong>
+     * </p>
      * <p>
      * <strong>NOTE:</strong> A Standalone JBoss AS instance is not able to restart
      * itself; it can only shut itself down, and requires external action to
