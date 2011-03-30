@@ -51,7 +51,16 @@ class DataSourcesMetrics implements ModelQueryOperationHandler {
     static final String[] NO_LOCATION = new String[0];
     private static final String MAX_POOL_SIZE = "max-pool-size";
     private static final String MIN_POOL_SIZE = "min-pool-size";
-    static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE };
+    private static final String BLOCKING_TIMEOUT = "blocking-timeout-wait-millis";
+    private static final String IDLE_TIMEOUT_MINUTES = "idle-timeout-minutes";
+    private static final String BACKGROUND_VALIDATION = "background-validation";
+    private static final String BACKGROUND_VALIDATION_MINUTES = "background-validation-minutes";
+    private static final String POOL_PREFILL = "pool-prefill";
+    private static final String POOL_USE_STRICT_MIN = "pool-use-strict-min";
+    private static final String USE_FAST_FAIL = "use-fast-fail";
+
+    static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT, IDLE_TIMEOUT_MINUTES,
+        BACKGROUND_VALIDATION, BACKGROUND_VALIDATION_MINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN, USE_FAST_FAIL};
 
     /** {@inheritDoc} */
     @Override
@@ -79,6 +88,27 @@ class DataSourcesMetrics implements ModelQueryOperationHandler {
                                         }
                                         if (MIN_POOL_SIZE.equals(attributeName)) {
                                             result.set("" + ds.getPoolConfiguration().getMinSize());
+                                        }
+                                        if (BLOCKING_TIMEOUT.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().getBlockingTimeout());
+                                        }
+                                        if (IDLE_TIMEOUT_MINUTES.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().getIdleTimeout());
+                                        }
+                                        if (BACKGROUND_VALIDATION.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().isBackgroundValidation());
+                                        }
+                                        if (BACKGROUND_VALIDATION_MINUTES.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().getBackgroundValidationMinutes());
+                                        }
+                                        if (POOL_PREFILL.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().isPrefill());
+                                        }
+                                        if (POOL_USE_STRICT_MIN.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().isStrictMin());
+                                        }
+                                        if (USE_FAST_FAIL.equals(attributeName)) {
+                                            result.set("" + ds.getPoolConfiguration().isUseFastFail());
                                         }
                                     }
                                 }
