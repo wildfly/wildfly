@@ -23,20 +23,21 @@
 package org.jboss.as.jpa.container;
 
 import org.jboss.as.jpa.spi.SFSBContextHandle;
+import org.jboss.util.collection.ConcurrentReferenceHashMap;
 
 import javax.persistence.EntityManager;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * For stateful session bean life cycle management and tracking XPC Inheritance.
- *
+ * <p/>
  * There are two intended uses.
  * 1.  Getting the XPCs associated with a stateful session bean.
  * 2.  Getting the stateful session beans associated with a XPC.
- *
+ * <p/>
  * The XPC is represented by the EntityManager.
  *
  * @author Scott Marlow
@@ -48,32 +49,45 @@ public class SFSBXPCMap {
     public static SFSBXPCMap getINSTANCE() {
         return INSTANCE;
     }
+
     /**
      * Track the XPCs used by each stateful session bean.
+     * If the only reference to the EntityManager is from here, it must not exist anymore (so it will be
+     * removed from here.
+     * <p/>
+     * TODO:  The SFSB clustering should be careful not to create the situation where there are no
+     * references to the EntityManager on a remote node (the SFSB should replicate before the SFSXPCMap entry for it.)
+     * <p/>
+     * Note:  We shouldn't have the case where the EntityManager list being looked up,
+     * is ever null (since SFSBs should have strong references to the EntityManagers).
      */
-    private ConcurrentHashMap<SFSBContextHandle, List<EntityManager>> contextToXPCMap =
-        new ConcurrentHashMap<SFSBContextHandle, List<EntityManager>>();
+    private ConcurrentReferenceHashMap<SFSBContextHandle, List<WeakReference<EntityManager>>> contextToXPCMap =
+        new ConcurrentReferenceHashMap<SFSBContextHandle, List<WeakReference<EntityManager>>>
+            (ConcurrentReferenceHashMap.ReferenceType.WEAK, ConcurrentReferenceHashMap.ReferenceType.STRONG);
 
     /**
      * Track the stateful session beans that are referencing a XPC.
-     *
-     * TODO: this reverse lookup (by SFSB id), might be needed for clustering.
-     * If not, remove XPCToContextMap for better performance...
+     * <p/>
+     * Note:  We shouldn't have the case where the EntityManager being looked up, is not referenced by a SFSB.
+     * Therefore, the EntityManager shouldn't normally be null.
      */
-    private ConcurrentHashMap<EntityManager, List<SFSBContextHandle>> XPCToContextMap =
-        new ConcurrentHashMap<EntityManager, List<SFSBContextHandle>>();
+    private ConcurrentReferenceHashMap<EntityManager, List<SFSBContextHandle>> XPCToContextMap =
+        new ConcurrentReferenceHashMap<EntityManager, List<SFSBContextHandle>>
+            (ConcurrentReferenceHashMap.ReferenceType.WEAK, ConcurrentReferenceHashMap.ReferenceType.STRONG);
 
     /**
      * Get the extended persistence contexts associate with the specified SFSB
+     *
      * @param beanContextHandle represents the SFSB
      * @return a list of extended (XPC) persistence contexts
      */
-    public List<EntityManager> getXPC(SFSBContextHandle beanContextHandle) {
+    public List<WeakReference<EntityManager>> getXPC(SFSBContextHandle beanContextHandle) {
         return contextToXPCMap.get(beanContextHandle);
     }
 
     /**
      * Get the stateful session beans associated with the specified XPC
+     *
      * @param entityManager represents the extended persistence context (XPC)
      * @return list of stateful session beans
      */
@@ -87,8 +101,8 @@ public class SFSBXPCMap {
     // The deferToPostConstruct is a one item length store (hack)
     private static ThreadLocal<Object[]> deferToPostConstruct = new ThreadLocal() {
         protected Object initialValue() {
-                    return new Object[1];
-                }
+            return new Object[1];
+        }
 
     };
 
@@ -100,11 +114,11 @@ public class SFSBXPCMap {
      */
     public static void RegisterPersistenceContext(EntityManager xpc) {
 
-        if(xpc == null) {
+        if (xpc == null) {
             throw new RuntimeException("internal SFSBXPCMap.RegisterPersistenceContext error, null EntityManager passed in");
         }
 
-        if (! (xpc instanceof AbstractEntityManager)) {
+        if (!(xpc instanceof AbstractEntityManager)) {
             throw new RuntimeException("internal error, XPC needs to be a AbstractEntityManager so that we can get metadata");
         }
 
@@ -117,36 +131,43 @@ public class SFSBXPCMap {
      */
     public void finishRegistrationOfPersistenceContext(SFSBContextHandle current) {
         Object[] store = deferToPostConstruct.get();
-        if (store !=null && store.length == 1) {
-            if(store[0] == null) {
+        if (store != null && store.length == 1) {
+            if (store[0] == null) {
                 throw new RuntimeException("internal SFSBXPCMap.finishRegistrationOfPersistenceContext error, null EntityManager passed in");
             }
-            register(current, (EntityManager)store[0]);
+            register(current, (EntityManager) store[0]);
             store[0] = null;    // clear store
         }
     }
 
     /**
      * Register the specified stateful session bean with the XPC
+     *
      * @param beanContextHandle represents the stateful session bean
-     * @param entityManager represents the extended persistence context (XPC)
+     * @param entityManager     represents the extended persistence context (XPC)
      */
     public void register(SFSBContextHandle beanContextHandle, EntityManager entityManager) {
-        if (! (entityManager instanceof AbstractEntityManager)) {
+        if (!(entityManager instanceof AbstractEntityManager)) {
             throw new RuntimeException("internal error, XPC needs to be a AbstractEntityManager so that we can get metadata");
         }
-        List<EntityManager> xpcList = Collections.synchronizedList(new ArrayList<EntityManager>());
-        xpcList.add(entityManager);
-        xpcList = contextToXPCMap.putIfAbsent(beanContextHandle, xpcList);
-        if( null != xpcList) {
+        List<WeakReference<EntityManager>> xpcList = contextToXPCMap.get(beanContextHandle);
+        if (xpcList == null) {
+            xpcList = Collections.synchronizedList(new ArrayList<WeakReference<EntityManager>>());
+            xpcList.add(new WeakReference(entityManager));
+            List<WeakReference<EntityManager>> existingList = contextToXPCMap.putIfAbsent(beanContextHandle, xpcList);
+            if (existingList != null) {
+                xpcList = existingList;
+                xpcList.add(new WeakReference(entityManager));
+            }
+        } else {
             // session bean was already registered, just add XPC to existing list.
-            xpcList.add(entityManager);
+            xpcList.add(new WeakReference(entityManager));
         }
 
         List<SFSBContextHandle> sfsbList = Collections.synchronizedList(new ArrayList<SFSBContextHandle>());
         sfsbList.add(beanContextHandle);
-        sfsbList = XPCToContextMap.putIfAbsent(entityManager,sfsbList);
-        if( null != sfsbList) {
+        sfsbList = XPCToContextMap.putIfAbsent(entityManager, sfsbList);
+        if (null != sfsbList) {
             // XPC was already registered, just add SFSB to existing list.
             sfsbList.add(beanContextHandle);
         }
@@ -154,28 +175,35 @@ public class SFSBXPCMap {
 
     /**
      * Remove the specified stateful session bean
+     *
      * @param bean
      * @return a list of any XPCs that are ready to be closed by the caller (because the last SFSB was removed)
      */
     public List<EntityManager> remove(SFSBContextHandle bean) {
         List<EntityManager> result = null;
-        List<EntityManager> xpcList = contextToXPCMap.remove(bean);
+        // get list of extended persistence contexts that this bean was using.
+        List<WeakReference<EntityManager>> xpcList = contextToXPCMap.remove(bean);
         if (xpcList != null) {
-            for(EntityManager xpc:xpcList) {
-                List<SFSBContextHandle> sfsbList = XPCToContextMap.get(xpc);
-                if (sfsbList != null) {
-                    // build a list of SFSBs that should be removed
-                    List<SFSBContextHandle>removed = new ArrayList<SFSBContextHandle>();
-                    for (SFSBContextHandle beanContextHandle:sfsbList) {
-                        if (beanContextHandle == bean || beanContextHandle.getBeanContextHandle() == null) {
-                            removed.add(beanContextHandle);
+            for (WeakReference<EntityManager> xpc_ref : xpcList) {
+                EntityManager xpc = xpc_ref.get();
+                if (xpc != null) {  // null means the SFSB was destroyed without SFSBDestroyInterceptor triggering
+                                    // we can ignore that case since the XPC is already closed by GC
+                    List<SFSBContextHandle> sfsbList = XPCToContextMap.get(xpc);
+                    if (sfsbList != null) {
+                        // build a list of SFSBs that should be removed
+                        List<SFSBContextHandle> removed = new ArrayList<SFSBContextHandle>();
+                        for (SFSBContextHandle beanContextHandle : sfsbList) {
+                            if (beanContextHandle == bean || beanContextHandle.getBeanContextHandle() == null) {
+                                removed.add(beanContextHandle);
+                            }
+                        }
+                        sfsbList.removeAll(removed);
+                        if (sfsbList.size() == 0) {
+                            result.add(xpc);    // caller should close the xpc
                         }
                     }
-                    sfsbList.removeAll(removed);
-                    if (sfsbList.size() == 0) {
-                        result.add(xpc);    // caller should close the xpc
-                    }
                 }
+
             }
         }
         return result;

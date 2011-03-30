@@ -25,6 +25,7 @@ package org.jboss.as.jpa.container;
 import org.jboss.as.jpa.spi.SFSBContextHandle;
 
 import javax.persistence.EntityManager;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,11 +57,12 @@ public class SFSBCallStack {
     public static EntityManager findPersistenceContext(String puScopedName) {
         // TODO: arrange for a more optimal datastructure for this
         for (SFSBContextHandle handle : currentSFSBCallStack()) {
-            List<EntityManager> xpcs = SFSBXPCMap.getINSTANCE().getXPC(handle);
+            List<WeakReference<EntityManager>> xpcs = SFSBXPCMap.getINSTANCE().getXPC(handle);
             if (xpcs == null)
                 continue;
-            for (EntityManager xpc : xpcs) {
-                if (xpc.unwrap(EntityManagerMetadata.class).getScopedPuName().equals(puScopedName)) {
+            for (WeakReference<EntityManager> xpc_ref : xpcs) {
+                EntityManager xpc = xpc_ref.get();
+                if (xpc != null && xpc.unwrap(EntityManagerMetadata.class).getScopedPuName().equals(puScopedName)) {
                     return xpc;
                 }
             }
