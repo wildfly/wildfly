@@ -23,12 +23,16 @@ package org.jboss.as.test.embedded.demos.ws;
 
 import java.net.URL;
 
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+
 import junit.framework.Assert;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.demos.ws.archive.Endpoint;
 import org.jboss.as.demos.ws.archive.EndpointImpl;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.PollingUtils.UrlConnectionTask;
@@ -59,19 +63,12 @@ public class WSTestCase {
     }
 
     @Test
-    public void testLegacyServlet() throws Exception {
-        final String request = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:arc=\"http://archive.ws.demos.as.jboss.org/\">"
-            + "  <soapenv:Header/>"
-            + "  <soapenv:Body>"
-            + "    <arc:echoString>"
-            + "      <arg0>Foo</arg0>"
-            + "    </arc:echoString>"
-            + "  </soapenv:Body>"
-            + "</soapenv:Envelope>";
-        String s = performCall("", request);
-        Assert.assertNotNull(s);
-        Assert.assertTrue(s.contains("echoStringResponse"));
-        Assert.assertTrue(s.contains("Foo"));
+    public void testAccess() throws Exception {
+        URL wsdlURL = new URL("http://localhost:8080/ws-example?wsdl");
+        QName serviceName = new QName("http://archive.ws.demos.as.jboss.org/", "EndpointService");
+        Service service = Service.create(wsdlURL, serviceName);
+        Endpoint port = (Endpoint) service.getPort(Endpoint.class);
+        Assert.assertEquals("Foo", port.echo("Foo"));
     }
 
 

@@ -64,6 +64,7 @@
             <module name="javax.ws.rs.api"/>
             <module name="org.jboss.msc"/>
             <module name="javax.xml.ws.api"/>
+            <module name="javax.jws.api"/>
         </dependencies>
     </module>
 

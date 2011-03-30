@@ -25,11 +25,15 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import javax.xml.ws.spi.Provider;
+
 import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.ws.archive.Endpoint;
 import org.jboss.as.demos.ws.archive.EndpointImpl;
 
 /**
@@ -45,16 +49,15 @@ public class ExampleRunner {
             utils = new DeploymentUtils();
             utils.addWarDeployment("ws-example.war", true, EndpointImpl.class.getPackage());
             utils.deploy();
-            testWSDL();
-            testSOAPCall();
             testWebServiceRef();
+            testAccess();
         } finally {
             utils.undeploy();
             safeClose(utils);
         }
     }
 
-    private static void testWSDL() throws Exception {
+    private static void testAccess() throws Exception {
         URLConnection conn = null;
         InputStream in = null;
         try {
@@ -72,40 +75,13 @@ public class ExampleRunner {
         } finally {
             safeClose(in);
         }
-    }
-
-    private static void testSOAPCall() throws Exception {
-        URLConnection conn = null;
-        InputStream in = null;
-        OutputStreamWriter osw = null;
-        final String message = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:arc=\"http://archive.ws.demos.as.jboss.org/\">"
-                + "  <soapenv:Header/>"
-                + "  <soapenv:Body>"
-                + "    <arc:echoString>"
-                + "      <arg0>Foo</arg0>"
-                + "    </arc:echoString>"
-                + "  </soapenv:Body>"
-                + "</soapenv:Envelope>";
-        try {
-            URL url = new URL("http://localhost:8080/ws-example");
-            System.out.println("Reading response from " + url + ":");
-            conn = url.openConnection();
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-            osw = new OutputStreamWriter(conn.getOutputStream());
-            osw.write(message);
-            osw.flush();
-            in = new BufferedInputStream(conn.getInputStream());
-            int i = in.read();
-            while (i != -1) {
-                System.out.print((char) i);
-                i = in.read();
-            }
-            System.out.println("");
-        } finally {
-            safeClose(osw);
-            safeClose(in);
-        }
+        URL wsdlURL = new URL("http://localhost:8080/ws-example?wsdl");
+        QName serviceName = new QName("http://archive.ws.demos.as.jboss.org/", "EndpointService");
+        System.out.println("JAXWS Client provider being used: " + Provider.provider().getClass());
+        Service service = Service.create(wsdlURL, serviceName);
+        Endpoint port = (Endpoint) service.getPort(Endpoint.class);
+        System.out.println("Sending request 'hello' to address http://localhost:8080/ws-example");
+        System.out.println("Got result : " + port.echo("hello"));
     }
 
     private static void testWebServiceRef() throws Exception {
