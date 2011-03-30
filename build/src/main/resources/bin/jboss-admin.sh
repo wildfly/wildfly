@@ -66,4 +66,4 @@ echo ""
 echo "========================================================================="
 echo ""
 
-eval \"$JAVA\" $JAVA_OPTS -jar \"$JBOSS_HOME/jboss-modules.jar\" -mp \"$JBOSS_HOME/modules\" org.jboss.as.cli
+eval \"$JAVA\" $JAVA_OPTS -jar \"$JBOSS_HOME/jboss-modules.jar\" -mp \"$JBOSS_HOME/modules\" org.jboss.as.cli "$@"

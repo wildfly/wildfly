@@ -147,6 +147,11 @@ public class DefaultOperationCallbackHandler extends ValidatingOperationCallback
         if(address == null) {
             address = new DefaultOperationRequestAddress();
         }
+
+        if(!address.endsOnType()) {
+            throw new OperationFormatException("The prefix should end with the node type before going to a specific node name.");
+        }
+
         address.toNode(nodeName);
         separator = SEPARATOR_NONE;
     }

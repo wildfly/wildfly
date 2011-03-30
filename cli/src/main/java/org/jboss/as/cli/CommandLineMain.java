@@ -95,9 +95,48 @@ public class CommandLineMain {
         console.addCompletor(new CommandCompleter(handlers.keySet(), opCompleter));
         console.addCompletor(opCompleter);
 
-        cmdCtx.printLine("You are disconnected at the moment." +
+        boolean connect = false;
+        for(String arg : args) {
+            if(arg.startsWith("controller=")) {
+                String value = arg.substring(11);
+                String portStr = null;
+                int colonIndex = value.indexOf(':');
+                if(colonIndex < 0) {
+                    // default port
+                    cmdCtx.defaultControllerHost = value;
+                } else if(colonIndex == 0) {
+                    // default host
+                    portStr = value.substring(1);
+                } else {
+                    cmdCtx.defaultControllerHost = value.substring(0, colonIndex);
+                    portStr = value.substring(colonIndex + 1);
+                }
+
+                if(portStr != null) {
+                    int port = -1;
+                    try {
+                        port = Integer.parseInt(portStr);
+                        if(port < 0) {
+                            cmdCtx.printLine("The port must be a valid non-negative integer: '" + args + "'");
+                        } else {
+                            cmdCtx.defaultControllerPort = port;
+                        }
+                    } catch(NumberFormatException e) {
+                        cmdCtx.printLine("The port must be a valid non-negative integer: '" + arg + "'");
+                    }
+                }
+            } else if("--connect".equals(arg)) {
+                connect = true;
+            }
+        }
+
+        if(connect) {
+            cmdCtx.connectController(null, -1);
+        } else {
+            cmdCtx.printLine("You are disconnected at the moment." +
                 " Type 'connect' to connect to the server or" +
                 " 'help' for the list of supported commands.");
+        }
 
         while (!cmdCtx.terminate) {
             String line = console.readLine(cmdCtx.getPrompt()).trim();
@@ -151,6 +190,10 @@ public class CommandLineMain {
         private String cmdArgs;
         /** the controller client */
         private ModelControllerClient client;
+        /** the default controller host */
+        private String defaultControllerHost = "localhost";
+        /** the default controller port */
+        private int defaultControllerPort = 9999;
         /** the host of the controller */
         private String controllerHost;
         /** the port of the controller */
@@ -250,13 +293,11 @@ public class CommandLineMain {
         @Override
         public void connectController(String host, int port) {
             if(host == null) {
-                printLine("Can't connect to the controller: the host hasn't been specified.");
-                return;
+                host = defaultControllerHost;
             }
 
             if(port < 0) {
-                printLine("Can't connect to the controller: invalid port value '" + port + '\'');
-                return;
+                port = defaultControllerPort;
             }
 
             try {
@@ -347,6 +388,16 @@ public class CommandLineMain {
             public void clear() {
                 console.getHistory().clear();
             }
+        }
+
+        @Override
+        public String getDefaultControllerHost() {
+            return defaultControllerHost;
+        }
+
+        @Override
+        public int getDefaultControllerPort() {
+            return defaultControllerPort;
         }
     }
 }

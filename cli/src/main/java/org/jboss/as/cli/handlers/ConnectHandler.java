@@ -42,8 +42,8 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     @Override
     protected void handle(CommandContext ctx, String args) {
 
-        int port = 9999;
-        String host = "localhost";
+        int port = -1;
+        String host = null;
         if(args != null) {
             String portStr = null;
             int colonIndex = args.indexOf(':');
@@ -63,13 +63,16 @@ public class ConnectHandler extends CommandHandlerWithHelp {
                     port = Integer.parseInt(portStr);
                 } catch(NumberFormatException e) {
                     ctx.printLine("The port must be a valid non-negative integer: '" + args + "'");
-                    port = -1;
+                    return;
+                }
+
+                if(port < 0) {
+                    ctx.printLine("The port must be a valid non-negative integer: '" + args + "'");
+                    return;
                 }
             }
         }
 
-        if(port >= 0) {
-            ctx.connectController(host, port);
-        }
+        ctx.connectController(host, port);
     }
 }

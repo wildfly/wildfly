@@ -82,7 +82,11 @@ public interface CommandContext {
     ModelControllerClient getModelControllerClient();
 
     /**
-     * Connects with the controller client using the host and the port.
+     * Connects the controller client using the host and the port.
+     * If the host is null, the default controller host will be used,
+     * which is localhost.
+     * If the port is less than zero, the default controller port will be used,
+     * which is 9999.
      *
      * @param host the host to connect with
      * @param port the port to connect on
@@ -94,6 +98,24 @@ public interface CommandContext {
      * If the connection hasn't been established, the method silently returns.
      */
     void disconnectController();
+
+    /**
+     * Returns the default host the controller client will be connected to
+     * in case the host argument isn't specified.
+     *
+     * @return  the default host the controller client will be connected to
+     * in case the host argument isn't specified.
+     */
+    String getDefaultControllerHost();
+
+    /**
+     * Returns the default port the controller client will be connected to
+     * in case the port argument isn't specified.
+     *
+     * @return  the default port the controller client will be connected to
+     * in case the port argument isn't specified.
+     */
+    int getDefaultControllerPort();
 
     /**
      * Returns the host the controller client is connected to or
