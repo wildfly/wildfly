@@ -91,8 +91,7 @@ public class RelativePathService extends AbstractPathService {
     protected String resolvePath() {
         String base = injectedPath.getValue();
         base = base.endsWith(File.separator) ? base.substring(0, base.length() -1) : base;
-        String relative = relativePath.startsWith(File.separator) ? relativePath.substring(0, relativePath.length() -1) : relativePath;
-        return base + File.separatorChar + relative;
+        return base + File.separatorChar + relativePath;
     }
 
     private static boolean isWindows(){
