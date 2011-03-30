@@ -22,11 +22,14 @@
 package org.jboss.as.cli.handlers;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -93,78 +96,53 @@ public class DeployHandler extends CommandHandlerWithHelp {
             }
         }
 
-        final String url;
-        try {
-            url = f.toURI().toURL().toExternalForm();
-        } catch(Exception e) {
-            ctx.printLine("Failed to create a URL from '" + args + "': " + e.getLocalizedMessage());
-            return;
-        }
-
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
-        // upload
-        builder.setOperationName("upload-deployment-url");
-        builder.addProperty("name", name);
-        if(runtimeName != null) {
-            builder.addProperty("runtime-name", runtimeName);
-        }
-        builder.addProperty("url", url);
         ModelNode result;
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-        } catch(Exception e) {
-            ctx.printLine("Failed to upload content: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if(!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
-
-        byte[] hash = Util.getHash(result);
-        if (hash == null) {
-            ctx.printLine("Failed to obtain the hash of the deployment.");
-            return;
-        }
 
         // add
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("add");
         builder.addNode("deployment", name);
-        builder.getModelNode().get("hash").set(hash);
+        if(runtimeName != null) {
+            builder.addProperty("runtime-name", runtimeName);
+        }
+
+        FileInputStream is = null;
         try {
+            is = new FileInputStream(f);
             ModelNode request = builder.buildRequest();
-            result = client.execute(request);
+            OperationBuilder op = OperationBuilder.Factory.create(request);
+            op.addInputStream(is);
+            request.get("input-stream-index").set(0);
+            result = client.execute(op.build());
         } catch(Exception e) {
             ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
             return;
+        } finally {
+            StreamUtils.safeClose(is);
         }
         if(!Util.isSuccess(result)) {
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
 
-        //deploy
+        // deploy
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("deploy");
         builder.addNode("deployment", name);
-
         try {
             ModelNode request = builder.buildRequest();
             result = client.execute(request);
-         } catch(Exception e) {
-             ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
-             return;
-         }
+        } catch (Exception e) {
+            ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+            return;
+        }
+        if (!Util.isSuccess(result)) {
+            ctx.printLine(Util.getFailureDescription(result));
+            return;
+        }
 
-         if(!Util.isSuccess(result)) {
-             ctx.printLine(Util.getFailureDescription(result));
-             return;
-         }
-
-         ctx.printLine("'" + name + "' deployed successfully.");
+        ctx.printLine("'" + name + "' deployed successfully.");
     }
 }
