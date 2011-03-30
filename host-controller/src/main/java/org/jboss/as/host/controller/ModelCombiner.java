@@ -24,7 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -56,8 +56,10 @@ import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.PathAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
@@ -67,9 +69,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
+ * Combines the relevant parts of the domain-level and host-level models to
+ * determine the jvm launch command and boot-time updates needed to start
+ * an application server instance.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 class ModelCombiner implements ManagedServerBootConfiguration {
 
@@ -79,17 +83,18 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         EMPTY.protect();
     }
 
-    final String serverName;
-    final ModelNode domainModel;
-    final ModelNode hostModel;
-    final ModelNode serverModel;
-    final ModelNode serverGroup;
-    final String profileName;
-    final JvmElement jvmElement;
-    final HostControllerEnvironment environment;
-    final DomainController domainController;
+    private final String serverName;
+    private final ModelNode domainModel;
+    private final ModelNode hostModel;
+    private final ModelNode serverModel;
+    private final ModelNode serverGroup;
+    private final String profileName;
+    private final JvmElement jvmElement;
+    private final HostControllerEnvironment environment;
+    private final DomainController domainController;
 
-    ModelCombiner(final String serverName, final ModelNode hostModel, final DomainController domainController, final HostControllerEnvironment environment) {
+    ModelCombiner(final String serverName, final ModelNode hostModel, final DomainController domainController,
+            final HostControllerEnvironment environment) {
         this.serverName = serverName;
         this.domainModel = domainController.getDomainModel();
         this.hostModel = hostModel;
@@ -153,17 +158,18 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
 
         List<ModelNode> updates = new ArrayList<ModelNode>();
+
         addNamespaces(updates);
         addServerName(updates);
         addSchemaLocations(updates);
         addExtensions(updates);
         addPaths(updates);
+        addSystemProperties(updates);
         addInterfaces(updates);
         addSocketBindings(updates, portOffSet, socketBindingRef);
-
         addSubsystems(updates);
-        //TODO deployments
-        // TODO  system properties
+        addDeployments(updates);
+
         return updates;
     }
 
@@ -301,6 +307,33 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
     }
 
+    private void addSystemProperties(List<ModelNode> updates) {
+        Map<String, String> props = new HashMap<String, String>();
+
+        addSystemProperties(domainModel, props);
+        addSystemProperties(serverGroup, props);
+        addSystemProperties(hostModel, props);
+        addSystemProperties(serverModel, props);
+
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS.toModelNode());
+            op.get(NAME).set(entry.getKey());
+            if (entry.getValue() != null) {
+                op.get(VALUE).set(entry.getValue());
+            }
+            updates.add(op);
+        }
+    }
+
+    private void addSystemProperties(final ModelNode source, final Map<String, String> props) {
+        if (source.hasDefined(SYSTEM_PROPERTIES)) {
+            for (Property prop : source.get(SYSTEM_PROPERTIES).asPropertyList()) {
+                String val = prop.getValue().isDefined() ? prop.getValue().asString() : null;
+                props.put(prop.getName(), val);
+            }
+        }
+    }
+
     private void addInterfaces(List<ModelNode> updates) {
         final Map<String, ModelNode> interfaces = new LinkedHashMap<String, ModelNode>();
         addInterfaces(interfaces, domainModel.get(INTERFACE));
@@ -375,6 +408,27 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addSubsystems(List<ModelNode> updates) {
         ModelNode node = domainController.getProfileOperations(profileName);
         updates.addAll(node.asList());
+    }
+
+    private void addDeployments(List<ModelNode> updates) {
+        if (serverGroup.hasDefined(DEPLOYMENT)) {
+            for (Property deployment : serverGroup.get(DEPLOYMENT).asPropertyList()) {
+                String name = deployment.getName();
+                ModelNode details = deployment.getValue();
+
+                // Make sure we have a copy of the deployment in the local repo
+                byte[] hash = details.require(HASH).asBytes();
+                domainController.getFileRepository().getDeploymentFiles(hash);
+
+                PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name));
+                ModelNode addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
+                addOp.get(RUNTIME_NAME).set(details.get(RUNTIME_NAME));
+                addOp.get(HASH).set(hash);
+                addOp.get(ENABLED).set(!details.hasDefined(ENABLED) || details.get(ENABLED).asBoolean());
+
+                updates.add(addOp);
+            }
+        }
     }
 
     private ModelNode pathAddress(PathElement...elements) {
