@@ -72,7 +72,6 @@ import org.jboss.osgi.framework.DeployerServiceProvider;
 import org.jboss.osgi.framework.FrameworkExt;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
-import org.jboss.osgi.framework.SystemBundleProvider;
 import org.jboss.osgi.framework.SystemModuleProvider;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.jboss.osgi.spi.util.BundleInfo;
@@ -206,7 +205,6 @@ public class FrameworkService implements Service<Framework> {
 
     private static class FrameworkModuleIntegration implements FrameworkModuleProvider {
 
-        private final InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
         private final InjectedValue<Module> injectedSystemModule = new InjectedValue<Module>();
         private final SubsystemState subsystemState;
         private Module frameworkModule;
@@ -214,7 +212,6 @@ public class FrameworkService implements Service<Framework> {
         private static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(subsystemState);
             ServiceBuilder<?> serviceBuilder = target.addService(FrameworkModuleProvider.SERVICE_NAME, service);
-            serviceBuilder.addDependency(SystemBundleProvider.SERVICE_NAME, Bundle.class, service.injectedSystemBundle);
             serviceBuilder.addDependency(SystemModuleProvider.SERVICE_NAME, Module.class, service.injectedSystemModule);
             serviceBuilder.setInitialMode(Mode.PASSIVE);
             serviceBuilder.install();
@@ -226,7 +223,6 @@ public class FrameworkService implements Service<Framework> {
 
         @Override
         public void start(StartContext context) throws StartException {
-            frameworkModule = createFrameworkModule();
         }
 
         @Override
@@ -235,11 +231,19 @@ public class FrameworkService implements Service<Framework> {
         }
 
         @Override
-        public Module getValue() throws IllegalStateException {
+        public FrameworkModuleProvider getValue() throws IllegalStateException {
+            return this;
+        }
+
+        @Override
+        public Module getFrameworkModule(Bundle systemBundle) {
+            if (frameworkModule == null) {
+                frameworkModule = createFrameworkModule(systemBundle);
+            }
             return frameworkModule;
         }
 
-        private Module createFrameworkModule() {
+        private Module createFrameworkModule(final Bundle systemBundle) {
             // Setup the extended framework module spec
             Module systemModule = injectedSystemModule.getValue();
             ModuleIdentifier systemIdentifier = systemModule.getIdentifier();
@@ -265,7 +269,6 @@ public class FrameworkService implements Service<Framework> {
                 }
             }
 
-            Bundle systemBundle = injectedSystemBundle.getValue();
             specBuilder.setModuleClassLoaderFactory(new BundleReferenceClassLoader.Factory(systemBundle));
 
             try {
