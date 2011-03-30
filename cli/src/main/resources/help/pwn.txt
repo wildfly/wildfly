@@ -1,0 +1,6 @@
+Synopsis:	pwn
+			pwd
+
+Description:	prints the full node path of the current working node.
+
+Arguments: n/a.

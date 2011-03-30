@@ -96,7 +96,7 @@ public interface OperationRequestAddress extends Iterable<OperationRequestAddres
 
     /**
      * Returns the node name of the last node.
-     * @return  the node name of the last node or null is the prefix ends
+     * @return  the node name of the last node or null if the prefix ends
      * on a type or is empty.
      */
     String getNodeName();

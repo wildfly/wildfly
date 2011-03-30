@@ -5,8 +5,9 @@ Supported commands:
  deploy			- deploy an application; 
  help (or h)	- print this message;
  history		- print or disable/enable/clear the history expansion.
- quit (or q)	- quit the command line interface;
  ls				- list the contents of the node path;
+ pwn (or pwd)	- prints the current working node;
+ quit (or q)	- quit the command line interface;
  undeploy		- undeploy an application.
 
 For a more detailed description of a specific command, execute the command with '--help' as the argument.

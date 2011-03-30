@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -66,6 +67,7 @@ public class CommandLineMain {
         registerHandler(new HistoryHandler(), "history");
         registerHandler(new DeployHandler(), "deploy");
         registerHandler(new UndeployHandler(), "undeploy");
+        registerHandler(new PrintWorkingNodeHandler(), "pwn", "pwd");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
@@ -303,7 +305,18 @@ public class CommandLineMain {
             } else {
                 buffer.append("disconnected ");
             }
-            buffer.append(prefixFormatter.format(prefix)).append("] ");
+
+            if(prefix.isEmpty()) {
+                buffer.append('/');
+            } else {
+                final String nodeName = prefix.getNodeName();
+                if(nodeName == null) {
+                    buffer.append(prefix.getNodeType());
+                } else {
+                    buffer.append(nodeName);
+                }
+            }
+            buffer.append("] ");
             return buffer.toString();
         }
 
