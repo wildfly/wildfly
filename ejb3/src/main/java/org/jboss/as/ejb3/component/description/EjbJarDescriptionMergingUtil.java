@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.component.description;
 
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.EjbJarDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -44,7 +45,7 @@ import java.util.Set;
  */
 public class EjbJarDescriptionMergingUtil {
 
-    public static void merge(EjbJarDescription mergedResult, EjbJarDescription original, EjbJarDescription override) {
+    public static void merge(EjbJarDescription mergedResult, EjbJarDescription original, EjbJarDescription override, EEModuleDescription moduleDescription) {
         Collection<SessionBeanComponentDescription> originalSessionBeans = original.getSessionBeans();
         if (originalSessionBeans.isEmpty()) {
             // no session beans in the original ejb jar description. So just use all the session beans from the override
@@ -57,13 +58,13 @@ public class EjbJarDescriptionMergingUtil {
             } else {
                 // both original and override session beans are non-empty. Merge them
                 List<SessionBeanComponentDescription> mergedBeans = new ArrayList<SessionBeanComponentDescription>();
-                mergeSessionBeans(mergedBeans, originalSessionBeans, overrideSessionBeans);
+                mergeSessionBeans(mergedBeans, originalSessionBeans, overrideSessionBeans, moduleDescription);
                 mergedResult.addSessionBeans(mergedBeans);
             }
         }
     }
 
-    public static void mergeSessionBeans(Collection<SessionBeanComponentDescription> mergedResult, Collection<SessionBeanComponentDescription> original, Collection<SessionBeanComponentDescription> override) {
+    public static void mergeSessionBeans(Collection<SessionBeanComponentDescription> mergedResult, Collection<SessionBeanComponentDescription> original, Collection<SessionBeanComponentDescription> override, EEModuleDescription moduleDescription) {
 
         if (original.isEmpty()) {
             // no session beans in the original ejb jar description. So just use all the session beans from the override
@@ -91,7 +92,7 @@ public class EjbJarDescriptionMergingUtil {
                         }
                         // there's a overridden session bean, so merge them
                         commonBeans.add(originalSessionBean.getEJBName());
-                        SessionBeanComponentDescription mergedBean = createNewSessionBean(originalSessionBean);
+                        SessionBeanComponentDescription mergedBean = createNewSessionBean(originalSessionBean, moduleDescription);
                         switch (sessionBeanType) {
                             case STATELESS:
                                 mergeStatelessBean((StatelessComponentDescription) mergedBean, (StatelessComponentDescription) originalSessionBean, (StatelessComponentDescription) overrideSessionBean);
@@ -242,15 +243,15 @@ public class EjbJarDescriptionMergingUtil {
     }
 
 
-    private static SessionBeanComponentDescription createNewSessionBean(SessionBeanComponentDescription source) {
+    private static SessionBeanComponentDescription createNewSessionBean(SessionBeanComponentDescription source, EEModuleDescription moduleDescription) {
         SessionBeanComponentDescription.SessionBeanType sessionBeanType = source.getSessionBeanType();
         switch (sessionBeanType) {
             case STATELESS:
-                return new StatelessComponentDescription(source.getComponentName(), source.getComponentClassName(), source.getModuleName(), source.getApplicationName());
+                return new StatelessComponentDescription(source.getComponentName(), source.getComponentClassName(), moduleDescription);
             case STATEFUL:
-                return new StatefulComponentDescription(source.getComponentName(), source.getComponentClassName(), source.getModuleName(), source.getApplicationName());
+                return new StatefulComponentDescription(source.getComponentName(), source.getComponentClassName(), moduleDescription);
             case SINGLETON:
-                return new SingletonComponentDescription(source.getComponentName(), source.getComponentClassName(), source.getModuleName(), source.getApplicationName());
+                return new SingletonComponentDescription(source.getComponentName(), source.getComponentClassName(), moduleDescription);
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType + " for bean " + source.getEJBName());
         }

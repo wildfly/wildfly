@@ -47,7 +47,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      */
     private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
 
-    private final Map<MethodIntf, TransactionAttributeType> txPerViewStyle1 = new HashMap<MethodIntf, TransactionAttributeType>();;
+    private final Map<MethodIntf, TransactionAttributeType> txPerViewStyle1 = new HashMap<MethodIntf, TransactionAttributeType>();
     private final PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>> txPerViewStyle2 = new PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>>() {
         @Override
         Map<String, TransactionAttributeType> populate() {

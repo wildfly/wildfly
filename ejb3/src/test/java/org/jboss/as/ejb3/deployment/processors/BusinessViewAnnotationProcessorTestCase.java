@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -85,7 +86,8 @@ public class BusinessViewAnnotationProcessorTestCase {
         index(indexer, MyInterface.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestModule", "TestApp");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), moduleDescription);
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -106,7 +108,8 @@ public class BusinessViewAnnotationProcessorTestCase {
         index(indexer, MyInterface.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ejbClass.getSimpleName(), ejbClass.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestModule", "TestApp");
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ejbClass.getSimpleName(), ejbClass.getName(), moduleDescription);
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -126,7 +129,8 @@ public class BusinessViewAnnotationProcessorTestCase {
         index(indexer, ejbClass);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ImplicitNoInterfaceBean.class.getSimpleName(), ImplicitNoInterfaceBean.class.getName(), "TestModule", "TestApp");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestModule", "TestApp");
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ImplicitNoInterfaceBean.class.getSimpleName(), ImplicitNoInterfaceBean.class.getName(), moduleDescription);
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
