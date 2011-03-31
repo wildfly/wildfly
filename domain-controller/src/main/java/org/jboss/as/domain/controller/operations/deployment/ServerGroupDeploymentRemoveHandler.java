@@ -18,13 +18,9 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -32,12 +28,10 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Handles removal of a deployment from the model. This can be used at either the domain deployments level
@@ -45,13 +39,18 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class ServerGroupDeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
-    public static final DeploymentRemoveHandler INSTANCE = new DeploymentRemoveHandler();
+    public static final ServerGroupDeploymentRemoveHandler INSTANCE = new ServerGroupDeploymentRemoveHandler();
 
-    private DeploymentRemoveHandler() {
+    private ServerGroupDeploymentRemoveHandler() {
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ServerGroupDescription.getDeploymentRemoveOperation(locale);
     }
 
     /**
@@ -59,33 +58,11 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
      */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+
         final ModelNode model = context.getSubModel();
-        final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
-
-        final String deploymentName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-
-        final ModelNode root = context.getSubModel(PathAddress.EMPTY_ADDRESS);
-        if (root.hasDefined(SERVER_GROUP)) {
-            List<String> badGroups = new ArrayList<String>();
-            for (Property prop : root.get(SERVER_GROUP).asPropertyList()) {
-                ModelNode sg = prop.getValue();
-                if (sg.hasDefined(DEPLOYMENT) && sg.get(DEPLOYMENT).has(deploymentName)) {
-                    badGroups.add(prop.getName());
-                }
-            }
-
-            if (badGroups.size() > 0) {
-                String msg = String.format("Cannot remove deployment %s from the domain as it is still used by server groups %s", deploymentName, badGroups);
-                throw new OperationFailedException(new ModelNode().set(msg));
-            }
-        }
+        final ModelNode compensatingOp = ServerGroupDeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOp);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DomainRootDescription.getDeploymentRemoveOperation(locale);
     }
 }

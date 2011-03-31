@@ -340,7 +340,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
 
             if(opsByGroup.size() == 0) {
                 // FIXME Reformat a single domain-result
-                final ModelNode result = hostResults.get(localHostName).get(RESULT);
+                final ModelNode result = getSingleHostResult(hostResults);
                 if(result.hasDefined(DOMAIN_RESULTS) && ! result.hasDefined(SERVER_OPERATIONS)) {
                     final List<Property> steps = result.get(DOMAIN_RESULTS).asPropertyList();
                     if(steps.size() == 1) {
@@ -637,6 +637,24 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
             }
         }
         return result;
+    }
+
+    private ModelNode getSingleHostResult(Map<String, ModelNode> hostResults) {
+        ModelNode singleHost = hostResults.get(localHostName);
+        if (singleHost != null
+                && (!singleHost.hasDefined(OUTCOME) || IGNORED.equals(singleHost.get(OUTCOME).asString()))) {
+            singleHost = null;
+        }
+        if (singleHost == null) {
+            for (ModelNode node : hostResults.values()) {
+                if (node.hasDefined(OUTCOME) && !IGNORED.equals(node.get(OUTCOME).asString())) {
+                    singleHost = node;
+                    break;
+                }
+            }
+        }
+
+        return singleHost == null ? new ModelNode() : singleHost.get(RESULT);
     }
 
     private ModelNode getRolloutPlan(ModelNode rolloutPlan, Map<String, Map<ServerIdentity, ModelNode>> opsByGroup) throws OperationFailedException {

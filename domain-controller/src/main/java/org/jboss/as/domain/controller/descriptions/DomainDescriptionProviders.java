@@ -93,26 +93,4 @@ public final class DomainDescriptionProviders {
             return DeploymentDescription.getDeploymentDescription(locale, true);
         }
     };
-
-    /**
-     * We put this operation description provider here rather than on the handler so we can use the
-     * handler for two use cases with slightly different descriptions.
-     */
-    public static final DescriptionProvider SERVER_GROUP_DEPLOYMENT_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ServerGroupDescription.getDeploymentRemoveOperation(locale);
-        }
-    };
-
-    /**
-     * We put this operation description provider here rather than on the handler so we can use the
-     * handler for two use cases with slightly different descriptions.
-     */
-    public static final DescriptionProvider DEPLOYMENT_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return DomainRootDescription.getDeploymentRemoveOperation(locale);
-        }
-    };
 }

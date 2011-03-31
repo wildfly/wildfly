@@ -80,6 +80,7 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLH
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentDeployHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRedeployHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
@@ -202,13 +203,13 @@ class DomainModelUtil {
         serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentDeployHandler.OPERATION_NAME, ServerGroupDeploymentDeployHandler.INSTANCE, ServerGroupDeploymentDeployHandler.INSTANCE);
         serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentRedeployHandler.OPERATION_NAME, ServerGroupDeploymentRedeployHandler.INSTANCE, ServerGroupDeploymentRedeployHandler.INSTANCE);
         serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentUndeployHandler.OPERATION_NAME, ServerGroupDeploymentUndeployHandler.INSTANCE, ServerGroupDeploymentUndeployHandler.INSTANCE);
-        serverGroupDeployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DomainDescriptionProviders.SERVER_GROUP_DEPLOYMENT_REMOVE);
+        serverGroupDeployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, ServerGroupDeploymentRemoveHandler.INSTANCE, ServerGroupDeploymentRemoveHandler.INSTANCE);
 
         // Root Deployments
         final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepo, isMaster);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
-        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DomainDescriptionProviders.DEPLOYMENT_REMOVE);
+        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);
 
         // Extensions
         final ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);

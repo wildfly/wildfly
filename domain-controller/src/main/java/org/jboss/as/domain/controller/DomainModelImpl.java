@@ -400,6 +400,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
             ModelNode setNode = serverOpsNode.add();
             ModelNode serverNode = setNode.get("servers");
+            serverNode.setEmptyList();
             for (ServerIdentity server : entry.getKey()) {
                 serverNode.add(server.getServerName(), server.getServerGroupName());
             }
