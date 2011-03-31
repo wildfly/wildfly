@@ -296,6 +296,7 @@ public enum Phase {
     // INSTALL
     public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
+    public static final int INSTALL_JAXRS_SCANNING                      = 0x0101;
     public static final int INSTALL_APP_CONTEXT                         = 0x0200;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0300;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0400;
@@ -305,7 +306,6 @@ public enum Phase {
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0800;
     public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
-    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x0B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x0C00;
     public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0D00;
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0E00;
@@ -315,9 +315,9 @@ public enum Phase {
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x0F03;
     public static final int INSTALL_EE_COMPONENT                        = 0x0F04;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1000;
-    public static final int INSTALL_JAXRS_SCANNING                      = 0x1100;
     public static final int INSTALL_JAXRS_COMPONENT                     = 0x1200;
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1300;
+    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1301;
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1400;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1500;
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1600;

@@ -32,7 +32,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -282,15 +281,6 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 }
                 params.add(param);
 
-                try {
-                    classLoader.loadClass(JaxrsIntegrationProcessor.CDI_INJECTOR_FACTORY_CLASS);
-                    // don't set this param if it is not a CDI deployment
-                    if (WeldDeploymentMarker.isPartOfWeldDeployment(du)) {
-                        JaxrsIntegrationProcessor.setContextParameter(webData, "resteasy.injector.factory",
-                                JaxrsIntegrationProcessor.CDI_INJECTOR_FACTORY_CLASS);
-                    }
-                } catch (ClassNotFoundException ignored) {
-                }
                 return clazz;
             }
         }
