@@ -91,6 +91,7 @@
                     <path name="javax/swing/plaf/basic"/>
                     <path name="javax/swing/plaf/metal"/>
                     <path name="javax/swing/plaf/multi"/>
+                    <path name="javax/swing/plaf/nimbus"/>
                     <path name="javax/swing/plaf/synth"/>
                     <path name="javax/swing/table"/>
                     <path name="javax/swing/text"/>
