@@ -1,4 +1,4 @@
-Synopsis:	ls [node_path]
+Synopsis:	ls [node_path] [-l]
 
 Description:	lists the contents of a node path.
 
@@ -12,6 +12,9 @@ Arguments:
 				
 				If specified, the node-path is expected to follow the following format:
 				[node-type [=node-name (,node-type[=node-name])*]].
+				
+	-l			- by default the result is printed in columns using the whole width of the terminal,
+				the -l switch will make it printed one name per line.  
 				
 The following navigation signs are supported in the node-path:
 	/		- the root node (e.g. 'cd /' or 'cd /some=thing');

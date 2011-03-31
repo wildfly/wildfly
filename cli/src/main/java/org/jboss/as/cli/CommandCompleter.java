@@ -73,10 +73,34 @@ public class CommandCompleter implements Completor {
         // TODO a hack to enable tab-completion for cd/cn
         if(buffer.startsWith("cd ", firstCharIndex) || buffer.startsWith("cn ", firstCharIndex)
                 || buffer.startsWith("ls ")) {
-            String opBuffer = buffer.substring(firstCharIndex + 3);
+
+            int nextCharIndex = firstCharIndex + 3;
+            while(nextCharIndex < buffer.length()) {
+                if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                    break;
+                }
+                ++nextCharIndex;
+            }
+
+            if(nextCharIndex < buffer.length() && buffer.charAt(nextCharIndex) == '-') {
+                // that's a switch, skip it
+                nextCharIndex = buffer.indexOf(' ', nextCharIndex);
+                if(nextCharIndex < 0) {
+                    return -1;
+                }
+
+                while(nextCharIndex < buffer.length()) {
+                    if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+            }
+
+            String opBuffer = buffer.substring(nextCharIndex);
             int result = opCompleter.doComplete(opBuffer, candidates, false);
             if(result >= 0) {
-                return firstCharIndex + 3 + result;
+                return nextCharIndex + result;
             } else {
                 return result;
             }

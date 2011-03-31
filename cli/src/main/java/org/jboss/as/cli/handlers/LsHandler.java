@@ -49,11 +49,25 @@ public class LsHandler extends CommandHandlerWithHelp {
 
         final OperationRequestAddress address;
 
+        boolean lSwitch = false;
+        String nodePath = null;
         if (args != null) {
+            String[] arr = args.split("\\s+");
+            for (int i = 0; i < arr.length; ++i) {
+                String arg = arr[i];
+                if ("-l".equals(arg)) {
+                    lSwitch = true;
+                } else {
+                    nodePath = arg;
+                }
+            }
+        }
+
+        if (nodePath != null) {
             address = new DefaultOperationRequestAddress(ctx.getPrefix());
             OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(address);
             try {
-                ctx.getOperationRequestParser().parse(args, handler);
+                ctx.getOperationRequestParser().parse(nodePath, handler);
             } catch (CommandFormatException e) {
                 ctx.printLine(e.getLocalizedMessage());
             }
@@ -68,6 +82,12 @@ public class LsHandler extends CommandHandlerWithHelp {
             names = ctx.getOperationCandidatesProvider().getNodeTypes(address);
         }
 
-        ctx.printColumns(names);
+        if(lSwitch) {
+            for(String name : names) {
+                ctx.printLine(name);
+            }
+        } else {
+            ctx.printColumns(names);
+        }
     }
 }
