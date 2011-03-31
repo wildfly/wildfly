@@ -124,13 +124,14 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
                         throw new StartException("Error resolving CDI injection point " + field + " on " + componentClass + ". No bean satisfies the injection point.");
                     }
                     Bean<?> bean = bm.resolve(beans);
-                    injectionPoints.add(new CDIFieldInjection(field.getJavaMember(), bean));
+                    injectionPoints.add(new CDIFieldInjection(field.getJavaMember(), bean, ip));
                 }
             }
             //now look for @Inject methods
             for (AnnotatedMethod<?> method : weldClass.getMethods()) {
                 if (method.isAnnotationPresent(Inject.class)) {
                     final List<Bean<?>> parameterBeans = new ArrayList<Bean<?>>();
+                    final List<InjectionPoint> ips = new ArrayList<InjectionPoint>();
                     for (AnnotatedParameter<?> param : method.getParameters()) {
                         final Set<Annotation> qualifiers = new HashSet<Annotation>();
                         for (Annotation annotation : param.getAnnotations()) {
@@ -147,8 +148,9 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
                         }
                         Bean<?> bean = bm.resolve(beans);
                         parameterBeans.add(bean);
+                        ips.add(ip);
                     }
-                    injectionPoints.add(new CDIMethodInjection(method.getJavaMember(), parameterBeans));
+                    injectionPoints.add(new CDIMethodInjection(method.getJavaMember(), parameterBeans, ips));
                 }
             }
 
@@ -206,10 +208,12 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
     private static final class CDIFieldInjection implements Injection {
         private final Field field;
         private final Bean<?> bean;
+        private final FieldInjectionPoint injectionPoint;
 
-        public CDIFieldInjection(final Field field, final Bean<?> bean) {
+        public CDIFieldInjection(final Field field, final Bean<?> bean, final FieldInjectionPoint injectionPoint) {
             this.bean = bean;
             this.field = field;
+            this.injectionPoint = injectionPoint;
             AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 @Override
                 public Object run() {
@@ -229,7 +233,7 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
         public Collection<CreationalContext<?>> inject(Object instance, BeanManager beanManager) {
             try {
                 final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
-                final Object value = beanManager.getReference(bean, field.getGenericType(), ctx);
+                final Object value = beanManager.getInjectableReference(injectionPoint, ctx);
                 field.set(instance, value);
                 return Collections.<CreationalContext<?>>singleton(ctx);
             } catch (IllegalAccessException e) {
@@ -244,10 +248,12 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
     private static final class CDIMethodInjection implements Injection {
         private final Method method;
         private final List<Bean<?>> beans;
+        private final List<InjectionPoint> injectionPoints;
 
-        public CDIMethodInjection(final Method method, final List<Bean<?>> beans) {
+        public CDIMethodInjection(final Method method, final List<Bean<?>> beans, final List<InjectionPoint> injectionPoints) {
             this.beans = beans;
             this.method = method;
+            this.injectionPoints = injectionPoints;
             AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 @Override
                 public Object run() {
@@ -273,7 +279,7 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
                 for(Bean<?> bean : beans) {
                     final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
                     contexts.add(ctx);
-                    final Object value = beanManager.getReference(bean, method.getParameterTypes()[i], ctx);
+                    final Object value = beanManager.getInjectableReference(injectionPoints.get(i), ctx);
                     params[i++] = value;
                 }
                 method.invoke(instance,params);
