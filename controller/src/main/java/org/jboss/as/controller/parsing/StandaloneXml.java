@@ -355,7 +355,7 @@ public class StandaloneXml extends CommonXml {
             final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
             deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
             deploymentAdd.get(HASH).set(hash);
-            if(startInput != null) deploymentAdd.get(ENABLED).set(startInput);
+            deploymentAdd.get(ENABLED).set(enabled);
             list.add(deploymentAdd);
         }
     }
