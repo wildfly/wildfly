@@ -99,6 +99,10 @@ public class Util {
     }
 
     public static boolean isDeployed(String name, ModelControllerClient client) {
+        return getDeployments(client).contains(name);
+    }
+
+    public static List<String> getDeployments(ModelControllerClient client) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
@@ -113,11 +117,11 @@ public class Util {
         try {
             ModelNode outcome = client.execute(request);
             if (isSuccess(outcome)) {
-                return getList(outcome).contains(name);
+                return getList(outcome);
             }
         } catch (Exception e) {
         }
 
-        return false;
+        return Collections.emptyList();
     }
 }

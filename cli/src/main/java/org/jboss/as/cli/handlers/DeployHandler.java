@@ -52,7 +52,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(args == null) {
-            ctx.printLine("File path is missing.");
+            ctx.printColumns(Util.getDeployments(client));
             return;
         }
 
