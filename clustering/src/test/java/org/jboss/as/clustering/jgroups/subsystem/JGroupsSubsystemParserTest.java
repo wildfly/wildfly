@@ -64,7 +64,7 @@ public class JGroupsSubsystemParserTest {
         URL url = Thread.currentThread().getContextClassLoader().getResource(name);
         Assert.assertNotNull(url);
 
-        XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(new StreamSource(url.toString()));
+        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StreamSource(url.toString()));
         mapper.parseDocument(operations, reader);
 
         return operations;
