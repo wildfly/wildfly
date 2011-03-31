@@ -69,7 +69,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     private final String applicationName;
     private final String componentClassName;
     private final EEModuleDescription moduleDescription;
-    private final Map<String, InterceptorMethodDescription> aroundInvokeMethods = new LinkedHashMap<String,InterceptorMethodDescription>();
+    private final Map<String, InterceptorMethodDescription> aroundInvokeMethods = new LinkedHashMap<String, InterceptorMethodDescription>();
 
     private final List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
     private final Set<String> classInterceptorsSet = new HashSet<String>();
@@ -82,7 +82,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
     private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
 
-    private final Map<String,InterceptorDescription> allInterceptors = new HashMap<String,InterceptorDescription>();
+    private final Map<String, InterceptorDescription> allInterceptors = new HashMap<String, InterceptorDescription>();
 
     private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
 
@@ -95,7 +95,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     /**
      * Construct a new instance.
      *
-     * @param componentName the component name
+     * @param componentName      the component name
      * @param componentClassName the component instance class name
      * @param module
      */
@@ -170,12 +170,11 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
      *
      * @return all interceptors on the class
      */
-    public Map<String,InterceptorDescription> getAllInterceptors() {
+    public Map<String, InterceptorDescription> getAllInterceptors() {
         return allInterceptors;
     }
 
     /**
-     *
      * @return <code>true</code> if the <code>ExcludeDefaultInterceptors</code> annotation was applied to the class
      */
     public boolean isExcludeDefaultInterceptors() {
@@ -187,7 +186,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     }
 
     /**
-     *
      * @param method The method that has been annotated <code>@ExcludeDefaultInterceptors</code>
      */
     public void excludeDefaultInterceptors(MethodIdentifier method) {
@@ -195,7 +193,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     }
 
     /**
-     *
      * @param method The method that has been annotated <code>@ExcludeClassInterceptors</code>
      */
     public void excludeClassInterceptors(MethodIdentifier method) {
@@ -222,12 +219,31 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         if (classInterceptorsSet.contains(name)) {
             return false;
         }
-        if(!allInterceptors.containsKey(name)) {
-            allInterceptors.put(name,description);
+        if (!allInterceptors.containsKey(name)) {
+            allInterceptors.put(name, description);
         }
         classInterceptors.add(description);
         classInterceptorsSet.add(name);
         return true;
+    }
+
+    /**
+     * Returns the {@link InterceptorDescription} for the passed <code>interceptorClassName</code>, if such a class
+     * interceptor exists for this component description. Else returns null.
+     *
+     * @param interceptorClassName The fully qualified interceptor class name
+     * @return
+     */
+    public InterceptorDescription getClassInterceptor(String interceptorClassName) {
+        if (!this.classInterceptorsSet.contains(interceptorClassName)) {
+            return null;
+        }
+        for (InterceptorDescription interceptor : this.classInterceptors) {
+            if (interceptor.getInterceptorClassName().equals(interceptorClassName)) {
+                return interceptor;
+            }
+        }
+        return null;
     }
 
     /**
@@ -243,7 +259,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     /**
      * Add a method interceptor class name.
      *
-     * @param method the method
+     * @param method      the method
      * @param description the interceptor descriptor
      * @return {@code true} if the interceptor class was not already associated with the method, {@code false} if it was
      */
@@ -257,10 +273,10 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
             methodInterceptorsSet.put(method, interceptorClasses = new HashSet<String>());
         }
         final String name = description.getInterceptorClassName();
-        if(interceptorClasses.contains(name)) {
+        if (interceptorClasses.contains(name)) {
             return false;
         }
-        if(!allInterceptors.containsKey(name)) {
+        if (!allInterceptors.containsKey(name)) {
             allInterceptors.put(name, description);
         }
         interceptors.add(description);
@@ -275,10 +291,10 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
      */
     public void addAroundInvokeMethod(InterceptorMethodDescription methodDescription) {
         String declaringClassName = methodDescription.getDeclaringClass();
-        if(aroundInvokeMethods.containsKey(declaringClassName)) {
+        if (aroundInvokeMethods.containsKey(declaringClassName)) {
             throw new IllegalArgumentException("Only one @AroundInvoke method allowed per class: " + declaringClassName);
         }
-        aroundInvokeMethods.put(declaringClassName,methodDescription);
+        aroundInvokeMethods.put(declaringClassName, methodDescription);
     }
 
     /**
@@ -316,7 +332,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
      * take effect.
      *
      * @param serviceName the service name of the dependency
-     * @param type the type of the dependency (required or optional)
+     * @param type        the type of the dependency (required or optional)
      */
     public void addDependency(ServiceName serviceName, ServiceBuilder.DependencyType type) {
         if (serviceName == null) {
@@ -337,10 +353,11 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     /**
      * Create the component configuration which will be used to construct the component instance.
      *
-     * @param phaseContext the deployment phase context
+     * @param phaseContext   the deployment phase context
      * @param componentClass the component class
      * @return the component configuration
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException if an error occurs
+     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
+     *          if an error occurs
      */
     public final AbstractComponentConfiguration createComponentConfiguration(final DeploymentPhaseContext phaseContext, final Class<?> componentClass) throws DeploymentUnitProcessingException {
         AbstractComponentConfiguration configuration = constructComponentConfiguration();
@@ -361,12 +378,13 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
      * method at the start of processing.
      *
      * @param configuration the configuration to prepare
-     * @param phaseContext the phase context
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException if an error occurs
+     * @param phaseContext  the phase context
+     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
+     *          if an error occurs
      */
     protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module= deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
         // Create the table of component class methods
@@ -381,7 +399,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
             for (Method componentMethod : classIndex.getMethods()) {
                 final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(componentMethod);
                 int modifiers = componentMethod.getModifiers();
-                if (! Modifier.isStatic(modifiers) && ! Modifier.isFinal(modifiers)) {
+                if (!Modifier.isStatic(modifiers) && !Modifier.isFinal(modifiers)) {
                     componentMethods.put(MethodIdentifier.getIdentifierForMethod(componentMethod), componentMethod);
                     // assemble the final set of interceptor factories for this method.
                     final List<InterceptorFactory> theInterceptorFactories = new ArrayList<InterceptorFactory>();
@@ -396,20 +414,20 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
                     //and probably more stuff as well
 
                     //first class level interceptor
-                    if(!methodExcludeClassInterceptors.contains(methodIdentifier)){
-                        for(final InterceptorDescription interceptor: classInterceptors) {
+                    if (!methodExcludeClassInterceptors.contains(methodIdentifier)) {
+                        for (final InterceptorDescription interceptor : classInterceptors) {
                             registerComponentInterceptor(interceptor, configuration, module, index, theInterceptorFactories);
                         }
                     }
                     //now method level interceptors
                     List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(methodIdentifier);
-                    if(methodLevelInterceptors != null)
-                        for(final InterceptorDescription interceptor : methodLevelInterceptors) {
+                    if (methodLevelInterceptors != null)
+                        for (final InterceptorDescription interceptor : methodLevelInterceptors) {
                             registerComponentInterceptor(interceptor, configuration, module, index, theInterceptorFactories);
                         }
                     //now register around invoke methods on the bean and its superclasses
                     //this is a linked hash set so methods will be invoked in the correct order
-                    for(Map.Entry<String, InterceptorMethodDescription> entry : aroundInvokeMethods.entrySet()) {
+                    for (Map.Entry<String, InterceptorMethodDescription> entry : aroundInvokeMethods.entrySet()) {
                         try {
                             final InterceptorMethodDescription aroundInvoke = entry.getValue();
                             final Class<?> methodDeclaringClass = module.getClassLoader().loadClass(entry.getKey());
@@ -417,7 +435,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
                             //we know what the signature is
                             final Method aroundInvokeMethod = methodDeclaringClassIndex.getMethod(Object.class, aroundInvoke.getIdentifier().getName(), InvocationContext.class);
                             theInterceptorFactories.add(new MethodInterceptorFactory(AbstractComponent.INSTANCE_FACTORY, aroundInvokeMethod));
-                        } catch(ClassNotFoundException e){
+                        } catch (ClassNotFoundException e) {
                             //this should never happen
                             throw new DeploymentUnitProcessingException("Failed to load interceptor class " + entry.getKey());
                         }
@@ -443,7 +461,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         configuration.addPreDestroyLifecycles(createLifecycleInterceptors(getPreDestroys(), module, index));
         configuration.addPreDestroyComponentLifecycles(getPreDestroyComponentLifecycles());
         final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys = configuration.getInterceptorPreDestroys();
-        for(InterceptorDescription interceptorDescription : getClassInterceptors()) {
+        for (InterceptorDescription interceptorDescription : getClassInterceptors()) {
             final Class<?> interceptorClass;
             try {
                 interceptorClass = Class.forName(interceptorDescription.getInterceptorClassName(), false, componentClass.getClassLoader());
@@ -515,16 +533,16 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
             final List<LifecycleInterceptorFactory> postConstructs = createLifecycleInterceptors(interceptor.getPostConstructs(), module, index);
             final List<LifecycleInterceptorFactory> preDestroys = createLifecycleInterceptors(interceptor.getPreDestroys(), module, index);
 
-            final InjectingInterceptorInstanceFactory instanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass),interceptorClass,configuration, postConstructs, preDestroys);
+            final InjectingInterceptorInstanceFactory instanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass), interceptorClass, configuration, postConstructs, preDestroys);
             //we need to create an Interceptor for every around invoke method
-            for(InterceptorMethodDescription aroundInvoke : interceptor.getAroundInvokeMethods()) {
+            for (InterceptorMethodDescription aroundInvoke : interceptor.getAroundInvokeMethods()) {
                 final Class<?> methodDeclaringClass = module.getClassLoader().loadClass(aroundInvoke.getDeclaringClass());
                 final ClassReflectionIndex<?> methodDeclaringClassIndex = index.getClassIndex(methodDeclaringClass);
                 //we know what the signature is
                 final Method aroundInvokeMethod = methodDeclaringClassIndex.getMethod(Object.class, aroundInvoke.getIdentifier().getName(), InvocationContext.class);
                 theInterceptorFactories.add(new MethodInterceptorFactory(instanceFactory, aroundInvokeMethod));
             }
-        } catch(ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException("Failed to load interceptor class " + interceptor.getInterceptorClassName());
         }
     }
@@ -539,7 +557,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     public void addAnnotationBinding(BindingDescription binding) {
         //for JNDI bindings where the naming mode is not CREATE
         //the module is responsible for installing the binding
-        if(this.getNamingMode() != ComponentNamingMode.CREATE ||
+        if (this.getNamingMode() != ComponentNamingMode.CREATE ||
                 !(binding.getBindingName() != null &&
                         binding.getBindingName().startsWith("java:comp"))) {
             moduleDescription.getBindingsContainer().addAnnotationBinding(binding);
@@ -556,7 +574,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
      * @param binding The binding to add
      */
     public void addBinding(BindingDescription binding) {
-        if(this.getNamingMode() != ComponentNamingMode.CREATE ||
+        if (this.getNamingMode() != ComponentNamingMode.CREATE ||
                 !(binding.getBindingName() != null &&
                         binding.getBindingName().startsWith("java:comp"))) {
             moduleDescription.getBindingsContainer().addBinding(binding);
@@ -568,12 +586,12 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     /**
      * Adds multiple bindings
      *
-     * @see #addBinding(BindingDescription)
      * @param bindings The bindings to add
+     * @see #addBinding(BindingDescription)
      */
     public void addBindings(Iterable<BindingDescription> bindings) {
         final Iterator<BindingDescription> iterator = bindings.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             addBinding(iterator.next());
         }
     }
@@ -590,7 +608,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     }
 
     public void addAnnotationBindings(Collection<BindingDescription> bindings) {
-        for(BindingDescription binding : bindings) {
+        for (BindingDescription binding : bindings) {
             addAnnotationBinding(binding);
         }
     }

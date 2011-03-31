@@ -111,4 +111,17 @@ public class DDBasedSLSBTestCase {
         Assert.assertEquals("Unexpected return message from no-interface view of bean", msgTwo, noInterfaceView.echo(msgTwo));
 
     }
+
+    @Test
+    public void testInterceptorsOnSLSB() throws Exception {
+        Context ctx = new InitialContext();
+        String ejbName = InterceptedDDBean.class.getSimpleName();
+        String jndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName();
+        Echo interceptedBean = (Echo) ctx.lookup(jndiName);
+        String msg = "You will be intercepted!!!";
+        String returnMsg = interceptedBean.echo(msg);
+        String expectedReturnMsg = SimpleInterceptor.class.getName() + "#" + DDBasedInterceptor.class.getName() + "#" + msg;
+        Assert.assertEquals("Unexpected return message from bean", expectedReturnMsg, returnMsg);
+
+    }
 }

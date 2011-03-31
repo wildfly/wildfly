@@ -45,18 +45,32 @@
             <ejb-class>org.jboss.as.test.embedded.demos.ejb3.dd.PartialDDSLSB</ejb-class>
             <session-type>Stateless</session-type>
         </session>
+
+        <session>
+            <ejb-name>InterceptedDDBean</ejb-name>
+            <ejb-class>org.jboss.as.test.embedded.demos.ejb3.dd.InterceptedDDBean</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+
     </enterprise-beans>
     
     <interceptors>
         <interceptor>
             <interceptor-class>org.jboss.as.test.embedded.demos.ejb3.dd.SimpleInterceptor</interceptor-class>
         </interceptor>
+        <interceptor>
+            <interceptor-class>org.jboss.as.test.embedded.demos.ejb3.dd.DDBasedInterceptor</interceptor-class>
+            <around-invoke>
+                <method-name>onInvoke</method-name>
+            </around-invoke>
+        </interceptor>
     </interceptors>
 
     <assembly-descriptor>
         <interceptor-binding>
-            <ejb-name>PartialDDSLSB</ejb-name>
+            <ejb-name>InterceptedDDBean</ejb-name>
             <interceptor-class>org.jboss.as.test.embedded.demos.ejb3.dd.SimpleInterceptor</interceptor-class>
+            <interceptor-class>org.jboss.as.test.embedded.demos.ejb3.dd.DDBasedInterceptor</interceptor-class>
         </interceptor-binding>
     </assembly-descriptor>
     

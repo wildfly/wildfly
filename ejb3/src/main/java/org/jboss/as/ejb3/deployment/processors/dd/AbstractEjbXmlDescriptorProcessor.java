@@ -115,8 +115,12 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
         InterceptorsMetaData applicableInterceptors = EjbJarMetaData.getInterceptors(ejbName, ejbJarMetaData);
         if (applicableInterceptors != null) {
             for (InterceptorMetaData interceptor : applicableInterceptors) {
-                // apply the interceptor
-                ejbComponentDescription.addClassInterceptor(new InterceptorDescription(interceptor.getInterceptorClass()));
+                // get (or create the interceptor description)
+                InterceptorDescription interceptorDescription = ejbComponentDescription.getClassInterceptor(interceptor.getInterceptorClass());
+                if (interceptorDescription == null) {
+                    interceptorDescription = new InterceptorDescription(interceptor.getInterceptorClass());
+                    ejbComponentDescription.addClassInterceptor(interceptorDescription);
+                }
 
                 // around-invoke(s) of the interceptor configured (if any) in the deployment descriptor
                 AroundInvokesMetaData aroundInvokes = interceptor.getAroundInvokes();
@@ -124,9 +128,9 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                     for (AroundInvokeMetaData aroundInvoke : aroundInvokes) {
                         String methodName = aroundInvoke.getMethodName();
                         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, new Class<?>[]{InvocationContext.class});
-                        InterceptorMethodDescription aroundInvokeIntereptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
-                        // add it to the session bean description
-                        ejbComponentDescription.addAroundInvokeMethod(aroundInvokeIntereptor);
+                        InterceptorMethodDescription aroundInvokeMethodDescription = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // add the around-invoke to the interceptor description
+                        interceptorDescription.addAroundInvokeMethod(aroundInvokeMethodDescription);
                     }
                 }
 
@@ -137,8 +141,8 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                         String methodName = postConstruct.getMethodName();
                         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
                         InterceptorMethodDescription postConstructInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
-                        // add it to the session bean description
-                        ejbComponentDescription.addPostConstructMethod(postConstructInterceptor);
+                        // add it to the interceptor description
+                        interceptorDescription.addPostConstructMethod(postConstructInterceptor);
                     }
                 }
 
@@ -149,8 +153,8 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                         String methodName = preDestroy.getMethodName();
                         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
                         InterceptorMethodDescription preDestroyInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
-                        // add it to the session bean description
-                        ejbComponentDescription.addPreDestroyMethod(preDestroyInterceptor);
+                        // add it to the interceptor description
+                        interceptorDescription.addPreDestroyMethod(preDestroyInterceptor);
                     }
                 }
             }

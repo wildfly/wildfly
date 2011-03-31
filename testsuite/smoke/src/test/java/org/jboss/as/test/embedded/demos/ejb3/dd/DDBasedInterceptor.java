@@ -22,24 +22,14 @@
 
 package org.jboss.as.test.embedded.demos.ejb3.dd;
 
-import javax.annotation.PostConstruct;
-import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
 /**
  * User: jpai
  */
-public class SimpleInterceptor {
+public class DDBasedInterceptor {
 
-    private boolean postConstructInvoked;
-
-    @PostConstruct
-    private void onConstruct(InvocationContext invocationContext) {
-        this.postConstructInvoked = true;
-    }
-
-    @AroundInvoke
-    public Object onInvoke(InvocationContext ctx) throws Exception {
-        return getClass().getName() + "#" + ctx.proceed();
+    public Object onInvoke(InvocationContext invocationContext) throws Exception {
+        return this.getClass().getName() + "#" + invocationContext.proceed();
     }
 }
