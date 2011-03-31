@@ -306,7 +306,6 @@ public enum Phase {
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0800;
     public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
-    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x0C00;
     public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0D00;
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0E00;
     public static final int INSTALL_ENV_ENTRY                           = 0x0F00;
@@ -317,13 +316,14 @@ public enum Phase {
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1000;
     public static final int INSTALL_JAXRS_COMPONENT                     = 0x1200;
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1300;
-    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1301;
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1400;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1500;
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1600;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1700;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1800;
     public static final int INSTALL_PERSISTENTUNIT                      = 0x1900;
+    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1A00;
+    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1B00;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1C00;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;

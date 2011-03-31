@@ -84,11 +84,18 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
+
+        //add a dependency on the weld service to web deployments
+        final ServiceName weldServiceName = parent.getServiceName().append(WeldService.SERVICE_NAME);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES,weldServiceName);
+
+
         // we only start weld on top level deployments
         if (deploymentUnit.getParent() != null) {
             return;
@@ -173,7 +180,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         weldContainer.addWeldService(JpaInjectionServices.class,rootJpaInjectionServices);
 
         final WeldService weldService = new WeldService(weldContainer);
-        final ServiceName weldServiceName = deploymentUnit.getServiceName().append(WeldService.SERVICE_NAME);
         // add the weld service
         final ServiceBuilder<WeldContainer> weldServiceBuilder = serviceTarget.addService(weldServiceName, weldService);
 

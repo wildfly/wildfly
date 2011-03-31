@@ -211,6 +211,11 @@ public final class Attachments {
     //
 
     /**
+     * A list of services that a web deployment should have as dependencies.
+     */
+    public static final AttachmentKey<AttachmentList<ServiceName>> WEB_DEPENDENCIES = AttachmentKey.createList(ServiceName.class);
+
+    /**
      * The reflection index for the deployment.
      */
     public static final AttachmentKey<DeploymentReflectionIndex> REFLECTION_INDEX = AttachmentKey.create(DeploymentReflectionIndex.class);

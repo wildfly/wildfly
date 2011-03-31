@@ -218,6 +218,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         addProviderProperties(pu, properties);
                         final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
 
+                        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES,serviceName);
+
                         ServiceBuilder builder = serviceTarget.addService(serviceName, service);
                         if (pu.getJtaDataSourceName() != null) {
                             builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getJtaDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
