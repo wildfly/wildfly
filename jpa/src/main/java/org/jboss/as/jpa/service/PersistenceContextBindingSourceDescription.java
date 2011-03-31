@@ -134,6 +134,7 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
                     log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
             }
             else {
+                // handle PersistenceContextType.EXTENDED
                 EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
