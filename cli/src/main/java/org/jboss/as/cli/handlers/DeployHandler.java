@@ -52,19 +52,32 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(args == null) {
-            ctx.printLine("Required argument is missing.");
+            ctx.printLine("File path is missing.");
             return;
         }
 
-        final String filePath;
-        final String name;
-        final String runtimeName;
+        boolean force = false;
+        String filePath = null;
+        String name = null;
+        String runtimeName = null;
 
-        int spaceInd = args.indexOf(' ');
-        if(spaceInd < 0) {
-            filePath = args;
-        } else {
-            filePath = args.substring(0, spaceInd);
+        String[] arr = args.split("\\s+");
+        for(int i = 0; i < arr.length; ++i) {
+            String arg = arr[i];
+            if ("-f".equals(arg)) {
+                force = true;
+            } else if (filePath == null) {
+                filePath = arg;
+            } else if (name == null) {
+                name = arg;
+            } else {
+                runtimeName = arg;
+            }
+        }
+
+        if(filePath == null) {
+            ctx.printLine("File path is missing.");
+            return;
         }
 
         File f = new File(filePath);
@@ -73,76 +86,99 @@ public class DeployHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        if(spaceInd < 0) {
+        if(name == null) {
             name = f.getName();
-            runtimeName = null;
-        } else {
-            char ch = args.charAt(spaceInd++);
-            while(spaceInd < args.length() && Character.isWhitespace(ch)) {
-                ch = args.charAt(spaceInd++);
-            }
-            if(spaceInd == args.length()) {
-                name = f.getName();
-                runtimeName = null;
-            } else {
-                int nextSpace = args.indexOf(' ', spaceInd + 1);
-                if(nextSpace < 0) {
-                    name = args.substring(spaceInd - 1, args.length());
-                    runtimeName = null;
-                } else {
-                    name = args.substring(spaceInd - 1, nextSpace);
-                    runtimeName = args.substring(nextSpace).trim();
+        }
+
+        if(Util.isDeployed(name, ctx.getModelControllerClient())) {
+            if(force) {
+                DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+
+                ModelNode result;
+
+                // replace
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName("full-replace-deployment");
+                builder.addProperty("name", name);
+                if(runtimeName != null) {
+                    builder.addProperty("runtime-name", runtimeName);
                 }
+
+                FileInputStream is = null;
+                try {
+                    is = new FileInputStream(f);
+                    ModelNode request = builder.buildRequest();
+                    OperationBuilder op = OperationBuilder.Factory.create(request);
+                    op.addInputStream(is);
+                    request.get("input-stream-index").set(0);
+                    result = client.execute(op.build());
+                } catch(Exception e) {
+                    ctx.printLine("Failed to replace the deployment: " + e.getLocalizedMessage());
+                    return;
+                } finally {
+                    StreamUtils.safeClose(is);
+                }
+                if(!Util.isSuccess(result)) {
+                    ctx.printLine(Util.getFailureDescription(result));
+                    return;
+                }
+
+                ctx.printLine("'" + name + "' re-deployed successfully.");
+            } else {
+                ctx.printLine("'" + name + "' is already deployed (use -f to force re-deploy).");
             }
-        }
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-
-        ModelNode result;
-
-        // add
-        builder = new DefaultOperationRequestBuilder();
-        builder.setOperationName("add");
-        builder.addNode("deployment", name);
-        if(runtimeName != null) {
-            builder.addProperty("runtime-name", runtimeName);
-        }
-
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(f);
-            ModelNode request = builder.buildRequest();
-            OperationBuilder op = OperationBuilder.Factory.create(request);
-            op.addInputStream(is);
-            request.get("input-stream-index").set(0);
-            result = client.execute(op.build());
-        } catch(Exception e) {
-            ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
             return;
-        } finally {
-            StreamUtils.safeClose(is);
-        }
-        if(!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
+        } else {
 
-        // deploy
-        builder = new DefaultOperationRequestBuilder();
-        builder.setOperationName("deploy");
-        builder.addNode("deployment", name);
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
-            return;
-        }
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
+            DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
-        ctx.printLine("'" + name + "' deployed successfully.");
+            ModelNode result;
+
+            // add
+            builder = new DefaultOperationRequestBuilder();
+            builder.setOperationName("add");
+            builder.addNode("deployment", name);
+            if (runtimeName != null) {
+                builder.addProperty("runtime-name", runtimeName);
+            }
+
+            FileInputStream is = null;
+            try {
+                is = new FileInputStream(f);
+                ModelNode request = builder.buildRequest();
+                OperationBuilder op = OperationBuilder.Factory.create(request);
+                op.addInputStream(is);
+                request.get("input-stream-index").set(0);
+                result = client.execute(op.build());
+            } catch (Exception e) {
+                ctx.printLine("Failed to add the deployment content to the repository: "
+                        + e.getLocalizedMessage());
+                return;
+            } finally {
+                StreamUtils.safeClose(is);
+            }
+            if (!Util.isSuccess(result)) {
+                ctx.printLine(Util.getFailureDescription(result));
+                return;
+            }
+
+            // deploy
+            builder = new DefaultOperationRequestBuilder();
+            builder.setOperationName("deploy");
+            builder.addNode("deployment", name);
+            try {
+                ModelNode request = builder.buildRequest();
+                result = client.execute(request);
+            } catch (Exception e) {
+                ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+                return;
+            }
+            if (!Util.isSuccess(result)) {
+                ctx.printLine(Util.getFailureDescription(result));
+                return;
+            }
+            ctx.printLine("'" + name + "' deployed successfully.");
+        }
     }
 }

@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -93,5 +96,28 @@ public class Util {
             list.add(node.getName());
         }
         return list;
+    }
+
+    public static boolean isDeployed(String name, ModelControllerClient client) {
+
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final ModelNode request;
+        try {
+            builder.operationName("read-children-names");
+            builder.addProperty("child-type", "deployment");
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                return getList(outcome).contains(name);
+            }
+        } catch (Exception e) {
+        }
+
+        return false;
     }
 }

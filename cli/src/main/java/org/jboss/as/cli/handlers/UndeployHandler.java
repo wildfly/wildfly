@@ -68,6 +68,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
              return;
          }
 
+         // TODO undeploy may fail if the content failed to deploy but remove should still be executed
          if(!Util.isSuccess(result)) {
              ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
              return;

@@ -81,10 +81,34 @@ public class CommandCompleter implements Completor {
                 return result;
             }
         } else if(buffer.startsWith("deploy ", firstCharIndex)) {
-            String opBuffer = buffer.substring(firstCharIndex + 7);
+
+            int nextCharIndex = firstCharIndex + 7;
+            while(nextCharIndex < buffer.length()) {
+                if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                    break;
+                }
+                ++nextCharIndex;
+            }
+
+            if(nextCharIndex < buffer.length() && buffer.charAt(nextCharIndex) == '-') {
+                // that's a switch, skip it
+                nextCharIndex = buffer.indexOf(' ', nextCharIndex);
+                if(nextCharIndex < 0) {
+                    return -1;
+                }
+
+                while(nextCharIndex < buffer.length()) {
+                    if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+            }
+
+            String opBuffer = buffer.substring(nextCharIndex);
             int result = fnCompleter.complete(opBuffer, cursor, candidates);
             if(result >= 0) {
-                return firstCharIndex + 7 + result;
+                return nextCharIndex + result;
             } else {
                 return result;
             }
