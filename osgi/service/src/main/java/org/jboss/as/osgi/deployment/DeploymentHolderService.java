@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -33,12 +32,13 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.osgi.framework.launch.Framework;
 
 /**
  * A holder service for an OSGi deployment.
  *
  * The {@link Deployment} is the one constructed by the {@link Framework}.
- * It is not the one constructed by the OSGi {@link DeploymentUnitProcessor}s
+ * It is not the one constructed by the {@link BundleInstallProcessor}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 24-Nov-2010
@@ -54,9 +54,8 @@ public class DeploymentHolderService extends AbstractService<Deployment> {
 
     public static void addService(ServiceTarget serviceTarget, String contextName, Deployment dep) {
         DeploymentHolderService service = new DeploymentHolderService(dep);
-        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
-        serviceBuilder.setInitialMode(Mode.ACTIVE);
-        serviceBuilder.install();
+        ServiceBuilder<Deployment> builder = serviceTarget.addService(getServiceName(contextName), service);
+        builder.install();
     }
 
     public static void removeService(ServiceContainer container, String contextName) {

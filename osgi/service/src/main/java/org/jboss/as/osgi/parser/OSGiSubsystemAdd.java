@@ -43,12 +43,13 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.osgi.deployment.DeployerServiceIntegration;
+import org.jboss.as.osgi.deployment.BundleStartupProcessor;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
+import org.jboss.as.osgi.service.DeployerServiceIntegration;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.osgi.service.StartLevelService;
@@ -97,15 +98,16 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     }
                     SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
 
-                    ServiceTarget target = context.getServiceTarget();
+                    ServiceTarget serviceTarget = context.getServiceTarget();
                     Activation policy = subsystemState.getActivationPolicy();
-                    BundleContextService.addService(target, policy);
-                    DeployerServiceIntegration.addService(target);
-                    FrameworkService.addService(target, subsystemState);
-                    PackageAdminService.addService(target);
-                    StartLevelService.addService(target);
+                    BundleContextService.addService(serviceTarget, policy);
+                    BundleStartupProcessor.addService(serviceTarget);
+                    DeployerServiceIntegration.addService(serviceTarget);
+                    FrameworkService.addService(serviceTarget, subsystemState);
+                    PackageAdminService.addService(serviceTarget);
+                    StartLevelService.addService(serviceTarget);
 
-                    ConfigAdminServiceImpl.addService(target, subsystemState);
+                    ConfigAdminServiceImpl.addService(serviceTarget, subsystemState);
 
                     new OSGiDeploymentActivator().activate(updateContext);
                     resultHandler.handleResultComplete();

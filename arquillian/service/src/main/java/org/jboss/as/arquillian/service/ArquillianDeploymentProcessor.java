@@ -27,7 +27,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
-import org.jboss.as.osgi.deployment.OSGiDeploymentService;
+import org.jboss.as.osgi.deployment.BundleInstallService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -64,7 +64,7 @@ public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
         // If this is an OSGi deployment, add a dependency on the associated service
         Deployment osgiDeployment = OSGiDeploymentAttachment.getDeployment(phaseContext.getDeploymentUnit());
         if (osgiDeployment != null) {
-            ServiceName serviceName = OSGiDeploymentService.getServiceName(phaseContext.getDeploymentUnit().getName());
+            ServiceName serviceName = BundleInstallService.getServiceName(phaseContext.getDeploymentUnit().getName());
             serviceBuilder.addDependency(serviceName);
             osgiDeployment.setAutoStart(false);
         }

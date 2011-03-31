@@ -52,10 +52,10 @@ public class StartLevelService implements Service<StartLevel> {
 
     public static void addService(final ServiceTarget batchBuilder) {
         StartLevelService service = new StartLevelService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(StartLevelService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedContext);
-        serviceBuilder.setInitialMode(Mode.ON_DEMAND);
-        serviceBuilder.install();
+        ServiceBuilder<?> builder = batchBuilder.addService(StartLevelService.SERVICE_NAME, service);
+        builder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedContext);
+        builder.setInitialMode(Mode.ON_DEMAND);
+        builder.install();
     }
 
     public static StartLevel getServiceValue(ServiceContainer container) {

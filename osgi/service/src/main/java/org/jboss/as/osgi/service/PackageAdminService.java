@@ -52,10 +52,10 @@ public class PackageAdminService implements Service<PackageAdmin> {
 
     public static void addService(final ServiceTarget target) {
         PackageAdminService service = new PackageAdminService();
-        ServiceBuilder<?> serviceBuilder = target.addService(PackageAdminService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedContext);
-        serviceBuilder.setInitialMode(Mode.ON_DEMAND);
-        serviceBuilder.install();
+        ServiceBuilder<?> builder = target.addService(PackageAdminService.SERVICE_NAME, service);
+        builder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedContext);
+        builder.setInitialMode(Mode.ON_DEMAND);
+        builder.install();
     }
 
     public static PackageAdmin getServiceValue(ServiceContainer container) {

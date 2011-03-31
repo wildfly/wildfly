@@ -24,10 +24,16 @@ package org.jboss.as.test.embedded.osgi;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.osgi.service.BundleContextService;
+import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
@@ -35,8 +41,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
-import org.jboss.osgi.framework.FrameworkExt;
+import org.jboss.osgi.framework.FrameworkIntegration;
 import org.osgi.framework.Bundle;
 
 /**
@@ -74,12 +81,22 @@ abstract class AbstractXServiceTestCase {
                 throw new IllegalStateException("BundleContextService not started");
         }
 
-        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(FrameworkExt.SERVICE_NAME);
-        FrameworkExt bundleManager = (FrameworkExt) bundleManagerService.getValue();
+        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(FrameworkIntegration.SERVICE_NAME);
+        FrameworkIntegration bundleManager = (FrameworkIntegration) bundleManagerService.getValue();
         if (bundleManager == null)
-            throw new IllegalStateException("FrameworkExt not started");
+            throw new IllegalStateException("FrameworkIntegration not started");
 
-        return bundleManager.installBundle(moduleId);
+        ServiceContainer serviceContainer = getServiceContainer();
+        ServiceTarget serviceTarget = serviceContainer.subTarget();
+        ServiceName serviceName = bundleManager.installBundle(serviceTarget, moduleId);
+        return getBundleFromService(serviceContainer, serviceName);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Bundle getBundleFromService(ServiceContainer serviceContainer, ServiceName serviceName) throws ExecutionException, TimeoutException {
+        ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getService(serviceName);
+        FutureServiceValue<Bundle> future = new FutureServiceValue<Bundle>(controller);
+        return future.get(5, TimeUnit.SECONDS);
     }
 
     void assertServiceState(ServiceName serviceName, State expState, long timeout) throws Exception {
@@ -96,5 +113,115 @@ abstract class AbstractXServiceTestCase {
             timeout -= 100;
         }
         assertEquals(serviceName.toString(), expState, state);
+    }
+
+    private static final class FutureServiceValue<T> implements Future<T> {
+
+        private static final Logger log = Logger.getLogger(FutureServiceValue.class);
+
+        private ServiceController<T> controller;
+
+        FutureServiceValue(ServiceController<T> controller) {
+            this.controller = controller;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return controller.getState() == State.UP;
+        }
+
+        @Override
+        public T get() throws ExecutionException {
+            try {
+                return get(5, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                throw new ExecutionException(ex);
+            }
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws ExecutionException, TimeoutException {
+            return getValue(timeout, unit);
+        }
+
+        private T getValue(long timeout, TimeUnit unit) throws ExecutionException, TimeoutException {
+
+            if (controller.getState() == State.UP)
+                return controller.getValue();
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            AbstractServiceListener<T> listener = new AbstractServiceListener<T>() {
+
+                @Override
+                public void listenerAdded(ServiceController<? extends T> controller) {
+                    State state = controller.getState();
+                    if (state == State.UP || state == State.START_FAILED)
+                        listenerDone(controller);
+                }
+
+                @Override
+                public void serviceStarted(ServiceController<? extends T> controller) {
+                    listenerDone(controller);
+                }
+
+                @Override
+                public void serviceFailed(ServiceController<? extends T> controller, StartException reason) {
+                    listenerDone(controller);
+                }
+
+                private void listenerDone(ServiceController<? extends T> controller) {
+                    controller.removeListener(this);
+                    latch.countDown();
+                }
+            };
+
+            controller.addListener(listener);
+
+            try {
+                if (latch.await(timeout, unit) == false) {
+                    TimeoutException cause = new TimeoutException("Timeout getting " + controller.getName());
+                    processExceptionCause(cause);
+                    throw cause;
+                }
+            } catch (InterruptedException e) {
+                // ignore;
+            }
+
+            if (controller.getState() == State.UP)
+                return controller.getValue();
+
+            StartException startException = controller.getStartException();
+            Throwable cause = (startException != null ? startException.getCause() : null);
+            String message = processExceptionCause(cause);
+
+            if (cause instanceof RuntimeException)
+                throw (RuntimeException) cause;
+            if (cause instanceof ExecutionException)
+                throw (ExecutionException) cause;
+            if (cause instanceof TimeoutException)
+                throw (TimeoutException) cause;
+
+            throw new ExecutionException(message, cause);
+        }
+
+        String processExceptionCause(Throwable cause) throws ExecutionException, TimeoutException {
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            controller.getServiceContainer().dumpServices(new PrintStream(baos));
+            String message = "Cannot start " + controller.getName();
+            log.debugf(message + "\n%s", baos.toString());
+            log.errorf(message);
+            return message;
+        }
     }
 }

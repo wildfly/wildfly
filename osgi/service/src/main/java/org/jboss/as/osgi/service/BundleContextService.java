@@ -50,10 +50,10 @@ public class BundleContextService implements Service<BundleContext> {
 
     public static void addService(final ServiceTarget target, Activation policy) {
         BundleContextService service = new BundleContextService();
-        ServiceBuilder<?> serviceBuilder = target.addService(BundleContextService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, Framework.class, service.injectedFramework);
-        serviceBuilder.setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE);
-        serviceBuilder.install();
+        ServiceBuilder<?> builder = target.addService(BundleContextService.SERVICE_NAME, service);
+        builder.addDependency(FrameworkService.SERVICE_NAME, Framework.class, service.injectedFramework);
+        builder.setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE);
+        builder.install();
     }
 
     public synchronized void start(final StartContext context) throws StartException {

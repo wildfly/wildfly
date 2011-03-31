@@ -41,12 +41,12 @@ import org.osgi.framework.Version;
 /**
  * Processes deployments that have OSGi metadata attached.
  *
- * If so, it creates an {@link OSGiDeploymentService}.
+ * If so, it creates an {@link BundleInstallService}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
  */
-public class OSGiDeploymentInstallProcessor implements DeploymentUnitProcessor {
+public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -91,18 +91,18 @@ public class OSGiDeploymentInstallProcessor implements DeploymentUnitProcessor {
             OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
 
-        // Create the {@link OSGiDeploymentService}
+        // Create the {@link BundleInstallService}
         if (deployment != null) {
             // Prevent garbage collection of the MountHandle which will close the file
             MountHandle mount = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
             deployment.addAttachment(MountHandle.class, mount);
             deployment.setAutoStart(autoStart);
-            OSGiDeploymentService.addService(phaseContext, deployment);
+            BundleInstallService.addService(phaseContext, deployment);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
-        OSGiDeploymentService.removeService(deploymentUnit);
+        BundleInstallService.removeService(deploymentUnit);
     }
 }
