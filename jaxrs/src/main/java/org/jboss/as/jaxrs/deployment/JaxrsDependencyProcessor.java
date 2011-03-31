@@ -42,8 +42,10 @@ import org.jboss.modules.ModuleLoader;
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     public static ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
+    public static ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
     public static ModuleIdentifier ASYNC_HTTP_SERVLET_30 = ModuleIdentifier.create("org.jboss.resteasy.async-http-servlet-30");
     public static ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
+    public static ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -53,6 +55,8 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         }
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
+        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
+        addDepdenency(moduleSpecification, moduleLoader, JAXB_API);
         addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {

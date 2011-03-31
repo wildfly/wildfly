@@ -22,17 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="javax.xml.bind.api">
-
-
-    <dependencies>
-        <module name="javax.activation.api" export="true"/>
-        <module name="javax.xml.stream.api"/>
-        <module name="com.sun.xml.bind" services="import"/>
-        <module name="javax.api"/>
-    </dependencies>
-
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.resteasy.resteasy-jaxb-provider">
     <resources>
         <!-- Insert resources here -->
     </resources>
+
+    <dependencies>
+        <module name="javax.xml.bind.api"/>
+        <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.ws.rs.api"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+    </dependencies>
 </module>

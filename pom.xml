@@ -2707,7 +2707,7 @@
                 <artifactId>ironjacamar-deployers-common</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-jdbc</artifactId>
@@ -3241,6 +3241,22 @@
                     <exclusion>
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>jaxrs-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxb-provider</artifactId>
+                <version>${version.org.jboss.resteasy.resteasy-jaxrs}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>jaxrs-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.stream</groupId>
+                        <artifactId>sjsxp</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3970,7 +3986,7 @@
                 <artifactId>jgroups</artifactId>
                 <version>${version.org.jgroups}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>

@@ -42,6 +42,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
@@ -66,6 +67,10 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.jaxrs");
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
+
+    private static final ModuleIdentifier[] JAXRS_MODULES_TO_SCAN = {JaxrsDependencyProcessor.RESTEASY_JAXRS, JaxrsDependencyProcessor.RESTEASY_JAXB};
+
+    private static CompositeIndex[] EMPTY_INDEXES = new CompositeIndex[0];
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -125,9 +130,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
         ServiceModuleLoader moduleLoader = du.getAttachment(Attachments.SERVICE_MODULE_LOADER);
 
-        final Module resteasy = moduleLoader.loadModule(JaxrsDependencyProcessor.RESTEASY_JAXRS);
-        final CompositeIndex resteastAnnotations = moduleIndexService.getIndex(resteasy);
-
+        final List<CompositeIndex> indexes = new ArrayList<CompositeIndex>();
+        for(ModuleIdentifier moduleIdentifier : JAXRS_MODULES_TO_SCAN) {
+            final Module resteasy = moduleLoader.loadModule(moduleIdentifier);
+            indexes.add(moduleIndexService.getIndex(resteasy));
+        }
 
         // If there is a resteasy boot class in web.xml, then the default should be to not scan
         // make sure this call happens before checkDeclaredApplicationClassAsServlet!!!
@@ -135,8 +142,8 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         resteasyDeploymentData.setBootClasses(hasBoot);
 
         // Looked for annotated resources and providers
-        CompositeIndex deploymentIndex = du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        CompositeIndex index = new CompositeIndex(deploymentIndex,resteastAnnotations);
+        indexes.add(du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX));
+        CompositeIndex index = new CompositeIndex(indexes.toArray(EMPTY_INDEXES));
         Class<?> declaredApplicationClass = checkDeclaredApplicationClassAsServlet(du, webdata, classLoader);
         // Assume that checkDeclaredApplicationClassAsServlet created the dispatcher
         if (declaredApplicationClass != null)

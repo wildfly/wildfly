@@ -639,7 +639,7 @@
         <module-def name="org.jboss.ironjacamar.jdbcadapters">
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-jdbc"/>
         </module-def>
-        
+
         <module-def name="org.jboss.jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
@@ -747,6 +747,10 @@
 
         <module-def name="org.jboss.resteasy.resteasy-cdi">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-cdi"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-jaxb-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxb-provider" jandex="true"/>
         </module-def>
 
         <module-def name="org.jboss.shrinkwrap.api">
