@@ -53,11 +53,13 @@ import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.controller.ControllerTransactionContext;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelProvider;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContextFactory;
+import org.jboss.as.controller.OperationContextImpl;
 import org.jboss.as.controller.OperationControllerContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -65,51 +67,85 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeOperationContext;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.SynchronousOperationSupport;
-import org.jboss.as.controller.BasicModelController.XmlMarshallingHandler;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class DomainModelImpl extends BasicModelController implements DomainModel {
 
-    private final ExtensionContext extensionContext;
-    private final ServerOperationResolver serverOperationResolver;
-    private final String localHostName;
-    private final ModelNode hostModel;
-    private final Map<String, DomainControllerSlaveClient> hosts;
-    private final ExtensibleConfigurationPersister injectedHostPersister;
-    private final boolean master;
-    private final ConfigurationPersister delegatingHostPersister = new ConfigurationPersister() {
+    // Member Variables Handled Post Refactor
+    private ServiceContainer serviceContainer;
+
+    private final OperationContextFactory contextFactory = new OperationContextFactory() {
+        @Override
+        public OperationContext getOperationContext(final ModelProvider modelSource, final PathAddress address,
+                                                    final OperationHandler operationHandler, final Operation operation) {
+            final ModelNode subModel = getOperationSubModel(modelSource, operationHandler, address);
+            if (provideRuntimeContext(operation.getOperation()) == true) {
+                return new RuntimeOperationContextImpl(DomainModelImpl.this, getRegistry(), subModel, modelSource, operation);
+            } else {
+                return DomainModelImpl.this.getOperationContext(subModel, operationHandler, operation, modelSource);
+            }
+        }
+    };
+
+    // The host name for the host this DomainModel is being use on.
+    private String localHostName;
+    // Temporary indicator to decide if a runtime context should be provided to operations executed on this model.
+    private boolean alwaysProvideRuntimeContext = true;
+    // Is this DomainModel running within the HostController of the master DomainController?
+    private boolean master;
+    // Used for request operation handling.
+    private ServerOperationResolver serverOperationResolver;
+    // Map of hosts.
+    private Map<String, DomainControllerSlaveClient> hosts;
+    // The ExtensionContext for this DC.
+    private ExtensionContext extensionContext;
+
+    // The persister for the domain configuration.
+    private DelegatingConfigurationPersister domainPersister;
+    // The persister for the local host configuration.
+    private ExtensibleConfigurationPersister hostPersister;
+
+    private ConfigurationPersister delegatingHostPersister = new ConfigurationPersister() {
 
         @Override
         public void store(ModelNode model) throws ConfigurationPersistenceException {
             // We'll be given the whole model but we only persist the host part
-            injectedHostPersister.store(model.get(HOST, localHostName));
+            if (hostPersister != null) {
+                hostPersister.store(model.get(HOST, localHostName));
+            }
         }
 
         @Override
         public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
-            injectedHostPersister.marshallAsXml(model, output);
+            if (hostPersister != null) {
+                hostPersister.marshallAsXml(model, output);
+            }
         }
 
         @Override
@@ -136,6 +172,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         }
 
     };
+
     private final ConfigurationPersisterProvider hostPersisterProvider = new ConfigurationPersisterProvider() {
         @Override
         public ConfigurationPersister getConfigurationPersister() {
@@ -143,52 +180,71 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         }
     };
 
-    /** Constructor for a master DC. */
-    protected DomainModelImpl(final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
-        this(null, configurationPersister, localHostProxy, deploymentRepo, fileRepository, hosts, true);
+
+    /*
+     * The private constructor here allows us to both create and retain a reference to the DelegatingConfigurationPersister.
+     */
+
+    private DomainModelImpl(ModelNodeRegistration rootRegistry, ServiceContainer serviceContainer, ExtensibleConfigurationPersister hostPersister, DelegatingConfigurationPersister domainPersister) {
+        super(getInitialModel(), domainPersister, rootRegistry);
+        this.serviceContainer = serviceContainer;
+        this.hostPersister = hostPersister;
+        this.domainPersister = domainPersister;
+
     }
 
-    /** Constructor for a slave DC. */
-    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
-        this(model, configurationPersister, localHostProxy, deploymentRepo, fileRepository, hosts, false);
+    /**
+     * Constructor for use starting at HostControllerBootstrap.
+     * <p/>
+     * A template model will be started to hold the local host configuration, this will then build up
+     * the domain configuration.
+     */
+    public DomainModelImpl(ModelNodeRegistration rootRegistry, ServiceContainer serviceContainer, ExtensibleConfigurationPersister hostPersister) {
+        this(rootRegistry, serviceContainer, hostPersister, new DelegatingConfigurationPersister());
     }
 
-    protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts, final boolean master) {
 
-        super(getInitialModel(model), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
-        this.localHostName = localHostProxy.getName();
+    /**
+     * Initialise the remaining domain management aspects of this DomainModel for use with a master domain controller.
+     */
+    public void initialiseAsMasterDC(final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
+        // Disable providing a RuntimeContext to operation handlers once DC initialisation occurs.
+        alwaysProvideRuntimeContext = false;
 
+        ModelNode ourModel = super.getModel();
+        DomainModelUtil.updateCoreModel(ourModel);
+        master = true;
+        domainPersister.setDelegate(configurationPersister);
         ModelNodeRegistration registry = getRegistry();
-        if (model == null) {
-            this.extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
-        }
-        else {
-            this.extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
-        }
+        extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
         registerInternalOperations();
 
-        ModelNodeRegistration hostRegistry = localHostProxy.getRegistry();
-        registry.registerSubModel(PathElement.pathElement(HOST, localHostName), hostRegistry);
-        this.hostModel = localHostProxy.getHostModel();
-        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(localHostProxy.getConfigurationPersister(), hostModel);
-        hostRegistry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, xmlHandler, xmlHandler, false, OperationEntry.EntryType.PRIVATE);
-
-        this.injectedHostPersister = localHostProxy.getConfigurationPersister();
-        ModelNode ourModel = getModel();
-        ourModel.get(HOST, localHostName).set(this.hostModel);
-        this.serverOperationResolver = new ServerOperationResolver(localHostName);
-        if (model == null) {
-            initializeExtensions(ourModel);
-        }
+        this.serverOperationResolver = new ServerOperationResolver(getLocalHostName());
+        initializeExtensions(ourModel, extensionContext);
         this.hosts = Collections.unmodifiableMap(hosts);
-        this.master = master;
     }
 
-    private static ModelNode getInitialModel(final ModelNode model) {
-        return model == null ? DomainModelUtil.createCoreModel() : model;
+    /**
+     * Initialise the remaining domain management aspects of this DomainMode for use with a slave domain controller.
+     */
+    public void initialiseAsSlaveDC(final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
+        // Disable providing a RuntimeContext to operation handlers once DC initialisation occurs.
+        alwaysProvideRuntimeContext = false;
+
+        master = false;
+        domainPersister.setDelegate(configurationPersister);
+        ModelNodeRegistration registry = getRegistry();
+        extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
+        registerInternalOperations();
+        this.serverOperationResolver = new ServerOperationResolver(getLocalHostName());
+        this.hosts = Collections.unmodifiableMap(hosts);
+    }
+
+    /**
+     * Obtains the initial model ready for host registration.
+     */
+    private static ModelNode getInitialModel() {
+        return DomainModelUtil.createBaseModel();
     }
 
     public boolean isMaster() {
@@ -197,6 +253,26 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
     public ModelNode getDomainAndHostModel() {
         return super.getModel().clone();
+    }
+
+    public ModelNode getHostModel() {
+        ModelNode model = super.getModel().clone();
+        // extract host model.
+        return model.get(HOST, getLocalHostName());
+    }
+
+    public final String getLocalHostName() {
+        if (this.localHostName == null) {
+            throw new IllegalStateException("LocalHostName not set.");
+        }
+        return localHostName;
+    }
+
+    public void setLocalHostName(String localHostName) {
+        if (this.localHostName != null) {
+            throw new IllegalStateException("LocalHostName already set.");
+        }
+        this.localHostName = localHostName;
     }
 
     @Override
@@ -213,7 +289,8 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     }
 
     // FIXME the domainModel really should not expose hosts
-    public Map<String, DomainControllerSlaveClient> getRemoteHosts(){
+    public Map<String, DomainControllerSlaveClient> getRemoteHosts() {
+        String localHostName = getLocalHostName();
         if (hosts.size() == 1 && hosts.containsKey(localHostName)) {
             return Collections.emptyMap();
         }
@@ -225,6 +302,11 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     @Override
     protected OperationControllerContext getOperationControllerContext(Operation operation) {
         return getOperationControllerContext(operation, null);
+    }
+
+    @Override
+    protected OperationContextFactory getOperationContextFactory() {
+        return this.contextFactory;
     }
 
     protected OperationControllerContext getOperationControllerContext(final Operation operation, final ControllerTransactionContext transaction) {
@@ -254,30 +336,58 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         };
     }
 
-
     @Override
     protected OperationResult doExecute(final OperationContext operationHandlerContext, final Operation operation,
             final OperationHandler operationHandler, final ResultHandler resultHandler,
             final PathAddress address, final OperationControllerContext operationControllerContext) throws OperationFailedException {
 
+        final OperationResult result;
+
         ControllerTransactionContext transaction = operationControllerContext.getControllerTransactionContext();
         if (transaction == null) {
-            return super.doExecute(operationHandlerContext, operation, operationHandler, resultHandler, address, operationControllerContext);
+            result = super.doExecute(operationHandlerContext, operation, operationHandler, resultHandler, address, operationControllerContext);
+        } else {
+
+            try {
+                ModelNode opNode = operation.getOperation();
+
+                result = operationHandler.execute(operationHandlerContext, opNode, resultHandler);
+                ControllerResource txResource = getControllerResource(operationHandlerContext, opNode, operationHandler, resultHandler,
+                        address, operationControllerContext);
+                if (txResource != null) {
+                    transaction.registerResource(txResource);
+                }
+                return result;
+            } catch (OperationFailedException e) {
+                transaction.setRollbackOnly();
+                throw e;
+            }
         }
 
-        try {
-            ModelNode opNode = operation.getOperation();
-            final OperationResult result = operationHandler.execute(operationHandlerContext, opNode, resultHandler);
-            ControllerResource txResource = getControllerResource(operationHandlerContext, opNode, operationHandler, resultHandler,
-                                                                  address, operationControllerContext);
-            if (txResource != null) {
-                transaction.registerResource(txResource);
+        if (operationHandlerContext instanceof RuntimeOperationContextImpl) {
+            final RuntimeOperationContextImpl runtimeOperationContext = RuntimeOperationContextImpl.class.cast(operationHandlerContext);
+            if (runtimeOperationContext.getRuntimeTask() != null) {
+                try {
+                    runtimeOperationContext.getRuntimeTask().execute(new RuntimeTaskContext() {
+                        @Override
+                        public ServiceTarget getServiceTarget() {
+                            return serviceContainer;
+                        }
+
+                        @Override
+                        public ServiceRegistry getServiceRegistry() {
+                            return serviceContainer;
+                        }
+                    });
+                } catch (OperationFailedException e) {
+                    resultHandler.handleFailed(e.getFailureDescription());
+                } catch (Exception e) {
+                    resultHandler.handleFailed(new ModelNode().set(e.toString()));
+                }
             }
-            return result;
-        } catch (OperationFailedException e) {
-            transaction.setRollbackOnly();
-            throw e;
         }
+
+        return result;
     }
 
     @Override
@@ -301,7 +411,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         return resource;
     }
 
-    private void initializeExtensions(ModelNode model) {
+    private void initializeExtensions(ModelNode model, ExtensionContext extensionContext) {
         // If we were provided a model, we're a slave and need to initialize all extensions
         if (model != null && model.hasDefined(EXTENSION)) {
             for (Property prop : model.get(EXTENSION).asPropertyList()) {
@@ -324,7 +434,20 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         root.set(domainModel);
         root.get(HOST).set(host);
         // Now we know what extensions are needed
-        initializeExtensions(domainModel);
+        initializeExtensions(domainModel, extensionContext);
+    }
+
+    /**
+     * Should a RuntimeContext be provided for the execution of this operation?
+     *
+     * Initially a RuntimeContext is only supplied during the HostController phase of bootstrap,
+     * this will be expanded to provide a RuntimeContext for specific operations on the HostController.
+     *
+     * @param operation
+     * @return true if a RuntimeContext should be supplied.
+     */
+    private boolean provideRuntimeContext(ModelNode operation) {
+        return alwaysProvideRuntimeContext;
     }
 
     private static boolean isOperationForHost(ModelNode operation) {
@@ -379,7 +502,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
         ParsedOp result = null;
 
-        if (targetHost != null && !localHostName.equals(targetHost)) {
+        if (targetHost != null && !getLocalHostName().equals(targetHost)) {
             result = new SimpleParsedOp(index);
         }
         else if (runningServerTarget != null) {
@@ -421,7 +544,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         if (fullModel == null) {
             fullModel = getDomainAndHostModel();
         }
-        ModelNode hostModel = fullModel.get(HOST, localHostName);
+        ModelNode hostModel = fullModel.get(HOST, getLocalHostName());
         Map<Set<ServerIdentity>, ModelNode> serverOps = parsedOp.getServerOps(fullModel, hostModel);
         ModelNode serverOpsNode = overallResult.get(RESULT, SERVER_OPERATIONS);
         for (Map.Entry<Set<ServerIdentity>, ModelNode> entry : serverOps.entrySet()) {
@@ -444,7 +567,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     }
 
     private String getServerGroup(String serverName) {
-        return getModel().require(HOST).require(localHostName).require(SERVER_CONFIG).require(serverName).require(GROUP).asString();
+        return getModel().require(HOST).require(getLocalHostName()).require(SERVER_CONFIG).require(serverName).require(GROUP).asString();
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {
@@ -490,7 +613,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
             this.domainStep = "step-" + (index + 1);
             this.domainOp = null;
             this.domainOpAddress = null;
-            final ServerIdentity serverIdentity = new ServerIdentity(localHostName, getServerGroup(serverName), serverName);
+            final ServerIdentity serverIdentity = new ServerIdentity(getLocalHostName(), getServerGroup(serverName), serverName);
             this.serverOps = Collections.singletonMap(Collections.singleton(serverIdentity), serverOp);
         }
 
@@ -717,6 +840,36 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     }
 
     /**
+     * OperationContext for the handlers that should be given access to a RuntimeContext.
+     */
+    private class RuntimeOperationContextImpl extends OperationContextImpl implements RuntimeOperationContext {
+
+        private RuntimeTask runtimeTask;
+
+        /**
+         * Construct a new instance.
+         */
+        public RuntimeOperationContextImpl(final ModelController controller, final ModelNodeRegistration registry, final ModelNode subModel, ModelProvider modelProvider, final OperationAttachments executionAttachments) {
+            super(controller, registry, subModel, modelProvider, executionAttachments);
+        }
+
+        @Override
+        public RuntimeOperationContext getRuntimeContext() {
+            return this;
+        }
+
+        RuntimeTask getRuntimeTask() {
+            return runtimeTask;
+        }
+
+        @Override
+        public void setRuntimeTask(RuntimeTask runtimeTask) {
+            this.runtimeTask = runtimeTask;
+        }
+
+    }
+
+    /**
      * Hack to pass both the domain and host configuration persisters through to
      * TransactionalMultiStepOperationController via the getMultiStepOperationController method.
      */
@@ -759,7 +912,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
                     public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
                         // an UnsupportedOperationException is also fine if this delegation needs to be removed
                         // in some refactor someday
-                        DomainModelImpl.this.injectedHostPersister.marshallAsXml(model, output);
+                        DomainModelImpl.this.hostPersister.marshallAsXml(model, output);
                     }
 
                     @Override
@@ -937,6 +1090,76 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
                 }
             }
             return model;
+        }
+    }
+
+    /**
+     * A configuration persister to delegate to another configuration persister once set, this allows
+     * a configuration persister to be 'available' before it really is.
+     */
+    private static class DelegatingConfigurationPersister implements ConfigurationPersister {
+
+        private ConfigurationPersister delegate;
+
+        @Override
+        public void store(ModelNode model) throws ConfigurationPersistenceException {
+            if (delegate != null) {
+                delegate.store(model);
+            }
+        }
+
+        @Override
+        public void marshallAsXml(ModelNode model, OutputStream output) throws ConfigurationPersistenceException {
+            if (delegate != null) {
+                delegate.marshallAsXml(model, output);
+            }
+        }
+
+        @Override
+        public List<ModelNode> load() throws ConfigurationPersistenceException {
+            if (delegate == null) {
+                throw new IllegalStateException("Delegate ConfigurationPersister not set.");
+            }
+
+            return delegate.load();
+        }
+
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+            if (delegate != null) {
+                delegate.successfulBoot();
+            }
+        }
+
+        @Override
+        public String snapshot() throws ConfigurationPersistenceException {
+            if (delegate == null) {
+                throw new IllegalStateException("Delegate ConfigurationPersister not set.");
+            }
+
+            return delegate.snapshot();
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            if (delegate == null) {
+                throw new IllegalStateException("Delegate ConfigurationPersister not set.");
+            }
+
+            return delegate.listSnapshots();
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
+            if (delegate == null) {
+                throw new IllegalStateException("Delegate ConfigurationPersister not set.");
+            }
+
+            delegate.deleteSnapshot(name);
+        }
+
+        void setDelegate(ConfigurationPersister delegate) {
+            this.delegate = delegate;
         }
     }
 }

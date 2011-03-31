@@ -28,20 +28,30 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installLocalDomainController;
+import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installRemoteDomainControllerConnection;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.domain.controller.DomainModelImpl;
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.host.controller.DomainModelProxy;
+import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.LocalFileRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
 public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
@@ -55,12 +65,19 @@ public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHan
         return op;
     }
 
-    public static final RemoteDomainControllerAddHandler INSTANCE = new RemoteDomainControllerAddHandler();
+    private final DomainModelProxy domainModelProxy;
+    private final HostControllerEnvironment environment;
+
+    public static RemoteDomainControllerAddHandler getInstance(final DomainModelProxy domainModelProxy, final HostControllerEnvironment environment) {
+        return new RemoteDomainControllerAddHandler(domainModelProxy, environment);
+    }
 
     /**
      * Create the ServerAddHandler
      */
-    RemoteDomainControllerAddHandler() {
+    RemoteDomainControllerAddHandler(DomainModelProxy domainModelProxy, HostControllerEnvironment environment) {
+        this.domainModelProxy = domainModelProxy;
+        this.environment = environment;
     }
 
     /**
@@ -77,12 +94,27 @@ public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHan
         catch (Exception e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
+
+        if (context.getRuntimeContext() != null) {
+            final DomainModelImpl domainModel = domainModelProxy.getDomainModel();
+
+            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    final ServiceTarget serviceTarget = context.getServiceTarget();
+                    final FileRepository fileRepository = new LocalFileRepository(environment);
+                    installRemoteDomainControllerConnection(domainModel.getHostModel(), serviceTarget, fileRepository);
+                    installLocalDomainController(environment, domainModel.getHostModel(), serviceTarget, true, fileRepository, domainModelProxy.getDomainModel());
+                }
+            });
+        }
+
         ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
         return new BasicOperationResult(compensating);
     }
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
+        // TODO - Add the ModelDescription
         return new ModelNode();
     }
 }

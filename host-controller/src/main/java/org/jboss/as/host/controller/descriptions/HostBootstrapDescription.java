@@ -19,37 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.host.controller.descriptions;
 
-package org.jboss.as.controller;
+import java.util.Locale;
 
-import java.util.concurrent.CancellationException;
-
-import org.jboss.as.controller.client.Operation;
+import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Controls reads of and modifications to a management model.
+ * The description for the bootstrap model.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface ModelController {
+public class HostBootstrapDescription {
 
-    /**
-     * Execute an operation, possibly asynchronously, sending updates and the final result to the given handler.
-     *
-     * @param operation the operation to execute
-     * @param handler the result handler
-     * @return a handle which may be used to cancel the operation or obtain a compensating operation
-     */
-    OperationResult execute(Operation operation, ResultHandler handler);
+    private static final String RESOURCE_NAME = HostServerDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-    /**
-     * Execute an operation synchronously.
-     *
-     * @param operation the operation to execute
-     * @return the result
-     * @throws CancellationException if the operation was cancelled due to interruption (the thread's interrupt
-     * status will be set)
-     */
-    ModelNode execute(Operation operation) throws CancellationException;
+    public static ModelNode getDescription(final Locale locale) {
+
+        // TODO - Need to add further description.
+        return  DomainRootDescription.getDescription(locale);
+
+    }
 }

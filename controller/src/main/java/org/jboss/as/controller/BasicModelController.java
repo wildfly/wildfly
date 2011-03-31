@@ -341,7 +341,6 @@ public class BasicModelController extends AbstractModelController<OperationContr
      * @param operationHandler the operation handler which will run the operation
      * @param executionContext the exectution context
      * @param modelProvider source for the overall model
-     * @param operation the operation itself
      * @return the operation context
      */
     protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final Operation executionContext, ModelProvider modelProvider) {
@@ -360,7 +359,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
      * @param resultHandler the result handler for this operation
      * @param address the address the operation targets
      * @param operationControllerContext context to be used by the controller
-     * @param subModel @return a handle which can be used to asynchronously cancel the operation
+     * @return a handle which can be used to asynchronously cancel the operation
      */
     protected OperationResult doExecute(final OperationContext operationHandlerContext, final Operation operation,
             final OperationHandler operationHandler, final ResultHandler resultHandler,

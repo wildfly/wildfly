@@ -504,7 +504,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
         mgmtSocket.get(OP).set(ADD);
-        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT_INTERFACES, HTTP_INTERFACE);
+        ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACES, HTTP_INTERFACE);
+        mgmtSocket.get(OP_ADDR).set(operationAddress);
 
         list.add(mgmtSocket);
 
@@ -560,7 +562,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(INTERFACE).set(interfaceName);
         mgmtSocket.get(PORT).set(port);
         mgmtSocket.get(OP).set(ADD);
-        mgmtSocket.get(OP_ADDR).setEmptyList().add(MANAGEMENT_INTERFACES, NATIVE_INTERFACE);
+        ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACES, NATIVE_INTERFACE);
+        mgmtSocket.get(OP_ADDR).set(operationAddress);
         list.add(mgmtSocket);
 
         reader.discardRemainder();

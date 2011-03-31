@@ -27,7 +27,6 @@ import org.jboss.msc.service.ServiceRegistry;
 
 /**
  *
- * TODO: this will be renamed to {@code ServerController} and replace that type
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

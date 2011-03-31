@@ -52,6 +52,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -66,9 +67,10 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A mapper between {@code host.xml} and a model.
+ * A mapper between an AS server's configuration model and XML representations, particularly {@code host.xml}
  *
  * @author Brian Stansberry
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class HostXml extends CommonXml {
 
@@ -139,10 +141,11 @@ public class HostXml extends CommonXml {
     }
 
     private void readHostElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-
-        parseNamespaces(reader, address, list);
-
         String hostName = null;
+
+        // Deffer adding the namespaces and schema locations until after the host has been created.
+        List<ModelNode> namespaceOperations = new LinkedList<ModelNode>();
+        parseNamespaces(reader, address, namespaceOperations);
 
         // attributes
         final int count = reader.getAttributeCount();
@@ -163,7 +166,7 @@ public class HostXml extends CommonXml {
                 case XML_SCHEMA_INSTANCE: {
                     switch (Attribute.forName(reader.getAttributeLocalName(i))) {
                         case SCHEMA_LOCATION: {
-                            parseSchemaLocations(reader, address, list, i);
+                            parseSchemaLocations(reader, address, namespaceOperations, i);
                             break;
                         }
                         case NO_NAMESPACE_SCHEMA_LOCATION: {
@@ -183,7 +186,15 @@ public class HostXml extends CommonXml {
         if (hostName == null) {
             hostName = getDefaultName();
         }
-        setHostName(address, list, hostName);
+        // The follownig also updates the address parameter so this address can be used for future operations
+        // in the context of this host.
+        addLocalHost(address, list, hostName);
+        // The namespace operations were created before the host name was known, the address can now be updated
+        // to the local host specific address.
+        for (ModelNode operation : namespaceOperations) {
+           operation.get(OP_ADDR).set(address);
+            list.add(operation);
+        }
 
         // Content
         // Handle elements: sequence
@@ -245,10 +256,22 @@ public class HostXml extends CommonXml {
 
     }
 
-    private void setHostName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
-        operationList.add(update);
+    /**
+     * Add the operation to add the local host definition.
+     */
+    private void addLocalHost(final ModelNode address, final List<ModelNode> operationList, final String hostName) {
+        // All further operations should modify the newly added host so the address passed in is updated.
+        address.add(HOST,hostName);
+
+        final ModelNode host = new ModelNode();
+        host.get(OP).set("add-host");
+        host.get(OP_ADDR).set(address.clone());
+
+        host.get(NAME).set(hostName);
+
+        operationList.add(host);
     }
+
 
     private void parseDomainController(final XMLExtendedStreamReader reader,
             final ModelNode address, final List<ModelNode> list) throws XMLStreamException {

@@ -83,7 +83,7 @@ import org.jboss.threads.JBossThreadFactory;
 /**
  * @author Kabir Khan
  */
-class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
+public class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private static final int CONNECTION_TIMEOUT = 5000;
@@ -103,7 +103,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     private final AtomicBoolean shutdown = new AtomicBoolean();
     private volatile ReconnectInfo reconnectInfo;
 
-    RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
+    public RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
         this.host = host;
         this.port = port;
