@@ -181,4 +181,14 @@ public class MockCommandContext implements CommandContext {
     public CommandHistory getHistory() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getDefaultControllerHost() {
+        return null;
+    }
+
+    @Override
+    public int getDefaultControllerPort() {
+        return -1;
+    }
 }
