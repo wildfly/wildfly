@@ -34,12 +34,11 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
+import org.jboss.as.weld.deployment.BeansXmlParser;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
-import org.jboss.weld.xml.BeansXmlParser;
-
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
