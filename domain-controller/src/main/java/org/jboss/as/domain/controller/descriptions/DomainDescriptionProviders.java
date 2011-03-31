@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.descriptions;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.descriptions.common.PathDescription;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
@@ -58,45 +59,10 @@ public final class DomainDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider PROFILE_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ProfileDescription.getProfileAddOperation(locale);
-        }
-    };
-
-    public static final DescriptionProvider PROFILE_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ProfileDescription.getProfileRemoveOperation(locale);
-        }
-    };
-
-    public static final DescriptionProvider PROFILE_DESCRIBE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ProfileDescription.getProfileDescribeOperation(locale);
-        }
-    };
-
     public static final DescriptionProvider SOCKET_BINDING_GROUP = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return SocketBindingGroupDescription.getDomainSocketBindingGroupDescription(locale);
-        }
-    };
-
-    public static final DescriptionProvider SOCKET_BINDING_GROUP_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return SocketBindingGroupDescription.getDomainSocketBindingGroupAddOperation(locale);
-        }
-    };
-
-    public static final DescriptionProvider SOCKET_BINDING_GROUP_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return SocketBindingGroupDescription.getSocketBindingGroupRemoveOperation(locale);
         }
     };
 
@@ -107,38 +73,10 @@ public final class DomainDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider SOCKET_BINDING_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return SocketBindingGroupDescription.getSocketBindingAddOperation(locale);
-        }
-    };
-
-    public static final DescriptionProvider SOCKET_BINDING_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
-        }
-    };
-
     public static final DescriptionProvider PATH_DESCRIPTION = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return PathDescription.getNamedPathDescription(locale);
-        }
-    };
-
-    public static final DescriptionProvider PATH_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return PathDescription.getNamedPathAddOperation(locale);
-        }
-    };
-
-    public static final DescriptionProvider PATH_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return PathDescription.getPathRemoveOperation(locale);
         }
     };
 
@@ -149,24 +87,32 @@ public final class DomainDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider SERVER_GROUP_ADD = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ServerGroupDescription.getServerGroupAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider SERVER_GROUP_REMOVE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ServerGroupDescription.getServerGroupRemove(locale);
-        }
-    };
-
     public static final DescriptionProvider SERVER_GROUP_DEPLOYMENT = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            return DeploymentDescription.getDeploymentDescription(locale, true);
+        }
+    };
+
+    /**
+     * We put this operation description provider here rather than on the handler so we can use the
+     * handler for two use cases with slightly different descriptions.
+     */
+    public static final DescriptionProvider SERVER_GROUP_DEPLOYMENT_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return ServerGroupDescription.getDeploymentRemoveOperation(locale);
+        }
+    };
+
+    /**
+     * We put this operation description provider here rather than on the handler so we can use the
+     * handler for two use cases with slightly different descriptions.
+     */
+    public static final DescriptionProvider DEPLOYMENT_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DomainRootDescription.getDeploymentRemoveOperation(locale);
         }
     };
 }

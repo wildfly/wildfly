@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 
 import java.util.Locale;
@@ -35,11 +36,11 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,7 +50,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerGroupDeploymentReplaceHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "replace-deployment";
+    public static final String OPERATION_NAME = REPLACE_DEPLOYMENT;
 
     static final ModelNode getOperation(ModelNode address) {
         return Util.getEmptyOperation(OPERATION_NAME, address);

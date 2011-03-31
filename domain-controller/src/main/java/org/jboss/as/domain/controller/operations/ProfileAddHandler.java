@@ -22,23 +22,27 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Locale;
+
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ProfileAddHandler implements ModelAddOperationHandler {
+public class ProfileAddHandler implements ModelAddOperationHandler, DescriptionProvider {
 
     public static final ProfileAddHandler INSTANCE = new ProfileAddHandler();
 
@@ -58,6 +62,11 @@ public class ProfileAddHandler implements ModelAddOperationHandler {
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ProfileDescription.getProfileAddOperation(locale);
     }
 
 }

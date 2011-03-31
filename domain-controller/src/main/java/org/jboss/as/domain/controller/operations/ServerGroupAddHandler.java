@@ -27,18 +27,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupAddHandler implements ModelAddOperationHandler {
+public class ServerGroupAddHandler implements ModelAddOperationHandler, DescriptionProvider {
 
     public static final ServerGroupAddHandler INSTANCE = new ServerGroupAddHandler();
 
@@ -54,6 +58,11 @@ public class ServerGroupAddHandler implements ModelAddOperationHandler {
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ServerGroupDescription.getServerGroupAdd(locale);
     }
 
 }

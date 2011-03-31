@@ -55,6 +55,7 @@ public class ModelDescriptionConstants {
     public static final String DEFAULT = "default";
     public static final String DESCRIBE = "describe";
     public static final String DEFAULT_INTERFACE = "default-interface";
+    public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
     public static final String DISABLE = "disable";
@@ -67,6 +68,7 @@ public class ModelDescriptionConstants {
     public static final String FAILED = "failed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FIXED_PORT = "fixed-port";
+    public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String GRACEFUL_SHUTDOWN_TIMEOUT = "graceful-shutdown-timeout";
     public static final String GROUP = "group";
     public static final String HASH = "hash";
@@ -133,10 +135,11 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_DESCRIPTION_OPERATION = "read-resource-description";
     public static final String READ_RESOURCE_METRICS = "read-resource-metrics";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
+    public static final String REDEPLOY = "redeploy";
     public static final String RELATIVE_TO = "relative-to";
     public static final String REMOVE = "remove";
     public static final String REMOTE = "remote";
-    public static final String REMOVE_OPERATION = "remove-operation";
+    public static final String REPLACE_DEPLOYMENT = "replace-deployment";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String RECURSIVE = "recursive";
@@ -175,6 +178,10 @@ public class ModelDescriptionConstants {
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TO_REPLACE = "to-replace";
     public static final String TYPE = "type";
+    public static final String UNDEPLOY = "undeploy";
+    public static final String UPLOAD_DEPLOYMENT_BYTES = "upload-deployment-bytes";
+    public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";
+    public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
     public static final String URL = "url";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";

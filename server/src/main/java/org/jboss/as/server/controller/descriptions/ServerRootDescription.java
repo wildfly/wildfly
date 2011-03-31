@@ -55,7 +55,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -85,10 +84,6 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, NAME, NILLABLE).set(true);
         root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
 
-        root.get(CHILDREN, MANAGEMENT_INTERFACES, DESCRIPTION).set(bundle.getString("server.management"));
-        root.get(CHILDREN, MANAGEMENT_INTERFACES, MIN_OCCURS).set(0);
-        root.get(CHILDREN, MANAGEMENT_INTERFACES, MODEL_DESCRIPTION);
-
         root.get(ATTRIBUTES, PROFILE_NAME, DESCRIPTION).set(bundle.getString("server.profile"));
         root.get(ATTRIBUTES, PROFILE_NAME, TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, PROFILE_NAME, REQUIRED).set(true);
@@ -108,6 +103,10 @@ public class ServerRootDescription {
         root.get(CHILDREN, PATH, DESCRIPTION).set(bundle.getString("server.path"));
         root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION);
+
+        root.get(CHILDREN, MANAGEMENT_INTERFACES, DESCRIPTION).set(bundle.getString("server.management"));
+        root.get(CHILDREN, MANAGEMENT_INTERFACES, MIN_OCCURS).set(0);
+        root.get(CHILDREN, MANAGEMENT_INTERFACES, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("server.interface"));
         root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);

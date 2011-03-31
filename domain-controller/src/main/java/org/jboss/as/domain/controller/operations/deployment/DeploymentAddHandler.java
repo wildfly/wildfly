@@ -37,11 +37,11 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -77,7 +77,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getAddDeploymentOperation(locale);
+        return DeploymentDescription.getAddDeploymentOperation(locale, false);
     }
 
     /**

@@ -33,8 +33,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -45,6 +47,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -113,6 +116,15 @@ public class DomainRootDescription {
         root.get(CHILDREN, HOST, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, HOST, MODEL_DESCRIPTION).setEmptyObject();
 
+        return root;
+    }
+
+    public static ModelNode getDeploymentRemoveOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(DeploymentRemoveHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("domain.deployment.remove"));
+        root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
 

@@ -27,9 +27,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
+import org.jboss.as.server.controller.descriptions.ServerDeploymentDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -47,7 +46,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
  */
 public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     public static final String OPERATION_NAME = REMOVE;
 
     public static final DeploymentRemoveHandler INSTANCE = new DeploymentRemoveHandler();
@@ -57,7 +55,7 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getRemoveDeploymentOperation(locale);
+        return ServerDeploymentDescription.getRemoveDeploymentOperation(locale);
     }
 
     /**

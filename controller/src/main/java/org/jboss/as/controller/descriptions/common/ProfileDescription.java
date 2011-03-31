@@ -145,11 +145,7 @@ public class ProfileDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(REMOVE);
         root.get(DESCRIPTION).set(bundle.getString("profile.remove"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.remove.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }

@@ -57,8 +57,8 @@ import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRange
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ModelTypeValidatingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
@@ -163,22 +163,22 @@ class DomainModelUtil {
         interfaces.registerOperationHandler(REMOVE, InterfaceAddHandler.NAMED_INSTANCE, InterfaceAddHandler.NAMED_INSTANCE, false);
 
         final ModelNodeRegistration profile = root.registerSubModel(PathElement.pathElement(PROFILE), DomainDescriptionProviders.PROFILE);
-        profile.registerOperationHandler(ADD, ProfileAddHandler.INSTANCE, DomainDescriptionProviders.PROFILE_ADD, false);
-        profile.registerOperationHandler(REMOVE, ProfileRemoveHandler.INSTANCE, DomainDescriptionProviders.PROFILE_REMOVE, false);
-        profile.registerOperationHandler(DESCRIBE, ProfileDescribeHandler.INSTANCE, DomainDescriptionProviders.PROFILE_DESCRIBE, false);
+        profile.registerOperationHandler(ADD, ProfileAddHandler.INSTANCE, ProfileAddHandler.INSTANCE, false);
+        profile.registerOperationHandler(REMOVE, ProfileRemoveHandler.INSTANCE, ProfileRemoveHandler.INSTANCE, false);
+        profile.registerOperationHandler(DESCRIBE, ProfileDescribeHandler.INSTANCE, ProfileDescribeHandler.INSTANCE, false);
 
         final ModelNodeRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), DomainDescriptionProviders.PATH_DESCRIPTION);
-        paths.registerOperationHandler(ADD, PathAddHandler.NAMED_INSTANCE, DomainDescriptionProviders.PATH_ADD, false);
-        paths.registerOperationHandler(REMOVE, PathRemoveHandler.INSTANCE, DomainDescriptionProviders.PATH_REMOVE, false);
+        paths.registerOperationHandler(ADD, PathAddHandler.NAMED_INSTANCE, PathAddHandler.NAMED_INSTANCE, false);
+        paths.registerOperationHandler(REMOVE, PathRemoveHandler.INSTANCE, PathRemoveHandler.INSTANCE, false);
 
         final ModelNodeRegistration socketBindingGroup = root.registerSubModel(PathElement.pathElement(SOCKET_BINDING_GROUP), DomainDescriptionProviders.SOCKET_BINDING_GROUP);
-        socketBindingGroup.registerOperationHandler(ADD, SocketBindingGroupAddHandler.INSTANCE, DomainDescriptionProviders.SOCKET_BINDING_GROUP_ADD, false);
-        socketBindingGroup.registerOperationHandler(REMOVE, SocketBindingGroupRemoveHandler.INSTANCE, DomainDescriptionProviders.SOCKET_BINDING_GROUP_REMOVE, false);
+        socketBindingGroup.registerOperationHandler(ADD, SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupAddHandler.INSTANCE, false);
+        socketBindingGroup.registerOperationHandler(REMOVE, SocketBindingGroupRemoveHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false);
         socketBindingGroup.registerReadWriteAttribute(PORT_OFFSET, null, new IntRangeValidatingHandler(0, 65535, true, true), AttributeAccess.Storage.CONFIGURATION);
         socketBindingGroup.registerReadWriteAttribute(DEFAULT_INTERFACE, null, new StringLengthValidatingHandler(1, false, true), AttributeAccess.Storage.CONFIGURATION);
         final ModelNodeRegistration socketBindings = socketBindingGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), DomainDescriptionProviders.SOCKET_BINDING);
-        socketBindings.registerOperationHandler(ADD, SocketBindingAddHandler.INSTANCE, DomainDescriptionProviders.SOCKET_BINDING_ADD, false);
-        socketBindings.registerOperationHandler(REMOVE, SocketBindingRemoveHandler.INSTANCE, DomainDescriptionProviders.SOCKET_BINDING_REMOVE, false);
+        socketBindings.registerOperationHandler(ADD, SocketBindingAddHandler.INSTANCE, SocketBindingAddHandler.INSTANCE, false);
+        socketBindings.registerOperationHandler(REMOVE, SocketBindingRemoveHandler.INSTANCE, SocketBindingRemoveHandler.INSTANCE, false);
         socketBindings.registerReadWriteAttribute(INTERFACE, null, new StringLengthValidatingHandler(1, true, true), AttributeAccess.Storage.CONFIGURATION);
         socketBindings.registerReadWriteAttribute(PORT, null, new IntRangeValidatingHandler(0, 65535, false, true), AttributeAccess.Storage.CONFIGURATION);
         socketBindings.registerReadWriteAttribute(FIXED_PORT, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN, true, true), AttributeAccess.Storage.CONFIGURATION);
@@ -186,8 +186,8 @@ class DomainModelUtil {
         socketBindings.registerReadWriteAttribute(MULTICAST_PORT, null, new IntRangeValidatingHandler(0, 65535, true, true), AttributeAccess.Storage.CONFIGURATION);
 
         final ModelNodeRegistration serverGroups = root.registerSubModel(PathElement.pathElement(SERVER_GROUP), DomainDescriptionProviders.SERVER_GROUP);
-        serverGroups.registerOperationHandler(ADD, ServerGroupAddHandler.INSTANCE, DomainDescriptionProviders.SERVER_GROUP_ADD, false);
-        serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, DomainDescriptionProviders.SERVER_GROUP_REMOVE, false);
+        serverGroups.registerOperationHandler(ADD, ServerGroupAddHandler.INSTANCE, ServerGroupAddHandler.INSTANCE, false);
+        serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
         serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
         serverGroups.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
@@ -202,13 +202,13 @@ class DomainModelUtil {
         serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentDeployHandler.OPERATION_NAME, ServerGroupDeploymentDeployHandler.INSTANCE, ServerGroupDeploymentDeployHandler.INSTANCE);
         serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentRedeployHandler.OPERATION_NAME, ServerGroupDeploymentRedeployHandler.INSTANCE, ServerGroupDeploymentRedeployHandler.INSTANCE);
         serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentUndeployHandler.OPERATION_NAME, ServerGroupDeploymentUndeployHandler.INSTANCE, ServerGroupDeploymentUndeployHandler.INSTANCE);
-        serverGroupDeployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);
+        serverGroupDeployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DomainDescriptionProviders.SERVER_GROUP_DEPLOYMENT_REMOVE);
 
         // Root Deployments
         final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepo, isMaster);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
-        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);
+        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DomainDescriptionProviders.DEPLOYMENT_REMOVE);
 
         // Extensions
         final ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);

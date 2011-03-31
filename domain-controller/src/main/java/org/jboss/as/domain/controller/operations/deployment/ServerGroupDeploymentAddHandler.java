@@ -25,7 +25,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 
 import java.util.Locale;
 
@@ -38,9 +37,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -68,7 +67,7 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getAddDeploymentOperation(locale);
+        return DeploymentDescription.getAddDeploymentOperation(locale, true);
     }
 
     /**

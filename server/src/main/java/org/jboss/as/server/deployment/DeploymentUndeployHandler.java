@@ -21,6 +21,7 @@ package org.jboss.as.server.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 
 import java.util.Locale;
 
@@ -33,8 +34,8 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -47,7 +48,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "undeploy";
+    public static final String OPERATION_NAME = UNDEPLOY;
 
     static final ModelNode getOperation(ModelNode address) {
         return Util.getEmptyOperation(OPERATION_NAME, address);

@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 import java.io.IOException;
@@ -29,9 +30,9 @@ import java.util.Locale;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -44,7 +45,7 @@ public class DeploymentUploadURLHandler
 extends AbstractDeploymentUploadHandler
 implements DescriptionProvider {
 
-    public static final String OPERATION_NAME = "upload-deployment-url";
+    public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_URL;
 
     private final ParametersValidator urlValidator = new ParametersValidator();
 

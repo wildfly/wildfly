@@ -22,23 +22,27 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Locale;
+
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ProfileRemoveHandler implements ModelRemoveOperationHandler {
+public class ProfileRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
 
     public static final ProfileRemoveHandler INSTANCE = new ProfileRemoveHandler();
 
@@ -58,6 +62,9 @@ public class ProfileRemoveHandler implements ModelRemoveOperationHandler {
         return new BasicOperationResult(compensatingOperation);
     }
 
-
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ProfileDescription.getProfileRemoveOperation(locale);
+    }
 
 }

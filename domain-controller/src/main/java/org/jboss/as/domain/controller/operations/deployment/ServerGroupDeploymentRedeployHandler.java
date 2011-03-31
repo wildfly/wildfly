@@ -19,6 +19,7 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 
 import java.util.Locale;
 
@@ -29,8 +30,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -40,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ServerGroupDeploymentRedeployHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "redeploy";
+    public static final String OPERATION_NAME = REDEPLOY;
 
     public static final ServerGroupDeploymentRedeployHandler INSTANCE = new ServerGroupDeploymentRedeployHandler();
 

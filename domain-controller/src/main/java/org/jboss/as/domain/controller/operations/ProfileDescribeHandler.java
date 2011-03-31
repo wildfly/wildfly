@@ -27,6 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +38,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -45,7 +49,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ProfileDescribeHandler implements ModelQueryOperationHandler {
+public class ProfileDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
     public static final ProfileDescribeHandler INSTANCE = new ProfileDescribeHandler();
 
@@ -96,5 +100,10 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler {
         resultHandler.handleResultFragment(Util.NO_LOCATION, result);
         resultHandler.handleResultComplete();
         return new BasicOperationResult();
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ProfileDescription.getProfileDescribeOperation(locale);
     }
 }

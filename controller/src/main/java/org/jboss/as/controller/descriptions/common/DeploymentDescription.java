@@ -16,13 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.controller.descriptions;
+package org.jboss.as.controller.descriptions.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
@@ -33,6 +36,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -40,20 +45,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.server.deployment.DeploymentDeployHandler;
-import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.deployment.DeploymentRedeployHandler;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.as.server.deployment.DeploymentReplaceHandler;
-import org.jboss.as.server.deployment.DeploymentUndeployHandler;
-import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
-import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
-import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -69,7 +69,7 @@ public class DeploymentDescription {
     private DeploymentDescription() {
     }
 
-    public static final ModelNode getDeploymentDescription(Locale locale) {
+    public static final ModelNode getDeploymentDescription(Locale locale, boolean includeEnabled) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("deployment"));
@@ -91,9 +91,11 @@ public class DeploymentDescription {
         root.get(ATTRIBUTES, HASH, MIN_LENGTH).set(20);
         root.get(ATTRIBUTES, HASH, MAX_LENGTH).set(20);
         root.get(ATTRIBUTES, HASH, NILLABLE).set(false);
-        root.get(ATTRIBUTES, ENABLED, TYPE).set(ModelType.BOOLEAN);
-        root.get(ATTRIBUTES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.start"));
-        root.get(ATTRIBUTES, ENABLED, REQUIRED).set(true);
+        if (includeEnabled) {
+            root.get(ATTRIBUTES, ENABLED, TYPE).set(ModelType.BOOLEAN);
+            root.get(ATTRIBUTES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.enabled"));
+            root.get(ATTRIBUTES, ENABLED, REQUIRED).set(true);
+        }
         root.get(OPERATIONS);
         root.get(CHILDREN).setEmptyObject();
         return root;
@@ -102,7 +104,7 @@ public class DeploymentDescription {
     public static final ModelNode getUploadDeploymentBytesOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentUploadBytesHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(UPLOAD_DEPLOYMENT_BYTES);
         root.get(DESCRIPTION).set(bundle.getString("deployment.upload-bytes"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
@@ -130,7 +132,7 @@ public class DeploymentDescription {
     public static final ModelNode getUploadDeploymentURLOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentUploadURLHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(UPLOAD_DEPLOYMENT_URL);
         root.get(DESCRIPTION).set(bundle.getString("deployment.upload-url"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
@@ -158,7 +160,7 @@ public class DeploymentDescription {
     public static final ModelNode getUploadDeploymentStreamAttachmentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(UPLOAD_DEPLOYMENT_STREAM);
         root.get(DESCRIPTION).set(bundle.getString("deployment.upload-stream"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
@@ -183,10 +185,10 @@ public class DeploymentDescription {
         return root;
     }
 
-    public static final ModelNode getAddDeploymentOperation(Locale locale) {
+    public static final ModelNode getAddDeploymentOperation(Locale locale, boolean includeEnabled) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set("add-deployment");
+        root.get(OPERATION_NAME).set(ADD);
         root.get(DESCRIPTION).set(bundle.getString("deployment.add"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
@@ -209,10 +211,11 @@ public class DeploymentDescription {
         root.get(REQUEST_PROPERTIES, HASH, MIN_LENGTH).set(20);
         root.get(REQUEST_PROPERTIES, HASH, MAX_LENGTH).set(20);
         root.get(REQUEST_PROPERTIES, HASH, NILLABLE).set(true);
-
-//        root.get(REQUEST_PROPERTIES, START, TYPE).set(ModelType.BOOLEAN);
-//        root.get(REQUEST_PROPERTIES, START, DESCRIPTION).set(bundle.getString("deployment.start"));
-//        root.get(REQUEST_PROPERTIES, START, REQUIRED).set(false);
+        if (includeEnabled) {
+            root.get(REQUEST_PROPERTIES, ENABLED, TYPE).set(ModelType.BOOLEAN);
+            root.get(REQUEST_PROPERTIES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.enabled"));
+            root.get(REQUEST_PROPERTIES, ENABLED, REQUIRED).set(false);
+        }
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -220,7 +223,7 @@ public class DeploymentDescription {
     public static final ModelNode getDeployDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentDeployHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(DEPLOY);
         root.get(DESCRIPTION).set(bundle.getString("deployment.deploy"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
@@ -230,7 +233,7 @@ public class DeploymentDescription {
     public static final ModelNode getReplaceDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentReplaceHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(REPLACE_DEPLOYMENT);
         root.get(DESCRIPTION).set(bundle.getString("deployment.replace"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.replace.name"));
@@ -249,7 +252,7 @@ public class DeploymentDescription {
     public static final ModelNode getFullReplaceDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentFullReplaceHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(FULL_REPLACE_DEPLOYMENT);
         root.get(DESCRIPTION).set(bundle.getString("deployment.full-replace"));
         root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
@@ -263,7 +266,7 @@ public class DeploymentDescription {
     public static final ModelNode getUndeployDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentUndeployHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(UNDEPLOY);
         root.get(DESCRIPTION).set(bundle.getString("deployment.undeploy"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
@@ -273,18 +276,9 @@ public class DeploymentDescription {
     public static final ModelNode getRedeployDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentRedeployHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(REDEPLOY);
         root.get(DESCRIPTION).set(bundle.getString("deployment.redeploy"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static final ModelNode getRemoveDeploymentOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.remove"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -297,12 +291,11 @@ public class DeploymentDescription {
     }
 
     public static void main(String[] args) {
-        System.out.println(getAddDeploymentOperation(null));
+        System.out.println(getDeploymentDescription(null, true));
+        System.out.println(getAddDeploymentOperation(null, true));
         System.out.println(getDeployDeploymentOperation(null));
-        System.out.println(getDeploymentDescription(null));
         System.out.println(getFullReplaceDeploymentOperation(null));
         System.out.println(getRedeployDeploymentOperation(null));
-        System.out.println(getRemoveDeploymentOperation(null));
         System.out.println(getReplaceDeploymentOperation(null));
         System.out.println(getUndeployDeploymentOperation(null));
         System.out.println(getUploadDeploymentBytesOperation(null));

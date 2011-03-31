@@ -18,13 +18,13 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 
 import java.util.Locale;
 
@@ -32,13 +32,10 @@ import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Handles redeployment in the runtime.
@@ -47,7 +44,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class DeploymentRedeployHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
-    public static final String OPERATION_NAME = "redeploy";
+    public static final String OPERATION_NAME = REDEPLOY;
 
     public static final DeploymentRedeployHandler INSTANCE = new DeploymentRedeployHandler();
 
