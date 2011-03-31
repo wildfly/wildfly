@@ -29,7 +29,17 @@ import javax.interceptor.InvocationContext;
  */
 public class DDBasedInterceptor {
 
+    private boolean postConstructInvoked;
+
+    private void onConstruct(InvocationContext ctx) {
+        this.postConstructInvoked = true;
+    }
+
     public Object onInvoke(InvocationContext invocationContext) throws Exception {
+        if (!this.postConstructInvoked) {
+            throw new IllegalStateException("PostConstruct method on " + this.getClass().getName() + " interceptor was not invoked");
+        }
         return this.getClass().getName() + "#" + invocationContext.proceed();
     }
+
 }

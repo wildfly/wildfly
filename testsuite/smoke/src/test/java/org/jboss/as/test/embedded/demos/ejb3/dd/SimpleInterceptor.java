@@ -40,6 +40,9 @@ public class SimpleInterceptor {
 
     @AroundInvoke
     public Object onInvoke(InvocationContext ctx) throws Exception {
+        if (!this.postConstructInvoked) {
+            throw new IllegalStateException("PostConstruct method on " + this.getClass().getName() + " interceptor was not invoked");
+        }
         return getClass().getName() + "#" + ctx.proceed();
     }
 }

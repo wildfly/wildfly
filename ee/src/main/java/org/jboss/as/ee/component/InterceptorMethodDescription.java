@@ -39,6 +39,13 @@ public class InterceptorMethodDescription {
     private final boolean declaredOnTargetClass;
 
 
+    /**
+     *
+     * @param declaringClass The class that declared the method
+     * @param instanceClass The class that should be instantiated, this may be a sub class on the declaring class
+     * @param identifier The method identifier
+     * @param declaredOnTargetClass
+     */
     public InterceptorMethodDescription(String declaringClass, String instanceClass, MethodIdentifier identifier, final boolean declaredOnTargetClass) {
         this.declaringClass = declaringClass;
         this.identifier = identifier;

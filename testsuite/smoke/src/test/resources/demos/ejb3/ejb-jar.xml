@@ -63,6 +63,9 @@
             <around-invoke>
                 <method-name>onInvoke</method-name>
             </around-invoke>
+            <post-construct>
+                <lifecycle-callback-method>onConstruct</lifecycle-callback-method>
+            </post-construct>
         </interceptor>
     </interceptors>
 

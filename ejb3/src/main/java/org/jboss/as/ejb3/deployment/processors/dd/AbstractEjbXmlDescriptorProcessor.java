@@ -128,7 +128,10 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                     for (AroundInvokeMetaData aroundInvoke : aroundInvokes) {
                         String methodName = aroundInvoke.getMethodName();
                         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, new Class<?>[]{InvocationContext.class});
-                        InterceptorMethodDescription aroundInvokeMethodDescription = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // TODO: This constructor for InterceptorMethodDescription needs a review. How does one get hold of the "declaraingClass"
+                        // for a DD based interceptor configuration. Why not just specify the instance class and then "find" the correct method
+                        // internally
+                        InterceptorMethodDescription aroundInvokeMethodDescription = new InterceptorMethodDescription(interceptor.getInterceptorClass(), interceptor.getInterceptorClass(), methodIdentifier, false);
                         // add the around-invoke to the interceptor description
                         interceptorDescription.addAroundInvokeMethod(aroundInvokeMethodDescription);
                     }
@@ -140,7 +143,10 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                     for (LifecycleCallbackMetaData postConstruct : postConstructs) {
                         String methodName = postConstruct.getMethodName();
                         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
-                        InterceptorMethodDescription postConstructInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // TODO: This constructor for InterceptorMethodDescription needs a review. How does one get hold of the "declaraingClass"
+                        // for a DD based interceptor configuration. Why not just specify the instance class and then "find" the correct method
+                        // internally
+                        InterceptorMethodDescription postConstructInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), interceptor.getInterceptorClass(), methodIdentifier, false);
                         // add it to the interceptor description
                         interceptorDescription.addPostConstructMethod(postConstructInterceptor);
                     }
@@ -152,7 +158,10 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                     for (LifecycleCallbackMetaData preDestroy : preDestroys) {
                         String methodName = preDestroy.getMethodName();
                         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
-                        InterceptorMethodDescription preDestroyInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), enterpriseBean.getEjbClass(), methodIdentifier, false);
+                        // TODO: This constructor for InterceptorMethodDescription needs a review. How does one get hold of the "declaraingClass"
+                        // for a DD based interceptor configuration. Why not just specify the instance class and then "find" the correct method
+                        // internally
+                        InterceptorMethodDescription preDestroyInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), interceptor.getInterceptorClass(), methodIdentifier, false);
                         // add it to the interceptor description
                         interceptorDescription.addPreDestroyMethod(preDestroyInterceptor);
                     }
