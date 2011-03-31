@@ -97,8 +97,8 @@
         <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
         <version.org.apache.ws.security>1.5.11</version.org.apache.ws.security>
         <version.org.hibernate>3.6.1.Final</version.org.hibernate>
-        <version.org.codehaus.woodstox.woodstox-core-asl>4.0.0</version.org.codehaus.woodstox.woodstox-core-asl>
-        <version.org.codehaus.woodstox.stax2-api>3.0.0</version.org.codehaus.woodstox.stax2-api>
+        <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
+        <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate.commons.annotations>3.2.0.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
