@@ -85,6 +85,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Credential;
@@ -279,8 +280,8 @@ class DataSourceModelNodeUtil {
         final Map<String, String> connectionProperties;
         if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
             connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList().size());
-            for (ModelNode property : dataSourceNode.get(CONNECTION_PROPERTIES).asList()) {
-                connectionProperties.put(property.asProperty().getName(), property.asString());
+            for (Property property : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
+                connectionProperties.put(property.getName(), property.getValue().asString());
             }
         } else {
             connectionProperties = Collections.emptyMap();
