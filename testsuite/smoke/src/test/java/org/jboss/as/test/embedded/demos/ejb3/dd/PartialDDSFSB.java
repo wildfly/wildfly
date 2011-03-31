@@ -29,7 +29,7 @@ import javax.ejb.LocalBean;
  * @author Jaikiran Pai
  */
 @LocalBean
-public class PartialDDSLSB implements Echo {
+public class PartialDDSFSB implements Echo {
 
     @EJB (beanName = "DDBasedSLSB")
     private Echo otherEchoBean;

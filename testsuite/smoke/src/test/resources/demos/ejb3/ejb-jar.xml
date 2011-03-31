@@ -40,16 +40,17 @@
         </session>
 
         <session>
-            <ejb-name>PartialDDSLSB</ejb-name>
+            <ejb-name>PartialDDSFSB</ejb-name>
             <business-local>org.jboss.as.test.embedded.demos.ejb3.dd.Echo</business-local>
-            <ejb-class>org.jboss.as.test.embedded.demos.ejb3.dd.PartialDDSLSB</ejb-class>
-            <session-type>Stateless</session-type>
+            <ejb-class>org.jboss.as.test.embedded.demos.ejb3.dd.PartialDDSFSB</ejb-class>
+            <session-type>Stateful</session-type>
         </session>
 
         <session>
             <ejb-name>InterceptedDDBean</ejb-name>
+            <local-bean></local-bean>
             <ejb-class>org.jboss.as.test.embedded.demos.ejb3.dd.InterceptedDDBean</ejb-class>
-            <session-type>Stateless</session-type>
+            <session-type>Singleton</session-type>
         </session>
 
     </enterprise-beans>

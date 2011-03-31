@@ -40,7 +40,7 @@ import javax.naming.InitialContext;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.IN_CONTAINER)
-public class DDBasedSLSBTestCase {
+public class DDBasedEJBTestCase {
 
     private static final String MODULE_NAME = "dd-based-slsb";
 
@@ -49,7 +49,7 @@ public class DDBasedSLSBTestCase {
     @Deployment
     public static JavaArchive getDeployment() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
-        jar.addPackage(DDBasedSLSBTestCase.class.getPackage());
+        jar.addPackage(DDBasedEJBTestCase.class.getPackage());
         jar.addManifestResource("demos/ejb3/ejb-jar.xml", "ejb-jar.xml");
         jar.addManifestResource("demos/ejb3/MANIFEST.MF", "MANIFEST.MF");
         return jar;
@@ -91,33 +91,33 @@ public class DDBasedSLSBTestCase {
     }
 
     /**
-     * Tests that the ejb-jar.xml and annotations are merged correctly for a SLSB, and the bean is invokable through
+     * Tests that the ejb-jar.xml and annotations are merged correctly for a SFSB, and the bean is invokable through
      * its exposed views
      *
      * @throws Exception
      */
     @Test
-    public void testPartialDDSLSB() throws Exception {
+    public void testPartialDDSFSB() throws Exception {
         Context ctx = new InitialContext();
-        String ejbName = PartialDDSLSB.class.getSimpleName();
+        String ejbName = PartialDDSFSB.class.getSimpleName();
         String localBusinessInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName();
         Echo localBusinessIntfView = (Echo) ctx.lookup(localBusinessInterfaceViewJndiName);
         String msgOne = "This is message one!";
         Assert.assertEquals("Unexpected return message from bean", msgOne, localBusinessIntfView.echo(msgOne));
 
-        String noInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + PartialDDSLSB.class.getName();
-        PartialDDSLSB noInterfaceView = (PartialDDSLSB) ctx.lookup(noInterfaceViewJndiName);
+        String noInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + PartialDDSFSB.class.getName();
+        PartialDDSFSB noInterfaceView = (PartialDDSFSB) ctx.lookup(noInterfaceViewJndiName);
         String msgTwo = "Yet another message!";
         Assert.assertEquals("Unexpected return message from no-interface view of bean", msgTwo, noInterfaceView.echo(msgTwo));
 
     }
 
     @Test
-    public void testInterceptorsOnSLSB() throws Exception {
+    public void testInterceptorsOnSingleton() throws Exception {
         Context ctx = new InitialContext();
         String ejbName = InterceptedDDBean.class.getSimpleName();
-        String jndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName();
-        Echo interceptedBean = (Echo) ctx.lookup(jndiName);
+        String jndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + InterceptedDDBean.class.getName();
+        InterceptedDDBean interceptedBean = (InterceptedDDBean) ctx.lookup(jndiName);
         String msg = "You will be intercepted!!!";
         String returnMsg = interceptedBean.echo(msg);
         String expectedReturnMsg = SimpleInterceptor.class.getName() + "#" + DDBasedInterceptor.class.getName() + "#" + msg;
