@@ -1,7 +1,8 @@
-Synopsis:	deploy file_path [name] [runtime_name]
+Synopsis:	deploy [file_path] [name] [runtime_name]
 
 Description:	deploys the application designated by the file_path.
 				File name tab-completion is supported for the file_path.
+				If executed w/o arguments, will list all the existing deployments.
 
 Arguments:
 
@@ -12,3 +13,8 @@ Arguments:
 					the file name will be used.
 				
 	runtime_name	- optional, the runtime name for the deployment.
+	
+	-f				- if the deployment with the specified name already exists, by default,
+					deploy will be aborted and the corresponding message will printed.
+					Switch -f will force replacement of the existing deployment with the one
+					specified in the command arguments. 
