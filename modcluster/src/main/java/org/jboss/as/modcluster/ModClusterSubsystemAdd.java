@@ -22,6 +22,8 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -30,6 +32,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +43,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  *
  * @author Jean-Frederic Clere
  */
-class ModClusterSubsystemAdd implements ModelAddOperationHandler {
+class ModClusterSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
 
@@ -71,6 +74,11 @@ class ModClusterSubsystemAdd implements ModelAddOperationHandler {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ModClusterSubsystemDescriptions.getSubsystemAddDescription(locale);
     }
 
 }

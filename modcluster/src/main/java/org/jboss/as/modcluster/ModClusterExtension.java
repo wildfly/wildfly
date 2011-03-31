@@ -23,6 +23,7 @@
 package org.jboss.as.modcluster;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -71,6 +72,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
@@ -87,7 +89,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
-    public static final String SUBSYSTEM_NAME = "mod_cluster";
+    public static final String SUBSYSTEM_NAME = "modcluster";
     public static final String NAMESPACE = "urn:jboss:domain:modcluster:1.0";
 
     final ModClusterSubsystemElementParser parser = new ModClusterSubsystemElementParser();
@@ -107,6 +109,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         nodeRegistration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, DESCRIPTION);
+        nodeRegistration.registerOperationHandler(DESCRIBE, ModClusterSubsystemDescribe.INSTANCE, ModClusterSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         registration.registerXMLElementWriter(parser);
     }
