@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.client;
 
+import java.security.AccessController;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 import java.io.ByteArrayOutputStream;
@@ -44,6 +45,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
 *
@@ -51,7 +53,7 @@ import org.jboss.dmr.ModelNode;
 * @version $Revision: 1.1 $
 */
 abstract class AbstractModelControllerClient implements ModelControllerClient {
-    final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+    final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ModelControllerClient-thread"), Boolean.FALSE, Thread.NORM_PRIORITY, "%G - %t", null, null, AccessController.getContext());
     final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
     public AbstractModelControllerClient() {
