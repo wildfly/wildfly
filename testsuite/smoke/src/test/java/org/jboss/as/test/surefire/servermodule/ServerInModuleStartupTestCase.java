@@ -40,7 +40,10 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
@@ -156,17 +159,20 @@ public class ServerInModuleStartupTestCase {
 
             @Override
             public void initialDeploy() {
-                manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
             }
 
             @Override
             public void fullReplace() {
-                manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
+                awaitDeploymentExecution(future);
             }
 
             @Override
             public void undeploy() {
-                manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
             }
         });
     }
@@ -184,17 +190,20 @@ public class ServerInModuleStartupTestCase {
 
             @Override
             public void initialDeploy() throws IOException{
-                manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", file).deploy("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", file).deploy("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
             }
 
             @Override
             public void fullReplace() throws IOException {
-                manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", file).build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", file).build());
+                awaitDeploymentExecution(future);
             }
 
             @Override
             public void undeploy() {
-                manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                awaitDeploymentExecution(future);
             }
         });
     }
@@ -269,7 +278,7 @@ public class ServerInModuleStartupTestCase {
                     // .dodpeloy put down by initialDeploy(). So pause a bit to let that complete
                     // so we don't end up having our own file deleted
                     final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < 500; i++) {
                         if (!dodeploy.exists()) {
                             break;
                         }
@@ -281,6 +290,11 @@ public class ServerInModuleStartupTestCase {
                             break;
                         }
                     }
+
+                    if (dodeploy.exists()) {
+                        Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
+                    }
+
                     //Copy file to deploy directory again
                     initialDeploy();
                 }
@@ -288,7 +302,7 @@ public class ServerInModuleStartupTestCase {
                 @Override
                 public void undeploy() {
                     final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < 500; i++) {
                         if (!dodeploy.exists() && deployed.exists()) {
                             break;
                         }
@@ -300,6 +314,10 @@ public class ServerInModuleStartupTestCase {
                             break;
                         }
                     }
+                    if (dodeploy.exists() || !deployed.exists()) {
+                        Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
+                    }
+
                     //Delete file from deploy directory
                     deployed.delete();
                 }
@@ -341,6 +359,20 @@ public class ServerInModuleStartupTestCase {
             }
         } finally {
             mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
+        }
+
+    }
+
+    private void awaitDeploymentExecution(Future<?> future) {
+        try {
+            future.get(20, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e.getCause());
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
         }
 
     }
