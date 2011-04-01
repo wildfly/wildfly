@@ -103,7 +103,7 @@ public class ExampleRunner {
         op.get("address").add("connector", "testConnector");
         op.get("socket-binding").set("http-test");
         op.get("enabled").set(true);
-        op.get("protocol").set("http");
+        op.get("protocol").set("HTTP/1.1");
         op.get("scheme").set("http");
 
         updates.add(op);
