@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -75,7 +76,18 @@ public class AutoDeployTestSupport {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("basic.war/web.xml");
         WebArchive war = ShrinkWrap.create(WebArchive.class, "basic.war");
-        File index = new File(tccl.getResource("basic.war/index.html").getPath());
+        File index = null;
+        try {
+            URL resource = tccl.getResource("basic.war/index.html");
+            if (resource == null)
+                throw new IllegalStateException("basic.war/index.html not found");
+            index = new File(resource.toURI().getRawPath());
+        } catch (URISyntaxException e) {
+            IllegalArgumentException ex = new IllegalArgumentException(e.getMessage());
+            ex.setStackTrace(e.getStackTrace());
+            ex.initCause(e.getCause());
+            throw ex;
+        }
         war.addResource(index);
         war.setWebXML(webxml);
 
