@@ -78,7 +78,7 @@ public class ExampleRunner {
 
             System.out.println("-- host configuration");
             final ModelNode hostResult = result.get(RESULT).clone();
-            System.out.println();
+            System.out.println(hostResult);
             System.out.println("--");
 
         } finally {
