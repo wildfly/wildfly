@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -65,7 +66,7 @@ public class ExampleRunner {
         // paths
         runPaths(client);
         // interfaces
-        runInetface(client);
+        runInterface(client);
     }
 
     void runSysProperties(final ModelControllerClient client) throws Exception {
@@ -95,7 +96,7 @@ public class ExampleRunner {
         runOperationAndRollback(operation,client);
     }
 
-    void runInetface(final ModelControllerClient client) throws IOException {
+    void runInterface(final ModelControllerClient client) throws IOException {
         final ModelNode address = new ModelNode();
         address.add(HOST, "local");
         address.add(INTERFACE, "new");
@@ -110,6 +111,8 @@ public class ExampleRunner {
     }
 
     void runOperationAndRollback(final ModelNode operation, final ModelControllerClient client) throws IOException {
+
+        System.out.println("Executing " + operation);
         final ModelNode result = client.execute(operation);
         try {
             checkSuccess(result);
@@ -121,6 +124,7 @@ public class ExampleRunner {
             final ModelNode readResult = client.execute(readResource);
             checkSuccess(readResult);
 
+            System.out.println("Effect on resource is " + result.get(RESULT));
         } finally {
             final ModelNode compensating = result.get(COMPENSATING_OPERATION);
             checkSuccess(client.execute(compensating));

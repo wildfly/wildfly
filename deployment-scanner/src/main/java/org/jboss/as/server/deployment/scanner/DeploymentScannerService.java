@@ -109,7 +109,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
         this.unit = unit;
         this.autoDeployZipped = autoDeployZipped == null ? true : autoDeployZipped.booleanValue();
-        this.autoDeployExploded = autoDeployExploded == null ? true : autoDeployExploded.booleanValue();
+        this.autoDeployExploded = autoDeployExploded == null ? false : autoDeployExploded.booleanValue();
         this.enabled = enabled == null ? true : enabled.booleanValue();
         this.deploymentTimeout = deploymentTimeout;
     }

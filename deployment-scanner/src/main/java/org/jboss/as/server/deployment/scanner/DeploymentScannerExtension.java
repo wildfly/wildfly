@@ -69,6 +69,7 @@ public class DeploymentScannerExtension implements Extension {
 
     private static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return DeploymentSubsystemDescriptions.getSubsystemDescription(locale);
         }
@@ -76,6 +77,7 @@ public class DeploymentScannerExtension implements Extension {
 
     private static final DescriptionProvider SCANNER = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(final Locale locale) {
             return DeploymentSubsystemDescriptions.getScannerDescription(locale);
         }
@@ -149,8 +151,8 @@ public class DeploymentScannerExtension implements Extension {
                         }
                     }
                     if (configuration.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED)) {
-                        if (configuration.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()) {
-                            writer.writeAttribute(Attribute.AUTO_DEPLOY_ZIPPED.getLocalName(), Boolean.TRUE.toString());
+                        if (configuration.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean()) {
+                            writer.writeAttribute(Attribute.AUTO_DEPLOY_EXPLODED.getLocalName(), Boolean.TRUE.toString());
                         }
                     }
                     if (configuration.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT)) {
