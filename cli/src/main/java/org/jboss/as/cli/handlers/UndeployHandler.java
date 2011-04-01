@@ -48,7 +48,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         }
 
         if(args == null) {
-            ctx.printLine("The argument is missing.");
+            ctx.printColumns(Util.getDeployments(client));
             return;
         }
 
