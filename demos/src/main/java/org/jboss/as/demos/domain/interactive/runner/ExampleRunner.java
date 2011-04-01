@@ -1122,7 +1122,7 @@ public class ExampleRunner implements Runnable {
         final ModelNode address = new ModelNode();
         address.add("host", server.getHostName());
         address.add("server", server.getServerName());
-        address.add("socket-binding-group", "*");
+        address.add("socket-binding-group", "standard-sockets");
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
@@ -1130,9 +1130,8 @@ public class ExampleRunner implements Runnable {
         operation.get(RECURSIVE).set(true);
 
         final ModelNode result = executeForResult(operation);
-
-        final int portOffset = result.get("step-1", RESULT, PORT_OFFSET).asInt(0);
-        final int port = result.get("step-1", RESULT, SOCKET_BINDING, "jmx-connector-registry", PORT).asInt() + portOffset;
+        final int portOffset = result.get(PORT_OFFSET).asInt(0);
+        final int port = result.get(SOCKET_BINDING, "jmx-connector-registry", PORT).asInt() + portOffset;
 
         final String addr = "localhost"; // TODO determine the interface binding
 
@@ -1272,7 +1271,7 @@ public class ExampleRunner implements Runnable {
                 throw new RuntimeException(result.get("host-failure-descriptions").toString());
             }
             else {
-                throw new RuntimeException("Operation outcome is " + result.asString());
+                throw new RuntimeException("Operation outcome is " + result);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
