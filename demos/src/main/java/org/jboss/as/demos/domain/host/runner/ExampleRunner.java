@@ -112,7 +112,7 @@ public class ExampleRunner {
 
     void runOperationAndRollback(final ModelNode operation, final ModelControllerClient client) throws IOException {
 
-        System.out.println("Executing " + operation);
+        System.out.println("Executing operation:\n" + operation);
         final ModelNode result = client.execute(operation);
         try {
             checkSuccess(result);
@@ -124,16 +124,35 @@ public class ExampleRunner {
             final ModelNode readResult = client.execute(readResource);
             checkSuccess(readResult);
 
-            System.out.println("Effect on resource is " + result.get(RESULT));
+            System.out.println("Effect on resource is \n" + readResult.get(RESULT));
         } finally {
             final ModelNode compensating = result.get(COMPENSATING_OPERATION);
+            System.out.println("Reverting change via \n" + compensating);
             checkSuccess(client.execute(compensating));
         }
     }
 
     void checkSuccess(final ModelNode result) {
-        if(!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new IllegalStateException();
+        if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
+            return;
+        }
+
+        System.out.println("Outcome was not successful:\n" + result);
+        if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        }
+        else if (result.hasDefined("domain-failure-description")) {
+            throw new RuntimeException(result.get("domain-failure-description").toString());
+        }
+        else if (result.hasDefined("host-failure-descriptions")) {
+            throw new RuntimeException(result.get("host-failure-descriptions").toString());
+        }
+        else if (result.isDefined()) {
+            System.out.println(result);
+            throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
+        }
+        else {
+            throw new IllegalStateException("Result is undefined");
         }
     }
 
