@@ -22,7 +22,15 @@
 package org.jboss.as.cli;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,7 +90,7 @@ public class CommandLineMain {
 
     public static void main(String[] args) throws Exception {
 
-        final jline.ConsoleReader console = new jline.ConsoleReader();
+        final jline.ConsoleReader console = initConsoleReader();
 
         final CommandContextImpl cmdCtx = new CommandContextImpl(console);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
@@ -172,6 +180,46 @@ public class CommandLineMain {
             }
         }
         StreamUtils.safeClose(cmdCtx.client);
+    }
+
+    protected static jline.ConsoleReader initConsoleReader() {
+
+        final String bindingsName;
+        final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase();
+        if(osName.indexOf("windows") >= 0) {
+            bindingsName = "keybindings/jline-windows-bindings.properties";
+        } else if(osName.startsWith("macos")) {
+            bindingsName = "keybindings/jline-mac-bindings.properties";
+        } else {
+            bindingsName = "keybindings/jline-default-bindings.properties";
+        }
+
+        ClassLoader cl = SecurityActions.getClassLoader(CommandLineMain.class);
+        InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
+        if(bindingsIs == null) {
+            System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);
+            URLClassLoader ucl = (URLClassLoader) cl;
+            for(URL url : ucl.getURLs()) {
+                System.out.println(url.toExternalForm());
+            }
+            try {
+                return new jline.ConsoleReader();
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to initialize console reader", e);
+            }
+        } else {
+            try {
+                final InputStream in = new FileInputStream(FileDescriptor.in);
+                final Writer out = new PrintWriter(
+                        new OutputStreamWriter(System.out,
+                                System.getProperty("jline.WindowsTerminal.output.encoding",System.getProperty("file.encoding"))));
+                return new jline.ConsoleReader(in, out, bindingsIs);
+            } catch(Exception e) {
+                throw new IllegalStateException("Failed to initialize console reader", e);
+            } finally {
+                StreamUtils.safeClose(bindingsIs);
+            }
+        }
     }
 
     private static boolean isOperation(String line) {

@@ -45,6 +45,10 @@ class SecurityActions {
             public static String getSystemProperty(String name) {
                 return getTCLAction().getSystemProperty(name);
             }
+
+            public static ClassLoader getClassLoader(Class<?> cls) {
+                return getTCLAction().getClassLoader(cls);
+            }
         }
 
         TCLAction NON_PRIVILEGED = new TCLAction() {
@@ -57,6 +61,11 @@ class SecurityActions {
             @Override
             public String getSystemProperty(String name) {
                 return System.getProperty(name);
+            }
+
+            @Override
+            public ClassLoader getClassLoader(Class<?> cls) {
+                return cls.getClassLoader();
             }
         };
 
@@ -79,9 +88,20 @@ class SecurityActions {
                     }
                 });
             }
+
+            @Override
+            public ClassLoader getClassLoader(final Class<?> cls) {
+                return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        return cls.getClassLoader();
+                    }
+                });
+            }
         };
 
         void addShutdownHook(Thread t);
+
+        ClassLoader getClassLoader(Class<?> cls);
 
         String getSystemProperty(String name);
     }
@@ -92,5 +112,9 @@ class SecurityActions {
 
     protected static String getSystemProperty(String name) {
         return TCLAction.UTIL.getSystemProperty(name);
+    }
+
+    protected static ClassLoader getClassLoader(Class<?> cls) {
+        return TCLAction.UTIL.getClassLoader(cls);
     }
 }
