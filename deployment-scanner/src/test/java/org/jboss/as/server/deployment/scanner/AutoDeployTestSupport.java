@@ -76,19 +76,10 @@ public class AutoDeployTestSupport {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("basic.war/web.xml");
         WebArchive war = ShrinkWrap.create(WebArchive.class, "basic.war");
-        File index = null;
-        try {
-            URL resource = tccl.getResource("basic.war/index.html");
-            if (resource == null)
-                throw new IllegalStateException("basic.war/index.html not found");
-            index = new File(resource.toURI().getRawPath());
-        } catch (URISyntaxException e) {
-            IllegalArgumentException ex = new IllegalArgumentException(e.getMessage());
-            ex.setStackTrace(e.getStackTrace());
-            ex.initCause(e.getCause());
-            throw ex;
-        }
-        war.addResource(index);
+        URL resource = tccl.getResource("basic.war/index.html");
+        if (resource == null)
+            throw new IllegalStateException("basic.war/index.html not found");
+        war.addResource(resource, "index.html");
         war.setWebXML(webxml);
 
         basicWar = new File(tmpDir, "basic.war");

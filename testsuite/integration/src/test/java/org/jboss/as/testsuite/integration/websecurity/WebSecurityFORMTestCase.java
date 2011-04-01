@@ -65,8 +65,8 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
         File loginJSP = new File(tccl.getResource("web-secure.war/login.jsp").getPath());
         File errorJSP = new File(tccl.getResource("web-secure.war/error.jsp").getPath());
 
-        war.addResource(loginJSP);
-        war.addResource(errorJSP);
+        war.addResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
+        war.addResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
 
         WebSecurityPasswordBasedBase.printWar(war);
         return war;

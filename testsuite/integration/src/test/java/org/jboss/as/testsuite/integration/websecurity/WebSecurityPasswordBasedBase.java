@@ -51,11 +51,9 @@ public abstract class WebSecurityPasswordBasedBase {
         war.addClass(servletClass);
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        File userProp = new File(tccl.getResource("security/users.properties").getPath());
-        File roleProp = new File(tccl.getResource("security/roles.properties").getPath());
 
-        war.addResource(userProp, "/WEB-INF/classes/users.properties");
-        war.addResource(roleProp, "/WEB-INF/classes/roles.properties");
+        war.addResource(tccl.getResource("security/users.properties"), "/WEB-INF/classes/users.properties");
+        war.addResource(tccl.getResource("security/roles.properties"), "/WEB-INF/classes/roles.properties");
 
         if (webxml != null) {
             war.setWebXML(webxml);
