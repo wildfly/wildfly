@@ -23,7 +23,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
@@ -44,8 +43,8 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
     protected OperationResult uninstallInterface(final String name, final ModelNode criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    RuntimeOperationContext runtimeContext = (RuntimeOperationContext) context;
                     final ServiceController<?> controller = context.getServiceRegistry()
                             .getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
                     if (controller != null) {
