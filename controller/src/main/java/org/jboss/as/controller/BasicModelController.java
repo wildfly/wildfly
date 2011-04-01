@@ -326,7 +326,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
         if (configurationPersister != null) {
             // Ugly. We register a handler for reading the config as xml to avoid leaking internals
             // via the ModelController or OperationContext interfaces.
-            XmlMarshallingHandler handler = new XmlMarshallingHandler();
+            XmlMarshallingHandler handler = new XmlMarshallingHandler(configurationPersister, model);
             this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false, OperationEntry.EntryType.PRIVATE);
         }
     }
@@ -424,9 +424,17 @@ public class BasicModelController extends AbstractModelController<OperationContr
         }
     }
 
-    private class XmlMarshallingHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    /** An {@link OperationHandler} that can output a model in XML form */
+    public static final class XmlMarshallingHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
         private final String[] EMPTY = new String[0];
+        private final ConfigurationPersister configPersister;
+        private final ModelNode model;
+
+        public XmlMarshallingHandler(final ConfigurationPersister configPersister, final ModelNode model) {
+            this.configPersister  = configPersister;
+            this.model = model;
+        }
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -439,7 +447,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {
                     BufferedOutputStream output = new BufferedOutputStream(baos);
-                    configurationPersister.marshallAsXml(model, output);
+                    configPersister.marshallAsXml(model, output);
                     output.close();
                     baos.close();
                 } finally {

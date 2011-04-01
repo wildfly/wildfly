@@ -66,7 +66,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SynchronousOperationSupport;
+import org.jboss.as.controller.BasicModelController.XmlMarshallingHandler;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -74,6 +76,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
@@ -135,8 +138,10 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
     protected DomainModelImpl(final ModelNode model, final ExtensibleConfigurationPersister configurationPersister, final LocalHostModel localHostProxy,
             final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts, final boolean master) {
+
         super(getInitialModel(model), configurationPersister, DomainDescriptionProviders.ROOT_PROVIDER);
         this.localHostName = localHostProxy.getName();
+
         ModelNodeRegistration registry = getRegistry();
         if (model == null) {
             this.extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
@@ -144,9 +149,14 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         else {
             this.extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
         }
-        registry.registerSubModel(PathElement.pathElement(HOST, localHostName), localHostProxy.getRegistry());
         registerInternalOperations();
+
+        ModelNodeRegistration hostRegistry = localHostProxy.getRegistry();
+        registry.registerSubModel(PathElement.pathElement(HOST, localHostName), hostRegistry);
         this.hostModel = localHostProxy.getHostModel();
+        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(localHostProxy.getConfigurationPersister(), hostModel);
+        hostRegistry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, xmlHandler, xmlHandler, false, OperationEntry.EntryType.PRIVATE);
+
         this.injectedHostPersister = localHostProxy.getConfigurationPersister();
         ModelNode ourModel = getModel();
         ourModel.get(HOST, localHostName).set(this.hostModel);
@@ -192,8 +202,6 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         hosts.remove(localHostName);
         return hosts;
     }
-
-
 
     @Override
     protected OperationControllerContext getOperationControllerContext(Operation operation) {
