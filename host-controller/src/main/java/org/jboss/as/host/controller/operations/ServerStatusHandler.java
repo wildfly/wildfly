@@ -65,17 +65,18 @@ public class ServerStatusHandler implements ModelQueryOperationHandler {
         } else {
             isStart = true;
         }
-        if(!isStart) {
-            resultHandler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(ServerStatus.DISABLED.toString()));
+
+        ServerStatus status = hostController.getServerStatus(serverName);
+
+        if (status == ServerStatus.STOPPED) {
+            status = isStart ? status : ServerStatus.DISABLED;
+        }
+
+        if(status != null) {
+            resultHandler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(status.toString()));
             resultHandler.handleResultComplete();
         } else {
-            final ServerStatus status = hostController.getServerStatus(serverName);
-            if(status != null) {
-                resultHandler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(status.toString()));
-                resultHandler.handleResultComplete();
-            } else {
-                resultHandler.handleFailed(new ModelNode().set("failed to get server status"));
-            }
+            resultHandler.handleFailed(new ModelNode().set("Failed to get server status"));
         }
         return new BasicOperationResult();
     }
