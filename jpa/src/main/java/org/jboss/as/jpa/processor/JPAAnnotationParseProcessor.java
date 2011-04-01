@@ -69,6 +69,9 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
     private static final DotName PERSISTENCE_CONTEXT_ANNOTATION_NAME = DotName.createSimple(PersistenceContext.class.getName());
     private static final DotName PERSISTENCE_UNIT_ANNOTATION_NAME = DotName.createSimple(PersistenceUnit.class.getName());
 
+    private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
+    private static final String ENTITY_MANAGERFACTORY_CLASS = "javax.persistence.EntityManagerFactory";
+
     /**
      * Check the deployment annotation index for all classes with the @PersistenceContext annotation.  For each class with the
      * annotation, collect all the required information to create a managed bean instance, and attach it to the context.
@@ -245,11 +248,12 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
             throw new IllegalArgumentException("Class level annotations must provide a name.");
         }
         final String name = nameValue.asString();
-        final String type = classInfo.name().toString();
         final BindingDescription bindingDescription = new BindingDescription(name,componentDescription);
         bindingDescription.setDependency(true);
+        String type = getClassLevelInjectionType(annotation);
         bindingDescription.setBindingType(type);
-        bindingDescription.setReferenceSourceDescription(getBindingSource(deploymentUnit,annotation,type));
+        bindingDescription.setReferenceSourceDescription(
+            getBindingSource(deploymentUnit,annotation,type));
         return bindingDescription;
     }
 
@@ -294,6 +298,16 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
 
     private boolean isPersistenceContext(final AnnotationInstance annotation) {
         return annotation.name().local().equals("PersistenceContext");
+    }
+
+    /**
+     * Based on the the annotation type, its either entitymanager or entitymanagerfactory
+     * @param annotation
+     * @return
+     */
+    private String getClassLevelInjectionType(final AnnotationInstance annotation) {
+        boolean isPC = annotation.name().local().equals("PersistenceContext");
+        return isPC ? ENTITY_MANAGER_CLASS : ENTITY_MANAGERFACTORY_CLASS;
     }
 
     private String getScopedPuName(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation)
