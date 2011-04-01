@@ -154,7 +154,7 @@ public class ExampleRunner {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(WC_ADDR);
-        operation.get("protocol").set("http");
+        operation.get("protocol").set("HTTP/1.1");
         operation.get("socket-binding").set("new-http-binding");
         operation.get("scheme").set("http");
 
