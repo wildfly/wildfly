@@ -235,7 +235,7 @@
          <xs:documentation>
                <![CDATA[
                     The flag attribute controls how a login module
-                    participates in the overall authentication proceedure.
+                    participates in the overall procedure.
                     Required - The LoginModule is required to succeed. If it
                     succeeds or fails, authentication still continues to proceed
                     down the LoginModule list.

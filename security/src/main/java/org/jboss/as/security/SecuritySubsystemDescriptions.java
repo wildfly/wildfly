@@ -45,6 +45,7 @@ import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
 import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.IDENTITY_TRUST_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.CommonAttributes.MODULE_OPTIONS;
 import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
 
 import java.util.Locale;
@@ -134,28 +135,31 @@ class SecuritySubsystemDescriptions {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.SECURITY_1_0.getUriString());
 
-            subsystem.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("authentication-manager"));
+            subsystem.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("authentication-manager"));
             subsystem.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, DEFAULT).set("default");
-
 
             subsystem.get(ATTRIBUTES, DEEP_COPY_SUBJECT_MODE, DESCRIPTION).set(bundle.getString("deep-copy-subject-mode"));
             subsystem.get(ATTRIBUTES, DEEP_COPY_SUBJECT_MODE, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, DEEP_COPY_SUBJECT_MODE, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, DEEP_COPY_SUBJECT_MODE, DEFAULT).set(false);
 
-            subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DESCRIPTION).set(bundle.getString("default-callback-handler-class-name"));
+            subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("default-callback-handler-class-name"));
             subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DEFAULT).set("default");
 
-            subsystem.get(ATTRIBUTES, SUBJECT_FACTORY_CLASS_NAME, DESCRIPTION).set(bundle.getString("subject-factory-class-name"));
-            subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DEFAULT).set("default");
+            subsystem.get(ATTRIBUTES, SUBJECT_FACTORY_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("subject-factory-class-name"));
+            subsystem.get(ATTRIBUTES, SUBJECT_FACTORY_CLASS_NAME, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, SUBJECT_FACTORY_CLASS_NAME, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, SUBJECT_FACTORY_CLASS_NAME, DEFAULT).set("default");
 
-            subsystem.get(ATTRIBUTES, AUTHORIZATION_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("authorization-manager-class-name"));
+            subsystem.get(ATTRIBUTES, AUTHORIZATION_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("authorization-manager-class-name"));
             subsystem.get(ATTRIBUTES, AUTHORIZATION_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, AUTHORIZATION_MANAGER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, AUTHORIZATION_MANAGER_CLASS_NAME, DEFAULT).set("default");
@@ -165,17 +169,20 @@ class SecuritySubsystemDescriptions {
             subsystem.get(ATTRIBUTES, AUDIT_MANAGER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, AUDIT_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("identity-trust-manager-class-name"));
+            subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("identity-trust-manager-class-name"));
             subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("mapping-manager-class-name"));
-            subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DEFAULT).set("default");
+            subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("mapping-manager-class-name"));
+            subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            subsystem.get(CHILDREN, CommonAttributes.SECURITY_DOMAIN, DESCRIPTION).set(bundle.getString("security-domain-children"));
+            subsystem.get(CHILDREN, CommonAttributes.SECURITY_DOMAIN, DESCRIPTION).set(
+                    bundle.getString("security-domain-children"));
             subsystem.get(CHILDREN, CommonAttributes.SECURITY_DOMAIN, REQUIRED).set(false);
             subsystem.get(CHILDREN, CommonAttributes.SECURITY_DOMAIN, MIN_OCCURS).set(0);
             subsystem.get(CHILDREN, CommonAttributes.SECURITY_DOMAIN, MAX_OCCURS).set(Integer.MAX_VALUE);
@@ -192,28 +199,31 @@ class SecuritySubsystemDescriptions {
             op.get(OPERATION_NAME).set(ADD);
             op.get(DESCRIPTION).set(bundle.getString("security.add"));
 
-            op.get(REQUEST_PROPERTIES, AUTHENTICATION_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("authentication-manager"));
+            op.get(REQUEST_PROPERTIES, AUTHENTICATION_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("authentication-manager"));
             op.get(REQUEST_PROPERTIES, AUTHENTICATION_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, AUTHENTICATION_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, AUTHENTICATION_MANAGER_CLASS_NAME, DEFAULT).set("default");
-
 
             op.get(REQUEST_PROPERTIES, DEEP_COPY_SUBJECT_MODE, DESCRIPTION).set(bundle.getString("deep-copy-subject-mode"));
             op.get(REQUEST_PROPERTIES, DEEP_COPY_SUBJECT_MODE, TYPE).set(ModelType.BOOLEAN);
             op.get(REQUEST_PROPERTIES, DEEP_COPY_SUBJECT_MODE, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, DEEP_COPY_SUBJECT_MODE, DEFAULT).set(false);
 
-            op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DESCRIPTION).set(bundle.getString("default-callback-handler-class-name"));
+            op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("default-callback-handler-class-name"));
             op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DEFAULT).set("default");
 
-            op.get(REQUEST_PROPERTIES, SUBJECT_FACTORY_CLASS_NAME, DESCRIPTION).set(bundle.getString("subject-factory-class-name"));
-            op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, DEFAULT_CALLBACK_HANDLER_CLASS_NAME, DEFAULT).set("default");
+            op.get(REQUEST_PROPERTIES, SUBJECT_FACTORY_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("subject-factory-class-name"));
+            op.get(REQUEST_PROPERTIES, SUBJECT_FACTORY_CLASS_NAME, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, SUBJECT_FACTORY_CLASS_NAME, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, SUBJECT_FACTORY_CLASS_NAME, DEFAULT).set("default");
 
-            op.get(REQUEST_PROPERTIES, AUTHORIZATION_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("authorization-manager-class-name"));
+            op.get(REQUEST_PROPERTIES, AUTHORIZATION_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("authorization-manager-class-name"));
             op.get(REQUEST_PROPERTIES, AUTHORIZATION_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, AUTHORIZATION_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, AUTHORIZATION_MANAGER_CLASS_NAME, DEFAULT).set("default");
@@ -223,15 +233,17 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, AUDIT_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, AUDIT_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("identity-trust-manager-class-name"));
+            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("identity-trust-manager-class-name"));
             op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, DESCRIPTION).set(bundle.getString("mapping-manager-class-name"));
-            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, IDENTITY_TRUST_MANAGER_CLASS_NAME, DEFAULT).set("default");
+            op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, DESCRIPTION).set(
+                    bundle.getString("mapping-manager-class-name"));
+            op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
@@ -246,23 +258,251 @@ class SecuritySubsystemDescriptions {
             op.get(HEAD_COMMENT_ALLOWED).set(true);
             op.get(TAIL_COMMENT_ALLOWED).set(true);
 
-//            op.get(ATTRIBUTES, Attribute.EXTENDS.getLocalName(), DESCRIPTION).set(bundle.getString("extends"));
-//            op.get(REQUEST_PROPERTIES, Attribute.EXTENDS.getLocalName(), TYPE).set(ModelType.STRING);
-//            op.get(REQUEST_PROPERTIES, Attribute.EXTENDS.getLocalName(), REQUIRED).set(false);
-//
-//            op.get(ATTRIBUTES, Element.AUTHENTICATION.getLocalName(), DESCRIPTION).set(bundle.getString("authentication"));
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, TYPE).set(ModelType.OBJECT);
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, REQUIRED).set(false);
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, VALUE_TYPE, DESCRIPTION).set(bundle.getString("authentication.modules"));
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, VALUE_TYPE, TYPE).set(ModelType.LIST);
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, VALUE_TYPE, VALUE_TYPE);
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, VALUE_TYPE, VALUE_TYPE, CODE);
-//
-//            op.get(ATTRIBUTES, Element.AUTHENTICATION_JASPI.getLocalName(), DESCRIPTION).set(bundle.getString("authentication-jaspi"));
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
-//            op.get(ATTRIBUTES, AUTHENTICATION_MANAGER_CLASS_NAME, REQUIRED).set(false);
+            op.get(ATTRIBUTES, Attribute.EXTENDS.getLocalName(), DESCRIPTION).set(bundle.getString("extends"));
+            op.get(ATTRIBUTES, Attribute.EXTENDS.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(ATTRIBUTES, Attribute.EXTENDS.getLocalName(), REQUIRED).set(false);
 
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), DESCRIPTION).set(bundle.getString("authentication"));
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), Attribute.CODE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("code"));
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), Attribute.FLAG.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("flag"));
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), Attribute.FLAG.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), Attribute.FLAG.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, DESCRIPTION).set(
+                    bundle.getString("module-options"));
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION)
+                    .set(bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED)
+                    .set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION)
+                    .set(bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED)
+                    .set(true);
 
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), DESCRIPTION).set(bundle.getString("authorization"));
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), Attribute.CODE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("code"));
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), Attribute.FLAG.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("flag"));
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), Attribute.FLAG.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), Attribute.FLAG.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, DESCRIPTION).set(
+                    bundle.getString("module-options"));
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION)
+                    .set(bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED)
+                    .set(true);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION)
+                    .set(bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHORIZATION.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED)
+                    .set(true);
+
+            op.get(CHILDREN, Element.ACL.getLocalName(), DESCRIPTION).set(bundle.getString("acl"));
+            op.get(CHILDREN, Element.ACL.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.ACL.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.ACL.getLocalName(), Attribute.CODE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("code"));
+            op.get(CHILDREN, Element.ACL.getLocalName(), Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.ACL.getLocalName(), Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.ACL.getLocalName(), Attribute.FLAG.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("flag"));
+            op.get(CHILDREN, Element.ACL.getLocalName(), Attribute.FLAG.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.ACL.getLocalName(), Attribute.FLAG.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, DESCRIPTION).set(bundle.getString("module-options"));
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.ACL.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED).set(true);
+
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), DESCRIPTION).set(bundle.getString("mapping"));
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), Attribute.CODE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("code"));
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), Attribute.TYPE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("type"));
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), Attribute.TYPE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), Attribute.TYPE.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, DESCRIPTION).set(
+                    bundle.getString("module-options"));
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.MAPPING.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED)
+                    .set(true);
+
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), DESCRIPTION).set(bundle.getString("audit"));
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), Attribute.CODE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("code"));
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, DESCRIPTION).set(bundle.getString("module-options"));
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.AUDIT.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED).set(true);
+
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), DESCRIPTION).set(bundle.getString("identity-trust"));
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), Attribute.CODE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("code"));
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), Attribute.FLAG.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("flag"));
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), Attribute.FLAG.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), Attribute.FLAG.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, DESCRIPTION).set(
+                    bundle.getString("module-options"));
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION)
+                    .set(bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED)
+                    .set(true);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION)
+                    .set(bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(
+                    ModelType.STRING);
+            op.get(CHILDREN, Element.IDENTITY_TRUST.getLocalName(), MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED)
+                    .set(true);
+
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("authentication-jaspi"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    DESCRIPTION).set(bundle.getString("authentication-jaspi.login-module-stack"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(), TYPE).set(
+                    ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(), REQUIRED)
+                    .set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.NAME.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("authentication-jaspi.login-module-stack.name"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.NAME.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.NAME.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("code"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.FLAG.getLocalName(), DESCRIPTION).set(bundle.getString("flag"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.FLAG.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    Attribute.FLAG.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, DESCRIPTION).set(bundle.getString("module-options"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, Attribute.NAME.getLocalName(), DESCRIPTION).set(bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, Attribute.NAME.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, Attribute.NAME.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, Attribute.VALUE.getLocalName(), DESCRIPTION).set(bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, Attribute.VALUE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.LOGIN_MODULE_STACK.getLocalName(),
+                    MODULE_OPTIONS, Attribute.VALUE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("authentication-jaspi.auth-module"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), TYPE).set(
+                    ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), REQUIRED).set(
+                    false);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(),
+                    Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("code"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(),
+                    Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(),
+                    Attribute.CODE.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(),
+                    Attribute.LOGIN_MODULE_STACK_REF.getLocalName(), DESCRIPTION).set(
+                    bundle.getString("login-module-stack-ref"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(),
+                    Attribute.LOGIN_MODULE_STACK_REF.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(),
+                    Attribute.LOGIN_MODULE_STACK_REF.getLocalName(), REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    DESCRIPTION).set(bundle.getString("module-options"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    TYPE).set(ModelType.LIST);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    REQUIRED).set(false);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    Attribute.NAME.getLocalName(), DESCRIPTION).set(bundle.getString("module-options.name"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    Attribute.NAME.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    Attribute.NAME.getLocalName(), REQUIRED).set(true);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    Attribute.VALUE.getLocalName(), DESCRIPTION).set(bundle.getString("module-options.value"));
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    Attribute.VALUE.getLocalName(), TYPE).set(ModelType.STRING);
+            op.get(CHILDREN, Element.AUTHENTICATION_JASPI.getLocalName(), Element.AUTH_MODULE.getLocalName(), MODULE_OPTIONS,
+                    Attribute.VALUE.getLocalName(), REQUIRED).set(true);
 
             return op;
         }

@@ -313,24 +313,33 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
     private void writeLoginModuleStack(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
-            writer.writeStartElement(Element.LOGIN_MODULE_STACK.getLocalName());
-            List<ModelNode> modules = modelNode.asList();
-            Iterator<ModelNode> iter = modules.iterator();
-            ModelNode nameNode = iter.next();
-            writer.writeAttribute(Attribute.NAME.getLocalName(), nameNode.require(Attribute.NAME.getLocalName()).asString());
-            while (iter.hasNext()) {
-                ModelNode loginModule = iter.next();
-                writer.writeStartElement(Element.LOGIN_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.AUTHENTICATION);
+            List<ModelNode> stacks = modelNode.asList();
+            for (ModelNode stack : stacks) {
+                writer.writeStartElement(Element.LOGIN_MODULE_STACK.getLocalName());
+                List<ModelNode> nodes = stack.asList();
+                Iterator<ModelNode> iter = nodes.iterator();
+                ModelNode nameNode = iter.next();
+                writer.writeAttribute(Attribute.NAME.getLocalName(), nameNode.require(Attribute.NAME.getLocalName()).asString());
+                while (iter.hasNext()) {
+                    ModelNode loginModuleNode = iter.next();
+                    List<ModelNode> lms = loginModuleNode.asList();
+                    for (ModelNode loginModule : lms) {
+                        writer.writeStartElement(Element.LOGIN_MODULE.getLocalName());
+                        writeCommonModule(writer, loginModule, Element.AUTHENTICATION);
+                    }
+                }
+                writer.writeEndElement();
             }
-            writer.writeEndElement();
         }
     }
 
     private void writeAuthModule(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
-            writer.writeStartElement(Element.AUTH_MODULE.getLocalName());
-            writeCommonModule(writer, modelNode, Element.AUTH_MODULE);
+            List<ModelNode> authModulesNode = modelNode.asList();
+            for (ModelNode authModule : authModulesNode) {
+                writer.writeStartElement(Element.AUTH_MODULE.getLocalName());
+                writeCommonModule(writer, authModule, Element.AUTH_MODULE);
+            }
         }
     }
 
@@ -810,21 +819,19 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
     private void parseAuthenticationJaspi(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         requireNoAttributes(reader);
-        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case SECURITY_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (!visited.add(element)) {
-                        throw unexpectedElement(reader);
-                    }
                     switch (element) {
                         case LOGIN_MODULE_STACK: {
-                            parseLoginModuleStack(reader, op.get(Element.LOGIN_MODULE_STACK.getLocalName()));
+                            ModelNode node = op.get(Element.LOGIN_MODULE_STACK.getLocalName());
+                            parseLoginModuleStack(reader, node.add());
                             break;
                         }
                         case AUTH_MODULE: {
-                            parseAuthModule(reader, op.get(Element.AUTH_MODULE.getLocalName()));
+                            ModelNode node = op.get(Element.AUTH_MODULE.getLocalName());
+                            parseAuthModule(reader, node.add());
                             break;
                         }
                         default: {
@@ -842,7 +849,6 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
     private void parseLoginModuleStack(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
         EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        ModelNode moduleStack = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -851,7 +857,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    moduleStack = op.add(Attribute.NAME.getLocalName(), value);
+                    op.add().get(Attribute.NAME.getLocalName()).set(value);
                     break;
                 }
                 default:
@@ -862,8 +868,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (required.size() > 0) {
             throw missingRequired(reader, required);
         }
-
-        parseAuthentication(reader, moduleStack, false);
+        parseAuthentication(reader, op.add(), false);
     }
 
     private void parseAuthModule(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
@@ -967,7 +972,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         break;
                     }
                 }
-                return value;
+                if (value != null)
+                    return value;
+                else
+                    return code;
             }
             default:
                 return code;

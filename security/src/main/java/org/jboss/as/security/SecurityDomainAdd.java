@@ -258,45 +258,55 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
             Map<String, LoginModuleStackHolder> holders = new HashMap<String, LoginModuleStackHolder>();
             ModelNode moduleStack = node.get(Element.LOGIN_MODULE_STACK.getLocalName());
             modules = moduleStack.asList();
-            Iterator<ModelNode> iter = modules.iterator();
-            ModelNode nameNode = iter.next();
-            String name = nameNode.get(Attribute.NAME.getLocalName()).asString();
-            LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
-            holders.put(name, holder);
-            authenticationInfo.add(holder);
-            while (iter.hasNext()) {
-                ModelNode module = iter.next();
-                String code = module.require(Attribute.CODE.getLocalName()).asString();
-                LoginModuleControlFlag controlFlag = getControlFlag(module.require(Attribute.FLAG.getLocalName()).asString());
+            for (ModelNode loginModuleStack : modules) {
+                List<ModelNode> nodes = loginModuleStack.asList();
+                Iterator<ModelNode> iter = nodes.iterator();
+                ModelNode nameNode = iter.next();
+                String name = nameNode.get(Attribute.NAME.getLocalName()).asString();
+                LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
+                holders.put(name, holder);
+                authenticationInfo.add(holder);
+                while (iter.hasNext()) {
+                    ModelNode lmsNode = iter.next();
+                    List<ModelNode> lms = lmsNode.asList();
+                    for (ModelNode lmNode : lms) {
+                        String code = lmNode.require(Attribute.CODE.getLocalName()).asString();
+                        LoginModuleControlFlag controlFlag = getControlFlag(lmNode.require(Attribute.FLAG.getLocalName())
+                                .asString());
+                        Map<String, Object> options = new HashMap<String, Object>();
+                        if (lmNode.hasDefined(MODULE_OPTIONS)) {
+                            for (Property prop : lmNode.get(MODULE_OPTIONS).asPropertyList()) {
+                                options.put(prop.getName(), prop.getValue().asString());
+                            }
+                        }
+                        AppConfigurationEntry entry = new AppConfigurationEntry(code, controlFlag, options);
+                        holder.addAppConfigurationEntry(entry);
+                    }
+                }
+            }
+            ModelNode authModuleNode = node.get(Element.AUTH_MODULE.getLocalName());
+            List<ModelNode> authModules = authModuleNode.asList();
+            for (ModelNode authModule : authModules) {
+                String code = authModule.require(Attribute.CODE.getLocalName()).asString();
+                String loginStackRef = null;
+                if (authModule.hasDefined(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()))
+                    loginStackRef = authModule.get(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()).asString();
                 Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
+                if (authModule.hasDefined(MODULE_OPTIONS)) {
+                    for (Property prop : authModule.get(MODULE_OPTIONS).asPropertyList()) {
                         options.put(prop.getName(), prop.getValue().asString());
                     }
                 }
-                AppConfigurationEntry entry = new AppConfigurationEntry(code, controlFlag, options);
-                holder.addAppConfigurationEntry(entry);
-            }
-            ModelNode authModule = node.get(Element.AUTH_MODULE.getLocalName());
-            String code = authModule.require(Attribute.CODE.getLocalName()).asString();
-            String loginStackRef = null;
-            if (authModule.hasDefined(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()))
-                loginStackRef = authModule.get(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()).asString();
-            Map<String, Object> options = new HashMap<String, Object>();
-            if (authModule.hasDefined(MODULE_OPTIONS)) {
-                for (Property prop : authModule.get(MODULE_OPTIONS).asPropertyList()) {
-                    options.put(prop.getName(), prop.getValue().asString());
+                AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
+                if (loginStackRef != null) {
+                    if (!holders.containsKey(loginStackRef)) {
+                        throw new IllegalArgumentException("auth-module references a login module stack that doesn't exist: "
+                                + loginStackRef);
+                    }
+                    entry.setLoginModuleStackHolder(holders.get(loginStackRef));
                 }
+                authenticationInfo.add(entry);
             }
-            AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
-            if (loginStackRef != null) {
-                if (!holders.containsKey(loginStackRef)) {
-                    throw new IllegalArgumentException("auth-module references a login module stack that doesn't exist: "
-                            + loginStackRef);
-                }
-                entry.setLoginModuleStackHolder(holders.get(loginStackRef));
-            }
-            authenticationInfo.add(entry);
             applicationPolicy.setAuthenticationInfo(authenticationInfo);
         }
 
