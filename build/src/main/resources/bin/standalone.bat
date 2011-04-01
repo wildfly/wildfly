@@ -85,8 +85,8 @@ echo.
 
 :RESTART
 "%JAVA%" %JAVA_OPTS% ^
- -Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log ^
- -Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties ^
+ "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
+ "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_HOME%\modules" ^
     -logmodule "org.jboss.logmanager" ^
