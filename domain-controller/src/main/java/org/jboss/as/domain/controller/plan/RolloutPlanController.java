@@ -218,7 +218,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
             if (series.hasDefined(CONCURRENT_GROUPS)) {
                 ModelNode item = null;
-                for (Property prop : series.get(SERVER_GROUP).asPropertyList()) {
+                for (Property prop : series.get(CONCURRENT_GROUPS).asPropertyList()) {
                     if (rollbackOpsByGroup.containsKey(prop.getName())) {
                         ModelNode rollbackPolicy = getRollbackPolicy(prop.getValue());
                         if (item == null) {
@@ -227,7 +227,9 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                         item.get(prop.getName()).set(rollbackPolicy);
                     }
                 }
-                rollbackRolloutPlan.get(IN_SERIES).add().get(CONCURRENT_GROUPS).set(item);
+                if (item != null) {
+                    rollbackRolloutPlan.get(IN_SERIES).add().get(CONCURRENT_GROUPS).set(item);
+                }
             }
             else {
                 Property prop = series.get(SERVER_GROUP).asProperty();
