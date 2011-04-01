@@ -717,7 +717,7 @@ public class ExampleRunner implements Runnable {
 
                 builder = builder.replace(contentName, content);
                 ModelNode existing = model.get("deployment", contentName);
-                if (deployedContent.contains(contentName) || (existing.isDefined() && existing.get("auto-start").asBoolean(true) && !undeployedContent.contains(contentName))) {
+                if (deployedContent.contains(contentName) || (existing.isDefined() && existing.get("enabled").asBoolean(true) && !undeployedContent.contains(contentName))) {
                     deployedContent.add(contentName);
                 }
                 break;
@@ -760,7 +760,7 @@ public class ExampleRunner implements Runnable {
                 if (serverGroup.hasDefined("deployment")) {
                     for (Property deploymentProp : serverGroup.get("deployment").asPropertyList()) {
                         ModelNode deployment = deploymentProp.getValue();
-                        if (deployment.hasDefined("auto-start") && !deployment.get("auto-start").asBoolean()) {
+                        if (deployment.hasDefined("enabled") && !deployment.get("enabled").asBoolean()) {
                             deployments.add(deploymentProp.getName());
                         }
                     }
@@ -826,7 +826,7 @@ public class ExampleRunner implements Runnable {
                 if (serverGroup.hasDefined("deployment")) {
                     for (Property deploymentProp : serverGroup.get("deployment").asPropertyList()) {
                         ModelNode deployment = deploymentProp.getValue();
-                        if (!deployment.hasDefined("auto-start") || deployment.get("auto-start").asBoolean()) {
+                        if (!deployment.hasDefined("enabled") || deployment.get("enabled").asBoolean()) {
                             deployments.add(deploymentProp.getName());
                         }
                     }
@@ -1294,47 +1294,6 @@ public class ExampleRunner implements Runnable {
             }
         }
         return servers;
-    }
-
-    private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
-        final XMLMapper mapper = XMLMapper.Factory.create();
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final BufferedOutputStream bos = new BufferedOutputStream(baos);
-        final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
-        try {
-            mapper.deparseDocument(new RootElementWriter(element, content), writer);
-        }
-        catch (XMLStreamException e) {
-            // Dump some diagnostics
-            stdout.println("XML Content that was written prior to exception:");
-            stdout.println(writer.toString());
-            throw e;
-        }
-        finally {
-            writer.close();
-            bos.close();
-        }
-        return new String(baos.toByteArray());
-    }
-
-    private static class RootElementWriter implements XMLContentWriter {
-
-        private final String element;
-        private final XMLContentWriter content;
-
-        RootElementWriter(final String element, final XMLContentWriter content) {
-            this.element = element;
-            this.content = content;
-        }
-
-        @Override
-        public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-            streamWriter.writeStartDocument();
-            streamWriter.writeStartElement(element);
-            content.writeContent(streamWriter);
-            streamWriter.writeEndDocument();
-        }
-
     }
 
 }
