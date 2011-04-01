@@ -24,12 +24,16 @@ package org.jboss.as.host.controller;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
+import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
@@ -39,16 +43,19 @@ import org.jboss.logging.Logger;
  * Inventory of the managed servers.
  *
  * @author Emanuel Muckenhuber
- */
+ * @author Kabir Khan
+   */
 class ServerInventory implements ManagedServerLifecycleCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
-    private final Map<String, ManagedServer> servers = new HashMap<String, ManagedServer>();
+    private final Map<String, ManagedServer> servers = Collections.synchronizedMap(new HashMap<String, ManagedServer>());
 
     private final HostControllerEnvironment environment;
     private final ProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
-    private HostControllerImpl hostController;
+    private volatile HostControllerImpl hostController;
+    private volatile CountDownLatch processInventoryLatch;
+    private volatile Map<String, ProcessInfo> processInfos;
 
     ServerInventory(final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
         this.environment = environment;
@@ -58,6 +65,31 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
     void setHostController(HostControllerImpl hostController) {
         this.hostController = hostController;
+    }
+
+    synchronized Map<String, ProcessInfo> determineRunningProcesses(){
+        processInventoryLatch = new CountDownLatch(1);
+        try {
+            processControllerClient.requestProcessInventory();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            if (!processInventoryLatch.await(30, TimeUnit.SECONDS)){
+                throw new RuntimeException("Could not get the server inventory in 30 seconds");
+            }
+        } catch (InterruptedException e) {
+        }
+        return processInfos;
+
+    }
+
+    @Override
+    public void processInventory(Map<String, ProcessInfo> processInfos) {
+        this.processInfos = processInfos;
+        if (processInventoryLatch != null){
+            processInventoryLatch.countDown();
+        }
     }
 
     ServerStatus determineServerStatus(final String serverName) {
@@ -94,6 +126,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
     }
 
     ServerStatus startServer(final String serverName, final ModelNode hostModel, final DomainController domainController) {
+
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
@@ -103,6 +136,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         log.infof("Starting server %s", serverName);
         final ManagedServer server = createManagedServer(serverName, hostModel, domainController);
         servers.put(processName, server);
+
         try {
             server.createServerProcess();
         } catch(IOException e) {
@@ -116,6 +150,26 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         return determineServerStatus(serverName);
     }
 
+    void reconnectServer(final String serverName, final ModelNode hostModel, final DomainController domainController, final boolean running){
+
+        final String processName = ManagedServer.getServerProcessName(serverName);
+        final ManagedServer existing = servers.get(processName);
+        if(existing != null) { // FIXME
+            log.warnf("existing server [%s] with state: %s", processName, existing.getState());
+        }
+        log.info("Reconnecting server " + serverName);
+        final ManagedServer server = createManagedServer(serverName, hostModel, domainController);
+        servers.put(processName, server);
+
+        if (running){
+            try {
+                server.reconnectServerProcess(environment.getHostControllerPort());
+            } catch (IOException e) {
+                log.errorf(e, "Failed to send reconnect message to server %s", serverName);
+            }
+        }
+    }
+
     ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode hostModel, final DomainController domainController) {
         stopServer(serverName, gracefulTimeout);
         return startServer(serverName, hostModel, domainController);
@@ -127,6 +181,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         try {
             final ManagedServer server = servers.get(processName);
             if (server != null) {
+                server.setState(ServerState.STOPPING);
                 if (gracefulTimeout > -1) {
                     // FIXME implement gracefulShutdown
                     //server.gracefulShutdown(gracefulTimeout);
@@ -134,16 +189,13 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
                     // Workaround until the above is fixed
                     log.warnf("Graceful shutdown of server %s was requested but is not presently supported. " +
-                              "Falling back to rapid shutdown.", serverName);
+                            "Falling back to rapid shutdown.", serverName);
                     server.stopServerProcess();
                     server.removeServerProcess();
-                    servers.remove(processName);
                 }
                 else {
                     server.stopServerProcess();
                     server.removeServerProcess();
-                    servers.remove(processName);
-                    hostController.unregisterRunningServer(serverName);
                 }
             }
         }
@@ -164,58 +216,15 @@ class ServerInventory implements ManagedServerLifecycleCallback {
             }
 
             server.setServerManagementConnection(connection);
-            // TODO start the server here?
-            // TODO
+            if (!environment.isRestart()){
+                checkState(server, ServerState.STARTING);
+            }
             server.setState(ServerState.STARTED);
-
-            //This should really be in serverStarted() along with an unregisterCall in serverStopped()
             hostController.registerRunningServer(server.getServerName(), server.getServerConnection());
+            server.resetRespawnCount();
         } catch (final Exception e) {
             log.errorf(e, "Could not start server %s", serverName);
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void serverDown(String serverName) {
-        final ManagedServer server = servers.get(serverName);
-        if (server == null) {
-            log.errorf("No server called %s exists", serverName);
-            return;
-        }
-
-        if (environment.isRestart() && server.getState() == ServerState.BOOTING && environment.getHostControllerPort() == 0) {
-            //If this was a restarted HC and a server went down while we were down, process controller will send the DOWN message. If the port
-            //is 0, it will be different following a restart so remove and re-add the server with the new port here
-            try {
-                server.removeServerProcess();
-                server.createServerProcess();
-            } catch (final IOException e) {
-                log.errorf("Error removing and adding process %s", serverName);
-                return;
-            }
-            try {
-                server.startServerProcess();
-            } catch (final IOException e) {
-                // AutoGenerated
-                throw new RuntimeException(e);
-            }
-
-        } else {
-            server.setState(ServerState.FAILED);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void serverStarted(String serverName) {
-        final ManagedServer server = servers.get(serverName);
-        if (server == null) {
-            log.errorf("No server called %s exists for start", serverName);
-            return;
-        }
-        checkState(server, ServerState.STARTING);
-        server.setState(ServerState.STARTED);
     }
 
     /** {@inheritDoc} */
@@ -238,36 +247,22 @@ class ServerInventory implements ManagedServerLifecycleCallback {
             log.errorf("No server called %s exists for stop", serverName);
             return;
         }
-        checkState(server, ServerState.STOPPING);
-
-        try {
-            server.stopServerProcess();
-        } catch (final IOException e) {
-            log.errorf(e, "Could not stop server %s in PM", serverName);
-        }
-        try {
-            server.removeServerProcess();
-        } catch (final IOException e) {
-            log.errorf(e, "Could not stop server %s", serverName);
-        }
-    }
-
-    void reconnectedServer(final String serverName, final ServerState state) {
-        final ManagedServer server = servers.get(serverName);
-        if (server == null) {
-            log.errorf("No server found for reconnected server %s", serverName);
-            return;
-        }
-
-        server.setState(state);
-
-        if (state.isRestartOnReconnect()) {
+        hostController.unregisterRunningServer(server.getServerName());
+        if (server.getState() != ServerState.STOPPING){
+            //The server crashed, try to restart it
+            // TODO: throttle policy
             try {
-                server.startServerProcess();
-            } catch (final IOException e) {
-                log.errorf(e, "Could not start reconnected server %s", server.getServerProcessName());
+                //TODO make configurable
+                if (server.incrementAndGetRespawnCount() < 10 ){
+                    server.startServerProcess();
+                    return;
+                }
+                server.setState(ServerState.MAX_FAILED);
+            } catch(IOException e) {
+                log.error("Failed to start server " + serverName, e);
             }
         }
+        servers.remove(serverName);
     }
 
     private void checkState(final ManagedServer server, final ServerState expected) {
@@ -280,6 +275,10 @@ class ServerInventory implements ManagedServerLifecycleCallback {
     private ManagedServer createManagedServer(final String serverName, final ModelNode hostModel, final DomainController domainController) {
         final ModelCombiner combiner = new ModelCombiner(serverName, hostModel, domainController, environment);
         return new ManagedServer(serverName, processControllerClient, managementAddress, combiner);
+    }
+
+    HostControllerEnvironment getEnvironment(){
+        return environment;
     }
 
 }

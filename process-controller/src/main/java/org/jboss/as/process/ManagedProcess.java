@@ -31,11 +31,19 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 
 /**
  * A managed process.
@@ -127,7 +135,7 @@ final class ManagedProcess {
                 log.debugf("Attempted to start already-running process '%s'", processName);
                 return;
             }
-            doStart();
+            doStart(false);
         }
     }
 
@@ -140,8 +148,23 @@ final class ManagedProcess {
         }
     }
 
-    private void doStart() {
+
+    public void reconnect(String hostName, int port) {
+        try {
+            StreamUtils.writeUTFZBytes(stdin, hostName);
+            StreamUtils.writeInt(stdin, port);
+            stdin.flush();
+        } catch (IOException e) {
+            log.errorf(e, "Failed to send reconnect message to process '%s' input stream", processName);
+        }
+    }
+
+    private void doStart(boolean restart) {
         // Call under lock
+        if (restart && isInitial() && !command.contains(CommandLineConstants.RESTART_HOST_CONTROLLER)){
+            //Add the restart flag to the HC process if we are respawning it
+            command.add(CommandLineConstants.RESTART_HOST_CONTROLLER);
+        }
         log.infof("Starting process '%s'", processName);
         log.debugf("Process name='%s' command='%s' workingDirectory='%s'", processName, command, workingDirectory);
         final ProcessBuilder builder = new ProcessBuilder(command);
@@ -231,7 +254,7 @@ final class ManagedProcess {
                     processController.processStopped(processName, endTime - startTime);
                     if (isInitial()) {
                         // we must respawn the initial process
-                        doStart();
+                        doStart(true);
                         // TODO: throttle policy
                     }
                 }

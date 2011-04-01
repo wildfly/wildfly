@@ -39,9 +39,12 @@ import org.jboss.as.host.controller.operations.ServerRestartHandler;
 import org.jboss.as.host.controller.operations.ServerStartHandler;
 import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
+import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.Connection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -139,19 +142,47 @@ public class HostControllerImpl implements HostController {
         this.domainController = domainController;
         // start servers
         final ModelNode rawModel = getHostModel();
+
         if(rawModel.hasDefined(SERVER_CONFIG)) {
             final ModelNode servers = rawModel.get(SERVER_CONFIG).clone();
-            for(final String serverName : servers.keys()) {
-                if(servers.get(serverName, AUTO_START).asBoolean(true)) {
-                    try {
-                        startServer(serverName);
-                    } catch (Exception e) {
-                        log.errorf(e, "failed to start server (%s)", serverName);
-                    }
+            if (serverInventory.getEnvironment().isRestart()){
+                restartedHcStartOrReconnectServers(servers);
+            } else {
+                cleanStartServers(servers);
+            }
+        }
+    }
+
+    private void cleanStartServers(final ModelNode servers){
+        for(final String serverName : servers.keys()) {
+            if(servers.get(serverName, AUTO_START).asBoolean(true)) {
+                try {
+                    startServer(serverName);
+                } catch (Exception e) {
+                    log.errorf(e, "failed to start server (%s)", serverName);
                 }
             }
         }
     }
+
+    private void restartedHcStartOrReconnectServers(final ModelNode servers){
+        Map<String, ProcessInfo> processInfos = serverInventory.determineRunningProcesses();
+        for(final String serverName : servers.keys()) {
+            ProcessInfo info = processInfos.get(ManagedServer.getServerProcessName(serverName));
+            boolean auto = servers.get(serverName, AUTO_START).asBoolean(true);
+            if (info == null && auto) {
+                try {
+                    startServer(serverName);
+                } catch (Exception e) {
+                    log.errorf(e, "failed to start server (%s)", serverName);
+                }
+            } else if (info != null){
+                //Reconnect the server
+                serverInventory.reconnectServer(serverName, getHostModel(), domainController, info.isRunning());
+            }
+        }
+    }
+
 
     @Override
     public void stopServers() {

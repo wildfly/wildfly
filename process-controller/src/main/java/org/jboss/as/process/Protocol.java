@@ -40,6 +40,7 @@ public final class Protocol {
     public static final int REMOVE_PROCESS = 0x13;
     public static final int SEND_STDIN = 0x14;
     public static final int REQUEST_PROCESS_INVENTORY = 0x15;
+    public static final int RECONNECT_PROCESS = 0x16;
 
     // outbound messages
 
@@ -49,4 +50,5 @@ public final class Protocol {
     public static final int PROCESS_STOPPED = 0x12;
     public static final int PROCESS_REMOVED = 0x13;
     public static final int PROCESS_INVENTORY = 0x14;
+    public static final int PROCESS_RECONNECTED = 0x15;
 }

@@ -55,6 +55,16 @@ public final class Main {
     public static final String HOST_CONTROLLER_MODULE = "org.jboss.as.host-controller";
 
     public static void main(String[] args) throws IOException {
+
+        for (int i = 0 ; i < args.length ; i++){
+            System.out.println(i + "\t" + args[i]);
+        }
+
+
+        start(args);
+    }
+
+    public static ProcessController start(String[] args) throws IOException {
         MDC.put("process", "process controller");
 
         String javaHome = System.getProperty("java.home", ".");
@@ -175,5 +185,7 @@ public final class Main {
         }, "Shutdown thread");
         shutdownThread.setDaemon(false);
         Runtime.getRuntime().addShutdownHook(shutdownThread);
+
+        return processController;
     }
 }

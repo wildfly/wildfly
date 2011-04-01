@@ -43,7 +43,7 @@ class ServerInventoryService implements Service<ServerInventory> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
     private final InjectedValue<NetworkInterfaceBinding> iFace = new InjectedValue<NetworkInterfaceBinding>();
-    private final InjectedValue<ProcessControllerClient> client = new InjectedValue<ProcessControllerClient>();
+    private final InjectedValue<ProcessControllerConnectionService> client = new InjectedValue<ProcessControllerConnectionService>();
     private final HostControllerEnvironment environment;
     private final int port;
 
@@ -61,19 +61,21 @@ class ServerInventoryService implements Service<ServerInventory> {
         final ServerInventory serverInventory;
         try {
             final NetworkInterfaceBinding interfaceBinding = iFace.getValue();
-            final ProcessControllerClient client = this.client.getValue();
+            final ProcessControllerClient client = this.client.getValue().getClient();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getAddress(), port);
             serverInventory = new ServerInventory(environment, binding, client);
         } catch (Exception e) {
             throw new StartException(e);
         }
         this.serverInventory = serverInventory;
+        client.getValue().setServerInventory(serverInventory);
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
         this.serverInventory = null;
+        client.getValue().setServerInventory(null);
     }
 
     /** {@inheritDoc} */
@@ -90,7 +92,7 @@ class ServerInventoryService implements Service<ServerInventory> {
         return iFace;
     }
 
-    InjectedValue<ProcessControllerClient> getClient() {
+    InjectedValue<ProcessControllerConnectionService> getClient() {
         return client;
     }
 }

@@ -194,6 +194,12 @@ class ManagedServer implements ModelController {
         }
     }
 
+    void reconnectServerProcess(int port) throws IOException {
+        synchronized (lock){
+            processControllerClient.reconnectProcess(serverProcessName, managementSocket.getAddress().getHostName(), managementSocket.getPort());
+        }
+    }
+
     void stopServerProcess() throws IOException {
         synchronized(lock) {
             processControllerClient.stopProcess(serverProcessName);

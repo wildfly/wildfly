@@ -190,7 +190,7 @@ public class HostControllerBootstrap {
 
         final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
-            .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerClient.class, inventory.getClient())
+            .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, inventory.getInterface())
             .install();
 
@@ -243,7 +243,6 @@ public class HostControllerBootstrap {
      * @param environment the host controller environment
      * @param host the host model
      * @param serviceTarget the service target
-     * @param fileRepository the local file repository
      * @param backupDomainFiles whether the remote domain controller should be backed up
      * @param useCachedDc Pass in true if this is a slave domain controller, and we want to be able
      */

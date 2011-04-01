@@ -40,10 +40,6 @@
 
     <modules>
         <module>smoke</module>
-        <!-- Exclude protocol tests from build until PM to Server comm is fixed
-             following JBAS-8448 work
-        <module>protocol</module>
-        -->
     </modules>
 
     <packaging>pom</packaging>

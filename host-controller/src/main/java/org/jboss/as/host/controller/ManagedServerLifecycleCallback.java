@@ -22,7 +22,10 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.Connection;
+
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -30,9 +33,7 @@ import org.jboss.as.protocol.Connection;
 public interface ManagedServerLifecycleCallback {
 
     void serverRegistered(String serverName, Connection connection);
-    void serverDown(String serverName);
-    void serverStarted(String serverName);
     void serverStartFailed(String serverName);
     void serverStopped(String serverName);
-
+    void processInventory(Map<String, ProcessInfo> processInfos);
 }

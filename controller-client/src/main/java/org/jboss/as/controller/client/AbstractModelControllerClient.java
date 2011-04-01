@@ -130,6 +130,8 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                 throw new CancellationException(e.getCause().getMessage());
             }
             throw new RuntimeException("Failed to execute operation ", e);
+        } catch (IOException e){
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute operation ", e);
         }

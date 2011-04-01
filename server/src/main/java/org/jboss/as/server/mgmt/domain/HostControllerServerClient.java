@@ -48,7 +48,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author John Bailey
  * @author Emanuel Muckenhuber
  */
-public class HostControllerServerClient implements Service<Void> {
+public class HostControllerServerClient implements Service<HostControllerServerClient> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
@@ -83,9 +83,13 @@ public class HostControllerServerClient implements Service<Void> {
     public void stop(StopContext context) {
     }
 
+    public String getServerName(){
+        return serverName;
+    }
+
     /** {@inheritDoc} */
-    public Void getValue() throws IllegalStateException {
-        return null;
+    public HostControllerServerClient getValue() throws IllegalStateException {
+        return this;
     }
 
     public Injector<Connection> getSmConnectionInjector() {

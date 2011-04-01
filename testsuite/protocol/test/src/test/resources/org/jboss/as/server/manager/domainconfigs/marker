@@ -1,1 +1,0 @@
-Just to be able to find this files parent directory using ClassLoader.getResource()

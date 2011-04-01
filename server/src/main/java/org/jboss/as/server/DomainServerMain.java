@@ -28,8 +28,10 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
@@ -43,14 +45,18 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * The main entry point for domain-managed server instances.
@@ -96,6 +102,7 @@ public final class DomainServerMain {
         final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", DomainServerMain.class.getClassLoader());
         final Unmarshaller unmarshaller;
         final ByteInput byteInput;
+        final AsyncFuture<ServiceContainer> containerFuture;
         try {
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
             configuration.setVersion(2);
@@ -105,7 +112,7 @@ public final class DomainServerMain {
             unmarshaller.start(byteInput);
             final ServerTask task = unmarshaller.readObject(ServerTask.class);
             unmarshaller.finish();
-            task.run(Arrays.<ServiceActivator>asList(new ServiceActivator() {
+            containerFuture = task.run(Arrays.<ServiceActivator>asList(new ServiceActivator() {
                 @Override
                 public void activate(final ServiceActivatorContext serviceActivatorContext) {
                     // TODO activate host controller client service
@@ -115,13 +122,36 @@ public final class DomainServerMain {
             e.printStackTrace(initialError);
             System.exit(1);
             throw new IllegalStateException(); // not reached
+        } finally {
         }
         for (;;) try {
-            unmarshaller.start(byteInput);
-            final InetSocketAddress socketAddress = unmarshaller.readObject(InetSocketAddress.class);
-            unmarshaller.finish();
-            // todo connect to the HC at socketAddress, disconnect from old
-            break;
+            String hostName = StreamUtils.readUTFZBytes(initialInput);
+            int port = StreamUtils.readInt(initialInput);
+
+            final CountDownLatch latch = new CountDownLatch(2);
+            final UninstallListener connectionListener = new UninstallListener(latch, HostControllerConnectionService.SERVICE_NAME);
+            final UninstallListener clientListener = new UninstallListener(latch, HostControllerServerClient.SERVICE_NAME);
+
+
+            //Disconnect from the old HC
+            final ServiceContainer container = containerFuture.get();
+            final ServiceController<?> client = container.getRequiredService(HostControllerServerClient.SERVICE_NAME);
+            final String name = ((HostControllerServerClient)client.getValue()).getServerName();
+            client.addListener(clientListener);
+            client.setMode(ServiceController.Mode.REMOVE);
+
+            final ServiceController<?> connection = container.getRequiredService(HostControllerConnectionService.SERVICE_NAME);
+            connection.addListener(connectionListener);
+            connection.setMode(ServiceController.Mode.REMOVE);
+
+            latch.await();
+
+            client.removeListener(clientListener);
+            connection.removeListener(connectionListener);
+
+            //Connect to the new HC address
+            addCommunicationServices(container, name, new InetSocketAddress(InetAddress.getByName(hostName), port));
+
         } catch (InterruptedIOException e) {
             Thread.interrupted();
             // ignore
@@ -129,11 +159,28 @@ public final class DomainServerMain {
             // this means it's time to exit
             break;
         } catch (Exception e) {
+            e.printStackTrace();
             break;
         }
+
         // Once the input stream is cut off, shut down
         System.exit(0);
         throw new IllegalStateException(); // not reached
+    }
+
+    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final InetSocketAddress managementSocket) {
+        final HostControllerConnectionService smConnection = new HostControllerConnectionService();
+        serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
+            .addInjection(smConnection.getSmAddressInjector(), managementSocket)
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
+
+        final HostControllerServerClient client = new HostControllerServerClient(serverName);
+        serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
+            .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
+            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, client.getServerControllerInjector())
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
     }
 
     public static final class HostControllerCommunicationActivator implements ServiceActivator, Serializable {
@@ -149,19 +196,23 @@ public final class DomainServerMain {
         @Override
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
+            addCommunicationServices(serviceTarget, serverName, managementSocket);
+        }
+    }
 
-            final HostControllerConnectionService smConnection = new HostControllerConnectionService();
-            serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
-                .addInjection(smConnection.getSmAddressInjector(), managementSocket)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+    private static final class UninstallListener extends AbstractServiceListener<Object>{
+        private final CountDownLatch latch;
+        private final ServiceName name;
 
-            final HostControllerServerClient client = new HostControllerServerClient(serverName);
-            serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
-                .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, client.getServerControllerInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        UninstallListener(CountDownLatch latch, ServiceName name) {
+            this.latch = latch;
+            this.name = name;
+        }
+
+        public void serviceRemoved(ServiceController<?> controller) {
+            if (controller.getName().equals(name)){
+                latch.countDown();
+            }
         }
     }
 }

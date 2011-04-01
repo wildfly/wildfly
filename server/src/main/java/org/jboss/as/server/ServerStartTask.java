@@ -35,6 +35,8 @@ import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * This is the task used by the Host Controller and passed to a Server instance
@@ -67,7 +69,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     }
 
     @Override
-    public void run(final List<ServiceActivator> runServices) {
+    public AsyncFuture<ServiceContainer> run(final List<ServiceActivator> runServices) {
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(providedEnvironment);
@@ -81,7 +83,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 return updates;
             }
         });
-        bootstrap.bootstrap(configuration, startServices);
+        return bootstrap.bootstrap(configuration, startServices);
     }
 
     @Override

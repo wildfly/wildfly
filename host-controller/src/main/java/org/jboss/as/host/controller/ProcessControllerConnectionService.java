@@ -47,19 +47,26 @@ import org.jboss.threads.JBossThreadFactory;
 /**
  * @author Emanuel Muckenhuber
  */
-class ProcessControllerConnectionService implements Service<ProcessControllerClient> {
+class ProcessControllerConnectionService implements Service<ProcessControllerConnectionService> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "process-controller-connection");
 
-    final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
-
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
-    private ProcessControllerClient client;
+    private volatile ProcessControllerClient client;
+    private volatile ServerInventory serverInventory;
 
     ProcessControllerConnectionService(final HostControllerEnvironment environment, final byte[] authCode) {
         this.environment = environment;
         this.authCode = authCode;
+    }
+
+    ServerInventory getServerInventory() {
+        return serverInventory;
+    }
+
+    void setServerInventory(ServerInventory serverInventory) {
+        this.serverInventory = serverInventory;
     }
 
     /** {@inheritDoc} */
@@ -81,10 +88,17 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCli
 
                 @Override
                 public void handleProcessStarted(final ProcessControllerClient client, final String processName) {
+                    if (serverInventory == null){
+                        throw new IllegalStateException("No server inventory");
+                    }
                 }
 
                 @Override
                 public void handleProcessStopped(final ProcessControllerClient client, final String processName, final long uptimeMillis) {
+                    if (serverInventory == null){
+                        throw new IllegalStateException("No server inventory");
+                    }
+                    serverInventory.serverStopped(processName);
                 }
 
                 @Override
@@ -94,6 +108,7 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCli
                 @Override
                 public void handleProcessInventory(final ProcessControllerClient client, final Map<String, ProcessInfo> inventory) {
                     // TODO: reconcile our server list against the process controller inventory
+                    serverInventory.processInventory(inventory);
                 }
 
                 @Override
@@ -108,7 +123,6 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCli
                 public void handleConnectionFinished(final ProcessControllerClient client) {
                 }
             });
-            client.requestProcessInventory();
         } catch(IOException e) {
             throw new StartException(e);
         }
@@ -125,7 +139,11 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCli
 
     /** {@inheritDoc} */
     @Override
-    public synchronized ProcessControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized ProcessControllerConnectionService getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    public synchronized ProcessControllerClient getClient() throws IllegalStateException, IllegalArgumentException {
         final ProcessControllerClient client = this.client;
         if(client == null) {
             throw new IllegalStateException();

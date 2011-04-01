@@ -231,6 +231,7 @@ public final class ProcessController {
                     }
                 } catch (IOException e) {
                     log.errorf("Failed to write PROCESS_STARTED message to connection: %s", e);
+                    removeManagedConnection(connection);
                 }
             }
         }
@@ -251,6 +252,7 @@ public final class ProcessController {
                     }
                 } catch (IOException e) {
                     log.errorf("Failed to write PROCESS_STOPPED message to connection: %s", e);
+                    removeManagedConnection(connection);
                 }
             }
         }
@@ -276,10 +278,25 @@ public final class ProcessController {
                     }
                 } catch (IOException e) {
                     log.errorf("Failed to write PROCESS_INVENTORY message to connection: %s", e);
+                    removeManagedConnection(connection);
                 }
             }
         }
     }
+
+    public void sendReconnectProcess(String processName, String hostName, int port) {
+        synchronized (lock) {
+            ManagedProcess process = processes.get(processName);
+            if (process == null) {
+                log.warnf("Attempted to reconnect non-existent process '%s'", processName);
+                // ignore
+                return;
+            }
+            process.reconnect(hostName, port);
+        }
+    }
+
+
 
     public ProtocolServer getServer() {
         return server;

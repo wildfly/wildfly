@@ -84,21 +84,25 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
             }
             log.tracef("Received authentic connection from %s", connection.getPeerAddress());
             connection.setMessageHandler(new ConnectedMessageHandler(processController, process.isInitial()));
+            processController.addManagedConnection(connection);
             dataStream.close();
         }
 
         public void handleShutdown(final Connection connection) throws IOException {
             log.tracef("Received end-of-stream for connection");
+            processController.removeManagedConnection(connection);
             connection.shutdownWrites();
         }
 
         public void handleFailure(final Connection connection, final IOException e) throws IOException {
             log.tracef(e, "Received failure of connection");
+            processController.removeManagedConnection(connection);
             connection.close();
         }
 
         public void handleFinished(final Connection connection) throws IOException {
             log.tracef("Connection finished");
+            processController.removeManagedConnection(connection);
             // nothing
         }
 
@@ -191,6 +195,18 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                                 processController.sendInventory();
                             } else {
                                 log.tracef("Ignoring request_process_inventory message from untrusted source");
+                            }
+                            dataStream.close();
+                            break;
+                        }
+                        case Protocol.RECONNECT_PROCESS: {
+                            if (isHostController) {
+                                final String processName = readUTFZBytes(dataStream);
+                                final String hostName = readUTFZBytes(dataStream);
+                                final int port = readInt(dataStream);
+                                processController.sendReconnectProcess(processName, hostName, port);
+                            } else {
+                                log.tracef("Ignoring reconnect_process message from untrusted source");
                             }
                             dataStream.close();
                             break;

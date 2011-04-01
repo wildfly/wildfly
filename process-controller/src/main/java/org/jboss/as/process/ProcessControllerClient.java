@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import org.jboss.as.protocol.Connection;
@@ -265,6 +266,22 @@ public final class ProcessControllerClient implements Closeable {
         final OutputStream os = connection.writeMessage();
         try {
             os.write(Protocol.REQUEST_PROCESS_INVENTORY);
+            os.close();
+        } finally {
+            safeClose(os);
+        }
+    }
+
+    public void reconnectProcess(final String processName, final String hostName, final int port) throws IOException {
+        if (processName == null){
+            throw new IllegalArgumentException("processName is null");
+        }
+        final OutputStream os = connection.writeMessage();
+        try{
+            os.write(Protocol.RECONNECT_PROCESS);
+            writeUTFZBytes(os, processName);
+            writeUTFZBytes(os, hostName);
+            writeInt(os, port);
             os.close();
         } finally {
             safeClose(os);
