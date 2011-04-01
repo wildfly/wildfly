@@ -1,6 +1,12 @@
 Synopsis:	undeploy name
 
 Description:	undeploys the application with the given name.
+				Tab-completion is supported for the deployment name.
+				If the deployment name isn't specified, prints the list of all the existing deployments.
 
 Arguments:	name	- the application to undeploy. The name here is equivalent to the name argument
 					in the deploy command.
+					
+			-l		- in case the deployment name isn't specified, the presence of the -l switch
+					will make the existing deployments printed one deployment per line, instead of
+					columns (the default).

@@ -100,7 +100,7 @@ public class CommandLineMain {
             }
         }));
         OperationRequestCompleter opCompleter = new OperationRequestCompleter(cmdCtx);
-        console.addCompletor(new CommandCompleter(handlers.keySet(), opCompleter));
+        console.addCompletor(new CommandCompleter(handlers.keySet(), cmdCtx, opCompleter));
         console.addCompletor(opCompleter);
 
         boolean connect = false;

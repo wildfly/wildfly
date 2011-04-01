@@ -22,6 +22,8 @@
 package org.jboss.as.cli.handlers;
 
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
@@ -48,7 +50,24 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         }
 
         if(args == null) {
-            ctx.printColumns(Util.getDeployments(client));
+            listDeployments(ctx, false);
+            return;
+        }
+
+        boolean lSwitch = false;
+        String deployment = null;
+        String[] arr = args.split("\\s+");
+        for(int i = 0; i < arr.length; ++i) {
+            String arg = arr[i];
+            if("-l".equals(arg)) {
+                lSwitch = true;
+            } else {
+                deployment = arg;
+            }
+        }
+
+        if (deployment == null) {
+            listDeployments(ctx, lSwitch);
             return;
         }
 
@@ -91,5 +110,16 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         }
 
         ctx.printLine("'" + args + "' undeployed successfully.");
+    }
+
+    protected void listDeployments(CommandContext ctx, boolean lSwitch) {
+        List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+        if (lSwitch) {
+            for (String name : deployments) {
+                ctx.printLine(name);
+            }
+        } else {
+            ctx.printColumns(deployments);
+        }
     }
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.cli;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,13 +39,15 @@ import jline.FileNameCompletor;
 public class CommandCompleter implements Completor {
 
     private final FileNameCompletor fnCompleter = new FileNameCompletor();
+    private final CommandContext ctx;
     private final OperationRequestCompleter opCompleter;
     private final Set<String> commands;
 
-    public CommandCompleter(Set<String> commands, OperationRequestCompleter opCompleter) {
+    public CommandCompleter(Set<String> commands, CommandContext ctx, OperationRequestCompleter opCompleter) {
         if(commands == null)
             throw new IllegalArgumentException("Set of commands can't be null.");
         this.commands = commands;
+        this.ctx = ctx;
         this.opCompleter = opCompleter;
     }
 
@@ -135,6 +138,53 @@ public class CommandCompleter implements Completor {
                 return nextCharIndex + result;
             } else {
                 return result;
+            }
+        } else if(buffer.startsWith("undeploy ", firstCharIndex)) {
+
+            int nextCharIndex = firstCharIndex + 9;
+            while (nextCharIndex < buffer.length()) {
+                if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                    break;
+                }
+                ++nextCharIndex;
+            }
+
+            if (nextCharIndex < buffer.length()
+                    && buffer.charAt(nextCharIndex) == '-') {
+                // that's a switch, skip it
+                nextCharIndex = buffer.indexOf(' ', nextCharIndex);
+                if (nextCharIndex < 0) {
+                    return -1;
+                }
+
+                while (nextCharIndex < buffer.length()) {
+                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+            }
+
+            if(ctx.getModelControllerClient() != null) {
+                List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+                if(deployments.isEmpty()) {
+                    return -1;
+                }
+
+                String opBuffer = buffer.substring(nextCharIndex).trim();
+                if (opBuffer.isEmpty()) {
+                    candidates.addAll(deployments);
+                } else {
+                    for(String name : deployments) {
+                        if(name.startsWith(opBuffer)) {
+                            candidates.add(name);
+                        }
+                    }
+                    Collections.sort(candidates);
+                }
+                return nextCharIndex;
+            } else {
+                return -1;
             }
         }
 

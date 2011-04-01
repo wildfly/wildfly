@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
@@ -51,12 +52,13 @@ public class DeployHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        if(args == null) {
-            ctx.printColumns(Util.getDeployments(client));
+        if (args == null) {
+            listDeployments(ctx, false);
             return;
         }
 
         boolean force = false;
+        boolean lSwitch = false;
         String filePath = null;
         String name = null;
         String runtimeName = null;
@@ -66,6 +68,8 @@ public class DeployHandler extends CommandHandlerWithHelp {
             String arg = arr[i];
             if ("-f".equals(arg)) {
                 force = true;
+            } else if("-l".equals(arg)) {
+                lSwitch = true;
             } else if (filePath == null) {
                 filePath = arg;
             } else if (name == null) {
@@ -76,7 +80,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(filePath == null) {
-            ctx.printLine("File path is missing.");
+            listDeployments(ctx, lSwitch);
             return;
         }
 
@@ -179,6 +183,17 @@ public class DeployHandler extends CommandHandlerWithHelp {
                 return;
             }
             ctx.printLine("'" + name + "' deployed successfully.");
+        }
+    }
+
+    protected void listDeployments(CommandContext ctx, boolean lSwitch) {
+        List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+        if(lSwitch) {
+            for(String deployment : deployments) {
+                ctx.printLine(deployment);
+            }
+        } else {
+            ctx.printColumns(deployments);
         }
     }
 }

@@ -17,4 +17,8 @@ Arguments:
 	-f				- if the deployment with the specified name already exists, by default,
 					deploy will be aborted and the corresponding message will printed.
 					Switch -f will force replacement of the existing deployment with the one
-					specified in the command arguments. 
+					specified in the command arguments.
+					
+	-l				- in case the file_path isn't specified, the presence of the -l switch
+					will make the existing deployments printed one deployment per line, instead of
+					columns (the default).
