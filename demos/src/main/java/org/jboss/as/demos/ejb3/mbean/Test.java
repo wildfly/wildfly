@@ -21,6 +21,9 @@
  */
 package org.jboss.as.demos.ejb3.mbean;
 
+import java.util.concurrent.Future;
+import org.jboss.as.demos.ejb3.archive.AsyncBean;
+import org.jboss.as.demos.ejb3.archive.AsyncLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 
 import javax.naming.Context;
@@ -91,6 +94,13 @@ public class Test implements TestMBean {
         Context ctx = new InitialContext();
         SimpleSingletonLocal counter = (SimpleSingletonLocal) ctx.lookup(jndiName);
         return counter.getCount();
+    }
+
+    public String callAsync(String jndiName, String input) throws Exception {
+        InitialContext ctx = new InitialContext();
+        AsyncLocal bean = (AsyncLocal)ctx.lookup(jndiName);
+        final Future<String> future = bean.asyncMethod(input);
+        return future.get();
     }
 
 }

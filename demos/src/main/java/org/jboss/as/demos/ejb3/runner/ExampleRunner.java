@@ -21,7 +21,9 @@
  */
 package org.jboss.as.demos.ejb3.runner;
 
+import java.util.concurrent.Future;
 import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.ejb3.archive.AsyncLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal;
@@ -79,6 +81,9 @@ public class ExampleRunner {
             SimpleStatelessSessionLocal bean = createProxy(mbeanServer, "java:global/ejb3-example/SimpleStatelessSessionBean!" + SimpleStatelessSessionLocal.class.getName(), SimpleStatelessSessionLocal.class);
             String msg = bean.echo("Hello world");
             System.out.println(msg);
+
+            final String result = (String)mbeanServer.invoke(new ObjectName("jboss:name=ejb3-test,type=service"), "callAsync", new Object[] {"java:global/ejb3-example/AsyncBean!" + AsyncLocal.class.getName(), "Hello World"}, new String[] {String.class.getName(), String.class.getName()});
+            System.out.println(result);
 
             exec(mbeanServer, ExerciseStateful.class);
 

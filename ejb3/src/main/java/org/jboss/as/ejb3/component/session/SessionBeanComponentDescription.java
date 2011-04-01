@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.component.session;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Future;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
@@ -33,7 +37,6 @@ import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
@@ -42,6 +45,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * @author Jaikiran Pai
@@ -81,6 +86,17 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private Map<EJBMethodDescription, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<EJBMethodDescription, AccessTimeout>();
 
     /**
+     * Methods on the component marked as @Asynchronous
+     */
+    private final Set<MethodIdentifier> asynchronousMethods = new HashSet<MethodIdentifier>();
+
+    /**
+     * Views the component marked as @Asynchronous
+     */
+    private final Set<String> asynchronousViews = new HashSet<String>();
+
+
+    /**
      * mapped-name of the session bean
      */
     private String mappedName;
@@ -96,10 +112,13 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param moduleDescription the module description
+     * @param moduleDescription  the module description
      */
     public SessionBeanComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
         super(componentName, componentClassName, moduleDescription);
+
+        // Add a dependency on the asyc-executor
+        addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
     }
 
     /**
@@ -284,11 +303,42 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
+     * Add an asynchronous method.
+     *
+     * @param methodIdentifier The identifier for an async method
+     */
+    public void addAsynchronousMethod(final MethodIdentifier methodIdentifier) {
+        asynchronousMethods.add(methodIdentifier);
+    }
+
+    /**
+     * Set an entire view's asynchronous nature.  All business methods for the view will be asynchronous.
+     *
+     * @param viewName The view name
+     */
+    public void addAsynchronousView(final String viewName) {
+        asynchronousViews.add(viewName);
+    }
+
+    /**
      * Returns the type of the session bean
      *
      * @return
      */
     public abstract SessionBeanType getSessionBeanType();
+
+    @Override
+    protected void processComponentMethod(final AbstractComponentConfiguration configuration, final Method componentMethod) throws DeploymentUnitProcessingException {
+        super.processComponentMethod(configuration, componentMethod);
+        // Process the async methods
+        if (asynchronousMethods.contains(MethodIdentifier.getIdentifierForMethod(componentMethod)) || asynchronousViews.contains(componentMethod.getDeclaringClass().getName())) {
+            if (!Void.TYPE.isAssignableFrom(componentMethod.getReturnType()) && !Future.class.isAssignableFrom(componentMethod.getReturnType())) {
+                throw new DeploymentUnitProcessingException("Invalid asynchronous method [" + componentMethod + "].  Asynchronous methods must return either void or Future<V>.");
+            }
+            SessionBeanComponentConfiguration sessionBeanComponentConfiguration = (SessionBeanComponentConfiguration) configuration;
+            sessionBeanComponentConfiguration.addAsynchronousMethod(componentMethod);
+        }
+    }
 
     @Override
     protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

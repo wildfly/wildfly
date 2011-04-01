@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ejb3.component.CancellationFlag;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
@@ -84,6 +85,14 @@ class SessionInvocationContextInterceptor implements Interceptor {
         @Override
         public void setParameters(Object[] params) throws IllegalArgumentException, IllegalStateException {
             context.setParameters(params);
+        }
+
+        public boolean wasCancelCalled() throws IllegalStateException {
+            final CancellationFlag flag = context.getPrivateData(CancellationFlag.class);
+            if(flag != null) {
+                return flag.get();
+            }
+            return super.wasCancelCalled();
         }
     }
 }

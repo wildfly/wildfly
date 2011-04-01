@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import java.util.concurrent.Executor;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.spi.SessionContext;

@@ -85,7 +85,6 @@ public abstract class AbstractComponent implements Component {
     private final InjectedValue<NamespaceContextSelector> namespaceContextSelectorInjector = new InjectedValue<NamespaceContextSelector>();
     private final Map<Class<?>, ServiceName> viewServices;
     private final Map<Class<?>, ComponentView> views = new HashMap<Class<?>, ComponentView>();
-    private final Set<Method> asynchronousMethods;
 
     private volatile boolean gate;
 
@@ -106,7 +105,6 @@ public abstract class AbstractComponent implements Component {
         interceptorPreDestroys = configuration.getInterceptorPreDestroys();
         componentInjectors = configuration.getComponentInjectors();
         viewServices = new HashMap<Class<?>, ServiceName>(configuration.getViewServices());
-        asynchronousMethods = configuration.getAsynchronousMethods();
     }
 
     /**
@@ -398,7 +396,7 @@ public abstract class AbstractComponent implements Component {
                 if (! interceptorMap.containsKey(method)) {
                     throw new IllegalArgumentException("No entry point found for " + method);
                 }
-                return asynchronousMethods.contains(method);
+                return false;
             }
 
             public void destroy() {

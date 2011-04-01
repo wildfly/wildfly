@@ -42,22 +42,19 @@ import org.jboss.threads.AsyncFutureTask;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class AsyncFutureInterceptor implements Interceptor {
+
     private final Executor executor;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param executor the executor to use for asynchronous invocation
-     */
     public AsyncFutureInterceptor(final Executor executor) {
         this.executor = executor;
     }
 
     /** {@inheritDoc} */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        CancellationFlag flag = new CancellationFlag();
-        final Task task = new Task(executor, context, flag);
-        context.putPrivateData(CancellationFlag.class, flag);
+        final InterceptorContext asyncInterceptorContext = context.clone();
+        final CancellationFlag flag = new CancellationFlag();
+        final Task task = new Task(executor, asyncInterceptorContext, flag);
+        asyncInterceptorContext.putPrivateData(CancellationFlag.class, flag);
         executor.execute(task);
         return task;
     }

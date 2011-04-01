@@ -94,7 +94,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
-             <subsystem xmlns="urn:jboss:domain:threads:1.0">
+            <subsystem xmlns="urn:jboss:domain:threads:1.0">
                 <scheduled-thread-pool name="remoting">
                     <max-threads count="10" per-cpu="20"/>
                     <keepalive-time time="10" unit="seconds"/>
@@ -106,6 +106,12 @@
                     <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
                 <bounded-queue-thread-pool name="jca-long-running" blocking="true">
+                    <core-threads count="10" per-cpu="20"/>
+                    <queue-length count="10" per-cpu="20"/>
+                    <max-threads count="10" per-cpu="20"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </bounded-queue-thread-pool>
+                <bounded-queue-thread-pool name="ejb3-async" blocking="true">
                     <core-threads count="10" per-cpu="20"/>
                     <queue-length count="10" per-cpu="20"/>
                     <max-threads count="10" per-cpu="20"/>

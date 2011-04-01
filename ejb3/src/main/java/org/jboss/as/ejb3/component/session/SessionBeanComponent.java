@@ -21,8 +21,15 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
+import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.threads.ThreadsServices;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
@@ -38,13 +45,19 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponent extends EJBComponent implements org.jboss.ejb3.context.spi.SessionBeanComponent {
 
+    static final ServiceName ASYNC_EXECUTOR_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3-async");
+
     protected AccessTimeout beanLevelAccessTimeout;
+    private final Set<Method> asynchronousMethods;
+    protected Executor asyncExecutor;
 
     /**
      * Construct a new instance.
@@ -75,6 +88,8 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
             };
         }
         this.beanLevelAccessTimeout = accessTimeout;
+        this.asynchronousMethods = configuration.getAsynchronousMethods();
+        this.asyncExecutor = (Executor) configuration.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
     }
 
     @Override
@@ -126,4 +141,38 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         return this.beanLevelAccessTimeout;
     }
 
+    /**
+     * Return the {@link Executor} used for asynchronous invocations.
+     *
+     * @return the async executor
+     */
+    public Executor getAsynchronousExecutor() {
+        return asyncExecutor;
+    }
+
+    protected boolean isAsynchronous(final Method method) {
+        final Set<Method> asyncMethods = this.asynchronousMethods;
+        if(asyncMethods == null) {
+            return false;
+        }
+
+        for (Method asyncMethod : asyncMethods) {
+            if (method.getName().equals(asyncMethod.getName())) {
+                final Object[] methodParams = method.getParameterTypes();
+                final Object[] asyncMethodParams = asyncMethod.getParameterTypes();
+                if(Arrays.equals(methodParams, asyncMethodParams)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    protected Object invokeAsynchronous(final Method method, final InterceptorContext context) throws Exception {
+        if (Void.TYPE.isAssignableFrom(method.getReturnType())) {
+            return new AsyncVoidInterceptor(getAsynchronousExecutor()).processInvocation(context);
+        } else {
+            return new AsyncFutureInterceptor(getAsynchronousExecutor()).processInvocation(context);
+        }
+    }
 }

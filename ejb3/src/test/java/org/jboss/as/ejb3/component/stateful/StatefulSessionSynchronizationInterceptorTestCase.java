@@ -88,7 +88,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
     public void testConcurrentTx() throws Exception {
         final Interceptor interceptor = new StatefulSessionSynchronizationInterceptor();
         final InterceptorContext context = new InterceptorContext();
-        context.setInterceptorIterator(Arrays.asList(noop()).listIterator());
+        context.setInterceptors(Arrays.asList(noop()));
         final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
         context.putPrivateData(Component.class, component);
         when(component.getAccessTimeout()).thenReturn(defaultAccessTimeout());
@@ -131,7 +131,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
     public void testDifferentTx() throws Exception {
         final Interceptor interceptor = new StatefulSessionSynchronizationInterceptor();
         final InterceptorContext context = new InterceptorContext();
-        context.setInterceptorIterator(Arrays.asList(noop()).listIterator());
+        context.setInterceptors(Arrays.asList(noop()));
         final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
         context.putPrivateData(Component.class, component);
         when(component.getAccessTimeout()).thenReturn(defaultAccessTimeout());

@@ -95,12 +95,16 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     @Override
     public Interceptor createClientInterceptor(Class<?> view) {
         return new Interceptor() {
-
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
                 // TODO: FIXME: Component shouldn't be attached in a interceptor context that
                 // runs on remote clients.
                 context.putPrivateData(Component.class, SingletonComponent.this);
+
+                final Method method = context.getMethod();
+                if(isAsynchronous(method)) {
+                    return invokeAsynchronous(method, context);
+                }
                 return context.proceed();
             }
         };

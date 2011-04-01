@@ -132,6 +132,12 @@
                 <max-threads count="10" per-cpu="20"/>
                 <keepalive-time time="10" unit="seconds"/>
             </bounded-queue-thread-pool>
+            <bounded-queue-thread-pool name="ejb3-async" blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                <queue-length count="10" per-cpu="20"/>
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="seconds"/>
+            </bounded-queue-thread-pool>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />

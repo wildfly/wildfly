@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
+import java.lang.reflect.Method;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -80,6 +81,10 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
                 // runs on remote clients.
                 context.putPrivateData(Component.class, StatelessSessionComponent.this);
                 try {
+                    final Method method = context.getMethod();
+                    if(isAsynchronous(method)) {
+                        return invokeAsynchronous(method, context);
+                    }
                     return context.proceed();
                 }
                 finally {

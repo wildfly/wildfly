@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.Future;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -82,9 +81,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
 
     private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
     private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
-
-    private final Set<MethodIdentifier> asynchronousMethods = new HashSet<MethodIdentifier>();
-    private final Set<String> asynchronousViews = new HashSet<String>();
 
     private final Map<String,InterceptorDescription> allInterceptors = new HashMap<String,InterceptorDescription>();
 
@@ -286,24 +282,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
     }
 
     /**
-     * Add an asynchronous method.
-     *
-     * @param methodIdentifier The identifier for an async method
-     */
-    public void addAsynchronousMethod(final MethodIdentifier methodIdentifier) {
-        asynchronousMethods.add(methodIdentifier);
-    }
-
-    /**
-     * Set an entire view's asynchronous nature.  All business methods for the view will be asynchronous.
-     *
-     * @param viewName The view name
-     */
-    public void addAsynchronousView(final String viewName) {
-        asynchronousViews.add(viewName);
-    }
-
-    /**
      * Get the naming mode of this component.
      *
      * @return the naming mode
@@ -452,14 +430,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
                     theInterceptorFactories.add(new MethodInvokingInterceptorFactory(AbstractComponent.INSTANCE_FACTORY, componentMethod));
                     componentToInterceptorFactory.put(componentMethod, Interceptors.getChainedInterceptorFactory(theInterceptorFactories));
                     processComponentMethod(configuration, componentMethod);
-
-                    // Now process the async methods
-                    if(asynchronousMethods.contains(methodIdentifier) || asynchronousViews.contains(currentClass.getName())) {
-                        if(!Void.TYPE.isAssignableFrom(componentMethod.getReturnType()) && !Future.class.isAssignableFrom(componentMethod.getReturnType())) {
-                            throw new DeploymentUnitProcessingException("Invalid asynchronous method [" + componentMethod +  "].  Asynchronous methods must return either void or Future<V>.");
-                        }
-                        configuration.addAsynchronousMethod(componentMethod);
-                    }
                 }
             }
             currentClass = currentClass.getSuperclass();
@@ -527,7 +497,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         return dependencies;
     }
 
-    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) {
+    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
         // do nothing
     }
 

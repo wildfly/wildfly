@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.component.session;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
@@ -52,6 +56,7 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
 
     private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
 
+    private final Set<Method> asynchronousMethods = Collections.newSetFromMap(new IdentityHashMap<Method, Boolean>());
 
     /**
      * Construct a new instance.
@@ -137,5 +142,18 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
 
     protected void setMethodApplicableLockType(Map<EJBBusinessMethod, LockType> methodLockTypes) {
         this.methodLevelLockTypes = methodLockTypes;
+    }
+
+    public Set<Method> getAsynchronousMethods() {
+        return asynchronousMethods;
+    }
+
+    /**
+     * Add a method to the asynchronous method set.
+     *
+     * @param method the method to add
+     */
+    public void addAsynchronousMethod(Method method) {
+        asynchronousMethods.add(method);
     }
 }

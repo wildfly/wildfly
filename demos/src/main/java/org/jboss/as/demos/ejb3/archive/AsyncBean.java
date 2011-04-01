@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.ejb3.mbean;
 
-import java.util.concurrent.Callable;
+package org.jboss.as.demos.ejb3.archive;
+
+import java.util.concurrent.Future;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.Stateless;
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author John Bailey
  */
-public interface TestMBean {
-    Object exec(Class<?> cls) throws Exception;
+@Stateless
+public class AsyncBean implements AsyncLocal {
 
-    Object invoke(String name, String methodName, Class<?>[] parameterTypes, Object[] params) throws Exception;
-
-    int invokeSingleton(String jndiName, int numThreads, int numTimes) throws Exception;
-
-    int lookupSingleton(String jndiName, int numThreads, int numTimes) throws Exception;
-
-    String callAsync(String jndiName, String input) throws Exception;
+    @Asynchronous
+    public Future<String> asyncMethod(final String input) {
+        return new AsyncResult<String>("Async#" + input);
+    }
 }

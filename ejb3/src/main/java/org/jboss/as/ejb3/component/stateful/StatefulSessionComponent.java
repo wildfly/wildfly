@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.lang.reflect.Method;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -82,6 +83,10 @@ public class StatefulSessionComponent extends SessionBeanComponent {
                 // TODO: this won't work for remote proxies
                 context.putPrivateData(Component.class, StatefulSessionComponent.this);
                 try {
+                    final Method method = context.getMethod();
+                    if (isAsynchronous(method)) {
+                        return invokeAsynchronous(method, context);
+                    }
                     return context.proceed();
                 } finally {
                     context.putPrivateData(Serializable.class, null);

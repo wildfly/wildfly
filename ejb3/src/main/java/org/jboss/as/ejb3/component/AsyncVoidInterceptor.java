@@ -41,18 +41,15 @@ public final class AsyncVoidInterceptor implements Interceptor {
 
     private final Executor executor;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param executor the executor to use for asynchronous invocation
-     */
     public AsyncVoidInterceptor(final Executor executor) {
         this.executor = executor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        executor.execute(new Task(context));
+        executor.execute(new Task(context.clone()));
         return null;
     }
 

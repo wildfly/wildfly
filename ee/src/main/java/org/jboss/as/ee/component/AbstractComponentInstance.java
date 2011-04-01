@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.concurrent.Executor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 

@@ -61,7 +61,6 @@ public abstract class AbstractComponentConfiguration {
     private final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys = new HashMap<Class<?>, List<LifecycleInterceptorFactory>>();
     private Class<?> componentClass;
     private List<InterceptorFactory> componentInstanceSystemInterceptorFactories = new LinkedList<InterceptorFactory>();
-    private final Set<Method> asynchronousMethods = Collections.newSetFromMap(new IdentityHashMap<Method, Boolean>());
 
 
     /**
@@ -221,18 +220,5 @@ public abstract class AbstractComponentConfiguration {
 
     List<? extends InterceptorFactory> getComponentInstanceSystemInterceptorFactories() {
         return componentInstanceSystemInterceptorFactories;
-    }
-
-    Set<Method> getAsynchronousMethods() {
-        return asynchronousMethods;
-    }
-
-    /**
-     * Add a method to the asynchronous method set.
-     *
-     * @param method the method to add
-     */
-    public void addAsynchronousMethod(Method method) {
-        asynchronousMethods.add(method);
     }
 }

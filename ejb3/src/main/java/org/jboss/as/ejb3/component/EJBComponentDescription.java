@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -180,7 +181,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     }
 
     @Override
-    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) {
+    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
         super.processComponentMethod(configuration, componentMethod);
 
         // TODO: a temporary measure until EJBTHREE-2120 is fully resolved
