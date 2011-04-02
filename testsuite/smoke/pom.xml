@@ -34,12 +34,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-testsuite</artifactId>
-        <version>7.0.0.Beta2-SNAPSHOT</version>
+        <version>7.0.0.Beta2</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-smoke</artifactId>
-    <version>7.0.0.Beta2-SNAPSHOT</version>
+    <version>7.0.0.Beta2</version>
 
     <name>JBoss Application Server: Test Suite: Smoke Tests</name>
 

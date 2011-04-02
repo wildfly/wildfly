@@ -33,12 +33,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-arquillian</artifactId>
-        <version>7.0.0.Beta2-SNAPSHOT</version>
+        <version>7.0.0.Beta2</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
-    <version>7.0.0.Beta2-SNAPSHOT</version>
+    <version>7.0.0.Beta2</version>
 
     <name>JBoss Application Server: Arquillian Testenricher Resource</name>
 
