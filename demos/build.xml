@@ -46,6 +46,7 @@
         <echo>  ws               - deploys a simple JAXWS POJO endpoint and invokes it</echo>
         <echo>  wsejb            - deploys a simple JAXWS EJB3 endpoint and invokes it</echo>
         <echo>  ear              - deploys an ear</echo>
+        <echo>  jpa              - deploys simple JPA example</echo>
 <!-- Requires full EE api to be imported, which needs review before advertising
         <echo>  webapp           - deploys a servlet using jms and a database</echo>
 -->
