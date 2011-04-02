@@ -210,76 +210,76 @@ public enum Phase {
     public static final int PARSE_ANNOTATION_WAR                        = 0x0D00;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0E00;
     public static final int PARSE_WEB_COMPONENTS                        = 0x0F00;
-    public static final int PARSE_EAR_CONTEXT_ROOT                      = 0x0F01;
+    public static final int PARSE_EAR_CONTEXT_ROOT                      = 0x1000;
     // create and attach EJB metadata for EJB deployments
-    public static final int PARSE_EJB_DEPLOYMENT                        = 0x1000;
-    public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1001;
-    public static final int PARSE_EJB_MDB_DD                            = 0x1002;
+    public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
+    public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
+    public static final int PARSE_EJB_MDB_DD                            = 0x1300;
     // create and attach the component description out of EJB annotations
-    public static final int PARSE_EJB_ANNOTATION                        = 0x1100;
-    public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1101;
-    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1103;
-    public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1104;
-    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1106;
-    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1107;
+    public static final int PARSE_EJB_ANNOTATION                        = 0x1400;
+    public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1500;
+    public static final int PARSE_EJB_TRANSACTION_MANAGEMENT            = 0x1600;
+    public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1700;
+    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
+    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
     // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1108;
+    public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1109;
+    public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1B00;
     // should be after all views are known
-    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x110A;
-    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x110B;
-    public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x110C;
-    public static final int PARSE_TLD_DEPLOYMENT                        = 0x1200;
-    public static final int PARSE_WEB_MERGE_METADATA                    = 0x1201;
-    public static final int PARSE_RA_DEPLOYMENT                         = 0x1300;
-    public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x1400;
-    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x1500;
-    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x1600;
-    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x1700;
-    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x1800;
-    public static final int PARSE_DATA_SOURCES                          = 0x1900;
-    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x1A00;
-    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x1B00;
-    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x1C00;
-    public static final int PARSE_WELD_DEPLOYMENT                       = 0x1D00;
-    public static final int PARSE_WEBSERVICES_XML                       = 0x1E00;
-    public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x1F00;
-    public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2000;
-    public static final int PARSE_PERSISTENCE_UNIT                      = 0x2100;
-    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x2200;
-    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x2300;
-    public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x2400;
-    public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x2500;
-    public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x2600;
+    public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x1C00;
+    public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x1D00;
+    public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x1E00;
+    public static final int PARSE_TLD_DEPLOYMENT                        = 0x1F00;
+    public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
+    public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
+    public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;
+    public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x2300;
+    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x2400;
+    public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x2500;
+    public static final int PARSE_RESOURCE_ADAPTERS                     = 0x2600;
+    public static final int PARSE_DATA_SOURCES                          = 0x2700;
+    public static final int PARSE_ARQUILLIAN_RUNWITH                    = 0x2800;
+    public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x2900;
+    public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x2A00;
+    public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
+    public static final int PARSE_WEBSERVICES_XML                       = 0x2C00;
+    public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x2D00;
+    public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
+    public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
+    public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x3000;
+    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x3100;
+    public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
+    public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
+    public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x3400;
 
     // should be after all components are known
-    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x2700;
-    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x2800;
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3500;
+    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x3600;
 
 
 
     // DEPENDENCIES
-    public static final int DEPENDENCIES_MODULE                         = 0x100;
-    public static final int DEPENDENCIES_DS                             = 0x200;
-    public static final int DEPENDENCIES_RAR_CONFIG                     = 0x300;
-    public static final int DEPENDENCIES_MANAGED_BEAN                   = 0x400;
-    public static final int DEPENDENCIES_SAR_MODULE                     = 0x500;
-    public static final int DEPENDENCIES_WAR_MODULE                     = 0x600;
-    public static final int DEPENDENCIES_ARQUILLIAN                     = 0x700;
-    public static final int DEPENDENCIES_CLASS_PATH                     = 0x800;
-    public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x900;
-    public static final int DEPENDENCIES_WELD                           = 0xA00;
-    public static final int DEPENDENCIES_NAMING                         = 0xB00;
-    public static final int DEPENDENCIES_WS                             = 0xC00;
-    public static final int DEPENDENCIES_JAXRS                          = 0xD00;
-    public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0xE00;
+    public static final int DEPENDENCIES_MODULE                         = 0x0100;
+    public static final int DEPENDENCIES_DS                             = 0x0200;
+    public static final int DEPENDENCIES_RAR_CONFIG                     = 0x0300;
+    public static final int DEPENDENCIES_MANAGED_BEAN                   = 0x0400;
+    public static final int DEPENDENCIES_SAR_MODULE                     = 0x0500;
+    public static final int DEPENDENCIES_WAR_MODULE                     = 0x0600;
+    public static final int DEPENDENCIES_ARQUILLIAN                     = 0x0700;
+    public static final int DEPENDENCIES_CLASS_PATH                     = 0x0800;
+    public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x0900;
+    public static final int DEPENDENCIES_WELD                           = 0x0A00;
+    public static final int DEPENDENCIES_NAMING                         = 0x0B00;
+    public static final int DEPENDENCIES_WS                             = 0x0C00;
+    public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
+    public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     // Sets up appropriate module dependencies for EJB deployments
-    public static final int DEPENDENCIES_EJB                            = 0xF00;
+    public static final int DEPENDENCIES_EJB                            = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
 
     // CONFIGURE_MODULE
-    public static final int CONFIGURE_MODULE_SPEC                       = 0x100;
+    public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
 
     // POST_MODULE
     public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0100;
@@ -290,43 +290,43 @@ public enum Phase {
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0600;
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x0700;
-    public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x0701;
+    public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x0800;
 
-    public static final int POST_INITIALIZE_IN_ORDER                    = 0x0800;
+    public static final int POST_INITIALIZE_IN_ORDER                    = 0x0900;
 
 
     // INSTALL
     public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
-    public static final int INSTALL_JAXRS_SCANNING                      = 0x0101;
-    public static final int INSTALL_APP_CONTEXT                         = 0x0200;
-    public static final int INSTALL_MODULE_CONTEXT                      = 0x0300;
-    public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0400;
-    public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0500;
-    public static final int INSTALL_WAR_METADATA                        = 0x0600; //this needs to be removed, however WSDeploymentActivator still uses it
-    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0700;
-    public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0800;
-    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0900;
-    public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0A00;
-    public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0D00;
-    public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0E00;
-    public static final int INSTALL_ENV_ENTRY                           = 0x0F00;
-    public static final int INSTALL_EJB_REF                             = 0x0F01;
-    public static final int INSTALL_PERSISTENCE_REF                     = 0x0F02;
-    public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x0F03;
-    public static final int INSTALL_EE_COMPONENT                        = 0x0F04;
-    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1000;
-    public static final int INSTALL_JAXRS_COMPONENT                     = 0x1200;
-    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1300;
-    public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1400;
-    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1600;
-    public static final int INSTALL_JDBC_DRIVER                         = 0x1700;
-    public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1800;
-    public static final int INSTALL_PERSISTENTUNIT                      = 0x1900;
-    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1A00;
-    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1B00;
-    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1C00;
+    public static final int INSTALL_JAXRS_SCANNING                      = 0x0200;
+    public static final int INSTALL_APP_CONTEXT                         = 0x0300;
+    public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;
+    public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
+    public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
+    public static final int INSTALL_WAR_METADATA                        = 0x0700; //this needs to be removed, however WSDeploymentActivator still uses it
+    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0800;
+    public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
+    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0A00;
+    public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
+    public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0C00;
+    public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0D00;
+    public static final int INSTALL_ENV_ENTRY                           = 0x0E00;
+    public static final int INSTALL_EJB_REF                             = 0x0F00;
+    public static final int INSTALL_PERSISTENCE_REF                     = 0x1000;
+    public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1100;
+    public static final int INSTALL_EE_COMPONENT                        = 0x1200;
+    public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
+    public static final int INSTALL_JAXRS_COMPONENT                     = 0x1400;
+    public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1500;
+    public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
+    public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1700;
+    public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
+    public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
+    public static final int INSTALL_PERSISTENTUNIT                      = 0x1A00;
+    public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
+    public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
+    public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
 
     // CLEANUP
-    public static final int CLEANUP_REFLECTION_INDEX                    = 0x100;
+    public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;
 }
