@@ -24,8 +24,8 @@ package org.jboss.as.jpa.persistenceprovider;
 
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolver;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Implementation of PersistenceProviderResolver
@@ -36,24 +36,41 @@ import java.util.List;
  */
 public class PersistenceProviderResolverImpl implements PersistenceProviderResolver {
 
-    @Override
-    public List<PersistenceProvider> getPersistenceProviders() {
-        List<PersistenceProvider> providers = new ArrayList<PersistenceProvider>(1);
+    private List<PersistenceProvider> providers = new CopyOnWriteArrayList<PersistenceProvider>();
+
+    private static final PersistenceProviderResolverImpl INSTANCE = new PersistenceProviderResolverImpl();
+
+    public static PersistenceProviderResolverImpl getInstance() {
+        return INSTANCE;
+    }
+
+    public PersistenceProviderResolverImpl() {
         try {
-            Class cls = PersistenceProviderResolverImpl.class.getClassLoader().loadClass("org.hibernate.ejb" +
-                ".HibernatePersistence");
+            Class cls = PersistenceProviderResolverImpl.class.getClassLoader().loadClass(
+                "org.hibernate.ejb.HibernatePersistence");
             Object o = cls.newInstance();
             providers.add((PersistenceProvider) o);
         } catch (Throwable e) {
-            e.printStackTrace();
+            throw new RuntimeException("", e);
         }
+    }
 
-        //providers.add(new HibernatePersistence());
+    @Override
+    public List<PersistenceProvider> getPersistenceProviders() {
         return providers;
     }
 
     @Override
     public void clearCachedProviders() {
+        providers.clear();
+    }
+
+    public void addPersistenceProvider(PersistenceProvider persistenceProvider) {
+        providers.add(persistenceProvider);
+    }
+
+    public void removePersistenceProvider(PersistenceProvider persistenceProvider) {
 
     }
+
 }

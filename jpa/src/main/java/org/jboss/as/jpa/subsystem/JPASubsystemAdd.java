@@ -69,7 +69,7 @@ class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
 
             /* set Hibernate persistence provider as the default provider */
             javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
-                new PersistenceProviderResolverImpl());
+                PersistenceProviderResolverImpl.getInstance());
 
             PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(
                 "org.hibernate.ejb.HibernatePersistence", new HibernatePersistenceProviderAdaptor());

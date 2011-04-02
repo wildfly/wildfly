@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.processor;
 
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -45,6 +47,8 @@ import java.util.List;
  * Modeled after DriverProcessor.
  *
  * TODO:  add versioning support so that we could have multiple versions of the provider.
+ * Or use the provider jar name (which could include a version) as a version tag that
+ * could be specified in the persistence.xml
  *
  * @author Scott Marlow
  */
@@ -71,6 +75,8 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                                     ServiceName.JBOSS.append("persistenceprovider", providerName ),
                                     new ValueService<PersistenceProvider>(new ImmediateValue<PersistenceProvider>(provider))).setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
+// temp hack for testing  PersistenceProviderResolverImpl.getInstance().clearCachedProviders();
+                    PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(provider);
 
                 } catch (Exception e) {
                     log.warnf("Unable to instantiate persistence provider class \"%s\": %s", providerName, e);
