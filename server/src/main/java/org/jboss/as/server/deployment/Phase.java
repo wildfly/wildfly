@@ -258,7 +258,6 @@ public enum Phase {
     public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x3600;
 
 
-
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x0100;
     public static final int DEPENDENCIES_DS                             = 0x0200;
@@ -322,7 +321,8 @@ public enum Phase {
     public static final int INSTALL_ARQUILLIAN_DEPLOYMENT               = 0x1700;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
-    public static final int INSTALL_PERSISTENTUNIT                      = 0x1A00;
+    public static final int INSTALL_PERSISTENCE_PROVIDER                = 0x1A00;
+    public static final int INSTALL_PERSISTENTUNIT                      = 0x1A50;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
