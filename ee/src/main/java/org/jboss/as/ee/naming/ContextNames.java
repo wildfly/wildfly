@@ -129,7 +129,7 @@ public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
             } else if (namespace.equals("comp")) {
                 return contextServiceNameOfComponent(app, module, comp).append(context.substring(10));
             } else {
-                return null;
+                return JAVA_CONTEXT_SERVICE_NAME.append(context);
             }
         } else {
             return null;
