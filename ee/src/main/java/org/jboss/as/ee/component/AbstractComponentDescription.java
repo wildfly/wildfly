@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorInstanceFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.MethodInterceptorFactory;
 import org.jboss.invocation.MethodInvokingInterceptorFactory;
@@ -392,6 +393,10 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         final Map<Method, InterceptorFactory> componentToInterceptorFactory = new IdentityHashMap<Method, InterceptorFactory>();
         final Class<?> componentClass = configuration.getComponentClass();
         final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
+
+        //Map of interceptor class to the corresponding factory
+        final Map<String,InjectingInterceptorInstanceFactory> interceptorFactories = new HashMap<String,InjectingInterceptorInstanceFactory>();
+
         // Mapping of method identifiers to component (target) methods
         // Mapping of component methods to corresponding instance interceptor factories
         for (Method componentMethod : classIndex.getMethods()) {
@@ -414,14 +419,16 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
                 //first class level interceptor
                 if(!methodExcludeClassInterceptors.contains(methodIdentifier)){
                     for(final InterceptorDescription interceptor: classInterceptors) {
-                        registerComponentInterceptor(interceptor, configuration, module, index, theInterceptorFactories);
+                        InjectingInterceptorInstanceFactory interceptorFactory = getInstanceFactory(configuration, module, index, interceptorFactories, interceptor);
+                        registerComponentInterceptor(interceptor, module, index, theInterceptorFactories, interceptorFactory);
                     }
                 }
                 //now method level interceptors
                 List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(methodIdentifier);
                 if(methodLevelInterceptors != null)
                     for(final InterceptorDescription interceptor : methodLevelInterceptors) {
-                        registerComponentInterceptor(interceptor, configuration, module, index, theInterceptorFactories);
+                        InjectingInterceptorInstanceFactory interceptorFactory = getInstanceFactory(configuration, module, index, interceptorFactories, interceptor);
+                        registerComponentInterceptor(interceptor, module, index, theInterceptorFactories, interceptorFactory);
                     }
                 //now register around invoke methods on the bean and its superclasses
                 //this is a linked hash set so methods will be invoked in the correct order
@@ -440,7 +447,7 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
                 }
 
                 // include interceptor factories that have been added via addInterceptorFactory
-                theInterceptorFactories.addAll(interceptorFactories);
+                theInterceptorFactories.addAll(this.interceptorFactories);
 
                 // The final interceptor invokes the method on the associated instance
                 theInterceptorFactories.add(new MethodInvokingInterceptorFactory(AbstractComponent.INSTANCE_FACTORY, componentMethod));
@@ -453,8 +460,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         configuration.addPostConstructComponentLifecycles(getPostConstructComponentLifecycles()); // JPA needs this first
         configuration.addPostConstructComponentLifecycles(createLifecycless(getPostConstructs(), module, index));
         configuration.addPreDestroyComponentLifecycles(createLifecycless(getPreDestroys(), module, index));
-        configuration.addPostConstructLifecycles(createLifecycleInterceptors(getPostConstructs(), module, index));
-        configuration.addPreDestroyLifecycles(createLifecycleInterceptors(getPreDestroys(), module, index));
         configuration.addPreDestroyComponentLifecycles(getPreDestroyComponentLifecycles());
         final Map<Class<?>, List<LifecycleInterceptorFactory>> interceptorPreDestroys = configuration.getInterceptorPreDestroys();
         for (InterceptorDescription interceptorDescription : getClassInterceptors()) {
@@ -512,6 +517,25 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         }
     }
 
+    private InjectingInterceptorInstanceFactory getInstanceFactory(AbstractComponentConfiguration configuration, Module module, DeploymentReflectionIndex index, Map<String, InjectingInterceptorInstanceFactory> interceptorFactories, InterceptorDescription interceptor) throws DeploymentUnitProcessingException {
+        if(interceptorFactories.containsKey(interceptor.getInterceptorClassName())) {
+            return interceptorFactories.get(interceptor.getInterceptorClassName());
+        }
+        try {
+            final Class<?> interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
+            final List<LifecycleInterceptorFactory> postConstructInterceptors = createLifecycleInterceptors(interceptor.getPostConstructs(), module, index);
+            final List<LifecycleInterceptorFactory> preDestroyInterceptors = createLifecycleInterceptors(interceptor.getPreDestroys(), module, index);
+            configuration.addPostConstructLifecycles(postConstructInterceptors);
+            configuration.addPreDestroyLifecycles(preDestroyInterceptors);
+            final InjectingInterceptorInstanceFactory instanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass),interceptorClass,configuration, postConstructInterceptors, preDestroyInterceptors);
+            interceptorFactories.put(interceptor.getInterceptorClassName(),instanceFactory);
+            return instanceFactory;
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Failed to load interceptor class " + interceptor.getInterceptorClassName());
+        }
+    }
+
+
     /**
      * Get the dependency map.
      *
@@ -529,17 +553,13 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         // do nothing
     }
 
-    private void registerComponentInterceptor(InterceptorDescription interceptor, AbstractComponentConfiguration configuration, Module module, DeploymentReflectionIndex index, List<InterceptorFactory> theInterceptorFactories) throws DeploymentUnitProcessingException {
+    private void registerComponentInterceptor(InterceptorDescription interceptor, Module module, DeploymentReflectionIndex index, List<InterceptorFactory> theInterceptorFactories, InterceptorInstanceFactory instanceFactory) throws DeploymentUnitProcessingException {
+        //we don't actually have the required resource injections at this stage
+        //so we pass in the configuration, as it will have been populated with resource injections by
+        //the time the factory is called.
+
         try {
-            final Class<?> interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
-            //we don't actually have the required resource injections at this stage
-            //so we pass in the configuration, as it will have been populated with resource injections by
-            //the time the factory is called.
 
-            final List<LifecycleInterceptorFactory> postConstructs = createLifecycleInterceptors(interceptor.getPostConstructs(), module, index);
-            final List<LifecycleInterceptorFactory> preDestroys = createLifecycleInterceptors(interceptor.getPreDestroys(), module, index);
-
-            final InjectingInterceptorInstanceFactory instanceFactory = new InjectingInterceptorInstanceFactory(new SimpleInterceptorInstanceFactory(interceptorClass), interceptorClass, configuration, postConstructs, preDestroys);
             //we need to create an Interceptor for every around invoke method
             for (InterceptorMethodDescription aroundInvoke : interceptor.getAroundInvokeMethods()) {
                 final Class<?> methodDeclaringClass = module.getClassLoader().loadClass(aroundInvoke.getDeclaringClass());
@@ -548,8 +568,8 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
                 final Method aroundInvokeMethod = methodDeclaringClassIndex.getMethod(Object.class, aroundInvoke.getIdentifier().getName(), InvocationContext.class);
                 theInterceptorFactories.add(new MethodInterceptorFactory(instanceFactory, aroundInvokeMethod));
             }
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Failed to load interceptor class " + interceptor.getInterceptorClassName());
+        } catch(ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Could not load interceptor class ",e);
         }
     }
 

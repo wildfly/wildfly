@@ -97,7 +97,6 @@ public class EjbLocalViewTestCase {
         ensureDoesNotExist(TwoLocalsDeclaredOnInterface.class,Serializable.class);
     }
 
-    //TODO: add java:global lookups
     private void ensureExists(Class<?> bean, Class<?> iface, boolean single) throws NamingException {
         try {
             InitialContext ctx = new InitialContext();
