@@ -25,6 +25,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -32,10 +33,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -51,6 +49,7 @@ public class CDIApplicationPathIntegrationTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
+        war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(CDIApplicationPathIntegrationTestCase.class, CDIBean.class, CDIPathApplication.class, CDIResource.class);
         war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
@@ -58,20 +57,7 @@ public class CDIApplicationPathIntegrationTestCase {
 
 
     private static String performCall(String urlPattern) throws Exception {
-        URL url = new URL("http://localhost:8080/jaxrsapp/" + urlPattern);
-        URLConnection conn = url.openConnection();
-        InputStream in = conn.getInputStream();
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int b;
-            while((b = in.read()) != -1) {
-                out.write(b);
-            }
-            return out.toString();
-        }
-        finally {
-            in.close();
-        }
+        return HttpRequest.get("http://localhost:8080/jaxrsapp/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test

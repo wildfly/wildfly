@@ -25,6 +25,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,10 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests a JAX-RS deployment without an application bundled.
@@ -58,6 +56,7 @@ public class JaxbProviderTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
+        war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(JaxbProviderTestCase.class, JaxbModel.class, JaxbResource.class);
         war.addWebResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
@@ -69,20 +68,7 @@ public class JaxbProviderTestCase {
 
 
     private static String performCall(String urlPattern) throws Exception {
-        URL url = new URL("http://localhost:8080/jaxrsnoap/" + urlPattern);
-        URLConnection conn = url.openConnection();
-        InputStream in = conn.getInputStream();
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int b;
-            while((b = in.read()) != -1) {
-                out.write(b);
-            }
-            return out.toString();
-        }
-        finally {
-            in.close();
-        }
+        return HttpRequest.get("http://localhost:8080/jaxrsnoap/" + urlPattern, 5, TimeUnit.SECONDS);
     }
 
     @Test
