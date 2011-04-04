@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Beta2</version>
+        <version>7.0.0.Beta3-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite</artifactId>
-    <version>7.0.0.Beta2</version>
+    <version>7.0.0.Beta3-SNAPSHOT</version>
 
     <name>JBoss Application Server: Test Suite: Aggregator</name>
 
