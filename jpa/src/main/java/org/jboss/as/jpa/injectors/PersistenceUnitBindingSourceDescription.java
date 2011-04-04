@@ -20,10 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.service;
+package org.jboss.as.jpa.injectors;
 
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.BindingSourceDescription;
+import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
