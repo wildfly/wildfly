@@ -95,6 +95,10 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     }
 
+    public void containerClose() {
+        underlyingEntityManager.close();
+    }
+
     @Override
     public String toString() {
         return "ExtendedEntityManager [" + puScopedName +"]";
