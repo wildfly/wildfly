@@ -23,8 +23,10 @@
 package org.jboss.as.server.deployment.scanner;
 
 import java.io.File;
+import java.security.AccessController;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.ServerController;
@@ -41,6 +43,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Service responsible creating a {@code DeploymentScanner}
@@ -92,8 +95,8 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         } else {
             AbsolutePathService.addService(pathService, path, serviceTarget);
         }
-
-        final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeplooymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
 
         serviceTarget.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
