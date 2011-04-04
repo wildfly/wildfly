@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelType;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
- * The web subsystem description providers.
+ * The modcluster subsystem description providers.
  *
  * @author Jean-Frederic Clere
  */

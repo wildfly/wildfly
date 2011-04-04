@@ -106,17 +106,17 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public void initialize(ExtensionContext context) {
 
         log.debugf("Activating Mod_cluster Extension");
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        nodeRegistration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, DESCRIPTION);
-        nodeRegistration.registerOperationHandler(DESCRIBE, ModClusterSubsystemDescribe.INSTANCE, ModClusterSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
+        final ModelNodeRegistration registration = subsystem.registerSubsystemModel(ModClusterSubsystemDescriptionProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, ModClusterSubsystemAdd.INSTANCE, false);
+        registration.registerOperationHandler(DESCRIBE, ModClusterSubsystemDescribe.INSTANCE, ModClusterSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        registration.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(parser);
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE, parser);
+        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
     static class ModClusterSubsystemElementParser implements XMLElementReader<List<ModelNode>>,
@@ -127,9 +127,13 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             ParseUtils.requireNoAttributes(reader);
 
             final ModelNode address = new ModelNode();
-            address.add(SUBSYSTEM, SUBSYSTEM_NAME);
+            address.add(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
             address.protect();
 
+            final ModelNode subsystem = new ModelNode();
+            subsystem.get(OP).set(ADD);
+            subsystem.get(OP_ADDR).set(address);
+            list.add(subsystem);
 
             // Reads it
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -139,11 +143,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                        switch (element) {
                           case MOD_CLUSTER_CONFIG:
                               final ModelNode config  = parseModClusterConfig(reader);
-                              final ModelNode update = new ModelNode();
-                              update.get(OP).set(ADD);
-                              update.get(OP_ADDR).set(address);
-                              update.get(MOD_CLUSTER_CONFIG).set(config);
-                              list.add(update);
+                              subsystem.get(MOD_CLUSTER_CONFIG).set(config);
                               break;
                           default: {
                               throw unexpectedElement(reader);
@@ -161,10 +161,29 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
                 throws XMLStreamException {
-            context.startSubsystemElement(NAMESPACE, false);
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+
+            ModelNode node = context.getModelNode();
+            writeModClusterConfig(writer, node);
+            /* Why ?
+            if (node.hasDefined(MOD_CLUSTER_CONFIG)) {
+                writeModClusterConfig(writer, node.get(MOD_CLUSTER_CONFIG));
+            }
+            */
             writer.writeEndElement();
         }
 
+    }
+
+    static void writeModClusterConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.MOD_CLUSTER_CONFIG.getLocalName());
+        if (config.hasDefined(LOAD_PROVIDER)) {
+            writeLoadProvider(writer, config.get(LOAD_PROVIDER));
+        }
+        if (config.hasDefined(PROXY_CONF)) {
+            writeProxyConf(writer, config.get(PROXY_CONF));
+        }
+        writer.writeEndElement();
     }
 
     static ModelNode parseModClusterConfig(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -187,6 +206,17 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         return config;
     }
 
+    static void writeProxyConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.PROXY_CONF.getLocalName());
+        if (config.hasDefined(HTTPD_CONF)) {
+            writeHttpdConf(writer, config.get(HTTPD_CONF));
+        }
+        if (config.hasDefined(NODES_CONF)) {
+            writeNodesConf(writer, config.get(NODES_CONF));
+        }
+        writer.writeEndElement();
+    }
+
     static ModelNode parseProxyConf(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode config = new ModelNode();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -205,6 +235,22 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             }
         }
         return config;
+    }
+
+
+    static void writeHttpdConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.HTTPD_CONF.getLocalName());
+        writeAttribute(writer, PROXY_LIST, config);
+        writeAttribute(writer, PROXY_URL, config);
+        writeAttribute(writer, ADVERTISE, config);
+        writeAttribute(writer, ADVERTISE_SECURITY_KEY, config);
+        if (config.hasDefined(ADVERTISE_SOCKET)) {
+            writeAdvertiseSocket(writer, config.get(ADVERTISE_SOCKET));
+        }
+        if (config.hasDefined(SSL)) {
+            writeSSL(writer, config.get(SSL));
+        }
+        writer.writeEndElement();
     }
     static ModelNode parseHttpdConf(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode conf = new ModelNode();
@@ -248,6 +294,15 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
         return conf;
     }
+
+    static void writeNodesConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.NODES_CONF.getLocalName());
+        writeAttribute(writer, EXCLUDED_CONTEXTS, config);
+        writeAttribute(writer, AUTO_ENABLE_CONTEXTS, config);
+        writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
+        writeAttribute(writer, SOCKET_TIMEOUT, config);
+        writer.writeEndElement();
+    }
     static ModelNode parseNodesConf(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode conf = new ModelNode();
         final int count = reader.getAttributeCount();
@@ -277,12 +332,22 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
         return conf;
     }
+
+    static void writeAdvertiseSocket(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.ADVERTISE_SOCKET.getLocalName());
+        writer.writeEndElement();
+    }
     static ModelNode parseAdvertiseSocket(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode conf = new ModelNode();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             //TODO: Just read it...
         }
         return conf;
+    }
+
+    static void writeSSL(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.SSL.getLocalName());
+        writer.writeEndElement();
     }
     static ModelNode parseSSL(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode conf = new ModelNode();
@@ -292,6 +357,10 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         return conf;
     }
 
+    static void writeLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.LOAD_PROVIDER.getLocalName());
+        writer.writeEndElement();
+    }
     static ModelNode parseLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         // TODO that is elements... not attributes.
@@ -416,5 +485,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             }
         }
         return load;
+    }
+
+    static void writeAttribute(final XMLExtendedStreamWriter writer, final String name, ModelNode node) throws XMLStreamException {
+        if(node.hasDefined(name)) {
+            writer.writeAttribute(name, node.get(name).asString());
+        }
     }
 }

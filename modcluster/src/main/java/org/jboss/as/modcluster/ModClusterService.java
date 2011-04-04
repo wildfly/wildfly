@@ -53,7 +53,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Service configuring and starting the web container.
+ * Service configuring and starting modcluster.
  *
  * @author Emanuel Muckenhuber
  */
