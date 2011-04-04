@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.security.AccessController;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.concurrent.Executors;
@@ -42,6 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.threads.JBossThreadFactory;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -174,7 +176,8 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2));
+            final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+            tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2, threadFactory));
         } catch (IOException e) {
             throw new StartException("Failed to create temp file provider");
         }
