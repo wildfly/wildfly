@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.operations;
 
+import java.security.AccessController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -50,6 +51,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * A handler that activates the HTTP management API.
@@ -91,7 +93,7 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
                             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
                             .addDependency(AbstractPathService.pathNameOf(ServerEnvironment.SERVER_TEMP_DIR), String.class, service.getTempDirInjector())
                             .addInjection(service.getPortInjector(), port)
-                            .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool())
+                            .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                             .install();

@@ -24,7 +24,9 @@ package org.jboss.as.server.mgmt.domain;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.AccessController;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import javax.net.SocketFactory;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
@@ -37,6 +39,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
@@ -55,8 +58,10 @@ public class HostControllerConnectionService implements Service<Connection> {
         configuration.setServerAddress(smAddress.getValue());
         configuration.setMessageHandler(MessageHandler.NULL);
         configuration.setSocketFactory(SocketFactory.getDefault());
-        configuration.setThreadFactory(Executors.defaultThreadFactory());
-        configuration.setReadExecutor(Executors.newCachedThreadPool());
+        final ThreadGroup threadGroup = new ThreadGroup("HostControllerConnection-threads");
+        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        configuration.setThreadFactory(threadFactory);
+        configuration.setReadExecutor(Executors.newCachedThreadPool(threadFactory));
 
         final ProtocolClient protocolClient = new ProtocolClient(configuration);
         try {

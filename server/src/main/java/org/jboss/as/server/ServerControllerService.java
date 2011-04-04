@@ -134,7 +134,7 @@ final class ServerControllerService implements Service<ServerController> {
 
         // TODO consider injecting the executor service
         final ThreadGroup threadGroup = new ThreadGroup("ServerController-threads");
-        ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, null, null, null, AccessController.getContext());
+        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         final ExecutorService executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE, threadFactory);
         final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedDeploymentRepository.getValue(), executorService);
         serverController.init();

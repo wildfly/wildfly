@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.operations;
 
+import java.security.AccessController;
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -48,6 +50,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * @author Emanuel Muckenhuber
@@ -79,14 +82,17 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Des
 
                     Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
 
+                    final ThreadGroup threadGroup = new ThreadGroup("ManagementCommunication-threads");
+                    final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+
                     final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
                     serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
                             .addDependency(
                                     NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                                     NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
                             .addInjection(managementCommunicationService.getPortInjector(), port)
-                            .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool())
-                            .addInjection(managementCommunicationService.getThreadFactoryInjector(), Executors.defaultThreadFactory())
+                            .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool(threadFactory))
+                            .addInjection(managementCommunicationService.getThreadFactoryInjector(), threadFactory)
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
 
