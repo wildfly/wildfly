@@ -49,7 +49,7 @@ public interface ComponentInjector {
     /**
      * A reference to a completed injection.
      */
-    static interface InjectionHandle {
+    interface InjectionHandle {
 
         /**
          * Called at the end of the injected object lifecycle, to free any injected resources.

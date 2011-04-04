@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.cache.Cache;
@@ -116,7 +116,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
+    protected BasicComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
         return new StatefulSessionComponentInstance(this, instance, context);
     }
 

@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -32,12 +34,14 @@ import org.jboss.msc.service.ServiceTarget;
 final class DeploymentPhaseContextImpl extends SimpleAttachable implements DeploymentPhaseContext {
     private final ServiceTarget serviceTarget;
     private final ServiceRegistry serviceRegistry;
+    private final ServiceBuilder<?> nextPhaseBuilder;
     private final DeploymentUnit deploymentUnitContext;
     private final Phase phase;
 
-    DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnit deploymentUnitContext, final Phase phase) {
+    DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final ServiceBuilder<?> nextPhaseBuilder, final DeploymentUnit deploymentUnitContext, final Phase phase) {
         this.serviceTarget = serviceTarget;
         this.serviceRegistry = serviceRegistry;
+        this.nextPhaseBuilder = nextPhaseBuilder;
         this.deploymentUnitContext = deploymentUnitContext;
         this.phase = phase;
     }
@@ -65,6 +69,11 @@ final class DeploymentPhaseContextImpl extends SimpleAttachable implements Deplo
     @Override
     public <T> void addDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey) {
         addToAttachmentList(Attachments.NEXT_PHASE_ATTACHABLE_DEPS, new AttachableDependency(attachmentKey, serviceName, false));
+    }
+
+    @Override
+    public <T> void addDependency(final ServiceName serviceName, final Class<T> type, final Injector<T> injector) {
+        nextPhaseBuilder.addDependency(serviceName, type, injector);
     }
 
     @Override

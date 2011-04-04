@@ -22,11 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -60,11 +58,11 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         }
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final Collection<AbstractComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
+        final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
         if (componentDescriptions == null || componentDescriptions.isEmpty()) {
             return;
         }
-        for (AbstractComponentDescription componentDescription : componentDescriptions) {
+        for (ComponentDescription componentDescription : componentDescriptions) {
             // process only EJB session beans
             if (componentDescription instanceof SessionBeanComponentDescription) {
                 this.setupJNDIBindings((SessionBeanComponentDescription) componentDescription, deploymentUnit);

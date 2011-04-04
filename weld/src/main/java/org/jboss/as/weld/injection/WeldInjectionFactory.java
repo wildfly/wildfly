@@ -21,9 +21,8 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInjector;
-import org.jboss.as.ee.component.InjectionFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.msc.service.ServiceName;
@@ -63,7 +62,7 @@ public class WeldInjectionFactory implements InjectionFactory {
      * @return a WeldInjector for the component
      */
     @Override
-    public ComponentInjector createInjector(AbstractComponentConfiguration component) {
+    public ComponentInjector createInjector(ComponentConfiguration component) {
         final ServiceName serviceName = deploymentUnit.getServiceName().append("component",component.getComponentName(),"weldinjector");
         WeldComponentInjectionService service = new WeldComponentInjectionService(serviceName,component.getComponentClass(),classLoader);
         serviceTarget.addService(serviceName,service)

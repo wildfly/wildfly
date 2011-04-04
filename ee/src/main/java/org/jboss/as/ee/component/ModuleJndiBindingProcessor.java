@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -72,7 +72,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 serviceBindingName = bindingName.substring(idx + 1);
             }
             final BinderService service = new BinderService(serviceBindingName);
-            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(module.getAppName(), module.getModuleName(), componentName, bindingName);
+            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(module.getApplicationName(), module.getModuleName(), componentName, bindingName);
             if (bindingServiceName == null) {
                 throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
             }
@@ -83,7 +83,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             resourceValue = sourceServiceBuilder
                     .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
                     .install();
-            for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
+            for(final InjectionTarget injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
                 injectionPointStore.addInjectedValue(injectionTarget, resourceValue, bindingServiceName);
             }
         } else {

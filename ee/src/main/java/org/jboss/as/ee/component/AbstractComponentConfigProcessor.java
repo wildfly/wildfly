@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 
 /**
- * Abstract deployment unit processors used to process {@link AbstractComponentDescription} instances.
+ * Abstract deployment unit processors used to process {@link ComponentDescription} instances.
  *
  * @author John Bailey
  */
@@ -42,12 +42,12 @@ public abstract class AbstractComponentConfigProcessor implements DeploymentUnit
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final Collection<AbstractComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
+        final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
         if (componentConfigurations == null || componentConfigurations.isEmpty()) {
             return;
         }
 
-        for (AbstractComponentDescription componentConfiguration : componentConfigurations) {
+        for (ComponentDescription componentConfiguration : componentConfigurations) {
             final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
             if (index != null) {
                 processComponentConfig(deploymentUnit, phaseContext, index, componentConfiguration);
@@ -64,7 +64,7 @@ public abstract class AbstractComponentConfigProcessor implements DeploymentUnit
      * @param componentDescription The component configuration
      * @throws DeploymentUnitProcessingException if any problems occur
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
     }
 
 

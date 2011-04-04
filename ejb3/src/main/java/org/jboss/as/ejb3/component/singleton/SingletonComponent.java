@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
@@ -41,6 +41,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.jboss.msc.service.StopContext;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
@@ -84,7 +85,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    protected synchronized AbstractComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
+    protected synchronized BasicComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }
@@ -111,9 +112,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    public void stop() {
+    public void stop(final StopContext stopContext) {
         this.destroySingletonInstance();
-        super.stop();
+        super.stop(stopContext);
     }
 
     @Override

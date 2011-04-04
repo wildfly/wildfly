@@ -22,21 +22,23 @@
 
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+
 import org.jboss.as.ee.component.ComponentNamingMode;
+
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 
 /**
  * @author Stuart Douglas
  */
-public final class WebComponentDescription extends AbstractComponentDescription {
+public final class WebComponentDescription extends ComponentDescription {
 
     public WebComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
-        super(componentName, componentClassName, moduleDescription);
+        super(componentName, componentClassName, moduleDescription, classDescription, deploymentUnitServiceName);
     }
 
-    protected AbstractComponentConfiguration constructComponentConfiguration() {
+    protected ComponentConfiguration constructComponentConfiguration() {
         return new WebComponentConfiguration(this);
     }
 

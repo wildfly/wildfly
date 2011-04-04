@@ -37,8 +37,9 @@ public interface ManagedReference {
     void release();
 
     /**
+     * Get the object instance.
      *
-     * @return The object this reference refers to.
+     * @return the object this reference refers to
      */
     Object getInstance();
 }

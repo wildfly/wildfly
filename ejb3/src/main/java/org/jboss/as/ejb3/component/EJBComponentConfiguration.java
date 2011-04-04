@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponentConfiguration extends AbstractComponentConfiguration {
+public abstract class EJBComponentConfiguration extends ComponentConfiguration {
     private final TransactionManagementType transactionManagementType;
     private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
 
@@ -52,7 +52,7 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
      * @param description the original component description
      */
     public EJBComponentConfiguration(final EJBComponentDescription description) {
-        super(description);
+        super(description, INIT_ME);
 
         description.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
 

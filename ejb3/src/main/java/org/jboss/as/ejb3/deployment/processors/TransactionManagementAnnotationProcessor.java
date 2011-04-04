@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,7 +45,7 @@ public class TransactionManagementAnnotationProcessor extends AbstractComponentC
     private static final DotName TRANSACTION_MANAGEMENT_ANNOTATION_NAME = DotName.createSimple(TransactionManagement.class.getName());
 
     @Override
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
         if (classInfo == null) {
             return; // We can't continue without the annotation index info.

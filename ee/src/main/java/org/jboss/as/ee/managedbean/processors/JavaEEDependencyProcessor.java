@@ -29,15 +29,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
-import javax.annotation.ManagedBean;
-
 /**
- * Deployment processor which adds the java EE api's to EE deployments
+ * Deployment processor which adds the java EE APIs to EE deployments
  *
  * @author John E. Bailey
  * @author Jason T. Greene
@@ -45,11 +42,10 @@ import javax.annotation.ManagedBean;
  */
 public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
 
     /**
-     * Add the EE api's as a dependency to all deployments
+     * Add the EE APIs as a dependency to all deployments
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInjector;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -45,7 +46,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -97,24 +97,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         this.beanLevelAccessTimeout = accessTimeout;
         this.asynchronousMethods = configuration.getAsynchronousMethods();
         this.asyncExecutor = (Executor) configuration.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
-    }
-
-    @Override
-    protected List<ComponentInjector.InjectionHandle> applyInjections(ComponentInstance instance) {
-        // TODO: a temporary hack until injection interceptors are in place
-        BaseSessionInvocationContext invocationContext = new BaseSessionInvocationContext(null, null, null) {
-            @Override
-            public Object proceed() throws Exception {
-                throw new RuntimeException("Do not call proceed");
-            }
-        };
-        invocationContext.setEJBContext(((SessionBeanComponentInstance) instance).getSessionContext());
-        CurrentInvocationContext.push(invocationContext);
-        try {
-            return super.applyInjections(instance);
-        } finally {
-            CurrentInvocationContext.pop();
-        }
     }
 
     @Override

@@ -22,7 +22,11 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
+
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 
@@ -50,7 +54,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    protected AbstractComponentConfiguration constructComponentConfiguration() {
+    protected ComponentConfiguration constructComponentConfiguration() {
         return new SingletonComponentConfiguration(this);
     }
 

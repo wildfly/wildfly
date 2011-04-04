@@ -26,31 +26,31 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
+import javax.interceptor.InvocationContext;
+
 /**
  * Information about an AroundInvoke or lifecycle interceptor method
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class InterceptorMethodDescription {
 
     private final MethodIdentifier identifier;
     private final String declaringClass;
-    private final String instanceClass;
-    private final boolean declaredOnTargetClass;
-
+    private final boolean acceptsContext;
 
     /**
+     * Construct a new instance.
      *
-     * @param declaringClass The class that declared the method
-     * @param instanceClass The class that should be instantiated, this may be a sub class on the declaring class
-     * @param identifier The method identifier
-     * @param declaredOnTargetClass
+     * @param declaringClass the class that declared the interceptor method
+     * @param identifier the interceptor method identifier
      */
-    public InterceptorMethodDescription(String declaringClass, String instanceClass, MethodIdentifier identifier, final boolean declaredOnTargetClass) {
+    public InterceptorMethodDescription(String declaringClass, MethodIdentifier identifier) {
         this.declaringClass = declaringClass;
         this.identifier = identifier;
-        this.declaredOnTargetClass = declaredOnTargetClass;
-        this.instanceClass = instanceClass;
+        final String[] parameterTypes = identifier.getParameterTypes();
+        acceptsContext = parameterTypes.length == 1 && parameterTypes[0].equals(InvocationContext.class.getName());
     }
 
     /**
@@ -62,29 +62,47 @@ public class InterceptorMethodDescription {
     }
 
     /**
+     * Determine whether the method accepts an invocation context (EJB-style).
      *
-     * @return The class that should be instantiated, this may be a sub class on the declaring class
+     * @return {@code true} if the method accepts an invocation context, {@code false} otherwise
      */
-    public String getInstanceClass() {
-        return  instanceClass;
+    public boolean isAcceptsContext() {
+        return acceptsContext;
     }
 
+    /**
+     * Get the method identifier of this interceptor method.
+     *
+     * @return the method identifier
+     */
     public MethodIdentifier getIdentifier() {
         return identifier;
     }
 
-    public static InterceptorMethodDescription create(String declaringClass, String instanceClass, MethodInfo methodInfo, final boolean declaredOnTargetClass) {
+    /**
+     * Create an interceptor method description.
+     *
+     * @param declaringClass the name of the declaring class
+     * @param methodInfo the jandex method info
+     * @return the interceptor method description
+     */
+    public static InterceptorMethodDescription create(String declaringClass, MethodInfo methodInfo) {
         final String[] argTypes = new String[methodInfo.args().length];
         int i = 0;
         for (Type argType : methodInfo.args()) {
             argTypes[i++] = argType.name().toString();
         }
         MethodIdentifier identifier =  MethodIdentifier.getIdentifier(methodInfo.returnType().name().toString(), methodInfo.name(), argTypes);
-        return new InterceptorMethodDescription(declaringClass,instanceClass,identifier,declaredOnTargetClass);
+        return new InterceptorMethodDescription(declaringClass, identifier);
     }
 
-    public boolean isDeclaredOnTargetClass() {
-        return declaredOnTargetClass;
+    /**
+     * Create an interceptor method description.
+     *
+     * @param methodInfo the jandex method info
+     * @return the interceptor method description
+     */
+    public static InterceptorMethodDescription create(MethodInfo methodInfo) {
+        return create(methodInfo.declaringClass().name().toString(), methodInfo);
     }
-
 }

@@ -22,6 +22,18 @@
 
 package org.jboss.as.ee.component;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -31,52 +43,182 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * A view service which creates a view for a component.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ViewService implements Service<ComponentView> {
-
-    private final InjectedValue<AbstractComponent> componentInjector = new InjectedValue<AbstractComponent>();
-    private final Class<?> viewClass;
+final class ViewService implements Service<ComponentView> {
+    private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
+    private final Map<Method, InterceptorFactory> viewInterceptorFactories;
+    private final Map<Method, InterceptorFactory> clientInterceptorFactories;
+    private final InterceptorFactory viewPostConstruct;
+    private final InterceptorFactory viewPreDestroy;
+    private final InterceptorFactory clientPostConstruct;
+    private final InterceptorFactory clientPreDestroy;
     private final ProxyFactory<?> proxyFactory;
-    private volatile ComponentView instance;
+    private final Set<Method> allowedMethods;
+    private final Class<?> viewClass;
+    private volatile ComponentView view;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param viewClass the view class for this view service
-     * @param proxyFactory the proxy factory for the view class
-     */
-    public ViewService(final Class<?> viewClass, final ProxyFactory<?> proxyFactory) {
-        this.viewClass = viewClass;
+    private static InterceptorFactory DESTROY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            context.getPrivateData(ComponentViewInstance.class).destroy();
+            return null;
+        }
+    });
+
+    ViewService(final ViewConfiguration viewConfiguration) {
+        viewClass = viewConfiguration.getViewClass();
+        final ProxyFactory<?> proxyFactory = viewConfiguration.getProxyFactory();
         this.proxyFactory = proxyFactory;
+        final Method[] methods = proxyFactory.getCachedMethods();
+        final int methodCount = methods.length;
+        viewPostConstruct = Interceptors.getChainedInterceptorFactory(viewConfiguration.getViewPostConstructInterceptors());
+        viewPreDestroy = Interceptors.getChainedInterceptorFactory(viewConfiguration.getViewPreDestroyInterceptors());
+        clientPostConstruct = Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientPostConstructInterceptors());
+        clientPreDestroy = Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientPreDestroyInterceptors());
+        final IdentityHashMap<Method, InterceptorFactory> viewInterceptorFactories = new IdentityHashMap<Method, InterceptorFactory>(methodCount);
+        final IdentityHashMap<Method, InterceptorFactory> clientInterceptorFactories = new IdentityHashMap<Method, InterceptorFactory>(methodCount);
+        for (Method method : methods) {
+            if (method.getName().equals("finalize") && method.getParameterTypes().length == 0) {
+                viewInterceptorFactories.put(method, DESTROY_INTERCEPTOR);
+            } else {
+                viewInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getViewInterceptorDeque(method)));
+                clientInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientInterceptorDeque(method)));
+            }
+        }
+        this.viewInterceptorFactories = viewInterceptorFactories;
+        this.clientInterceptorFactories = clientInterceptorFactories;
+        allowedMethods = Collections.unmodifiableSet(viewInterceptorFactories.keySet());
     }
 
-    /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        final AbstractComponent component = componentInjector.getValue();
-        instance = new ComponentView(component, viewClass, proxyFactory);
-        component.addComponentView(instance);
+        // Construct the view
+        view = new View();
     }
 
-    /** {@inheritDoc} */
     public void stop(final StopContext context) {
-        componentInjector.getValue().removeComponentView(instance);
-        instance = null;
+        view = null;
     }
 
-    /** {@inheritDoc} */
-    public ComponentView getValue() throws IllegalStateException, IllegalArgumentException {
-        return instance;
-    }
-
-    /**
-     * Get the component injector.
-     *
-     * @return the component injector
-     */
-    public Injector<AbstractComponent> getComponentInjector() {
+    public Injector<Component> getComponentInjector() {
         return componentInjector;
+    }
+
+    public ComponentView getValue() throws IllegalStateException, IllegalArgumentException {
+        return view;
+    }
+
+    class View implements ComponentView {
+
+        private final Component component;
+
+        View() {
+            component = componentInjector.getValue();
+        }
+
+        public ComponentViewInstance createInstance() {
+            final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+            final Map<Method, InterceptorFactory> viewInterceptorFactories = ViewService.this.viewInterceptorFactories;
+            final Map<Method, Interceptor> viewEntryPoints = new IdentityHashMap<Method, Interceptor>(viewInterceptorFactories.size());
+            for (Method method : viewInterceptorFactories.keySet()) {
+                viewEntryPoints.put(method, viewInterceptorFactories.get(method).create(factoryContext));
+            }
+
+            final Interceptor postConstructInterceptor = viewPostConstruct.create(factoryContext);
+            final Interceptor preDestroyInterceptor = viewPreDestroy.create(factoryContext);
+
+            final ComponentViewInstance instance = new ViewInstance(viewEntryPoints, preDestroyInterceptor);
+            try {
+                InterceptorContext context = new InterceptorContext();
+                context.putPrivateData(ComponentView.class, this);
+                context.putPrivateData(Component.class, component);
+                postConstructInterceptor.processInvocation(context);
+            } catch (Exception e) {
+                // TODO: What is the best exception type to throw here?
+                throw new RuntimeException("Failed to instantiate component view", e);
+            }
+            return instance;
+        }
+
+        public Component getComponent() {
+            return component;
+        }
+
+        class ViewInstance implements ComponentViewInstance {
+
+            private final Map<Method, Interceptor> viewEntryPoints;
+            private final Interceptor preDestroyInterceptor;
+
+            ViewInstance(final Map<Method, Interceptor> viewEntryPoints, final Interceptor preDestroyInterceptor) {
+                this.viewEntryPoints = viewEntryPoints;
+                this.preDestroyInterceptor = preDestroyInterceptor;
+            }
+
+            public Component getComponent() {
+                return component;
+            }
+
+            public Class<?> getViewClass() {
+                return viewClass;
+            }
+
+            public Object createProxy() {
+                final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+                final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
+                final Map<Method, Interceptor> clientEntryPoints = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
+                for (Method method : clientInterceptorFactories.keySet()) {
+                    clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
+                }
+                final Interceptor postConstructInterceptor = clientPostConstruct.create(factoryContext);
+                try {
+                    Object object = proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints));
+                    InterceptorContext interceptorContext = new InterceptorContext();
+                    interceptorContext.putPrivateData(ComponentView.class, View.this);
+                    interceptorContext.putPrivateData(Component.class, component);
+                    try {
+                        postConstructInterceptor.processInvocation(interceptorContext);
+                    } catch (Exception e) {
+                        InstantiationException exception = new InstantiationException("Post-construct lifecycle failed");
+                        exception.initCause(e);
+                        throw exception;
+                    }
+                    return object;
+                } catch (InstantiationException e) {
+                    InstantiationError error = new InstantiationError(e.getMessage());
+                    Throwable cause = e.getCause();
+                    if (cause != null) error.initCause(cause);
+                    throw error;
+                } catch (IllegalAccessException e) {
+                    IllegalAccessError error = new IllegalAccessError(e.getMessage());
+                    Throwable cause = e.getCause();
+                    if (cause != null) error.initCause(cause);
+                    throw error;
+                }
+            }
+
+            public Collection<Method> allowedMethods() {
+                return allowedMethods;
+            }
+
+            public Interceptor getEntryPoint(final Method method) throws IllegalArgumentException {
+                Interceptor interceptor = viewEntryPoints.get(method);
+                if (interceptor == null) {
+                    throw new IllegalArgumentException("Invalid view entry point " + method);
+                }
+                return interceptor;
+            }
+
+            @Deprecated
+            public boolean isAsynchronous(final Method method) throws IllegalArgumentException {
+                return false;
+            }
+
+            public void destroy() {
+                try {
+                    preDestroyInterceptor.processInvocation(new InterceptorContext());
+                } catch (Exception e) {
+                    // todo: log the warning
+                }
+            }
+        }
     }
 }

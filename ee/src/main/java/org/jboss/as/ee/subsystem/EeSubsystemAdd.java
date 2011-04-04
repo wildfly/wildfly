@@ -30,7 +30,6 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.ComponentInstallProcessor;
 import org.jboss.as.ee.component.ComponentInterceptorAnnotationParsingProcessor;
-import org.jboss.as.ee.component.ComponentLazyBindingSourceProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.EEModuleNameProcessor;
 import org.jboss.as.ee.component.EnvEntryProcessor;
@@ -109,7 +108,6 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ENV_ENTRY, new EnvEntryProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
-            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER, new ComponentLazyBindingSourceProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EAR_AGGREGATE_COMPONENT_INDEX, new ComponentAggregationProcessor());

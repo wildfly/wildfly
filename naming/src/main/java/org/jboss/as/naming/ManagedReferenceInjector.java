@@ -40,7 +40,7 @@ public class ManagedReferenceInjector<T> implements Injector<T> {
 
     @Override
     public void inject(T value) throws InjectionException {
-        injectable.inject(new ValueManagedObject(new ImmediateValue<Object>(value)));
+        injectable.inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
     }
 
     @Override

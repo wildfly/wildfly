@@ -22,13 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.invocation.Interceptor;
-import org.jboss.msc.service.ServiceName;
-
-import java.util.Map;
-
-import java.io.Serializable;
+import org.jboss.msc.service.StopContext;
 
 /**
  * Common contract for an EE component.  Implementations of this will be available as a service and can be used as the
@@ -36,6 +30,7 @@ import java.io.Serializable;
  *
  * @author John Bailey
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface Component {
 
@@ -46,8 +41,10 @@ public interface Component {
 
     /**
      * Stop operation called when the Component is no longer available.
+     *
+     * @param stopContext the stop context for the component service
      */
-    void stop();
+    void stop(final StopContext stopContext);
 
     /**
      * Get the component's actual implementation class.
@@ -65,70 +62,4 @@ public interface Component {
      * @return the component instance
      */
     ComponentInstance createInstance();
-
-    /**
-     * Destroy an instance of the component.  This method causes all uninjection and pre-destroy lifecycle invocations
-     * to occur.
-     *
-     * @param instance the instance to destroy
-     */
-    void destroyInstance(ComponentInstance instance);
-
-    /**
-     * Create a new client entry point for this component.  The returned entry point will contain the necessary logic to
-     * locate the appropriate instance, perform security checks, etc. as well as perform the final invocation.  The
-     * returned handler may or may not be shared; generally shared handlers will ignore their {@code destroy()} method.
-     * <p>
-     * The given view type must be one of the registered view types for this component.
-     *
-     * @param view the view type
-     * @return the client entry point
-     * @throws IllegalArgumentException if the view class is not know
-     */
-    ComponentEntry createClient(Class<?> view) throws IllegalArgumentException;
-
-    /**
-     * Create a new client interceptor for this component.  The returned interceptor will contain the necessary logic to
-     * locate the appropriate instance.
-     * <p>
-     * The given view type must be one of the registered view types for this component.
-     *
-     * @param view the view type
-     * @return the client entry point
-     */
-    Interceptor createClientInterceptor(Class<?> view);
-
-    /**
-     * Create a new client interceptor for this component.  The returned interceptor will contain the necessary logic to
-     * locate the appropriate instance. The interceptor will be associated with the given sessionId
-     * <p>
-     * The given view type must be one of the registered view types for this component.
-     *
-     * @param view the view type
-     * @return the client entry point
-     */
-    Interceptor createClientInterceptor(Class<?> view,Serializable sessionId);
-
-    /**
-     * Create a remote client proxy for this component.
-     *
-     * @param view the view type class
-     * @param targetClassLoader the target class loader for the proxy
-     * @param clientInterceptor the client interceptor to use for this proxy.
-     * @return the proxy instance
-     */
-    Object createRemoteProxy(Class<?> view, ClassLoader targetClassLoader, Interceptor clientInterceptor);
-
-    /**
-     * Get the naming context selector for this component.
-     *
-     * @return the selector
-     */
-    NamespaceContextSelector getNamespaceContextSelector();
-
-    /**
-     * The view service names keyed by the view class type.
-     * @return The view services for this component
-     */
-    Map<Class<?>,ServiceName> getViewServices();
 }

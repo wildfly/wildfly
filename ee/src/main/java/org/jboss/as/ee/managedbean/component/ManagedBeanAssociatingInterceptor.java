@@ -22,38 +22,30 @@
 
 package org.jboss.as.ee.managedbean.component;
 
+import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
 
 /**
- * The interceptor which performs association for managed bean components.
+ * The interceptor which performs a simple association for managed bean components.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ManagedBeanAssociatingInterceptor implements Interceptor {
+    private final AtomicReference<ComponentInstance> componentInstanceReference;
 
-    /**
-     * The instance.
-     */
-    public static final Interceptor INSTANCE = new ManagedBeanAssociatingInterceptor();
-    /**
-     * The singleton factory which yields this instance.
-     */
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(INSTANCE);
-
-    ManagedBeanAssociatingInterceptor() {
+    public ManagedBeanAssociatingInterceptor(final AtomicReference<ComponentInstance> componentInstanceReference) {
+        this.componentInstanceReference = componentInstanceReference;
     }
 
     /** {@inheritDoc} */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        context.setTarget(context.getPrivateData(ComponentInstance.class).getInstance());
+        context.putPrivateData(ComponentInstance.class, componentInstanceReference.get());
         try {
             return context.proceed();
         } finally {
-            context.setTarget(null);
+            context.putPrivateData(ComponentInstance.class, null);
         }
     }
 }

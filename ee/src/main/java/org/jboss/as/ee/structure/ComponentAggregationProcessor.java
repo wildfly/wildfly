@@ -23,7 +23,7 @@
 package org.jboss.as.ee.structure;
 
 import java.util.List;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -57,7 +57,7 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
                     // Not an EE deployment.
                     continue;
                 }
-                for (AbstractComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
+                for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                     applicationDescription.addComponent(componentDescription);
                 }
                 subdeployment.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);
@@ -72,7 +72,7 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
                 // Not an EE deployment.
                 return;
             }
-            for (AbstractComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
+            for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 applicationDescription.addComponent(componentDescription);
             }
             deploymentUnit.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);

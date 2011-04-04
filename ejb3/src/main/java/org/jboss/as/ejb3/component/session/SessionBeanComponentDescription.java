@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
 
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 
@@ -328,7 +328,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public abstract SessionBeanType getSessionBeanType();
 
     @Override
-    protected void processComponentMethod(final AbstractComponentConfiguration configuration, final Method componentMethod) throws DeploymentUnitProcessingException {
+    protected void processComponentMethod(final ComponentConfiguration configuration, final Method componentMethod) throws DeploymentUnitProcessingException {
         super.processComponentMethod(configuration, componentMethod);
         // Process the async methods
         if (asynchronousMethods.contains(MethodIdentifier.getIdentifierForMethod(componentMethod)) || asynchronousViews.contains(componentMethod.getDeclaringClass().getName())) {
@@ -341,7 +341,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     @Override
-    protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         // let super do it's job first
         super.prepareComponentConfiguration(configuration, phaseContext);
 

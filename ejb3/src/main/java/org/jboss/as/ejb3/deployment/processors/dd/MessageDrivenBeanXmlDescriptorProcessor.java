@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -43,6 +44,9 @@ public class MessageDrivenBeanXmlDescriptorProcessor extends AbstractEjbXmlDescr
     protected void processBeanMetaData(MessageDrivenBeanMetaData mdb, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EjbJarDescription ejbModuleDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        // get the module description
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final String applicationName = moduleDescription.getApplicationName();
 
         String ejbName = mdb.getEjbName();
         String ejbClassName = mdb.getEjbClass();

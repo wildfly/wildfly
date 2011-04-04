@@ -74,7 +74,10 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        // get the annotation index
+
+        // get the module description
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final String applicationName = moduleDescription.getApplicationName();
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
             if (logger.isTraceEnabled()) {
@@ -110,11 +113,14 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
 
     private void processSessionBeans(final DeploymentUnit deploymentUnit, final List<AnnotationInstance> sessionBeanAnnotations, final SessionBeanType sessionBeanType) {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         if (ejbJarDescription == null) {
             ejbJarDescription = new EjbJarDescription(moduleDescription);
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
         }
+
+        final String applicationName = moduleDescription.getApplicationName();
 
         // process these session bean annotations and create component descriptions out of it
         for (final AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {

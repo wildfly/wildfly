@@ -22,17 +22,14 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
-import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.LazyBindingSourceDescription;
-import org.jboss.as.ee.component.LookupBindingSourceDescription;
+import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
-import org.jboss.as.jpa.injectors.PersistenceContextBindingSourceDescription;
-import org.jboss.as.jpa.injectors.PersistenceUnitBindingSourceDescription;
+import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
+import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -62,7 +59,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
 
     @Override
-    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         List<BindingDescription> bindings = new ArrayList<BindingDescription>();
         bindings.addAll(getPersistenceUnitRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
         bindings.addAll(getPersistenceContextRefs(deploymentUnit, environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
@@ -78,7 +75,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-    private List<BindingDescription> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private List<BindingDescription> getPersistenceUnitRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
 
         List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
         if (environment.getEnvironment() == null) {
@@ -134,7 +131,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-    private List<BindingDescription> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private List<BindingDescription> getPersistenceContextRefs(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
 
         List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
         if (environment.getEnvironment() == null) {
@@ -187,24 +184,24 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     }
 
 
-    private BindingSourceDescription getPersistenceUnitBindingSource(
+    private InjectionSource getPersistenceUnitBindingSource(
             final DeploymentUnit deploymentUnit,
             final String unitName)
             throws DeploymentUnitProcessingException {
 
         String scopedPuName = getScopedPuName(deploymentUnit, unitName);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        return new PersistenceUnitBindingSourceDescription(puServiceName, deploymentUnit, scopedPuName, EntityManagerFactory.class.getName());
+        return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, scopedPuName, EntityManagerFactory.class.getName());
     }
 
-    private BindingSourceDescription getPersistenceContextBindingSource(
+    private InjectionSource getPersistenceContextBindingSource(
             final DeploymentUnit deploymentUnit,
             final String unitName, PersistenceContextType type, Map properties)
             throws DeploymentUnitProcessingException {
 
         String scopedPuName = getScopedPuName(deploymentUnit, unitName);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        return new PersistenceContextBindingSourceDescription(type, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName());
+        return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName());
     }
 
     private String getScopedPuName(final DeploymentUnit deploymentUnit, final String puName)

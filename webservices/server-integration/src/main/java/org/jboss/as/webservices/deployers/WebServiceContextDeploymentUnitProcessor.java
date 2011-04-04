@@ -22,10 +22,8 @@
 package org.jboss.as.webservices.deployers;
 
 import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.LazyBindingSourceDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ValueManagedObject;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -63,7 +61,7 @@ public class WebServiceContextDeploymentUnitProcessor implements DeploymentUnitP
         @Override
         public boolean getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
             if(referenceDescription.getBindingType().equals("javax.xml.ws.WebServiceContext")) {
-                injector.inject(new ValueManagedObject(new ImmediateValue<Object>(ThreadLocalAwareWebServiceContext.getInstance())));
+                injector.inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(ThreadLocalAwareWebServiceContext.getInstance())));
                 return true;
             }
             return false;

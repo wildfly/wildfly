@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.ejb3.context.base.BaseMessageDrivenContext;
 import org.jboss.ejb3.context.spi.MessageDrivenContext;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -29,7 +29,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class MessageDrivenComponentInstance extends AbstractComponentInstance {
+public class MessageDrivenComponentInstance extends BasicComponentInstance {
     protected class MessageDrivenComponentInstanceContext extends BaseMessageDrivenContext {
         protected MessageDrivenComponentInstanceContext() {
             super(MessageDrivenComponentInstance.this.getComponent(), getInstance());
@@ -45,7 +45,7 @@ public class MessageDrivenComponentInstance extends AbstractComponentInstance {
      * @param instance  the object instance
      */
     protected MessageDrivenComponentInstance(final MessageDrivenComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
-        super(component, instance, factoryContext);
+        super(component);
     }
 
     @Override

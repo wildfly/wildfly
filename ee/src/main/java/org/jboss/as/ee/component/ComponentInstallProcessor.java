@@ -23,30 +23,19 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.naming.ContextNames;
-import org.jboss.as.ee.naming.NamespaceSelectorService;
-import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -55,222 +44,79 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(MODULE);
         if (module == null) {
             // Nothing to do
             return;
         }
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEModuleConfiguration moduleDescription = deploymentUnit.getAttachment(EE_MODULE_CONFIGURATION);
         // Iterate through each component, installing it into the container
-        for (AbstractComponentDescription description : moduleDescription.getComponentDescriptions()) {
+        for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             try {
-                deployComponent(phaseContext, description);
+                deployComponent(phaseContext, configuration);
             }
             catch (RuntimeException e) {
-                throw new DeploymentUnitProcessingException("Failed to install component " + description, e);
+                throw new DeploymentUnitProcessingException("Failed to install component " + configuration, e);
             }
         }
     }
 
-    protected void deployComponent(final DeploymentPhaseContext phaseContext, final AbstractComponentDescription description) throws DeploymentUnitProcessingException {
+    protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final ModuleClassLoader classLoader = module.getClassLoader();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final JndiInjectionPointStore moduleInjectionPointStore = deploymentUnit.getAttachment(Attachments.MODULE_INJECTIONS);
-        final JndiInjectionPointStore injectionPointStore;
-        if(moduleInjectionPointStore != null) {
-            injectionPointStore = new JndiInjectionPointStore(moduleInjectionPointStore);
-        } else {
-            injectionPointStore = new JndiInjectionPointStore();
-        }
-
-        final String className = description.getComponentClassName();
-        final Class<?> componentClass;
-        try {
-            componentClass = Class.forName(className, false, classLoader);
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Component class not found", e);
-        }
-        final String applicationName = description.getApplicationName();
-        final String moduleName = description.getModuleName();
-        final String componentName = description.getComponentName();
+        final String applicationName = configuration.getApplicationName();
+        final String moduleName = configuration.getModuleName();
+        final String componentName = configuration.getComponentName();
         final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(componentName);
 
-        final AbstractComponentConfiguration configuration = description.createComponentConfiguration(phaseContext, componentClass);
-        configuration.setComponentClass(componentClass);
-
         //create additional injectors
-        final List<ServiceName> additionalDependencies = new ArrayList<ServiceName>();
-        for (InjectionFactory injectionFactory : moduleDescription.getInjectionFactories()) {
-            final ComponentInjector injector = injectionFactory.createInjector(configuration);
-            if (injector != null) {
-                configuration.addComponentInjector(injector);
-                ServiceName injectorServiceName = injector.getServiceName();
-                if (injector.getServiceName() != null) {
-                    additionalDependencies.add(injectorServiceName);
-                }
-            }
-        }
-
         final ServiceName createServiceName = baseName.append("CREATE");
         final ServiceName startServiceName = baseName.append("START");
-        final ComponentCreateService createService = new ComponentCreateService(configuration);
+        final BasicComponentCreateService createService = configuration.getComponentCreateServiceFactory().constructService(configuration);
         final ServiceBuilder<Component> createBuilder = serviceTarget.addService(createServiceName, createService);
         final ComponentStartService startService = new ComponentStartService();
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
 
         // Add all service dependencies
-        Map<ServiceName, InjectedValue<Object>> injections = configuration.getDependencyInjections();
-        for (Map.Entry<ServiceName, ServiceBuilder.DependencyType> entry : description.getDependencies().entrySet()) {
-            createBuilder.addDependency(entry.getValue(), entry.getKey(), injections.get(entry.getKey()));
+        for (DependencyConfigurator configurator : configuration.getCreateDependencies()) {
+            configurator.configureDependency(createBuilder);
         }
-
-        final ServiceName appContextServiceName = ContextNames.contextServiceNameOfApplication(applicationName);
-        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(applicationName, moduleName);
-        final ServiceName componentContextServiceName;
-
-        switch (description.getNamingMode()) {
-            case CREATE: {
-                componentContextServiceName = ContextNames.contextServiceNameOfComponent(applicationName, moduleName, componentName);
-                // And, create the context...
-                RootContextService contextService = new RootContextService();
-                serviceTarget.addService(componentContextServiceName, contextService)
-                        .addDependency(createServiceName)
-                        .install();
-                break;
-            }
-            case USE_MODULE: {
-                componentContextServiceName = moduleContextServiceName;
-                break;
-            }
-            default: {
-                componentContextServiceName = null;
-                break;
-            }
+        for (DependencyConfigurator configurator : configuration.getStartDependencies()) {
+            configurator.configureDependency(startBuilder);
         }
-
-        final NamespaceSelectorService selectorService = new NamespaceSelectorService();
-        final ServiceName selectorServiceName = baseName.append("NAMESPACE");
-        final ServiceBuilder<NamespaceContextSelector> selectorServiceBuilder = serviceTarget.addService(selectorServiceName, selectorService)
-                .addDependency(appContextServiceName, NamingStore.class, selectorService.getApp())
-                .addDependency(moduleContextServiceName, NamingStore.class, selectorService.getModule());
-        if (componentContextServiceName != null) {
-            selectorServiceBuilder.addDependency(componentContextServiceName, NamingStore.class, selectorService.getComp());
-        }
-        selectorServiceBuilder.install();
 
         // START depends on CREATE
-        startBuilder.addDependency(createServiceName, AbstractComponent.class, startService.getComponentInjector());
-        //add dependencies on the injector services
-        startBuilder.addDependencies(additionalDependencies);
+        startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
 
         // Iterate through each view, creating the services for each
-        for (Map.Entry<Class<?>, ProxyFactory<?>> entry : configuration.getProxyFactories().entrySet()) {
-            final Class<?> viewClass = entry.getKey();
-            final ServiceName serviceName = baseName.append("VIEW").append(viewClass.getName());
-            final ProxyFactory<?> proxyFactory = entry.getValue();
-            final ViewService viewService = new ViewService(viewClass, proxyFactory);
+        for (ViewConfiguration viewConfiguration : configuration.getViews()) {
+            final ServiceName serviceName = viewConfiguration.getViewServiceName();
+            final ViewService viewService = new ViewService(viewConfiguration);
             serviceTarget.addService(serviceName, viewService)
-                    .addDependency(createServiceName, AbstractComponent.class, viewService.getComponentInjector())
+                    .addDependency(createServiceName, Component.class, viewService.getComponentInjector())
                     .install();
-            configuration.getViewServices().put(viewClass, serviceName);
-        }
 
-        // Iterate through each binding/injection, creating the JNDI binding and wiring dependencies for each
-        final List<BindingDescription> bindingDescriptions = description.getMergedBindings();
-        for (BindingDescription bindingDescription : bindingDescriptions) {
-            addJndiBinding(classLoader, serviceTarget, applicationName, moduleName, componentName, createServiceName, startBuilder, bindingDescription, phaseContext, injectionPointStore);
-        }
-
-        // Now iterate the interceptors and their bindings
-        final Collection<InterceptorDescription> interceptorClasses = description.getAllInterceptors().values();
-
-        for (InterceptorDescription interceptorDescription : interceptorClasses) {
-            String interceptorClassName = interceptorDescription.getInterceptorClassName();
-            final Class<?> interceptorClass;
-            try {
-                interceptorClass = Class.forName(interceptorClassName, false, classLoader);
-            } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Component interceptor class not found", e);
+            // The bindings for the view
+            for (BindingConfiguration bindingConfiguration : viewConfiguration.getBindingConfigurations()) {
+                final String bindingName = bindingConfiguration.getName();
+                final BinderService service = new BinderService(bindingName);
+                ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
+                bindingConfiguration.getSource().getResourceValue(configuration, serviceBuilder, phaseContext, service.getManagedObjectInjector());
             }
-
-            List<ResourceInjection> injectionList = injectionPointStore.applyInjections(interceptorClass, deploymentReflectionIndex);
-
-            configuration.addInterceptorResourceInjection(interceptorClass,injectionList);
         }
-        List<ResourceInjection> injectionList = injectionPointStore.applyInjections(componentClass, deploymentReflectionIndex);
-        //we want to make sure that all JNDI entries are available when the component is created.
-        startBuilder.addDependencies(injectionPointStore.getServiceNames());
-        configuration.getResourceInjections().addAll(injectionList);
+
+        // The bindings for the component
+        for (BindingConfiguration bindingConfiguration : configuration.getBindingConfigurations()) {
+            final String bindingName = bindingConfiguration.getName();
+            final BinderService service = new BinderService(bindingName);
+            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
+            bindingConfiguration.getSource().getResourceValue(configuration, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+        }
 
         createBuilder.install();
         startBuilder.install();
-    }
-
-    private static void addJndiBinding(final ModuleClassLoader classLoader, final ServiceTarget serviceTarget, final String applicationName, final String moduleName, final String componentName, final ServiceName createServiceName, final ServiceBuilder<Component> startBuilder, final BindingDescription bindingDescription, final DeploymentPhaseContext phaseContext, final JndiInjectionPointStore injectionPointStore) throws DeploymentUnitProcessingException {
-        // Gather information about the dependency
-        final String bindingName = bindingDescription.getBindingName();
-        final String bindingType = bindingDescription.getBindingType();
-        try {
-            // Sanity check before we invest a lot of effort
-            Class.forName(bindingType, false, classLoader);
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Component binding class not found", e);
-        }
-
-        // There are four applicable scenarios for an injectable dependency
-        // 1. The source is a service, and the resource is bound into JNDI (start->binding->service)
-        // 2. The source is a service but the resource is not bound into JNDI (start->service)
-        // 3. The source is not a service and the resource is bound into JNDI (start->binding)
-        // 4. The source is not a service and the resource is not bound (no dependency)
-
-        Value<ManagedReferenceFactory> resourceValue;
-
-        // Check to see if this entry should actually be bound into JNDI.
-        if (bindingName != null) {
-            // bind into JNDI
-            final String serviceBindingName;
-
-            int idx = bindingName.indexOf('/');
-            if (idx == -1) {
-                serviceBindingName = bindingName;
-            } else {
-                serviceBindingName = bindingName.substring(idx + 1);
-            }
-            final BinderService service = new BinderService(serviceBindingName);
-            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName);
-            if (bindingServiceName == null) {
-                throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
-            }
-            // The service builder for the binding
-            ServiceBuilder<ManagedReferenceFactory> sourceServiceBuilder = serviceTarget.addService(bindingServiceName, service);
-            // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
-            bindingDescription.getReferenceSourceDescription().getResourceValue(bindingDescription, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
-            resourceValue = sourceServiceBuilder
-                    .addDependency(createServiceName)
-                    .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
-                    .install();
-            // Start service depends on the binding if the binding is a dependency
-            if (bindingDescription.isDependency()) startBuilder.addDependency(bindingServiceName);
-
-            for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
-                injectionPointStore.addInjectedValue(injectionTarget,resourceValue,bindingServiceName);
-            }
-        } else {
-            // do not bind into JNDI
-            // The resource value comes from the reference source, which may add a dependency on the original value to the start service
-            final InjectedValue<ManagedReferenceFactory> injectedValue = new InjectedValue<ManagedReferenceFactory>();
-            bindingDescription.getReferenceSourceDescription().getResourceValue(bindingDescription, startBuilder, phaseContext, injectedValue);
-            resourceValue = injectedValue;
-            for(final InjectionTargetDescription injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
-                injectionPointStore.addInjectedValue(injectionTarget,resourceValue,null);
-            }
-        }
     }
 
     public void undeploy(final DeploymentUnit context) {

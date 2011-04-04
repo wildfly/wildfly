@@ -22,7 +22,6 @@
 package org.jboss.as.weld.deployment;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;

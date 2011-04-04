@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
@@ -81,7 +81,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     }
 
     @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
+    protected BasicComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
         return new StatelessSessionComponentInstance(this, instance, context);
     }
 

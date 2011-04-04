@@ -21,7 +21,7 @@
  */
 package org.jboss.as.txn;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -62,13 +62,13 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         //if this is a war we need to bind to the modules comp namespace
         if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
-            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(),moduleDescription.getModuleName());
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
             bindServices(deploymentUnit, serviceTarget,moduleDescription, moduleDescription.getModuleName(), moduleContextServiceName);
         }
 
-        for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
+        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if(component.getNamingMode() == ComponentNamingMode.CREATE) {
-                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getAppName(),moduleDescription.getModuleName(),component.getComponentName());
+                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),component.getComponentName());
                 bindServices(deploymentUnit, serviceTarget,moduleDescription, component.getComponentName(), compContextServiceName);
             }
         }
@@ -84,7 +84,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
      */
     private void bindServices(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, EEModuleDescription description,String componentName,ServiceName contextServiceName) {
 
-        final ServiceName userTransactionServiceName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/UserTransaction");
+        final ServiceName userTransactionServiceName = ContextNames.serviceNameOfContext(description.getApplicationName(),description.getModuleName(),componentName,"java:comp/UserTransaction");
         BinderService userTransactionBindingService = new BinderService("UserTransaction");
         serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
             .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
@@ -92,7 +92,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
             .addDependency(contextServiceName, NamingStore.class, userTransactionBindingService.getNamingStoreInjector())
             .install();
 
-        final ServiceName transactionSynchronizationRegistryName = ContextNames.serviceNameOfContext(description.getAppName(),description.getModuleName(),componentName,"java:comp/TransactionSynchronizationRegistry");
+        final ServiceName transactionSynchronizationRegistryName = ContextNames.serviceNameOfContext(description.getApplicationName(),description.getModuleName(),componentName,"java:comp/TransactionSynchronizationRegistry");
         BinderService transactionSyncBinderService = new BinderService("TransactionSynchronizationRegistry");
         serviceTarget.addService(transactionSynchronizationRegistryName, transactionSyncBinderService)
             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class,

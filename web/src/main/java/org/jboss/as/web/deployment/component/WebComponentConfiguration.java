@@ -22,14 +22,14 @@
 
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
 
 /**
  * The component configuration web components
  *
  * @author Stuart Douglas
  */
-public class WebComponentConfiguration extends AbstractComponentConfiguration {
+public class WebComponentConfiguration extends ComponentConfiguration {
 
     /**
      * Construct a new instance.
@@ -37,11 +37,6 @@ public class WebComponentConfiguration extends AbstractComponentConfiguration {
      * @param description the original description
      */
     public WebComponentConfiguration(final WebComponentDescription description) {
-        super(description);
-    }
-
-    /** {@inheritDoc} */
-    public WebComponent constructComponent() {
-        return new WebComponent(this);
+        super(description, INIT_ME);
     }
 }

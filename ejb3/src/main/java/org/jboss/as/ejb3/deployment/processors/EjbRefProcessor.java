@@ -22,14 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
-import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.LazyBindingSourceDescription;
-import org.jboss.as.ee.component.LookupBindingSourceDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -56,7 +52,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-     protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+     protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         EJBLocalReferencesMetaData ejbLocalRefs = environment.getEnvironment().getEjbLocalReferences();
         List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
         //TODO: this needs a lot more work

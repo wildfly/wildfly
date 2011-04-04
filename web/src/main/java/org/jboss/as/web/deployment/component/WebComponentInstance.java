@@ -22,7 +22,7 @@
 
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
@@ -30,7 +30,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class WebComponentInstance extends AbstractComponentInstance {
+public final class WebComponentInstance extends BasicComponentInstance {
 
     private static final long serialVersionUID = -6175038319331057073L;
 
@@ -41,6 +41,6 @@ public final class WebComponentInstance extends AbstractComponentInstance {
      * @param instance the object instance
      */
     protected WebComponentInstance(final WebComponent component, final Object instance, InterceptorFactoryContext context) {
-        super(component, instance, context);
+        super(component);
     }
 }

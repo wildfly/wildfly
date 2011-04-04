@@ -22,7 +22,7 @@
 
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -45,7 +45,6 @@ import org.jboss.metadata.web.spec.WebMetaData;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,14 +74,14 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final Map<String, AbstractComponentDescription> componentByClass = new HashMap<String,AbstractComponentDescription>();
+        final Map<String, ComponentDescription> componentByClass = new HashMap<String,ComponentDescription>();
         final Map<String, ComponentInstantiator> webComponents = new HashMap<String,ComponentInstantiator>();
         final EEModuleDescription moduleDescription =  deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final String applicationName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName();
         if(moduleDescription == null) {
             return; //not an ee deployment
         }
-        for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
+        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             componentByClass.put(component.getComponentClassName(), component);
         }
 
@@ -90,7 +89,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         final TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         final Set<String> classes  = getAllComponentClasses(warMetaData, tldsMetaData);
         for(String clazz : classes) {
-            AbstractComponentDescription description = componentByClass.get(clazz);
+            ComponentDescription description = componentByClass.get(clazz);
             if(description != null) {
                 //for now just make sure it has a single view
                 //this will generally be a managed bean, but it could also be an EJB

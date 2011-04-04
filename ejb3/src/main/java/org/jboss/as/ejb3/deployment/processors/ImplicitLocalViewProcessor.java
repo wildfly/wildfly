@@ -23,7 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -54,7 +54,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
     private static Logger logger = Logger.getLogger(ImplicitLocalViewProcessor.class);
 
     @Override
-    protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex index, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex index, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
 
         if (!(componentDescription instanceof SessionBeanComponentDescription)) {
             return;

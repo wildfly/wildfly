@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
@@ -57,10 +56,5 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
                 }
             });
         }
-    }
-
-    @Override
-    public AbstractComponent constructComponent() {
-        return new StatefulSessionComponent(this);
     }
 }

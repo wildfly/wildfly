@@ -1,9 +1,8 @@
 package org.jboss.as.jaxrs.deployment;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -52,12 +51,8 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
 
         final ClassLoader loader = module.getClassLoader();
 
-        for (final AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            //TODO: EJB support
-            if(!(component instanceof ManagedBeanComponentDescription)) {
-                continue;
-            }
-            Class componentClass = null;
+        for (final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            Class<?> componentClass = null;
             try {
                 componentClass = loader.loadClass(component.getComponentClassName());
             } catch (ClassNotFoundException e) {

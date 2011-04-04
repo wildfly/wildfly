@@ -36,7 +36,6 @@ import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
-import org.jboss.as.ee.naming.NamespaceSelectorService;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -54,7 +53,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
@@ -192,15 +190,12 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
                     .install();
-            ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
             builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService);
             builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class,
                     new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
             builder.addDependency(WebSubsystemServices.JBOSS_WEB_REALM.append(deploymentName), Realm.class,
                     webDeploymentService.getRealm());
-            builder.addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
-                    webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE);
 
             builder.addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
 

@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.SFSBXPCMap;
@@ -47,7 +47,7 @@ public class SFSBDestroyInterceptorFactory implements InterceptorFactory {
         return new Interceptor() {
             @Override
             public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-                StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) context.getContextData().get(AbstractComponent.COMPONENT_INSTANCE_KEY);
+                StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) context.getContextData().get(BasicComponent.COMPONENT_INSTANCE_KEY);
                 SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
                 List<EntityManager> readyToClose = SFSBXPCMap.getINSTANCE().remove(sfsbContextHandle);
                 if (readyToClose != null && readyToClose.size() > 0) {

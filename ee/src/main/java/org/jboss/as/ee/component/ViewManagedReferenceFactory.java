@@ -1,0 +1,105 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.ee.component;
+
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.msc.inject.InjectionException;
+
+/**
+ * A managed reference factory for a component view.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ */
+final class ViewManagedReferenceFactory implements ManagedReferenceFactory {
+    private final ComponentView view;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param view the component view
+     */
+    public ViewManagedReferenceFactory(final ComponentView view) {
+        this.view = view;
+    }
+
+    /** {@inheritDoc} */
+    public ManagedReference getReference() {
+        final ComponentViewInstance instance = view.createInstance();
+        return new Instance(instance, instance.createProxy());
+    }
+
+    /**
+     * The bridge injector for binding views into JNDI.  Injects a {@link ComponentView}
+     * wrapped as a {@link ManagedReferenceFactory}.
+     */
+    static class Injector implements org.jboss.msc.inject.Injector<ComponentView> {
+        private final org.jboss.msc.inject.Injector<ManagedReferenceFactory> referenceFactoryInjector;
+
+        /**
+         * Construct a new instance.
+         *
+         * @param referenceFactoryInjector the injector from the binder service
+         */
+        public Injector(final org.jboss.msc.inject.Injector<ManagedReferenceFactory> referenceFactoryInjector) {
+            this.referenceFactoryInjector = referenceFactoryInjector;
+        }
+
+        /** {@inheritDoc} */
+        public void inject(final ComponentView value) throws InjectionException {
+            referenceFactoryInjector.inject(new ViewManagedReferenceFactory(value));
+        }
+
+        /** {@inheritDoc} */
+        public void uninject() {
+            referenceFactoryInjector.uninject();
+        }
+    }
+
+    private static class Instance implements ManagedReference {
+
+        private final ComponentViewInstance instance;
+        private volatile Object proxy;
+        private static final AtomicReferenceFieldUpdater<Instance, Object> proxyUpdater = AtomicReferenceFieldUpdater.newUpdater(Instance.class, Object.class, "proxy");
+
+        public Instance(final ComponentViewInstance instance, final Object proxy) {
+            this.instance = instance;
+            this.proxy = proxy;
+        }
+
+        public void release() {
+            if (proxyUpdater.getAndSet(this, null) != null) {
+                instance.destroy();
+            }
+        }
+
+        public Object getInstance() {
+            Object proxy = this.proxy;
+            if (proxy == null) {
+                throw new IllegalStateException("Instance was destroyed");
+            }
+            return proxy;
+        }
+    }
+}

@@ -22,8 +22,8 @@
 
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponent;
-import org.jboss.as.ee.component.AbstractComponentInstance;
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
@@ -34,7 +34,7 @@ import java.io.Serializable;
  *
  * @author Stuart Douglas
  */
-public class WebComponent extends AbstractComponent {
+public class WebComponent extends BasicComponent {
 
     /**
      * Construct a new instance.
@@ -46,7 +46,7 @@ public class WebComponent extends AbstractComponent {
     }
 
     /** {@inheritDoc} */
-    protected AbstractComponentInstance constructComponentInstance(final Object instance, InterceptorFactoryContext context) {
+    protected BasicComponentInstance constructComponentInstance(final Object instance, InterceptorFactoryContext context) {
         return new WebComponentInstance(this, instance, context);
     }
 

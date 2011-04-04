@@ -34,10 +34,9 @@ import org.jboss.as.server.deployment.SetupAction;
  */
 public class JavaNamespaceSetup implements SetupAction {
 
-    private final NamespaceSelectorService namespaceSelector;
+    private final NamespaceContextSelector namespaceSelector;
 
-
-    public JavaNamespaceSetup(NamespaceSelectorService namespaceSelector) {
+    public JavaNamespaceSetup(final NamespaceContextSelector namespaceSelector) {
         this.namespaceSelector = namespaceSelector;
     }
 
@@ -48,7 +47,7 @@ public class JavaNamespaceSetup implements SetupAction {
 
     @Override
     public void setup(Map<String, Object> properties) {
-        NamespaceContextSelector.pushCurrentSelector(namespaceSelector.getValue());
+        NamespaceContextSelector.pushCurrentSelector(namespaceSelector);
     }
 
     @Override

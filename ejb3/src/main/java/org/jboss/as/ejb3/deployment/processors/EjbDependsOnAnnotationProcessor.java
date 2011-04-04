@@ -29,7 +29,7 @@ import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -56,7 +56,7 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
 
     @Override
     protected final void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext,
-            final CompositeIndex index, final AbstractComponentDescription componentDescription)
+            final CompositeIndex index, final ComponentDescription componentDescription)
             throws DeploymentUnitProcessingException {
         final ClassInfo beanClass = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
         if (beanClass == null) {

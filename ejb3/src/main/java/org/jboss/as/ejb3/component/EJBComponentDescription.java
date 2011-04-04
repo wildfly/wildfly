@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponentDescription extends AbstractComponentDescription {
+public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * EJB 3.1 FR 13.3.7, the default transaction attribute is <i>REQUIRED</i>.
      */
@@ -88,7 +88,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
      * @param ejbDeploymentDescription the module
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbDeploymentDescription) {
-        super(componentName, componentClassName, ejbDeploymentDescription.getEEModuleDescription());
+        super(componentName, componentClassName, ejbDeploymentDescription.getEEModuleDescription(), classDescription, deploymentUnitServiceName);
         //TODO: This should not be create for EJB's in a war
         setNamingMode(ComponentNamingMode.CREATE);
     }
@@ -184,22 +184,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
         return this.getComponentClassName();
     }
 
-    @Override
-    protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        super.prepareComponentConfiguration(configuration, phaseContext);
-
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        EjbJarConfiguration ejbModuleConfiguration = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_CONFIGURATION);
-        if (ejbModuleConfiguration == null) {
-            throw new DeploymentUnitProcessingException(EjbJarConfiguration.class.getSimpleName() + " not found in unit " + deploymentUnit);
-        }
-        // set the EJB module configuration on the EJB component configuration
-        ((EJBComponentConfiguration) configuration).setEjbJarConfiguration(ejbModuleConfiguration);
-    }
-
-    @Override
-    protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
+    protected void processComponentMethod(ComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
         super.processComponentMethod(configuration, componentMethod);
 
         // TODO: a temporary measure until EJBTHREE-2120 is fully resolved
@@ -208,7 +193,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     }
 
     @Override
-    protected void processViewMethod(AbstractComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
+    protected void processViewMethod(ComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
         super.processViewMethod(configuration, viewClass, viewMethod, componentMethod);
 
         MethodIntf methodIntf = getMethodIntf(viewClass.getName());

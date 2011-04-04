@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -41,7 +41,7 @@ public abstract class AbstractAnnotationEJBProcessor<D extends EJBComponentDescr
     protected abstract void processAnnotations(final ClassInfo beanClass, final CompositeIndex index, D componentDescription) throws DeploymentUnitProcessingException;
 
     @Override
-    protected final void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected final void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final ClassInfo beanClass = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
         if (beanClass == null) {
             return; // We can't continue without the annotation index info.

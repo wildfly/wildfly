@@ -57,7 +57,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
             List<BindingDescription> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
             description.getBindingsContainer().addBindings(bindings);
         }
-        for(final AbstractComponentDescription componentDescription : description.getComponentDescriptions()) {
+        for(final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if(componentDescription.getDeploymentDescriptorEnvironment() != null) {
                 List<BindingDescription> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, null, module.getClassLoader(), deploymentReflectionIndex);
                 componentDescription.addBindings(bindings);
@@ -65,7 +65,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
         }
     }
 
-    protected abstract List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException;
+    protected abstract List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException;
 
     @Override
     public void undeploy(DeploymentUnit context) {
@@ -141,15 +141,10 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
                 } else {
                     classType = injectionTargetType;
                 }
-                final InjectionTargetDescription injectionTargetDescription = new InjectionTargetDescription();
-                injectionTargetDescription.setClassName(injectionTarget.getInjectionTargetClass());
-                if(method == null) {
-                    injectionTargetDescription.setType(InjectionTargetDescription.Type.FIELD);
-                } else {
-                    injectionTargetDescription.setType(InjectionTargetDescription.Type.METHOD);
-                }
-                injectionTargetDescription.setName(memberName);
-                injectionTargetDescription.setDeclaredValueClassName(classType.getName());
+                String injectionTargetName = injectionTarget.getInjectionTargetName();
+                final InjectionTarget injectionTargetDescription = method == null ?
+                        new FieldInjectionTarget(injectionTargetName, memberName, classType.getName()) :
+                        new MethodInjectionTarget(injectionTargetName, memberName, classType.getName());
                 description.getInjectionTargetDescriptions().add(injectionTargetDescription);
             }
         }

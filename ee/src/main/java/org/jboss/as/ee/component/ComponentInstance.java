@@ -22,8 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Collection;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -50,7 +50,8 @@ public interface ComponentInstance extends Serializable {
     Object getInstance();
 
     /**
-     * Get the interceptor for the given method.
+     * Get the instance interceptor (entry point) for the given method.  This is the internal entry point for
+     * the component instance, which bypasses view interceptors.
      *
      * @param method the method
      * @return the interceptor
@@ -59,9 +60,16 @@ public interface ComponentInstance extends Serializable {
     Interceptor getInterceptor(Method method) throws IllegalStateException;
 
     /**
-     * Get the {@link InterceptorFactoryContext} associated with this component instance.
+     * Get the list of allowed methods for this component instance.  The handler will only accept invocations on
+     * these exact {@code Method} objects.
      *
-     * @return the InterceptorFactoryContext for this instance
+     * @return the list of methods
      */
-    InterceptorFactoryContext getInterceptorFactoryContext();
+    Collection<Method> allowedMethods();
+
+    /**
+     * Destroy this component instance.  Implementations of this method must be idempotent, meaning that destroying
+     * a component instance more than one time has no additional effect.
+     */
+    void destroy();
 }

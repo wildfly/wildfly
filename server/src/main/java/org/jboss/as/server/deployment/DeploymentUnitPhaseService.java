@@ -51,7 +51,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private final DeploymentUnit deploymentUnit;
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
-    private final List<AttachedDependency> injectedAttachedDepenendencies = new ArrayList<AttachedDependency>();
+    private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<AttachedDependency>();
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
@@ -77,10 +77,16 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator();
         final ServiceContainer container = context.getController().getServiceContainer();
         final ServiceTarget serviceTarget = context.getChildTarget().subTarget();
-        final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), deploymentUnit, phase);
+        final Phase nextPhase = phase.next();
+        final String name = deploymentUnit.getName();
+        final DeploymentUnit parent = deploymentUnit.getParent();
+        final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
+        final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
+        final ServiceBuilder<?> phaseServiceBuilder = nextPhase == null ? null : serviceTarget.addService(serviceName, phaseService);
+        final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), phaseServiceBuilder, deploymentUnit, phase);
 
         // attach any injected values from the last phase
-        for (AttachedDependency attachedDependency : injectedAttachedDepenendencies) {
+        for (AttachedDependency attachedDependency : injectedAttachedDependencies) {
             final Attachable target;
             if (attachedDependency.isDeploymentUnit()) {
                 target = deploymentUnit;
@@ -108,13 +114,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                 throw new StartException(String.format("Failed to process phase %s of %s", phase, deploymentUnit), e);
             }
         }
-        final Phase nextPhase = phase.next();
         if (nextPhase != null) {
-            final String name = deploymentUnit.getName();
-            final DeploymentUnit parent = deploymentUnit.getParent();
-            final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
-            final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
-            final ServiceBuilder<?> phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
             phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
             phaseServiceBuilder.addDependency(context.getController().getName());
 
@@ -129,7 +129,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                     AttachedDependency result = new AttachedDependency(attachableDep.getAttachmentKey(), attachableDep
                             .isDeploymentUnit());
                     phaseServiceBuilder.addDependency(attachableDep.getServiceName(), result.getValue());
-                    phaseService.injectedAttachedDepenendencies.add(result);
+                    phaseService.injectedAttachedDependencies.add(result);
 
                 }
             }
@@ -147,7 +147,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     }
 
     public synchronized void stop(final StopContext context) {
-        final DeploymentUnit deploymentUnitContext = this.deploymentUnit;
+        final DeploymentUnit deploymentUnitContext = deploymentUnit;
         final DeployerChains chains = deployerChainsInjector.getValue();
         final List<DeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator(list.size());

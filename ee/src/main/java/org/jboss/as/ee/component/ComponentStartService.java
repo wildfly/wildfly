@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -38,25 +37,20 @@ import org.jboss.msc.value.InjectedValue;
  */
 public final class ComponentStartService implements Service<Component> {
 
-    private final InjectedValue<AbstractComponent> component = new InjectedValue<AbstractComponent>();
-    private final InjectedValue<NamespaceContextSelector> namespaceContextSelector = new InjectedValue<NamespaceContextSelector>();
+    private final InjectedValue<BasicComponent> component = new InjectedValue<BasicComponent>();
 
     /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
-        AbstractComponent component = this.component.getValue();
-        NamespaceContextSelector selector = namespaceContextSelector.getOptionalValue();
-        if (selector != null) component.getNamespaceContextSelectorInjector().inject(selector);
-        component.start();
+        getValue().start();
     }
 
     /** {@inheritDoc} */
     public void stop(StopContext context) {
-        AbstractComponent component = this.component.getValue();
-        component.stop();
+        getValue().stop(context);
     }
 
     /** {@inheritDoc} */
-    public AbstractComponent getValue() throws IllegalStateException, IllegalArgumentException {
+    public BasicComponent getValue() throws IllegalStateException, IllegalArgumentException {
         return component.getValue();
     }
 
@@ -65,16 +59,7 @@ public final class ComponentStartService implements Service<Component> {
      *
      * @return the component injector
      */
-    public Injector<AbstractComponent> getComponentInjector() {
+    public Injector<BasicComponent> getComponentInjector() {
         return component;
-    }
-
-    /**
-     * Get the namespace context selector injector.
-     *
-     * @return the injector
-     */
-    public Injector<NamespaceContextSelector> getNamespaceContextSelectorInjector() {
-        return namespaceContextSelector;
     }
 }

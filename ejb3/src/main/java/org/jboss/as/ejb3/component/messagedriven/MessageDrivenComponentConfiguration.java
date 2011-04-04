@@ -26,8 +26,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import javax.resource.spi.ResourceAdapter;
-
 import static org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor.pooled;
 
 /**
@@ -62,13 +60,6 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
     @Override
     protected void addCurrentInvocationContextInterceptorFactory() {
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(MessageDrivenInvocationContextInterceptor.INSTANCE));
-    }
-
-    @Override
-    public MessageDrivenComponent constructComponent() {
-        MessageDrivenComponent component = new MessageDrivenComponent(this);
-        component.setResourceAdapter(getInjectionValue(raServiceName, ResourceAdapter.class));
-        return component;
     }
 
     Class<?> getMessageListenerInterface() {

@@ -27,14 +27,14 @@ package org.jboss.as.naming;
  * Usages of these references is very much implementation specific, however implementers should be
  * careful to make sure that the references are idempotent.
  *
- *
  * @author Stuart Douglas
  */
 public interface ManagedReferenceFactory {
 
     /**
+     * Get a new managed instance reference.
      *
-     * @return A reference to a managed object.
+     * @return a reference to a managed object
      */
     ManagedReference getReference();
 }

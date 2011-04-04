@@ -23,9 +23,9 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.AbstractComponentDescription;
-import org.jboss.as.ee.component.BindingDescription;
-import org.jboss.as.ee.component.BindingSourceDescription;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.naming.ManagedReference;
@@ -47,14 +47,14 @@ import javax.ejb.EJBContext;
  * @author John Bailey
  */
 public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProcessor {
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit) || !(componentDescription instanceof EJBComponentDescription)) {
             return;  // Only process EJB deployments
         }
 
         final BindingDescription ejbContextBinding = new BindingDescription("java:comp/EJBContext");
         ejbContextBinding.setBindingType(EJBContext.class.getName());
-        ejbContextBinding.setReferenceSourceDescription(directEjbContextReferenceSourceDescription);
+        ejbContextBinding.setReferenceSourceDescription(directEjbContextReferenceSource);
         componentDescription.addBinding(ejbContextBinding);
     }
 
@@ -73,8 +73,8 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
         }
     };
 
-    private final BindingSourceDescription directEjbContextReferenceSourceDescription = new BindingSourceDescription() {
-        public void getResourceValue(BindingDescription referenceDescription, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) {
+    private final InjectionSource directEjbContextReferenceSource = new InjectionSource() {
+        public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
             injector.inject(ejbContextManagedReferenceFactory);
         }
 

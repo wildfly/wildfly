@@ -78,6 +78,10 @@
             <artifactId>jboss-dmr</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
         </dependency>

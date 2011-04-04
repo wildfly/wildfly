@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.deployers.annotation;
 
-import org.jboss.as.ee.component.InjectionTargetDescription;
+import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.MethodInfo;
@@ -50,8 +50,8 @@ public class WebServiceRefMethodAnnotation extends AbstractWebServiceRefAnnotati
     }
 
     @Override
-    public InjectionTargetDescription.Type getInjectionType() {
-        return InjectionTargetDescription.Type.METHOD;
+    public InjectionTarget.Type getInjectionType() {
+        return InjectionTarget.Type.METHOD;
     }
 
     @Override

@@ -42,6 +42,7 @@ import javax.transaction.TransactionManager;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+import org.jboss.msc.service.StopContext;
 
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
@@ -160,9 +161,9 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    public void stop() {
+    public void stop(final StopContext stopContext) {
         resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
 
-        super.stop();
+        super.stop(stopContext);
     }
 }

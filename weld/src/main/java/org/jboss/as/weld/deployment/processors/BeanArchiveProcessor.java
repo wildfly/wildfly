@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -135,7 +135,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
     private void processEjbComponents(DeploymentUnit deploymentUnit, Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, BeanDeploymentArchiveImpl rootBda, Map<ResourceRoot, Index> indexes) {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        for(AbstractComponentDescription component : moduleDescription.getComponentDescriptions()) {
+        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if(component instanceof SessionBeanComponentDescription) {
                 SessionBeanComponentDescription componentDescription = (SessionBeanComponentDescription) component;
                 //first we need to resolve the correct BDA for the bean

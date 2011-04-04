@@ -63,7 +63,7 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
             throw new IllegalArgumentException("Injection point represents a method which doesn't follow JavaBean conventions (must have exactly one parameter) " + injectionPoint);
         }
         if(!ejb.lookup().equals("")) {
-            final ServiceName ejbServiceName = ContextNames.serviceNameOfContext(moduleDescription.getAppName(),moduleDescription.getModuleName(),moduleDescription.getModuleName(),ejb.lookup());
+            final ServiceName ejbServiceName = ContextNames.serviceNameOfContext(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),moduleDescription.getModuleName(),ejb.lookup());
             ServiceController<?> controller =  serviceRegistry.getRequiredService(ejbServiceName);
             ManagedReferenceFactory factory = (ManagedReferenceFactory) controller.getValue();
             return factory.getReference().getInstance();

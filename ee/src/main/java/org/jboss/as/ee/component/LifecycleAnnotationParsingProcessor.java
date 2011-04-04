@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.AbstractComponentDescription} instance to configure
+ * Deployment processor responsible for analyzing each attached {@link ComponentDescription} instance to configure
  * required life-cycle methods.
  *
  * @author John Bailey
@@ -53,7 +53,7 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
     /**
      * {@inheritDoc} *
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         processClass(index, componentDescription, DotName.createSimple(componentDescription.getComponentClassName()), componentDescription.getComponentClassName(), true);
 
         for (InterceptorDescription description : componentDescription.getClassInterceptors()) {
@@ -61,7 +61,7 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
         }
     }
 
-    private void processClass(final CompositeIndex index, final AbstractLifecycleCapableDescription lifecycleCapableDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
+    private void processClass(final CompositeIndex index, final LifecycleCapableDescription lifecycleCapableDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
         final ClassInfo classInfo = index.getClassByName(className);
         if (classInfo == null) {
             return;
@@ -108,13 +108,13 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
         final Type[] args = methodInfo.args();
         if (declaredOnTargetClass) {
             if (args.length == 0) {
-                return InterceptorMethodDescription.create(classInfo.name().toString(), actualClass, methodInfo, declaredOnTargetClass);
+                return InterceptorMethodDescription.create(classInfo.name().toString(), methodInfo);
             } else {
                 throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
             }
         } else {
             if (args.length == 1 && args[0].name().toString().equals(InvocationContext.class.getName())) {
-                return InterceptorMethodDescription.create(classInfo.name().toString(), actualClass, methodInfo, declaredOnTargetClass);
+                return InterceptorMethodDescription.create(classInfo.name().toString(), methodInfo);
             } else {
                 throw new IllegalArgumentException("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() + ", signature must be void methodName(InvocationContext ctx)");
             }

@@ -23,7 +23,7 @@ package org.jboss.as.webservices.deployers.annotation;
 
 import javax.xml.ws.Service;
 
-import org.jboss.as.ee.component.InjectionTargetDescription;
+import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -111,7 +111,7 @@ public abstract class AbstractWebServiceRefAnnotation<E extends AnnotationTarget
     }
 
     public abstract String getName(E annotationTarget);
-    public abstract InjectionTargetDescription.Type getInjectionType();
+    public abstract InjectionTarget.Type getInjectionType();
     protected abstract String getInjectionName(E element);
     protected abstract String getType(E element);
     protected abstract ClassInfo getTypeInfo(E element);

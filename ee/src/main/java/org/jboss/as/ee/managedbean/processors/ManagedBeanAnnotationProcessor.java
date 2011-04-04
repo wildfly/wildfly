@@ -22,10 +22,16 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
-import org.jboss.as.ee.component.BindingDescription;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.ServiceBindingSourceDescription;
-import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.managedbean.component.ManagedBeanAssociatingInterceptorFactory;
+import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -37,7 +43,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceName;
 
 import javax.annotation.ManagedBean;
 import java.util.List;
@@ -63,7 +68,6 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final String applicationName = moduleDescription.getAppName();
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
             return;
@@ -84,22 +88,24 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName, beanClassName, moduleDescription);
-            final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(beanName);
+            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, moduleDescription.getClassByName(beanClassName), deploymentUnitServiceName);
 
             // Add the view
-            componentDescription.getViewClassNames().add(beanClassName);
-
-            // Bind the view to its two JNDI locations
-            // TODO - this should be a bit more elegant
-            final BindingDescription moduleBinding = new BindingDescription("java:module/" + beanName);
-            moduleBinding.setBindingType(beanClassName);
-            moduleBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseName.append("VIEW").append(beanClassName)));
-            componentDescription.addBinding(moduleBinding);
-            final BindingDescription appBinding = new BindingDescription("java:app/" + moduleDescription.getModuleName() + "/" + beanName);
-            appBinding.setBindingType(beanClassName);
-            appBinding.setReferenceSourceDescription(new ServiceBindingSourceDescription(baseName.append("VIEW").append(beanClassName)));
-            componentDescription.addBinding(appBinding);
+            ViewDescription viewDescription = new ViewDescription(componentDescription, beanClassName);
+            viewDescription.getConfigurators().addFirst(new ViewConfigurator() {
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    // Add MB association interceptors
+                    final Object contextKey = new Object();
+                    configuration.getViewPostConstructInterceptors().addFirst(new ManagedBeanCreateInterceptorFactory(contextKey));
+                    final ManagedBeanAssociatingInterceptorFactory associatingInterceptorFactory = new ManagedBeanAssociatingInterceptorFactory(contextKey);
+                    for (Method method : configuration.getProxyFactory().getCachedMethods()) {
+                        configuration.getViewInterceptorDeque(method).addFirst(associatingInterceptorFactory);
+                    }
+                    configuration.getViewPreDestroyInterceptors().addFirst(new ManagedBeanCreateInterceptorFactory(contextKey));
+                }
+            });
+            viewDescription.getBindingNames().addAll(Arrays.asList("java:module/" + beanName, "java:app/" + moduleDescription.getModuleName() + "/" + beanName));
+            componentDescription.getViews().add(viewDescription);
             moduleDescription.addComponent(componentDescription);
         }
     }

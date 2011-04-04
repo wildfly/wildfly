@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.AbstractComponent;
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 
@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponent extends AbstractComponent implements org.jboss.ejb3.context.spi.EJBComponent, TransactionalComponent {
+public abstract class EJBComponent extends BasicComponent implements org.jboss.ejb3.context.spi.EJBComponent, TransactionalComponent {
     private static Logger log = Logger.getLogger(EJBComponent.class);
 
     private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;

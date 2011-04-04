@@ -21,8 +21,7 @@
  */
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
-import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceController;
@@ -44,7 +43,7 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
     private final ServiceName serviceName;
     private final ServiceRegistry serviceRegistry;
 
-    public ManagedBeanComponentInstantiator(DeploymentUnit deploymentUnit, AbstractComponentDescription componentDescription) {
+    public ManagedBeanComponentInstantiator(DeploymentUnit deploymentUnit, ComponentDescription componentDescription) {
         final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName());
         serviceRegistry = deploymentUnit.getServiceRegistry();
         serviceNames.add(baseName.append("START"));

@@ -22,74 +22,24 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.invocation.Interceptors;
-import org.jboss.invocation.proxy.ProxyFactory;
-
-import java.io.Serializable;
-
 /**
- * A single view of a component.  This will return a proxy to a single instance of the component.  The proxy will
- * be based on the provided view interface.
+ * A component view.
  *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ComponentView implements ManagedReferenceFactory {
-
-    private final Class<?> viewClass;
-    private final ProxyFactory<?> proxyFactory;
-    private final AbstractComponent component;
+public interface ComponentView {
 
     /**
-     * Construct a new instance.
+     * Create the component view instance.
      *
-     * @param component the component for this view
-     * @param viewClass the view class
-     * @param proxyFactory the proxy factory
+     * @return the component view instance
      */
-    public ComponentView(final AbstractComponent component, final Class<?> viewClass, final ProxyFactory<?> proxyFactory) {
-        this.viewClass = viewClass;
-        this.proxyFactory = proxyFactory;
-        this.component = component;
-    }
+    ComponentViewInstance createInstance();
 
-    @Override
-    public ManagedReference getReference() {
-        return new ManagedReference() {
-            @Override
-            public void release() {
-
-            }
-
-            @Override
-            public Object getInstance() {
-                try {
-                    return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass), component.getComponentInterceptor()))));
-                } catch (InstantiationException e) {
-                    throw new InstantiationError(e.getMessage());
-                } catch (IllegalAccessException e) {
-                    throw new IllegalAccessError(e.getMessage());
-                }
-            }
-        };
-    }
-
-    Class<?> getViewClass() {
-        return viewClass;
-    }
-
-    public Object getViewForInstance(Serializable sessionId) {
-        try {
-            return viewClass.cast(proxyFactory.newInstance(new ProxyInvocationHandler(Interceptors.getChainedInterceptor(component.createClientInterceptor(viewClass,sessionId), component.getComponentInterceptor()))));
-        } catch (InstantiationException e) {
-            throw new InstantiationError(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        }
-    }
-
-    ProxyFactory<?> getProxyFactory() {
-        return proxyFactory;
-    }
+    /**
+     * Get the associated component.
+     *
+     * @return the component
+     */
+    Component getComponent();
 }

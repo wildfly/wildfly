@@ -22,37 +22,29 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class EEModuleDescription {
-    private final String appName;
+    private final String applicationName;
     private volatile String moduleName;
-    private final Map<String, AbstractComponentDescription> componentsByName = new HashMap<String, AbstractComponentDescription>();
-    private final Map<String, AbstractComponentDescription> componentsByClassName = new HashMap<String, AbstractComponentDescription>();
-    private final List<InjectionFactory> injectionFactories = new ArrayList<InjectionFactory>();
-    private final Map<String, Set<AbstractComponentDescription>> componentsByViewName = new HashMap<String, Set<AbstractComponentDescription>>();
-    private final BindingsContainer bindingsContainer;
+    private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
+    private final Map<String, ComponentDescription> componentsByClassName = new HashMap<String, ComponentDescription>();
+    private final Map<String, EEModuleClassDescription> classesByName = new HashMap<String, EEModuleClassDescription>();
 
     /**
      * Construct a new instance.
      *
-     * @param appName the application name
+     * @param applicationName the application name
      * @param moduleName the module name
      */
-    public EEModuleDescription(final String appName, final String moduleName) {
-        this.appName = appName;
+    public EEModuleDescription(final String applicationName, final String moduleName) {
+        this.applicationName = applicationName;
         this.moduleName = moduleName;
-        this.bindingsContainer = new BindingsContainer();
     }
 
     /**
@@ -60,7 +52,7 @@ public final class EEModuleDescription {
      *
      * @param description the component description
      */
-    public void addComponent(AbstractComponentDescription description) {
+    public void addComponent(ComponentDescription description) {
         final String componentName = description.getComponentName();
         final String componentClassName = description.getComponentClassName();
         if (componentName == null) {
@@ -77,18 +69,21 @@ public final class EEModuleDescription {
         }
         componentsByName.put(componentName, description);
         componentsByClassName.put(componentClassName, description);
-        for(String viewName : description.getViewClassNames()) {
-            Set<AbstractComponentDescription> viewComponents = componentsByViewName.get(viewName);
-            if(viewComponents == null) {
-                viewComponents = new HashSet<AbstractComponentDescription>();
-                componentsByViewName.put(viewName, viewComponents);
-            }
-            viewComponents.add(description);
-        }
     }
 
-    public String getAppName() {
-        return appName;
+    public void addClass(EEModuleClassDescription description) {
+        String className = description.getClassName();
+        if (className == null) {
+            throw new IllegalArgumentException("className is null");
+        }
+        if (classesByName.containsKey(className)) {
+            throw new IllegalArgumentException("A class named '" + className + "' is already defined in this module");
+        }
+        classesByName.put(className, description);
+    }
+
+    public String getApplicationName() {
+        return applicationName;
     }
 
     public String getModuleName() {
@@ -99,35 +94,31 @@ public final class EEModuleDescription {
         this.moduleName = moduleName;
     }
 
-    public AbstractComponentDescription getComponentByName(String name) {
+    public ComponentDescription getComponentByName(String name) {
         return componentsByName.get(name);
     }
 
-    public AbstractComponentDescription getComponentByClassName(String className) {
+    public ComponentDescription getComponentByClassName(String className) {
         return componentsByClassName.get(className);
     }
 
-    public Collection<AbstractComponentDescription> getComponentDescriptions() {
+    public Collection<ComponentDescription> getComponentDescriptions() {
         return componentsByName.values();
     }
 
-    public void addInjectionFactory(InjectionFactory factory) {
-        injectionFactories.add(factory);
+    public EEModuleClassDescription getClassByName(String name) {
+        return classesByName.get(name);
     }
 
-    public List<InjectionFactory> getInjectionFactories() {
-        return Collections.unmodifiableList(injectionFactories);
+    public EEModuleClassDescription getOrAddClassByName(String name) {
+        EEModuleClassDescription description = classesByName.get(name);
+        if (description == null) {
+            classesByName.put(name, description = new EEModuleClassDescription(name));
+        }
+        return description;
     }
 
-    public Map<String, Set<AbstractComponentDescription>> getComponentsByViewName() {
-        return Collections.unmodifiableMap(componentsByViewName);
-    }
-
-    public Set<AbstractComponentDescription> getComponentsForViewName(final String name) {
-        return componentsByViewName.get(name);
-    }
-
-    public BindingsContainer getBindingsContainer() {
-        return bindingsContainer;
+    public Collection<EEModuleClassDescription> getClassDescriptions() {
+        return classesByName.values();
     }
 }

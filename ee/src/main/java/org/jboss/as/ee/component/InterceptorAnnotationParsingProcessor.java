@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link AbstractComponentDescription} instance to
+ * Deployment processor responsible for analyzing each attached {@link ComponentDescription} instance to
  * configure interceptor AroundInvoke methods.
  * <p/>
  * This class does not process the <code>@Interceptors</code> annotation, this is handled by {@link ComponentInterceptorAnnotationParsingProcessor}
@@ -53,14 +53,14 @@ public class InterceptorAnnotationParsingProcessor extends AbstractComponentConf
     /**
      * {@inheritDoc} *
      */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         processClass(index, componentDescription, DotName.createSimple(componentDescription.getComponentClassName()), componentDescription.getComponentClassName(), true);
         for(InterceptorDescription descriptor : componentDescription.getAllInterceptors().values()) {
             processClass(index,DotName.createSimple(descriptor.getInterceptorClassName()),descriptor, componentDescription.getComponentClassName());
         }
     }
 
-    private void processClass(final CompositeIndex index, final AbstractComponentDescription componentDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
+    private void processClass(final CompositeIndex index, final ComponentDescription componentDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
         final ClassInfo classInfo = index.getClassByName(className);
         if(classInfo == null) {
             return;
@@ -119,7 +119,7 @@ public class InterceptorAnnotationParsingProcessor extends AbstractComponentConf
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
 
         validateArgumentType(classInfo,methodInfo);
-        return InterceptorMethodDescription.create(classInfo.name().toString(),actualClass, methodInfo,declaredOnTargetClass);
+        return InterceptorMethodDescription.create(classInfo.name().toString(), methodInfo);
     }
 
 

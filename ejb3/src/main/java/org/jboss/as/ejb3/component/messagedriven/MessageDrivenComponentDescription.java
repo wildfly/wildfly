@@ -21,7 +21,10 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
+
+
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -68,7 +71,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         super.prepareComponentConfiguration(configuration, phaseContext);
 
         final MessageDrivenComponentConfiguration messageDrivenComponentConfiguration = (MessageDrivenComponentConfiguration) configuration;

@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ValueManagedObject;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,6 +35,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
+
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG;
+import static org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS;
 
 /**
  * Deployment processor that deploys a naming context for the current module.
@@ -54,35 +58,30 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        EEModuleDescription moduleDescription = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getAppName(),moduleDescription.getModuleName());
+        final ServiceName appContextServiceName = ContextNames.contextServiceNameOfApplication(moduleDescription.getApplicationName());
+        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
         final RootContextService contextService = new RootContextService();
         serviceTarget.addService(moduleContextServiceName, contextService).install();
 
         final BinderService moduleNameBinder = new BinderService("ModuleName");
 
         serviceTarget.addService(moduleContextServiceName.append("ModuleName"), moduleNameBinder)
-                .addInjection(moduleNameBinder.getManagedObjectInjector(), new ValueManagedObject(Values.immediateValue(moduleDescription.getModuleName())))
+                .addInjection(moduleNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getModuleName())))
                 .addDependency(moduleContextServiceName, NamingStore.class, moduleNameBinder.getNamingStoreInjector())
                 .install();
 
-        deploymentUnit.putAttachment(Attachments.MODULE_CONTEXT_CONFIG, moduleContextServiceName);
+        deploymentUnit.putAttachment(MODULE_CONTEXT_CONFIG, moduleContextServiceName);
 
-        // Add the namespace selector service for the module
-        ServiceName appNs = ContextNames.contextServiceNameOfApplication(moduleDescription.getAppName());
-        ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
-        NamespaceSelectorService namespaceSelector = new NamespaceSelectorService();
-        serviceTarget.addService(namespaceSelectorServiceName, namespaceSelector)
-                .addDependency(appNs, NamingStore.class, namespaceSelector.getApp())
-                .addDependency(moduleContextServiceName, NamingStore.class, namespaceSelector.getModule())
-                .addDependency(moduleContextServiceName, NamingStore.class, namespaceSelector.getComp())
-                .install();
+        final InjectedEENamespaceContextSelector selector = new InjectedEENamespaceContextSelector();
+        phaseContext.addDependency(appContextServiceName, NamingStore.class, selector.getAppContextInjector());
+        phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getModuleContextInjector());
 
         // add the arquillian setup action, so the module namespace is available in arquillian tests
-        JavaNamespaceSetup setupAction = new JavaNamespaceSetup(namespaceSelector);
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS, setupAction);
+        final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector);
+        deploymentUnit.addToAttachmentList(SETUP_ACTIONS, setupAction);
     }
 
     public void undeploy(DeploymentUnit context) {

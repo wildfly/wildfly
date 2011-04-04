@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -86,6 +87,9 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     protected void processBeanMetaData(SessionBeanMetaData sessionBean, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        // get the module description
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final String applicationName = moduleDescription.getApplicationName();
 
         SessionType sessionType = sessionBean.getSessionType();
         if (sessionType == null) {

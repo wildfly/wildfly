@@ -21,7 +21,7 @@
  */
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -43,7 +43,7 @@ public class WebComponentInstantiator implements ComponentInstantiator {
     private final ServiceRegistry serviceRegistry;
     private final ServiceName serviceName;
 
-    public WebComponentInstantiator(DeploymentUnit deploymentUnit, AbstractComponentDescription componentDescription) {
+    public WebComponentInstantiator(DeploymentUnit deploymentUnit, ComponentDescription componentDescription) {
         serviceName = deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName()).append("START");
         this.serviceRegistry = deploymentUnit.getServiceRegistry();
     }

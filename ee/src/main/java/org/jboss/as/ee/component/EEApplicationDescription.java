@@ -24,34 +24,32 @@ package org.jboss.as.ee.component;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John Bailey
  */
 public class EEApplicationDescription {
-    private final Map<String, Set<AbstractComponentDescription>> componentsByViewName = new HashMap<String, Set<AbstractComponentDescription>>();
+    private final Map<String, Set<ViewDescription>> componentsByViewName = new HashMap<String, Set<ViewDescription>>();
 
     /**
      * Add a component to this application.
      *
      * @param description the component description
      */
-    public void addComponent(AbstractComponentDescription description) {
-        for(String viewName : description.getViewClassNames()) {
-            Set<AbstractComponentDescription> viewComponents = componentsByViewName.get(viewName);
+    public void addComponent(ComponentDescription description) {
+        for(ViewDescription viewDescription : description.getViews()) {
+            Set<ViewDescription> viewComponents = componentsByViewName.get(viewDescription);
             if(viewComponents == null) {
-                viewComponents = new HashSet<AbstractComponentDescription>();
-                componentsByViewName.put(viewName, viewComponents);
+                viewComponents = new HashSet<ViewDescription>();
+                componentsByViewName.put(viewDescription.getViewClassName(), viewComponents);
             }
-            viewComponents.add(description);
+            viewComponents.add(viewDescription);
         }
     }
 
-    public Set<AbstractComponentDescription> getComponentsForViewName(final String name) {
+    public Set<ViewDescription> getComponentsForViewName(final String name) {
         return componentsByViewName.get(name);
     }
 }

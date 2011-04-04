@@ -42,7 +42,7 @@ import java.util.List;
 public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
     @Override
-    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         List<BindingDescription> bindings = new ArrayList<BindingDescription>();
         bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex));
         bindings.addAll(getResourceEnvRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
@@ -50,7 +50,7 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
         return bindings;
     }
 
-    private List<BindingDescription> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private List<BindingDescription> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         List<BindingDescription> bindings = new ArrayList<BindingDescription>();
         final ResourceEnvironmentReferencesMetaData entries = environment.getEnvironment().getResourceEnvironmentReferences();
         if(entries == null) {
@@ -93,7 +93,7 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
         return bindings;
     }
 
-    private List<BindingDescription> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, AbstractComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    private List<BindingDescription> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         List<BindingDescription> bindings = new ArrayList<BindingDescription>();
         final ResourceReferencesMetaData entries = environment.getEnvironment().getResourceReferences();
         if(entries == null) {
@@ -180,34 +180,34 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             description.setBindingType(classType.getName());
 
             if(type.equals(String.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(value));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(value));
             } else if(type.equals(Integer.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Integer.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Integer.valueOf(value)));
             } else if(type.equals(Short.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Short.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Short.valueOf(value)));
             } else if(type.equals(Long.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Long.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Long.valueOf(value)));
             } else if(type.equals(Byte.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Byte.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Byte.valueOf(value)));
             }  else if(type.equals(Double.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Double.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Double.valueOf(value)));
             } else if(type.equals(Float.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Float.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Float.valueOf(value)));
             } else if(type.equals(Boolean.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Boolean.valueOf(value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Boolean.valueOf(value)));
             } else if(type.equals(Character.class.getName())) {
                 if(value.length() != 1) {
                     throw new DeploymentUnitProcessingException("env-entry of type java.lang.Character is not exactly one character long " + value);
                 }
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(value.charAt(0)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(value.charAt(0)));
             } else if(type.equals(Class.class.getName())) {
                 try {
-                    description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(classLoader.loadClass(value)));
+                    description.setReferenceSourceDescription(new EnvEntryInjectionSource(classLoader.loadClass(value)));
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Could not load class " + value + " specified in env-entry");
                 }
             }  else if(classType.isEnum() || (classType.getEnclosingClass() != null && classType.getEnclosingClass().isEnum())) {
-                description.setReferenceSourceDescription(new EnvEntryReferenceSourceDescription(Enum.valueOf((Class)classType,value)));
+                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Enum.valueOf((Class)classType,value)));
             } else {
                 throw new DeploymentUnitProcessingException("Unkown env-entry type " + type);
             }
