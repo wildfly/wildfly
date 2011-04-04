@@ -34,7 +34,6 @@ import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter;
-import org.jboss.modcluster.catalina.ModClusterListener;
 import org.jboss.modcluster.config.ModClusterConfig;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
@@ -59,7 +58,7 @@ import org.jboss.msc.service.StopContext;
 /**
  * Service configuring and starting modcluster.
  *
- * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
 class ModClusterService implements Service<Void> {
 
@@ -69,7 +68,6 @@ class ModClusterService implements Service<Void> {
 
     private ModelNode modelconf;
 
-    private ModClusterListener listener;
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
 
@@ -252,7 +250,35 @@ class ModClusterService implements Service<Void> {
 
 
     private void addCustomLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
-        // TODO Auto-generated method stub something like addLoadMetrics...
+        Iterator<ModelNode> it= array.iterator();
+        while(it.hasNext()) {
+            final ModelNode node= (ModelNode)it.next();
+            int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
+            int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
+            String name = node.get(CommonAttributes.CLASS).asString();
+            Class<? extends LoadMetric> loadMetricClass = null;
+            LoadMetric<LoadContext> metric = null;
+            try {
+                loadMetricClass = (Class<? extends LoadMetric>) ClassLoader.getSystemClassLoader().loadClass(name);
+            } catch (ClassNotFoundException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            if (loadMetricClass != null) {
+                try {
+                    metric = loadMetricClass.newInstance();
+                    metric.setCapacity(capacity);
+                    metric.setWeight(weight);
+                    metrics.add(metric);
+                } catch (InstantiationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }
