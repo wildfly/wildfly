@@ -42,10 +42,14 @@ import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadContext;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric;
+import org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric;
 import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
+import org.jboss.modcluster.load.metric.impl.ConnectionPoolUsageLoadMetric;
+import org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric;
 import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
+import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -202,16 +206,33 @@ class ModClusterService implements Service<Void> {
             String type = node.get(CommonAttributes.TYPE).asString();
             Class<? extends LoadMetric> loadMetricClass = null;
             LoadMetric<LoadContext> metric = null;
-            if (type.equals("ActiveSessionsLoadMetric"))
+
+            //  SourcedLoadMetric
+            if (type.equals("cpu"))
+                loadMetricClass = AverageSystemLoadMetric.class;
+            if (type.equals("mem"))
+                loadMetricClass = SystemMemoryUsageLoadMetric.class;
+
+            if (type.equals("heap"))
+                loadMetricClass = HeapMemoryUsageLoadMetric.class;
+
+            // MBeanAttributeLoadMetric...
+            if (type.equals("sessions"))
                 loadMetricClass = ActiveSessionsLoadMetric.class;
-            if (type.equals("BusyConnectorsLoadMetric"))
-                loadMetricClass = BusyConnectorsLoadMetric.class;
-            if (type.equals("ReceiveTrafficLoadMetric"))
+            if (type.equals("receive-traffic"))
                 loadMetricClass = ReceiveTrafficLoadMetric.class;
-            if (type.equals("SendTrafficLoadMetric"))
+            if (type.equals("send-traffic"))
                 loadMetricClass = SendTrafficLoadMetric.class;
-            if (type.equals("RequestCountLoadMetric"))
+            if (type.equals("requests"))
                 loadMetricClass = RequestCountLoadMetric.class;
+
+            // MBeanAttributeRatioLoadMetric
+            if (type.equals("connection-pool"))
+                loadMetricClass = ConnectionPoolUsageLoadMetric.class;
+            if (type.equals("busyness"))
+                loadMetricClass = BusyConnectorsLoadMetric.class;
+
+
             if (loadMetricClass != null) {
                 try {
                     metric = loadMetricClass.newInstance();

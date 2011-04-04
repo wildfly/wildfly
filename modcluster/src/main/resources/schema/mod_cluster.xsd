@@ -128,11 +128,14 @@
   <xs:simpleType name="loadMetricEnum">
     <xs:restriction base="xs:string">
       <xs:enumeration value="cpu"/>
+      <xs:enumeration value="mem"/>
+      <xs:enumeration value="heap"/>
       <xs:enumeration value="sessions"/>
       <xs:enumeration value="requests"/>
       <xs:enumeration value="send-traffic"/>
       <xs:enumeration value="receive-traffic"/>
       <xs:enumeration value="busyness"/>
+      <xs:enumeration value="connection-pool"/>
       <!-- TODO add missing ones. -->
     </xs:restriction>
   </xs:simpleType>
