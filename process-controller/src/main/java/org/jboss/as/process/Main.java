@@ -25,10 +25,12 @@ package org.jboss.as.process;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -37,6 +39,7 @@ import javax.net.ServerSocketFactory;
 import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.handlers.ConsoleHandler;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * The main entry point for the process controller.
@@ -135,8 +138,9 @@ public final class Main {
         // todo better config
         configuration.setBindAddress(new InetSocketAddress(InetAddress.getLocalHost(), 0));
         configuration.setSocketFactory(ServerSocketFactory.getDefault());
-        configuration.setThreadFactory(Executors.defaultThreadFactory());
-        configuration.setReadExecutor(Executors.newCachedThreadPool());
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ProcessController-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        configuration.setThreadFactory(threadFactory);
+        configuration.setReadExecutor(Executors.newCachedThreadPool(threadFactory));
 
         final ProcessController processController = new ProcessController(configuration, System.out, System.err);
         final InetSocketAddress boundAddress = processController.getServer().getBoundAddress();
