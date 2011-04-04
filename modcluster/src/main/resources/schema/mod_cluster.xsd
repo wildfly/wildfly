@@ -51,9 +51,9 @@
   <xs:complexType name="httpd-conf-attlistType">
     <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
     <xs:sequence>
-      <xs:element name="advertise-socket" type="socket-refType" minOccurs="0" maxOccurs="1" />
       <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
+    <xs:attribute name="advertise-socket" />
     <xs:attribute name="proxy-list" />
     <xs:attribute name="proxy-url" />
     <xs:attribute name="advertise" />

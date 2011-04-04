@@ -240,13 +240,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     static void writeHttpdConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.HTTPD_CONF.getLocalName());
+        writeAttribute(writer, ADVERTISE_SOCKET, config);
         writeAttribute(writer, PROXY_LIST, config);
         writeAttribute(writer, PROXY_URL, config);
         writeAttribute(writer, ADVERTISE, config);
         writeAttribute(writer, ADVERTISE_SECURITY_KEY, config);
-        if (config.hasDefined(ADVERTISE_SOCKET)) {
-            writeAdvertiseSocket(writer, config.get(ADVERTISE_SOCKET));
-        }
         if (config.hasDefined(SSL)) {
             writeSSL(writer, config.get(SSL));
         }
@@ -261,6 +259,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
 
+            case ADVERTISE_SOCKET:
+                conf.get(ADVERTISE_SOCKET).set(value);
+                break;
             case PROXY_LIST:
                 conf.get(PROXY_LIST).set(value);
                 break;
@@ -280,10 +281,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ADVERTISE_SOCKET:
-                    final ModelNode socket = parseAdvertiseSocket(reader);
-                    conf.get(ADVERTISE_SOCKET).set(socket);
-                    break;
                 case SSL:
                     final ModelNode ssl = parseSSL(reader);
                     conf.get(SSL).set(ssl);
@@ -327,18 +324,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                     unexpectedAttribute(reader, i);
             }
         }
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            //TODO: Just read it...
-        }
-        return conf;
-    }
-
-    static void writeAdvertiseSocket(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.ADVERTISE_SOCKET.getLocalName());
-        writer.writeEndElement();
-    }
-    static ModelNode parseAdvertiseSocket(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode conf = new ModelNode();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             //TODO: Just read it...
         }
