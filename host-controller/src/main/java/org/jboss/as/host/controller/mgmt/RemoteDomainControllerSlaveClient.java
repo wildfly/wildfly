@@ -1,5 +1,6 @@
 package org.jboss.as.host.controller.mgmt;
 
+import java.security.AccessController;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 import java.io.ByteArrayOutputStream;
@@ -33,6 +34,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.threads.JBossThreadFactory;
 
 class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
 
@@ -46,7 +48,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
     private final InetAddress slaveAddress;
     private final int slavePort;
 //    private final ManagementRequestConnectionStrategy connectionStrategy;
-    private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("RemoteDomainConnection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
     public RemoteDomainControllerSlaveClient(String hostId, InetAddress slaveAddress, int slavePort) {

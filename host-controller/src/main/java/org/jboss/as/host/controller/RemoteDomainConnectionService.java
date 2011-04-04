@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import java.security.AccessController;
+import java.util.concurrent.ThreadFactory;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 import java.io.BufferedOutputStream;
@@ -74,6 +76,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * @author Kabir Khan
@@ -106,14 +109,15 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     /** {@inheritDoc} */
     @Override
     public synchronized void register(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("RemoteDomainConnection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+
         final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
         config.setMessageHandler(initialMessageHandler);
         config.setConnectTimeout(CONNECTION_TIMEOUT);
-        config.setReadExecutor(Executors.newCachedThreadPool()); //TODO inject
+        config.setReadExecutor(Executors.newCachedThreadPool(threadFactory)); //TODO inject
         config.setSocketFactory(SocketFactory.getDefault());
         config.setServerAddress(new InetSocketAddress(host, port));
-        config.setThreadFactory(Executors.defaultThreadFactory()); //TODO inject
-
+        config.setThreadFactory(threadFactory); //TODO inject
         final InetAddress callbackAddress = getCallbackAddress(ourAddress, host);
         final ProtocolClient protocolClient = new ProtocolClient(config);
 
