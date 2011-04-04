@@ -993,6 +993,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     /**
      * Creates the appropriate AbstractInterfaceCriteriaElement for simple criterion.
      *
+     * Note! changes/additions made here will likely need to be added to the
+     * corresponding write method that handles the write of the element. Failure to
+     * do so will result in a configuration that can be read, but not written out.
+     *
+     * @see {@link #writeInterfaceCriteria(org.jboss.staxmapper.XMLExtendedStreamWriter, java.util.List)}
+     * @see {@link #writePropertyInterfaceCriteria(org.jboss.staxmapper.XMLExtendedStreamWriter, org.jboss.dmr.ModelNode)}
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
     protected void parseSimpleInterfaceCriterion(final XMLExtendedStreamReader reader, final ModelNode criteria) throws XMLStreamException {
@@ -1298,6 +1304,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             case INET_ADDRESS:
                 writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
                 break;
+            case LOOPBACK_ADDRESS:
+                writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
+                break;
             case NIC:
                 writeAttribute(writer, Attribute.NAME, property.getValue().asString());
                 break;
@@ -1308,7 +1317,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
                 break;
             default:
-                throw new RuntimeException("Unknown property in interface criteria list: " + property);
+                throw new RuntimeException("Unknown property in interface criteria list: " + property.getName());
         }
         writer.writeEndElement();
     }
