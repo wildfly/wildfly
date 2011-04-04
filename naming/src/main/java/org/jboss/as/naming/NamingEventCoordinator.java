@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import java.security.AccessController;
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.naming.util.FastCopyHashMap;
 
 import javax.naming.Binding;
@@ -40,6 +42,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Coordinator responsible for passing @(code NamingEvent} instances to registered @{code NamingListener} instances.  Two
@@ -52,7 +55,9 @@ public class NamingEventCoordinator {
     private volatile Map<TargetScope, List<ListenerHolder>> holdersByTarget = Collections.emptyMap();
     private volatile Map<NamingListener, ListenerHolder> holdersByListener = Collections.emptyMap();
 
-    private final Executor executor = Executors.newSingleThreadExecutor();
+    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+
+    private final Executor executor = Executors.newSingleThreadExecutor(threadFactory);
 
     static final Integer[] DEFAULT_SCOPES = {EventContext.OBJECT_SCOPE, EventContext.ONELEVEL_SCOPE, EventContext.SUBTREE_SCOPE};
 
