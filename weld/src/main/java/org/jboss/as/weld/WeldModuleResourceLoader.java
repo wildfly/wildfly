@@ -21,16 +21,16 @@
  */
 package org.jboss.as.weld;
 
+import org.jboss.modules.Module;
+import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.resources.spi.ResourceLoadingException;
+
 import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.jboss.modules.Module;
-import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.resources.spi.ResourceLoadingException;
 
 /**
  * A {@link ResourceLoader} that can load classes from a {@link Module}
@@ -66,7 +66,11 @@ public class WeldModuleResourceLoader implements ResourceLoader {
                 return additionalClasses.get(name);
             }
             return module.getClassLoader().loadClass(name);
-        } catch (Exception e) {
+        } catch (NoClassDefFoundError e) {
+            throw new ResourceLoadingException(e);
+        } catch (ClassNotFoundException e) {
+            throw new ResourceLoadingException(e);
+        } catch (LinkageError e) {
             throw new ResourceLoadingException(e);
         }
     }
