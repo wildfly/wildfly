@@ -113,7 +113,7 @@ public class BoundedQueueThreadPoolAdd implements ModelAddOperationHandler {
                     //TODO add the handoffExceutor injection
 
                     final ServiceBuilder<Executor> serviceBuilder = target.addService(serviceName, service);
-                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target);
+                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
                     serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     serviceBuilder.install();
                 }

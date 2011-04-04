@@ -54,11 +54,14 @@ import org.jboss.msc.service.ServiceTarget;
  */
 class ThreadsSubsystemThreadPoolOperationUtils {
 
-    static <T> void addThreadFactoryDependency(final String threadFactory, final ServiceName serviceName, ServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, ServiceTarget target) {
+    static <T> void addThreadFactoryDependency(final String threadFactory, final ServiceName serviceName, ServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, ServiceTarget target, String defaultThreadGroupName) {
         final ServiceName threadFactoryName;
         if (threadFactory == null) {
             threadFactoryName = serviceName.append("thread-factory");
-            target.addService(threadFactoryName, new ThreadFactoryService())
+            final ThreadFactoryService service = new ThreadFactoryService();
+            service.setThreadGroupName(defaultThreadGroupName);
+            service.setNamePattern("%G - %t");
+            target.addService(threadFactoryName, service)
                 .install();
         } else {
             threadFactoryName = ThreadsServices.threadFactoryName(threadFactory);
