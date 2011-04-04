@@ -870,6 +870,41 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(pending.exists());
     }
 
+    /**
+     * Test for JBAS-9226 -- deleting a .deployed marker does not result in a redeploy
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIgnoreUndeployed() throws Exception {
+
+        File war = new File(tmpDir, "foo.war");
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
+        testSupport.createZip(war, 0, false, false, false, false);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(deployed.exists());
+
+        // Undeploy
+        deployed.delete();
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(undeployed.exists());
+        assertFalse(deployed.exists());
+
+        // Confirm it doesn't come back
+        ts.testee.scan();
+
+        assertTrue(undeployed.exists());
+        assertFalse(deployed.exists());
+    }
+
     @Test
     public void testDeploymentTimeout() throws Exception {
         File deployment = new File(tmpDir, "foo.war");
@@ -879,6 +914,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         testSupport.createZip(deployment, 0, false, false, true, true);
 
         TesteeSet ts = createTestee(new DiscardTaskExecutor() {
+            @Override
             public <T> Future<T> submit(Callable<T> tCallable) {
                 return new TimeOutFuture<T>(5, tCallable);
             }
@@ -1186,6 +1222,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
             return null;
         }
 
+        @Override
         public <T> Future<T> submit(Callable<T> tCallable) {
             return new CallOnGetFuture<T>(tCallable);
         }
@@ -1202,18 +1239,22 @@ public class FileSystemDeploymentServiceUnitTestCase {
             this.callable = callable;
         }
 
+        @Override
         public boolean cancel(boolean b) {
             return false;
         }
 
+        @Override
         public boolean isCancelled() {
             return false;
         }
 
+        @Override
         public boolean isDone() {
             return false;
         }
 
+        @Override
         public T get() throws InterruptedException, ExecutionException {
             try {
                 return callable.call();
@@ -1223,6 +1264,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
             }
         }
 
+        @Override
         public T get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
             return get();
         }
@@ -1237,18 +1279,22 @@ public class FileSystemDeploymentServiceUnitTestCase {
             this.callable = callable;
         }
 
+        @Override
         public boolean cancel(boolean b) {
             return false;
         }
 
+        @Override
         public boolean isCancelled() {
             return false;
         }
 
+        @Override
         public boolean isDone() {
             return false;
         }
 
+        @Override
         public T get() throws InterruptedException, ExecutionException {
             try {
                 return callable.call();
@@ -1258,6 +1304,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
             }
         }
 
+        @Override
         public T get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
             assertEquals( "Should use the configured timeout", expectedTimeout, l);
             throw new TimeoutException();

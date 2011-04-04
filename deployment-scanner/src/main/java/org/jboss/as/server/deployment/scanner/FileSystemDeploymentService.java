@@ -214,6 +214,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         startScan();
     }
 
+    @Override
     public void setDeploymentTimeout(long deploymentTimeout) {
         this.deploymentTimeout = deploymentTimeout;
     }
@@ -439,6 +440,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
                         if(failedMarker.exists()) {// && child.lastModified() <= failedMarker.lastModified()) {
                             continue;  // Don't auto-retry failed deployments
+                        }
+                        final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
+                        if(undeployedMarker.exists()) {// && child.lastModified() <= undeployedMarker.lastModified()) {
+                            continue;  // Don't auto-deploy undeployed deployments
                         }
 
                         DeploymentMarker marker = deployed.get(fileName);
