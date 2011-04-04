@@ -23,10 +23,10 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * An instance of a Java EE component.
@@ -48,13 +48,6 @@ public interface ComponentInstance extends Serializable {
      * @return the instance
      */
     Object getInstance();
-
-    /**
-     *
-     * @return  The pre destroy interceptors that must be run before this component is destroyed.
-     */
-    Iterable<Interceptor> getPreDestroyInterceptors();
-
 
     /**
      * Get the interceptor for the given method.

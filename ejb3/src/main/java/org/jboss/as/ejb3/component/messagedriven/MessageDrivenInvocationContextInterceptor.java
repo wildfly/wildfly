@@ -47,8 +47,7 @@ class MessageDrivenInvocationContextInterceptor implements Interceptor {
         CurrentInvocationContext.push(invocationContext);
         try {
             return context.proceed();
-        }
-        finally {
+        } finally {
             CurrentInvocationContext.pop();
             context.putPrivateData(InvocationContext.class, null);
         }

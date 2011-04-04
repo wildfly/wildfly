@@ -21,15 +21,12 @@
  */
 package org.jboss.as.ejb3.component.session;
 
-import java.util.concurrent.Executor;
 import org.jboss.as.ee.component.AbstractComponentInstance;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.spi.SessionContext;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -57,8 +54,8 @@ public abstract class SessionBeanComponentInstance extends AbstractComponentInst
      * @param component the component
      * @param instance  the object instance
      */
-    protected SessionBeanComponentInstance(final SessionBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
-        super(component, instance, preDestroyInterceptors, factoryContext);
+    protected SessionBeanComponentInstance(final SessionBeanComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
+        super(component, instance, factoryContext);
 
         this.sessionContext = new SessionBeanComponentInstanceContext();
     }

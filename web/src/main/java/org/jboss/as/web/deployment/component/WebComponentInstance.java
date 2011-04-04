@@ -23,10 +23,7 @@
 package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.AbstractComponentInstance;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.List;
 
 /**
  * A managed bean component instance.
@@ -43,7 +40,7 @@ public final class WebComponentInstance extends AbstractComponentInstance {
      * @param component the component
      * @param instance the object instance
      */
-    protected WebComponentInstance(final WebComponent component, final Object instance, List<Interceptor> preDestroyInterceptors,InterceptorFactoryContext context) {
-        super(component, instance, preDestroyInterceptors, context);
+    protected WebComponentInstance(final WebComponent component, final Object instance, InterceptorFactoryContext context) {
+        super(component, instance, context);
     }
 }

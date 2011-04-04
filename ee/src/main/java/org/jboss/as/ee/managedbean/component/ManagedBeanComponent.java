@@ -30,7 +30,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} used to managed instances of managed beans.
@@ -50,8 +49,8 @@ public class ManagedBeanComponent extends AbstractComponent {
     }
 
     /** {@inheritDoc} */
-    protected AbstractComponentInstance constructComponentInstance(final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        return new ManagedBeanComponentInstance(this, instance,preDestroyInterceptors,context);
+    protected AbstractComponentInstance constructComponentInstance(final Object instance, InterceptorFactoryContext context) {
+        return new ManagedBeanComponentInstance(this, instance, context);
     }
 
     /** {@inheritDoc} */

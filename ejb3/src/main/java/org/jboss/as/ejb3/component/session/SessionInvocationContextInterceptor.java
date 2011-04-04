@@ -51,8 +51,7 @@ class SessionInvocationContextInterceptor implements Interceptor {
         CurrentInvocationContext.push(sessionInvocationContext);
         try {
             return context.proceed();
-        }
-        finally {
+        } finally {
             CurrentInvocationContext.pop();
             context.putPrivateData(InvocationContext.class, null);
         }

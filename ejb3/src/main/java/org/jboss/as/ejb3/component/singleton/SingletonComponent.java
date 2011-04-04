@@ -38,7 +38,6 @@ import javax.ejb.LockType;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -84,11 +83,11 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    protected synchronized AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
+    protected synchronized AbstractComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }
-        this.singletonComponentInstance = new SingletonComponentInstance(this, instance, preDestroyInterceptors, context);
+        this.singletonComponentInstance = new SingletonComponentInstance(this, instance, context);
         return this.singletonComponentInstance;
     }
 

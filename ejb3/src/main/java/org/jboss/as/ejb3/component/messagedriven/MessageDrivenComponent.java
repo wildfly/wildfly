@@ -41,7 +41,6 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static javax.ejb.TransactionAttributeType.REQUIRED;
@@ -113,8 +112,8 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    protected MessageDrivenComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        return new MessageDrivenComponentInstance(this, instance, preDestroyInterceptors, context);
+    protected MessageDrivenComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
+        return new MessageDrivenComponentInstance(this, instance, context);
     }
 
     @Override

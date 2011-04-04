@@ -29,20 +29,22 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import java.lang.reflect.Method;
 
 /**
- * InterceptorFactory for lifecycle methods. The factory holds extra information
+ * InterceptorFactory used for lifecycle methods.
+ *
+ * The factory holds extra information
  * about the method that is being called, so there is no need to call
  * {@link InterceptorContext#setMethod(java.lang.reflect.Method)} before invoking the
  * interceptor.
  *
  * @author Stuart Douglas
  */
-public class LifecycleInterceptorFactory implements InterceptorFactory{
+public class MethodAwareInterceptorFactory implements InterceptorFactory {
 
     private final Method method;
     private final InterceptorFactory delegate;
 
 
-    public LifecycleInterceptorFactory(InterceptorFactory delegate, Method method) {
+    public MethodAwareInterceptorFactory(InterceptorFactory delegate, Method method) {
         this.delegate = delegate;
         this.method = method;
     }

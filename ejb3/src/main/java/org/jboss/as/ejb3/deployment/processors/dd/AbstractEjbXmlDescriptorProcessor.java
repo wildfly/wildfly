@@ -148,7 +148,7 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                         // internally
                         InterceptorMethodDescription postConstructInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), interceptor.getInterceptorClass(), methodIdentifier, false);
                         // add it to the interceptor description
-                        interceptorDescription.addPostConstructMethod(postConstructInterceptor);
+                        interceptorDescription.addPostConstruct(postConstructInterceptor);
                     }
                 }
 
@@ -163,7 +163,7 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
                         // internally
                         InterceptorMethodDescription preDestroyInterceptor = new InterceptorMethodDescription(interceptor.getInterceptorClass(), interceptor.getInterceptorClass(), methodIdentifier, false);
                         // add it to the interceptor description
-                        interceptorDescription.addPreDestroyMethod(preDestroyInterceptor);
+                        interceptorDescription.addPreDestroy(preDestroyInterceptor);
                     }
                 }
             }

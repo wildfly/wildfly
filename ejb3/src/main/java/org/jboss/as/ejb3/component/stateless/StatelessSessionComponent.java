@@ -36,7 +36,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -108,8 +107,8 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     }
 
     @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        return new StatelessSessionComponentInstance(this, instance, preDestroyInterceptors, context);
+    protected AbstractComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
+        return new StatelessSessionComponentInstance(this, instance, context);
     }
 
     @Override

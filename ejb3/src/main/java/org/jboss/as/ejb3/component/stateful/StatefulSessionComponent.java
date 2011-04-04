@@ -33,7 +33,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -106,8 +105,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     @Override
-    protected AbstractComponentInstance constructComponentInstance(Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        return new StatefulSessionComponentInstance(this, instance, preDestroyInterceptors, context);
+    protected AbstractComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
+        return new StatefulSessionComponentInstance(this, instance, context);
     }
 
     @Override

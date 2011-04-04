@@ -40,8 +40,8 @@ public class SingletonComponentInstance extends SessionBeanComponentInstance {
      * @param component the component
      * @param instance  the object instance
      */
-    public SingletonComponentInstance(final SingletonComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext factoryContext) {
-        super(component, instance, preDestroyInterceptors, factoryContext);
+    public SingletonComponentInstance(final SingletonComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
+        super(component, instance, factoryContext);
     }
 
     @Override

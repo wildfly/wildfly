@@ -21,15 +21,12 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.ejb3.cache.Identifiable;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.util.id.GUID;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -37,8 +34,8 @@ import java.util.List;
 public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
     private final GUID id;
 
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        super(component, instance, preDestroyInterceptors, context);
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, InterceptorFactoryContext context) {
+        super(component, instance, context);
         this.id = new GUID();
     }
 

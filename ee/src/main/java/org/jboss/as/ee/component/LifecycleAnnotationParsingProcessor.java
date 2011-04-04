@@ -74,11 +74,11 @@ public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfig
 
         final InterceptorMethodDescription postConstructMethod = getLifeCycle(classInfo, actualClassName, POST_CONSTRUCT_ANNOTATION, declaredOnTargetClass);
         if (postConstructMethod != null) {
-            lifecycleCapableDescription.addPostConstructMethod(postConstructMethod);
+            lifecycleCapableDescription.addPostConstruct(postConstructMethod);
         }
         final InterceptorMethodDescription preDestroyMethod = getLifeCycle(classInfo, actualClassName, PRE_DESTROY_ANNOTATION, declaredOnTargetClass);
         if (preDestroyMethod != null) {
-            lifecycleCapableDescription.addPreDestroyMethod(preDestroyMethod);
+            lifecycleCapableDescription.addPreDestroy(preDestroyMethod);
         }
     }
 

@@ -34,8 +34,9 @@ public class SimpleInterceptor {
     private boolean postConstructInvoked;
 
     @PostConstruct
-    private void onConstruct(InvocationContext invocationContext) {
+    private void onConstruct(InvocationContext invocationContext) throws Exception {
         this.postConstructInvoked = true;
+        invocationContext.proceed();
     }
 
     @AroundInvoke

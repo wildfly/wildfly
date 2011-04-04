@@ -22,12 +22,10 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.Executor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +39,6 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
 
     private final AbstractComponent component;
     private final Object instance;
-    private final List<Interceptor> preDestroyInterceptors;
     private final InterceptorFactoryContext factoryContext;
 
     /**
@@ -56,10 +53,9 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
      * @param component the component
      * @param instance the object instance
      */
-    protected AbstractComponentInstance(final AbstractComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors,final InterceptorFactoryContext factoryContext) {
+    protected AbstractComponentInstance(final AbstractComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
         this.component = component;
         this.instance = instance;
-        this.preDestroyInterceptors = preDestroyInterceptors;
         this.factoryContext = factoryContext;
     }
 
@@ -71,11 +67,6 @@ public abstract class AbstractComponentInstance implements ComponentInstance {
     /** {@inheritDoc} */
     public Object getInstance() {
         return instance;
-    }
-
-    @Override
-    public Iterable<Interceptor> getPreDestroyInterceptors() {
-        return preDestroyInterceptors;
     }
 
     /** {@inheritDoc} */

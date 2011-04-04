@@ -28,18 +28,18 @@ import javax.interceptor.InvocationContext;
 /**
  * @author Stuart Douglas
  */
-public class InterceptorWithLifecycle {
+public class LifecycleInterceptorNoProceed {
 
     public static boolean postConstruct = false;
     public static boolean preDestroy = false;
 
     @PostConstruct
-    private void postConstruct(InvocationContext ctx) {
+    private void postConstruct(InvocationContext ctx) throws Exception{
         postConstruct = true;
     }
 
     @PreDestroy
-    private void preDestroy(InvocationContext ctx) {
+    private void preDestroy(InvocationContext ctx) throws Exception {
         preDestroy = true;
     }
 

@@ -43,8 +43,8 @@ public final class ManagedBeanComponentInstance extends AbstractComponentInstanc
      * @param component the component
      * @param instance the object instance
      */
-    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance, final List<Interceptor> preDestroyInterceptors, final InterceptorFactoryContext interceptorFactoryContext) {
+    protected ManagedBeanComponentInstance(final ManagedBeanComponent component, final Object instance, final InterceptorFactoryContext interceptorFactoryContext) {
         //we don't support pre destroy for manage beans, as the lifecycle is not defined
-        super(component, instance, preDestroyInterceptors,interceptorFactoryContext);
+        super(component, instance, interceptorFactoryContext);
     }
 }

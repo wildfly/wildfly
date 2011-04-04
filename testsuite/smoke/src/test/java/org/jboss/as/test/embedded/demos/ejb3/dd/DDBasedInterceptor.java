@@ -31,8 +31,9 @@ public class DDBasedInterceptor {
 
     private boolean postConstructInvoked;
 
-    private void onConstruct(InvocationContext ctx) {
+    private void onConstruct(InvocationContext ctx)  throws Exception {
         this.postConstructInvoked = true;
+        ctx.proceed();
     }
 
     public Object onInvoke(InvocationContext invocationContext) throws Exception {

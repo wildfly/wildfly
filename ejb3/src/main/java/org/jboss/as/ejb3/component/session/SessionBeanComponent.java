@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ee.component.ComponentInjector;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
@@ -30,7 +32,6 @@ import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.SessionContext;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
 
@@ -94,7 +95,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     }
 
     @Override
-    protected List<Interceptor> applyInjections(Object instance) {
+    protected List<ComponentInjector.InjectionHandle> applyInjections(ComponentInstance instance) {
         // TODO: a temporary hack until injection interceptors are in place
         BaseSessionInvocationContext invocationContext = new BaseSessionInvocationContext(null, null, null) {
             @Override
@@ -102,13 +103,12 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
                 throw new RuntimeException("Do not call proceed");
             }
         };
-        BaseSessionContext instanceContext = new BaseSessionContext(this, instance);
-        invocationContext.setEJBContext(instanceContext);
+        invocationContext.setEJBContext(((SessionBeanComponentInstance) instance).getSessionContext());
         CurrentInvocationContext.push(invocationContext);
         try {
             return super.applyInjections(instance);
         } finally {
-            CurrentInvocationContext.pop();
+             CurrentInvocationContext.pop();
         }
     }
 

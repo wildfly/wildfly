@@ -23,11 +23,9 @@
 package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Author : Jaikiran Pai
@@ -40,8 +38,8 @@ public class StatelessSessionComponentInstance extends SessionBeanComponentInsta
      * @param component   the component
      * @param instance    the object instance
      */
-    protected StatelessSessionComponentInstance(final StatelessSessionComponent component, final Object instance, List<Interceptor> preDestroyInterceptors, InterceptorFactoryContext context) {
-        super(component, instance, preDestroyInterceptors, context);
+    protected StatelessSessionComponentInstance(final StatelessSessionComponent component, final Object instance, InterceptorFactoryContext context) {
+        super(component, instance, context);
     }
 
     @Override

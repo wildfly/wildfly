@@ -21,6 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle;
 
+import org.junit.Assert;
+
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 
@@ -28,11 +31,28 @@ import javax.interceptor.Interceptors;
  * @author Stuart Douglas
  */
 @Stateless
-@Interceptors(InterceptorWithLifecycle.class)
-public class InterceptedSFSB {
+@Interceptors(LifecycleInterceptorWithProceed.class)
+public class InterceptedWithProceedSFSB {
+
+    boolean postConstructCalled = false;
 
     public void doStuff() {
 
     }
 
+    /**
+     * This method should be called, after proceed is called from the interceptor, in the same call stack
+     * as the interceptors post construct method. (See 'Multiple Callback Interceptor Methods for a Life Cycle
+     * Callback Event' in the interceptors specification.
+     */
+    @PostConstruct
+    public void postConstruct() {
+        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
+        Assert.assertFalse(LifecycleInterceptorWithProceed.postConstructFinished);
+        postConstructCalled = true;
+    }
+
+    public boolean isPostConstructCalled() {
+        return postConstructCalled;
+    }
 }

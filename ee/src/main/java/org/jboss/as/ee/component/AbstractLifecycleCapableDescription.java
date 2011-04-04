@@ -31,6 +31,10 @@ import java.util.List;
  * @author John Bailey
  */
 public class AbstractLifecycleCapableDescription  {
+    private final List<InterceptorMethodDescription> interceptorPostConstructs = new ArrayList<InterceptorMethodDescription>();
+    private final List<InterceptorMethodDescription> interceptorPreDestroys = new ArrayList<InterceptorMethodDescription>();
+
+
     private final List<InterceptorMethodDescription> postConstructs = new ArrayList<InterceptorMethodDescription>();
     private final List<InterceptorMethodDescription> preDestroys = new ArrayList<InterceptorMethodDescription>();
 
@@ -73,40 +77,60 @@ public class AbstractLifecycleCapableDescription  {
         return postDestroysComponentLifecycles;
     }
 
-    /**
-     * Adds a post construct method
-     *
-     * @param methodDescription The method
-     */
-    public void addPostConstructMethod(InterceptorMethodDescription methodDescription) {
-        postConstructs.add(methodDescription);
-    }
 
     /**
-     * Get the post-construct lifecycle method configurations.
+     * Get the post-construct lifecycle method configurations for interceptor classes attached to this component
      *
      * @return the post-construct lifecycle method configurations
      */
-    public List<InterceptorMethodDescription> getPostConstructs() {
-        return postConstructs;
+    public List<InterceptorMethodDescription> getInterceptorPostConstructs() {
+        return interceptorPostConstructs;
     }
 
     /**
-     * Adds a pre destroy method
-     *
-     * @param methodDescription The method
-     */
-    public void addPreDestroyMethod(InterceptorMethodDescription methodDescription) {
-        preDestroys.add(methodDescription);
-    }
-
-    /**
-     * Get the pre-destroy lifecycle method configurations.
+     * Get the pre-destroy lifecycle method configurations for interceptor classes attached to this component
      *
      * @return the pre-destroy lifecycle method configurations
+     */
+    public List<InterceptorMethodDescription> getInterceptorPreDestroys() {
+        return interceptorPreDestroys;
+    }
+
+    /**
+     * Adds a PostConstruct method
+     * @param methodDescription The method to add
+     */
+    public void addPostConstruct(InterceptorMethodDescription methodDescription) {
+        if(methodDescription.isDeclaredOnTargetClass()) {
+            postConstructs.add(methodDescription);
+        } else {
+            interceptorPostConstructs.add(methodDescription);
+        }
+    }
+
+    public void addPreDestroy(InterceptorMethodDescription methodDescription) {
+        if(methodDescription.isDeclaredOnTargetClass()) {
+            preDestroys.add(methodDescription);
+        } else {
+            interceptorPreDestroys.add(methodDescription);
+        }
+    }
+
+    /**
+     * Get pre-destroy lifecycle methods declared on the component itself
+     *
+     * @return The pre-destroy methods
      */
     public List<InterceptorMethodDescription> getPreDestroys() {
         return preDestroys;
     }
 
+    /**
+     * Get post-construct lifecycle methods declared on the component itself
+     *
+     * @return The post-construct methods
+     */
+    public List<InterceptorMethodDescription> getPostConstructs() {
+        return postConstructs;
+    }
 }

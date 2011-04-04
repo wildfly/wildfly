@@ -34,7 +34,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that local views of SLSF's are handled properly, as per EE 3.1 4.9.7
+ * Tests that lifecycle interceptors are handed correctly,
+ * as per the interceptors specification.
  *
  * @author Stuart Douglas
  */
@@ -48,13 +49,23 @@ public class InterceptorLifecycleSFSBTestCase {
         return war;
     }
 
-    @Test
-    public void testInterceptorPostConstruct() throws NamingException {
-        InitialContext ctx = new InitialContext();
-        InterceptedSFSB bean = (InterceptedSFSB)ctx.lookup("java:module/" + InterceptedSFSB.class.getSimpleName());
-        bean.doStuff();
-        Assert.assertTrue(InterceptorWithLifecycle.postConstruct);
 
+    @Test
+    public void testInterceptorPostConstructWithoutProceed() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        InterceptedNoProceedSFSB bean = (InterceptedNoProceedSFSB)ctx.lookup("java:module/" + InterceptedNoProceedSFSB.class.getSimpleName());
+        bean.doStuff();
+        Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
+        Assert.assertFalse(bean.isPostConstructCalled());
+    }
+
+    @Test
+    public void testInterceptorPostConstructWithProceed() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        InterceptedWithProceedSFSB bean = (InterceptedWithProceedSFSB)ctx.lookup("java:module/" + InterceptedWithProceedSFSB.class.getSimpleName());
+        bean.doStuff();
+        Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
+        Assert.assertTrue(bean.isPostConstructCalled());
     }
 
 
