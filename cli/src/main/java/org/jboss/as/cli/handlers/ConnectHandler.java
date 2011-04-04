@@ -40,8 +40,9 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
 
+        String args = ctx.getCommandArguments();
         int port = -1;
         String host = null;
         if(args != null) {

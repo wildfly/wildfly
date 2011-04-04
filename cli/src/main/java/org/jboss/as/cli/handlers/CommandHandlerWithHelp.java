@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
@@ -32,7 +33,7 @@ import org.jboss.as.protocol.StreamUtils;
 /**
  * Abstract handler that checks whether the argument is '--help', in which case it
  * tries to locate file [cmd].txt and print its content. If the argument
- * is absent or isn't '--help', it'll call handle(ctx, args) method.
+ * is absent or isn't '--help', it'll call doHandle(ctx) method.
  *
  * @author Alexey Loubyansky
  */
@@ -50,18 +51,12 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
     @Override
     public void handle(CommandContext ctx) {
 
-        String args = ctx.getCommandArguments();
-        if(args != null) {
-            args = args.trim();
-            if(args.isEmpty()) {
-                args = null;
-            } else if(args.equals("--help")) {
-                printHelp(ctx);
-                return;
-            }
+        if(ctx.hasSwitch("help")) {
+            printHelp(ctx);
+            return;
         }
 
-        handle(ctx, args);
+        doHandle(ctx);
     }
 
     protected void printHelp(CommandContext ctx) {
@@ -85,5 +80,21 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
         return;
     }
 
-    protected abstract void handle(CommandContext ctx, String args);
+    protected abstract void doHandle(CommandContext ctx);
+
+    /**
+     * Prints a list of strings. If -l switch is present then the list is printed one item per line,
+     * otherwise the list is printed in columns.
+     * @param ctx  the context
+     * @param list  the list to print
+     */
+    protected void printList(CommandContext ctx, List<String> list) {
+        if(ctx.hasSwitch("l")) {
+            for(String item : list) {
+                ctx.printLine(item);
+            }
+        } else {
+            ctx.printColumns(list);
+        }
+    }
 }

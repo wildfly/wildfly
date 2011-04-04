@@ -22,6 +22,7 @@
 package org.jboss.as.cli.completion.mock;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
@@ -190,5 +191,25 @@ public class MockCommandContext implements CommandContext {
     @Override
     public int getDefaultControllerPort() {
         return -1;
+    }
+
+    @Override
+    public boolean hasSwitch(String switchName) {
+        return false;
+    }
+
+    @Override
+    public String getNamedArgument(String argName) {
+        return null;
+    }
+
+    @Override
+    public List<String> getArguments() {
+        return null;
+    }
+
+    @Override
+    public boolean hasArguments() {
+        return false;
     }
 }

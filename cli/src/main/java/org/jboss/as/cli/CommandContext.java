@@ -22,6 +22,7 @@
 package org.jboss.as.cli;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestParser;
@@ -42,6 +43,35 @@ public interface CommandContext {
      * @return current command's arguments as a string or null if the command was entered w/o arguments.
      */
     String getCommandArguments();
+
+    /**
+     * Checks whether there are arguments on the command line for the current command.
+     * @return true if there are arguments, false if there aren't.
+     */
+    boolean hasArguments();
+
+    /**
+     * Checks whether the switch is present among the command arguments.
+     * @return
+     */
+    boolean hasSwitch(String switchName);
+
+    /**
+     * Returns a value for the named argument on the command line or
+     * null if the argument with the name isn't present.
+     * @param argName  the name of the argument
+     * @return  the value of the argument or null if the argument isn't present
+     */
+    String getNamedArgument(String argName);
+
+    /**
+     * Returns arguments that are not switchesas a list of strings
+     * in the order they appear on the command line. If there no such arguments
+     * an empty list is returned.
+     * @return a list of arguments that are not switches or an empty list
+     * if there are no such arguments.
+     */
+    List<String> getArguments();
 
     /**
      * Prints a string to the CLI's output.

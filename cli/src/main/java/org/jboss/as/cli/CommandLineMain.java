@@ -32,10 +32,14 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
@@ -160,14 +164,15 @@ public class CommandLineMain {
 
             } else {
                 String cmd = line;
-                cmdCtx.cmdArgs = null;
+                String cmdArgs = null;
                 for (int i = 0; i < cmd.length(); ++i) {
                     if (Character.isWhitespace(cmd.charAt(i))) {
-                        cmdCtx.cmdArgs = cmd.substring(i + 1).trim();
+                        cmdArgs = cmd.substring(i + 1).trim();
                         cmd = cmd.substring(0, i);
                         break;
                     }
                 }
+                cmdCtx.setArgs(cmdArgs);
 
                 CommandHandler handler = handlers.get(cmd.toLowerCase());
                 if (handler != null) {
@@ -234,8 +239,16 @@ public class CommandLineMain {
 
         /** whether the session should be terminated*/
         private boolean terminate;
+
         /** current command's arguments */
         private String cmdArgs;
+        /** command argument switches */
+        private Set<String> switches;
+        /** named command arguments */
+        private Map<String, String> namedArgs;
+        /** other command arguments */
+        private List<String> argsList;
+
         /** the controller client */
         private ModelControllerClient client;
         /** the default controller host */
@@ -446,6 +459,111 @@ public class CommandLineMain {
         @Override
         public int getDefaultControllerPort() {
             return defaultControllerPort;
+        }
+
+        @Override
+        public boolean hasSwitch(String switchName) {
+            if(switches == null) {
+                parseArgs();
+            }
+            return switches.contains(switchName);
+        }
+
+        @Override
+        public String getNamedArgument(String argName) {
+            if(namedArgs == null) {
+                parseArgs();
+            }
+            return namedArgs.get(argName);
+        }
+
+        @Override
+        public List<String> getArguments() {
+            if(argsList == null) {
+                parseArgs();
+            }
+            return argsList;
+        }
+
+        @Override
+        public boolean hasArguments() {
+            return cmdArgs != null;
+        }
+
+        private void parseArgs() {
+            switches = null;
+            namedArgs = null;
+            argsList = null;
+            if (cmdArgs != null) {
+                String[] arr = cmdArgs.split("\\s+");
+                if (arr.length > 0) {
+                    for (int i = 0; i < arr.length; ++i) {
+                        String arg = arr[i];
+                        if (arg.charAt(0) == '-') {
+                            final String switchArg;
+                            if (arg.length() > 1 && arg.charAt(1) == '-') {
+                                switchArg = arg.substring(2);
+                            } else {
+                                switchArg = arg.substring(1);
+                            }
+                            if (switchArg.length() > 0) {
+                                if(switches == null) {
+                                    switches = new HashSet<String>();
+                                }
+                                switches.add(switchArg);
+                            } else {
+                                if(argsList == null) {
+                                    argsList = new ArrayList<String>();
+                                }
+                                argsList.add(arg);
+                            }
+                        } else {
+                            if(argsList == null) {
+                                argsList = new ArrayList<String>();
+                            }
+                            argsList.add(arg);
+
+                            int equalsIndex = arg.indexOf('=');
+                            if(equalsIndex > 0) {
+                                if(equalsIndex == arg.length() - 1 || arg.indexOf(equalsIndex + 1, '=') < 0) {
+                                } else {
+                                    final String name = arg.substring(0, equalsIndex - 1).trim();
+                                    final String value;
+                                    if(equalsIndex == arg.length() - 1) {
+                                        value = "";
+                                    } else {
+                                        value = arg.substring(equalsIndex + 1).trim();
+                                    }
+                                    if(namedArgs == null) {
+                                        namedArgs = new HashMap<String, String>();
+                                    }
+                                    namedArgs.put(name, value);
+                                }
+                            }
+                        }
+                    }
+                    if(argsList != null) {
+                        argsList = Collections.unmodifiableList(argsList);
+                    }
+                }
+            }
+
+            if(switches == null) {
+                switches = Collections.emptySet();
+            }
+            if(namedArgs == null) {
+                namedArgs = Collections.emptyMap();
+            }
+            if(argsList == null) {
+                argsList = Collections.emptyList();
+            }
+        }
+
+        private void setArgs(String args) {
+            cmdArgs = args;
+            switches = null;
+            namedArgs = null;
+            argsList = null;
         }
     }
 }

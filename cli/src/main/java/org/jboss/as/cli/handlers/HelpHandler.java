@@ -47,6 +47,6 @@ public class HelpHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
     }
 }

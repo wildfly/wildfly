@@ -23,7 +23,6 @@ package org.jboss.as.cli.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
@@ -44,7 +43,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
@@ -52,25 +51,17 @@ public class DeployHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        if (args == null) {
-            listDeployments(ctx, false);
+        if (!ctx.hasArguments()) {
+            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
             return;
         }
 
-        boolean force = false;
-        boolean lSwitch = false;
         String filePath = null;
         String name = null;
         String runtimeName = null;
 
-        String[] arr = args.split("\\s+");
-        for(int i = 0; i < arr.length; ++i) {
-            String arg = arr[i];
-            if ("-f".equals(arg)) {
-                force = true;
-            } else if("-l".equals(arg)) {
-                lSwitch = true;
-            } else if (filePath == null) {
+        for(String arg : ctx.getArguments()) {
+            if (filePath == null) {
                 filePath = arg;
             } else if (name == null) {
                 name = arg;
@@ -80,7 +71,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(filePath == null) {
-            listDeployments(ctx, lSwitch);
+            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
             return;
         }
 
@@ -95,7 +86,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(Util.isDeployed(name, ctx.getModelControllerClient())) {
-            if(force) {
+            if(ctx.hasSwitch("f")) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
                 ModelNode result;
@@ -183,17 +174,6 @@ public class DeployHandler extends CommandHandlerWithHelp {
                 return;
             }
             ctx.printLine("'" + name + "' deployed successfully.");
-        }
-    }
-
-    protected void listDeployments(CommandContext ctx, boolean lSwitch) {
-        List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
-        if(lSwitch) {
-            for(String deployment : deployments) {
-                ctx.printLine(deployment);
-            }
-        } else {
-            ctx.printColumns(deployments);
         }
     }
 }

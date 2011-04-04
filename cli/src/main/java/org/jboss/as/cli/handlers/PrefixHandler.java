@@ -42,18 +42,18 @@ public class PrefixHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
 
         OperationRequestAddress prefix = ctx.getPrefix();
 
-        if(args == null) {
+        if(!ctx.hasArguments()) {
             ctx.printLine(ctx.getPrefixFormatter().format(prefix));
             return;
         }
 
         OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(ctx.getPrefix());
         try {
-            ctx.getOperationRequestParser().parse(args, handler);
+            ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), handler);
         } catch (CommandFormatException e) {
             ctx.printLine(e.getLocalizedMessage());
         }

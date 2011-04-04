@@ -41,14 +41,14 @@ public class HistoryHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
 
-        if(args == null) {
+        if(!ctx.hasArguments()) {
             printHistory(ctx);
             return;
         }
 
-        String lc = args.toLowerCase();
+        String lc = ctx.getCommandArguments().toLowerCase();
         if(lc.equals("disable")) {
             ctx.getHistory().setUseHistory(false);
         } else if(lc.equals("enable")) {
@@ -56,7 +56,7 @@ public class HistoryHandler extends CommandHandlerWithHelp {
         } else if(lc.equals("clear")) {
             ctx.getHistory().clear();
         } else {
-            ctx.printLine("Unexpected argument '" + args + '"');
+            ctx.printLine("Unexpected argument '" + ctx.getCommandArguments() + '"');
         }
     }
 

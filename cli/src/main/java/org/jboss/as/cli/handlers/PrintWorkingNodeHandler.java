@@ -38,7 +38,7 @@ public class PrintWorkingNodeHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#handle(org.jboss.as.cli.CommandContext, java.lang.String)
      */
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
         OperationRequestAddress prefix = ctx.getPrefix();
         ctx.printLine(ctx.getPrefixFormatter().format(prefix));
     }

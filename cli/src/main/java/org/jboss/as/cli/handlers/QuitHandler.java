@@ -39,7 +39,7 @@ public class QuitHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
         ctx.terminateSession();
     }
 }

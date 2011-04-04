@@ -41,7 +41,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
@@ -49,25 +49,19 @@ public class UndeployHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        if(args == null) {
-            listDeployments(ctx, false);
+        if(!ctx.hasArguments()) {
+            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
             return;
         }
 
-        boolean lSwitch = false;
         String deployment = null;
-        String[] arr = args.split("\\s+");
-        for(int i = 0; i < arr.length; ++i) {
-            String arg = arr[i];
-            if("-l".equals(arg)) {
-                lSwitch = true;
-            } else {
-                deployment = arg;
-            }
+        List<String> args = ctx.getArguments();
+        if(args.size() > 0) {
+            deployment = args.get(0);
         }
 
         if (deployment == null) {
-            listDeployments(ctx, lSwitch);
+            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
             return;
         }
 
@@ -76,7 +70,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         // undeploy
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("undeploy");
-        builder.addNode("deployment", args);
+        builder.addNode("deployment", deployment);
 
         ModelNode result;
         try {
@@ -96,7 +90,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         // remove
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("remove");
-        builder.addNode("deployment", args);
+        builder.addNode("deployment", deployment);
         try {
             ModelNode request = builder.buildRequest();
             result = client.execute(request);
@@ -109,17 +103,6 @@ public class UndeployHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        ctx.printLine("'" + args + "' undeployed successfully.");
-    }
-
-    protected void listDeployments(CommandContext ctx, boolean lSwitch) {
-        List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
-        if (lSwitch) {
-            for (String name : deployments) {
-                ctx.printLine(name);
-            }
-        } else {
-            ctx.printColumns(deployments);
-        }
+        ctx.printLine("'" + deployment + "' undeployed successfully.");
     }
 }

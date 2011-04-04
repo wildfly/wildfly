@@ -45,22 +45,14 @@ public class LsHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void handle(CommandContext ctx, String args) {
+    protected void doHandle(CommandContext ctx) {
 
         final OperationRequestAddress address;
 
-        boolean lSwitch = false;
         String nodePath = null;
-        if (args != null) {
-            String[] arr = args.split("\\s+");
-            for (int i = 0; i < arr.length; ++i) {
-                String arg = arr[i];
-                if ("-l".equals(arg)) {
-                    lSwitch = true;
-                } else {
-                    nodePath = arg;
-                }
-            }
+        List<String> args = ctx.getArguments();
+        if(!args.isEmpty()) {
+            nodePath = args.get(0);
         }
 
         if (nodePath != null) {
@@ -82,12 +74,6 @@ public class LsHandler extends CommandHandlerWithHelp {
             names = ctx.getOperationCandidatesProvider().getNodeTypes(address);
         }
 
-        if(lSwitch) {
-            for(String name : names) {
-                ctx.printLine(name);
-            }
-        } else {
-            ctx.printColumns(names);
-        }
+        printList(ctx, names);
     }
 }
