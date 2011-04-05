@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
@@ -154,7 +155,7 @@ public class HostControllerBootstrap {
         final BasicModelController bootstrapContoller = new BootstrapModelController();
         for(final ModelNode operation : operations) {
             count.incrementAndGet();
-            operation.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            operation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             bootstrapContoller.execute(OperationBuilder.Factory.create(operation).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {

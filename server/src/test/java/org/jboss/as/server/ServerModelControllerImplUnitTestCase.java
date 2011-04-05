@@ -4,7 +4,9 @@
 package org.jboss.as.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -159,7 +161,7 @@ public class ServerModelControllerImplUnitTestCase {
     public void testOperationFailedExecutionNoRollback() throws Exception {
 
         Operation op = getOperation("bad", "attr1", 5, "good");
-        op.getOperation().get("rollback-on-runtime-failure").set(false);
+        op.getOperation().get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertEquals("this request is bad", result.get("failure-description").asString());
@@ -177,7 +179,7 @@ public class ServerModelControllerImplUnitTestCase {
     public void testHandleFailedExecutionNoRollback() throws Exception {
 
         Operation op = getOperation("handleFailed", "attr1", 5, "good");
-        op.getOperation().get("rollback-on-runtime-failure").set(false);
+        op.getOperation().get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertEquals("handleFailed", result.get("failure-description").asString());
@@ -195,7 +197,7 @@ public class ServerModelControllerImplUnitTestCase {
     public void testUnhandledFailureExecutionNoRollback() throws Exception {
 
         Operation op = getOperation("evil", "attr1", 5, "good");
-        op.getOperation().get("rollback-on-runtime-failure").set(false);
+        op.getOperation().get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);

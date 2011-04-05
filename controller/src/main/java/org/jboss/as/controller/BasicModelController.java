@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -569,7 +570,9 @@ public class BasicModelController extends AbstractModelController<OperationContr
             this.resultHandler = resultHandler;
             this.steps = operationNode.require(STEPS).asList();
             this.unfinishedCount.set(steps.size());
-            this.rollbackOnRuntimeFailure = (!operationNode.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || operationNode.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
+            this.rollbackOnRuntimeFailure = (!operationNode.hasDefined(OPERATION_HEADERS)
+                    || !operationNode.get(OPERATION_HEADERS).hasDefined(ROLLBACK_ON_RUNTIME_FAILURE)
+                    || operationNode.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
             this.modelSource = modelProvider;
             this.localModel = this.modelSource.getModel().clone();
             this.injectedConfigPersisterProvider = injectedConfigPersisterProvider;
@@ -636,7 +639,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
 
             if (rollbackIndex > 0) {
                 // Don't let the compensating op rollback; if it fails it needs a manual fix
-                compensatingOp.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+                compensatingOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
                 return compensatingOp;
             }
@@ -685,7 +688,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
                 currentOperation = i;
                 final ModelNode step = steps.get(i).clone();
                 // Do not auto-rollback individual steps
-                step.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+                step.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
                 if (hasFailures()) {
                     recordCancellation(Integer.valueOf(i));
                 }

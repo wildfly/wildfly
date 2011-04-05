@@ -82,7 +82,7 @@ public class DeploymentUtils implements Closeable {
         addDeployment(archiveName, pkg);
     }
 
-    public DeploymentUtils(Archive archive) throws UnknownHostException {
+    public DeploymentUtils(Archive<?> archive) throws UnknownHostException {
         this();
         deployments.add(new ArbitraryDeployment(archive,false));
     }

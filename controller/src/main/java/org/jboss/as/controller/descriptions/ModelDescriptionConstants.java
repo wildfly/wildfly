@@ -116,6 +116,7 @@ public class ModelDescriptionConstants {
     /** Use this standard operation address field in the operation *request* ModelNode */
     public static final String OP_ADDR = "address";
     public static final String OPERATIONS = "operations";
+    public static final String OPERATION_HEADERS = "operation-headers";
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OPERATION_NAME = "operation-name";
     public static final String OUTCOME = "outcome";

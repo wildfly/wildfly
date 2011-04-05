@@ -47,6 +47,7 @@ import javax.management.remote.JMXServiceURL;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -99,20 +100,20 @@ public class DomainDeploymentUtils implements Closeable {
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         ModelNode op = new ModelNode();
         OperationBuilder builder = OperationBuilder.Factory.create(op);
-        op.get("operation").set("composite");
-        op.get("address").setEmptyList();
+        op.get(ClientConstants.OP).set("composite");
+        op.get(ClientConstants.OP_ADDR).setEmptyList();
         ModelNode steps = op.get("steps");
         for (Deployment deployment : deployments) {
             steps.add(deployment.addDeployment(builder));
         }
-        op.get("rollout-plan").set(getRolloutPlan());
+        op.get(ClientConstants.OPERATION_HEADERS, ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE).set(getRolloutPlan());
         execute(builder.build());
     }
 
     public synchronized void undeploy() throws IOException {
         ModelNode op = new ModelNode();
-        op.get("operation").set("composite");
-        op.get("address").setEmptyList();
+        op.get(ClientConstants.OP).set("composite");
+        op.get(ClientConstants.OP_ADDR).setEmptyList();
         ModelNode steps = op.get("steps");
         boolean execute = false;
         Set<String> deployed = getDeploymentNames();
@@ -123,7 +124,7 @@ public class DomainDeploymentUtils implements Closeable {
             }
         }
         if (execute) {
-            op.get("rollout-plan").set(getRolloutPlan());
+            op.get(ClientConstants.OPERATION_HEADERS, ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE).set(getRolloutPlan());
             ModelNode result = client.execute(op);
         }
     }

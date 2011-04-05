@@ -4,16 +4,16 @@
 package org.jboss.as.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.DESC_PROVIDER;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.NULL_REPO;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.createTestNode;
 import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.getOperation;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Executors;
@@ -125,7 +125,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation step1 = getOperation("good", "attr1", 2);
         Operation step2 = getOperation("bad", "attr2", 1);
         Operation op = getCompositeOperation(null, step1, step2);
-        op.getOperation().get("rollback-on-runtime-failure").set(false);
+        op.getOperation().get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
@@ -157,7 +157,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation step1 = getOperation("good", "attr1", 2);
         Operation step2 = getOperation("evil", "attr2", 1);
         Operation op = getCompositeOperation(null, step1, step2);
-        op.getOperation().get("rollback-on-runtime-failure").set(false);
+        op.getOperation().get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
@@ -197,7 +197,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         Operation step1 = getOperation("good", "attr1", 2);
         Operation step2 = getOperation("handleFailed", "attr2", 1);
         Operation op = getCompositeOperation(null, step1, step2);
-        op.getOperation().get("rollback-on-runtime-failure").set(false);
+        op.getOperation().get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
@@ -268,7 +268,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
             op.get("steps").add(step.getOperation());
         }
         if (rollback != null) {
-            op.get("rollback-on-runtime-failure").set(rollback);
+            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(rollback);
         }
         return OperationBuilder.Factory.create(op).build();
     }

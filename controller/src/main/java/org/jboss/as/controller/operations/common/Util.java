@@ -20,10 +20,9 @@ package org.jboss.as.controller.operations.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
@@ -98,8 +97,7 @@ public class Util {
         // Remove general operation params
         keys.remove(OP);
         keys.remove(OP_ADDR);
-        keys.remove(ROLLBACK_ON_RUNTIME_FAILURE);
-        keys.remove(ROLLOUT_PLAN);
+        keys.remove(OPERATION_HEADERS);
         for (String key : keys) {
             model.get(key).set(operation.get(key));
         }

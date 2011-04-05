@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
@@ -224,7 +225,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
     private boolean isRollbackOnRuntimeFailure(OperationContext context, ModelNode operation) {
         return context instanceof ServerOperationContextImpl &&
-            (!operation.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || operation.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
+            (!operation.hasDefined(OPERATION_HEADERS) || !operation.get(OPERATION_HEADERS).hasDefined(ROLLBACK_ON_RUNTIME_FAILURE)
+                    || operation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).asBoolean());
     }
 
     private class ServerOperationContextImpl extends OperationContextImpl implements ServerOperationContext, RuntimeOperationContext {
@@ -392,7 +394,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             };
 
             // Make sure the rollback op doesn't itself try and roll back
-            rollbackOperation.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            rollbackOperation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
             Runnable r = new Runnable() {
 

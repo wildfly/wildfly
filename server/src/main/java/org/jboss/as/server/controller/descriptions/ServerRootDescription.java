@@ -136,9 +136,6 @@ public class ServerRootDescription {
         root.get(REQUEST_PROPERTIES, STEPS, TYPE).set(ModelType.LIST); // TODO details of the type
         root.get(REQUEST_PROPERTIES, STEPS, DESCRIPTION).set(bundle.getString("composite.steps"));
         root.get(REQUEST_PROPERTIES, STEPS, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, ROLLBACK_ON_RUNTIME_FAILURE, TYPE).set(ModelType.BOOLEAN);
-        root.get(REQUEST_PROPERTIES, ROLLBACK_ON_RUNTIME_FAILURE, DESCRIPTION).set(bundle.getString("composite.rollback"));
-        root.get(REQUEST_PROPERTIES, ROLLBACK_ON_RUNTIME_FAILURE, REQUIRED).set(false);
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
         // TODO details of the reply
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("composite.result"));

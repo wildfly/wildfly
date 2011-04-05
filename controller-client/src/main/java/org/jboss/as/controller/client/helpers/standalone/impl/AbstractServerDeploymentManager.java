@@ -34,6 +34,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_
 import static org.jboss.as.controller.client.helpers.ClientConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
@@ -86,7 +87,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
         op.get(OP_ADDR).setEmptyList();
         ModelNode steps = op.get(STEPS);
         steps.setEmptyList();
-        op.get(ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
         // FIXME deal with shutdown params
 
         OperationBuilder builder = OperationBuilder.Factory.create(op);

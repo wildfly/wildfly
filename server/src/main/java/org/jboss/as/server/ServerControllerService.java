@@ -84,6 +84,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 /**
@@ -178,7 +179,7 @@ final class ServerControllerService implements Service<ServerController> {
         };
         for (ModelNode update : updates) {
             count.incrementAndGet();
-            update.get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            update.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             serverController.execute(OperationBuilder.Factory.create(update).build(), resultHandler);
         }
         if (count.decrementAndGet() == 0) {

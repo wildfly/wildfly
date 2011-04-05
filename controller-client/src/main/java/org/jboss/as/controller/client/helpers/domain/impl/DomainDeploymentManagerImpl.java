@@ -33,8 +33,10 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
@@ -136,7 +138,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         op.get(OP_ADDR).setEmptyList();
         ModelNode steps = op.get(STEPS);
         steps.setEmptyList();
-        op.get(ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isSingleServerRollback());
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isSingleServerRollback());
         // FIXME deal with shutdown params
 
         OperationBuilder builder = OperationBuilder.Factory.create(op);
@@ -245,7 +247,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
 
     private void addRollbackPlan(DeploymentPlanImpl plan, Operation op) {
         ModelNode opNode = op.getOperation();
-        ModelNode rolloutPlan = opNode.get("rollout-plan");
+        ModelNode rolloutPlan = opNode.get(OPERATION_HEADERS, ROLLOUT_PLAN);
         rolloutPlan.get("rollback-across-groups").set(plan.isRollbackAcrossGroups());
         ModelNode series = rolloutPlan.get("in-series");
         for (Set<ServerGroupDeploymentPlan> concurrent : plan.getServerGroupDeploymentPlans()) {

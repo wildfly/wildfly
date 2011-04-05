@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -258,7 +259,8 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
         // -- apply to DomainController models across domain and then push to servers
 
         // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
-        ModelNode rolloutPlan = operationNode.has(ROLLOUT_PLAN) ? operationNode.remove(ROLLOUT_PLAN) : null;
+        ModelNode rolloutPlan = operationNode.hasDefined(OPERATION_HEADERS) && operationNode.get(OPERATION_HEADERS).has(ROLLOUT_PLAN)
+            ? operationNode.get(OPERATION_HEADERS).remove(ROLLOUT_PLAN) : null;
 
         // Push to hosts, formulate plan, push to servers
         ControllerTransaction  transaction = new ControllerTransaction();
