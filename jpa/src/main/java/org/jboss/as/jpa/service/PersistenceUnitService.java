@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jpa", "persistenceunit");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("persistenceunit");
 
     private final InjectedValue<Map> properties = new InjectedValue<Map>();
 
