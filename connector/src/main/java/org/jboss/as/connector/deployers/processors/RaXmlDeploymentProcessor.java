@@ -41,6 +41,7 @@ import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.metadata.merge.Merger;
+import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
@@ -134,6 +135,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, service.getTxIntegrationInjector())
                         .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class, service.getConfigInjector())
                         .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, service.getSubjectFactoryInjector())
+                        .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
                         .addDependency(NamingService.SERVICE_NAME)
                         .setInitialMode(Mode.ACTIVE)
                         .install();

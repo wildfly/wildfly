@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.datasources;
-
-import org.jboss.jca.common.api.metadata.ds.DataSource;
+package org.jboss.as.connector.pool;
 
 /**
- * Local data-source service implementation.
- * @author John Bailey
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
+ *         Maestri</a>
  */
-public class LocalDataSourceService extends AbstractDataSourceService {
+public class Constants {
 
-    private final DataSource dataSourceConfig;
+    public static final String MIN_POOL_SIZE = "min-pool-size";
 
-    public LocalDataSourceService(final String jndiName, final DataSource dataSourceConfig) {
-        super(jndiName);
-        this.dataSourceConfig = dataSourceConfig;
-        deployer = new AS7DataSourceDeployer(log, dataSourceConfig);
+    public static final String MAX_POOL_SIZE = "max-pool-size";
 
-    }
+    public static final String POOL_PREFILL = "pool-prefill";
+
+    public static final String POOL_USE_STRICT_MIN = "pool-use-strict-min";
+
+    public static final String BACKGROUNDVALIDATIONMINUTES = "background-validation-minutes";
+
+    public static final String BACKGROUNDVALIDATION = "background-validation";
+
+    public static final String USE_FAST_FAIL = "use-fast-fail";
+
+    public static final String BLOCKING_TIMEOUT_WAIT_MILLIS = "blocking-timeout-wait-millis";
+
+    public static final String IDLETIMEOUTMINUTES = "idle-timeout-minutes";
+
 }

@@ -48,6 +48,7 @@ import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
@@ -91,6 +92,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
     private final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
+    private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
             Connector cmd, IronJacamar ijmd, Module module, String deploymentName, File root) {
@@ -158,6 +160,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     public Injector<SubjectFactory> getSubjectFactoryInjector() {
         return subjectFactory;
+    }
+
+    public Injector<CachedConnectionManager> getCcmInjector() {
+        return ccmValue;
     }
 
     private class AS7RaDeployer extends AbstractResourceAdapterDeployer {
@@ -358,7 +364,11 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
         @Override
         protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            return subjectFactory.getValue();
+            if (securityDomain == null || securityDomain.trim().equals("")) {
+                return null;
+            } else {
+                return subjectFactory.getValue();
+            }
         }
 
         @Override
@@ -370,6 +380,17 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         @Override
         protected TransactionIntegration getTransactionIntegration() {
             return getTxIntegration().getValue();
+        }
+
+        @Override
+        protected CachedConnectionManager getCachedConnectionManager() {
+            return ccmValue.getValue();
+        }
+
+        // Override this method to change how jndiName is build in AS7
+        @Override
+        protected String buildJndiName(String jndiName, Boolean javaContext) {
+            return super.buildJndiName(jndiName, javaContext);
         }
     }
 

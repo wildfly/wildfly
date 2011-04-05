@@ -22,11 +22,17 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATIONMINUTES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
@@ -35,19 +41,15 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLA
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
@@ -70,7 +72,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMI
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
@@ -90,6 +92,7 @@ import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
@@ -137,6 +140,9 @@ class DataSourceModelNodeUtil {
             setIntegerIfNotNull(dataSourceModel, MIN_POOL_SIZE, pool.getMinPoolSize());
             setBooleanIfNotNull(dataSourceModel, POOL_PREFILL, pool.isPrefill());
             setBooleanIfNotNull(dataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
+            if (pool.getFlushStrategy() != null) {
+                setStringIfNotNull(dataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().name());
+            }
         }
         DsSecurity security = dataSource.getSecurity();
         if (security != null) {
@@ -169,6 +175,10 @@ class DataSourceModelNodeUtil {
 
         if (dataSource.isSpy()) {
             setBooleanIfNotNull(dataSourceModel, SPY, dataSource.isSpy());
+        }
+
+        if (dataSource.isUseCcm()) {
+            setBooleanIfNotNull(dataSourceModel, USE_CCM, dataSource.isUseCcm());
         }
 
         Validation validation = dataSource.getValidation();
@@ -206,6 +216,9 @@ class DataSourceModelNodeUtil {
             setIntegerIfNotNull(xaDataSourceModel, MIN_POOL_SIZE, pool.getMinPoolSize());
             setBooleanIfNotNull(xaDataSourceModel, POOL_PREFILL, pool.isPrefill());
             setBooleanIfNotNull(xaDataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
+            if (pool.getFlushStrategy() != null) {
+                setStringIfNotNull(xaDataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().name());
+            }
             setBooleanIfNotNull(xaDataSourceModel, INTERLIVING, pool.isInterleaving());
             setBooleanIfNotNull(xaDataSourceModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
             setBooleanIfNotNull(xaDataSourceModel, PAD_XID, pool.isPadXid());
@@ -245,6 +258,10 @@ class DataSourceModelNodeUtil {
 
         if (xaDataSource.isSpy()) {
             setBooleanIfNotNull(xaDataSourceModel, SPY, xaDataSource.isSpy());
+        }
+
+        if (xaDataSource.isUseCcm()) {
+            setBooleanIfNotNull(xaDataSourceModel, USE_CCM, xaDataSource.isUseCcm());
         }
 
         final Validation validation = xaDataSource.getValidation();
@@ -301,7 +318,10 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
         final boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, false);
-        final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin);
+        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.valueOf(dataSourceNode
+                .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
+
+        final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
         final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
@@ -342,12 +362,14 @@ class DataSourceModelNodeUtil {
         final boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
+        final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, true);
+
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
         return new DataSourceImpl(connectionUrl, driverClass, module, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
-                poolName, enabled, jndiName, spy, pool);
+                poolName, enabled, jndiName, spy, useCcm, pool);
     }
 
     static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
@@ -375,8 +397,11 @@ class DataSourceModelNodeUtil {
         final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
         final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);
         final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_DATASOURCE, false);
-        final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, isSameRmOverride,
-                interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
+        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.valueOf(dataSourceNode
+                .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
+
+        final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
+                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
         final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
@@ -418,6 +443,7 @@ class DataSourceModelNodeUtil {
         final boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
+        final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, true);
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMinutes, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
@@ -431,7 +457,7 @@ class DataSourceModelNodeUtil {
         final boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
         Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
         return new XADataSourceImpl(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
-                urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, xaDataSourceProperty,
+                urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm, xaDataSourceProperty,
                 xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
     }
 

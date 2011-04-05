@@ -21,31 +21,33 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -57,15 +59,18 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_RESOURCEADAPTER_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_RESOURCEADAPTER_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.TEST_CONNECTION_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -80,8 +85,11 @@ import java.util.Map.Entry;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.connector.subsystems.resourceadapters.RaConfigRWHandler.RaConfigReadHandler;
-import org.jboss.as.connector.subsystems.resourceadapters.RaConfigRWHandler.RaConfigWriteHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.connector.pool.PoolOperations;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -98,9 +106,9 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -148,10 +156,23 @@ public class ResourceAdaptersExtension implements Extension {
         resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
         resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
 
-        for (final String attributeName : RaConfigRWHandler.ATTRIBUTES) {
-            resourceadapter.registerReadWriteAttribute(attributeName, RaConfigReadHandler.INSTANCE,
-                    RaConfigWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        resourceadapter.registerOperationHandler("flush-idle-connection-in-pool",
+                PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
+        resourceadapter.registerOperationHandler("flush-all-connection-in-pool",
+                PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
+        resourceadapter.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
+                TEST_CONNECTION_DESC, false);
+
+        for (final String attributeName : PoolMetrics.ATTRIBUTES) {
+            resourceadapter.registerMetric(attributeName, PoolMetrics.RaPoolMetricsHandler.INSTANCE);
+
         }
+
+        for (final String attributeName : PoolConfigurationRWHandler.ATTRIBUTES) {
+            resourceadapter.registerReadWriteAttribute(attributeName, PoolConfigurationReadHandler.INSTANCE,
+                    RaPoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        }
+
     }
 
     @Override
@@ -249,6 +270,7 @@ public class ResourceAdaptersExtension implements Extension {
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.ENABLED, ENABLED);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.POOL_NAME, POOL_NAME);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USECCM, USE_CCM);
 
             writeConfigProperties(streamWriter, conDef);
 
@@ -260,6 +282,7 @@ public class ResourceAdaptersExtension implements Extension {
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.PREFILL, POOL_PREFILL);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.FLUSH_STRATEGY, FLUSH_STRATEGY);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
 
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE, SAME_RM_OVERRIDE);
@@ -520,16 +543,16 @@ public class ResourceAdaptersExtension implements Extension {
             setStringIfNotNull(condefModel, POOL_NAME, conDef.getPoolName());
             setBooleanIfNotNull(condefModel, ENABLED, conDef.isEnabled());
             setBooleanIfNotNull(condefModel, USE_JAVA_CONTEXT, conDef.isUseJavaContext());
+            setBooleanIfNotNull(condefModel, USE_CCM, conDef.isUseCcm());
 
             if (conDef.getPool() != null) {
                 setIntegerIfNotNull(condefModel, MAX_POOL_SIZE, conDef.getPool().getMaxPoolSize());
                 setIntegerIfNotNull(condefModel, MIN_POOL_SIZE, conDef.getPool().getMinPoolSize());
                 setBooleanIfNotNull(condefModel, POOL_PREFILL, conDef.getPool().isPrefill());
                 setBooleanIfNotNull(condefModel, POOL_USE_STRICT_MIN, conDef.getPool().isUseStrictMin());
-                condefModel.get(MAX_POOL_SIZE).set(conDef.getPool().getMaxPoolSize());
-                condefModel.get(MIN_POOL_SIZE).set(conDef.getPool().getMinPoolSize());
-                condefModel.get(POOL_PREFILL).set(conDef.getPool().isPrefill());
-                condefModel.get(POOL_USE_STRICT_MIN).set(conDef.getPool().isUseStrictMin());
+                if (conDef.getPool().getFlushStrategy() != null) {
+                    setStringIfNotNull(condefModel, FLUSH_STRATEGY, conDef.getPool().getFlushStrategy().name());
+                }
                 if (conDef.isXa()) {
                     CommonXaPool xaPool = (CommonXaPool) conDef.getPool();
                     setBooleanIfNotNull(condefModel, INTERLIVING, xaPool.isInterleaving());

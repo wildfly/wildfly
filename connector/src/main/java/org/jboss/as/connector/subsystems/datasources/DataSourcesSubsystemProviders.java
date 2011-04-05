@@ -61,27 +61,47 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
+ *         Maestri</a>
  * @author John Bailey
  */
 class DataSourcesSubsystemProviders {
 
-    static final AttributeDefinition[] DATASOURCE_ATTRIBUTE = new AttributeDefinition[]{AttributeDefinition.CONNECTION_URL, AttributeDefinition.DRIVER_CLASS, AttributeDefinition.JNDINAME, AttributeDefinition.MODULE,
-            AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER, AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT, AttributeDefinition.ENABLED,
-            AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE, AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.USERNAME, AttributeDefinition.PASSWORD, AttributeDefinition.PREPAREDSTATEMENTSCACHESIZE,
-            AttributeDefinition.SHAREPREPAREDSTATEMENTS, AttributeDefinition.TRACKSTATEMENTS, AttributeDefinition.ALLOCATION_RETRY, AttributeDefinition.ALLOCATION_RETRY_WAIT_MILLIS,
-            AttributeDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS, AttributeDefinition.IDLETIMEOUTMINUTES, AttributeDefinition.QUERYTIMEOUT, AttributeDefinition.USETRYLOCK, AttributeDefinition.SETTXQUERYTIMEOUT,
-            AttributeDefinition.TRANSACTION_ISOLOATION, AttributeDefinition.CHECKVALIDCONNECTIONSQL, AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME,
-            AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.BACKGROUNDVALIDATIONMINUTES, AttributeDefinition.BACKGROUNDVALIDATION, AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.SPY};
+    static final AttributeDefinition[] DATASOURCE_ATTRIBUTE = new AttributeDefinition[] { AttributeDefinition.CONNECTION_URL,
+            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.JNDINAME, AttributeDefinition.MODULE,
+            AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
+            AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
+            AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
+            AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.USERNAME,
+            AttributeDefinition.PASSWORD, AttributeDefinition.PREPAREDSTATEMENTSCACHESIZE,
+            AttributeDefinition.SHAREPREPAREDSTATEMENTS, AttributeDefinition.TRACKSTATEMENTS,
+            AttributeDefinition.ALLOCATION_RETRY, AttributeDefinition.ALLOCATION_RETRY_WAIT_MILLIS,
+            AttributeDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS, AttributeDefinition.IDLETIMEOUTMINUTES,
+            AttributeDefinition.QUERYTIMEOUT, AttributeDefinition.USETRYLOCK, AttributeDefinition.SETTXQUERYTIMEOUT,
+            AttributeDefinition.TRANSACTION_ISOLOATION, AttributeDefinition.CHECKVALIDCONNECTIONSQL,
+            AttributeDefinition.EXCEPTIONSORTERCLASSNAME, AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME,
+            AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.BACKGROUNDVALIDATIONMINUTES,
+            AttributeDefinition.BACKGROUNDVALIDATION, AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH,
+            AttributeDefinition.SPY };
 
-    static final AttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new AttributeDefinition[]{AttributeDefinition.XADATASOURCECLASS, AttributeDefinition.JNDINAME, AttributeDefinition.MODULE, AttributeDefinition.NEW_CONNECTION_SQL,
-            AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER, AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT, AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
-            AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.INTERLIVING, AttributeDefinition.NOTXSEPARATEPOOL, AttributeDefinition.PAD_XID, AttributeDefinition.SAME_RM_OVERRIDE, AttributeDefinition.WRAP_XA_DATASOURCE,
-            AttributeDefinition.USERNAME, AttributeDefinition.PASSWORD, AttributeDefinition.PREPAREDSTATEMENTSCACHESIZE, AttributeDefinition.SHAREPREPAREDSTATEMENTS, AttributeDefinition.TRACKSTATEMENTS, AttributeDefinition.ALLOCATION_RETRY,
-            AttributeDefinition.ALLOCATION_RETRY_WAIT_MILLIS, AttributeDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS, AttributeDefinition.IDLETIMEOUTMINUTES, AttributeDefinition.QUERYTIMEOUT, AttributeDefinition.USETRYLOCK,
-            AttributeDefinition.SETTXQUERYTIMEOUT, AttributeDefinition.TRANSACTION_ISOLOATION, AttributeDefinition.CHECKVALIDCONNECTIONSQL, AttributeDefinition.EXCEPTIONSORTERCLASSNAME,
-            AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME, AttributeDefinition.BACKGROUNDVALIDATIONMINUTES,
-            AttributeDefinition.BACKGROUNDVALIDATION, AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.XA_RESOURCE_TIMEOUT, AttributeDefinition.SPY};
+    static final AttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new AttributeDefinition[] {
+            AttributeDefinition.XADATASOURCECLASS, AttributeDefinition.JNDINAME, AttributeDefinition.MODULE,
+            AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
+            AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
+            AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
+            AttributeDefinition.POOL_PREFILL, AttributeDefinition.POOL_USE_STRICT_MIN, AttributeDefinition.INTERLIVING,
+            AttributeDefinition.NOTXSEPARATEPOOL, AttributeDefinition.PAD_XID, AttributeDefinition.SAME_RM_OVERRIDE,
+            AttributeDefinition.WRAP_XA_DATASOURCE, AttributeDefinition.USERNAME, AttributeDefinition.PASSWORD,
+            AttributeDefinition.PREPAREDSTATEMENTSCACHESIZE, AttributeDefinition.SHAREPREPAREDSTATEMENTS,
+            AttributeDefinition.TRACKSTATEMENTS, AttributeDefinition.ALLOCATION_RETRY,
+            AttributeDefinition.ALLOCATION_RETRY_WAIT_MILLIS, AttributeDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS,
+            AttributeDefinition.IDLETIMEOUTMINUTES, AttributeDefinition.QUERYTIMEOUT, AttributeDefinition.USETRYLOCK,
+            AttributeDefinition.SETTXQUERYTIMEOUT, AttributeDefinition.TRANSACTION_ISOLOATION,
+            AttributeDefinition.CHECKVALIDCONNECTIONSQL, AttributeDefinition.EXCEPTIONSORTERCLASSNAME,
+            AttributeDefinition.STALECONNECTIONCHECKERCLASSNAME, AttributeDefinition.VALIDCONNECTIONCHECKERCLASSNAME,
+            AttributeDefinition.BACKGROUNDVALIDATIONMINUTES, AttributeDefinition.BACKGROUNDVALIDATION,
+            AttributeDefinition.USE_FAST_FAIL, AttributeDefinition.VALIDATEONMATCH, AttributeDefinition.XA_RESOURCE_TIMEOUT,
+            AttributeDefinition.SPY };
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -100,28 +120,35 @@ class DataSourcesSubsystemProviders {
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, DESCRIPTION).set(bundle.getString("installed-drivers"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, TYPE).set(ModelType.LIST);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DEPLOYMENT_NAME, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.deployment-name"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DEPLOYMENT_NAME, REQUIRED).set(true);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DEPLOYMENT_NAME, NILLABLE).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_NAME, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.module-name"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_NAME, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_NAME, REQUIRED).set(true);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_NAME, NILLABLE).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_SLOT, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.module-slot"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_SLOT, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_SLOT, REQUIRED).set(true);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MODULE_SLOT, NILLABLE).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS, DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.driver-class"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, DRIVER_CLASS, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MAJOR_VERSION, DESCRIPTION).set(bundle.getString("installed-drivers.major-version"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MAJOR_VERSION, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.major-version"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MAJOR_VERSION, TYPE).set(ModelType.INT);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MAJOR_VERSION, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MINOR_VERSION, DESCRIPTION).set(bundle.getString("installed-drivers.minor-version"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MINOR_VERSION, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.minor-version"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MINOR_VERSION, TYPE).set(ModelType.INT);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, MINOR_VERSION, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
+            subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, JDBC_COMPLIANT, DESCRIPTION).set(
+                    bundle.getString("installed-drivers.jdbc-compliant"));
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, INSTALLED_DRIVERS, VALUE_TYPE, JDBC_COMPLIANT, REQUIRED).set(true);
 
@@ -232,7 +259,8 @@ class DataSourcesSubsystemProviders {
             operation.get(DESCRIPTION).set(bundle.getString("data-source.add"));
 
             for (AttributeDefinition propertyType : DATASOURCE_ATTRIBUTE) {
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
+                        bundle.getString(propertyType.getName()));
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
             }
@@ -273,6 +301,39 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+    static DescriptionProvider FLUSH_IDLE_CONNECTION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("flush-idle-connection-in-pool");
+            operation.get(DESCRIPTION).set(bundle.getString("data-source.flush-idle-connection-in-pool"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider FLUSH_ALL_CONNECTION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("flush-all-connection-in-pool");
+            operation.get(DESCRIPTION).set(bundle.getString("data-source.flush-all-connection-in-pool"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider TEST_CONNECTION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("test-connection-in-pool");
+            operation.get(DESCRIPTION).set(bundle.getString("data-source.test-connection-in-pool"));
+            return operation;
+        }
+    };
+
     static DescriptionProvider XA_DATA_SOURCE_DESC = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
@@ -301,7 +362,8 @@ class DataSourcesSubsystemProviders {
             operation.get(DESCRIPTION).set(bundle.getString("xa-data-source.add"));
 
             for (AttributeDefinition propertyType : XA_DATASOURCE_ATTRIBUTE) {
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
+                operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
+                        bundle.getString(propertyType.getName()));
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
             }

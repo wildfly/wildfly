@@ -55,21 +55,11 @@ class Constants {
 
     static final String URLDELIMITER = "url-delimiter";
 
-    static final String MIN_POOL_SIZE = "min-pool-size";
-
-    static final String MAX_POOL_SIZE = "max-pool-size";
-
-    static final String POOL_PREFILL = "pool-prefill";
-
-    static final String POOL_USE_STRICT_MIN = "pool-use-strict-min";
+    static final String FLUSH_STRATEGY = "flush-strategy";
 
     static final String ALLOCATION_RETRY = "allocation-retry";
 
     static final String ALLOCATION_RETRY_WAIT_MILLIS = "allocation-retry-wait-millis";
-
-    static final String BLOCKING_TIMEOUT_WAIT_MILLIS = "blocking-timeout-wait-millis";
-
-    static final String IDLETIMEOUTMINUTES = "idle-timeout-minutes";
 
     static final String SETTXQUERTTIMEOUT = "set-tx-quert-timeout";
 
@@ -99,11 +89,7 @@ class Constants {
 
     static final String STALECONNECTIONCHECKERCLASSNAME = "stale-connection-checker-class-name";
 
-    static final String BACKGROUNDVALIDATIONMINUTES = "background-validation-minutes";
-
-    static final String BACKGROUNDVALIDATION = "background-validation";
-
-    static final String USE_FAST_FAIL = "use-fast-fail";
+    static final String USE_CCM = "use-ccm";
 
     static final String CONFIG_PROPERTIES = "config-properties";
 

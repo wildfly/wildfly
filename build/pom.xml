@@ -670,11 +670,6 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-spi</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-core-api</artifactId>
         </dependency>
 

@@ -5,23 +5,24 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.FLUSH_STRATEGY;
+import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDI_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -31,7 +32,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOU
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
@@ -41,9 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdapeters;
-import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonConnDef;
@@ -53,6 +53,7 @@ import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
@@ -65,7 +66,6 @@ import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
-import org.jboss.logging.Logger;
 
 public abstract class AbstractRaOperation {
 
@@ -117,11 +117,14 @@ public abstract class AbstractRaOperation {
             String poolName = getStringIfSetOrGetDefault(conDefNode, POOL_NAME, null);
             boolean enabled = getBooleanIfSetOrGetDefault(conDefNode, ENABLED, false);
             boolean useJavaContext = getBooleanIfSetOrGetDefault(conDefNode, USE_JAVA_CONTEXT, false);
+            boolean useCcm = getBooleanIfSetOrGetDefault(conDefNode, USE_CCM, true);
 
             Integer maxPoolSize = getIntIfSetOrGetDefault(conDefNode, MAX_POOL_SIZE, null);
             Integer minPoolSize = getIntIfSetOrGetDefault(conDefNode, MIN_POOL_SIZE, null);
             boolean prefill = getBooleanIfSetOrGetDefault(conDefNode, POOL_PREFILL, false);
             boolean useStrictMin = getBooleanIfSetOrGetDefault(conDefNode, POOL_USE_STRICT_MIN, false);
+            final FlushStrategy flushStrategy = conDefNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.valueOf(conDefNode.get(
+                    FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
 
             Integer allocationRetry = getIntIfSetOrGetDefault(conDefNode, ALLOCATION_RETRY, null);
             Long allocationRetryWaitMillis = getLongIfSetOrGetDefault(conDefNode, ALLOCATION_RETRY_WAIT_MILLIS, null);
@@ -130,7 +133,7 @@ public abstract class AbstractRaOperation {
             Integer xaResourceTimeout = getIntIfSetOrGetDefault(conDefNode, XA_RESOURCE_TIMEOUT, null);
             CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                     allocationRetryWaitMillis, xaResourceTimeout);
-            CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin);
+            CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
 
             String securityDomain = getStringIfSetOrGetDefault(conDefNode, SECURITY_DOMAIN, null);
             String securityDomainAndApplication = getStringIfSetOrGetDefault(conDefNode, SECURITY_DOMAIN_AND_APPLICATION, null);
@@ -152,7 +155,7 @@ public abstract class AbstractRaOperation {
             final boolean noRecovery = getBooleanIfSetOrGetDefault(conDefNode, NO_RECOVERY, false);
             Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
             CommonConnDef connectionDefinition = new CommonConnDefImpl(configProperties, className, jndiName, poolName,
-                    enabled, useJavaContext, pool, timeOut, validation, security, recovery);
+                    enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery);
 
             connDefs.add(connectionDefinition);
         }

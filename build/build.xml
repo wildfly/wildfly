@@ -633,7 +633,6 @@
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-api"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-spi"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-core-api"/>
-            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-core-spi"/>
         </module-def>
 
         <module-def name="org.jboss.ironjacamar.impl">

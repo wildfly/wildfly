@@ -22,33 +22,35 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -71,6 +73,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -87,6 +90,7 @@ class ResourceAdaptersSubsystemProviders {
             new NodeAttribute(ENABLED, ModelType.BOOLEAN, false), new NodeAttribute(MAX_POOL_SIZE, ModelType.INT, false),
             new NodeAttribute(MIN_POOL_SIZE, ModelType.INT, false),
             new NodeAttribute(POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false),
+            new NodeAttribute(FLUSH_STRATEGY, ModelType.STRING, false),
             new NodeAttribute(SECURITY_DOMAIN_AND_APPLICATION, ModelType.STRING, false),
             new NodeAttribute(APPLICATION, ModelType.STRING, false),
             new NodeAttribute(SECURITY_DOMAIN, ModelType.STRING, false),
@@ -98,7 +102,7 @@ class ResourceAdaptersSubsystemProviders {
             new NodeAttribute(USETRYLOCK, ModelType.BOOLEAN, false),
             new NodeAttribute(BACKGROUNDVALIDATIONMINUTES, ModelType.INT, false),
             new NodeAttribute(BACKGROUNDVALIDATION, ModelType.BOOLEAN, false),
-            new NodeAttribute(USE_FAST_FAIL, ModelType.BOOLEAN, false) };
+            new NodeAttribute(USE_FAST_FAIL, ModelType.BOOLEAN, false), new NodeAttribute(USE_CCM, ModelType.BOOLEAN, false) };
 
     static final NodeAttribute[] ADMIN_OBJECTS_NODEATTRIBUTE = new NodeAttribute[] {
             new NodeAttribute(CLASS_NAME, ModelType.STRING, true), new NodeAttribute(JNDINAME, ModelType.STRING, true),
@@ -160,6 +164,7 @@ class ResourceAdaptersSubsystemProviders {
             connectionDefinitionsNode.get(DESCRIPTION).set(CONNECTIONDEFINITIONS);
 
             for (NodeAttribute attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
+                Logger.getLogger(this.getClass()).debugf("##########################################%s", attribute.getName());
                 connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), DESCRIPTION).set(
                         bundle.getString(attribute.getName()));
                 connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), TYPE).set(attribute.getModelType());
@@ -255,6 +260,39 @@ class ResourceAdaptersSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(REMOVE);
             operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.remove"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider FLUSH_IDLE_CONNECTION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("flush-idle-connection-in-pool");
+            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.flush-idle-connection-in-pool"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider FLUSH_ALL_CONNECTION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("flush-all-connection-in-pool");
+            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.flush-all-connection-in-pool"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider TEST_CONNECTION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set("test-connection-in-pool");
+            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.test-connection-in-pool"));
             return operation;
         }
     };

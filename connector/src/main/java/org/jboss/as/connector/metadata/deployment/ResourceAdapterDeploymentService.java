@@ -45,6 +45,7 @@ import org.jboss.jca.common.api.metadata.ra.Connector.Version;
 import org.jboss.jca.common.api.metadata.ra.Connector;
 import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
 import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -98,6 +99,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
     private final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
+    private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
 
     public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
             final IronJacamar ijmd, final Module module) {
@@ -164,6 +166,10 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
     public Injector<SubjectFactory> getSubjectFactoryInjector() {
         return subjectFactory;
+    }
+
+    public Injector<CachedConnectionManager> getCcmInjector() {
+        return ccmValue;
     }
 
     private class AS7RaDeployer extends AbstractResourceAdapterDeployer {
@@ -464,12 +470,27 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         @Override
         protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            return subjectFactory.getValue();
+            if (securityDomain == null || securityDomain.trim().equals("")) {
+                return null;
+            } else {
+                return subjectFactory.getValue();
+            }
         }
 
         @Override
         protected TransactionIntegration getTransactionIntegration() {
             return getTxIntegration().getValue();
+        }
+
+        @Override
+        protected CachedConnectionManager getCachedConnectionManager() {
+            return ccmValue.getValue();
+        }
+
+        // Override this method to change how jndiName is build in AS7
+        @Override
+        protected String buildJndiName(String jndiName, Boolean javaContext) {
+            return super.buildJndiName(jndiName, javaContext);
         }
 
     }

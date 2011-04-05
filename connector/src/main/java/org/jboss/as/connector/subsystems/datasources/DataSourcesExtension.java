@@ -21,12 +21,18 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
+import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.BACKGROUNDVALIDATIONMINUTES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
@@ -36,19 +42,15 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLIVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
@@ -63,7 +65,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMI
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
@@ -82,6 +83,8 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
@@ -90,6 +93,7 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
@@ -109,10 +113,11 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.connector.subsystems.datasources.DataSourcePoolConfigurationRWHandler.DataSourcePoolConfigurationReadHandler;
-import org.jboss.as.connector.subsystems.datasources.DataSourcePoolConfigurationRWHandler.DataSourcePoolConfigurationWriteHandler;
-import org.jboss.as.connector.subsystems.datasources.XaDataSourcePoolConfigurationRWHandler.XaDataSourcePoolConfigurationReadHandler;
-import org.jboss.as.connector.subsystems.datasources.XaDataSourcePoolConfigurationRWHandler.XaDataSourcePoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.connector.pool.PoolOperations;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -129,9 +134,9 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
@@ -173,7 +178,8 @@ public class DataSourcesExtension implements Extension {
         subsystem.registerOperationHandler(ADD, DataSourcesSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
                 DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem.registerReadOnlyAttribute("installed-drivers", InstalledDriversReadAttributeHandler.INSTANCE, Storage.RUNTIME);
+        subsystem
+                .registerReadOnlyAttribute("installed-drivers", InstalledDriversReadAttributeHandler.INSTANCE, Storage.RUNTIME);
 
         final ModelNodeRegistration jdbcDrivers = subsystem.registerSubModel(PathElement.pathElement(JDBC_DRIVER),
                 JDBC_DRIVER_DESC);
@@ -186,14 +192,26 @@ public class DataSourcesExtension implements Extension {
         dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler("flush-idle-connection-in-pool",
+                PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
+        dataSources.registerOperationHandler("flush-all-connection-in-pool",
+                PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
+        dataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
+                TEST_CONNECTION_DESC, false);
 
-        for (final String attributeName : DataSourcesMetrics.ATTRIBUTES) {
-            dataSources.registerMetric(attributeName, DataSourcesMetrics.INSTANCE);
+        for (final String attributeName : PoolMetrics.ATTRIBUTES) {
+            dataSources.registerMetric(attributeName, PoolMetrics.LocalAndXaDataSourcePoolMetricsHandler.INSTANCE);
+
         }
 
-        for (final String attributeName : DataSourcePoolConfigurationRWHandler.ATTRIBUTES) {
-            dataSources.registerReadWriteAttribute(attributeName, DataSourcePoolConfigurationReadHandler.INSTANCE,
-                    DataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        for (final String attributeName : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
+            dataSources.registerMetric(attributeName, LocalAndXaDataSourcesJdbcMetrics.INSTANCE);
+
+        }
+
+        for (final String attributeName : PoolConfigurationRWHandler.ATTRIBUTES) {
+            dataSources.registerReadWriteAttribute(attributeName, PoolConfigurationReadHandler.INSTANCE,
+                    LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
         }
 
         final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
@@ -203,13 +221,18 @@ public class DataSourcesExtension implements Extension {
         xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
 
-        for (final String attributeName : XaDataSourcesMetrics.ATTRIBUTES) {
-            xaDataSources.registerMetric(attributeName, XaDataSourcesMetrics.INSTANCE);
+        for (final String attributeName : PoolMetrics.ATTRIBUTES) {
+            xaDataSources.registerMetric(attributeName, PoolMetrics.LocalAndXaDataSourcePoolMetricsHandler.INSTANCE);
         }
 
-        for (final String attributeName : XaDataSourcePoolConfigurationRWHandler.ATTRIBUTES) {
-            xaDataSources.registerReadWriteAttribute(attributeName, XaDataSourcePoolConfigurationReadHandler.INSTANCE,
-                    XaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        for (final String attributeName : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
+            xaDataSources.registerMetric(attributeName, LocalAndXaDataSourcesJdbcMetrics.INSTANCE);
+
+        }
+
+        for (final String attributeName : PoolConfigurationRWHandler.ATTRIBUTES) {
+            xaDataSources.registerReadWriteAttribute(attributeName, PoolConfigurationReadHandler.INSTANCE,
+                    LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
         }
 
     }
@@ -306,6 +329,8 @@ public class DataSourcesExtension implements Extension {
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.PREFILL, POOL_PREFILL);
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
+                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.FLUSH_STRATEGY, FLUSH_STRATEGY);
+
                         if (isXADataSource) {
                             writeElementIfHas(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE, SAME_RM_OVERRIDE);
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE,

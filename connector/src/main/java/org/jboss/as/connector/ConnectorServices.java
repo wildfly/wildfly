@@ -61,6 +61,8 @@ public final class ConnectorServices {
 
     public static final ServiceName JDBC_DRIVER_REGISTRY_SERVICE = ServiceName.JBOSS.append("jdbc-driver", "registry");
 
+    public static final ServiceName CCM_SERVICE = ServiceName.JBOSS.append("cached-connection-manager");
+
     private ConnectorServices() {
     }
 

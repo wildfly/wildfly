@@ -47,9 +47,11 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -57,6 +59,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.security.SubjectFactory;
 import org.jboss.util.Strings;
 
 /**
@@ -102,7 +105,8 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                                     dataSourceService.getTransactionIntegrationInjector())
                             .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
                                     dataSourceService.getmanagementRepositoryInjector())
-                            .addDependency(NamingService.SERVICE_NAME);
+                            .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                                    dataSourceService.getSubjectFactoryInjector()).addDependency(NamingService.SERVICE_NAME);
 
                     final String driverName = operation.require(DRIVER).asString();
                     final ServiceName driverServiceName = getDriverDependency(driverName);
