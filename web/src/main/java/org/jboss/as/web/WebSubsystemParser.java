@@ -280,13 +280,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         writeAttribute(writer, Attribute.SMAP.getLocalName(), jsp);
         writeAttribute(writer, Attribute.DUMP_SMAP.getLocalName(), jsp);
         writeAttribute(writer, Attribute.GENERATE_STRINGS_AS_CHAR_ARRAYS.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.getLocalName(), jsp);
         writeAttribute(writer, Attribute.SCRATCH_DIR.getLocalName(), jsp);
         writeAttribute(writer, Attribute.SOURCE_VM.getLocalName(), jsp);
         writeAttribute(writer, Attribute.TARGET_VM.getLocalName(), jsp);
         writeAttribute(writer, Attribute.JAVA_ENCODING.getLocalName(), jsp);
         writeAttribute(writer, Attribute.X_POWERED_BY.getLocalName(), jsp);
-        writeAttribute(writer, Attribute.DISPLAY_SOOURCE_FRAGMENT.getLocalName(), jsp);
+        writeAttribute(writer, Attribute.DISPLAY_SOURCE_FRAGMENT.getLocalName(), jsp);
         writeAttribute(writer, Attribute.DISABLED.getLocalName(), jsp);
         writer.writeEndElement();
     }
@@ -294,11 +294,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     /** {@inheritDoc} */
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        // no attributes
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
-        }
-
         final ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME);
         address.protect();
@@ -409,13 +404,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             case SMAP:
             case DUMP_SMAP:
             case GENERATE_STRINGS_AS_CHAR_ARRAYS:
-            case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
+            case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE:
             case SCRATCH_DIR:
             case SOURCE_VM:
             case TARGET_VM:
             case JAVA_ENCODING:
             case X_POWERED_BY:
-            case DISPLAY_SOOURCE_FRAGMENT:
+            case DISPLAY_SOURCE_FRAGMENT:
                 jsp.get(attribute.getLocalName()).set(value);
                 break;
             default:
@@ -442,6 +437,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 break;
             case FILE_ENCONDING:
                 resources.get(FILE_ENCONDING).set(value);
+                break;
             case READ_ONLY:
                 resources.get(READ_ONLY).set(value);
                 break;
