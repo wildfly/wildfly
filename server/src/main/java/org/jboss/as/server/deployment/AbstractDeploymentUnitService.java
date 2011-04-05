@@ -110,6 +110,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         private final ServiceTarget target;
         private final String deploymentName;
         private final AtomicInteger count = new AtomicInteger();
+        private final AtomicInteger uninstalledCount = new AtomicInteger();
         private final Map<ServiceName, StartException> startExceptions = Collections.synchronizedMap(new HashMap<ServiceName, StartException>());
         private final Set<ServiceName> failedDependencies = Collections.synchronizedSet(new HashSet<ServiceName>());
         private final DeploymentCompletionCallback callback;
@@ -133,31 +134,38 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
         public void serviceStarted(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
-            tick(controller);
+            tick();
         }
 
         public void serviceFailed(final ServiceController<? extends Object> controller, final StartException reason) {
             controller.removeListener(this);
             startExceptions.put(controller.getName(), reason);
-            tick(controller);
+            tick();
         }
 
         public void serviceRemoved(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
-            tick(controller);
+            tick();
         }
 
         public void dependencyFailed(final ServiceController<? extends Object> controller) {
             controller.removeListener(this);
             failedDependencies.add(controller.getName());
-            tick(controller);
+            tick();
         }
 
-        private void tick(ServiceController<?> controller) {
-            //this can happen if a service with missing deps is removed
-            //we do not decrement the count, as this has already happened
-            //in the dependencyUninstalled method
-            if (count.decrementAndGet() == 0) {
+        @Override
+        public void dependencyInstalled(ServiceController<? extends Object> serviceController) {
+            uninstalledCount.decrementAndGet();
+        }
+
+        @Override
+        public void dependencyUninstalled(ServiceController<? extends Object> serviceController) {
+            uninstalledCount.incrementAndGet();
+        }
+
+        private void tick() {
+            if (count.decrementAndGet() == 0 || (!failedDependencies.isEmpty() && (count.get() - uninstalledCount.get()) == 0)) {
                 target.removeListener(this);
                 if(startExceptions.isEmpty() && failedDependencies.isEmpty()) {
                     log.infof("Completed deployment of \"%s\" in %d ms", deploymentName, Long.valueOf((System.nanoTime() - startTime) / 1000000L));
