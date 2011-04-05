@@ -43,6 +43,8 @@ public interface DomainController extends ModelController {
      * @param hostControllerClient client the domain controller can use to communicate with the Host Controller.
      *
      * @return a copy of the domain level model
+     * @throws IllegalArgumentException if there already exists a host controller with the same id as
+     * <code>hostControllerClient</code>
      */
     ModelNode addClient(final DomainControllerSlaveClient hostControllerClient);
 

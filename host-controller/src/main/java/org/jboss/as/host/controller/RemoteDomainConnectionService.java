@@ -305,6 +305,11 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
             expectHeader(input, DomainControllerProtocol.PARAM_MODEL);
             ModelNode node = new ModelNode();
             node.readExternal(input);
+
+            if (node.hasDefined("protocol-error")){
+                log.error(node.get("protocol-error").asString());
+                log.error("Exiting");
+            }
             return node;
         }
     }

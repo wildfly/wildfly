@@ -177,6 +177,9 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     @Override
     public ModelNode addClient(final DomainControllerSlaveClient client) {
         Logger.getLogger("org.jboss.domain").info("register host " + client.getId());
+        if (hosts.containsKey(client.getId()) || localHostName.equals(client.getId())){
+            throw new IllegalArgumentException("There is already a host named '" + client.getId() + "'");
+        }
         this.hosts.put(client.getId(), client);
         return localDomainModel.getDomainModel();
     }

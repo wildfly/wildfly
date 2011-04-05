@@ -45,6 +45,7 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Standard ModelController operation handler that also has the operations for HC->DC.
@@ -52,6 +53,8 @@ import org.jboss.dmr.ModelNode;
  * @version $Revision: 1.1 $
  */
 public class MasterDomainControllerOperationHandlerImpl extends ModelControllerOperationHandlerImpl {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     public MasterDomainControllerOperationHandlerImpl(DomainController modelController, MessageHandler initiatingHandler) {
         super(modelController, initiatingHandler);
@@ -131,8 +134,16 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
 //            getController().addClient(new RemoteDomainControllerSlaveClient(hostId, connection));
-            getController().addClient(new RemoteDomainControllerSlaveClient(hostId, slaveAddress, slavePort));
-            ModelNode node = getController().getDomainModel();
+
+            ModelNode node;
+            try {
+                getController().addClient(new RemoteDomainControllerSlaveClient(hostId, slaveAddress, slavePort));
+                node = getController().getDomainModel();
+            } catch (IllegalArgumentException e){
+                log.error(e);
+                node = new ModelNode();
+                node.get("protocol-error").set(e.getMessage());
+            }
             outputStream.write(DomainControllerProtocol.PARAM_MODEL);
             node.writeExternal(outputStream);
         }
