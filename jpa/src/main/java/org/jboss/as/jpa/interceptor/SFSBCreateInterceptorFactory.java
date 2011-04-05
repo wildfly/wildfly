@@ -22,16 +22,14 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ee.component.ComponentLifecycle;
+import org.jboss.as.ee.component.AbstractComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.jpa.container.AbstractEntityManager;
-import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
-
-import javax.persistence.EntityManager;
-import java.util.List;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * For SFSB life cycle management.
@@ -39,24 +37,19 @@ import java.util.List;
  *
  * @author Scott Marlow
  */
-public class SFSBDestroyInterceptor implements ComponentLifecycle {
-
+public class SFSBCreateInterceptorFactory implements InterceptorFactory {
 
     @Override
-    public void invoke(ComponentInstance target) throws Exception {
-        StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance)target;
-        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
-        List<EntityManager> readyToClose = SFSBXPCMap.getINSTANCE().remove(sfsbContextHandle);
-        if (readyToClose != null && readyToClose.size() > 0) {
-            for( EntityManager entityManager: readyToClose) {
-                if (entityManager instanceof ExtendedEntityManager) {
-                    // TODO:  continue iteratorating through remaing entity managers and chain any exceptions
-                    ((ExtendedEntityManager) entityManager).containerClose();
-                }
-                else {
-                    throw new RuntimeException("can only close SFSB XPC entity manager that are instances of ExtendedEntityManager" + entityManager.getClass().getName());
-                }
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return new Interceptor() {
+            @Override
+            public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+                Object target = context.getContextData().get(AbstractComponent.COMPONENT_INSTANCE_KEY);
+                StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance)target;
+                SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
+                SFSBXPCMap.getINSTANCE().finishRegistrationOfPersistenceContext(sfsbContextHandle);
+                return interceptorContext.proceed();
             }
-        }
+        };
     }
 }

@@ -26,38 +26,41 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
  * Interceptor factory that forms the end point of the component lifecycle
  * chain.
+ * <p/>
+ * It invokes lifecycle methods directly on the component instance
  *
  * @author Stuart Douglas
  */
-public class ComponentLifecycleInterceptorFactory implements InterceptorFactory {
+public class ComponentLifecycleMethodInterceptorFactory implements InterceptorFactory {
 
-    private final List<ComponentLifecycle> lifecycleMethods;
+    private final List<Method> lifecycleMethods;
 
-    public ComponentLifecycleInterceptorFactory(List<ComponentLifecycle> lifecycleMethods) {
+    public ComponentLifecycleMethodInterceptorFactory(List<Method> lifecycleMethods) {
         this.lifecycleMethods = lifecycleMethods;
     }
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        return new ComponentLifecycleInterceptor((ComponentInstance)context.getContextData().get(AbstractComponent.COMPONENT_INSTANCE_KEY));
+        return new ComponentLifecycleInterceptor((Object)context.getContextData().get(AbstractComponent.INSTANCE_KEY));
     }
 
     private class ComponentLifecycleInterceptor implements Interceptor {
 
-        private final ComponentInstance instance;
+        private final Object instance;
 
-        public ComponentLifecycleInterceptor(ComponentInstance instance) {
+        public ComponentLifecycleInterceptor(Object instance) {
             this.instance = instance;
         }
 
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
-            for(ComponentLifecycle method : lifecycleMethods) {
+            for(Method method : lifecycleMethods) {
                 method.invoke(instance);
             }
             return null;

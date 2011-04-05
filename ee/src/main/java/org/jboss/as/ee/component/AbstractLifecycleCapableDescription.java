@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.invocation.InterceptorFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,45 +40,8 @@ public class AbstractLifecycleCapableDescription  {
     private final List<InterceptorMethodDescription> postConstructs = new ArrayList<InterceptorMethodDescription>();
     private final List<InterceptorMethodDescription> preDestroys = new ArrayList<InterceptorMethodDescription>();
 
-    private final List<ComponentLifecycle> postConstructsComponentLifecycles = new ArrayList<ComponentLifecycle>();
-    private final List<ComponentLifecycle> postDestroysComponentLifecycles = new ArrayList<ComponentLifecycle>();
-
-    /**
-     * Adds a post construct ComponentLifecycle
-     *
-     * @param componentLifecycle The ComponentLifecycle
-     */
-    public void addPostConstructComponentLifecycle(ComponentLifecycle componentLifecycle) {
-        postConstructsComponentLifecycles.add(componentLifecycle);
-    }
-
-    /**
-     * Get the post-construct component lifecycles.
-     *
-     * @return the post-construct ComponentLifecycles
-     */
-    public  List<ComponentLifecycle> getPostConstructComponentLifecycles() {
-        return postConstructsComponentLifecycles;
-    }
-
-    /**
-     * Adds a post destroy ComponentLifecycle
-     *
-     * @param componentLifecycle The ComponentLifecycle
-     */
-    public void addPreDestroyComponentLifecycle(ComponentLifecycle componentLifecycle) {
-        postDestroysComponentLifecycles.add(componentLifecycle);
-    }
-
-    /**
-     * Get the post-destroy component lifecycles.
-     *
-     * @return the post-destroy ComponentLifecycles
-     */
-    public  List<ComponentLifecycle> getPreDestroyComponentLifecycles() {
-        return postDestroysComponentLifecycles;
-    }
-
+    private final List<InterceptorFactory> postConstructInterceptorFactories = new ArrayList<InterceptorFactory>();
+    private final List<InterceptorFactory> preDestroyInterceptorFactories = new ArrayList<InterceptorFactory>();
 
     /**
      * Get the post-construct lifecycle method configurations for interceptor classes attached to this component
@@ -132,5 +97,37 @@ public class AbstractLifecycleCapableDescription  {
      */
     public List<InterceptorMethodDescription> getPostConstructs() {
         return postConstructs;
+    }
+
+    /**
+     * Adds a InterceptorFactory that runs at the start of the post construct chain
+     * @param factory The factory to add
+     */
+    public void addPostConstructInterceptorFactory(InterceptorFactory factory) {
+        postConstructInterceptorFactories.add(factory);
+    }
+
+    /**
+     * Adds a InterceptorFactory that runs at the start of the pre destroy chain
+     * @param factory The factory to add
+     */
+    public void addPreDestroyInterceptorFactory(InterceptorFactory factory) {
+        preDestroyInterceptorFactories.add(factory);
+    }
+
+    /**
+     *
+     * @return A list of interceptor factories that run at the start of the post construct chain
+     */
+    public List<InterceptorFactory> getPostConstructInterceptorFactories() {
+        return postConstructInterceptorFactories;
+    }
+
+    /**
+     *
+     * @return A list of interceptor factories that run at the start of the pre-destry chain
+     */
+    public List<InterceptorFactory> getPreDestroyInterceptorFactories() {
+        return preDestroyInterceptorFactories;
     }
 }

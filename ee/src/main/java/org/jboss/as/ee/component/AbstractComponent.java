@@ -56,9 +56,9 @@ import static org.jboss.as.ee.component.SecurityActions.setContextClassLoader;
  */
 public abstract class AbstractComponent implements Component {
 
-    static final Object INSTANCE_KEY = new Object();
-    static final Object COMPONENT_INSTANCE_KEY = new Object();
-    static final Object INJECTION_HANDLE_KEY = new Object();
+    public static final Object INSTANCE_KEY = new Object();
+    public static final Object COMPONENT_INSTANCE_KEY = new Object();
+    public static final Object INJECTION_HANDLE_KEY = new Object();
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 

@@ -31,8 +31,8 @@ import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceUnitBindingSourceDescription;
-import org.jboss.as.jpa.interceptor.SFSBCreateInterceptor;
-import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptor;
+import org.jboss.as.jpa.interceptor.SFSBCreateInterceptorFactory;
+import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptorFactory;
 import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptorFactory;
 import org.jboss.as.jpa.injectors.PersistenceContextBindingSourceDescription;
 import org.jboss.as.jpa.service.PersistenceUnitService;
@@ -336,8 +336,8 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
     // Register our listeners on SFSB that will be created
     private void registerInterceptors(AbstractComponentDescription componentDescription, AnnotationInstance annotation) {
         if (componentDescription instanceof StatefulComponentDescription && isExtendedPersistenceContext(annotation)) {
-            componentDescription.addPostConstructComponentLifecycle(new SFSBCreateInterceptor());
-            componentDescription.addPreDestroyComponentLifecycle(new SFSBDestroyInterceptor());
+            componentDescription.addPostConstructInterceptorFactory(new SFSBCreateInterceptorFactory());
+            componentDescription.addPreDestroyInterceptorFactory(new SFSBDestroyInterceptorFactory());
             componentDescription.addInterceptorFactory(SFSBInvocationInterceptorFactory.getInstance());
         }
     }

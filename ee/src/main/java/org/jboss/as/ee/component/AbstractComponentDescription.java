@@ -402,6 +402,10 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         //postConstructInterceptors.addAll(configuration.getComponentInstanceSystemInterceptorFactories());
         //preDestroyInterceptors.addAll(configuration.getComponentInstanceSystemInterceptorFactories());
 
+        //add explicitly registered lifecycle InterceptorFactories
+        postConstructInterceptors.addAll(getPostConstructInterceptorFactories());
+        preDestroyInterceptors.addAll(getPreDestroyInterceptorFactories());
+
 
         //eagerly force the creation of interceptor factories
         //to ensure they are created in the correct order
@@ -469,30 +473,37 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
         }
 
 
-
-        // populate lifecycle method information
-        // we need to build lifecycle interceptor chains
-        // The chains need the system interceptors, then any interceptor
-        // lifecycle methods, then an interceptor to run component lifecycle methods
-        List<ComponentLifecycle> preDestroyComponentLifecycles = new ArrayList<ComponentLifecycle>(getPreDestroyComponentLifecycles());
-        for(InterceptorMethodDescription interceptor : getPreDestroys()) {
-                preDestroyComponentLifecycles.add(createComponentLifecycle(module.getClassLoader(),interceptor, index));
-        }
-        ComponentLifecycleInterceptorFactory preDestroyInterceptorFactory = new ComponentLifecycleInterceptorFactory(preDestroyComponentLifecycles);
-        preDestroyInterceptors.add(preDestroyInterceptorFactory);
-        configuration.getPreDestroy().addAll(preDestroyInterceptors);
-
-
-        List<ComponentLifecycle> postConstructComponentLifecycles = new ArrayList<ComponentLifecycle>(getPostConstructComponentLifecycles());
-        for(InterceptorMethodDescription interceptor : getPostConstructs()) {
-            if(interceptor.isDeclaredOnTargetClass()) {
-                postConstructComponentLifecycles.add(createComponentLifecycle(module.getClassLoader(),interceptor,index));
+        try {
+            // populate lifecycle method information
+            // we need to build lifecycle interceptor chains
+            // The chains need the system interceptors, then any interceptor
+            // lifecycle methods, then an interceptor to run component lifecycle methods
+            List<Method> preDestroyMethods = new ArrayList<Method>();
+            for(InterceptorMethodDescription interceptor : getPreDestroys()) {
+                final Class<?> declaringClass = module.getClassLoader().loadClass(interceptor.getDeclaringClass());
+                final Method lifecycleMethod = index.getClassIndex(declaringClass).getMethod(void.class, interceptor.getIdentifier().getName());
+                preDestroyMethods.add(lifecycleMethod);
             }
-        }
-        ComponentLifecycleInterceptorFactory postConstructInterceptorFactory = new ComponentLifecycleInterceptorFactory(postConstructComponentLifecycles);
-        postConstructInterceptors.add(postConstructInterceptorFactory);
-        configuration.getPostConstruct().addAll(postConstructInterceptors);
+            ComponentLifecycleMethodInterceptorFactory preDestroyInterceptorFactory = new ComponentLifecycleMethodInterceptorFactory(preDestroyMethods);
+            preDestroyInterceptors.add(preDestroyInterceptorFactory);
 
+
+
+            List<Method> postConstructMethods = new ArrayList<Method>();
+            for(InterceptorMethodDescription interceptor : getPostConstructs()) {
+                final Class<?> declaringClass = module.getClassLoader().loadClass(interceptor.getDeclaringClass());
+                final Method lifecycleMethod = index.getClassIndex(declaringClass).getMethod(void.class, interceptor.getIdentifier().getName());
+                postConstructMethods.add(lifecycleMethod);
+            }
+            ComponentLifecycleMethodInterceptorFactory postConstructInterceptorFactory = new ComponentLifecycleMethodInterceptorFactory(postConstructMethods);
+            postConstructInterceptors.add(postConstructInterceptorFactory);
+        } catch(ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Could not load class while configuring lifecycle methods",e);
+        }
+
+        //set the final lifecycle chains on the configuration
+        configuration.getPostConstruct().addAll(postConstructInterceptors);
+        configuration.getPreDestroy().addAll(preDestroyInterceptors);
 
         // Now create the views
         final Map<Method, InterceptorFactory> viewToInterceptorFactory = configuration.getInterceptorFactoryMap();
@@ -637,17 +648,6 @@ public abstract class AbstractComponentDescription extends AbstractLifecycleCapa
             }
         } catch(ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException("Could not load interceptor class ",e);
-        }
-    }
-
-
-    private static ComponentLifecycle createComponentLifecycle(final ClassLoader classLoader, final InterceptorMethodDescription lifecycleConfiguration, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        try {
-            final Class<?> declaringClass = classLoader.loadClass(lifecycleConfiguration.getDeclaringClass());
-            final Method lifecycleMethod = deploymentReflectionIndex.getClassIndex(declaringClass).getMethod(void.class, lifecycleConfiguration.getIdentifier().getName());
-            return new ComponentLifecycleMethod(lifecycleMethod);
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException(e);
         }
     }
 
