@@ -83,6 +83,7 @@ public class ConcurrencyManagementAnnotationProcessor extends AbstractAnnotation
                 break;
             case BEAN:
                 componentDescription.beanManagedConcurrency();
+                break;
             default:
                 throw new DeploymentUnitProcessingException("Unexpected concurrency management type: " + concurrencyManagementType + " on bean " + componentDescription.getEJBName());
         }
