@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle;
+package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.order;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -34,39 +34,28 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that lifecycle interceptors are handed correctly,
- * as per the interceptors specification.
- *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class InterceptorLifecycleSFSBTestCase {
+public class PostConstructOrderTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class,"testlocal.war");
-        war.addPackage(InterceptorLifecycleSFSBTestCase.class.getPackage());
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "testlocal.war");
+        war.addPackage(PostConstructOrderTestCase.class.getPackage());
         return war;
     }
 
 
     @Test
-    public void testInterceptorPostConstructWithoutProceed() throws NamingException {
+    public void testPostConstructMethodOrder() throws NamingException {
         InitialContext ctx = new InitialContext();
-        InterceptedNoProceedSFSB bean = (InterceptedNoProceedSFSB)ctx.lookup("java:module/" + InterceptedNoProceedSFSB.class.getSimpleName());
+        SFSBChild bean = (SFSBChild) ctx.lookup("java:module/" + SFSBChild.class.getSimpleName());
         bean.doStuff();
-        Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
-        Assert.assertFalse(bean.isPostConstructCalled());
+        Assert.assertTrue(SFSBParent.parentPostConstructCalled);
+        Assert.assertTrue(SFSBChild.childPostConstructCalled);
+        Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
+        Assert.assertTrue(InterceptorChild.childPostConstructCalled);
     }
-
-    @Test
-    public void testInterceptorPostConstructWithProceed() throws NamingException {
-        InitialContext ctx = new InitialContext();
-        InterceptedWithProceedSFSB bean = (InterceptedWithProceedSFSB)ctx.lookup("java:module/" + InterceptedWithProceedSFSB.class.getSimpleName());
-        bean.doStuff();
-        Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
-        Assert.assertTrue(bean.isPostConstructCalled());
-    }
-
 
 }

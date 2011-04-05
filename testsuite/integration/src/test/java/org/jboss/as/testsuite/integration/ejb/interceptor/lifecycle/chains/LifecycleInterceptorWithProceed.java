@@ -19,40 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle;
-
-import org.junit.Assert;
+package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.chains;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import javax.annotation.PreDestroy;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
-@Interceptors(LifecycleInterceptorWithProceed.class)
-public class InterceptedWithProceedSFSB {
+public class LifecycleInterceptorWithProceed {
 
-    boolean postConstructCalled = false;
+    public static boolean postConstruct = false;
+    public static boolean postConstructFinished = false;
+    public static boolean preDestroy = false;
 
-    public void doStuff() {
-
-    }
-
-    /**
-     * This method should be called, after proceed is called from the interceptor, in the same call stack
-     * as the interceptors post construct method. (See 'Multiple Callback Interceptor Methods for a Life Cycle
-     * Callback Event' in the interceptors specification.
-     */
     @PostConstruct
-    public void postConstruct() {
-        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
-        Assert.assertFalse(LifecycleInterceptorWithProceed.postConstructFinished);
-        postConstructCalled = true;
+    private void postConstruct(InvocationContext ctx) throws Exception {
+        postConstruct = true;
+        ctx.proceed();
+        postConstructFinished = true;
     }
 
-    public boolean isPostConstructCalled() {
-        return postConstructCalled;
+    @PreDestroy
+    private void preDestroy(InvocationContext ctx) throws Exception {
+        preDestroy = true;
+        ctx.proceed();
     }
+
+
 }

@@ -19,35 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle;
+package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.chains;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
+import javax.annotation.PreDestroy;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
-@Interceptors(LifecycleInterceptorNoProceed.class)
-public class InterceptedNoProceedSFSB {
+public class LifecycleInterceptorNoProceed {
 
-    boolean postConstructCalled = false;
+    public static boolean postConstruct = false;
+    public static boolean preDestroy = false;
 
-    public void doStuff() {
-
-    }
-
-    /**
-     * This method should not be called, as proceed() is not called from the interceptors
-     * post construct method.
-     */
     @PostConstruct
-    public void postContruct() {
-        postConstructCalled = true;
+    private void postConstruct(InvocationContext ctx) throws Exception{
+        postConstruct = true;
     }
 
-    public boolean isPostConstructCalled() {
-        return postConstructCalled;
+    @PreDestroy
+    private void preDestroy(InvocationContext ctx) throws Exception {
+        preDestroy = true;
     }
+
+
 }

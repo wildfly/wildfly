@@ -19,29 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle;
+package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.order;
+
+import org.junit.Assert;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas
  */
-public class LifecycleInterceptorNoProceed {
+public class FirstInterceptor {
 
-    public static boolean postConstruct = false;
-    public static boolean preDestroy = false;
+    public static boolean postConstructCalled;
 
     @PostConstruct
-    private void postConstruct(InvocationContext ctx) throws Exception{
-        postConstruct = true;
+    public void child(InvocationContext ctx) throws Exception{
+        postConstructCalled = true;
+        Assert.assertFalse(InterceptorParent.parentPostConstructCalled);
+        Assert.assertFalse(InterceptorChild.childPostConstructCalled);
+        Assert.assertFalse(LastInterceptor.postConstructCalled);
+        Assert.assertFalse(SFSBParent.parentPostConstructCalled);
+        Assert.assertFalse(SFSBChild.childPostConstructCalled);
+        ctx.proceed();
     }
-
-    @PreDestroy
-    private void preDestroy(InvocationContext ctx) throws Exception {
-        preDestroy = true;
-    }
-
 
 }
