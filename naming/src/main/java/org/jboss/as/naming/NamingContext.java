@@ -33,7 +33,6 @@ import javax.naming.Binding;
 import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
 import javax.naming.Context;
-import javax.naming.ContextNotEmptyException;
 import javax.naming.InitialContext;
 import javax.naming.LinkRef;
 import javax.naming.Name;
@@ -41,7 +40,6 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.Referenceable;
 import javax.naming.event.EventContext;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
@@ -440,5 +438,13 @@ public class NamingContext implements EventContext {
             throw namingException("Could not dereference object", t);
         }
         return linkResult;
+    }
+
+    Name getPrefix() {
+        return prefix;
+    }
+
+    NamingStore getNamingStore() {
+        return namingStore;
     }
 }

@@ -22,14 +22,23 @@
 
 package org.jboss.as.messaging.jms;
 
+import java.util.Map;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.jboss.as.naming.MockContext;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ValueManagedObject;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Values;
 
 /**
  * {@code Service} responsible for creating and destroying a {@link javax.jms.ConnectionFactory}.
@@ -54,7 +63,21 @@ class ConnectionFactoryService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         final JMSServerManager jmsManager = jmsServer.getValue();
         try {
-            jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
+            MockContext.pushBindingTrap();
+            try {
+                jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
+            } finally {
+                final ServiceTarget target = context.getChildTarget();
+                final Map<String, Object> bindings = MockContext.popTrappedBindings();
+                for(Map.Entry<String, Object> binding : bindings.entrySet()) {
+                    final BinderService binderService = new BinderService(binding.getKey());
+                    target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getKey()), binderService)
+                        .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
+                        .addInjection(binderService.getManagedObjectInjector(), new ValueManagedObject(Values.immediateValue(binding.getValue())))
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
+                }
+            }
         } catch (Exception e) {
             throw new StartException("failed to create connection-factory", e);
         }
