@@ -29,8 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter;
@@ -49,11 +51,13 @@ import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service configuring and starting modcluster.
@@ -71,6 +75,8 @@ class ModClusterService implements Service<Void> {
     private CatalinaEventHandlerAdapter adapter;
     private LoadBalanceFactorProvider load;
 
+    private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
+
     /* Depending on configuration we use one of the other */
     private org.jboss.modcluster.ModClusterService service;
     private ModClusterConfig config;
@@ -82,6 +88,13 @@ class ModClusterService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting Mod_cluster Extension");
         final MBeanServer mbeanServer = getMBeanServer();
+        if (mbeanServer == null) {
+            log.error("Mod_cluster can't work without MBeanServer");
+            return;
+        }
+        // TODO move that in mod_cluster via another BLABLAEventHandlerAdapter()
+        registerObject(mbeanServer, "jboss.web:type=Server", webServer.getValue().getServer(),  "org.apache.catalina.startup.StandardServer");
+        registerObject(mbeanServer, "jboss.web:service=WebServer", webServer.getValue().getService(), "org.apache.catalina.core.StandardService");
 
         config = new ModClusterConfig();
         // Set the configuration.
@@ -259,7 +272,7 @@ class ModClusterService implements Service<Void> {
             Class<? extends LoadMetric> loadMetricClass = null;
             LoadMetric<LoadContext> metric = null;
             try {
-                loadMetricClass = (Class<? extends LoadMetric>) ClassLoader.getSystemClassLoader().loadClass(name);
+                loadMetricClass = (Class<? extends LoadMetric>) this.getClass().getClassLoader().loadClass(name);
             } catch (ClassNotFoundException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
@@ -281,4 +294,22 @@ class ModClusterService implements Service<Void> {
         }
     }
 
+    public Injector<WebServer> getWebServer() {
+        return webServer;
+    }
+
+    Registry getRegistry() {
+        return Registry.getRegistry(null, null);
+    }
+    void registerObject(MBeanServer mbeanServer, String name, Object obj, String classname) {
+        if (mbeanServer != null) {
+            ObjectName objectName;
+            try {
+                objectName = new ObjectName(name);
+                getRegistry().registerComponent(obj, objectName, classname);
+            } catch (Exception e) {
+                return;
+            }
+        }
+    }
 }

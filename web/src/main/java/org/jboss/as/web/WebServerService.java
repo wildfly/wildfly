@@ -15,7 +15,6 @@
 package org.jboss.as.web;
 
 import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
@@ -60,10 +59,9 @@ class WebServerService implements WebServer, Service<WebServer> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        MBeanServer mbeanServer = null;
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             // Set the MBeanServer
-            mbeanServer = this.mbeanServer.getOptionalValue();
+            MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
             if(mbeanServer != null) {
                 Registry.getRegistry(null, null).setMBeanServer(mbeanServer);
             }
@@ -74,12 +72,8 @@ class WebServerService implements WebServer, Service<WebServer> {
 
         final StandardServer server = new StandardServer();
         catalina.setServer(server);
-        if (mbeanServer != null)
-            registerObject(mbeanServer, "jboss.web:type=Server", server,  "org.apache.catalina.startup.StandardServer");
 
         final StandardService service = new StandardService();
-        if (mbeanServer != null)
-            registerObject(mbeanServer, "jboss.web:service=WebServer", service, "org.apache.catalina.core.StandardService");
         service.setName(JBOSS_WEB);
         service.setServer(server);
         server.addService(service);
@@ -163,19 +157,12 @@ class WebServerService implements WebServer, Service<WebServer> {
         return pathInjector;
     }
 
-    Registry getRegistry() {
-        return Registry.getRegistry(null, null);
+    public StandardServer getServer() {
+        return (StandardServer) catalina.getServer();
     }
-    void registerObject(MBeanServer mbeanServer, String name, Object obj, String classname) {
-        if (mbeanServer != null) {
-            ObjectName objectName;
-            try {
-                objectName = new ObjectName(name);
-                getRegistry().registerComponent(obj, objectName, classname);
-            } catch (Exception e) {
-                return;
-            }
-        }
+
+    public StandardService getService() {
+        return service;
     }
 
 }

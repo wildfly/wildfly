@@ -23,6 +23,8 @@ package org.jboss.as.web;
 
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.core.StandardServer;
+import org.apache.catalina.core.StandardService;
 
 /**
  * The web server.
@@ -58,5 +60,15 @@ public interface WebServer {
      * @param host the virtual host
      */
     void removeHost(Host host);
+
+    /**
+     * return the server (StandardServer)
+     */
+    StandardServer getServer();
+
+    /**
+     * return the service (StandardService)
+     */
+    StandardService getService();
 
 }

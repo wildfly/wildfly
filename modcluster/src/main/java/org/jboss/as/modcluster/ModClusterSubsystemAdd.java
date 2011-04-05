@@ -34,6 +34,7 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -65,7 +66,7 @@ class ModClusterSubsystemAdd implements ModelAddOperationHandler, DescriptionPro
                     final ModClusterService service = new ModClusterService(config.clone());
                     context.getServiceTarget().addService(ModClusterService.NAME, service)
                         .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                        .addDependency(WebSubsystemServices.JBOSS_WEB)
+                        .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
                         .setInitialMode(Mode.ACTIVE)
                         .install();
                 }
