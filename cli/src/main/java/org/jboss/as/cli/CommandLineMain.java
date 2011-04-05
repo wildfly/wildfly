@@ -21,9 +21,11 @@
  */
 package org.jboss.as.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -40,6 +42,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
+import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
@@ -78,6 +82,8 @@ public class CommandLineMain {
         registerHandler(new DeployHandler(), "deploy");
         registerHandler(new UndeployHandler(), "undeploy");
         registerHandler(new PrintWorkingNodeHandler(), "pwn", "pwd");
+        registerHandler(new CreateJmsResourceHandler(), "create-jms-resource");
+        registerHandler(new DeleteJmsResourceHandler(), "delete-jms-resource");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
@@ -105,6 +111,7 @@ public class CommandLineMain {
         console.addCompletor(new CommandCompleter(handlers.keySet(), cmdCtx, opCompleter));
         console.addCompletor(opCompleter);
 
+        String fileName = null;
         boolean connect = false;
         for(String arg : args) {
             if(arg.startsWith("controller=")) {
@@ -137,6 +144,8 @@ public class CommandLineMain {
                 }
             } else if("--connect".equals(arg)) {
                 connect = true;
+            } else if(arg.startsWith("file=")) {
+                fileName = arg.substring(5);
             }
         }
 
@@ -148,41 +157,63 @@ public class CommandLineMain {
                 " 'help' for the list of supported commands.");
         }
 
-        while (!cmdCtx.terminate) {
-            String line = console.readLine(cmdCtx.getPrompt()).trim();
-
-            if (line.isEmpty()) {
-                // cmdCtx.log("Type /help for the list of supported commands.");
-                continue;
-            }
-
-            if(isOperation(line)) {
-                cmdCtx.cmdArgs = line;
-                operationHandler.handle(cmdCtx);
-
+        if(fileName != null && !fileName.isEmpty()) {
+            File f = new File(fileName);
+            if(!f.exists()) {
+                cmdCtx.printLine("File " + f.getAbsolutePath() + " doesn't exist.");
             } else {
-                String cmd = line;
-                String cmdArgs = null;
-                for (int i = 0; i < cmd.length(); ++i) {
-                    if (Character.isWhitespace(cmd.charAt(i))) {
-                        cmdArgs = cmd.substring(i + 1).trim();
-                        cmd = cmd.substring(0, i);
-                        break;
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                try {
+                    String line = reader.readLine();
+                    while(!cmdCtx.terminate && line != null) {
+                        processLine(cmdCtx, line.trim());
+                        line = reader.readLine();
                     }
+                } finally {
+                    StreamUtils.safeClose(reader);
+                    StreamUtils.safeClose(cmdCtx.client);
                 }
-                cmdCtx.setArgs(cmdArgs);
-
-                CommandHandler handler = handlers.get(cmd.toLowerCase());
-                if (handler != null) {
-                    handler.handle(cmdCtx);
-                } else {
-                    cmdCtx.printLine("Unexpected command '"
-                            + line
-                            + "'. Type 'help' for the list of supported commands.");
-                }
+                return;
             }
         }
+
+        while (!cmdCtx.terminate) {
+            String line = console.readLine(cmdCtx.getPrompt()).trim();
+            processLine(cmdCtx, line);
+        }
         StreamUtils.safeClose(cmdCtx.client);
+    }
+
+    protected static void processLine(final CommandContextImpl cmdCtx, String line) {
+        if (line.isEmpty()) {
+            return;
+        }
+
+        if(isOperation(line)) {
+            cmdCtx.cmdArgs = line;
+            operationHandler.handle(cmdCtx);
+
+        } else {
+            String cmd = line;
+            String cmdArgs = null;
+            for (int i = 0; i < cmd.length(); ++i) {
+                if (Character.isWhitespace(cmd.charAt(i))) {
+                    cmdArgs = cmd.substring(i + 1).trim();
+                    cmd = cmd.substring(0, i);
+                    break;
+                }
+            }
+            cmdCtx.setArgs(cmdArgs);
+
+            CommandHandler handler = handlers.get(cmd.toLowerCase());
+            if (handler != null) {
+                handler.handle(cmdCtx);
+            } else {
+                cmdCtx.printLine("Unexpected command '"
+                        + line
+                        + "'. Type 'help' for the list of supported commands.");
+            }
+        }
     }
 
     protected static jline.ConsoleReader initConsoleReader() {

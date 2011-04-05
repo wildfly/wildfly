@@ -1,0 +1,7 @@
+Synopsis:	delete-jms-resource name
+
+Description:	removes a JMS resource
+
+Arguments:
+
+	name	- the name (not the JNDI name) of the JMS resource.
