@@ -149,7 +149,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
                     injectionTargetDescription.setType(InjectionTargetDescription.Type.METHOD);
                 }
                 injectionTargetDescription.setName(memberName);
-                injectionTargetDescription.setValueClassName(classType.getName());
+                injectionTargetDescription.setDeclaredValueClassName(classType.getName());
                 description.getInjectionTargetDescriptions().add(injectionTargetDescription);
             }
         }

@@ -197,7 +197,7 @@ public class WebServiceRefAnnotationParsingProcessor extends AbstractComponentCo
         targetDescription.setName(name);
         targetDescription.setClassName(className);
         targetDescription.setType(processor.getInjectionType());
-        targetDescription.setValueClassName(ref.getServiceRefType());
+        targetDescription.setDeclaredValueClassName(ref.getServiceRefType());
         bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
 
         return bindingDescription;

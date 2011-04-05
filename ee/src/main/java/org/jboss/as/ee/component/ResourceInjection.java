@@ -65,7 +65,7 @@ public interface ResourceInjection {
         public static ResourceInjection create(final InjectionTargetDescription resourceConfiguration, final Class<?> beanClass, final DeploymentReflectionIndex deploymentReflectionIndex, final Value<ManagedReferenceFactory> value) {
             final Class<?> argClass;
             try {
-                argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getValueClassName());
+                argClass = beanClass.getClassLoader().loadClass(resourceConfiguration.getDeclaredValueClassName());
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("Invalid resource injection configuration.", e);
             }
@@ -88,7 +88,7 @@ public interface ResourceInjection {
                         throw new IllegalArgumentException("Invalid injection - Method void " + memberName + "(" + argClass.getName() + ")" + " not found on " + beanClass);
                     }
                     if (!method.getParameterTypes()[0].isAssignableFrom(argClass)) {
-                        throw new IllegalArgumentException("Field type " + method.getParameterTypes()[0] + " is not assignable from " + argClass + " , injection into class " + beanClass + " failed");
+                        throw new IllegalArgumentException("Method param type " + method.getParameterTypes()[0] + " is not assignable from " + argClass + " , injection into class " + beanClass + " failed");
                     }
                     return new MethodResourceInjection(method, value);
                 }

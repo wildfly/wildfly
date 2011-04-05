@@ -188,7 +188,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         targetDescription.setName(fieldName);
         targetDescription.setClassName(fieldInfo.declaringClass().name().toString());
         targetDescription.setType(InjectionTargetDescription.Type.FIELD);
-        targetDescription.setValueClassName(injectionTypeName);
+        targetDescription.setDeclaredValueClassName(fieldInfo.type().name().toString());
         bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
 
         return bindingDescription;
@@ -230,7 +230,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         targetDescription.setName(methodName);
         targetDescription.setClassName(methodInfo.declaringClass().name().toString());
         targetDescription.setType(InjectionTargetDescription.Type.METHOD);
-        targetDescription.setValueClassName(injectionTypeName);
+        targetDescription.setDeclaredValueClassName(methodInfo.returnType().name().toString());
         bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
         return bindingDescription;
     }

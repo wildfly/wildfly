@@ -30,7 +30,7 @@ package org.jboss.as.ee.component;
 public final class InjectionTargetDescription {
     private String className;
     private String name;
-    private String valueClassName;
+    private String declaredValueClassName;
     private Type type;
 
     /**
@@ -84,21 +84,21 @@ public final class InjectionTargetDescription {
     }
 
     /**
-     * Get the class name which the field or setter method can accept.
+     * Get the class name of the field or the parameter type declared for the target method
      *
      * @return the class name
      */
-    public String getValueClassName() {
-        return valueClassName;
+    public String getDeclaredValueClassName() {
+        return declaredValueClassName;
     }
 
     /**
-     * Set the class name which the field or setter method can accept.
+     * Set the class name of the field or the parameter type declared for the target method
      *
      * @param valueClassName the class name
      */
-    public void setValueClassName(final String valueClassName) {
-        this.valueClassName = valueClassName;
+    public void setDeclaredValueClassName(final String valueClassName) {
+        this.declaredValueClassName = valueClassName;
     }
 
     /**
@@ -118,4 +118,5 @@ public final class InjectionTargetDescription {
     public void setType(final Type type) {
         this.type = type;
     }
+
 }

@@ -160,7 +160,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         targetDescription.setName(fieldName);
         targetDescription.setClassName(fieldInfo.declaringClass().name().toString());
         targetDescription.setType(InjectionTargetDescription.Type.FIELD);
-        targetDescription.setValueClassName(injectionType);
+        targetDescription.setDeclaredValueClassName(fieldInfo.type().name().toString());
         bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
         return bindingDescription;
     }
@@ -186,7 +186,7 @@ public class ResourceInjectionAnnotationParsingProcessor extends AbstractCompone
         targetDescription.setName(methodName);
         targetDescription.setClassName(methodInfo.declaringClass().name().toString());
         targetDescription.setType(InjectionTargetDescription.Type.METHOD);
-        targetDescription.setValueClassName(injectionType);
+        targetDescription.setDeclaredValueClassName(methodInfo.args()[0].name().toString());
         bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
         return bindingDescription;
     }
