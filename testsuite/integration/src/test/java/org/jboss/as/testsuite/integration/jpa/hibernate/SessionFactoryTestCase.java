@@ -78,7 +78,8 @@ public class SessionFactoryTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(SessionFactoryTestCase.class,
             Employee.class,
-            SFSB1.class
+            SFSB1.class,
+            SFSBHibernateSession.class
         );
 
         jar.addResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -94,6 +95,8 @@ public class SessionFactoryTestCase {
         return interfaceType.cast(iniCtx.lookup(name));
     }
 
+    // test that we didn't break the Hibernate hibernate.session_factory_name (bind Hibernate session factory to
+    // specified jndi name) functionality.
     @Test
     public void testHibernateSessionFactoryName() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
@@ -109,5 +112,13 @@ public class SessionFactoryTestCase {
         assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
     }
 
+    // Test that a Persistence context can be injected into a Hibernate Session
+    @Test
+    public void testInjectPCIntoHibernateSession() throws Exception {
+        SFSBHibernateSession sfsbHibernateSession = lookup("SFSBHibernateSession",SFSBHibernateSession.class);
+        sfsbHibernateSession.createEmployee("Molly", "2 apple way", 2);
 
+        Employee emp = sfsbHibernateSession.getEmployee(2);
+        assertTrue("name read from hibernate session is Molly", "Molly".equals(emp.getName()));
+    }
 }
