@@ -22,11 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -48,6 +43,11 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Create and mount classpath entries in the .war deployment.
@@ -94,6 +94,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             // if this has not been overriden by jboss-structure.xml
             moduleSpecification.setChildFirst(true);
         }
+        moduleSpecification.setPrivateModule(true);
 
         // other sub deployments should not have access to classes in the war module
         PrivateSubDeploymentMarker.mark(deploymentUnit);

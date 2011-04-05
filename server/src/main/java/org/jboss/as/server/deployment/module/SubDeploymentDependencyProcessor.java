@@ -30,6 +30,9 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Processor that set up a module dependency on the parent module
  *
@@ -46,14 +49,39 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
         if (parent == null) {
             return;
         }
+
+        final ModuleSpecification parentModuleSpec = parent.getAttachment(Attachments.MODULE_SPECIFICATION);
+
         final ModuleSpecification moduleSpec=deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
+        final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (parentModule != null) {
             // access to ear classes
             ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true);
             moduleDependency.addImportFilter(PathFilters.acceptAll(),true);
             moduleSpec.addDependency(moduleDependency);
+        }
+
+        //If the extended class visibility flag is set up we need to set
+        //up dependencies on other sub deployments
+        if(parentModuleSpec.isExtendedClassVisibility()) {
+            final List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+            final List<ModuleDependency> accessibleModules = new ArrayList<ModuleDependency>();
+            for(DeploymentUnit subDeployment : subDeployments) {
+                final ModuleSpecification subModule = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
+                if(!subModule.isPrivateModule()) {
+                    ModuleIdentifier identifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
+                    ModuleDependency dependency =new  ModuleDependency(moduleLoader,identifier,false, false, true);
+                    dependency.addImportFilter(PathFilters.acceptAll(),true);
+                    accessibleModules.add(dependency);
+                }
+            }
+            for(ModuleDependency identifier : accessibleModules) {
+                if(!identifier.equals(moduleIdentifier)) {
+                    moduleSpec.addDependencies(accessibleModules);
+                }
+            }
         }
 
     }

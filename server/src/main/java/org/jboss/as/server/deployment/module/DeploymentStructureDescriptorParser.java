@@ -130,6 +130,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
     private static class ParseResult {
+        private boolean extendedClassVisibility = false;
         private ModuleStructureSpec rootDeploymentSpecification;
         private final Map<String, ModuleStructureSpec> subDeploymentSpecifications = new HashMap<String, ModuleStructureSpec>();
         private final List<ModuleStructureSpec> additionalModules = new ArrayList<ModuleStructureSpec>();
@@ -147,6 +148,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
 
     enum Element {
         JBOSS_STRUCTURE,
+        EXTENDED_CLASS_VISIBILITY,
         DEPLOYMENT,
         SUB_DEPLOYMENT,
         MODULE,
@@ -171,6 +173,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         static {
             Map<QName, Element> elementsMap = new HashMap<QName, Element>();
             elementsMap.put(new QName(NAMESPACE, "jboss-deployment-structure"), Element.JBOSS_STRUCTURE);
+            elementsMap.put(new QName(NAMESPACE, "extended-class-visibility"), Element.EXTENDED_CLASS_VISIBILITY);
             elementsMap.put(new QName(NAMESPACE, "deployment"), Element.DEPLOYMENT);
             elementsMap.put(new QName(NAMESPACE, "sub-deployment"), Element.SUB_DEPLOYMENT);
             elementsMap.put(new QName(NAMESPACE, "module"), Element.MODULE);
@@ -277,9 +280,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         try {
             ParseResult result = parse(deploymentFile.getPhysicalFile(), resourceRoot.getRoot(), moduleLoader);
 
+            ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+            moduleSpec.setExtendedClassVisibility(result.extendedClassVisibility);
             // handle the the root deployment
             if (result.rootDeploymentSpecification != null) {
-                ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
                 moduleSpec.addDependencies(result.rootDeploymentSpecification.getModuleDependencies());
                 for (ResourceRoot additionalResourceRoot : result.rootDeploymentSpecification.getResourceRoots()) {
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
@@ -302,12 +306,12 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                     throw subDeploymentNotFound(path, subDeploymentMap.keySet());
                 }
                 final DeploymentUnit subDeployment = subDeploymentMap.get(path);
-                ModuleSpecification moduleSpec = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
-                moduleSpec.addDependencies(spec.getModuleDependencies());
+                ModuleSpecification subModuleSpec = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
+                subModuleSpec.addDependencies(spec.getModuleDependencies());
                 for (ResourceRoot additionalResourceRoot : spec.getResourceRoots()) {
                     subDeployment.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 }
-                moduleSpec.setChildFirst(spec.getChildFirst());
+                subModuleSpec.setChildFirst(spec.getChildFirst());
             }
 
             // handle additional modules
@@ -535,6 +539,14 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                     final Element element = Element.of(reader.getName());
 
                     switch (element) {
+                        case EXTENDED_CLASS_VISIBILITY:
+                            String value = reader.getElementText();
+                            if(value == null || value.isEmpty()) {
+                                result.extendedClassVisibility = true;
+                            } else {
+                                result.extendedClassVisibility = Boolean.valueOf(value);
+                            }
+                            break;
                         case DEPLOYMENT:
                             if (deploymentVisited) {
                                 throw unexpectedContent(reader);

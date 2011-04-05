@@ -21,13 +21,13 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import org.jboss.as.server.deployment.SimpleAttachable;
+import org.jboss.modules.ResourceLoaderSpec;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.jboss.as.server.deployment.SimpleAttachable;
-import org.jboss.modules.ResourceLoaderSpec;
 
 /**
  * Information used to build a module.
@@ -41,6 +41,16 @@ public class ModuleSpecification extends SimpleAttachable {
     private final List<ResourceLoaderSpec> resourceLoaders = new ArrayList<ResourceLoaderSpec>();
 
     private Boolean childFirst;
+
+    /**
+     * Flag that is set to true if non private sub deployments should be able to see each other
+     */
+    private boolean extendedClassVisibility;
+
+    /**
+     * Flag that indicates that this module should never be visible to other sub deployments
+     */
+    private boolean privateModule;
 
     public Boolean getChildFirst() {
         return childFirst;
@@ -70,4 +80,19 @@ public class ModuleSpecification extends SimpleAttachable {
         return Collections.unmodifiableList(resourceLoaders);
     }
 
+    public boolean isExtendedClassVisibility() {
+        return extendedClassVisibility;
+    }
+
+    public void setExtendedClassVisibility(boolean extendedClassVisibility) {
+        this.extendedClassVisibility = extendedClassVisibility;
+    }
+
+    public boolean isPrivateModule() {
+        return privateModule;
+    }
+
+    public void setPrivateModule(boolean privateModule) {
+        this.privateModule = privateModule;
+    }
 }

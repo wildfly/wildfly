@@ -45,6 +45,14 @@
             </xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
+            <xsd:element name="extended-class-visibility" type="xsd:boolean" minOccurs="0" maxOccurs="1" >
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        If this is set to true then ejb-jar's are accessible from other modules
+                        without an explicit Class-Path: reference.
+                    </documentation>
+                </annotation>
+            </xsd:element>
             <xsd:element name="deployment" type="deploymentType" minOccurs="0" maxOccurs="1" >
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
@@ -53,7 +61,7 @@
                     </documentation>
                 </annotation>
             </xsd:element>
-            <xsd:element name="subDeployment" type="deploymentType" minOccurs="0" maxOccurs="unbounded" >
+            <xsd:element name="sub-deployment" type="deploymentType" minOccurs="0" maxOccurs="unbounded" >
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         Element that corresponds to a deployment. This is used to customise
