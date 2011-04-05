@@ -69,8 +69,13 @@ public class MethodAwareInterceptorFactory implements InterceptorFactory {
 
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
-            context.setMethod(method);
-            return delegate.processInvocation(context);
+            final Method oldMethod = context.getMethod();
+            try {
+                context.setMethod(method);
+                return delegate.processInvocation(context);
+            } finally {
+                context.setMethod(oldMethod);
+            }
         }
     }
 }
