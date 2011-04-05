@@ -97,21 +97,21 @@ class ServerInventory implements ManagedServerLifecycleCallback {
         final String processName = ManagedServer.getServerProcessName(serverName);
         final ManagedServer existing = servers.get(processName);
         if(existing != null) { // FIXME
-            log.warnf("existing server [%s] with state: " + existing.getState());
+            log.warnf("Existing server [%s] with state: %s", processName, existing.getState());
             return determineServerStatus(serverName);
         }
-        log.info("starting server " + serverName);
+        log.infof("Starting server %s", serverName);
         final ManagedServer server = createManagedServer(serverName, hostModel, domainController);
         servers.put(processName, server);
         try {
             server.createServerProcess();
         } catch(IOException e) {
-            log.error("Failed to create server process " + serverName, e);
+            log.errorf(e, "Failed to create server process %s", serverName);
         }
         try {
             server.startServerProcess();
         } catch(IOException e) {
-            log.error("Failed to start server " + serverName, e);
+            log.errorf(e, "Failed to start server %s", serverName);
         }
         return determineServerStatus(serverName);
     }
