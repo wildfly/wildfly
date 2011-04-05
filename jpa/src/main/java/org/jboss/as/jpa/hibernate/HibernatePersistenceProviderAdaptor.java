@@ -37,8 +37,6 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     @Override
     public void addProviderProperties(Map properties) {
         properties.put("hibernate.transaction.manager_lookup_class", "org.jboss.as.jpa.hibernate.HibernateTransactionManagerLookup");
-        properties.put("hibernate.jndi.java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-        properties.put("hibernate.jndi.java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
         properties.put("hibernate.id.new_generator_mappings", "true");
         properties.put("hibernate.ejb.resource_scanner","org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
     }
