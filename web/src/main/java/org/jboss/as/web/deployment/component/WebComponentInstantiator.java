@@ -22,7 +22,7 @@
 package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.AbstractComponentDescription;
-import org.jboss.as.ee.component.ComponentInstanceManagedReference;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceController;
@@ -50,16 +50,32 @@ public class WebComponentInstantiator implements ComponentInstantiator {
 
     @Override
     public ManagedReference getReference() {
-        if(component == null) {
+        if (component == null) {
             synchronized (this) {
-                if(component == null) {
+                if (component == null) {
                     component = ((ServiceController<WebComponent>) serviceRegistry.getRequiredService(serviceName)).getValue();
                 }
             }
         }
-        return new ComponentInstanceManagedReference(component.createInstance());
-    }
+        return new ManagedReference() {
 
+            private final ComponentInstance instance = component.createInstance();
+            private boolean destroyed;
+
+            @Override
+            public synchronized void release() {
+                if (!destroyed) {
+                    instance.getComponent().destroyInstance(instance);
+                    destroyed = true;
+                }
+            }
+
+            @Override
+            public Object getInstance() {
+                return instance.getInstance();
+            }
+        };
+    }
 
 
     @Override
