@@ -43,7 +43,8 @@ import static org.junit.Assert.assertTrue;
  * -Djboss.options="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"
  * <p/>
  * For embedded debugging:
- * -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787"
+ *  start AS standalone and attach debugger
+ *  mvn install -Premote
  *
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  * @author Scott Marlow
