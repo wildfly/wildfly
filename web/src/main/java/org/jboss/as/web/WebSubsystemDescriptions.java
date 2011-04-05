@@ -57,9 +57,27 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.NATIVE, DESCRIPTION).set(bundle.getString("web.native"));
         node.get(ATTRIBUTES, Constants.NATIVE, REQUIRED).set(false);
 
+        node.get(ATTRIBUTES, Constants.CONNECTOR, TYPE).set(ModelType.LIST);
+        node.get(ATTRIBUTES, Constants.CONNECTOR, DESCRIPTION).set(bundle.getString("web.connector"));
+        node.get(ATTRIBUTES, Constants.CONNECTOR, MAX_OCCURS).set(Integer.MAX_VALUE);
+
+        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, TYPE).set(ModelType.LIST);
+        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.name"));
+        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, REQUIRED).set(true);
+        node.get(ATTRIBUTES, Constants.CONNECTOR, Constants.NAME, NILLABLE).set(false);
+
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, TYPE).set(ModelType.LIST);
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.virtual-server"));
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, MAX_OCCURS).set(Integer.MAX_VALUE);
+
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, DESCRIPTION).set(bundle.getString("web.virtual-server.name"));
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, REQUIRED).set(true);
+        node.get(ATTRIBUTES, Constants.VIRTUAL_SERVER, Constants.NAME, NILLABLE).set(false);
+
         getConfigurationCommonDescription(node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG), ATTRIBUTES, bundle);
-        getConnectorCommonDescription(node.get(CHILDREN, Constants.CONNECTOR), bundle);
-        getVirtualServerCommonDescription(node.get(CHILDREN, Constants.VIRTUAL_SERVER), bundle);
+        getConnectorCommonDescription(node.get(CHILDREN, Constants.CONNECTOR), ATTRIBUTES, bundle);
+        getVirtualServerCommonDescription(node.get(CHILDREN, Constants.VIRTUAL_SERVER), ATTRIBUTES, bundle);
 
         return node;
     }
@@ -91,7 +109,15 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        return getConnectorCommonDescription(node, bundle);
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.connector"));
+
+        node.get(ATTRIBUTES, Constants.NAME, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.name"));
+        node.get(ATTRIBUTES, Constants.NAME, REQUIRED).set(true);
+        node.get(ATTRIBUTES, Constants.NAME, NILLABLE).set(false);
+
+        return getConnectorCommonDescription(node, ATTRIBUTES, bundle);
     }
 
     static ModelNode getConfigurationCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
@@ -103,7 +129,7 @@ class WebSubsystemDescriptions {
         getStaticResourcesCommonDescription(node.get(type, Constants.STATIC_RESOURCES), type, bundle);
         getJSPCommonDescription(node.get(type, Constants.STATIC_RESOURCES), type, bundle);
 
-        node.get(type, Constants.MIME_MAPPING, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MIME_MAPPING, TYPE).set(ModelType.LIST);
         node.get(type, Constants.MIME_MAPPING, DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping"));
         node.get(type, Constants.MIME_MAPPING, REQUIRED).set(false);
         node.get(type, Constants.MIME_MAPPING, MAX_OCCURS).set(Integer.MAX_VALUE);
@@ -118,10 +144,10 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.MIME_MAPPING, Constants.VALUE, REQUIRED).set(true);
         node.get(type, Constants.MIME_MAPPING, Constants.VALUE, NILLABLE).set(false);
 
-        node.get(type, Constants.WELCOME_FILE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.WELCOME_FILE, TYPE).set(ModelType.LIST);
         node.get(type, Constants.WELCOME_FILE, DESCRIPTION).set(bundle.getString("web.configuration.welcome-file"));
         node.get(type, Constants.WELCOME_FILE, REQUIRED).set(false);
-        node.get(type, Constants.WELCOME_FILE, NILLABLE).set(false);
+        node.get(type, Constants.WELCOME_FILE, NILLABLE).set(true);
         node.get(type, Constants.WELCOME_FILE, MAX_OCCURS).set(Integer.MAX_VALUE);
 
         return node;
@@ -253,32 +279,133 @@ class WebSubsystemDescriptions {
         return node;
     }
 
-    static ModelNode getConnectorCommonDescription(final ModelNode node, final ResourceBundle bundle) {
+    static ModelNode getConnectorCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
+        node.get(type, Constants.PROTOCOL, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.protocol"));
+        node.get(type, Constants.PROTOCOL, REQUIRED).set(false);
+
+        node.get(type, Constants.SOCKET_BINDING, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SOCKET_BINDING, DESCRIPTION).set(bundle.getString("web.connector.socket-binding"));
+        node.get(type, Constants.SOCKET_BINDING, REQUIRED).set(true);
+        node.get(type, Constants.SOCKET_BINDING, NILLABLE).set(false);
+
+        node.get(type, Constants.SCHEME, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SCHEME, DESCRIPTION).set(bundle.getString("web.connector.scheme"));
+        node.get(type, Constants.SCHEME, REQUIRED).set(false);
+
+        node.get(type, Constants.EXECUTOR, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.EXECUTOR, DESCRIPTION).set(bundle.getString("web.connector.executor"));
+        node.get(type, Constants.EXECUTOR, REQUIRED).set(false);
+
+        node.get(type, Constants.ENABLED, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.ENABLED, DESCRIPTION).set(bundle.getString("web.connector.enabled"));
+        node.get(type, Constants.ENABLED, REQUIRED).set(false);
+
+        node.get(type, Constants.ENABLE_LOOKUPS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.ENABLE_LOOKUPS, DESCRIPTION).set(bundle.getString("web.connector.enable-lookups"));
+        node.get(type, Constants.ENABLE_LOOKUPS, REQUIRED).set(false);
+
+        node.get(type, Constants.PROXY_NAME, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PROXY_NAME, DESCRIPTION).set(bundle.getString("web.connector.proxy-name"));
+        node.get(type, Constants.PROXY_NAME, REQUIRED).set(false);
+
+        node.get(type, Constants.PROXY_PORT, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PROXY_PORT, DESCRIPTION).set(bundle.getString("web.connector.proxy-port"));
+        node.get(type, Constants.PROXY_PORT, REQUIRED).set(false);
+
+        node.get(type, Constants.MAX_POST_SIZE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MAX_POST_SIZE, DESCRIPTION).set(bundle.getString("web.connector.max-post-size"));
+        node.get(type, Constants.MAX_POST_SIZE, REQUIRED).set(false);
+
+        node.get(type, Constants.MAX_SAVE_POST_SIZE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MAX_SAVE_POST_SIZE, DESCRIPTION).set(bundle.getString("web.connector.max-save-post-size"));
+        node.get(type, Constants.MAX_SAVE_POST_SIZE, REQUIRED).set(false);
+
+        node.get(type, Constants.SECURE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SECURE, DESCRIPTION).set(bundle.getString("web.connector.secure"));
+        node.get(type, Constants.SECURE, REQUIRED).set(false);
+
+        node.get(type, Constants.REDIRECT_PORT, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.REDIRECT_PORT, DESCRIPTION).set(bundle.getString("web.connector.redirect-port"));
+        node.get(type, Constants.REDIRECT_PORT, REQUIRED).set(false);
+
+        node.get(type, Constants.MAX_CONNECTIONS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MAX_CONNECTIONS, DESCRIPTION).set(bundle.getString("web.connector.max-connections"));
+        node.get(type, Constants.MAX_CONNECTIONS, REQUIRED).set(false);
+
+        node.get(type, Constants.VIRTUAL_SERVER, TYPE).set(ModelType.LIST);
+        node.get(type, Constants.VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.connector.virtual-server"));
+        node.get(type, Constants.VIRTUAL_SERVER, REQUIRED).set(false);
+
+        getSSLCommonDescription(node.get(type, Constants.SSL), type, bundle);
+
+        if (ATTRIBUTES.equals(type)) {
+            for(final String metric : WebConnectorMetrics.ATTRIBUTES) {
+                node.get(ATTRIBUTES, metric, TYPE).set(ModelType.INT);
+            }
+        }
+
+        return node;
+    }
+
+    static ModelNode getSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
         node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.connector"));
+        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
+        node.get(REQUIRED).set(false);
 
-        node.get(ATTRIBUTES, Constants.NAME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.name"));
-        node.get(ATTRIBUTES, Constants.NAME, REQUIRED).set(true);
-        node.get(ATTRIBUTES, Constants.NAME, NILLABLE).set(false);
+        node.get(type, Constants.NAME, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.ssl.name"));
+        node.get(type, Constants.NAME, REQUIRED).set(false);
 
-        node.get(ATTRIBUTES, Constants.PROTOCOL, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.protocol"));
-        node.get(ATTRIBUTES, Constants.PROTOCOL, REQUIRED).set(false);
+        node.get(type, Constants.KEY_ALIAS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.KEY_ALIAS, DESCRIPTION).set(bundle.getString("web.connector.ssl.key-alias"));
+        node.get(type, Constants.KEY_ALIAS, REQUIRED).set(false);
 
-        node.get(ATTRIBUTES, Constants.SOCKET_BINDING, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.SOCKET_BINDING, DESCRIPTION).set(bundle.getString("web.connector.socket-binding"));
-        node.get(ATTRIBUTES, Constants.SOCKET_BINDING, REQUIRED).set(true);
-        node.get(ATTRIBUTES, Constants.SOCKET_BINDING, NILLABLE).set(false);
+        node.get(type, Constants.PASSWORD, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PASSWORD, DESCRIPTION).set(bundle.getString("web.connector.ssl.password"));
+        node.get(type, Constants.PASSWORD, REQUIRED).set(false);
 
-        node.get(ATTRIBUTES, Constants.SCHEME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.SCHEME, DESCRIPTION).set(bundle.getString("web.connector.scheme"));
-        node.get(ATTRIBUTES, Constants.SCHEME, REQUIRED).set(false);
+        node.get(type, Constants.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.certificate-key-file"));
+        node.get(type, Constants.CERTIFICATE_KEY_FILE, REQUIRED).set(false);
 
-        for(final String metric : WebConnectorMetrics.ATTRIBUTES) {
-            node.get(ATTRIBUTES, metric, TYPE).set(ModelType.INT);
-        }
+        node.get(type, Constants.CIPHER_SUITE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CIPHER_SUITE, DESCRIPTION).set(bundle.getString("web.connector.ssl.cipher-suite"));
+        node.get(type, Constants.CIPHER_SUITE, REQUIRED).set(false);
+
+        node.get(type, Constants.PROTOCOL, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.ssl.protocol"));
+        node.get(type, Constants.PROTOCOL, REQUIRED).set(false);
+
+        node.get(type, Constants.VERIFY_CLIENT, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.VERIFY_CLIENT, DESCRIPTION).set(bundle.getString("web.connector.ssl.verify-client"));
+        node.get(type, Constants.VERIFY_CLIENT, REQUIRED).set(false);
+
+        node.get(type, Constants.VERIFY_DEPTH, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.VERIFY_DEPTH, DESCRIPTION).set(bundle.getString("web.connector.ssl.verify-depth"));
+        node.get(type, Constants.VERIFY_DEPTH, REQUIRED).set(false);
+
+        node.get(type, Constants.CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.certificate-file"));
+        node.get(type, Constants.CERTIFICATE_FILE, REQUIRED).set(false);
+
+        node.get(type, Constants.CA_CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CA_CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-certificate-file"));
+        node.get(type, Constants.CA_CERTIFICATE_FILE, REQUIRED).set(false);
+
+        node.get(type, Constants.CA_REVOCATION_URL, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CA_REVOCATION_URL, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-revocation-url"));
+        node.get(type, Constants.CA_REVOCATION_URL, REQUIRED).set(false);
+
+        node.get(type, Constants.SESSION_CACHE_SIZE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SESSION_CACHE_SIZE, DESCRIPTION).set(bundle.getString("web.connector.ssl.session-cache-size"));
+        node.get(type, Constants.SESSION_CACHE_SIZE, REQUIRED).set(false);
+
+        node.get(type, Constants.SESSION_TIMEOUT, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SESSION_TIMEOUT, DESCRIPTION).set(bundle.getString("web.connector.ssl.session-timeout"));
+        node.get(type, Constants.SESSION_TIMEOUT, REQUIRED).set(false);
 
         return node;
     }
@@ -290,18 +417,7 @@ class WebSubsystemDescriptions {
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("web.connector.add"));
 
-        node.get(REQUEST_PROPERTIES, Constants.PROTOCOL, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.protocol"));
-        node.get(REQUEST_PROPERTIES, Constants.PROTOCOL, REQUIRED).set(false);
-
-        node.get(REQUEST_PROPERTIES, Constants.SOCKET_BINDING, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.SOCKET_BINDING, DESCRIPTION).set(bundle.getString("web.connector.socket-binding"));
-        node.get(REQUEST_PROPERTIES, Constants.SOCKET_BINDING, REQUIRED).set(true);
-        node.get(REQUEST_PROPERTIES, Constants.SOCKET_BINDING, NILLABLE).set(false);
-
-        node.get(REQUEST_PROPERTIES, Constants.SCHEME, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.SCHEME, DESCRIPTION).set(bundle.getString("web.connector.scheme"));
-        node.get(REQUEST_PROPERTIES, Constants.SCHEME, REQUIRED).set(false);
+        getConnectorCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
         return node;
     }
@@ -321,10 +437,6 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        return getVirtualServerCommonDescription(node, bundle);
-    }
-
-    static ModelNode getVirtualServerCommonDescription(final ModelNode node, final ResourceBundle bundle) {
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server"));
 
@@ -333,10 +445,97 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.NAME, REQUIRED).set(true);
         node.get(ATTRIBUTES, Constants.NAME, NILLABLE).set(false);
 
-        node.get(ATTRIBUTES, Constants.ALIAS, TYPE).set(ModelType.LIST);
-        node.get(ATTRIBUTES, Constants.ALIAS, DESCRIPTION).set(bundle.getString("web.virtual-server.alias"));
-        node.get(ATTRIBUTES, Constants.ALIAS, REQUIRED).set(false);
-        node.get(ATTRIBUTES, Constants.ALIAS, NILLABLE).set(true);
+        return getVirtualServerCommonDescription(node, ATTRIBUTES, bundle);
+    }
+
+    static ModelNode getVirtualServerCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+        node.get(type, Constants.ALIAS, TYPE).set(ModelType.LIST);
+        node.get(type, Constants.ALIAS, DESCRIPTION).set(bundle.getString("web.virtual-server.alias"));
+        node.get(type, Constants.ALIAS, REQUIRED).set(false);
+        node.get(type, Constants.ALIAS, NILLABLE).set(true);
+
+        node.get(type, Constants.DEFAULT_WEB_MODULE, TYPE).set(ModelType.LIST);
+        node.get(type, Constants.DEFAULT_WEB_MODULE, DESCRIPTION).set(bundle.getString("web.virtual-server.default-web-module"));
+        node.get(type, Constants.DEFAULT_WEB_MODULE, REQUIRED).set(false);
+
+        getAccessLogCommonDescription(node.get(type, Constants.ACCESS_LOG), type, bundle);
+        getRewriteCommonDescription(node.get(type, Constants.REWRITE), type, bundle);
+
+        return node;
+    }
+
+    static ModelNode getAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
+        node.get(REQUIRED).set(false);
+
+        node.get(type, Constants.PATTERN, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.pattern"));
+        node.get(type, Constants.PATTERN, REQUIRED).set(false);
+
+        node.get(type, Constants.RESOLVE_HOSTS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.RESOLVE_HOSTS, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.resolve-hosts"));
+        node.get(type, Constants.RESOLVE_HOSTS, REQUIRED).set(false);
+
+        node.get(type, Constants.EXTENDED, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.EXTENDED, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.extended"));
+        node.get(type, Constants.EXTENDED, REQUIRED).set(false);
+
+        node.get(type, Constants.PREFIX, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PREFIX, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.prefix"));
+        node.get(type, Constants.PREFIX, REQUIRED).set(false);
+
+        node.get(type, Constants.ROTATE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.ROTATE, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.rotate"));
+        node.get(type, Constants.ROTATE, REQUIRED).set(false);
+
+        node.get(type, Constants.DIRECTORY, TYPE).set(ModelType.OBJECT);
+        node.get(type, Constants.DIRECTORY, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.directory"));
+        node.get(type, Constants.DIRECTORY, REQUIRED).set(false);
+
+        node.get(type, Constants.DIRECTORY, Constants.PATH, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.DIRECTORY, Constants.PATH, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.directory.path"));
+        node.get(type, Constants.DIRECTORY, Constants.PATH, REQUIRED).set(false);
+
+        node.get(type, Constants.DIRECTORY, Constants.RELATIVE_TO, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.DIRECTORY, Constants.RELATIVE_TO, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.directory.relative-to"));
+        node.get(type, Constants.DIRECTORY, Constants.RELATIVE_TO, REQUIRED).set(false);
+
+        return node;
+    }
+
+    static ModelNode getRewriteCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+        node.get(TYPE).set(ModelType.LIST);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
+        node.get(REQUIRED).set(false);
+
+        node.get(type, Constants.PATTERN, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.pattern"));
+        node.get(type, Constants.PATTERN, REQUIRED).set(false);
+
+        node.get(type, Constants.SUBSTITUTION, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SUBSTITUTION, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.substitution"));
+        node.get(type, Constants.SUBSTITUTION, REQUIRED).set(false);
+
+        node.get(type, Constants.FLAGS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.FLAGS, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.flags"));
+        node.get(type, Constants.FLAGS, REQUIRED).set(false);
+
+        node.get(type, Constants.CONDITION, TYPE).set(ModelType.LIST);
+        node.get(type, Constants.CONDITION, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
+        node.get(type, Constants.CONDITION, REQUIRED).set(false);
+
+        node.get(type, Constants.CONDITION, Constants.TEST, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CONDITION, Constants.TEST, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition.test"));
+        node.get(type, Constants.CONDITION, Constants.TEST, REQUIRED).set(false);
+
+        node.get(type, Constants.CONDITION, Constants.PATTERN, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CONDITION, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition.pattern"));
+        node.get(type, Constants.CONDITION, Constants.PATTERN, REQUIRED).set(false);
+
+        node.get(type, Constants.CONDITION, Constants.FLAGS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CONDITION, Constants.FLAGS, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition.flags"));
+        node.get(type, Constants.CONDITION, Constants.FLAGS, REQUIRED).set(false);
 
         return node;
     }
@@ -348,9 +547,7 @@ class WebSubsystemDescriptions {
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.add"));
 
-        node.get(REQUEST_PROPERTIES, Constants.ALIAS, TYPE).set(ModelType.LIST);
-        node.get(REQUEST_PROPERTIES, Constants.ALIAS, DESCRIPTION).set(bundle.getString("web.virtual-server.alias"));
-        node.get(REQUEST_PROPERTIES, Constants.ALIAS, REQUIRED).set(false);
+        getVirtualServerCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
         return node;
     }

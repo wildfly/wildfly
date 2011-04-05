@@ -717,8 +717,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         if (name == null) {
             missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        if (protocol == null) {
-            missingRequired(reader, Collections.singleton(Attribute.PROTOCOL));
+        if (bindingRef == null) {
+            missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
         }
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
@@ -777,6 +777,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 break;
             case PASSWORD:
                 ssl.get(PASSWORD).set(value);
+                break;
             case CERTIFICATE_KEY_FILE:
                 ssl.get(CERTIFICATE_KEY_FILE).set(value);
                 break;
