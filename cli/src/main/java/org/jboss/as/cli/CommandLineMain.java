@@ -191,7 +191,7 @@ public class CommandLineMain {
         final String osName = SecurityActions.getSystemProperty("os.name").toLowerCase();
         if(osName.indexOf("windows") >= 0) {
             bindingsName = "keybindings/jline-windows-bindings.properties";
-        } else if(osName.startsWith("macos")) {
+        } else if(osName.startsWith("mac")) {
             bindingsName = "keybindings/jline-mac-bindings.properties";
         } else {
             bindingsName = "keybindings/jline-default-bindings.properties";
