@@ -209,7 +209,7 @@ public enum Phase {
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0C00;
     public static final int PARSE_ANNOTATION_WAR                        = 0x0D00;
     public static final int PARSE_JBOSS_WEB_DEPLOYMENT                  = 0x0E00;
-    public static final int PARSE_WEB_COMPONENTS                        = 0x0F00;
+    public static final int PARSE_TLD_DEPLOYMENT                        = 0x0F00;
     public static final int PARSE_EAR_CONTEXT_ROOT                      = 0x1000;
     // create and attach EJB metadata for EJB deployments
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
@@ -230,7 +230,7 @@ public enum Phase {
     public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x1C00;
     public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x1D00;
     public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x1E00;
-    public static final int PARSE_TLD_DEPLOYMENT                        = 0x1F00;
+    public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;
