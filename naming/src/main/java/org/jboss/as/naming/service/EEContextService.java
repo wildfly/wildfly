@@ -50,7 +50,7 @@ public class EEContextService implements Service<Void> {
         final Reference appReference = NamespaceObjectFactory.createReference(name);
         final NamingStore javaContext = this.javaContext.getValue();
         try {
-            javaContext.rebind(null, NameParser.INSTANCE.parse(name), appReference, Reference.class.getName());
+            javaContext.rebind(NameParser.INSTANCE.parse(name), appReference, Reference.class);
         } catch (NamingException e) {
             throw new StartException("Failed to bind EE context: java:" + name, e);
         }
@@ -59,7 +59,7 @@ public class EEContextService implements Service<Void> {
     public synchronized void stop(StopContext stopContext) {
         final NamingStore javaContext = this.javaContext.getValue();
         try {
-            javaContext.unbind(null, NameParser.INSTANCE.parse(name));
+            javaContext.unbind(NameParser.INSTANCE.parse(name));
         } catch (NamingException e) {
             throw new IllegalStateException("Failed to unbind EE context: java:" + name, e);
         }

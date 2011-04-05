@@ -68,7 +68,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
         try {
             final Reference reference = ManagedReferenceObjectFactory.createReference(context.getController().getName());
             final Name name = NameParser.INSTANCE.parse(this.name);
-            namingStore.bindCreatingParents(null, name, reference, Reference.class.getName());
+            namingStore.bind(name, reference);
         } catch (NamingException e) {
             throw new StartException("Failed to bind resource into naming store [" + namingStore + "] at location [" + name + "]", e);
         }
@@ -82,7 +82,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     public synchronized void stop(StopContext context) {
         final NamingStore namingStore = namingStoreValue.getValue();
         try {
-            namingStore.unbind(null, NameParser.INSTANCE.parse(name));
+            namingStore.unbind(NameParser.INSTANCE.parse(name));
         } catch (NamingException e) {
             throw new IllegalStateException("Failed to unbind resource from naming store [" + namingStore + "] at location [" + name + "]", e);
         }

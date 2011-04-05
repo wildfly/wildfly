@@ -53,7 +53,8 @@ import org.jboss.as.naming.util.NameParser;
 import org.jboss.logging.Logger;
 
 /**
- * Naming context implementation which proxies calls to a {@code NamingStore} instance.
+ * Naming context implementation which proxies calls to a {@code NamingStore} instance.  This context is
+ * read-only.
  *
  * @author John E. Bailey
  */
@@ -113,9 +114,8 @@ public class NamingContext implements EventContext {
      * the active naming store.
      *
      * @param environment The naming environment
-     * @throws NamingException if an error occurs
      */
-    public NamingContext(final Hashtable<String, Object> environment) throws NamingException {
+    public NamingContext(final Hashtable<String, Object> environment) {
         this(new CompositeName(), ACTIVE_NAMING_STORE, environment);
     }
 
@@ -136,9 +136,8 @@ public class NamingContext implements EventContext {
      * @param prefix The prefix for this context
      * @param namingStore The NamingStore
      * @param environment The naming environment
-     * @throws NamingException if an error occurs
      */
-    public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) throws NamingException {
+    public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) {
         if(prefix == null) {
             throw new IllegalArgumentException("Naming prefix can not be null");
         }
@@ -159,9 +158,8 @@ public class NamingContext implements EventContext {
      *
      * @param namingStore the naming store to use
      * @param environment the environment to use
-     * @throws NamingException if an error occurs
      */
-    public NamingContext(final NamingStore namingStore, final Hashtable<String, Object> environment) throws NamingException {
+    public NamingContext(final NamingStore namingStore, final Hashtable<String, Object> environment) {
         this(new CompositeName(), namingStore, environment);
     }
 
@@ -213,80 +211,43 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void bind(final Name name, Object object) throws NamingException {
-        final Name absoluteName = getAbsoluteName(name);
-
-        object = NamingManager.getStateToBind(object, absoluteName, this, environment);
-
-        if(object instanceof Referenceable) {
-            object = ((Referenceable) object).getReference();
-        }
-        String className = object.getClass().getName();
-        if(object instanceof Reference) {
-            className = ((Reference) object).getClassName();
-        }
-        try {
-            namingStore.bind(this, absoluteName, object, className);
-        } catch(CannotProceedException cpe) {
-            final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            continuationContext.bind(cpe.getRemainingName(), object);
-        }
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void bind(final String name, final Object obj) throws NamingException {
-        bind(parseName(name), obj);
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void rebind(final Name name, Object object) throws NamingException {
-        final Name absoluteName = getAbsoluteName(name);
-        object = NamingManager.getStateToBind(object, absoluteName, this, environment);
-
-        if(object instanceof Referenceable) {
-            object = ((Referenceable) object).getReference();
-        }
-        String className = object.getClass().getName();
-        if(object instanceof Reference) {
-            className = ((Reference) object).getClassName();
-        }
-        try {
-            namingStore.rebind(this, absoluteName, object, className);
-        } catch(CannotProceedException cpe) {
-            final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            continuationContext.rebind(cpe.getRemainingName(), object);
-        }
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void rebind(final String name, final Object obj) throws NamingException {
-        rebind(parseName(name), obj);
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void unbind(final Name name) throws NamingException {
-        try {
-            namingStore.unbind(this, getAbsoluteName(name));
-        } catch(CannotProceedException cpe) {
-            final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            continuationContext.unbind(cpe.getRemainingName());
-        }
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void unbind(final String name) throws NamingException {
-        unbind(parseName(name));
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void rename(final Name oldName, final Name newName) throws NamingException {
-        bind(newName, lookup(oldName));
-        unbind(oldName);
+       throw new UnsupportedOperationException("Naming context is read-only");
 
     }
 
     /** {@inheritDoc} */
     public void rename(final String oldName, final String newName) throws NamingException {
-        rename(parseName(oldName), parseName(newName));
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
@@ -321,32 +282,22 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void destroySubcontext(final Name name) throws NamingException {
-        final Name absoluteName = getAbsoluteName(name);
-        if (!list(name).hasMore()) {
-            unbind(name);
-        } else {
-            throw new ContextNotEmptyException(absoluteName.toString());
-        }
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public void destroySubcontext(String name) throws NamingException {
-        destroySubcontext(parseName(name));
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
-        try {
-            return namingStore.createSubcontext(this, getAbsoluteName(name));
-        } catch(CannotProceedException cpe) {
-            final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            return continuationContext.createSubcontext(cpe.getRemainingName());
-        }
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */
     public Context createSubcontext(String name) throws NamingException {
-        return createSubcontext(getNameParser(name).parse(name));
+        throw new UnsupportedOperationException("Naming context is read-only");
     }
 
     /** {@inheritDoc} */

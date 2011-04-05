@@ -30,8 +30,6 @@ import org.junit.Test;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
-import javax.naming.ContextNotEmptyException;
-import javax.naming.InvalidNameException;
 import javax.naming.LinkRef;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
@@ -54,6 +52,7 @@ import static org.junit.Assert.fail;
  */
 public class NamingContextTestCase {
 
+    private NamingStore namingStore;
     private NamingContext namingContext;
 
     @BeforeClass
@@ -63,102 +62,80 @@ public class NamingContextTestCase {
 
     @Before
     public void setup() throws Exception {
-        namingContext = new NamingContext(null);
+        namingStore = new InMemoryNamingStore();
+        NamingContext.setActiveNamingStore(namingStore);
+        namingContext = new NamingContext(namingStore, null);
     }
 
     @After
     public void cleanup() throws Exception {
+        namingStore.close();
         NamingContext.setActiveNamingStore(new InMemoryNamingStore());
     }
 
     @Test
-    public void testBindEmptyName() throws Exception {
-        try {
-            namingContext.bind(new CompositeName(), new Object());
-            fail("Should have thrown and InvalidNameException");
-        } catch(InvalidNameException expected){}
-
-        try {
-            namingContext.bind(new CompositeName(""), new Object());
-            fail("Should have thrown and InvalidNameException");
-        } catch(InvalidNameException expected){}
-    }
-
-    @Test
-    public void testBindInvalidContext() throws Exception {
-        try {
-            namingContext.bind(new CompositeName("bogus/test"), new Object());
-            fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected){}
-    }
-
-    @Test
-    public void testBindAndLookup() throws Exception {
+    public void testLookup() throws Exception {
         final Name name = new CompositeName("test");
         final Object object = new Object();
-        namingContext.bind(name, object);
+        namingStore.bind(name, object);
+
         final Object result = namingContext.lookup(name);
         assertEquals(object, result);
     }
 
     @Test
-    public void testBindAndLookupReference() throws Exception {
+    public void testLookupReference() throws Exception {
         final Name name = new CompositeName("test");
-
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("blah", "test"), TestObjectFactory.class.getName(), null);
+        namingStore.bind(name, reference);
 
-        namingContext.bind(name, reference);
         final Object result = namingContext.lookup(name);
         assertEquals("test", result);
     }
 
     @Test
-    public void testBindAndLookupWithContinuation() throws Exception {
-        namingContext.createSubcontext("comp");
+    public void testLookupWithContinuation() throws Exception {
+        namingStore.bind(new CompositeName("comp/nested"), "test");
 
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "comp"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("test"), reference);
-
-        namingContext.bind("test/nested", "test");
+        namingStore.bind(new CompositeName("test"), reference);
 
         final Object result = namingContext.lookup(new CompositeName("test/nested"));
         assertEquals("test", result);
     }
 
     @Test
-    public void testBindAndLookupWitResolveResult() throws Exception {
-        namingContext.createSubcontext("test");
-        namingContext.bind("test/nested", "test");
+    public void testLookupWitResolveResult() throws Exception {
+        namingStore.bind(new CompositeName("test/nested"), "test");
 
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("blahh", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("comp"), reference);
+        namingStore.bind(new CompositeName("comp"), reference);
 
         final Object result = namingContext.lookup(new CompositeName("comp/nested"));
         assertEquals("test", result);
     }
 
     @Test
-    public void testBindAndLookupLink() throws Exception {
+    public void testLookupLink() throws Exception {
         final Name name = new CompositeName("test");
-        namingContext.bind(name, "testValue");
+        namingStore.bind(name, "testValue", String.class);
         final Name linkName = new CompositeName("link");
-        namingContext.bind(linkName, new LinkRef("./test"));
+        namingStore.bind(linkName, new LinkRef("./test"));
         Object result = namingContext.lookup(linkName);
         assertEquals("testValue", result);
 
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, InitialContextFactory.class.getName());
-        namingContext.rebind(linkName, new LinkRef(name));
+        namingStore.rebind(linkName, new LinkRef(name));
         result = namingContext.lookup(linkName);
         assertEquals("testValue", result);
     }
 
     @Test
-    public void testBindAndLookupContextLink() throws Exception {
-        final Name name = new CompositeName("test");
-        final Context context = namingContext.createSubcontext(name);
-        context.bind("value", "testValue");
+    public void testLookupContextLink() throws Exception {
+        final Name name = new CompositeName("test/value");
+        namingStore.bind(name, "testValue");
         final Name linkName = new CompositeName("link");
-        namingContext.bind(linkName, new LinkRef("./test"));
+        namingStore.bind(linkName, new LinkRef("./test"));
         Object result = namingContext.lookup("link/value");
         assertEquals("testValue", result);
     }
@@ -169,7 +146,8 @@ public class NamingContextTestCase {
         try {
             namingContext.lookup(new CompositeName("test"));
             fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected) {}
+        } catch (NameNotFoundException expected) {
+        }
     }
 
     @Test
@@ -181,173 +159,49 @@ public class NamingContextTestCase {
     }
 
     @Test
-    public void testUnbindNotFound() throws Exception {
+    public void testbind() throws Exception {
+        try {
+            namingContext.bind(new CompositeName("test"), new Object());
+            fail("Should have thrown and UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {
+        }
+    }
+
+    @Test
+    public void testUnbind() throws Exception {
         try {
             namingContext.unbind(new CompositeName("test"));
-            fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected) {}
-    }
-
-    @Test
-    public void testBindUnbindLookup() throws Exception {
-        final Name name = new CompositeName("test");
-        final Object object = new Object();
-        namingContext.bind(name, object);
-        final Object result = namingContext.lookup(name);
-        assertEquals(object, result);
-        namingContext.unbind(name);
-        try {
-            namingContext.lookup(name);
-            fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected) {}
-    }
-
-    @Test
-    public void testUnbindAndLookupWithContinuation() throws Exception {
-        namingContext.createSubcontext("comp");
-
-        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "comp"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("test"), reference);
-
-        final Name continuedName = new CompositeName("test/nested");
-        namingContext.bind("test/nested", "test");
-        assertEquals("test", namingContext.lookup(continuedName));
-        namingContext.unbind("test/nested");
-        try {
-            namingContext.lookup("test/nested");
-            fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected) {}
-    }
-
-    @Test
-    public void testCreateSubcontextEmptyName() throws Exception {
-        try {
-            namingContext.createSubcontext(new CompositeName());
-            fail("Should have thrown and InvalidNameException");
-        } catch(InvalidNameException expected){}
-
-        try {
-            namingContext.createSubcontext(new CompositeName(""));
-            fail("Should have thrown and InvalidNameException");
-        } catch(InvalidNameException expected){}
+            fail("Should have thrown and UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {
+        }
     }
 
     @Test
     public void testCreateSubcontext() throws Exception {
-        final Context context = namingContext.createSubcontext(new CompositeName("subcontext"));
-        assertTrue(context instanceof NamingContext);
-    }
-
-    @Test
-    public void testCreateAndLookupSubcontext() throws Exception {
-        final Name name = new CompositeName("subcontext");
-        namingContext.createSubcontext(name);
-        final Context context = (Context)namingContext.lookup(name);
-        assertTrue(context instanceof NamingContext);
-    }
-
-    @Test
-    public void testCreateSubcontextWithContinuation() throws Exception {
-        namingContext.createSubcontext("test");
-
-        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("comp"), reference);
-
-        final Context context = namingContext.createSubcontext(new CompositeName("comp/test"));
-        assertTrue(context instanceof NamingContext);
-    }
-
-    @Test
-    public void testCreateAndDestroySubcontext() throws Exception {
-        final Name name = new CompositeName("subcontext");
-        namingContext.createSubcontext(name);
-        final Context context = (Context)namingContext.lookup(name);
-        assertTrue(context instanceof NamingContext);
-
-        namingContext.destroySubcontext(name);
         try {
-            namingContext.lookup(name);
-            fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected){}
+            namingContext.createSubcontext(new CompositeName());
+            fail("Should have thrown and UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {
+        }
     }
 
     @Test
     public void testDestroyNonEmptySubcontext() throws Exception {
-        final Name name = new CompositeName("subcontext");
-        final Context context = namingContext.createSubcontext(name);
-        context.bind("test", new Object());
         try {
-            namingContext.destroySubcontext(name);
-            fail("Should have thrown and ContextNotEmptyException");
-        } catch(ContextNotEmptyException expected){}
+            namingContext.destroySubcontext(new CompositeName("subcontext"));
+            fail("Should have thrown and UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {
+        }
     }
 
-    @Test
-    public void testBindToSubcontext() throws Exception {
-        final Name name = new CompositeName("subcontext");
-        final Context context = namingContext.createSubcontext(name);
-        final Object object = new Object();
-        context.bind("test", object);
-        Object result = context.lookup("test");
-        assertEquals(object, result);
-
-        result = namingContext.lookup(new CompositeName("subcontext/test"));
-        assertEquals(object, result);
-    }
 
     @Test
-    public void testRebindEmptyName() throws Exception {
+    public void testRebind() throws Exception {
         try {
             namingContext.rebind(new CompositeName(), new Object());
-            fail("Should have thrown and InvalidNameException");
-        } catch(InvalidNameException expected){}
-
-        try {
-            namingContext.rebind(new CompositeName(""), new Object());
-            fail("Should have thrown and InvalidNameException");
-        } catch(InvalidNameException expected){}
-    }
-
-    @Test
-    public void testRebindInvalidContext() throws Exception {
-        try {
-            namingContext.rebind(new CompositeName("subcontext/test"), new Object());
-            fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected){}
-    }
-
-    @Test
-    public void testRebindAndLookup() throws Exception {
-        final Name name = new CompositeName("test");
-        final Object object = new Object();
-        namingContext.rebind(name, object);
-        final Object result = namingContext.lookup(name);
-        assertEquals(object, result);
-    }
-
-    @Test
-    public void testBindAndRebind() throws Exception {
-        final Name name = new CompositeName("test");
-        final Object object = new Object();
-        namingContext.bind(name, object);
-        assertEquals(object, namingContext.lookup(name));
-        final Object objectTwo = new Object();
-        namingContext.rebind(name, objectTwo);
-        assertEquals(objectTwo, namingContext.lookup(name));
-    }
-
-    @Test
-    public void testRebindAndLookupWithContinuation() throws Exception {
-        namingContext.createSubcontext("comp");
-
-        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "comp"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("test"), reference);
-
-        final Name continuedName = new CompositeName("test/nested");
-        namingContext.bind("test/nested", "test");
-        assertEquals("test", namingContext.lookup(continuedName));
-        namingContext.rebind("test/nested", "testTwo");
-        assertEquals("testTwo", namingContext.lookup(continuedName));
+            fail("Should have thrown and UnsupportedOperationException");
+        } catch (UnsupportedOperationException expected) {
+        }
     }
 
     @Test
@@ -355,31 +209,32 @@ public class NamingContextTestCase {
         try {
             namingContext.list(new CompositeName("test"));
             fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected) {}
+        } catch (NameNotFoundException expected) {
+        }
     }
 
     @Test
     public void testList() throws Exception {
         final Name name = new CompositeName("test");
         final Object object = new Object();
-        namingContext.bind(name, object);
+        namingStore.bind(name, object);
         final Name nameTwo = new CompositeName("testTwo");
         final Object objectTwo = new Object();
-        namingContext.bind(nameTwo, objectTwo);
+        namingStore.bind(nameTwo, objectTwo);
         final Name nameThree = new CompositeName("testThree");
         final Object objectThree = new Object();
-        namingContext.bind(nameThree, objectThree);
+        namingStore.bind(nameThree, objectThree);
 
-        namingContext.createSubcontext(new CompositeName("testContext"));
+        namingStore.bind(new CompositeName("testContext/test"), "testNested");
 
         final NamingEnumeration<NameClassPair> results = namingContext.list(new CompositeName());
         final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
-        while(results.hasMore()) {
+        while (results.hasMore()) {
             NameClassPair result = results.next();
             final String resultName = result.getName();
-            if("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
+            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());
-            } else if("testContext".equals(resultName)) {
+            } else if ("testContext".equals(resultName)) {
                 assertEquals(Context.class.getName(), result.getClassName());
             } else {
                 fail("Unknown result name: " + resultName);
@@ -391,27 +246,25 @@ public class NamingContextTestCase {
 
     @Test
     public void testListWithContinuation() throws Exception {
-        namingContext.createSubcontext("test");
-
         final Name name = new CompositeName("test/test");
         final Object object = new Object();
-        namingContext.bind(name, object);
+        namingStore.bind(name, object);
         final Name nameTwo = new CompositeName("test/testTwo");
         final Object objectTwo = new Object();
-        namingContext.bind(nameTwo, objectTwo);
+        namingStore.bind(nameTwo, objectTwo);
         final Name nameThree = new CompositeName("test/testThree");
         final Object objectThree = new Object();
-        namingContext.bind(nameThree, objectThree);
+        namingStore.bind(nameThree, objectThree);
 
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("comp"), reference);
+        namingStore.bind(new CompositeName("comp"), reference);
 
         final NamingEnumeration<NameClassPair> results = namingContext.list(new CompositeName("comp"));
         final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree"));
-        while(results.hasMore()) {
+        while (results.hasMore()) {
             NameClassPair result = results.next();
             final String resultName = result.getName();
-            if("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
+            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());
             } else {
                 fail("Unknown result name: " + resultName);
@@ -426,38 +279,39 @@ public class NamingContextTestCase {
         try {
             namingContext.listBindings(new CompositeName("test"));
             fail("Should have thrown and NameNotFoundException");
-        } catch(NameNotFoundException expected) {}
+        } catch (NameNotFoundException expected) {
+        }
     }
 
     @Test
     public void testListBindings() throws Exception {
         final Name name = new CompositeName("test");
         final Object object = new Object();
-        namingContext.bind(name, object);
+        namingStore.bind(name, object);
         final Name nameTwo = new CompositeName("testTwo");
         final Object objectTwo = new Object();
-        namingContext.bind(nameTwo, objectTwo);
+        namingStore.bind(nameTwo, objectTwo);
         final Name nameThree = new CompositeName("testThree");
         final Object objectThree = new Object();
-        namingContext.bind(nameThree, objectThree);
+        namingStore.bind(nameThree, objectThree);
 
-        namingContext.createSubcontext(new CompositeName("testContext"));
+        namingStore.bind(new CompositeName("testContext/test"), "test");
 
         final NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName());
         final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
-        while(results.hasMore()) {
+        while (results.hasMore()) {
             final Binding result = results.next();
             final String resultName = result.getName();
-            if("test".equals(resultName)) {
+            if ("test".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());
                 assertEquals(object, result.getObject());
-            } else if("testTwo".equals(resultName)) {
+            } else if ("testTwo".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());
                 assertEquals(objectTwo, result.getObject());
-            } else if("testThree".equals(resultName)) {
+            } else if ("testThree".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());
                 assertEquals(objectThree, result.getObject());
-            } else if("testContext".equals(resultName)) {
+            } else if ("testContext".equals(resultName)) {
                 assertEquals(Context.class.getName(), result.getClassName());
             } else {
                 fail("Unknown result name: " + resultName);
@@ -469,27 +323,25 @@ public class NamingContextTestCase {
 
     @Test
     public void testListBindingsWithContinuation() throws Exception {
-        namingContext.createSubcontext("test");
-
         final Name name = new CompositeName("test/test");
         final Object object = new Object();
-        namingContext.bind(name, object);
+        namingStore.bind(name, object);
         final Name nameTwo = new CompositeName("test/testTwo");
         final Object objectTwo = new Object();
-        namingContext.bind(nameTwo, objectTwo);
+        namingStore.bind(nameTwo, objectTwo);
         final Name nameThree = new CompositeName("test/testThree");
         final Object objectThree = new Object();
-        namingContext.bind(nameThree, objectThree);
+        namingStore.bind(nameThree, objectThree);
 
         final Reference reference = new Reference(String.class.getName(), new StringRefAddr("nns", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
-        namingContext.bind(new CompositeName("comp"), reference);
+        namingStore.bind(new CompositeName("comp"), reference);
 
         final NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName("comp"));
         final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree"));
-        while(results.hasMore()) {
+        while (results.hasMore()) {
             NameClassPair result = results.next();
             final String resultName = result.getName();
-            if("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
+            if ("test".equals(resultName) || "testTwo".equals(resultName) || "testThree".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());
             } else {
                 fail("Unknown result name: " + resultName);
@@ -499,18 +351,18 @@ public class NamingContextTestCase {
         assertTrue("Not all expected results were returned", expected.isEmpty());
     }
 
-    public  static class TestObjectFactory implements ObjectFactory {
+    public static class TestObjectFactory implements ObjectFactory {
         @Override
         public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
             return ((Reference) obj).get(0).getContent();
         }
     }
 
-    public  static class TestObjectFactoryWithNameResolution implements ObjectFactory {
+    public static class TestObjectFactoryWithNameResolution implements ObjectFactory {
         @Override
         public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
             final Reference reference = (Reference) obj;
-            return new NamingContext(new CompositeName((String)reference.get(0).getContent()), null);
+            return new NamingContext(new CompositeName((String) reference.get(0).getContent()), null);
         }
     }
 }

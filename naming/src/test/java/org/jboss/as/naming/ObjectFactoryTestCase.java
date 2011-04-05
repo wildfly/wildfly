@@ -23,6 +23,7 @@
 package org.jboss.as.naming;
 
 import java.util.Hashtable;
+import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
@@ -41,6 +42,7 @@ import org.junit.Test;
  * @author John Bailey
  */
 public class ObjectFactoryTestCase {
+    private NamingStore namingStore;
     private NamingContext namingContext;
 
     @BeforeClass
@@ -50,7 +52,9 @@ public class ObjectFactoryTestCase {
 
     @Before
     public void setup() throws Exception {
-        namingContext = new NamingContext(null);
+        namingStore = new InMemoryNamingStore();
+        NamingContext.setActiveNamingStore(namingStore);
+        namingContext = new NamingContext(namingStore, null);
     }
 
     @After
@@ -61,7 +65,7 @@ public class ObjectFactoryTestCase {
     @Test
     public void testBindAndRetrieveObjectFactoryFromNamingContext() throws Exception {
         final Reference reference = new Reference("java.util.String", TestObjectFactory.class.getName(), null);
-        namingContext.bind("test", reference);
+        namingStore.bind(new CompositeName("test"), reference);
 
         final Object result = namingContext.lookup("test");
         assertTrue(result instanceof String);
@@ -71,9 +75,9 @@ public class ObjectFactoryTestCase {
     @Test
     public void testBindAndRetrieveObjectFactoryFromInitialContext() throws Exception {
         final Reference reference = new Reference("java.util.String", TestObjectFactory.class.getName(), null);
-        final InitialContext initialContext = new InitialContext();
-        initialContext.bind("test", reference);
+        namingStore.bind(new CompositeName("test"), reference);
 
+        final InitialContext initialContext = new InitialContext();
         final Object result = initialContext.lookup("test");
         assertTrue(result instanceof String);
         assertEquals("Test Result", result);

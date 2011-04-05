@@ -68,7 +68,7 @@ public class GlobalContextService implements Service<NamingStore> {
         try {
             final Reference globalReference = GlobalNamespaceObjectFactory.createReference(name, (Context) store.lookup(new CompositeName()));
             final NamingStore javaContext =  this.javaContext.getValue();
-            javaContext.rebind(null, NameParser.INSTANCE.parse(name), globalReference, Reference.class.getName());
+            javaContext.rebind(NameParser.INSTANCE.parse(name), globalReference, Reference.class);
         } catch (NamingException e) {
             throw new StartException("Failed to bind EE context: java:" + name, e);
         }
@@ -82,7 +82,7 @@ public class GlobalContextService implements Service<NamingStore> {
     public synchronized void stop(StopContext context) {
         final NamingStore javaContext = this.javaContext.getValue();
         try {
-            javaContext.unbind(null, NameParser.INSTANCE.parse(name));
+            javaContext.unbind(NameParser.INSTANCE.parse(name));
         } catch (NamingException e) {
             throw new IllegalStateException("Failed to unbind EE context: java:" + name, e);
         } finally {

@@ -38,46 +38,53 @@ import java.util.List;
  */
 public interface NamingStore {
     /**
-     * Bind and object into the naming store.  All parent contexts must be created before this can be executed.
+     * Bind and object into the naming store, creating parent contexts if needed.  All parent contexts must be
+     * created before this can be executed.  The bind object type will be determined by the class of the object being passed in.
      *
-     * @param context The calling context
-     * @param name The entry name
+     * @param name   The entry name
      * @param object The entry object
-     * @param className The entry class name
      * @throws NamingException If any problems occur
      */
-    void bind(Context context, Name name, Object object, String className) throws NamingException;
+    void bind(Name name, Object object) throws NamingException;
 
     /**
-     * Bind and object into the naming store, creating parent contexts.
+     * Bind and object into the naming store, creating parent contexts if needed.  All parent contexts must be
+     * created before this can be executed.
      *
-     * @param context The calling context
-     * @param name The entry name
-     * @param object The entry object
-     * @param className The entry class name
+     * @param name     The entry name
+     * @param object   The entry object
+     * @param bindType The entry class
      * @throws NamingException If any problems occur
      */
-    void bindCreatingParents(Context context, Name name, Object object, String className) throws NamingException;
+    void bind(Name name, Object object, Class<?> bindType) throws NamingException;
+
+    /**
+     * Re-bind and object into the naming store.  All parent contexts must be created before this can be executed.
+     * The bind object type will be determined by the class of the object being passed in.
+     *
+     * @param name     The entry name
+     * @param object   The entry object
+     * @throws NamingException If any problems occur
+     */
+    void rebind(Name name, Object object) throws NamingException;
 
     /**
      * Re-bind and object into the naming store.  All parent contexts must be created before this can be executed.
      *
-     * @param context The calling context
-     * @param name The entry name
-     * @param object The entry object
-     * @param className The entry class name
+     * @param name     The entry name
+     * @param object   The entry object
+     * @param bindType The entry class
      * @throws NamingException If any problems occur
      */
-    void rebind(Context context, Name name, Object object, String className) throws NamingException;
+    void rebind(Name name, Object object, Class<?> bindType) throws NamingException;
 
     /**
      * Unbind an object from the naming store.  An entry for the name must exist.
      *
-     * @param context The calling context
      * @param name The entry name
      * @throws NamingException If any problems occur
      */
-    void unbind(Context context, Name name) throws NamingException;
+    void unbind(Name name) throws NamingException;
 
     /**
      * Look up an object from the naming store.  An entry for this name must already exist.
@@ -109,16 +116,6 @@ public interface NamingStore {
     List<Binding> listBindings(Name name) throws NamingException;
 
     /**
-     * Create a sub-context for the provided name.  All parent contexts must be created before this can be executed.
-     *
-     * @param context The calling context
-     * @param name The entry name
-     * @return The new sub-context
-     * @throws NamingException If any errors occur
-     */
-    Context createSubcontext(Context context, Name name) throws NamingException;
-
-    /**
      * Close the naming store and cleanup any resource used by the store.
      *
      * @throws NamingException If any errors occur
@@ -128,8 +125,8 @@ public interface NamingStore {
     /**
      * Add a {@code NamingListener} for a specific target and scope.
      *
-     * @param target The target name to add the listener to
-     * @param scope The listener scope
+     * @param target   The target name to add the listener to
+     * @param scope    The listener scope
      * @param listener The listener
      */
     void addNamingListener(Name target, int scope, NamingListener listener);
