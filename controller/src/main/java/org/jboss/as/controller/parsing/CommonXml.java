@@ -555,7 +555,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (home != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         home = value;
-                        final ModelNode update = Util.getWriteAttributeOperation(null, "java-home", home);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_JAVA_HOME, home);
                         attrUpdates.add(update);
                         break;
                     }
@@ -573,7 +573,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (debugEnabled != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugEnabled = Boolean.valueOf(value);
-                        final ModelNode update = Util.getWriteAttributeOperation(null, "debug-enabled", debugEnabled);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_DEBUG_ENABLED, debugEnabled);
                         attrUpdates.add(update);
                         break;
                     }
@@ -581,7 +581,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (debugOptions != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugOptions = value;
-                        final ModelNode update = Util.getWriteAttributeOperation(null, "debug-options", debugOptions);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_DEBUG_OPTIONS, debugOptions);
                         attrUpdates.add(update);
                         break;
                     }
@@ -589,7 +589,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (envClasspathIgnored != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         envClasspathIgnored = Boolean.valueOf(value);
-                        final ModelNode update = Util.getWriteAttributeOperation(null, "env-classpath-ignored", envClasspathIgnored);
+                        final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_ENV_CLASSPATH_IGNORED, envClasspathIgnored);
                         attrUpdates.add(update);
                         break;
                     }
@@ -609,10 +609,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode address = parentAddress.clone();
         address.add(ModelDescriptionConstants.JVM, name);
 
-        final ModelNode addUpdate = new ModelNode();
-        addUpdate.get(OP_ADDR).set(address);
-        addUpdate.get(OP).set(ADD);
-        addUpdate.get(NAME).set(name);
+        final ModelNode addUpdate = Util.getEmptyOperation(ADD, address);
         if(type != null) addUpdate.get(JVM_TYPE).set(type);
         updates.add(addUpdate);
 
@@ -659,7 +656,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (hasEnvironmentVariables) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            updates.add(Util.getWriteAttributeOperation(address, "environment-variables", parseProperties(reader)));
+                            updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES, parseProperties(reader)));
                             hasEnvironmentVariables = true;
                             break;
                         }
@@ -718,10 +715,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
 
-        if(size != null || maxSize != null) {
-            final ModelNode update = Util.getWriteAttributeOperation(address, "heap", new ModelNode());
-            if(size != null) update.get(VALUE, "size").set(size);
-            if(maxSize != null) update.get(VALUE, "max-size").set(maxSize);
+        if(size != null) {
+            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_HEAP, size);
+            updates.add(update);
+        }
+
+        if(maxSize != null) {
+            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_MAX_HEAP, maxSize);
             updates.add(update);
         }
 
@@ -757,10 +757,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
 
-        if(size != null || maxSize != null) {
-            final ModelNode update = Util.getWriteAttributeOperation(address, "heap", new ModelNode());
-            if(size != null) update.get(VALUE, "size").set(size);
-            if(maxSize != null) update.get(VALUE, "max-size").set(maxSize);
+        if(size != null) {
+            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_PERMGEN, size);
+            updates.add(update);
+        }
+
+        if(maxSize != null) {
+            final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_MAX_PERMGEN, maxSize);
             updates.add(update);
         }
 
@@ -781,7 +784,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SIZE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "stack-size", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_STACK, value);
                         updates.add(update);
                         sizeSet = true;
                         break;
@@ -811,7 +814,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "agent-lib", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_AGENT_LIB, value);
                         updates.add(update);
                         valueSet = true;
                         break;
@@ -841,7 +844,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "agent-path", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_AGENT_PATH, value);
                         updates.add(update);
                         valueSet = true;
                         break;
@@ -871,7 +874,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case VALUE: {
-                        final ModelNode update = Util.getWriteAttributeOperation(address, "java-agent", value);
+                        final ModelNode update = Util.getWriteAttributeOperation(address, JVMHandlers.JVM_JAVA_AGENT, value);
                         updates.add(update);
                         valueSet = true;
                         break;
@@ -926,8 +929,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         // PropertyAdd
                         final ModelNode update = new ModelNode();
                         update.get(OP_ADDR).set(address);
-                        update.get(OP).set("add-jvm-option");
-                        update.get("option").set(option);
+                        update.get(OP).set(JVMHandlers.ADD_JVM_OPTION);
+                        update.get(JVMHandlers.JVM_OPTION).set(option);
                         updates.add(update);
                         optionSet = true;
                         // Handle elements
@@ -1420,21 +1423,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             writer.writeAttribute(Attribute.ENV_CLASSPATH_IGNORED.getLocalName(), jvmElement.get(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED).asString());
         }
 
-        if(jvmElement.hasDefined(JVMHandlers.JVM_HEAP)) {
-            final ModelNode heap = jvmElement.get(JVMHandlers.JVM_HEAP);
-            if(heap.hasDefined(JVMHandlers.SIZE) || heap.hasDefined(JVMHandlers.MAX_SIZE)) {
-                writer.writeEmptyElement(Element.HEAP.getLocalName());
-                if(heap.hasDefined(JVMHandlers.SIZE)) writer.writeAttribute(Attribute.SIZE.getLocalName(), heap.get(JVMHandlers.SIZE).asString());
-                if(heap.hasDefined(JVMHandlers.MAX_SIZE)) writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), heap.get(JVMHandlers.MAX_SIZE).asString());
-            }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_HEAP) || jvmElement.hasDefined(JVMHandlers.JVM_MAX_HEAP)) {
+            writer.writeEmptyElement(Element.HEAP.getLocalName());
+            if(jvmElement.hasDefined(JVMHandlers.JVM_HEAP)) writer.writeAttribute(Attribute.SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_HEAP).asString());
+            if(jvmElement.hasDefined(JVMHandlers.JVM_MAX_HEAP)) writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_MAX_HEAP).asString());
         }
-        if(jvmElement.hasDefined(JVMHandlers.JVM_PERMGEN)) {
-            final ModelNode permGen = jvmElement.get(JVMHandlers.JVM_PERMGEN);
-            if(permGen.hasDefined(JVMHandlers.SIZE) || permGen.hasDefined(JVMHandlers.MAX_SIZE)) {
-                writer.writeEmptyElement(Element.HEAP.getLocalName());
-                if(permGen.hasDefined(JVMHandlers.SIZE)) writer.writeAttribute(Attribute.SIZE.getLocalName(), permGen.get(JVMHandlers.SIZE).asString());
-                if(permGen.hasDefined(JVMHandlers.MAX_SIZE)) writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), permGen.get(JVMHandlers.MAX_SIZE).asString());
-            }
+        if(jvmElement.hasDefined(JVMHandlers.JVM_PERMGEN) || jvmElement.hasDefined(JVMHandlers.JVM_MAX_PERMGEN)) {
+            writer.writeEmptyElement(Element.PERMGEN.getLocalName());
+            if(jvmElement.hasDefined(JVMHandlers.JVM_PERMGEN)) writer.writeAttribute(Attribute.SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_PERMGEN).asString());
+            if(jvmElement.hasDefined(JVMHandlers.JVM_MAX_PERMGEN)) writer.writeAttribute(Attribute.MAX_SIZE.getLocalName(), jvmElement.get(JVMHandlers.JVM_MAX_PERMGEN).asString());
         }
         if(jvmElement.hasDefined(JVMHandlers.JVM_STACK)) {
             writer.writeEmptyElement(Element.STACK.getLocalName());

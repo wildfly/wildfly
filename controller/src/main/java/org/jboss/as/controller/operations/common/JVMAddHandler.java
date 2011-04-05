@@ -26,9 +26,7 @@ import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
@@ -53,12 +51,17 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
+        ModelNode subModel = context.getSubModel();
+        ModelNode jvmType = subModel.get(JVM_TYPE);
         if(operation.hasDefined(JVM_TYPE)) {
-            context.getSubModel().get(JVM_TYPE).set(operation.get(JVM_TYPE));
+            jvmType.set(operation.get(JVM_TYPE));
+        }
+
+        // Create all attributes
+        for (String attr : JVMHandlers.ATTRIBUTES) {
+            subModel.get(attr);
         }
 
         resultHandler.handleResultComplete();

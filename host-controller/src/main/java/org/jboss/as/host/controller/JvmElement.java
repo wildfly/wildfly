@@ -76,13 +76,10 @@ public class JvmElement {
                 }
             }
             if(node.hasDefined(JVMHandlers.JVM_HEAP)) {
-                final ModelNode heap = node.get(JVMHandlers.JVM_HEAP);
-                if(heap.hasDefined(JVMHandlers.SIZE)) {
-                    heapSize = heap.get(JVMHandlers.SIZE).asString();
-                }
-                if(heap.hasDefined(JVMHandlers.MAX_SIZE)) {
-                    maxHeap = heap.get(JVMHandlers.MAX_SIZE).asString();
-                }
+                heapSize = node.get(JVMHandlers.JVM_HEAP).asString();
+            }
+            if(node.hasDefined(JVMHandlers.JVM_MAX_HEAP)) {
+                maxHeap = node.get(JVMHandlers.JVM_MAX_HEAP).asString();
             }
             if(node.hasDefined(JVMHandlers.JVM_JAVA_AGENT)) {
                 javaagent = node.get(JVMHandlers.JVM_JAVA_AGENT).asString();
@@ -96,13 +93,10 @@ public class JvmElement {
                 }
             }
             if(node.hasDefined(JVMHandlers.JVM_PERMGEN)) {
-                final ModelNode permGen = node.get(JVMHandlers.JVM_PERMGEN);
-                if(permGen.hasDefined(JVMHandlers.SIZE)) {
-                    permgenSize = permGen.get(JVMHandlers.SIZE).asString();
-                }
-                if(permGen.hasDefined(JVMHandlers.MAX_SIZE)) {
-                    maxPermgen = permGen.get(JVMHandlers.MAX_SIZE).asString();
-                }
+                permgenSize = node.get(JVMHandlers.JVM_PERMGEN).asString();
+            }
+            if(node.hasDefined(JVMHandlers.JVM_MAX_PERMGEN)) {
+                maxPermgen = node.get(JVMHandlers.JVM_MAX_PERMGEN).asString();
             }
             if(node.hasDefined(JVMHandlers.JVM_STACK)) {
                 stack = node.get(JVMHandlers.JVM_STACK).asString();

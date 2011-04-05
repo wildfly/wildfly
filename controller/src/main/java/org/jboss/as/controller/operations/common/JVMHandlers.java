@@ -38,6 +38,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -54,19 +55,27 @@ public final class JVMHandlers {
     public static final String JVM_DEBUG_OPTIONS = "debug-options";
     public static final String JVM_ENV_CLASSPATH_IGNORED = "env-classpath-ignored";
     public static final String JVM_ENV_VARIABLES = "environment-variables";
-    public static final String JVM_HEAP = "heap";
-    public static final String JVM_JAVA_AGENT = "javaagent";
+    public static final String JVM_HEAP = "heap-size";
+    public static final String JVM_MAX_HEAP = "max-heap-size";
+    public static final String JVM_JAVA_AGENT = "java-agent";
     public static final String JVM_JAVA_HOME = "java-home";
     public static final String JVM_OPTIONS = "jvm-options";
     public static final String JVM_OPTION = "jvm-option";
-    public static final String JVM_PERMGEN = "permgen";
+    public static final String ADD_JVM_OPTION = "add-jvm-option";
+    public static final String JVM_PERMGEN = "permgen-size";
+    public static final String JVM_MAX_PERMGEN = "max-permgen-size";
     public static final String JVM_STACK = "stack-size";
     public static final String JVM_SYSTEM_PROPERTIES = SYSTEM_PROPERTIES;
     public static final String SIZE = "size";
     public static final String MAX_SIZE = "max-size";
 
+    static final String[] ATTRIBUTES = {JVM_AGENT_LIB, JVM_AGENT_PATH, JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS, JVM_ENV_CLASSPATH_IGNORED,
+        JVM_ENV_VARIABLES, JVM_HEAP, JVM_MAX_HEAP, JVM_JAVA_AGENT, JVM_JAVA_HOME, JVM_OPTIONS, JVM_PERMGEN, JVM_MAX_PERMGEN,
+        JVM_STACK, JVM_SYSTEM_PROPERTIES};
+
     private static final OperationHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
     private static final OperationHandler booleanWriteHandler = new ModelUpdateOperationHandler() {
+        @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
             try {
                 final String name = operation.require(NAME).asString();
@@ -92,9 +101,11 @@ public final class JVMHandlers {
         registration.registerReadWriteAttribute(JVM_ENV_CLASSPATH_IGNORED, null, booleanWriteHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_ENV_VARIABLES, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_HEAP, null, writeHandler, Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(JVM_MAX_HEAP, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_JAVA_AGENT, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_JAVA_HOME, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_PERMGEN, null, writeHandler, Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(JVM_MAX_PERMGEN, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_STACK, null, writeHandler, Storage.CONFIGURATION);
 
         registration.registerOperationHandler(JVMOptionAddHandler.OPERATION_NAME, JVMOptionAddHandler.INSTANCE, JVMOptionAddHandler.INSTANCE, false);
@@ -111,7 +122,7 @@ public final class JVMHandlers {
 
     static final class JVMOptionAddHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
-        static final String OPERATION_NAME = "add-jvm-option";
+        static final String OPERATION_NAME = ADD_JVM_OPTION;
         static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
 
         /** {@inheritDoc} */
@@ -135,8 +146,7 @@ public final class JVMHandlers {
         /** {@inheritDoc} */
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            // TODO Auto-generated method stub
-            return new ModelNode();
+            return JVMDescriptions.getOptionAddOperation(locale);
         }
 
     }
@@ -177,8 +187,7 @@ public final class JVMHandlers {
         /** {@inheritDoc} */
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            // TODO Auto-generated method stub
-            return new ModelNode();
+            return JVMDescriptions.getOptionRemoveOperation(locale);
         }
 
     }
