@@ -29,8 +29,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -203,10 +201,6 @@ public class CommandLineMain {
         InputStream bindingsIs = cl.getResourceAsStream(bindingsName);
         if(bindingsIs == null) {
             System.err.println("Failed to locate key bindings for OS '" + osName +"': " + bindingsName);
-            URLClassLoader ucl = (URLClassLoader) cl;
-            for(URL url : ucl.getURLs()) {
-                System.out.println(url.toExternalForm());
-            }
             try {
                 return new jline.ConsoleReader();
             } catch (IOException e) {
