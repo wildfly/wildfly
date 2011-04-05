@@ -164,7 +164,7 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
                     throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
                 }
                 Object targetValueToInject = entityManager.unwrap(extensionClass);
-                new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
+                return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
             }
 
             return new ValueManagedReference(new ImmediateValue<Object>(entityManager));
