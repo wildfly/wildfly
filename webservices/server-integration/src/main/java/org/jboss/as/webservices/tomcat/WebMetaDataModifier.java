@@ -36,6 +36,7 @@ import org.jboss.wsf.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.ServletClassProvider;
+import org.jboss.wsf.spi.deployment.WSFServlet;
 
 /**
  * The modifier of jboss web meta data. It configures WS transport for every webservice endpoint plus propagates WS stack
@@ -90,11 +91,12 @@ final class WebMetaDataModifier {
             if (endpointClassName != null && endpointClassName.length() > 0) { // exclude JSP
                 if (epNames.contains(endpointClassName)) {
                     // set transport servlet
-                    servletMD.setServletClass(transportClassName);
-
-                    // configure webservice endpoint
+                    servletMD.setServletClass(WSFServlet.class.getName());
                     this.log.debug("Setting transport class: " + transportClassName + " for servlet: " + endpointClassName);
                     final List<ParamValueMetaData> initParams = WebMetaDataHelper.getServletInitParams(servletMD);
+                    // configure transport class name
+                    WebMetaDataHelper.newParamValue(WSFServlet.STACK_SERVLET_DELEGATE_CLASS, transportClassName, initParams);
+                    // configure webservice endpoint
                     WebMetaDataHelper.newParamValue(Endpoint.SEPID_DOMAIN_ENDPOINT, endpointClassName, initParams);
                 }
             }

@@ -25,6 +25,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 
 /**
  * A DUP that sets the context classloader
@@ -37,7 +38,7 @@ public abstract class TCCLDeploymentProcessor implements DeploymentUnitProcessor
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
         try {
-            SecurityActions.setContextClassLoader(TCCLDeploymentProcessor.class.getClassLoader());
+            SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             internalDeploy(phaseContext);
         } finally {
             SecurityActions.setContextClassLoader(origClassLoader);
@@ -47,7 +48,7 @@ public abstract class TCCLDeploymentProcessor implements DeploymentUnitProcessor
     public final void undeploy(final DeploymentUnit context) {
         ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
         try {
-            SecurityActions.setContextClassLoader(TCCLDeploymentProcessor.class.getClassLoader());
+            SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             internalUndeploy(context);
         } finally {
             SecurityActions.setContextClassLoader(origClassLoader);

@@ -41,7 +41,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.filter.PathFilters;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
 /**
@@ -55,24 +54,20 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(WSDependenciesProcessor.class);
     public static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
+    public static final ModuleIdentifier JBOSSWS_API = ModuleIdentifier.create("org.jboss.ws.api");
+    public static final ModuleIdentifier JBOSSWS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        //always add the JBossWS API to dependencies when the WS subsystem is on; a ws client can live everywhere
+        moduleSpec.addDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true));
+
         if (!isWSDeployment(deploymentUnit)) {
             return;
         }
-
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-
-        moduleSpec.addDependency(applyCXFExtensionImportFilters(new ModuleDependency(moduleLoader, ASIL, false, true, true)));
-    }
-
-    private static ModuleDependency applyCXFExtensionImportFilters(final ModuleDependency dep) {
-        // TODO: investigate how to do it via module.xml
-        dep.addImportFilter(PathFilters.match("META-INF/cxf"), true);
-        dep.addImportFilter(PathFilters.match("META-INF"), true);
-        return dep;
+        moduleSpec.addDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true));
     }
 
     /**

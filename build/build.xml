@@ -286,6 +286,7 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-frontend-jaxws"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-frontend-simple"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-management"/>
+            <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-common"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-http"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-jms"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-transports-local"/>
@@ -812,6 +813,8 @@
         <module-def name="org.jboss.ws.common">
             <maven-resource group="org.jboss.ws" artifact="jbossws-common"/>
         </module-def>
+
+        <module-def name="org.jboss.ws.cxf.jbossws-cxf-client"/>
 
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-factories">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-factories"/>
