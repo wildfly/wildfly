@@ -72,6 +72,7 @@ import org.jboss.as.protocol.StreamUtils;
 public class CommandLineMain {
 
     private static final Map<String, CommandHandler> handlers = new HashMap<String, CommandHandler>();
+    private static final Set<String> tabCompleteCommands = new HashSet<String>();
     static {
         registerHandler(new HelpHandler(), "help", "h");
         registerHandler(new QuitHandler(), "quit", "q");
@@ -81,16 +82,23 @@ public class CommandLineMain {
         registerHandler(new HistoryHandler(), "history");
         registerHandler(new DeployHandler(), "deploy");
         registerHandler(new UndeployHandler(), "undeploy");
-        registerHandler(new PrintWorkingNodeHandler(), "pwn", "pwd");
-        registerHandler(new CreateJmsResourceHandler(), "create-jms-resource");
-        registerHandler(new DeleteJmsResourceHandler(), "delete-jms-resource");
+        registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
+        registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
+        registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
     }
 
     private static void registerHandler(CommandHandler handler, String... names) {
+        registerHandler(handler, true, names);
+    }
+
+    private static void registerHandler(CommandHandler handler, boolean tabComplete, String... names) {
         for(String name : names) {
             CommandHandler previous = handlers.put(name, handler);
             if(previous != null)
                 throw new IllegalStateException("Duplicate command name '" + name + "'. Handlers: " + previous + ", " + handler);
+        }
+        if(tabComplete) {
+            tabCompleteCommands.add(names[0]);
         }
     }
 
@@ -108,7 +116,7 @@ public class CommandLineMain {
             }
         }));
         OperationRequestCompleter opCompleter = new OperationRequestCompleter(cmdCtx);
-        console.addCompletor(new CommandCompleter(handlers.keySet(), cmdCtx, opCompleter));
+        console.addCompletor(new CommandCompleter(tabCompleteCommands, cmdCtx, opCompleter));
         console.addCompletor(opCompleter);
 
         String fileName = null;
