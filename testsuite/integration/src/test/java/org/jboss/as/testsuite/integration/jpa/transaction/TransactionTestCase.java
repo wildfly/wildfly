@@ -20,10 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.jpa.hibernate;
+package org.jboss.as.testsuite.integration.jpa.transaction;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,20 +34,19 @@ import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.persistence.TransactionRequiredException;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+
 /**
- * Hibernate session factory tests
- *
+ * Transaction tests
  *
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-public class SessionFactoryTestCase {
+public class TransactionTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
 
@@ -61,8 +58,6 @@ public class SessionFactoryTestCase {
             "    </description>" +
             "  <jta-data-source>java:/H2DS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-//  Disabled until JBAS-9229 & JBAS-9224 are fixed.
-//            "<property name=\"hibernate.session_factory_name\" value=\"modelSessionFactory\" />" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
@@ -78,10 +73,9 @@ public class SessionFactoryTestCase {
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(SessionFactoryTestCase.class,
+        jar.addClasses(TransactionTestCase.class,
             Employee.class,
-            SFSB1.class,
-            SFSBHibernateSession.class
+            SFSB1.class
         );
 
         jar.addResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -97,31 +91,25 @@ public class SessionFactoryTestCase {
         return interfaceType.cast(iniCtx.lookup(name));
     }
 
-    // test that we didn't break the Hibernate hibernate.session_factory_name (bind Hibernate session factory to
-    // specified jndi name) functionality.
+    /**
+     * Ensure that calling entityManager.flush outside of a transaction, throws a TransactionRequiredException
+     *
+     * @throws Exception
+     */
     @Test
-    public void testHibernateSessionFactoryName() throws Exception {
-// Disabled until JBAS-9229 & JBAS-9224 are fixed.
-//        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-//        sfsb1.createEmployee("Sally","1 home street", 1);
-
-        // check if we can look up the Hibernate session factory that should of been bound because of
-        // the hibernate.session_factory_name was specified in the properties (in peristence.xml above).
-//        SessionFactory hibernateSessionFactory = rawLookup("modelSessionFactory",SessionFactory.class);
-//        assertNotNull("jndi lookup of hibernate.session_factory_name should return HibernateSessionFactory", hibernateSessionFactory);
-
-//        Session session = hibernateSessionFactory.openSession();
-//        Employee emp = (Employee)session.get(Employee.class,1);
-//        assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
-    }
-
-    // Test that a Persistence context can be injected into a Hibernate Session
-    @Test
-    public void testInjectPCIntoHibernateSession() throws Exception {
-        SFSBHibernateSession sfsbHibernateSession = lookup("SFSBHibernateSession",SFSBHibernateSession.class);
-        sfsbHibernateSession.createEmployee("Molly", "2 apple way", 2);
-
-        Employee emp = sfsbHibernateSession.getEmployee(2);
-        assertTrue("name read from hibernate session is Molly", "Molly".equals(emp.getName()));
+    public void testTransactionRequiredException() throws Exception {
+// uncomment after JBCTS-1103 is fixed.
+//        Exception error = null;
+//        try {
+//            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+//            sfsb1.createEmployeeNoTx("Sally", "1 home street", 1);
+//        } catch (TransactionRequiredException e) {
+//            error = e;
+//        } catch (Exception failed) {
+//            error = failed;
+//        }
+//        assertTrue(
+//            "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
+//                + " but we instead got a " + error, error instanceof TransactionRequiredException);
     }
 }
