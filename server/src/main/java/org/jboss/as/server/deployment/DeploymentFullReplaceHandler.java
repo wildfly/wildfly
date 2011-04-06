@@ -18,17 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
@@ -42,9 +31,29 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -59,6 +68,8 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         return Util.getEmptyOperation(OPERATION_NAME, address);
     }
 
+    private static final List<String> VALID_DEPLOYMENT_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, HASH, URL);
+
     private final DeploymentRepository deploymentRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
@@ -69,6 +80,8 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
         this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
+        this.validator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
+        this.validator.registerValidator(URL, new StringLengthValidator(1, true));
     }
 
     @Override
@@ -87,25 +100,27 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         String name = operation.require(NAME).asString();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
         byte[] hash;
-        if (operation.hasDefined(INPUT_STREAM_INDEX) && operation.hasDefined(HASH)) {
-            throw new OperationFailedException(new ModelNode().set("Can't pass in both an input-stream-index and a hash"));
-        } else if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            InputStream in = getContents(context, operation);
-            try {
-                hash = deploymentRepository.addDeploymentContent(in);
-            } catch (IOException e) {
-                throw new OperationFailedException(new ModelNode().set(e.toString()));
-            }
+        if (tooManyDeploymentParametersDefined(operation)) {
+            throw createFailureException("Only allowed one of the following parameters is allowed %s.", VALID_DEPLOYMENT_PARAMETERS);
         } else if (operation.hasDefined(HASH)) {
 
             hash = operation.get(HASH).asBytes();
             if (!deploymentRepository.hasDeploymentContent(hash)) {
-                throw new OperationFailedException(new ModelNode().set(String.format(
-                        "No deployment content with hash %s is available in the deployment content repository.",
-                        HashUtil.bytesToHexString(hash))));
+                throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+            }
+        } else if (hasValidDeploymentParameterDefined(operation)) {
+            InputStream in = getContents(context, operation);
+            try {
+                try {
+                    hash = deploymentRepository.addDeploymentContent(in);
+                } catch (IOException e) {
+                    throw createFailureException(e.toString());
+                }
+            } finally {
+                StreamUtils.safeClose(in);
             }
         } else {
-            throw new OperationFailedException(new ModelNode().set("Neither an attachment or a hash were passed in"));
+            throw createFailureException("None of the following parameters were defined %s.", VALID_DEPLOYMENT_PARAMETERS);
         }
 
         ModelNode rootModel = context.getSubModel();
@@ -113,7 +128,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
         ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
         if (replaceNode == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No deployment with name %s found", name)));
+            throw createFailureException("No deployment with name %s found", name);
         }
 
         boolean start = replaceNode.get(ENABLED).asBoolean();
@@ -135,8 +150,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
         if (start) {
             DeploymentHandlerUtil.replace(deployNode, name, context, resultHandler);
-        }
-        else {
+        } else {
             resultHandler.handleResultComplete();
         }
 
@@ -144,16 +158,83 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
     }
 
 
-    private InputStream getContents(OperationContext context, ModelNode operation) {
-        int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-        if (streamIndex > context.getInputStreams().size() - 1) {
-            throw new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
+    private InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
+        InputStream in = null;
+        String message = "";
+        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
+            int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
+            if (streamIndex > context.getInputStreams().size() - 1) {
+                IllegalArgumentException e = new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
+                throw createFailureException(e, e.getMessage());
+            }
+            message = "Null stream at index " + streamIndex;
+            in = context.getInputStreams().get(streamIndex);
+        } else if (operation.hasDefined(BYTES)) {
+            message = "Invalid byte stream.";
+            in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
+        } else if (operation.hasDefined(URL)) {
+            final String urlSpec = operation.get(URL).asString();
+            try {
+                message = "Invalid url stream.";
+                in = new URL(urlSpec).openStream();
+            } catch (MalformedURLException e) {
+                throw createFailureException(message);
+            } catch (IOException e) {
+                throw createFailureException(message);
+            }
         }
-
-        InputStream in = context.getInputStreams().get(streamIndex);
         if (in == null) {
-            throw new IllegalStateException("Null stream at index " + streamIndex);
+            throw createFailureException(message);
         }
         return in;
+    }
+
+    /**
+     * Checks to see if a valid deployment parameter has been defined.
+     *
+     * @param operation the operation to check.
+     *
+     * @return {@code true} of the parameter is valid, otherwise {@code false}.
+     */
+    private boolean hasValidDeploymentParameterDefined(ModelNode operation) {
+        for (String s : VALID_DEPLOYMENT_PARAMETERS) {
+            if (operation.hasDefined(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if too many deployment parameters have been defined.
+     *
+     * @param operation the operation.
+     *
+     * @return {@code true} if there are too many deployment parameters, otherwise {@code false}.
+     */
+    private boolean tooManyDeploymentParametersDefined(ModelNode operation) {
+        int count = 0;
+        for (String s : VALID_DEPLOYMENT_PARAMETERS) {
+            if (operation.hasDefined(s)) {
+                count++;
+            }
+        }
+        return (count > 1);
+    }
+
+    private OperationFailedException createFailureException(String format, Object... params) {
+        return createFailureException(String.format(format, params));
+    }
+
+    private OperationFailedException createFailureException(Throwable cause, String format, Object... params) {
+        return createFailureException(cause, String.format(format, params));
+    }
+
+    private OperationFailedException createFailureException(String msg) {
+        return new OperationFailedException(new ModelNode().set(msg));
+    }
+
+    private OperationFailedException createFailureException(Throwable cause, String msg) {
+        return new OperationFailedException(cause, new ModelNode().set(msg));
     }
 }
