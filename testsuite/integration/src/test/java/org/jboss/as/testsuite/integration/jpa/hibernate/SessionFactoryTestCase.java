@@ -81,7 +81,8 @@ public class SessionFactoryTestCase {
         jar.addClasses(SessionFactoryTestCase.class,
             Employee.class,
             SFSB1.class,
-            SFSBHibernateSession.class
+            SFSBHibernateSession.class,
+            SFSBHibernateSessionFactory.class
         );
 
         jar.addResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -124,4 +125,16 @@ public class SessionFactoryTestCase {
         Employee emp = sfsbHibernateSession.getEmployee(2);
         assertTrue("name read from hibernate session is Molly", "Molly".equals(emp.getName()));
     }
+
+    // Test that a Persistence unit can be injected into a Hibernate Session factory
+    @Test
+    public void testInjectPUIntoHibernateSessionFactory() throws Exception {
+        SFSBHibernateSessionFactory sfsbHibernateSessionFactory =
+            lookup("SFSBHibernateSessionFactory",SFSBHibernateSessionFactory.class);
+        sfsbHibernateSessionFactory.createEmployee("Sharon", "3 beach ave", 3);
+
+        Employee emp = sfsbHibernateSessionFactory.getEmployee(3);
+        assertTrue("name read from hibernate session is Sharon", "Sharon".equals(emp.getName()));
+    }
+
 }
