@@ -144,10 +144,8 @@ class WebConnectorService implements Service<Connector> {
                             m.invoke(connector.getProtocolHandler(), ssl.get(Constants.PASSWORD).asString());
                         }
                         if (ssl.hasDefined(Constants.CERTIFICATE_KEY_FILE)) {
-                            String certificateKeyFiles = ssl.get(Constants.CERTIFICATE_KEY_FILE).asString();
-                            // FIXME: parse for multiple files and identify types (?)
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCertificateKeyFile", String.class);
-                            m.invoke(connector.getProtocolHandler(), certificateKeyFiles);
+                            m.invoke(connector.getProtocolHandler(), ssl.get(Constants.CERTIFICATE_KEY_FILE).asString());
                         }
                         if (ssl.hasDefined(Constants.CIPHER_SUITE)) {
                             Method m = connector.getProtocolHandler().getClass().getMethod("setSSLCipherSuite", String.class);

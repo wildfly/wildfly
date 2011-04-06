@@ -53,7 +53,7 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
         node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, REQUIRED).set(false);
 
-        node.get(ATTRIBUTES, Constants.NATIVE, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, Constants.NATIVE, TYPE).set(ModelType.BOOLEAN);
         node.get(ATTRIBUTES, Constants.NATIVE, DESCRIPTION).set(bundle.getString("web.native"));
         node.get(ATTRIBUTES, Constants.NATIVE, REQUIRED).set(false);
 
@@ -93,7 +93,7 @@ class WebSubsystemDescriptions {
         node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
         node.get(REQUEST_PROPERTIES, Constants.DEFAULT_VIRTUAL_SERVER, REQUIRED).set(false);
 
-        node.get(REQUEST_PROPERTIES, Constants.NATIVE, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, Constants.NATIVE, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, Constants.NATIVE, DESCRIPTION).set(bundle.getString("web.native"));
         node.get(REQUEST_PROPERTIES, Constants.NATIVE, REQUIRED).set(false);
 
@@ -283,7 +283,7 @@ class WebSubsystemDescriptions {
 
         node.get(type, Constants.PROTOCOL, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.protocol"));
-        node.get(type, Constants.PROTOCOL, REQUIRED).set(false);
+        node.get(type, Constants.PROTOCOL, REQUIRED).set(true);
 
         node.get(type, Constants.SOCKET_BINDING, TYPE).set(ModelType.STRING);
         node.get(type, Constants.SOCKET_BINDING, DESCRIPTION).set(bundle.getString("web.connector.socket-binding"));
@@ -298,11 +298,11 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.EXECUTOR, DESCRIPTION).set(bundle.getString("web.connector.executor"));
         node.get(type, Constants.EXECUTOR, REQUIRED).set(false);
 
-        node.get(type, Constants.ENABLED, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.ENABLED, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.ENABLED, DESCRIPTION).set(bundle.getString("web.connector.enabled"));
         node.get(type, Constants.ENABLED, REQUIRED).set(false);
 
-        node.get(type, Constants.ENABLE_LOOKUPS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.ENABLE_LOOKUPS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.ENABLE_LOOKUPS, DESCRIPTION).set(bundle.getString("web.connector.enable-lookups"));
         node.get(type, Constants.ENABLE_LOOKUPS, REQUIRED).set(false);
 
@@ -310,27 +310,27 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.PROXY_NAME, DESCRIPTION).set(bundle.getString("web.connector.proxy-name"));
         node.get(type, Constants.PROXY_NAME, REQUIRED).set(false);
 
-        node.get(type, Constants.PROXY_PORT, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.PROXY_PORT, TYPE).set(ModelType.INT);
         node.get(type, Constants.PROXY_PORT, DESCRIPTION).set(bundle.getString("web.connector.proxy-port"));
         node.get(type, Constants.PROXY_PORT, REQUIRED).set(false);
 
-        node.get(type, Constants.MAX_POST_SIZE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MAX_POST_SIZE, TYPE).set(ModelType.INT);
         node.get(type, Constants.MAX_POST_SIZE, DESCRIPTION).set(bundle.getString("web.connector.max-post-size"));
         node.get(type, Constants.MAX_POST_SIZE, REQUIRED).set(false);
 
-        node.get(type, Constants.MAX_SAVE_POST_SIZE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MAX_SAVE_POST_SIZE, TYPE).set(ModelType.INT);
         node.get(type, Constants.MAX_SAVE_POST_SIZE, DESCRIPTION).set(bundle.getString("web.connector.max-save-post-size"));
         node.get(type, Constants.MAX_SAVE_POST_SIZE, REQUIRED).set(false);
 
-        node.get(type, Constants.SECURE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.SECURE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.SECURE, DESCRIPTION).set(bundle.getString("web.connector.secure"));
         node.get(type, Constants.SECURE, REQUIRED).set(false);
 
-        node.get(type, Constants.REDIRECT_PORT, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.REDIRECT_PORT, TYPE).set(ModelType.INT);
         node.get(type, Constants.REDIRECT_PORT, DESCRIPTION).set(bundle.getString("web.connector.redirect-port"));
         node.get(type, Constants.REDIRECT_PORT, REQUIRED).set(false);
 
-        node.get(type, Constants.MAX_CONNECTIONS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.MAX_CONNECTIONS, TYPE).set(ModelType.INT);
         node.get(type, Constants.MAX_CONNECTIONS, DESCRIPTION).set(bundle.getString("web.connector.max-connections"));
         node.get(type, Constants.MAX_CONNECTIONS, REQUIRED).set(false);
 
@@ -383,7 +383,7 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.VERIFY_CLIENT, DESCRIPTION).set(bundle.getString("web.connector.ssl.verify-client"));
         node.get(type, Constants.VERIFY_CLIENT, REQUIRED).set(false);
 
-        node.get(type, Constants.VERIFY_DEPTH, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.VERIFY_DEPTH, TYPE).set(ModelType.INT);
         node.get(type, Constants.VERIFY_DEPTH, DESCRIPTION).set(bundle.getString("web.connector.ssl.verify-depth"));
         node.get(type, Constants.VERIFY_DEPTH, REQUIRED).set(false);
 
@@ -473,11 +473,11 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.pattern"));
         node.get(type, Constants.PATTERN, REQUIRED).set(false);
 
-        node.get(type, Constants.RESOLVE_HOSTS, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.RESOLVE_HOSTS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.RESOLVE_HOSTS, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.resolve-hosts"));
         node.get(type, Constants.RESOLVE_HOSTS, REQUIRED).set(false);
 
-        node.get(type, Constants.EXTENDED, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.EXTENDED, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.EXTENDED, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.extended"));
         node.get(type, Constants.EXTENDED, REQUIRED).set(false);
 
@@ -485,7 +485,7 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.PREFIX, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.prefix"));
         node.get(type, Constants.PREFIX, REQUIRED).set(false);
 
-        node.get(type, Constants.ROTATE, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.ROTATE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.ROTATE, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.rotate"));
         node.get(type, Constants.ROTATE, REQUIRED).set(false);
 
