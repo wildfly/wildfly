@@ -34,6 +34,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_XA_TERMINATOR = JBOSS_TXN.append("XATerminator");
 
+    public static final ServiceName JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT = JBOSS_TXN.append("ArjunaObjectStoreEnvironment");
+
     public static final ServiceName JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER = JBOSS_TXN.append("ArjunaTransactionManager");
 
     public static final ServiceName JBOSS_TXN_ARJUNA_RECOVERY_MANAGER = JBOSS_TXN.append("ArjunaRecoveryManager");

@@ -42,14 +42,12 @@ import org.omg.CORBA.ORB;
 
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
-import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
-import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 
 /**
  * A service for the propriatary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
@@ -65,7 +63,6 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
     private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
-    private final InjectedValue<String> pathInjector = new InjectedValue<String>();
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private ObjStoreBrowser objStoreBrowser;
@@ -82,6 +79,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
     }
 
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
 
         // JTS expects the TCCL to be set to something that can find the log factory class.
@@ -102,16 +100,6 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
             coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
             coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
-
-            final ObjectStoreEnvironmentBean actionStoreObjectStoreEnvironmentBean =
-               BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "default");
-            actionStoreObjectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
-            final ObjectStoreEnvironmentBean stateStoreObjectStoreEnvironmentBean =
-                BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "stateStore");
-            stateStoreObjectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
-            final ObjectStoreEnvironmentBean communicationStoreObjectStoreEnvironmentBean =
-                BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "communicationStore");
-            communicationStoreObjectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
 
             // Object Store Browser bean
             Map<String, String> objStoreBrowserTypes = new HashMap<String, String> ();
@@ -175,6 +163,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         }
     }
 
+    @Override
     public synchronized void stop(final StopContext context) {
         value.stop();
         value.destroy();
@@ -182,6 +171,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         value = null;
     }
 
+    @Override
     public synchronized com.arjuna.ats.jbossatx.jta.TransactionManagerService getValue() throws IllegalStateException {
         setContextLoader(ArjunaTransactionManagerService.class.getClassLoader());
         try {
@@ -201,9 +191,5 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
 
     Injector<SocketBinding> getSocketProcessBindingInjector() {
         return socketProcessBindingInjector;
-    }
-
-    InjectedValue<String> getPathInjector() {
-        return pathInjector;
     }
 }

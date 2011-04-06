@@ -22,7 +22,6 @@
 
 package org.jboss.as.txn;
 
-import com.arjuna.ats.jts.extensions.Arjuna;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -82,8 +81,9 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         final String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
         final String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
         final boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
-        final String objectStorePathRef = "jboss.server.data.dir";
-        final String objectStorePath = "tx-object-store";
+        final ModelNode objectStore = operation.get(OBJECT_STORE);
+        final String objectStorePathRef = objectStore.hasDefined(RELATIVE_TO) ? objectStore.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
+        final String objectStorePath = objectStore.hasDefined(PATH) ? objectStore.get(PATH).asString() : "tx-object-store";
         final int maxPorts = 10;
         final int coordinatorDefaultTimeout = 300;
 
@@ -93,10 +93,12 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(RECOVERY_ENVIRONMENT).require(BINDING));
         subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
-
+        subModel.get(OBJECT_STORE, RELATIVE_TO).set(operation.get(OBJECT_STORE, RELATIVE_TO));
+        subModel.get(OBJECT_STORE, PATH).set(operation.get(OBJECT_STORE, PATH));
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
 
@@ -104,11 +106,18 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                     final XATerminatorService xaTerminatorService = new XATerminatorService();
                     target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install();
 
+                    // Configure the ObjectStoreEnvironmentBeans
+                    final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService();
+                    target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
+                        .addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, objStoreEnvironmentService.getPathInjector())
+                        .setInitialMode(Mode.ACTIVE).install();
+
                     final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService();
                     target.addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService)
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, recoveryManagerService.getOrbInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
                         .setInitialMode(Mode.ACTIVE)
                         .install();
 
@@ -117,7 +126,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                             .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
                             .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
                             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector())
-                            .addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, transactionManagerService.getPathInjector())
+                            .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
                             .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
                             .setInitialMode(Mode.ACTIVE)
                             .install();
