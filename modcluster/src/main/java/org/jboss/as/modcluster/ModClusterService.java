@@ -87,14 +87,6 @@ class ModClusterService implements Service<Void> {
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting Mod_cluster Extension");
-        final MBeanServer mbeanServer = getMBeanServer();
-        if (mbeanServer == null) {
-            log.error("Mod_cluster can't work without MBeanServer");
-            return;
-        }
-        // TODO move that in mod_cluster via another BLABLAEventHandlerAdapter()
-        registerObject(mbeanServer, "jboss.web:type=Server", webServer.getValue().getServer(),  "org.apache.catalina.startup.StandardServer");
-        registerObject(mbeanServer, "jboss.web:service=WebServer", webServer.getValue().getService(), "org.apache.catalina.core.StandardService");
 
         config = new ModClusterConfig();
         // Set the configuration.
@@ -176,7 +168,7 @@ class ModClusterService implements Service<Void> {
             load = myload;
         }
         service = new org.jboss.modcluster.ModClusterService(config, load);
-        adapter = new CatalinaEventHandlerAdapter(service, mbeanServer);
+        adapter = new CatalinaEventHandlerAdapter(service, webServer.getValue().getServer(), webServer.getValue().getService());
         try {
             adapter.start();
         } catch (JMException e) {
