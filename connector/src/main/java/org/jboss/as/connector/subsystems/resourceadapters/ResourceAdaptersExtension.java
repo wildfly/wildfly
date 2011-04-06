@@ -170,7 +170,6 @@ public class ResourceAdaptersExtension implements Extension {
                 writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
                 for (Property property : node.get(RESOURCEADAPTER).asPropertyList()) {
                     final ModelNode ra = property.getValue();
-                    Logger.getLogger(ResourceAdaptersExtension.class).infof("************ra node=%s", ra);
 
                     writeRaElement(writer, ra);
                 }
@@ -386,8 +385,6 @@ public class ResourceAdaptersExtension implements Extension {
         }
 
         private boolean has(ModelNode node, String name) {
-            Logger.getLogger(ResourceAdaptersExtension.class).infof("^^^^^^^^^^^node=%s", node);
-            Logger.getLogger(ResourceAdaptersExtension.class).infof("^^^^^^^^^^^name=%s", name);
 
             return node.has(name) && node.get(name).isDefined();
         }

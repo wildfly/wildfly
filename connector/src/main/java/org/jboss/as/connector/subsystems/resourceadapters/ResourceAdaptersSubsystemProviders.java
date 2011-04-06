@@ -207,7 +207,7 @@ class ResourceAdaptersSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(ADD);
-            operation.get(DESCRIPTION).set(bundle.getString("resourceadapter.add"));
+            operation.get(DESCRIPTION).set(bundle.getString("resource-adapter.add"));
 
             final ModelNode connectionDefinitionsNode = new ModelNode();
             connectionDefinitionsNode.get(DESCRIPTION).set(CONNECTIONDEFINITIONS);
