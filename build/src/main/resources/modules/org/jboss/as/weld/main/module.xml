@@ -34,6 +34,7 @@
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.el.api" />
+        <module name="javax.ejb.api" />
         <module name="javax.enterprise.api"/>
         <module name="javax.faces.api"/>
         <module name="javax.interceptor.api"/>
