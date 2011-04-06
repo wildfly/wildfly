@@ -24,6 +24,7 @@ package org.jboss.as.jpa.container;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
+import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import java.io.Serializable;
 
@@ -56,6 +57,8 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     private String puScopedName;
 
+    private boolean isInTx;
+
     public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
         super(puScopedName, true);
         this.underlyingEntityManager = underlyingEntityManager;
@@ -71,6 +74,32 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     @Override
     protected EntityManager getEntityManager() {
+
+        isInTx = TransactionUtil.getInstance().isInTx();
+
+        // ensure that a different XPC (with same name) is not already present in the TX
+        if (isInTx) {
+
+            // 7.6.3.1 throw EJBException if a different persistence context is already joined to the
+            // transaction (with the same puScopedName).
+            EntityManager existing = TransactionUtil.getInstance().getTransactionScopedEntityManager(puScopedName);
+            if (existing != null && existing != this) {
+            // should be enough to test if not the same object
+                throw new EJBException(
+                    "Found extended persistence context in SFSB invocation call stack but that cannot be used " +
+                    "because the transaction already has a transactional context associated with it.  " +
+                    "This can be avoided by changing application code, either eliminate the extended " +
+                    "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
+                    "Scoped persistence unit name=" +puScopedName +
+                    ", persistence context already in transaction =" + existing +
+                    ", extended persistence context =" + this) ;
+            }
+            else if( existing == null) {
+                // JPA 7.9.1 join the transaction if not already done.
+                TransactionUtil.getInstance().registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
+            }
+        }
+
         return underlyingEntityManager;
     }
 
@@ -81,7 +110,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     @Override
     protected boolean isInTx() {
-        return TransactionUtil.getInstance().isInTx();
+        return this.isInTx;
     }
 
     /**

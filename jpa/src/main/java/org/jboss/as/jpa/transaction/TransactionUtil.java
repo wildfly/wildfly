@@ -119,6 +119,12 @@ public class TransactionUtil {
         return result;
     }
 
+    public void registerExtendedUnderlyingWithTransaction(String scopedPuName, EntityManager xpc, EntityManager underlyingEntityManager) {
+        // xpc invoked this method, we cannot call xpc because it will recurse back to here, join with underloying em instead
+        underlyingEntityManager.joinTransaction();
+        setPC(scopedPuName, xpc);
+    }
+
     public void registerExtendedWithTransaction(String scopedPuName, EntityManager pc) {
         pc.joinTransaction();
         setPC(scopedPuName, pc);
