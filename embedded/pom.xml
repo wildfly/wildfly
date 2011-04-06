@@ -28,62 +28,25 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian</artifactId>
+        <artifactId>jboss-as-parent</artifactId>
         <version>7.0.0.Beta3-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+    <artifactId>jboss-as-embedded</artifactId>
     <version>7.0.0.Beta3-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian Embedded Container</name>
-
-    <packaging>jar</packaging>
+    <name>JBoss Application Server: Embedded</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-common</artifactId>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-embedded</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.arquillian</groupId>
-            <artifactId>arquillian-junit</artifactId>
-            <scope>test</scope>
-        </dependency>        
-        
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -21,12 +21,35 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import junit.framework.Assert;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.Bootstrap;
+import org.jboss.as.server.EmbeddedStandAloneServerFactory;
+import org.jboss.as.server.Main;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
+import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerDelegate;
+import javax.management.MBeanServerNotification;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -45,36 +68,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerDelegate;
-import javax.management.MBeanServerNotification;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-
-import junit.framework.Assert;
-
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.Bootstrap;
-import org.jboss.as.server.EmbeddedServerFactory;
-import org.jboss.as.server.Main;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
-import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Here to prove the forked surefire plugin is capable of running
@@ -90,7 +88,7 @@ public class ServerInModuleStartupTestCase {
     @BeforeClass
     public static void startServer() throws Exception {
 
-        EmbeddedServerFactory.setupCleanDirectories(System.getProperties());
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
 
         ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
         Assert.assertNotNull(serverEnvironment);

@@ -16,14 +16,6 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Properties;
-
-import javax.management.MBeanServerConnection;
-
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
@@ -31,8 +23,15 @@ import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.AbstractDeployableContainer;
-import org.jboss.as.server.EmbeddedServerFactory;
-import org.jboss.as.server.StandaloneServer;
+import org.jboss.as.embedded.EmbeddedServerFactory;
+import org.jboss.as.embedded.StandaloneServer;
+
+import javax.management.MBeanServerConnection;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Properties;
 
 /**
  * JBossASEmbeddedContainer

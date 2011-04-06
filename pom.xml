@@ -203,6 +203,7 @@
         <module>domain-http-api</module>
         <module>ee</module>
         <module>ejb3</module>
+        <module>embedded</module>
         <module>host-controller</module>
         <module>jaxrs</module>
         <module>jmx</module>
@@ -607,6 +608,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ejb3</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-embedded</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

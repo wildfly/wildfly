@@ -19,15 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server;
-
-import java.io.File;
+package org.jboss.as.embedded;
 
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+
+import java.io.File;
 
 /**
  * A factory for the initial ModuleLoader.
@@ -44,7 +41,7 @@ final class InitialModuleLoaderFactory {
     /**
      * Initializes the modules system and obtains the initial default ModuleLoader
      *
-     * @param systemPaths Paths that are exported by the SYSTEM module
+     * @param systemPackages Packages that are exported by the SYSTEM module
      * @return The default module loader
      */
     public static ModuleLoader getModuleLoader(File modulePath, String... systemPackages) {
@@ -57,7 +54,7 @@ final class InitialModuleLoaderFactory {
             SecurityActions.clearSystemProperty("java.class.path");
             SecurityActions.setSystemProperty("module.path", modulePath.getAbsolutePath());
 
-            StringBuffer packages = new StringBuffer("org.jboss.modules");
+            StringBuffer packages = new StringBuffer("org.jboss.modules," + InitialModuleLoaderFactory.class.getPackage().getName());
             if (systemPackages != null) {
                 for (String packageName : systemPackages)
                     packages.append("," + packageName);
@@ -66,7 +63,9 @@ final class InitialModuleLoaderFactory {
 
             ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-            // Sanity check that the SYSTEM module ClassLoader cannot see this class
+            // we don't want jboss-as-server to show up, but we do want jboss-as-embedded.
+            // So a sanity check that the SYSTEM module ClassLoader cannot see this class is obsolete.
+            /*
             try {
                 ModuleClassLoader classLoader = moduleLoader.loadModule(ModuleIdentifier.SYSTEM).getClassLoader();
                 classLoader.loadClass(InitialModuleLoaderFactory.class.getName());
@@ -76,15 +75,11 @@ final class InitialModuleLoaderFactory {
             } catch (ClassNotFoundException ex) {
                 // expected
             }
+            */
 
             return moduleLoader;
         } finally {
             SecurityActions.setSystemProperty("java.class.path", oldClassPath);
         }
-    }
-
-    private static String classToResource(Class<?> clazz) {
-        String base = clazz.getName().replace('.', '/');
-        return base + ".class";
     }
 }

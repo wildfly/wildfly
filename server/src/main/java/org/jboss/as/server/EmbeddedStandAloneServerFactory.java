@@ -22,6 +22,13 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.embedded.ServerStartException;
+import org.jboss.as.embedded.StandaloneServer;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -31,27 +38,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.LogManager;
-
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.log.JDKModuleLogger;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.threads.AsyncFuture;
+import java.util.concurrent.Future;
 
 /**
+ * This is the counter-part of EmbeddedServerFactory which lives behind a module class loader.
  * <p>
  * ServerFactory that sets up a standalone server using modular classloading.
  * </p>
@@ -71,81 +66,39 @@ import org.jboss.threads.AsyncFuture;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
+ * @see org.jboss.as.embedded.EmbeddedServerFactory
  */
-public class EmbeddedServerFactory {
+public class EmbeddedStandAloneServerFactory {
 
     public static final String JBOSS_EMBEDDED_ROOT = "jboss.embedded.root";
 
-    private EmbeddedServerFactory() {
+    private EmbeddedStandAloneServerFactory() {
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) throws Throwable {
-
-        if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
-            throw new IllegalStateException("Invalid jboss.home.dir: " + jbossHomeDir);
-
-        if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null)
-            systemProps.setProperty(ServerEnvironment.HOME_DIR, jbossHomeDir.getAbsolutePath());
-
+    public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv) {
         setupCleanDirectories(jbossHomeDir, systemProps);
-
-        File modulesDir = new File(jbossHomeDir + "/modules");
-        final ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir, systemPackages);
-
-        // Initialize the Logging system
-        ModuleIdentifier logModuleId = ModuleIdentifier.create("org.jboss.logmanager");
-        ModuleClassLoader logModuleClassLoader = moduleLoader.loadModule(logModuleId).getClassLoader();
-        ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(logModuleClassLoader);
-            systemProps.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
-            if (LogManager.getLogManager().getClass() == LogManager.class) {
-                System.err.println("WARNING: Failed to load the specified logmodule " + logModuleId);
-            } else {
-                Module.setModuleLogger(new JDKModuleLogger());
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(ctxClassLoader);
-        }
-
-        // Load the server Module and get its ClassLoader
-        final ModuleIdentifier serverModuleId = ModuleIdentifier.create("org.jboss.as.server");
-        final Module serverModule = moduleLoader.loadModule(serverModuleId);
-        final ModuleClassLoader serverModuleClassLoader = serverModule.getClassLoader();
 
         StandaloneServer standaloneServer = new StandaloneServer() {
 
-            private Object serviceContainer;
+            private ServiceContainer serviceContainer;
 
             @Override
             public void start() throws ServerStartException {
                 try {
                     // Determine the ServerEnvironment
-                    Class<?> serverMainClass = serverModuleClassLoader.loadClass(Main.class.getName());
-                    Method determineEnvironmentMethod = serverMainClass.getMethod("determineEnvironment", String[].class, Properties.class, Map.class);
-                    Object serverEnvironment = determineEnvironmentMethod.invoke(null, new String[0], systemProps, systemEnv);
+                    ServerEnvironment serverEnviromment = Main.determineEnvironment(new String[0], systemProps, systemEnv);
 
-                    Class<?> bootstrapFactoryClass = serverModuleClassLoader.loadClass(Bootstrap.Factory.class.getName());
-                    Method newInstanceMethod = bootstrapFactoryClass.getMethod("newInstance");
-                    Object bootstrap = newInstanceMethod.invoke(null);
+                    Bootstrap bootstrap = Bootstrap.Factory.newInstance();
 
-                    Class<?> configurationClass = serverModuleClassLoader.loadClass(Bootstrap.Configuration.class.getName());
-                    Constructor<?> configurationCtor = configurationClass.getConstructor();
-                    Object configuration = configurationCtor.newInstance();
+                    Bootstrap.Configuration configuration = new Bootstrap.Configuration();
 
-                    Method setServerEnvironmentMethod = configurationClass.getMethod("setServerEnvironment", serverEnvironment.getClass());
-                    setServerEnvironmentMethod.invoke(configuration, serverEnvironment);
+                    configuration.setServerEnvironment(serverEnviromment);
 
-                    Method setModuleLoaderMethod = configurationClass.getMethod("setModuleLoader", ModuleLoader.class);
-                    setModuleLoaderMethod.invoke(configuration, moduleLoader);
+                    configuration.setModuleLoader(moduleLoader);
 
-                    Class<?> bootstrapClass = serverModuleClassLoader.loadClass(Bootstrap.class.getName());
-                    Method bootstrapStartMethod = bootstrapClass.getMethod("startup", configurationClass, List.class);
-                    Object future = bootstrapStartMethod.invoke(bootstrap, configuration, Collections.<ServiceActivator>emptyList());
+                    Future<ServiceContainer> future = bootstrap.startup(configuration, Collections.<ServiceActivator>emptyList());
 
-                    Class<?> asyncFutureClass = serverModuleClassLoader.loadClass(AsyncFuture.class.getName());
-                    Method getMethod = asyncFutureClass.getMethod("get");
-                    serviceContainer = getMethod.invoke(future);
+                    serviceContainer = future.get();
 
                 } catch (RuntimeException rte) {
                     throw rte;
@@ -158,12 +111,9 @@ public class EmbeddedServerFactory {
             public void stop() {
                 if (serviceContainer != null) {
                     try {
-                        Class<?> serverContainerClass = serverModuleClassLoader.loadClass(ServiceContainer.class.getName());
-                        Method shutdownMethod = serverContainerClass.getMethod("shutdown");
-                        shutdownMethod.invoke(serviceContainer);
+                        serviceContainer.shutdown();
 
-                        Method awaitTerminationMethod = serverContainerClass.getMethod("awaitTermination");
-                        awaitTerminationMethod.invoke(serviceContainer);
+                        serviceContainer.awaitTermination();
                     } catch (RuntimeException rte) {
                         throw rte;
                     } catch (Exception ex) {
@@ -288,21 +238,5 @@ public class EmbeddedServerFactory {
                 }
             }
         }
-    }
-
-    public static void main(String[] args) throws Throwable {
-        SecurityActions.setSystemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
-
-        String jbossHomeKey = "jboss.home";
-        String jbossHomeProp = System.getProperty(jbossHomeKey);
-        if (jbossHomeProp == null)
-            throw new IllegalStateException("Cannot find system property: " + jbossHomeKey);
-
-        File jbossHomeDir = new File(jbossHomeProp);
-        if (jbossHomeDir.isDirectory() == false)
-            throw new IllegalStateException("Invalid jboss home directory: " + jbossHomeDir);
-
-        StandaloneServer server = create(jbossHomeDir, System.getProperties(), System.getenv());
-        server.start();
     }
 }

@@ -21,12 +21,20 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.server.Bootstrap;
+import org.jboss.as.server.EmbeddedStandAloneServerFactory;
+import org.jboss.as.server.Main;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -40,20 +48,12 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import org.jboss.as.server.Bootstrap;
-import org.jboss.as.server.EmbeddedServerFactory;
-import org.jboss.as.server.Main;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -77,7 +77,7 @@ public class HttpDeploymentUploadUnitTestCase {
 
     @BeforeClass
     public static void startServer() throws Exception {
-        EmbeddedServerFactory.setupCleanDirectories(System.getProperties());
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
         final ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
         assertNotNull(serverEnvironment);
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();

@@ -21,13 +21,13 @@
  */
 package org.jboss.as.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  *
@@ -56,18 +56,18 @@ public class EmbeddedServerFactorySetupUnitTestCase {
     @Test
     public void testNoSpecialConfig() throws Exception {
         Properties props = new Properties();
-        EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(0, props.size());
     }
 
     @Test
     public void testEmbeddedRootNoOverrides() throws Exception {
         Properties props = new Properties();
-        props.setProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
-        EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
+        props.setProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(standardJBossHome, props);
 
         Assert.assertEquals(4, props.size());
-        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT));
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 1);
@@ -76,11 +76,11 @@ public class EmbeddedServerFactorySetupUnitTestCase {
     @Test
     public void testEmbeddedRootServerOverride() throws Exception {
         Properties props = new Properties();
-        props.setProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
+        props.setProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_BASE_DIR, alternativeServer.getAbsolutePath());
-        EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
-        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT));
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 2);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 2);
@@ -89,12 +89,12 @@ public class EmbeddedServerFactorySetupUnitTestCase {
     @Test
     public void testDataAndConfigOverride() throws Exception {
         Properties props = new Properties();
-        props.setProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
+        props.setProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_DATA_DIR, alternativeDataDir.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_CONFIG_DIR, alternativeConfigDir.getAbsolutePath());
-        EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
-        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT));
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 3);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 4);
@@ -103,13 +103,13 @@ public class EmbeddedServerFactorySetupUnitTestCase {
     @Test
     public void testServerOverrideAndDataAndConfigOverride() throws Exception {
         Properties props = new Properties();
-        props.setProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
+        props.setProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_BASE_DIR, alternativeServer.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_DATA_DIR, alternativeDataDir.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_CONFIG_DIR, alternativeConfigDir.getAbsolutePath());
-        EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
-        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT));
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 3);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 4);
@@ -118,12 +118,12 @@ public class EmbeddedServerFactorySetupUnitTestCase {
     @Test
     public void testServerOverrideAndConfigOverride() throws Exception {
         Properties props = new Properties();
-        props.setProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
+        props.setProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, embeddedRoot.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_BASE_DIR, alternativeServer.getAbsolutePath());
         props.setProperty(ServerEnvironment.SERVER_CONFIG_DIR, alternativeConfigDir.getAbsolutePath());
-        EmbeddedServerFactory.setupCleanDirectories(standardJBossHome, props);
+        EmbeddedStandAloneServerFactory.setupCleanDirectories(standardJBossHome, props);
         Assert.assertEquals(4, props.size());
-        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedServerFactory.JBOSS_EMBEDDED_ROOT));
+        Assert.assertEquals(embeddedRoot.getAbsolutePath(), props.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT));
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_BASE_DIR, -1);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_DATA_DIR, 2);
         assertPropertyAndEmbeddedRootFile(props, ServerEnvironment.SERVER_CONFIG_DIR, 4);

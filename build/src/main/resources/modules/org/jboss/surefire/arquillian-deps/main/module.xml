@@ -38,8 +38,8 @@
        <module name="org.jboss.arquillian.spi" export="true"/>
        <module name="org.jboss.arquillian.testenricher.msc" export="true"/>
        <module name="org.jboss.arquillian.testenricher.osgi" export="true"/>
+       <module name="org.jboss.as.embedded" export="true"/>
        <module name="org.jboss.as.jmx" export="true"/>
-       <module name="org.jboss.as.server" export="true"/>
        <module name="org.jboss.marshalling.river" export="true"/>
        <module name="org.jboss.osgi.spi" export="true"/>
        <module name="org.jboss.shrinkwrap.api" export="true"/>
