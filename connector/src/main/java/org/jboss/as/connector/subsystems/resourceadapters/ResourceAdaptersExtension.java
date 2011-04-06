@@ -165,7 +165,6 @@ public class ResourceAdaptersExtension implements Extension {
             boolean hasChildren = node.hasDefined(RESOURCEADAPTER) && node.get(RESOURCEADAPTER).asInt() > 0;
 
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), !hasChildren);
-            Logger.getLogger(ResourceAdaptersExtension.class).infof("###########node=%s", node);
 
             if (hasChildren) {
                 writer.writeStartElement(Element.RESOURCE_ADAPTERS.getLocalName());
@@ -349,7 +348,6 @@ public class ResourceAdaptersExtension implements Extension {
         private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, String localName, String identifier)
                 throws XMLStreamException {
             if (has(node, identifier)) {
-                Logger.getLogger(ResourceAdaptersExtension.class).infof("###########Writing=%s", localName);
 
                 writer.writeStartElement(localName);
                 writer.writeCharacters(node.get(identifier).asString());
