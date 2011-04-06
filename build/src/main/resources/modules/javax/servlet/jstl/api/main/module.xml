@@ -28,6 +28,7 @@
         <module name="javax.api" export="false"/>
         <module name="javax.servlet.api" export="false"/>
         <module name="javax.servlet.jsp.api" export="false"/>
+        <module name="org.apache.xalan" export="false"/>
     </dependencies>
 
     <resources>

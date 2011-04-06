@@ -185,7 +185,7 @@
         </module-def>
 
         <module-def name="javax.servlet.jstl.api">
-            <maven-resource group="javax.servlet" artifact="jstl"/>
+            <maven-resource group="org.jboss.spec.javax.servlet.jstl" artifact="jboss-jstl-api_1.2_spec"/>
         </module-def>
 
         <module-def name="javax.transaction.api">
