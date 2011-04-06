@@ -41,7 +41,7 @@ import org.jboss.weld.manager.BeanManagerImpl;
  *
  *
  */
-public class WeldInjectionFactory implements InjectionFactory{
+public class WeldInjectionFactory implements InjectionFactory {
 
     private final ServiceName beanManagerServiceName;
     private final ServiceTarget serviceTarget;

@@ -89,7 +89,7 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
             SecurityActions.setContextClassLoader(classLoader);
             final BeanManagerImpl bm = beanManager.getValue();
             WeldInjectionHandle weldHandle = new WeldInjectionHandle();
-            for (Injection injectionPoint :injectionPoints) {
+            for (Injection injectionPoint : injectionPoints) {
                 weldHandle.addAll(injectionPoint.inject(instance,bm));
             }
             return weldHandle;
@@ -110,6 +110,11 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
             WeldClass<?> weldClass = transformer.loadClass(componentClass);
             for (AnnotatedField<?> field : weldClass.getFields()) {
                 if (field.isAnnotationPresent(Inject.class)) {
+
+                    if(InjectionPoint.class.isAssignableFrom(field.getJavaMember().getType())) {
+                        throw new StartException("Component " + componentClass + " is attempting to inject the InjectionPoint into a field: " + field.getJavaMember());
+                    }
+
                     final Set<Annotation> qualifiers = new HashSet<Annotation>();
                     for (Annotation annotation : field.getAnnotations()) {
                         if (bm.isQualifier(annotation.annotationType())) {
@@ -139,6 +144,11 @@ public class WeldComponentInjectionService implements ComponentInjector, Service
                                 qualifiers.add(annotation);
                             }
                         }
+                        final Class<?> parameterType = method.getJavaMember().getParameterTypes()[param.getPosition()];
+                        if(InjectionPoint.class.isAssignableFrom(parameterType)) {
+                            throw new StartException("Component " + componentClass + " is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean " + method.getJavaMember());
+                        }
+
                         ParameterInjectionPoint ip = new ParameterInjectionPoint(param, qualifiers);
                         Set<Bean<?>> beans = bm.getBeans(ip);
                         if (beans.size() > 1) {
