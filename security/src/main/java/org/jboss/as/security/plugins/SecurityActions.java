@@ -47,7 +47,7 @@ class SecurityActions {
         try {
             return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
                 public ModuleClassLoader run() throws ModuleLoadException {
-                    ModuleLoader loader = Module.getCurrentModuleLoader();
+                    ModuleLoader loader = Module.getCallerModuleLoader();
                     ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
                     return loader.loadModule(identifier).getClassLoader();
                 }
