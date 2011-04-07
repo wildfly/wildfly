@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.embedded;
+package org.jboss.as.embedded.ejb3;
 
-import javax.naming.Context;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * The standalone server interface.
+ * Defines a mechanism whereby ClassPath entries
+ * may be excluded from scanning for EJB resources
+ * according to some implementation-specific
+ * criteria.
  *
- * @author Thomas.Diesler@jboss.com
- * @since 17-Nov-2010
+ * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
+ * @version $Revision: $
  */
-public interface StandaloneServer {
-    // TODO: use a DeploymentPlan
-    @Deprecated
-    void deploy(File file) throws IOException, ExecutionException, InterruptedException;
-
+public interface ExclusionFilter {
     /**
-     * Retrieve a naming context for looking up references to session beans executing in
-     * the embeddable container.
+     * Returns whether this {@link org.jboss.vfs.VirtualFile} should be
+     * excluded from scanning for EJB resources.  The criteria
+     * whereby a file is excluded is up to the implementation.
      *
-     * @return The naming context.
+     * @param file The file to inspect for exclusion properties
+     * @throws IllegalArgumentException If the file is not specified
      */
-    Context getContext();
+    boolean exclude(VirtualFile file) throws IllegalArgumentException;
 
-    void start() throws ServerStartException;
-
-    void stop();
-
-    // TODO: use a DeploymentPlan
-    @Deprecated
-    void undeploy(File file) throws ExecutionException, InterruptedException;
 }

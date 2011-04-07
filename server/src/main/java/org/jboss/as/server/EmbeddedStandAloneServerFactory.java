@@ -22,13 +22,23 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.embedded.ServerStartException;
 import org.jboss.as.embedded.StandaloneServer;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.value.Value;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -43,6 +53,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -81,6 +92,25 @@ public class EmbeddedStandAloneServerFactory {
         StandaloneServer standaloneServer = new StandaloneServer() {
 
             private ServiceContainer serviceContainer;
+            private ServerDeploymentManager serverDeploymentManager;
+            private Context context;
+
+            @Override
+            public void deploy(File file) throws IOException, ExecutionException, InterruptedException {
+                // the current deployment manager only accepts jar input stream, so hack one together
+                execute(serverDeploymentManager.newDeploymentPlan()
+                        .add(file.getName(), VFSUtils.createJarFileInputStream(VFS.getChild(file.toURI()))).andDeploy()
+                        .build());
+            }
+
+            private ServerDeploymentPlanResult execute(DeploymentPlan deploymentPlan) throws ExecutionException, InterruptedException {
+                return serverDeploymentManager.execute(deploymentPlan).get();
+            }
+
+            @Override
+            public Context getContext() {
+                return ifSet(context, "Server has not been started");
+            }
 
             @Override
             public void start() throws ServerStartException {
@@ -100,6 +130,10 @@ public class EmbeddedStandAloneServerFactory {
 
                     serviceContainer = future.get();
 
+                    Value<ServerController> serverControllerService = (Value<ServerController>) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+                    serverDeploymentManager = new ModelControllerServerDeploymentManager(serverControllerService.getValue());
+
+                    context = new InitialContext();
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (Exception ex) {
@@ -109,6 +143,17 @@ public class EmbeddedStandAloneServerFactory {
 
             @Override
             public void stop() {
+                if (context != null) {
+                    try {
+                        context.close();
+
+                        context = null;
+                    } catch (NamingException e) {
+                        // TODO: use logging?
+                        e.printStackTrace();
+                    }
+                }
+                serverDeploymentManager = null;
                 if (serviceContainer != null) {
                     try {
                         serviceContainer.shutdown();
@@ -121,10 +166,22 @@ public class EmbeddedStandAloneServerFactory {
                     }
                 }
             }
+
+            @Override
+            public void undeploy(File file) throws ExecutionException, InterruptedException {
+                execute(serverDeploymentManager.newDeploymentPlan()
+                        .undeploy(file.getName()).andRemoveUndeployed()
+                        .build());
+            }
         };
         return standaloneServer;
     }
 
+    private static <T> T ifSet(T value, String message) {
+        if (value == null)
+            throw new IllegalStateException(message);
+        return value;
+    }
 
     public static void setupCleanDirectories(Properties props) {
         File jbossHomeDir = new File(props.getProperty(ServerEnvironment.HOME_DIR));

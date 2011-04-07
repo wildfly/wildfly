@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.embedded;
+package org.jboss.as.embedded.ejb3.simple.unit;
 
-import javax.naming.Context;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import org.jboss.as.embedded.ejb3.simple.GreeterBean;
+import org.junit.Test;
+
+import javax.ejb.embeddable.EJBContainer;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * The standalone server interface.
- *
- * @author Thomas.Diesler@jboss.com
- * @since 17-Nov-2010
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface StandaloneServer {
-    // TODO: use a DeploymentPlan
-    @Deprecated
-    void deploy(File file) throws IOException, ExecutionException, InterruptedException;
+public class SimpleITCase {
+    @Test
+    public void test1() throws Exception {
+        EJBContainer container = EJBContainer.createEJBContainer();
 
-    /**
-     * Retrieve a naming context for looking up references to session beans executing in
-     * the embeddable container.
-     *
-     * @return The naming context.
-     */
-    Context getContext();
+        GreeterBean view = (GreeterBean) container.getContext().lookup("java:global/test-classes/GreeterBean");
+        String name = "μετεμψύχωσις";
+        String result = view.sayHi(name);
+        assertEquals("Hi μετεμψύχωσις", result);
 
-    void start() throws ServerStartException;
-
-    void stop();
-
-    // TODO: use a DeploymentPlan
-    @Deprecated
-    void undeploy(File file) throws ExecutionException, InterruptedException;
+        container.close();
+    }
 }
