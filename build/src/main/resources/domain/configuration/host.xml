@@ -55,7 +55,7 @@
     <servers>
         <server name="server-one" group="main-server-group">
             <!-- server-one inherits the default socket-group declared in the server-group -->
-            <jvm name="default" /> 
+            <jvm name="default"/>
         </server>
         <server name="server-two" group="main-server-group" auto-start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in 

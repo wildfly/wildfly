@@ -18,25 +18,33 @@
  */
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,7 +67,6 @@ import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
@@ -188,11 +195,11 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 
-        for(Entry<String, String> property : jvmElement.getSystemProperties().entrySet()) {
+        for (Map.Entry<String, String> entry : getAllSystemProperties(true).entrySet()) {
             final StringBuilder sb = new StringBuilder("-D");
-            sb.append(property.getKey());
+            sb.append(entry.getKey());
             sb.append('=');
-            sb.append(property.getValue() == null ? "true" : property.getValue());
+            sb.append(entry.getValue() == null ? "true" : entry.getValue());
             command.add(sb.toString());
         }
 
@@ -308,12 +315,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     private void addSystemProperties(List<ModelNode> updates) {
-        Map<String, String> props = new HashMap<String, String>();
-
-        addSystemProperties(domainModel, props);
-        addSystemProperties(serverGroup, props);
-        addSystemProperties(hostModel, props);
-        addSystemProperties(serverModel, props);
+        Map<String, String> props = getAllSystemProperties(false);
 
         for (Map.Entry<String, String> entry : props.entrySet()) {
             ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS.toModelNode());
@@ -325,10 +327,24 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
     }
 
-    private void addSystemProperties(final ModelNode source, final Map<String, String> props) {
+    private Map<String, String> getAllSystemProperties(boolean boottimeOnly){
+        Map<String, String> props = new HashMap<String, String>();
+
+        addSystemProperties(domainModel, props, boottimeOnly);
+        addSystemProperties(serverGroup, props, boottimeOnly);
+        addSystemProperties(hostModel, props, boottimeOnly);
+        addSystemProperties(serverModel, props, boottimeOnly);
+
+        return props;
+    }
+
+    private void addSystemProperties(final ModelNode source, final Map<String, String> props, boolean boottimeOnly) {
         if (source.hasDefined(SYSTEM_PROPERTIES)) {
             for (Property prop : source.get(SYSTEM_PROPERTIES).asPropertyList()) {
-                String val = prop.getValue().isDefined() ? prop.getValue().asString() : null;
+                if (boottimeOnly && !prop.getValue().get(BOOT_TIME).asBoolean()) {
+                    continue;
+                }
+                String val = prop.getValue().get(VALUE).isDefined() ? prop.getValue().get(VALUE).asString() : null;
                 props.put(prop.getName(), val);
             }
         }

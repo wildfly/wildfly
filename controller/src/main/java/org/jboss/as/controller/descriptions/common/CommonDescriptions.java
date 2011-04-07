@@ -21,6 +21,8 @@
  */package org.jboss.as.controller.descriptions.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
@@ -147,7 +149,7 @@ public class CommonDescriptions {
         return root;
     }
 
-    public static ModelNode getAddSystemPropertyOperation(final Locale locale) {
+    public static ModelNode getAddSystemPropertyOperation(final Locale locale, boolean standalone) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(SystemPropertyAddHandler.OPERATION_NAME);
@@ -161,6 +163,13 @@ public class CommonDescriptions {
         root.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("system-properties.add.value"));
         root.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
+        if (!standalone) {
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, TYPE).set(ModelType.STRING);
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, DESCRIPTION).set(bundle.getString("system-properties.add.boottime"));
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, REQUIRED).set(false);
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, NILLABLE).set(true);
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, DEFAULT).set(true);
+        }
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -206,18 +215,5 @@ public class CommonDescriptions {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(getSchemaLocationAttribute(null));
-        System.out.println(getNamespacePrefixAttribute(null));
-        System.out.println(getAddNamespaceOperation(null));
-        System.out.println(getRemoveNamespaceOperation(null));
-        System.out.println(getAddSchemaLocationOperation(null));
-        System.out.println(getRemoveSchemaLocationOperation(null));
-        System.out.println(getSystemPropertiesAttribute(null));
-        System.out.println(getAddSystemPropertyOperation(null));
-        System.out.println(getRemoveSystemPropertyOperation(null));
-        System.out.println(getReadConfigAsXmlOperation(null));
     }
 }

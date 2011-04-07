@@ -25,6 +25,7 @@ package org.jboss.as.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -376,7 +377,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         list.add(update);
     }
 
-    protected void parseSystemProperties(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+    protected void parseSystemProperties(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates, boolean standalone) throws XMLStreamException {
 
         while (reader.nextTag() != END_ELEMENT) {
             if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
@@ -386,12 +387,54 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw unexpectedElement(reader);
             }
 
-            final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
+            String name = null;
+            String value = null;
+            Boolean boottime = null;
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i ++) {
+                final String val = reader.getAttributeValue(i);
+                if (!isNoNamespaceAttribute(reader, i)) {
+                    throw unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            if (name != null) {
+                                throw ParseUtils.duplicateAttribute(reader, NAME);
+                            }
+                            name = val;
+                            break;
+                        } case VALUE: {
+                            if (value != null) {
+                                throw ParseUtils.duplicateAttribute(reader, VALUE);
+                            }
+                            value = val;
+                            break;
+                        }
+                        case BOOT_TIME : {
+                            if (standalone) {
+                                throw unexpectedAttribute(reader, i);
+                            }
+                            boottime = Boolean.valueOf(val);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                }
+            }
             requireNoContent(reader);
 
             ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, address);
-            op.get(NAME).set(array[0]);
-            op.get(VALUE).set(array[1]);
+            op.get(NAME).set(name);
+            op.get(VALUE).set(value);
+            if (boottime != null) {
+                op.get(BOOT_TIME).set(boottime.booleanValue());
+            }
+
+
+
             updates.add(op);
         }
     }
@@ -658,14 +701,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             }
                             updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES, parseProperties(reader)));
                             hasEnvironmentVariables = true;
-                            break;
-                        }
-                        case SYSTEM_PROPERTIES: {
-                            if (hasSystemProperties) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            parseSystemProperties(reader, address, updates);
-                            hasSystemProperties = true;
                             break;
                         }
                         case JVM_OPTIONS: {
@@ -1384,14 +1419,20 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
-            Element element) throws XMLStreamException {
+            Element element, boolean standalone) throws XMLStreamException {
         final List<Property> properties = modelNode.asPropertyList();
         if (properties.size() > 0) {
             writer.writeStartElement(element.getLocalName());
             for (Property prop : properties) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writeAttribute(writer, Attribute.NAME, prop.getName());
-                writeAttribute(writer, Attribute.VALUE, prop.getValue().asString());
+                if (standalone) {
+                    writeAttribute(writer, Attribute.VALUE, prop.getValue().asString());
+                } else {
+                    writeAttribute(writer, Attribute.VALUE, prop.getValue().get(VALUE).asString());
+                    writeAttribute(writer, Attribute.BOOT_TIME, prop.getValue().get(BOOT_TIME).asString());
+                }
+
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -1465,11 +1506,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeAttribute(Attribute.VALUE.getLocalName(), variable.getValue().asString());
             }
             writer.writeEndElement();
-        }
-
-        // System properties
-        if(jvmElement.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, jvmElement, Element.SYSTEM_PROPERTIES);
         }
 
         writer.writeEndElement();

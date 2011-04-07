@@ -22,20 +22,19 @@
 
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
@@ -65,13 +64,12 @@ public final class JVMHandlers {
     public static final String JVM_PERMGEN = "permgen-size";
     public static final String JVM_MAX_PERMGEN = "max-permgen-size";
     public static final String JVM_STACK = "stack-size";
-    public static final String JVM_SYSTEM_PROPERTIES = SYSTEM_PROPERTIES;
     public static final String SIZE = "size";
     public static final String MAX_SIZE = "max-size";
 
     static final String[] ATTRIBUTES = {JVM_AGENT_LIB, JVM_AGENT_PATH, JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS, JVM_ENV_CLASSPATH_IGNORED,
         JVM_ENV_VARIABLES, JVM_HEAP, JVM_MAX_HEAP, JVM_JAVA_AGENT, JVM_JAVA_HOME, JVM_OPTIONS, JVM_PERMGEN, JVM_MAX_PERMGEN,
-        JVM_STACK, JVM_SYSTEM_PROPERTIES};
+        JVM_STACK};
 
     private static final OperationHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
     private static final OperationHandler booleanWriteHandler = new ModelUpdateOperationHandler() {
@@ -110,10 +108,6 @@ public final class JVMHandlers {
 
         registration.registerOperationHandler(JVMOptionAddHandler.OPERATION_NAME, JVMOptionAddHandler.INSTANCE, JVMOptionAddHandler.INSTANCE, false);
         registration.registerOperationHandler(JVMOptionRemoveHandler.OPERATION_NAME, JVMOptionRemoveHandler.INSTANCE, JVMOptionRemoveHandler.INSTANCE, false);
-
-        registration.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
-        registration.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-
     }
 
     private JVMHandlers() {

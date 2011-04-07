@@ -110,7 +110,7 @@ public class HostXml extends CommonXml {
         }
 
         if (modelNode.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
         }
 
         if (modelNode.hasDefined(MANAGEMENT_INTERFACES)) {
@@ -201,7 +201,7 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list);
+            parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.MANAGEMENT_INTERFACES) {
@@ -499,7 +499,7 @@ public class HostXml extends CommonXml {
                             if (sawSystemProperties) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            parseSystemProperties(reader, address, list);
+                            parseSystemProperties(reader, address, list, false);
                             sawSystemProperties = true;
                             break;
                         }
@@ -553,8 +553,8 @@ public class HostXml extends CommonXml {
             if (server.hasDefined(PATH)) {
                 writePaths(writer, server.get(PATH));
             }
-            if (server.hasDefined(SYSTEM_PROPERTY)) {
-                writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES);
+            if (server.hasDefined(SYSTEM_PROPERTIES)) {
+                writeProperties(writer, server.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
             }
             if (server.hasDefined(INTERFACE)) {
                 writeInterfaces(writer, server.get(INTERFACE));

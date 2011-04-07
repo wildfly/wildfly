@@ -40,6 +40,7 @@ public enum Attribute {
 
     // domain 1.0 attributes in alpha order
     AUTO_START("auto-start"),
+    BOOT_TIME("boot-time"),
     DEFAULT_INTERFACE("default-interface"),
     DEBUG_ENABLED("debug-enabled"),
     DEBUG_OPTIONS("debug-options"),

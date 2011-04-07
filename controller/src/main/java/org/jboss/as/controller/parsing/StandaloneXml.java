@@ -169,7 +169,7 @@ public class StandaloneXml extends CommonXml {
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list);
+            parseSystemProperties(reader, address, list, true);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -446,7 +446,7 @@ public class StandaloneXml extends CommonXml {
         }
 
         if (modelNode.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, true);
         }
 
         if (modelNode.hasDefined(DEPLOYMENT)) {

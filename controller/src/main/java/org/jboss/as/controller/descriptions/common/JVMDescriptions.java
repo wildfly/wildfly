@@ -78,9 +78,6 @@ public final class JVMDescriptions {
         node.get(ATTRIBUTES, JVM_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.options"));
         node.get(ATTRIBUTES, JVM_STACK, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, JVM_STACK, DESCRIPTION).set(bundle.getString("jvm.stack"));
-        node.get(ATTRIBUTES, JVM_SYSTEM_PROPERTIES, TYPE).set(ModelType.LIST);
-        node.get(ATTRIBUTES, JVM_SYSTEM_PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
-        node.get(ATTRIBUTES, JVM_SYSTEM_PROPERTIES, DESCRIPTION).set(bundle.getString("jvm.system.properties"));
         node.get(ATTRIBUTES, JVM_TYPE, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, JVM_TYPE, DESCRIPTION).set(bundle.getString("jvm.type"));
 

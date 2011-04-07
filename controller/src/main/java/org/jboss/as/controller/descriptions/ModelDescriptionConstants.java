@@ -43,6 +43,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String ATTRIBUTES = "attributes";
     public static final String AUTO_START = "auto-start";
+    public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";

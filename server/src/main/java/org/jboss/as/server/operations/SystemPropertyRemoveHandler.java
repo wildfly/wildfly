@@ -18,6 +18,12 @@
  */
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+
+import java.util.Locale;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -25,7 +31,12 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Handler for the server remove-system-property operation.
@@ -36,10 +47,60 @@ public class SystemPropertyRemoveHandler extends org.jboss.as.controller.operati
 
     public static final SystemPropertyRemoveHandler INSTANCE = new SystemPropertyRemoveHandler();
 
-    private SystemPropertyRemoveHandler() {
+    public static ModelNode getOperation(ModelNode address, String name) {
+        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        op.get(NAME).set(name);
+        return op;
+    }
+
+    private final ParameterValidator typeValidator = new StringLengthValidator(1);
+
+    /**
+     * Create the SystemPropertyRemoveHandler
+     */
+    protected SystemPropertyRemoveHandler() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+
+        ModelNode param = operation.get(NAME);
+        typeValidator.validateParameter(NAME, param);
+
+        ModelNode properties = context.getSubModel().get(SYSTEM_PROPERTIES);
+        ModelNode toRemove = null;
+        ModelNode newMap = new ModelNode().setEmptyObject();
+        String name = param.asString();
+        if (properties.isDefined()) {
+            for (Property property : properties.asPropertyList()) {
+                if (!name.equals(property.getName())) {
+                    toRemove = newMap.get(property.getName()).set(property.getValue());
+                }
+                else {
+                    toRemove = property.getValue();
+                }
+            }
+        }
+
+        if (toRemove != null) {
+            properties.set(newMap);
+            String value = toRemove.isDefined() ? toRemove.asString() : null;
+            ModelNode compensating = SystemPropertyAddHandler.getOperation(operation.get(OP_ADDR), name, value);
+            return removeSystemProperty(name, context, resultHandler, compensating);
+        }
+        else {
+            throw new OperationFailedException(new ModelNode().set("No property with " + name + "found"));
+        }
     }
 
     @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return CommonDescriptions.getRemoveSystemPropertyOperation(locale);
+    }
+
     protected OperationResult removeSystemProperty(final String name, OperationContext context, final ResultHandler resultHandler, final ModelNode compensating) {
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {

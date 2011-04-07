@@ -33,9 +33,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.operations.SystemPropertyAddHandler;
+import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 

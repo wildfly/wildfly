@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations;
+package org.jboss.as.domain.controller.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
@@ -34,9 +35,11 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler for the server add-system-property operation
@@ -48,14 +51,16 @@ public class SystemPropertyAddHandler extends org.jboss.as.controller.operations
 
     public static final SystemPropertyAddHandler INSTANCE = new SystemPropertyAddHandler();
 
-    public static ModelNode getOperation(ModelNode address, String name, String value) {
+    public static ModelNode getOperation(ModelNode address, String name, String value, boolean boottime) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
+        op.get(NAME).set(name);
         if (value == null) {
-            op.get(name).set(new ModelNode());
+            op.get(VALUE).set(new ModelNode());
         }
         else {
-            op.get(name).set(value);
+            op.get(VALUE).set(value);
         }
+        op.get(BOOT_TIME).set(boottime);
         return op;
     }
 
@@ -66,6 +71,7 @@ public class SystemPropertyAddHandler extends org.jboss.as.controller.operations
     protected SystemPropertyAddHandler() {
         validator.registerValidator(NAME, new StringLengthValidator(1));
         validator.registerValidator(VALUE, new StringLengthValidator(0, true));
+        validator.registerValidator(BOOT_TIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
     }
 
     /**
@@ -76,19 +82,21 @@ public class SystemPropertyAddHandler extends org.jboss.as.controller.operations
 
         String name = operation.get(NAME).asString();
         String value = operation.get(VALUE).isDefined() ? operation.get(VALUE).asString() : null;
+        boolean boottime = operation.get(BOOT_TIME).isDefined() ? operation.get(BOOT_TIME).asBoolean() : true;
         ModelNode node = context.getSubModel().get(SYSTEM_PROPERTIES, name);
         if (value == null) {
-            node.set(new ModelNode());
+            node.get(VALUE).set(new ModelNode());
         }
         else {
-            node.set(value);
+            node.get(VALUE).set(value);
         }
+        node.get(BOOT_TIME).set(boottime);
         ModelNode compensating = SystemPropertyRemoveHandler.getOperation(operation.get(OP_ADDR), name);
         return updateSystemProperty(name, value, context, resultHandler, compensating);
     }
 
     public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getAddSystemPropertyOperation(locale, true);
+        return CommonDescriptions.getAddSystemPropertyOperation(locale, false);
     }
 
     protected OperationResult updateSystemProperty(final String name, final String value, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensating) {

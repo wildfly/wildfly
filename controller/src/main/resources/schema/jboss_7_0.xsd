@@ -46,7 +46,7 @@
                 <xs:element name="profiles" type="profilesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="system-properties" type="properties" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
@@ -69,7 +69,7 @@
             <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
-                <xs:element name="system-properties" type="properties" minOccurs="0"/>
+                <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
                 <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
@@ -207,7 +207,7 @@
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
 
             <!--<xs:element name="loggers" type="loggersType" minOccurs="0"/>-->
-            <xs:element name="system-properties" type="properties" minOccurs="0"/>
+            <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
             <xs:element name="jvm" minOccurs="0" type="namedJvmType"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
@@ -271,7 +271,7 @@
 
             <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
 
-            <xs:element name="system-properties" minOccurs="0" type="properties"/>
+            <xs:element name="system-properties" minOccurs="0" type="properties-with-boottime"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string">
             <xs:annotation>
@@ -1102,7 +1102,6 @@
             <xs:element name="javaagent" type="jvm-javaagentType" minOccurs="0"/>
             <xs:element name="jvm-options" type="jvm-optionsType" minOccurs="0"/>
             <xs:element name="environment-variables" type="environmentVariablesType" minOccurs="0"/>
-            <xs:element name="system-properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="java-home" type="xs:string"/>
         <xs:attribute name="type" default="SUN">
@@ -1194,6 +1193,12 @@
         <xs:attribute name="size" type="xs:string" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="properties-with-boottime">
+        <xs:sequence>
+            <xs:element name="property" type="boottimePropertyType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="properties">
         <xs:sequence>
             <xs:element name="property" type="propertyType" maxOccurs="unbounded"/>
@@ -1209,6 +1214,14 @@
     <xs:complexType name="propertyType">
         <xs:attribute name="name" use="required"/>
         <xs:attribute name="value" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="boottimePropertyType">
+        <xs:complexContent>
+            <xs:extension base="propertyType">
+                <xs:attribute name="boot-time" type="xs:boolean" default="true"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
 </xs:schema>

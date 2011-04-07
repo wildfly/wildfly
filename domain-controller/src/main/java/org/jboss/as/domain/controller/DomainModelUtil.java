@@ -71,6 +71,8 @@ import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupRemoveHandler;
+import org.jboss.as.domain.controller.operations.SystemPropertyAddHandler;
+import org.jboss.as.domain.controller.operations.SystemPropertyRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
@@ -87,8 +89,6 @@ import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
-import org.jboss.as.server.operations.SystemPropertyAddHandler;
-import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

@@ -40,7 +40,6 @@ public class JvmElement {
     private String stack;
     private final JvmOptionsElement jvmOptionsElement = new JvmOptionsElement();
     private Map<String, String> environmentVariables = new HashMap<String, String>();
-    private Map<String, String> systemProperties = new HashMap<String, String>();
 
     public JvmElement(final String name) {
         this.name = name;
@@ -100,12 +99,6 @@ public class JvmElement {
             }
             if(node.hasDefined(JVMHandlers.JVM_STACK)) {
                 stack = node.get(JVMHandlers.JVM_STACK).asString();
-            }
-            if(node.hasDefined(JVMHandlers.JVM_SYSTEM_PROPERTIES)) {
-                for(Property property : node.get(JVMHandlers.JVM_SYSTEM_PROPERTIES).asPropertyList()) {
-                    final ModelNode value = property.getValue();
-                    systemProperties.put(property.getName(), isDefined(value) ? value.asString() : "true");
-                }
             }
         }
 
@@ -201,10 +194,6 @@ public class JvmElement {
 
     public Map<String, String> getEnvironmentVariables() {
         return environmentVariables;
-    }
-
-    public Map<String, String> getSystemProperties() {
-        return systemProperties;
     }
 
     public String getAgentPath() {

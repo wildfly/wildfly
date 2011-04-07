@@ -123,7 +123,7 @@ public class DomainXml extends CommonXml {
             writer.writeEndElement();
         }
         if(modelNode.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES);
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
         }
         if(modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
@@ -196,7 +196,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list);
+            parseSystemProperties(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -389,7 +389,7 @@ public class DomainXml extends CommonXml {
                                 break;
                             }
                             case SYSTEM_PROPERTIES: {
-                                parseSystemProperties(reader, groupAddress, list);
+                                parseSystemProperties(reader, groupAddress, list, false);
                                 break;
                             }
                             default:
@@ -633,7 +633,7 @@ public class DomainXml extends CommonXml {
         }
         // System properties
         if(group.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, group, Element.SYSTEM_PROPERTIES);
+            writeProperties(writer, group.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
         }
 
         writer.writeEndElement();
