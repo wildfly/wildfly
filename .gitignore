@@ -24,3 +24,5 @@ atlassian-ide-plugin.xml
 *~
 # maven versions plugin
 pom.xml.versionsBackup
+# hprof dumps
+/*.hprof
