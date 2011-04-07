@@ -39,7 +39,9 @@ import org.jboss.dmr.ModelNode;
 public class DeployHandler extends CommandHandlerWithHelp {
 
     public DeployHandler() {
-        super("deploy", true);
+        super("deploy", true,
+                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-f", "-l"},
+                        FilenameTabCompleter.INSTANCE));
     }
 
     @Override

@@ -22,14 +22,11 @@
 package org.jboss.as.cli;
 
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 
 import jline.Completor;
-import jline.FileNameCompletor;
 
 /**
  * Tab-completer for commands starting with '/'.
@@ -38,163 +35,87 @@ import jline.FileNameCompletor;
  */
 public class CommandCompleter implements Completor {
 
-    private final FileNameCompletor fnCompleter = new FileNameCompletor();
     private final CommandContext ctx;
-    private final OperationRequestCompleter opCompleter;
-    private final Set<String> commands;
+    private final CommandRegistry cmdRegistry;
 
-    public CommandCompleter(Set<String> commands, CommandContext ctx, OperationRequestCompleter opCompleter) {
-        if(commands == null)
-            throw new IllegalArgumentException("Set of commands can't be null.");
-        this.commands = commands;
+    public CommandCompleter(CommandRegistry cmdRegistry, CommandContext ctx) {
+        if(cmdRegistry == null)
+            throw new IllegalArgumentException("Command registry can't be null.");
+        this.cmdRegistry = cmdRegistry;
         this.ctx = ctx;
-        this.opCompleter = opCompleter;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public int complete(String buffer, int cursor, List candidates) {
 
-        int firstCharIndex = 0;
-        while(firstCharIndex < buffer.length()) {
-            if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
+        int cmdFirstIndex = 0;
+        while(cmdFirstIndex < buffer.length()) {
+            if(!Character.isWhitespace(buffer.charAt(cmdFirstIndex))) {
                 break;
             }
-            ++firstCharIndex;
+            ++cmdFirstIndex;
         }
 
-        if(firstCharIndex == buffer.length()) {
-            candidates.addAll(commands);
-            return firstCharIndex;
+        if(cmdFirstIndex == buffer.length()) {
+            for(String cmd : cmdRegistry.getTabCompletionCommands()) {
+                CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
+                if(handler.isAvailable(ctx)) {
+                    candidates.add(cmd);
+                }
+            }
+            return cmdFirstIndex;
         }
 
-        char firstChar = buffer.charAt(firstCharIndex);
+        char firstChar = buffer.charAt(cmdFirstIndex);
         if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
-            return -1;
+            return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor, candidates);
         }
 
-        // TODO a hack to enable tab-completion for cd/cn
-        if(buffer.startsWith("cd ", firstCharIndex) || buffer.startsWith("cn ", firstCharIndex)
-                || buffer.startsWith("ls ")) {
+        int cmdLastIndex = cmdFirstIndex + 1;
+        while(cmdLastIndex < buffer.length() && !Character.isWhitespace(buffer.charAt(cmdLastIndex))) {
+            ++cmdLastIndex;
+        }
 
-            int nextCharIndex = firstCharIndex + 3;
-            while(nextCharIndex < buffer.length()) {
-                if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                    break;
-                }
-                ++nextCharIndex;
-            }
+        String cmd = buffer.substring(cmdFirstIndex, cmdLastIndex);
+        if(cmdLastIndex < buffer.length()) {
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
+            if (handler != null) {
+                CommandArgumentCompleter argsCompleter = handler.getArgumentCompleter();
+                if (argsCompleter != null) {
 
-            if(nextCharIndex < buffer.length() && buffer.charAt(nextCharIndex) == '-') {
-                // that's a switch, skip it
-                nextCharIndex = buffer.indexOf(' ', nextCharIndex);
-                if(nextCharIndex < 0) {
-                    return -1;
-                }
-
-                while(nextCharIndex < buffer.length()) {
-                    if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                        break;
-                    }
-                    ++nextCharIndex;
-                }
-            }
-
-            String opBuffer = buffer.substring(nextCharIndex);
-            int result = opCompleter.doComplete(opBuffer, candidates, false);
-            if(result >= 0) {
-                return nextCharIndex + result;
-            } else {
-                return result;
-            }
-        } else if(buffer.startsWith("deploy ", firstCharIndex)) {
-
-            int nextCharIndex = firstCharIndex + 7;
-            while(nextCharIndex < buffer.length()) {
-                if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                    break;
-                }
-                ++nextCharIndex;
-            }
-
-            if(nextCharIndex < buffer.length() && buffer.charAt(nextCharIndex) == '-') {
-                // that's a switch, skip it
-                nextCharIndex = buffer.indexOf(' ', nextCharIndex);
-                if(nextCharIndex < 0) {
-                    return -1;
-                }
-
-                while(nextCharIndex < buffer.length()) {
-                    if(!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                        break;
-                    }
-                    ++nextCharIndex;
-                }
-            }
-
-            String opBuffer = buffer.substring(nextCharIndex);
-            int result = fnCompleter.complete(opBuffer, cursor, candidates);
-            if(result >= 0) {
-                return nextCharIndex + result;
-            } else {
-                return result;
-            }
-        } else if(buffer.startsWith("undeploy ", firstCharIndex)) {
-
-            int nextCharIndex = firstCharIndex + 9;
-            while (nextCharIndex < buffer.length()) {
-                if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                    break;
-                }
-                ++nextCharIndex;
-            }
-
-            if (nextCharIndex < buffer.length()
-                    && buffer.charAt(nextCharIndex) == '-') {
-                // that's a switch, skip it
-                nextCharIndex = buffer.indexOf(' ', nextCharIndex);
-                if (nextCharIndex < 0) {
-                    return -1;
-                }
-
-                while (nextCharIndex < buffer.length()) {
-                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                        break;
-                    }
-                    ++nextCharIndex;
-                }
-            }
-
-            if(ctx.getModelControllerClient() != null) {
-                List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
-                if(deployments.isEmpty()) {
-                    return -1;
-                }
-
-                String opBuffer = buffer.substring(nextCharIndex).trim();
-                if (opBuffer.isEmpty()) {
-                    candidates.addAll(deployments);
-                } else {
-                    for(String name : deployments) {
-                        if(name.startsWith(opBuffer)) {
-                            candidates.add(name);
+                    int nextCharIndex = cmdLastIndex + 1;
+                    while (nextCharIndex < buffer.length()) {
+                        if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                            break;
                         }
+                        ++nextCharIndex;
                     }
-                    Collections.sort(candidates);
+
+                    String cmdBuffer = buffer.substring(nextCharIndex);
+                    int result = argsCompleter.complete(ctx, cmdBuffer, cursor, candidates);
+                    if (result >= 0) {
+                        return nextCharIndex + result;
+                    } else {
+                        return result;
+                    }
                 }
-                return nextCharIndex;
-            } else {
-                return -1;
             }
         }
 
-        String cmdChunk = buffer.substring(firstCharIndex);
-        for (String command : commands) {
-            if (command.startsWith(cmdChunk))
-                candidates.add(command);
+        if(cmdLastIndex < buffer.length()) {
+            cmd = buffer.substring(cmdFirstIndex);
         }
+        for(String command : cmdRegistry.getTabCompletionCommands()) {
+            if (!command.startsWith(cmd)) {
+                continue;
+            }
 
-        return buffer.length() - cmdChunk.length();
+            CommandHandler handler = cmdRegistry.getCommandHandler(command);
+            if(handler.isAvailable(ctx)) {
+                candidates.add(command);
+            }
+        }
+        return buffer.length() - cmd.length();
     }
-
 }

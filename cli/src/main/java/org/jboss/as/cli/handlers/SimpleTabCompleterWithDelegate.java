@@ -21,44 +21,39 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.OperationRequestCompleter;
-import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.CommandArgumentCompleter;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class PrefixHandler extends CommandHandlerWithHelp {
+public class SimpleTabCompleterWithDelegate extends SimpleTabCompleter {
 
-    public PrefixHandler() {
-        this("cn");
-    }
+    private final CommandArgumentCompleter delegate;
 
-    public PrefixHandler(String command) {
-        super(command, true,
-                new SimpleTabCompleterWithDelegate(new String[]{"--help"},
-                        OperationRequestCompleter.INSTANCE));
+    public SimpleTabCompleterWithDelegate(String[] candidates, CommandArgumentCompleter delegate) {
+        super(candidates);
+        if(delegate == null) {
+            throw new IllegalStateException("delegate can't be null");
+        }
+        this.delegate = delegate;
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) {
-
-        OperationRequestAddress prefix = ctx.getPrefix();
-
-        if(!ctx.hasArguments()) {
-            ctx.printLine(ctx.getPrefixFormatter().format(prefix));
-            return;
+    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+        int result = super.complete(ctx, buffer, cursor, candidates);
+        if(/*candidates.isEmpty() && */delegate != null) {
+            String delegateBuffer = result == buffer.length() ? "" : buffer.substring(result);
+            int delegateResult = delegate.complete(ctx, delegateBuffer, result, candidates);
+            if(delegateResult < 0) {
+                return result;
+            } else {
+                return result + delegateResult;
+            }
         }
-
-        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(ctx.getPrefix());
-        try {
-            ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), handler);
-        } catch (CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
-        }
+        return result;
     }
 }

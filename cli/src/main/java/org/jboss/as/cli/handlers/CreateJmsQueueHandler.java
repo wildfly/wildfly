@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
 public class CreateJmsQueueHandler extends CommandHandlerWithHelp {
 
     public CreateJmsQueueHandler() {
-        super("create-jms-queue", true);
+        super("create-jms-queue", true, new SimpleTabCompleter(new String[]{"name=", "entries=", "selector=", "durable=", "--help"}));
     }
 
     /* (non-Javadoc)

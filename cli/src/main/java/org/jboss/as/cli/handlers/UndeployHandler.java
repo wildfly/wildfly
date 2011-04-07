@@ -22,9 +22,11 @@
 package org.jboss.as.cli.handlers;
 
 
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandArgumentCompleter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -37,7 +39,42 @@ import org.jboss.dmr.ModelNode;
 public class UndeployHandler extends CommandHandlerWithHelp {
 
     public UndeployHandler() {
-        super("undeploy", true);
+        super("undeploy", true, new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},
+                new CommandArgumentCompleter() {
+                    @Override
+                    public int complete(CommandContext ctx, String buffer,
+                            int cursor, List<String> candidates) {
+
+                        int nextCharIndex = 0;
+                        while (nextCharIndex < buffer.length()) {
+                            if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                                break;
+                            }
+                            ++nextCharIndex;
+                        }
+
+                        if(ctx.getModelControllerClient() != null) {
+                            List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+                            if(deployments.isEmpty()) {
+                                return -1;
+                            }
+
+                            String opBuffer = buffer.substring(nextCharIndex).trim();
+                            if (opBuffer.isEmpty()) {
+                                candidates.addAll(deployments);
+                            } else {
+                                for(String name : deployments) {
+                                    if(name.startsWith(opBuffer)) {
+                                        candidates.add(name);
+                                    }
+                                }
+                                Collections.sort(candidates);
+                            }
+                            return nextCharIndex;
+                        } else {
+                            return -1;
+                        }
+                    }}));
     }
 
     @Override

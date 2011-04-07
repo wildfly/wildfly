@@ -21,16 +21,40 @@
  */
 package org.jboss.as.cli;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public class CommandRegistry {
 
-    boolean isAvailable(CommandContext ctx);
+    private final Map<String, CommandHandler> handlers = new HashMap<String, CommandHandler>();
+    private final Set<String> tabCompletionCommands = new HashSet<String>();
 
-    CommandArgumentCompleter getArgumentCompleter();
+    public void registerHandler(CommandHandler handler, String... names) {
+        registerHandler(handler, true, names);
+    }
 
-    void handle(CommandContext ctx);
+    public void registerHandler(CommandHandler handler, boolean tabComplete, String... names) {
+        for(String name : names) {
+            CommandHandler previous = handlers.put(name, handler);
+            if(previous != null)
+                throw new IllegalStateException("Duplicate command name '" + name + "'. Handlers: " + previous + ", " + handler);
+        }
+        if(tabComplete) {
+            tabCompletionCommands.add(names[0]);
+        }
+    }
+
+    public Set<String> getTabCompletionCommands() {
+        return tabCompletionCommands;
+    }
+
+    public CommandHandler getCommandHandler(String command) {
+        return handlers.get(command);
+    }
 }

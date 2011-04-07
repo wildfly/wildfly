@@ -26,6 +26,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -41,7 +42,9 @@ public class LsHandler extends CommandHandlerWithHelp {
     }
 
     public LsHandler(String command) {
-        super(command);
+        super(command, true,
+                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},
+                        OperationRequestCompleter.INSTANCE));
     }
 
     @Override

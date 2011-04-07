@@ -19,18 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
+import jline.FileNameCompletor;
+
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandArgumentCompleter;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public class FilenameTabCompleter implements CommandArgumentCompleter {
 
-    boolean isAvailable(CommandContext ctx);
+    private static final FileNameCompletor fnCompleter = new FileNameCompletor();
+    public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
 
-    CommandArgumentCompleter getArgumentCompleter();
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
+     */
+    @Override
+    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+        return fnCompleter.complete(buffer, cursor, candidates);
+    }
 
-    void handle(CommandContext ctx);
 }

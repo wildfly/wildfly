@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.CommandArgumentCompleter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -42,14 +43,40 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
 
     private final String filename;
     private final boolean connectionRequired;
+    private final CommandArgumentCompleter argsCompleter;
 
     public CommandHandlerWithHelp(String command) {
         this(command, false);
     }
 
+    public CommandHandlerWithHelp(String command, CommandArgumentCompleter argsCompleter) {
+        this(command, false, argsCompleter);
+    }
+
     public CommandHandlerWithHelp(String command, boolean connectionRequired) {
+        this(command, connectionRequired, new SimpleTabCompleter(new String[]{"--help"}));
+    }
+
+    public CommandHandlerWithHelp(String command, boolean connectionRequired, CommandArgumentCompleter argsCompleter) {
+        if(command == null) {
+            throw new IllegalArgumentException("command can't be null");
+        }
         this.filename = "help/" + command + ".txt";
         this.connectionRequired = connectionRequired;
+        this.argsCompleter = argsCompleter;
+    }
+
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        if(connectionRequired && ctx.getModelControllerClient() == null) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public CommandArgumentCompleter getArgumentCompleter() {
+        return argsCompleter;
     }
 
     /* (non-Javadoc)

@@ -28,6 +28,8 @@ import java.util.concurrent.CancellationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -70,4 +72,13 @@ public class OperationRequestHandler implements CommandHandler {
         }
     }
 
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        return true;
+    }
+
+    @Override
+    public CommandArgumentCompleter getArgumentCompleter() {
+        return OperationRequestCompleter.INSTANCE;
+    }
 }

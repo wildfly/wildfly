@@ -57,7 +57,6 @@ import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
@@ -73,41 +72,23 @@ import org.jboss.as.protocol.StreamUtils;
  */
 public class CommandLineMain {
 
-    private static final Map<String, CommandHandler> handlers = new HashMap<String, CommandHandler>();
-    private static final Set<String> tabCompleteCommands = new HashSet<String>();
+    private static final CommandRegistry cmdRegistry = new CommandRegistry();
     static {
-        registerHandler(new HelpHandler(), "help", "h");
-        registerHandler(new QuitHandler(), "quit", "q");
-        registerHandler(new ConnectHandler(), "connect");
-        registerHandler(new PrefixHandler(), "cd", "cn");
-        registerHandler(new LsHandler(), "ls");
-        registerHandler(new HistoryHandler(), "history");
-        registerHandler(new DeployHandler(), "deploy");
-        registerHandler(new UndeployHandler(), "undeploy");
-        registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
-        registerHandler(new CreateJmsQueueHandler(), "create-jms-queue");
-        registerHandler(new DeleteJmsQueueHandler(), "delete-jms-queue");
+        cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
+        cmdRegistry.registerHandler(new QuitHandler(), "quit", "q");
+        cmdRegistry.registerHandler(new ConnectHandler(), "connect");
+        cmdRegistry.registerHandler(new PrefixHandler(), "cd", "cn");
+        cmdRegistry.registerHandler(new LsHandler(), "ls");
+        cmdRegistry.registerHandler(new HistoryHandler(), "history");
+        cmdRegistry.registerHandler(new DeployHandler(), "deploy");
+        cmdRegistry.registerHandler(new UndeployHandler(), "undeploy");
+        cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
+        cmdRegistry.registerHandler(new CreateJmsQueueHandler(), "create-jms-queue");
+        cmdRegistry.registerHandler(new DeleteJmsQueueHandler(), "delete-jms-queue");
 
-        registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
-        registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
+        cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
+        cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
     }
-
-    private static void registerHandler(CommandHandler handler, String... names) {
-        registerHandler(handler, true, names);
-    }
-
-    private static void registerHandler(CommandHandler handler, boolean tabComplete, String... names) {
-        for(String name : names) {
-            CommandHandler previous = handlers.put(name, handler);
-            if(previous != null)
-                throw new IllegalStateException("Duplicate command name '" + name + "'. Handlers: " + previous + ", " + handler);
-        }
-        if(tabComplete) {
-            tabCompleteCommands.add(names[0]);
-        }
-    }
-
-    private static final CommandHandler operationHandler = new OperationRequestHandler();
 
     public static void main(String[] args) throws Exception {
 
@@ -120,9 +101,7 @@ public class CommandLineMain {
                 cmdCtx.disconnectController();
             }
         }));
-        OperationRequestCompleter opCompleter = new OperationRequestCompleter(cmdCtx);
-        console.addCompletor(new CommandCompleter(tabCompleteCommands, cmdCtx, opCompleter));
-        console.addCompletor(opCompleter);
+        console.addCompletor(new CommandCompleter(cmdRegistry, cmdCtx));
 
         String fileName = null;
         boolean connect = false;
@@ -204,7 +183,7 @@ public class CommandLineMain {
 
         if(isOperation(line)) {
             cmdCtx.setArgs(line);
-            operationHandler.handle(cmdCtx);
+            cmdCtx.operationHandler.handle(cmdCtx);
 
         } else {
             String cmd = line;
@@ -218,7 +197,7 @@ public class CommandLineMain {
             }
             cmdCtx.setArgs(cmdArgs);
 
-            CommandHandler handler = handlers.get(cmd.toLowerCase());
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
             if (handler != null) {
                 handler.handle(cmdCtx);
             } else {
@@ -309,6 +288,8 @@ public class CommandLineMain {
         private final PrefixFormatter prefixFormatter = new DefaultPrefixFormatter();
         /** provider of operation request candidates for tab-completion */
         private final OperationCandidatesProvider operationCandidatesProvider;
+        /** operation request handler */
+        private final OperationRequestHandler operationHandler;
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
@@ -324,6 +305,8 @@ public class CommandLineMain {
 
             this.history = new HistoryImpl();
             operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
+
+            operationHandler = new OperationRequestHandler();
         }
 
         @Override
