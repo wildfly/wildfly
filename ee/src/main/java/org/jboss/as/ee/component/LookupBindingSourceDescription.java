@@ -39,26 +39,56 @@ public final class LookupBindingSourceDescription extends BindingSourceDescripti
     private final String lookupName;
     private final ServiceName sourceServiceName;
 
-    public LookupBindingSourceDescription(final String lookupName, AbstractComponentDescription componentDescription) {
-        this.lookupName = lookupName;
+    public LookupBindingSourceDescription(final String lookupJndiName, AbstractComponentDescription componentDescription) {
+        // JBAS-9267 https://issues.jboss.org/browse/JBAS-9267
+        // Make sure that the passed lookup jndi name is converted from java:comp to java:module for
+        // a component which doesn't have a java:comp of its own
+        this.lookupName = this.parseLookupName(lookupJndiName, componentDescription);
 
         final String compName = componentDescription.getNamingMode() == ComponentNamingMode.CREATE ? componentDescription.getComponentName() : componentDescription.getModuleName();
         final String moduleName = componentDescription.getModuleName();
         final String appName = componentDescription.getApplicationName();
-        sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
+        sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, this.lookupName);
     }
 
-    public LookupBindingSourceDescription(final String lookupName, EEModuleDescription moduleDescription) {
-        this.lookupName = lookupName;
+    public LookupBindingSourceDescription(final String lookupJndiName, EEModuleDescription moduleDescription) {
+        // JBAS-9267 https://issues.jboss.org/browse/JBAS-9267
+        // Make sure that the passed lookup jndi name is converted from java:comp to java:module for
+        // a component which doesn't have a java:comp of its own
+        if (lookupJndiName.startsWith("java:comp/")) {
+            String jndiNameSansNamespace = lookupJndiName.substring("java:comp/".length());
+            this.lookupName = "java:module/" + jndiNameSansNamespace;
+        } else {
+            this.lookupName = lookupJndiName;
+        }
 
         final String compName = moduleDescription.getModuleName();
         final String moduleName = moduleDescription.getModuleName();
         final String appName = moduleDescription.getAppName();
-        sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, lookupName);
+        sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, this.lookupName);
     }
 
     public void getResourceValue(final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         serviceBuilder.addDependency(sourceServiceName, ManagedReferenceFactory.class, injector);
     }
 
+    /**
+     * Converts a java:comp/<blah> jndi name to java:module/<blah> jndi name if the passed <code>lookupName</code>
+     * starts with java:comp/ namespace and the {@link ComponentNamingMode} of the passed <code>componentDescription</code>
+     * is <i>not</i> {@link ComponentNamingMode#CREATE}
+     *
+     * @param lookupName           The lookup jndi name to be parsed
+     * @param componentDescription The component description
+     * @return
+     */
+    private String parseLookupName(String lookupName, AbstractComponentDescription componentDescription) {
+        ComponentNamingMode namingMode = componentDescription.getNamingMode();
+        if (namingMode != ComponentNamingMode.CREATE) {
+            if (lookupName.startsWith("java:comp/")) {
+                String jndiNameSansNamespace = lookupName.substring("java:comp/".length());
+                return "java:module/" + jndiNameSansNamespace;
+            }
+        }
+        return lookupName;
+    }
 }
