@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
@@ -31,10 +33,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
+public class DeleteJmsQueueHandler extends CommandHandlerWithHelp {
 
-    public DeleteJmsResourceHandler() {
-        super("delete-jms-resource", true);
+    public DeleteJmsQueueHandler() {
+        super("delete-jms-queue", true);
     }
 
     /* (non-Javadoc)
@@ -44,47 +46,28 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
     protected void doHandle(CommandContext ctx) {
 
         if(!ctx.hasArguments()) {
-            ctx.printLine("Arguments are missing");
+            ctx.printLine("Missing required argument 'name'.");
             return;
         }
 
-        //String target = null;
-        String jndiName = null;
-
-        String[] args = ctx.getCommandArguments().split("\\s+");
-        int i = 0;
-        while(i < args.length) {
-            String arg = args[i++];
-            if(arg.equals("--target")) {
-//                if(i < args.length) {
-//                    target = args[i++];
-//                }
-            } else {
-                jndiName = arg;
+        String name = ctx.getNamedArgument("name");
+        if(name == null) {
+            List<String> args = ctx.getArguments();
+            if(!args.isEmpty()) {
+                name = args.get(0);
             }
         }
 
-        if(jndiName == null) {
-            ctx.printLine("name is missing.");
+        if(name == null) {
+            ctx.printLine("Missing required argument 'name'.");
             return;
         }
 
         ModelControllerClient client = ctx.getModelControllerClient();
-        final String resource;
-        if(Util.isTopic(client, jndiName)) {
-            resource = "topic";
-        } else if(Util.isQueue(client, jndiName)) {
-            resource = "queue";
-        } else if(Util.isConnectionFactory(client, jndiName)) {
-            resource = "connection-factory";
-        } else {
-            ctx.printLine("'" + jndiName +"' wasn't found among existing JMS resources.");
-            return;
-        }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
-        builder.addNode(resource, jndiName);
+        builder.addNode("queue", name);
         builder.setOperationName("remove");
 
         final ModelNode result;
@@ -97,10 +80,10 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
         }
 
         if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
+            ctx.printLine("Failed to delete queue '" + name + "': " + Util.getFailureDescription(result));
             return;
         }
 
-        ctx.printLine("Removed " + resource + ' ' + jndiName);
+        ctx.printLine("Removed queue " + name);
     }
 }

@@ -31,10 +31,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
+public class CreateJmsQueueHandler extends CommandHandlerWithHelp {
 
-    public DeleteJmsResourceHandler() {
-        super("delete-jms-resource", true);
+    public CreateJmsQueueHandler() {
+        super("create-jms-queue", true);
     }
 
     /* (non-Javadoc)
@@ -43,50 +43,42 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        if(!ctx.hasArguments()) {
-            ctx.printLine("Arguments are missing");
-            return;
-        }
-
-        //String target = null;
-        String jndiName = null;
-
-        String[] args = ctx.getCommandArguments().split("\\s+");
-        int i = 0;
-        while(i < args.length) {
-            String arg = args[i++];
-            if(arg.equals("--target")) {
-//                if(i < args.length) {
-//                    target = args[i++];
-//                }
-            } else {
-                jndiName = arg;
-            }
-        }
-
-        if(jndiName == null) {
-            ctx.printLine("name is missing.");
-            return;
-        }
-
-        ModelControllerClient client = ctx.getModelControllerClient();
-        final String resource;
-        if(Util.isTopic(client, jndiName)) {
-            resource = "topic";
-        } else if(Util.isQueue(client, jndiName)) {
-            resource = "queue";
-        } else if(Util.isConnectionFactory(client, jndiName)) {
-            resource = "connection-factory";
-        } else {
-            ctx.printLine("'" + jndiName +"' wasn't found among existing JMS resources.");
+        final String name = ctx.getNamedArgument("name");
+        if(name == null) {
+            ctx.printLine("Required argument 'name' is missing.");
             return;
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
-        builder.addNode(resource, jndiName);
-        builder.setOperationName("remove");
+        builder.addNode("queue", name);
+        builder.setOperationName("add");
 
+        ModelNode entriesNode = builder.getModelNode().get("entries");
+        final String entriesStr = ctx.getNamedArgument("entries");
+        if(entriesStr == null) {
+            entriesNode.add(name);
+        } else {
+            String[] split = entriesStr.split(",");
+            for(int i = 0; i < split.length; ++i) {
+                String entry = split[i].trim();
+                if(!entry.isEmpty()) {
+                    entriesNode.add(entry);
+                }
+            }
+        }
+
+        final String selector = ctx.getNamedArgument("selector");
+        if(selector != null) {
+            builder.addProperty("selector", selector);
+        }
+
+        final String durable = ctx.getNamedArgument("durable");
+        if(durable != null) {
+            builder.addProperty("durable", durable);
+        }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode result;
         try {
             ModelNode request = builder.buildRequest();
@@ -101,6 +93,6 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        ctx.printLine("Removed " + resource + ' ' + jndiName);
+        ctx.printLine("Created queue " + name);
     }
 }

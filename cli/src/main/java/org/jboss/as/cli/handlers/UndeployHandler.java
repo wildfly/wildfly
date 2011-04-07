@@ -37,20 +37,15 @@ import org.jboss.dmr.ModelNode;
 public class UndeployHandler extends CommandHandlerWithHelp {
 
     public UndeployHandler() {
-        super("undeploy");
+        super("undeploy", true);
     }
 
     @Override
     protected void doHandle(CommandContext ctx) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
-        if(client == null) {
-            ctx.printLine("The controller client is not available. Make sure you are connected to the controller.");
-            return;
-        }
-
         if(!ctx.hasArguments()) {
-            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
+            printList(ctx, Util.getDeployments(client));
             return;
         }
 
@@ -61,7 +56,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         }
 
         if (deployment == null) {
-            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
+            printList(ctx, Util.getDeployments(client));
             return;
         }
 

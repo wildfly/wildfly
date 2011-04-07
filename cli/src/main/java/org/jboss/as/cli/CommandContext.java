@@ -65,7 +65,7 @@ public interface CommandContext {
     String getNamedArgument(String argName);
 
     /**
-     * Returns arguments that are not switchesas a list of strings
+     * Returns arguments that are not switches as a list of strings
      * in the order they appear on the command line. If there no such arguments
      * an empty list is returned.
      * @return a list of arguments that are not switches or an empty list

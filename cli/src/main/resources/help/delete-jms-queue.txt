@@ -1,0 +1,7 @@
+Synopsis:	delete-jms-queue name
+
+Description:	removes a JMS queue
+
+Arguments:
+
+	name	- the name of the JMS queue.

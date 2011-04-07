@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 
 /**
@@ -40,9 +41,15 @@ import org.jboss.as.protocol.StreamUtils;
 public abstract class CommandHandlerWithHelp implements CommandHandler {
 
     private final String filename;
+    private final boolean connectionRequired;
 
     public CommandHandlerWithHelp(String command) {
+        this(command, false);
+    }
+
+    public CommandHandlerWithHelp(String command, boolean connectionRequired) {
         this.filename = "help/" + command + ".txt";
+        this.connectionRequired = connectionRequired;
     }
 
     /* (non-Javadoc)
@@ -54,6 +61,14 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
         if(ctx.hasSwitch("help")) {
             printHelp(ctx);
             return;
+        }
+
+        if(connectionRequired) {
+            ModelControllerClient client = ctx.getModelControllerClient();
+            if(client == null) {
+                ctx.printLine("The controller client is not available. Make sure you are connected.");
+                return;
+            }
         }
 
         doHandle(ctx);

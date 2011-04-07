@@ -42,7 +42,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
 import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
+import org.jboss.as.cli.handlers.DeleteJmsQueueHandler;
 import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
@@ -83,6 +85,9 @@ public class CommandLineMain {
         registerHandler(new DeployHandler(), "deploy");
         registerHandler(new UndeployHandler(), "undeploy");
         registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
+        registerHandler(new CreateJmsQueueHandler(), "create-jms-queue");
+        registerHandler(new DeleteJmsQueueHandler(), "delete-jms-queue");
+
         registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
         registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
     }
@@ -198,7 +203,7 @@ public class CommandLineMain {
         }
 
         if(isOperation(line)) {
-            cmdCtx.cmdArgs = line;
+            cmdCtx.setArgs(line);
             operationHandler.handle(cmdCtx);
 
         } else {
@@ -248,9 +253,11 @@ public class CommandLineMain {
         } else {
             try {
                 final InputStream in = new FileInputStream(FileDescriptor.in);
-                final Writer out = new PrintWriter(
-                        new OutputStreamWriter(System.out,
-                                System.getProperty("jline.WindowsTerminal.output.encoding",System.getProperty("file.encoding"))));
+                String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
+                if(encoding == null) {
+                    encoding = SecurityActions.getSystemProperty("file.encoding");
+                }
+                final Writer out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
                 return new jline.ConsoleReader(in, out, bindingsIs);
             } catch(Exception e) {
                 throw new IllegalStateException("Failed to initialize console reader", e);
@@ -557,21 +564,13 @@ public class CommandLineMain {
                             argsList.add(arg);
 
                             int equalsIndex = arg.indexOf('=');
-                            if(equalsIndex > 0) {
-                                if(equalsIndex == arg.length() - 1 || arg.indexOf(equalsIndex + 1, '=') < 0) {
-                                } else {
-                                    final String name = arg.substring(0, equalsIndex - 1).trim();
-                                    final String value;
-                                    if(equalsIndex == arg.length() - 1) {
-                                        value = "";
-                                    } else {
-                                        value = arg.substring(equalsIndex + 1).trim();
-                                    }
-                                    if(namedArgs == null) {
-                                        namedArgs = new HashMap<String, String>();
-                                    }
-                                    namedArgs.put(name, value);
+                            if(equalsIndex > 0 && equalsIndex < arg.length() - 1 && arg.indexOf(equalsIndex + 1, '=') < 0) {
+                                final String name = arg.substring(0, equalsIndex).trim();
+                                final String value = arg.substring(equalsIndex + 1).trim();
+                                if (namedArgs == null) {
+                                    namedArgs = new HashMap<String, String>();
                                 }
+                                namedArgs.put(name, value);
                             }
                         }
                     }

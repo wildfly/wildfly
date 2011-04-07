@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
 public class CreateJmsResourceHandler extends CommandHandlerWithHelp {
 
     public CreateJmsResourceHandler() {
-        super("create-jms-resource");
+        super("create-jms-resource", true);
     }
 
     /* (non-Javadoc)
@@ -47,12 +47,6 @@ public class CreateJmsResourceHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
-
-        ModelControllerClient client = ctx.getModelControllerClient();
-        if(client == null) {
-            ctx.printLine("The controller client isn't available, make sure you are connected.");
-            return;
-        }
 
         if(!ctx.hasArguments()) {
             ctx.printLine("Arguments are missing");
@@ -137,6 +131,7 @@ public class CreateJmsResourceHandler extends CommandHandlerWithHelp {
             name = jndiName.replace('/', '_');
         }
 
+        ModelControllerClient client = ctx.getModelControllerClient();
         if(restype.equals("javax.jms.Queue")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
