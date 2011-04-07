@@ -24,6 +24,7 @@ package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 
 /**
@@ -37,5 +38,10 @@ public final class WebComponentDescription extends AbstractComponentDescription 
 
     protected AbstractComponentConfiguration constructComponentConfiguration() {
         return new WebComponentConfiguration(this);
+    }
+
+    @Override
+    public ComponentNamingMode getNamingMode() {
+        return ComponentNamingMode.USE_MODULE;
     }
 }
