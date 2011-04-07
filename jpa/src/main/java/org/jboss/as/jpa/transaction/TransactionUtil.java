@@ -30,17 +30,12 @@ import org.jboss.tm.TxUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
-import javax.persistence.TransactionRequiredException;
 import javax.transaction.RollbackException;
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
 import java.util.Map;
 
 /**
@@ -76,7 +71,91 @@ public class TransactionUtil {
         }
     }
 
-    public Transaction getTransaction() {
+    public boolean isInTx() {
+        Transaction tx = getTransaction();
+        if (tx == null || !TxUtils.isActive(tx))
+            return false;
+        return true;
+    }
+
+    /**
+     * Register the specified entity manager (persistence context) with the current transaction.
+     * Precondition:  Only call while a transaction is active in the current thread.
+     *
+     * @param scopedPuName is the fully (application deployment) scoped name of persistence unit
+     * @param xpc is the entity manager (a org.jboss.as.jpa class) to register
+     * @param underlyingEntityManager is the underlying entity manager obtained from the persistence provider
+     */
+    public void registerExtendedUnderlyingWithTransaction(String scopedPuName, EntityManager xpc, EntityManager underlyingEntityManager) {
+        // xpc invoked this method, we cannot call xpc because it will recurse back to here, join with underloying em instead
+        registerSynchronization(xpc, scopedPuName, false);
+        underlyingEntityManager.joinTransaction();
+        putEntityManagerInTransactionRegistry(scopedPuName, xpc);
+    }
+
+    /**
+     * Register the specified entity manager (persistence context) with the current transaction.
+     * Precondition:  Only call while a transaction is active in the current thread.
+     *
+     * @param scopedPuName is the fully (application deployment) scoped name of persistence unit
+     * @param xpc is the entity manager (a org.jboss.as.jpa class) to register
+     */
+    public void registerExtendedWithTransaction(String scopedPuName, EntityManager xpc) {
+        registerSynchronization(xpc, scopedPuName, false);
+        putEntityManagerInTransactionRegistry(scopedPuName, xpc);
+        xpc.joinTransaction();
+    }
+
+    /**
+     * Get current persistence context.  Only call while a transaction is active in the current thread.
+     *
+     * @param puScopedName
+     * @return
+     */
+    public EntityManager getTransactionScopedEntityManager(String puScopedName) {
+        return getEntityManagerInTransactionRegistry(puScopedName);
+    }
+
+    /**
+     * Get current PC or create a Transactional entity manager.
+     * Only call while a transaction is active in the current thread.
+     *
+     * @param emf
+     * @param scopedPuName
+     * @param properties
+     * @return
+     */
+    public EntityManager getOrCreateTransactionScopedEntityManager(EntityManagerFactory emf, String scopedPuName, Map properties) {
+        EntityManager entityManager = getEntityManagerInTransactionRegistry(scopedPuName);
+        if (entityManager == null) {
+            entityManager = EntityManagerUtil.createEntityManager(emf, properties);
+            if (log.isDebugEnabled())
+                log.debug(getEntityManagerDetails(entityManager) + ": created entity manager session " +
+                    getTransaction().toString());
+            registerSynchronization(entityManager, scopedPuName, true);
+            putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
+            entityManager.joinTransaction(); // force registration with TX
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(getEntityManagerDetails(entityManager) + ": reuse entity manager session already in tx" +
+                    getTransaction().toString());
+            }
+        }
+        return entityManager;
+    }
+
+    private void registerSynchronization(EntityManager entityManager, String puScopedName, boolean closeEMAtTxEnd) {
+        Transaction tx = getTransaction();
+        try {
+            tx.registerSynchronization(new SessionSynchronization(entityManager, tx, closeEMAtTxEnd, puScopedName));
+        } catch (RollbackException e) {
+            throw new RuntimeException(e);
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Transaction getTransaction() {
         try {
             return transactionManager.getTransaction();
         } catch (SystemException e) {
@@ -85,16 +164,10 @@ public class TransactionUtil {
         }
     }
 
-    public static TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+    private static TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
         return transactionSynchronizationRegistry;
     }
 
-    public boolean isInTx() {
-        Transaction tx = getTransaction();
-        if (tx == null || !TxUtils.isActive(tx))
-            return false;
-        return true;
-    }
 
     private static String currentThread() {
         return Thread.currentThread().getName();
@@ -110,27 +183,16 @@ public class TransactionUtil {
                     );
             }
         } catch (PersistenceException ignoreUnhandled) {  // TODO:  switch to a different way to lookup EntityManagerMetadata
-                                                          // so that we don't get this error on TransactionalEntityManager
-                                                          // (because the EntityManager is the underlying provider that
-                                                          // doesn't have the metadata.)
+            // so that we don't get this error on TransactionalEntityManager
+            // (because the EntityManager is the underlying provider that
+            // doesn't have the metadata.)
         }
 
 
         return result;
     }
 
-    public void registerExtendedUnderlyingWithTransaction(String scopedPuName, EntityManager xpc, EntityManager underlyingEntityManager) {
-        // xpc invoked this method, we cannot call xpc because it will recurse back to here, join with underloying em instead
-        underlyingEntityManager.joinTransaction();
-        setPC(scopedPuName, xpc);
-    }
-
-    public void registerExtendedWithTransaction(String scopedPuName, EntityManager pc) {
-        pc.joinTransaction();
-        setPC(scopedPuName, pc);
-    }
-
-    private EntityManager getPC(String scopedPuName) {
+    private EntityManager getEntityManagerInTransactionRegistry(String scopedPuName) {
         return (EntityManager) getTransactionSynchronizationRegistry().getResource(scopedPuName);
     }
 
@@ -141,56 +203,10 @@ public class TransactionUtil {
      * @param scopedPuName
      * @param entityManager
      */
-    private void setPC(String scopedPuName, EntityManager entityManager) {
+    private void putEntityManagerInTransactionRegistry(String scopedPuName, EntityManager entityManager) {
         getTransactionSynchronizationRegistry().putResource(scopedPuName, entityManager);
     }
 
-    /**
-     * Get current PC.  Only call while a transaction is active in the current thread.
-     *
-     * @param puScopedName
-     * @return
-     */
-    public EntityManager getTransactionScopedEntityManager(String puScopedName) {
-        return getPC(puScopedName);
-    }
-
-    /**
-     * Get current PC or create a Transactional entity manager.
-     * Only call while a transaction is active in the current thread.
-     *
-     * @param emf
-     * @param puScopedName
-     * @param properties
-     * @return
-     */
-    public EntityManager getOrCreateTransactionScopedEntityManager(EntityManagerFactory emf, String puScopedName, Map properties) {
-
-        EntityManager rtnSession = getPC(puScopedName);
-        if (rtnSession == null) {
-            rtnSession = EntityManagerUtil.createEntityManager(emf, properties);
-            Transaction tx = getTransaction();
-            if (log.isDebugEnabled())
-                log.debug(getEntityManagerDetails(rtnSession) + ": created entity managersession " +
-                    tx.toString());
-            try {
-                tx.registerSynchronization(new SessionSynchronization(rtnSession, tx, true, puScopedName));
-            } catch (RollbackException e) {
-                throw new RuntimeException(e);  //To change body of catch statement use Options | File Templates.
-            } catch (SystemException e) {
-                throw new RuntimeException(e);  //To change body of catch statement use Options | File Templates.
-            }
-            setPC(puScopedName, rtnSession);
-            rtnSession.joinTransaction(); // force registration with TX
-        } else {
-            if (log.isDebugEnabled()) {
-                Transaction tx = getTransaction();
-                log.debug(getEntityManagerDetails(rtnSession) + ": reuse entity managersession already in tx" +
-                    tx.toString());
-            }
-        }
-        return rtnSession;
-    }
 
     private static class SessionSynchronization implements Synchronization {
         private EntityManager manager;
@@ -211,8 +227,9 @@ public class TransactionUtil {
                 if (log.isDebugEnabled())
                     log.debug(getEntityManagerDetails(manager) + ": closing entity managersession ");
                 manager.close();
-                getInstance().setPC(scopedPuName, null);
             }
+            // clear TX reference to entity manager
+            getInstance().putEntityManagerInTransactionRegistry(scopedPuName, null);
         }
     }
 
