@@ -41,6 +41,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.EJB;
@@ -56,6 +57,9 @@ import java.util.Map;
  * @author John Bailey
  */
 public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentConfigProcessor {
+
+    private static final Logger logger = Logger.getLogger(EjbResourceInjectionAnnotationProcessor.class);
+
     private static final DotName EJB_ANNOTATION_NAME = DotName.createSimple(EJB.class.getName());
 
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription description) throws DeploymentUnitProcessingException {
@@ -117,7 +121,8 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
         final String lookup = lookupValue != null ? lookupValue.asString() : null;
 
         if (!isEmpty(lookup) && !isEmpty(beanName)) {
-            throw new IllegalArgumentException("@EJB annotations may have either 'beanName' or 'lookup' specified, but not both");
+            logger.debug("Both beanName = " + beanName + " and lookup = " + lookup + " have been specified in @EJB annotation." +
+                    " lookup will be given preference");
         }
 
         final BindingDescription bindingDescription;
@@ -134,6 +139,7 @@ public class EjbResourceInjectionAnnotationProcessor extends AbstractComponentCo
             if (!isEmpty(description)) {
                 bindingDescription.setDescription(description);
             }
+            // give preference to "lookup" before "beanName"
             if (!isEmpty(lookup)) {
                 bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookup,componentDescription));
             } else if (!isEmpty(beanName)) {
