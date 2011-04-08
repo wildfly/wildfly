@@ -33,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -148,7 +149,7 @@ public class CommandLineMain {
             } else if(arg.startsWith("file=")) {
                 fileName = arg.substring(5);
             } else if(arg.startsWith("commands=")) {
-                commands = arg.substring(9).split(";");
+                commands = arg.substring(9).split(",+");
             }
         }
 
@@ -174,7 +175,10 @@ public class CommandLineMain {
                     }
                 } finally {
                     StreamUtils.safeClose(reader);
-                    cmdCtx.terminateSession();
+                    if(!cmdCtx.terminate) {
+                        cmdCtx.terminateSession();
+                    }
+                    cmdCtx.disconnectController();
                 }
                 return;
             }
@@ -184,15 +188,21 @@ public class CommandLineMain {
             for(int i = 0; i < commands.length && !cmdCtx.terminate; ++i) {
                 processLine(cmdCtx, commands[i]);
             }
-            cmdCtx.terminateSession();
+            if(!cmdCtx.terminate) {
+                cmdCtx.terminateSession();
+            }
+            cmdCtx.disconnectController();
             return;
         }
 
-        while (!cmdCtx.terminate) {
-            String line = console.readLine(cmdCtx.getPrompt()).trim();
-            processLine(cmdCtx, line);
+        try {
+            while (!cmdCtx.terminate) {
+                String line = console.readLine(cmdCtx.getPrompt()).trim();
+                processLine(cmdCtx, line);
+            }
+        } finally {
+            cmdCtx.disconnectController();
         }
-        StreamUtils.safeClose(cmdCtx.client);
     }
 
     protected static void processLine(final CommandContextImpl cmdCtx, String line) {
