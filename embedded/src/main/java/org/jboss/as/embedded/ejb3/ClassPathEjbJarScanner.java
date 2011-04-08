@@ -233,7 +233,6 @@ class ClassPathEjbJarScanner {
 
         // Represent as VFS so we get a nice unified API
         final VirtualFile file = VFS.getChild(candidate);
-        Closeable handle = null;
         TempFileProvider provider = null;
 
         /*
@@ -251,6 +250,7 @@ class ClassPathEjbJarScanner {
         }
 
         try {
+            Closeable handle;
 
             // If the file exists
             if (file.exists()) {
@@ -280,37 +280,39 @@ class ClassPathEjbJarScanner {
                 return false;
             }
 
-            /*
-            * Directories and real JARs are handled the same way in VFS, so just do
-            * one check and skip logic to test isDirectory or not
-            */
+            try {
+                /*
+                * Directories and real JARs are handled the same way in VFS, so just do
+                * one check and skip logic to test isDirectory or not
+                */
 
-            // Look for META-INF/ejb-jar.xml
-            final VirtualFile ejbJarXml = file.getChild(PATH_EJB_JAR_XML);
-            if (ejbJarXml.exists()) {
-                if (log.isTraceEnabled()) {
-                    log.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
+                // Look for META-INF/ejb-jar.xml
+                final VirtualFile ejbJarXml = file.getChild(PATH_EJB_JAR_XML);
+                if (ejbJarXml.exists()) {
+                    if (log.isTraceEnabled()) {
+                        log.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
+                    }
+                    return true;
                 }
-                return true;
+
+                // Look for at least one .class with an EJB annotation
+                if (containsEjbComponentClass(file)) {
+                    return true;
+                }
+
+                // Return
+                return false;
             }
-
-            // Look for at least one .class with an EJB annotation
-            if (containsEjbComponentClass(file)) {
-                return true;
+            finally {
+                try {
+                    handle.close();
+                } catch (final IOException e) {
+                    // Ignore
+                    log.warn("Could not close handle to mounted " + file, e);
+                }
             }
-
-            // Return
-            return false;
-
         } catch (final IOException e) {
             throw new RuntimeException("Could not mount file from ClassPath for EJB JAR module scanning", e);
-        } finally {
-            try {
-                handle.close();
-            } catch (final IOException e) {
-                // Ignore
-                log.warn("Could not close handle to mounted " + file, e);
-            }
         }
 
     }
