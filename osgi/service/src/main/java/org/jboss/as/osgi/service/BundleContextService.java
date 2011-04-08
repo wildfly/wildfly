@@ -22,51 +22,45 @@
 
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.service.FrameworkBootstrapService.FRAMEWORK_BASE_NAME;
+
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.launch.Framework;
 
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi system {@link BundleContext}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 29-Oct-2010
+ *
+ * @deprecated Use {@link ServiceNames#SYSTEM_CONTEXT}
  */
-public class BundleContextService implements Service<BundleContext> {
+@Deprecated
+public class BundleContextService extends AbstractService<BundleContext> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "context");
+    @Deprecated
+    public static final ServiceName SERVICE_NAME = FRAMEWORK_BASE_NAME.append("systemcontext");
 
-    private final InjectedValue<Framework> injectedFramework = new InjectedValue<Framework>();
-    private BundleContext systemContext;
+    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
 
     public static void addService(final ServiceTarget target, Activation policy) {
         BundleContextService service = new BundleContextService();
         ServiceBuilder<?> builder = target.addService(BundleContextService.SERVICE_NAME, service);
-        builder.addDependency(FrameworkService.SERVICE_NAME, Framework.class, service.injectedFramework);
+        builder.addDependency(ServiceNames.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
+        builder.addDependency(ServiceNames.FRAMEWORK_ACTIVE);
         builder.setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE);
         builder.install();
     }
 
-    public synchronized void start(final StartContext context) throws StartException {
-        Framework framework = injectedFramework.getValue();
-        systemContext = framework.getBundleContext();
-    }
-
-    public synchronized void stop(StopContext context) {
-        systemContext = null;
-    }
-
     @Override
     public BundleContext getValue() throws IllegalStateException {
-        return systemContext;
+        return injectedBundleContext.getValue();
     }
 }

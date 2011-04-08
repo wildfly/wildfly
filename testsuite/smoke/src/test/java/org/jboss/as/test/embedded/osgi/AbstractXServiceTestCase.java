@@ -32,7 +32,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -43,7 +42,8 @@ import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
-import org.jboss.osgi.framework.FrameworkIntegration;
+import org.jboss.osgi.framework.BundleManagement;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.Bundle;
 
 /**
@@ -57,7 +57,7 @@ abstract class AbstractXServiceTestCase {
     abstract ServiceContainer getServiceContainer();
 
     Bundle registerModule(ModuleIdentifier moduleId) throws Exception {
-        final ServiceController<?> bundleContextService = getServiceContainer().getRequiredService(BundleContextService.SERVICE_NAME);
+        final ServiceController<?> bundleContextService = getServiceContainer().getRequiredService(ServiceNames.FRAMEWORK_ACTIVE);
         if (bundleContextService.getMode() == Mode.ON_DEMAND && bundleContextService.getState() == State.DOWN) {
             final CountDownLatch latch = new CountDownLatch(1);
             bundleContextService.addListener(new AbstractServiceListener<Object>() {
@@ -81,10 +81,10 @@ abstract class AbstractXServiceTestCase {
                 throw new IllegalStateException("BundleContextService not started");
         }
 
-        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(FrameworkIntegration.SERVICE_NAME);
-        FrameworkIntegration bundleManager = (FrameworkIntegration) bundleManagerService.getValue();
+        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(ServiceNames.BUNDLE_MANAGER);
+        BundleManagement bundleManager = (BundleManagement) bundleManagerService.getValue();
         if (bundleManager == null)
-            throw new IllegalStateException("FrameworkIntegration not started");
+            throw new IllegalStateException("BundleManagement not started");
 
         ServiceContainer serviceContainer = getServiceContainer();
         ServiceTarget serviceTarget = serviceContainer.subTarget();

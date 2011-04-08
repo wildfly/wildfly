@@ -21,6 +21,8 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
+
 import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -35,7 +37,6 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanRes
 import org.jboss.as.osgi.deployment.BundleInstallService;
 import org.jboss.as.osgi.deployment.DeploymentHolderService;
 import org.jboss.as.server.ServerController;
-import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -53,9 +54,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.SystemDeployerService;
+import org.jboss.osgi.framework.BundleManagement;
 import org.jboss.osgi.framework.DeployerServiceProvider;
-import org.jboss.osgi.framework.FrameworkIntegration;
-import org.jboss.osgi.framework.SystemBundleProvider;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -71,17 +72,18 @@ public class DeployerServiceIntegration implements DeployerServiceProvider {
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
-    private final InjectedValue<FrameworkIntegration> injectedBundleManager = new InjectedValue<FrameworkIntegration>();
+    private final InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
     private final InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
     private ServerDeploymentManager deploymentManager;
     private DeployerService delegate;
 
     public static void addService(final ServiceTarget target) {
         DeployerServiceIntegration service = new DeployerServiceIntegration();
-        ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
-        builder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
-        builder.addDependency(SystemBundleProvider.SERVICE_NAME, Bundle.class, service.injectedSystemBundle);
-        builder.addDependency(FrameworkIntegration.SERVICE_NAME, FrameworkIntegration.class, service.injectedBundleManager);
+        ServiceBuilder<?> builder = target.addService(ServiceNames.DEPLOYERSERVICE_PROVIDER, service);
+        builder.addDependency(JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
+        builder.addDependency(ServiceNames.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
+        builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
+        builder.addDependency(ServiceNames.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.PASSIVE);
         builder.install();
     }
@@ -173,7 +175,7 @@ public class DeployerServiceIntegration implements DeployerServiceProvider {
                 ServiceName serviceName = BundleInstallService.getServiceName(contextName);
                 ServiceController<?> controller = serviceContainer.getService(serviceName);
                 if (controller == null) {
-                    FrameworkIntegration bundleManager = injectedBundleManager.getValue();
+                    BundleManagement bundleManager = injectedBundleManager.getValue();
                     bundleManager.uninstallBundle(dep);
                     return;
                 }

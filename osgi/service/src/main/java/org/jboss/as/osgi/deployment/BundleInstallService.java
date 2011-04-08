@@ -23,7 +23,6 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.osgi.service.BundleContextService;
-import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
@@ -39,7 +38,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.FrameworkIntegration;
+import org.jboss.osgi.framework.BundleManagement;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -56,7 +56,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
 
     private final Deployment deployment;
     private InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
-    private InjectedValue<FrameworkIntegration> injectedBundleManager = new InjectedValue<FrameworkIntegration>();
+    private InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
     private InjectedValue<BundleStartupProcessor> injectedStartTracker = new InjectedValue<BundleStartupProcessor>();
     private ServiceName installedBundleName;
 
@@ -71,11 +71,10 @@ public class BundleInstallService implements Service<BundleInstallService> {
         final ServiceName serviceName = getServiceName(contextName);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<BundleInstallService> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
-        builder.addDependency(FrameworkIntegration.SERVICE_NAME, FrameworkIntegration.class, service.injectedBundleManager);
+        builder.addDependency(ServiceNames.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
+        builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
         builder.addDependency(BundleStartupProcessor.SERVICE_NAME, BundleStartupProcessor.class, service.injectedStartTracker);
-        builder.addDependency(Services.deploymentUnitName(contextName));
-        builder.addDependency(PackageAdminService.SERVICE_NAME);
+        builder.addDependency(org.jboss.as.server.deployment.Services.deploymentUnitName(contextName));
         builder.install();
     }
 
@@ -99,7 +98,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
         log.infof("Installing deployment: %s", deployment);
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
-            FrameworkIntegration bundleManager = injectedBundleManager.getValue();
+            BundleManagement bundleManager = injectedBundleManager.getValue();
             installedBundleName = bundleManager.installBundle(serviceTarget, deployment);
             injectedStartTracker.getValue().addInstalledBundle(installedBundleName, deployment);
         } catch (Throwable t) {
@@ -115,7 +114,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
     public synchronized void stop(StopContext context) {
         log.infof("Uninstalling deployment: %s", deployment);
         try {
-            FrameworkIntegration bundleManager = injectedBundleManager.getValue();
+            BundleManagement bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);

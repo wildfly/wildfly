@@ -22,13 +22,13 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.service.FrameworkBootstrapService.FRAMEWORK_BASE_NAME;
 import static org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -43,6 +43,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -57,7 +58,7 @@ public class BundleStartupProcessor extends AbstractService<BundleStartupProcess
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "starttracker");
+    public static final ServiceName SERVICE_NAME = FRAMEWORK_BASE_NAME.append("starttracker");
 
     private final InjectedValue<PackageAdmin> injectedPackageAdmin = new InjectedValue<PackageAdmin>();
     private final Map<ServiceName, Tuple> pendingServices = new ConcurrentHashMap<ServiceName, Tuple>();
@@ -67,7 +68,7 @@ public class BundleStartupProcessor extends AbstractService<BundleStartupProcess
     public static void addService(ServiceTarget serviceTarget) {
         BundleStartupProcessor service = new BundleStartupProcessor();
         ServiceBuilder<BundleStartupProcessor> builder = serviceTarget.addService(SERVICE_NAME, service);
-        builder.addDependency(PackageAdminService.SERVICE_NAME, PackageAdmin.class, service.injectedPackageAdmin);
+        builder.addDependency(ServiceNames.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.setInitialMode(Mode.PASSIVE);
         builder.install();
     }

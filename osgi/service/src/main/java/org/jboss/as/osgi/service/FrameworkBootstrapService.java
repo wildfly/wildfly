@@ -23,6 +23,7 @@
 package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 import java.io.File;
@@ -39,10 +40,10 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.parser.SubsystemState;
+import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
@@ -57,7 +58,6 @@ import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -66,20 +66,15 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.AutoInstallProvider;
+import org.jboss.osgi.framework.BundleManagement;
 import org.jboss.osgi.framework.BundleReferenceClassLoader;
-import org.jboss.osgi.framework.DeployerServiceProvider;
-import org.jboss.osgi.framework.FrameworkIntegration;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
-import org.jboss.osgi.framework.SystemBundleProvider;
-import org.jboss.osgi.framework.SystemModuleProvider;
-import org.jboss.osgi.framework.SystemServicesProvider;
+import org.jboss.osgi.framework.ServiceNames;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
-import org.osgi.framework.launch.Framework;
 
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi Framework.
@@ -87,23 +82,23 @@ import org.osgi.framework.launch.Framework;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-public class FrameworkService implements Service<Framework> {
+public class FrameworkBootstrapService implements Service<Void> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "framework");
+    public static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
+    public static final ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
+    public static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
     private final SubsystemState subsystemState;
-    private Framework framework;
 
     public static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
-        FrameworkService service = new FrameworkService(subsystemState);
-        ServiceBuilder<?> builder = target.addService(FrameworkService.SERVICE_NAME, service);
+        FrameworkBootstrapService service = new FrameworkBootstrapService(subsystemState);
+        ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
-        builder.setInitialMode(Mode.ON_DEMAND);
         builder.install();
 
         AutoInstallIntegration.addService(target, subsystemState);
@@ -112,12 +107,11 @@ public class FrameworkService implements Service<Framework> {
         SystemServicesIntegration.addService(target);
     }
 
-    private FrameworkService(SubsystemState subsystemState) {
+    private FrameworkBootstrapService(SubsystemState subsystemState) {
         this.subsystemState = subsystemState;
     }
 
     public synchronized void start(StartContext context) throws StartException {
-        log.infof("Starting OSGi Framework");
         try {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
@@ -128,31 +122,27 @@ public class FrameworkService implements Service<Framework> {
             // Start the OSGi {@link Framework}
             FrameworkBuilder builder = new FrameworkBuilder(props);
             builder.setServiceContainer(serviceContainer);
-            builder.addProvidedService(AutoInstallProvider.SERVICE_NAME);
-            builder.addProvidedService(DeployerServiceProvider.SERVICE_NAME);
-            builder.addProvidedService(FrameworkModuleProvider.SERVICE_NAME);
-            builder.addProvidedService(ModuleLoaderProvider.SERVICE_NAME);
-            builder.addProvidedService(SystemServicesProvider.SERVICE_NAME);
+            builder.setServiceTarget(context.getChildTarget());
+            builder.addProvidedService(org.jboss.osgi.framework.ServiceNames.AUTOINSTALL_PROVIDER);
+            builder.addProvidedService(org.jboss.osgi.framework.ServiceNames.DEPLOYERSERVICE_PROVIDER);
+            builder.addProvidedService(ServiceNames.FRAMEWORK_MODULE_PROVIDER);
+            builder.addProvidedService(ServiceNames.MODULE_LOADER_PROVIDER);
 
-            framework = builder.build();
-            framework.start();
+            Activation activation = subsystemState.getActivationPolicy();
+            Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
+            builder.createFrameworkServices(initialMode, true);
         } catch (Throwable t) {
-            throw new StartException("Failed to start OSGi Framework: " + framework, t);
+            throw new StartException("Failed to create Framework services", t);
         }
     }
 
     public synchronized void stop(StopContext context) {
         log.infof("Stopping OSGi Framework");
-        ServiceContainer serviceContainer = context.getController().getServiceContainer();
-        ServiceController<?> controller = serviceContainer.getService(FrameworkIntegration.SERVICE_NAME);
-        if (controller != null) {
-            controller.setMode(Mode.REMOVE);
-        }
     }
 
     @Override
-    public Framework getValue() throws IllegalStateException {
-        return framework;
+    public Void getValue() throws IllegalStateException {
+        return null;
     }
 
     private void setupIntegrationProperties(StartContext context, Map<String, Object> props) {
@@ -173,16 +163,20 @@ public class FrameworkService implements Service<Framework> {
         }
     }
 
-    private static final class SystemServicesIntegration extends AbstractService<SystemServicesProvider> implements SystemServicesProvider {
+    private static final class SystemServicesIntegration extends AbstractService<Void> {
+
+        static final ServiceName SYSTEM_SERVICES = FRAMEWORK_BASE_NAME.append("services");
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+        private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
         private ServiceContainer serviceContainer;
 
         public static void addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
-            ServiceBuilder<?> builder = target.addService(SystemServicesProvider.SERVICE_NAME, service);
+            ServiceBuilder<?> builder = target.addService(SYSTEM_SERVICES, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-            builder.setInitialMode(Mode.PASSIVE);
+            builder.addDependency(ServiceNames.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
+            builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }
 
@@ -190,24 +184,16 @@ public class FrameworkService implements Service<Framework> {
         }
 
         @Override
-        public void registerSystemServices(BundleContext systemContext) throws BundleException {
+        public void start(StartContext context) throws StartException {
+
             // Register the {@link MBeanServer} as OSGi service
             MBeanServer mbeanServer = injectedMBeanServer.getValue();
+            BundleContext systemContext = injectedSystemContext.getValue();
             systemContext.registerService(MBeanServer.class.getName(), mbeanServer, null);
 
             // Register the {@link ServiceContainer} as OSGi service
-            systemContext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
-
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
             serviceContainer = context.getController().getServiceContainer();
-        }
-
-        @Override
-        public SystemServicesProvider getValue() throws IllegalStateException {
-            return this;
+            systemContext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
         }
     }
 
@@ -217,8 +203,8 @@ public class FrameworkService implements Service<Framework> {
 
         private static void addService(final ServiceTarget target) {
             ModuleLoaderIntegration service = new ModuleLoaderIntegration();
-            ServiceBuilder<?> builder = target.addService(ModuleLoaderProvider.SERVICE_NAME, service);
-            builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
+            ServiceBuilder<?> builder = target.addService(ServiceNames.MODULE_LOADER_PROVIDER, service);
+            builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
             builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }
@@ -240,9 +226,9 @@ public class FrameworkService implements Service<Framework> {
 
         private static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(subsystemState);
-            ServiceBuilder<?> builder = target.addService(FrameworkModuleProvider.SERVICE_NAME, service);
-            builder.addDependency(SystemModuleProvider.SERVICE_NAME, Module.class, service.injectedSystemModule);
-            builder.setInitialMode(Mode.PASSIVE);
+            ServiceBuilder<?> builder = target.addService(ServiceNames.FRAMEWORK_MODULE_PROVIDER, service);
+            builder.addDependency(ServiceNames.SYSTEM_MODULE_PROVIDER, Module.class, service.injectedSystemModule);
+            builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }
 
@@ -323,7 +309,7 @@ public class FrameworkService implements Service<Framework> {
 
     private static final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implements AutoInstallProvider {
 
-        private InjectedValue<FrameworkIntegration> injectedBundleManager = new InjectedValue<FrameworkIntegration>();
+        private InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
         private InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
         private List<URL> autoInstall = new ArrayList<URL>();
         private List<URL> autoStart = new ArrayList<URL>();
@@ -331,10 +317,10 @@ public class FrameworkService implements Service<Framework> {
 
         private static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
             AutoInstallIntegration service = new AutoInstallIntegration(subsystemState);
-            ServiceBuilder<?> builder = target.addService(AutoInstallProvider.SERVICE_NAME, service);
-            builder.addDependency(FrameworkIntegration.SERVICE_NAME, FrameworkIntegration.class, service.injectedBundleManager);
-            builder.addDependency(SystemBundleProvider.SERVICE_NAME, Bundle.class, service.injectedSystemBundle);
-            builder.setInitialMode(Mode.PASSIVE);
+            ServiceBuilder<?> builder = target.addService(org.jboss.osgi.framework.ServiceNames.AUTOINSTALL_PROVIDER, service);
+            builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
+            builder.addDependency(ServiceNames.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
+            builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }
 

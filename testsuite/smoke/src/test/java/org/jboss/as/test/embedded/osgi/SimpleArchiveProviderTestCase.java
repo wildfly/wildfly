@@ -67,7 +67,7 @@ public class SimpleArchiveProviderTestCase {
     }
 
     @Test
-    public void testBundleInjection() throws Exception {
+    public void testBundleDeployment() throws Exception {
 
         InputStream input = provider.getClientDeploymentAsStream("deployment-provider-bundle");
         Bundle bundle = context.installBundle("deployment-provider-bundle", input);
