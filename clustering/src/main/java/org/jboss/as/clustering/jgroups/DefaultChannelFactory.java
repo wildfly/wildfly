@@ -23,32 +23,34 @@ package org.jboss.as.clustering.jgroups;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.clustering.ManagedExecutorService;
+import org.jboss.as.clustering.ManagedScheduledExecutorService;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
+import org.jgroups.Global;
 import org.jgroups.JChannel;
+import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.TP;
-import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
-import org.jgroups.stack.ProtocolStack;
+import org.jgroups.util.SocketFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DefaultChannelFactory implements ChannelFactory, ChannelListener {
+public class DefaultChannelFactory implements ChannelFactory, ChannelListener, ProtocolStackConfigurator {
     private static final Logger log = Logger.getLogger(DefaultChannelFactory.class);
 
     private final String name;
@@ -68,67 +70,17 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener {
 
     @Override
     public Channel createChannel() throws Exception {
-        ProtocolStack stack = this.createProtocolStack(this.configuration);
 
-        TransportConfiguration transportConfig = this.configuration.getTransport();
-        TP transport = this.getTransport(stack);
+        JChannel channel = new JChannel(this);
 
-        if (transportConfig.isShared() && (transport.getValue("singleton_name") == null)) {
-            transport.setValue("singleton_name", this.name);
+        TP transport = channel.getProtocolStack().getTransport();
+        if (transport.isSingleton()) {
+            synchronized (transport) {
+                this.init(transport);
+            }
+        } else {
+            this.init(transport);
         }
-
-        ThreadFactory threadFactory = transportConfig.getThreadFactory();
-        if (threadFactory != null) {
-            transport.setThreadFactory(new ThreadFactoryAdapter(threadFactory));
-        }
-
-        SocketBinding socketBinding = transportConfig.getSocketBinding();
-        if (socketBinding != null) {
-            InetSocketAddress socketAddress = socketBinding.getSocketAddress();
-
-            transport.setValue("bind_addr", socketAddress.getAddress());
-            transport.setBindPort(socketAddress.getPort());
-
-            this.configureMulticastSocket(transport, socketBinding, "mcast_group_addr", "mcast_port");
-
-            transport.setSocketFactory(new ManagedSocketFactory(transport.getSocketFactory(), socketBinding.getSocketBindings()));
-        }
-
-        SocketBinding diagnosticsSocketBinding = transportConfig.getDiagnosticsSocketBinding();
-        boolean diagnostics = (diagnosticsSocketBinding != null);
-        transport.setValue("enable_diagnostics", diagnostics);
-        if (diagnostics) {
-            this.configureMulticastSocket(transport, diagnosticsSocketBinding, "diagnostics_addr", "diagnostics_port");
-        }
-
-        Executor threadPool = transportConfig.getThreadPool();
-        if (threadPool != null) {
-            transport.setDefaultThreadPool(threadPool);
-        }
-
-        Executor oobExecutor = transportConfig.getOOBThreadPool();
-        if (oobExecutor != null) {
-            transport.setOOBThreadPool(oobExecutor);
-        }
-
-        ScheduledExecutorService scheduledExecutor = transportConfig.getTimerThreadPool();
-        if (scheduledExecutor != null) {
-            transport.getTimer().stop();
-            transport.setValue("timer", new TimerSchedulerAdapter(scheduledExecutor));
-        }
-
-        Protocol protocol = transport;
-
-        for (ProtocolConfiguration protocolConfig: this.configuration.getProtocols()) {
-            protocol = protocol.getUpProtocol();
-            this.configureMulticastSocket(protocol, protocolConfig.getSocketBinding(), "mcast_addr", "mcast_port");
-            this.configureServerSocket(protocol, protocolConfig.getSocketBinding(), "start_port");
-        }
-
-        JChannel channel = new JChannel(false);
-        channel.setProtocolStack(stack);
-
-        stack.init();
 
         channel.setName(this.logicalName);
 
@@ -139,22 +91,106 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener {
         return channel;
     }
 
-    private ProtocolStack createProtocolStack(ProtocolStackConfiguration stackConfig) throws Exception {
-        List<org.jgroups.conf.ProtocolConfiguration> protocolConfigs = new ArrayList<org.jgroups.conf.ProtocolConfiguration>(stackConfig.getProtocols().size() + 1);
-        protocolConfigs.add(this.createProtocol(stackConfig.getTransport()));
-        for (ProtocolConfiguration protocolConfig: stackConfig.getProtocols()) {
-            protocolConfigs.add(this.createProtocol(protocolConfig));
+    private void init(TP transport) {
+        TransportConfiguration transportConfig = this.configuration.getTransport();
+        SocketBinding binding = transportConfig.getSocketBinding();
+        if (binding != null) {
+            SocketFactory factory = transport.getSocketFactory();
+            if (!(factory instanceof ManagedSocketFactory)) {
+                transport.setSocketFactory(new ManagedSocketFactory(factory, binding.getSocketBindings()));
+            }
         }
-        ProtocolStack stack = new ProtocolStack();
-        List<Protocol> protocols = new ArrayList<Protocol>(protocolConfigs.size());
-        Protocol protocol = new Configurator(stack).setupProtocolStack(protocolConfigs);
-        while (protocol != null) {
-            protocols.add(protocol);
-            protocol = protocol.getDownProtocol();
+        ThreadFactory threadFactory = transportConfig.getThreadFactory();
+        if (threadFactory != null) {
+            if (!(transport.getThreadFactory() instanceof ThreadFactoryAdapter)) {
+                transport.setThreadFactory(new ThreadFactoryAdapter(threadFactory));
+            }
         }
-        Collections.reverse(protocols);
-        stack.addProtocols(protocols);
-        return stack;
+        ExecutorService defaultExecutor = transportConfig.getDefaultExecutor();
+        if (defaultExecutor != null) {
+            if (!(transport.getDefaultThreadPool() instanceof ManagedExecutorService)) {
+                transport.setDefaultThreadPool(new ManagedExecutorService(defaultExecutor));
+            }
+        }
+        ExecutorService oobExecutor = transportConfig.getOOBExecutor();
+        if (oobExecutor != null) {
+            if (!(transport.getOOBThreadPool() instanceof ManagedExecutorService)) {
+                transport.setOOBThreadPool(new ManagedExecutorService(oobExecutor));
+            }
+        }
+        ScheduledExecutorService timerExecutor = transportConfig.getTimerExecutor();
+        if (timerExecutor != null) {
+            if (!(transport.getTimer() instanceof TimerSchedulerAdapter)) {
+                this.setValue(transport, "timer", new TimerSchedulerAdapter(new ManagedScheduledExecutorService(timerExecutor)));
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jgroups.conf.ProtocolStackConfigurator#getProtocolStackString()
+     */
+    @Override
+    public String getProtocolStackString() {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.jgroups.conf.ProtocolStackConfigurator#getProtocolStack()
+     */
+    @Override
+    public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
+        List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<org.jgroups.conf.ProtocolConfiguration>(this.configuration.getProtocols().size() + 1);
+        TransportConfiguration transport = this.configuration.getTransport();
+        org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(this.configuration.getTransport());
+        Map<String, String> properties = config.getProperties();
+
+        if (transport.isShared() && !transport.getProperties().containsKey(Global.SINGLETON_NAME)) {
+            properties.put(Global.SINGLETON_NAME, this.name);
+        }
+        SocketBinding socketBinding = transport.getSocketBinding();
+        if (socketBinding != null) {
+            properties.put("bind_addr", socketBinding.getSocketAddress().getAddress().getHostAddress());
+            this.configureServerSocket(config, "bind_port", socketBinding);
+            this.configureMulticastSocket(config, "mcast_addr", "mcast_port", socketBinding);
+        }
+
+        SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
+        boolean diagnostics = (diagnosticsSocketBinding != null);
+        properties.put("enable_diagnostics", String.valueOf(diagnostics));
+        if (diagnostics) {
+            this.configureMulticastSocket(config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
+        }
+
+        configs.add(config);
+
+        for (ProtocolConfiguration protocol: this.configuration.getProtocols()) {
+            config = this.createProtocol(protocol);
+            socketBinding = protocol.getSocketBinding();
+            if (socketBinding != null) {
+                this.configureServerSocket(config, "start_port", socketBinding);
+                this.configureMulticastSocket(config, "mcast_addr", "mcast_port", socketBinding);
+            }
+
+            configs.add(config);
+        }
+        return configs;
+    }
+
+    private void configureServerSocket(org.jgroups.conf.ProtocolConfiguration config, String portProperty, SocketBinding socketBinding) {
+        config.getProperties().put(portProperty, String.valueOf(socketBinding.getSocketAddress().getPort()));
+    }
+
+    private void configureMulticastSocket(org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding socketBinding) {
+        Map<String, String> properties = config.getProperties();
+        try {
+            InetSocketAddress mcastSocketAddress = socketBinding.getMulticastSocketAddress();
+            properties.put(addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            properties.put(portProperty, String.valueOf(mcastSocketAddress.getPort()));
+        } catch (IllegalStateException e) {
+            log.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, socketBinding.getName());
+        }
     }
 
     private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
@@ -164,29 +200,6 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener {
                 return protocolConfig.getProperties();
             }
         };
-    }
-
-    private TP getTransport(ProtocolStack stack) {
-        List<Protocol> protocols = stack.getProtocols();
-        return (TP) protocols.get(protocols.size() - 1);
-    }
-
-    private void configureMulticastSocket(Protocol protocol, SocketBinding socketBinding, String addressProperty, String portProperty) {
-        if (socketBinding != null) {
-            try {
-                InetSocketAddress socketAddress = socketBinding.getMulticastSocketAddress();
-                this.setValue(protocol, addressProperty, socketAddress.getAddress());
-                this.setValue(protocol, portProperty, socketAddress.getPort());
-            } catch (IllegalStateException e) {
-                log.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", protocol.getName(), addressProperty, protocol.getName(), portProperty, socketBinding.getName());
-            }
-        }
-    }
-
-    private void configureServerSocket(Protocol protocol, SocketBinding socketBinding, String portProperty) {
-        if (socketBinding != null) {
-            this.setValue(protocol, portProperty, socketBinding.getSocketAddress().getPort());
-        }
     }
 
     private void setValue(Protocol protocol, String property, Object value) {

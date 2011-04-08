@@ -19,27 +19,65 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+
+package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
 
+/**
+ * @author Paul Ferraro
+ */
 public enum Attribute {
     // must be first
     UNKNOWN(null),
-
-    DEFAULT_EXECUTOR(ModelKeys.DEFAULT_EXECUTOR),
-    DEFAULT_STACK(ModelKeys.DEFAULT_STACK),
-    DIAGNOSTICS_SOCKET_BINDING(ModelKeys.DIAGNOSTICS_SOCKET_BINDING),
+    ACQUIRE_TIMEOUT(ModelKeys.ACQUIRE_TIMEOUT),
+    BATCHING(ModelKeys.BATCHING),
+    CLASS(ModelKeys.CLASS),
+    CONCURRENCY_LEVEL(ModelKeys.CONCURRENCY_LEVEL),
+    DEFAULT_CACHE(ModelKeys.DEFAULT_CACHE),
+    DEFAULT_CONTAINER(ModelKeys.DEFAULT_CONTAINER),
+    EAGER_LOCKING(ModelKeys.EAGER_LOCKING),
+    ENABLED(ModelKeys.ENABLED),
+    EVICTION_EXECUTOR(ModelKeys.EVICTION_EXECUTOR),
+    EXECUTOR(ModelKeys.EXECUTOR),
+    FETCH_STATE(ModelKeys.FETCH_STATE),
+    FLUSH_TIMEOUT(ModelKeys.FLUSH_TIMEOUT),
+    INDEXING(ModelKeys.INDEXING),
+    INTERVAL(ModelKeys.INTERVAL),
+    ISOLATION(ModelKeys.ISOLATION),
+    L1_LIFESPAN(ModelKeys.L1_LIFESPAN),
+    LIFESPAN(ModelKeys.LIFESPAN),
+    LISTENER_EXECUTOR(ModelKeys.LISTENER_EXECUTOR),
+    LOCK_TIMEOUT(ModelKeys.LOCK_TIMEOUT),
+    MACHINE(ModelKeys.MACHINE),
+    MAX_ENTRIES(ModelKeys.MAX_ENTRIES),
+    MAX_IDLE(ModelKeys.MAX_IDLE),
+    MODE(ModelKeys.MODE),
     NAME(ModelKeys.NAME),
     NAMESPACE(XMLConstants.XMLNS_ATTRIBUTE),
-    OOB_EXECUTOR(ModelKeys.OOB_EXECUTOR),
-    SOCKET_BINDING(ModelKeys.SOCKET_BINDING),
-    THREAD_FACTORY(ModelKeys.THREAD_FACTORY),
-    TIMER_EXECUTOR(ModelKeys.TIMER_EXECUTOR),
-    TYPE(ModelKeys.TYPE),
+    OWNERS(ModelKeys.OWNERS),
+    PASSIVATION(ModelKeys.PASSIVATION),
+    PATH(ModelKeys.PATH),
+    PRELOAD(ModelKeys.PRELOAD),
+    PURGE(ModelKeys.PURGE),
+    QUEUE_FLUSH_INTERVAL(ModelKeys.QUEUE_FLUSH_INTERVAL),
+    QUEUE_SIZE(ModelKeys.QUEUE_SIZE),
+    RACK(ModelKeys.RACK),
+    RELATIVE_TO(ModelKeys.RELATIVE_TO),
+    REMOTE_TIMEOUT(ModelKeys.REMOTE_TIMEOUT),
+    REPLICATION_QUEUE_EXECUTOR(ModelKeys.REPLICATION_QUEUE_EXECUTOR),
+    SHARED(ModelKeys.SHARED),
+    SINGLETON(ModelKeys.SINGLETON),
+    SITE(ModelKeys.SITE),
+    STACK(ModelKeys.STACK),
+    STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
+    STRATEGY(ModelKeys.STRATEGY),
+    STRIPING(ModelKeys.STRIPING),
+    SYNC_PHASE(ModelKeys.SYNC_PHASE),
+    TIMEOUT(ModelKeys.TIMEOUT),
     ;
 
     private final String name;

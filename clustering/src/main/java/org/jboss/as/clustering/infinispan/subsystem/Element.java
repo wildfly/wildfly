@@ -19,32 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+
+package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.XMLConstants;
-
-public enum Attribute {
+/**
+ * @author Paul Ferraro
+ */
+public enum Element {
     // must be first
     UNKNOWN(null),
 
-    DEFAULT_EXECUTOR(ModelKeys.DEFAULT_EXECUTOR),
-    DEFAULT_STACK(ModelKeys.DEFAULT_STACK),
-    DIAGNOSTICS_SOCKET_BINDING(ModelKeys.DIAGNOSTICS_SOCKET_BINDING),
-    NAME(ModelKeys.NAME),
-    NAMESPACE(XMLConstants.XMLNS_ATTRIBUTE),
-    OOB_EXECUTOR(ModelKeys.OOB_EXECUTOR),
-    SOCKET_BINDING(ModelKeys.SOCKET_BINDING),
-    THREAD_FACTORY(ModelKeys.THREAD_FACTORY),
-    TIMER_EXECUTOR(ModelKeys.TIMER_EXECUTOR),
-    TYPE(ModelKeys.TYPE),
+    ALIAS(ModelKeys.ALIAS),
+    CACHE_CONTAINER(ModelKeys.CACHE_CONTAINER),
+    DISTRIBUTED_CACHE(ModelKeys.DISTRIBUTED_CACHE),
+    EVICTION(ModelKeys.EVICTION),
+    EXPIRATION(ModelKeys.EXPIRATION),
+    FILE_STORE(ModelKeys.FILE_STORE),
+    INVALIDATION_CACHE(ModelKeys.INVALIDATION_CACHE),
+    LOCAL_CACHE(ModelKeys.LOCAL_CACHE),
+    LOCKING(ModelKeys.LOCKING),
+    PROPERTY(ModelKeys.PROPERTY),
+    REHASHING(ModelKeys.REHASHING),
+    REPLICATED_CACHE(ModelKeys.REPLICATED_CACHE),
+    STATE_TRANSFER(ModelKeys.STATE_TRANSFER),
+    STORE(ModelKeys.STORE),
+    SUBSYSTEM(org.jboss.as.controller.parsing.Element.SUBSYSTEM.getLocalName()),
+    TRANSACTION(ModelKeys.TRANSACTION),
+    TRANSPORT(ModelKeys.TRANSPORT),
     ;
 
     private final String name;
 
-    private Attribute(final String name) {
+    Element(final String name) {
         this.name = name;
     }
 
@@ -57,19 +66,19 @@ public enum Attribute {
         return name;
     }
 
-    private static final Map<String, Attribute> attributes;
+    private static final Map<String, Element> elements;
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute attribute : values()) {
-            final String name = attribute.getLocalName();
-            if (name != null) map.put(name, attribute);
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
         }
-        attributes = map;
+        elements = map;
     }
 
-    public static Attribute forName(String localName) {
-        final Attribute attribute = attributes.get(localName);
-        return attribute == null ? UNKNOWN : attribute;
+    public static Element forName(String localName) {
+        final Element element = elements.get(localName);
+        return element == null ? UNKNOWN : element;
     }
 }

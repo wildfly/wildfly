@@ -19,24 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+
+package org.jboss.as.clustering.infinispan.subsystem;
+
+import org.infinispan.config.Configuration.CacheMode;
 
 /**
- * Constants used for model keys.
  * @author Paul Ferraro
  */
-class ModelKeys {
-    static final String DEFAULT_EXECUTOR = "default-executor";
-    static final String DEFAULT_STACK = "default-stack";
-    static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
-    static final String NAME = "name";
-    static final String OOB_EXECUTOR = "oob-executor";
-    static final String PROPERTY = "property";
-    static final String PROTOCOL = "protocol";
-    static final String SOCKET_BINDING = "socket-binding";
-    static final String STACK = "stack";
-    static final String THREAD_FACTORY = "thread-factory";
-    static final String TIMER_EXECUTOR = "timer-executor";
-    static final String TRANSPORT = "transport";
-    static final String TYPE = "type";
+public enum Mode {
+    SYNC(true),
+    ASYNC(false),
+    ;
+    private final boolean sync;
+    private Mode(boolean sync) {
+        this.sync = sync;
+    }
+
+    public static Mode forCacheMode(CacheMode mode) {
+        return mode.isSynchronous() ? SYNC : ASYNC;
+    }
+
+    public CacheMode apply(CacheMode mode) {
+        return this.sync ? mode.toSync() : mode.toAsync();
+    }
+
+    public boolean isSynchronous() {
+        return this.sync;
+    }
+
+    public String toString() {
+        return this.name().toLowerCase();
+    }
 }

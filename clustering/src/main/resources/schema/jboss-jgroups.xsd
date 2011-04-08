@@ -20,9 +20,9 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<xs:schema targetNamespace="urn:jboss:domain:group-communication:1.0"
+<xs:schema targetNamespace="urn:jboss:domain:jgroups:1.0"
             xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:tns="urn:jboss:domain:group-communication:1.0"
+            xmlns:tns="urn:jboss:domain:jgroups:1.0"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
@@ -101,17 +101,17 @@
                         <xs:documentation>If specified, enables diagnostics and specified the multicast address/port on which to communicate.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="thread-pool" type="xs:string">
+                <xs:attribute name="default-executor" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>Defines the thread pool used for default messages received by this transport.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="oob-thread-pool" type="xs:string">
+                <xs:attribute name="oob-executor" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>Defines the thread pool used for OOB messages received by this transport.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="timer-thread-pool" type="xs:string">
+                <xs:attribute name="timer-executor" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>Defines the timer thread pool used by this transport.</xs:documentation>
                     </xs:annotation>

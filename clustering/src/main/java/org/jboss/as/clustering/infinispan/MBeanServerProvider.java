@@ -19,24 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+
+package org.jboss.as.clustering.infinispan;
+
+import java.util.Properties;
+
+import javax.management.MBeanServer;
+
+import org.infinispan.jmx.MBeanServerLookup;
 
 /**
- * Constants used for model keys.
  * @author Paul Ferraro
  */
-class ModelKeys {
-    static final String DEFAULT_EXECUTOR = "default-executor";
-    static final String DEFAULT_STACK = "default-stack";
-    static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
-    static final String NAME = "name";
-    static final String OOB_EXECUTOR = "oob-executor";
-    static final String PROPERTY = "property";
-    static final String PROTOCOL = "protocol";
-    static final String SOCKET_BINDING = "socket-binding";
-    static final String STACK = "stack";
-    static final String THREAD_FACTORY = "thread-factory";
-    static final String TIMER_EXECUTOR = "timer-executor";
-    static final String TRANSPORT = "transport";
-    static final String TYPE = "type";
+public class MBeanServerProvider implements MBeanServerLookup {
+
+    private final MBeanServer server;
+
+    public MBeanServerProvider(MBeanServer server) {
+        this.server = server;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.infinispan.jmx.MBeanServerLookup#getMBeanServer(java.util.Properties)
+     */
+    @Override
+    public MBeanServer getMBeanServer(Properties properties) {
+        return this.server;
+    }
 }

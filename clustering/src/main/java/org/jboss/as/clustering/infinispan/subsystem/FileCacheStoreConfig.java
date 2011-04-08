@@ -19,24 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups.subsystem;
+
+package org.jboss.as.clustering.infinispan.subsystem;
+
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * Constants used for model keys.
  * @author Paul Ferraro
  */
-class ModelKeys {
-    static final String DEFAULT_EXECUTOR = "default-executor";
-    static final String DEFAULT_STACK = "default-stack";
-    static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
-    static final String NAME = "name";
-    static final String OOB_EXECUTOR = "oob-executor";
-    static final String PROPERTY = "property";
-    static final String PROTOCOL = "protocol";
-    static final String SOCKET_BINDING = "socket-binding";
-    static final String STACK = "stack";
-    static final String THREAD_FACTORY = "thread-factory";
-    static final String TIMER_EXECUTOR = "timer-executor";
-    static final String TRANSPORT = "transport";
-    static final String TYPE = "type";
+public class FileCacheStoreConfig extends org.infinispan.loaders.file.FileCacheStoreConfig {
+    private static final long serialVersionUID = -4014773345198955321L;
+
+    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private String path;
+
+    public Injector<String> getRelativeToInjector() {
+        return relativeTo;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    @Override
+    public String getLocation() {
+        StringBuilder builder = new StringBuilder(this.relativeTo.getValue());
+        if (this.path != null) {
+            builder.append('/').append(this.path);
+        }
+        return builder.toString();
+    }
 }
