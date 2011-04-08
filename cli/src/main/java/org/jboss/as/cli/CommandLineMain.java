@@ -42,10 +42,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
 import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
+import org.jboss.as.cli.handlers.CreateJmsTopicHandler;
+import org.jboss.as.cli.handlers.DeleteJmsCFHandler;
 import org.jboss.as.cli.handlers.DeleteJmsQueueHandler;
 import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
+import org.jboss.as.cli.handlers.DeleteJmsTopicHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
@@ -83,9 +87,13 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new DeployHandler(), "deploy");
         cmdRegistry.registerHandler(new UndeployHandler(), "undeploy");
         cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
+
         cmdRegistry.registerHandler(new CreateJmsQueueHandler(), "create-jms-queue");
         cmdRegistry.registerHandler(new DeleteJmsQueueHandler(), "delete-jms-queue");
-
+        cmdRegistry.registerHandler(new CreateJmsTopicHandler(), "create-jms-topic");
+        cmdRegistry.registerHandler(new DeleteJmsTopicHandler(), "delete-jms-topic");
+        cmdRegistry.registerHandler(new CreateJmsCFHandler(), "create-jms-cf");
+        cmdRegistry.registerHandler(new DeleteJmsCFHandler(), "delete-jms-cf");
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
     }
@@ -579,6 +587,14 @@ public class CommandLineMain {
             switches = null;
             namedArgs = null;
             argsList = null;
+        }
+
+        @Override
+        public Set<String> getArgumentNames() {
+            if(namedArgs == null) {
+                parseArgs();
+            }
+            return namedArgs.keySet();
         }
     }
 }

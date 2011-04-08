@@ -23,6 +23,7 @@ package org.jboss.as.cli.completion.mock;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
@@ -211,5 +212,10 @@ public class MockCommandContext implements CommandContext {
     @Override
     public boolean hasArguments() {
         return false;
+    }
+
+    @Override
+    public Set<String> getArgumentNames() {
+        return null;
     }
 }

@@ -1,0 +1,7 @@
+Synopsis:	delete-jms-topic name
+
+Description:	removes a JMS topic
+
+Arguments:
+
+	name	- the name of the JMS topic.

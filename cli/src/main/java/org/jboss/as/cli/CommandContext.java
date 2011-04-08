@@ -23,6 +23,7 @@ package org.jboss.as.cli;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestParser;
@@ -63,6 +64,15 @@ public interface CommandContext {
      * @return  the value of the argument or null if the argument isn't present
      */
     String getNamedArgument(String argName);
+
+    /**
+     * Returns a set of argument names present on the command line
+     * of an empty set if there no named arguments on the command line.
+     *
+     * @return  a set of argument names present on the command line
+     * of an empty set if there no named arguments on the command line
+     */
+    Set<String> getArgumentNames();
 
     /**
      * Returns arguments that are not switches as a list of strings

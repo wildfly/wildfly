@@ -1,0 +1,7 @@
+Synopsis:	delete-jms-cf name
+
+Description:	removes a JMS connection factory
+
+Arguments:
+
+	name	- the name of the JMS connection factory.
