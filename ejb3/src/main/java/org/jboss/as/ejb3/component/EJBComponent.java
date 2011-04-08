@@ -36,6 +36,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -49,6 +50,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
     private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
+    private Map<Class<?>, ApplicationException> applicationExceptions;
 
     /**
      * Construct a new instance.
@@ -59,7 +61,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
         super(configuration);
 
         this.utilities = configuration.getInjectionValue(EJBUtilities.SERVICE_NAME, EJBUtilities.class);
-
+        this.applicationExceptions = configuration.getEjbJarConfiguration().getApplicationExceptions();
         // slurp some memory
         txAttrs = configuration.getTxAttrs();
         isBeanManagedTransaction = configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN);
@@ -67,8 +69,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Override
     public ApplicationException getApplicationException(Class<?> exceptionClass) {
-        // TODO: implement
-        return null;
+        return this.applicationExceptions.get(exceptionClass);
     }
 
     @Override
@@ -83,7 +84,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Override
     public boolean getRollbackOnly() throws IllegalStateException {
-        if(isBeanManagedTransaction())
+        if (isBeanManagedTransaction())
             throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation can use this method.");
         throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getRollbackOnly");
     }
@@ -95,7 +96,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Deprecated
     public TransactionAttributeType getTransactionAttributeType(Method method) {
-        if(!youHaveBeenWarnedEJBTHREE2120) {
+        if (!youHaveBeenWarnedEJBTHREE2120) {
             log.warn("EJBTHREE-2120: deprecated getTransactionAttributeType method called (dev problem)");
             youHaveBeenWarnedEJBTHREE2120 = true;
         }
@@ -131,7 +132,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Override
     public UserTransaction getUserTransaction() throws IllegalStateException {
-        if(!isBeanManagedTransaction())
+        if (!isBeanManagedTransaction())
             throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.");
         return utilities.getUserTransaction();
     }
@@ -152,7 +153,7 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Override
     public void setRollbackOnly() throws IllegalStateException {
-        if(isBeanManagedTransaction())
+        if (isBeanManagedTransaction())
             throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation can use this method.");
         throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.setRollbackOnly");
     }

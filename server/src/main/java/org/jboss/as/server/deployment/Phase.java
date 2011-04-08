@@ -222,6 +222,7 @@ public enum Phase {
     public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1700;
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
     public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
+    public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     // should be after ConcurrencyManagement annotation processor
@@ -290,6 +291,7 @@ public enum Phase {
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x0700;
     public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x0800;
+    public static final int POST_MODULE_EJB_MODULE_CONFIGURATION        = 0x0801;
 
     public static final int POST_INITIALIZE_IN_ORDER                    = 0x0900;
 

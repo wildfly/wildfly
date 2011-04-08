@@ -23,6 +23,8 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -59,6 +61,11 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
             return;
         }
         EjbDeploymentMarker.mark(deploymentUnit);
+        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        if (ejbJarDescription == null) {
+            ejbJarDescription = new EjbJarDescription(moduleDescription);
+            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
+        }
         for (final AnnotationInstance instance : instances) {
             final AnnotationTarget target = instance.target();
             if (!(target instanceof ClassInfo)) {
@@ -73,7 +80,7 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
             final String messageListenerInterfaceName = instance.value("messageListenerInterface").asClass().name().toString();
             // TODO: if messageListenerInterface is not set use the implemented interface
 
-            MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, moduleDescription);
+            MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription);
             messageDrivenComponentDescription.setMessageListenerInterfaceName(messageListenerInterfaceName);
 
             // add the mdb description to the module description

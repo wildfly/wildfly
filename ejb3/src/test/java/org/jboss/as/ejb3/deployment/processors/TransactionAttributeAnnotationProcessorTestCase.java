@@ -26,6 +26,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,7 +50,8 @@ import static org.junit.Assert.assertEquals;
 public class TransactionAttributeAnnotationProcessorTestCase {
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     private static class MyBean implements ViewA, ViewB {
-        public void doSomething() { }
+        public void doSomething() {
+        }
     }
 
     private static interface ViewA {
@@ -72,8 +74,9 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         index(indexer, MyBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), moduleDescription);
+        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription);
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -92,8 +95,9 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         index(indexer, ViewB.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), moduleDescription);
+        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
+        SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription);
         Collection<String> views = new HashSet<String>();
         views.add(ViewA.class.getName());
         views.add(ViewB.class.getName());

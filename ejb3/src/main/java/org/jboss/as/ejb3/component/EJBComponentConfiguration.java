@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.invocation.Interceptor;
@@ -42,6 +43,8 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class EJBComponentConfiguration extends AbstractComponentConfiguration {
     private final TransactionManagementType transactionManagementType;
     private final ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs;
+
+    protected EjbJarConfiguration ejbJarConfiguration;
 
     /**
      * Construct a new instance.
@@ -69,8 +72,7 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
                     return new CMTTxInterceptor((TransactionalComponent) component);
                 }
             });
-        }
-        else
+        } else
             txAttrs = null;
     }
 
@@ -93,5 +95,13 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
         return txAttrs;
+    }
+
+    void setEjbJarConfiguration(EjbJarConfiguration ejbJarConfiguration) {
+        this.ejbJarConfiguration = ejbJarConfiguration;
+    }
+
+    public EjbJarConfiguration getEjbJarConfiguration() {
+        return this.ejbJarConfiguration;
     }
 }
