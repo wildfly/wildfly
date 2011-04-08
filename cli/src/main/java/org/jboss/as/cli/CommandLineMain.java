@@ -111,6 +111,7 @@ public class CommandLineMain {
         }));
         console.addCompletor(new CommandCompleter(cmdRegistry, cmdCtx));
 
+        String[] commands = null;
         String fileName = null;
         boolean connect = false;
         for(String arg : args) {
@@ -146,6 +147,8 @@ public class CommandLineMain {
                 connect = true;
             } else if(arg.startsWith("file=")) {
                 fileName = arg.substring(5);
+            } else if(arg.startsWith("commands=")) {
+                commands = arg.substring(9).split(";");
             }
         }
 
@@ -171,10 +174,18 @@ public class CommandLineMain {
                     }
                 } finally {
                     StreamUtils.safeClose(reader);
-                    StreamUtils.safeClose(cmdCtx.client);
+                    cmdCtx.terminateSession();
                 }
                 return;
             }
+        }
+
+        if(commands != null) {
+            for(int i = 0; i < commands.length && !cmdCtx.terminate; ++i) {
+                processLine(cmdCtx, commands[i]);
+            }
+            cmdCtx.terminateSession();
+            return;
         }
 
         while (!cmdCtx.terminate) {
