@@ -76,6 +76,15 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final ModelNode compensating = Util.getResourceRemoveOperation(address);
+        final String rawJndiName = operation.require(JNDINAME).asString();
+        final String jndiName;
+        if (!rawJndiName.startsWith("java:/") && operation.hasDefined(USE_JAVA_CONTEXT)
+                && operation.get(USE_JAVA_CONTEXT).asBoolean()) {
+            jndiName = "java:/" + rawJndiName;
+        } else {
+            jndiName = rawJndiName;
+        }
+        final AbstractDataSourceService dataSourceService = createDataSourceService(jndiName, operation);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -83,16 +92,6 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
                     boolean enabled = !operation.hasDefined(ENABLED) || operation.get(ENABLED).asBoolean();
-
-                    final String rawJndiName = operation.require(JNDINAME).asString();
-                    final String jndiName;
-                    if (!rawJndiName.startsWith("java:/") && operation.hasDefined(USE_JAVA_CONTEXT)
-                            && operation.get(USE_JAVA_CONTEXT).asBoolean()) {
-                        jndiName = "java:/" + rawJndiName;
-                    } else {
-                        jndiName = rawJndiName;
-                    }
-                    final AbstractDataSourceService dataSourceService = createDataSourceService(jndiName, operation);
 
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
