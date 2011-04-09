@@ -72,8 +72,10 @@ public abstract class EJBComponentConfiguration extends AbstractComponentConfigu
                     return new CMTTxInterceptor((TransactionalComponent) component);
                 }
             });
-        } else
+        } else {
             txAttrs = null;
+        }
+
     }
 
     protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {

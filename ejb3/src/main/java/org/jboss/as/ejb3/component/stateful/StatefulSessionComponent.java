@@ -30,6 +30,7 @@ import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -74,23 +75,33 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     @Override
-    public Interceptor createClientInterceptor(Class<?> view, final Serializable sessionId) {
+    public Interceptor createClientInterceptor(final Class<?> view, final Serializable sessionId) {
         return new Interceptor() {
             @Override
             public Object processInvocation(InterceptorContext context) throws Exception {
+                final Method method = context.getMethod();
+                // if no-interface view, then check whether invocation on the method is allowed
+                // (for ex: invocation on protected methods isn't allowed)
+                if (StatefulSessionComponent.this.getComponentClass().equals(view)) {
+                    if (!StatefulSessionComponent.this.isInvocationAllowed(method)) {
+                        throw new javax.ejb.EJBException("Cannot invoke method " + method
+                                + " on nointerface view of bean " + StatefulSessionComponent.this.getComponentName());
+
+                    }
+                }
+                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+                // runs on remote clients.
+                context.putPrivateData(Component.class, StatefulSessionComponent.this);
                 // TODO: attaching as Serializable.class is a bit wicked
                 context.putPrivateData(Serializable.class, sessionId);
-                // TODO: this won't work for remote proxies
-                context.putPrivateData(Component.class, StatefulSessionComponent.this);
                 try {
-                    final Method method = context.getMethod();
                     if (isAsynchronous(method)) {
                         return invokeAsynchronous(method, context);
                     }
                     return context.proceed();
                 } finally {
-                    context.putPrivateData(Serializable.class, null);
                     context.putPrivateData(Component.class, null);
+                    context.putPrivateData(Serializable.class, null);
                 }
             }
         };

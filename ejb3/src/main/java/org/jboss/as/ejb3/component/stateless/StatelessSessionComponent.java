@@ -33,6 +33,7 @@ import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -70,33 +71,6 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
             }
         };
         this.pool = new StrictMaxPool<StatelessSessionComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
-    }
-
-    @Override
-    public Interceptor createClientInterceptor(Class<?> viewClass) {
-        return new Interceptor() {
-            @Override
-            public Object processInvocation(InterceptorContext context) throws Exception {
-                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-                // runs on remote clients.
-                context.putPrivateData(Component.class, StatelessSessionComponent.this);
-                try {
-                    final Method method = context.getMethod();
-                    if(isAsynchronous(method)) {
-                        return invokeAsynchronous(method, context);
-                    }
-                    return context.proceed();
-                }
-                finally {
-                    context.putPrivateData(Component.class, null);
-                }
-            }
-        };
-    }
-
-    @Override
-    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-        return createClientInterceptor(view);
     }
 
     //TODO: This should be getInstance()
