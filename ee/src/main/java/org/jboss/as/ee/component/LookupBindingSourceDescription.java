@@ -49,6 +49,9 @@ public final class LookupBindingSourceDescription extends BindingSourceDescripti
         final String moduleName = componentDescription.getModuleName();
         final String appName = componentDescription.getApplicationName();
         sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, this.lookupName);
+        if (sourceServiceName == null) {
+            throw new IllegalArgumentException("Cannot find source service for lookup name: " + this.lookupName);
+        }
     }
 
     public LookupBindingSourceDescription(final String lookupJndiName, EEModuleDescription moduleDescription) {
@@ -66,6 +69,9 @@ public final class LookupBindingSourceDescription extends BindingSourceDescripti
         final String moduleName = moduleDescription.getModuleName();
         final String appName = moduleDescription.getAppName();
         sourceServiceName = ContextNames.serviceNameOfContext(appName, moduleName, compName, this.lookupName);
+        if (sourceServiceName == null) {
+            throw new IllegalArgumentException("Cannot find source service for lookup name: " + this.lookupName);
+        }
     }
 
     public void getResourceValue(final BindingDescription bindingDescription, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
