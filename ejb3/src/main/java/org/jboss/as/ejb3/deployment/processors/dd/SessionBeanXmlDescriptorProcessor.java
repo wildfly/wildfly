@@ -85,7 +85,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     @Override
     protected void processBeanMetaData(SessionBeanMetaData sessionBean, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EjbJarDescription ejbModuleDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
 
         SessionType sessionType = sessionBean.getSessionType();
         if (sessionType == null) {
@@ -96,13 +96,13 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         SessionBeanComponentDescription sessionBeanDescription = null;
         switch (sessionType) {
             case Stateless:
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbModuleDescription);
+                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription);
                 break;
             case Stateful:
-                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbModuleDescription);
+                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription);
                 break;
             case Singleton:
-                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbModuleDescription);
+                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
@@ -155,7 +155,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
 
         // Add this component description to the module description
-        ejbModuleDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
+        ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
 
     }
 

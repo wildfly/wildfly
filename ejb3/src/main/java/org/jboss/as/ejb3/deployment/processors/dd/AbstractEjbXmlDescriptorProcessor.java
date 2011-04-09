@@ -22,12 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.InterceptorMethodDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -67,14 +65,13 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
         if (ejbJarMetaData == null) {
             return;
         }
-
+        // process EJBs
         EnterpriseBeansMetaData ejbs = ejbJarMetaData.getEnterpriseBeans();
-        if (ejbs == null || ejbs.isEmpty()) {
-            return;
-        }
-        for (EnterpriseBeanMetaData ejb : ejbs) {
-            if (this.getMetaDataType().isInstance(ejb)) {
-                this.processBeanMetaData((T) ejb, phaseContext);
+        if (ejbs != null && !ejbs.isEmpty()) {
+            for (EnterpriseBeanMetaData ejb : ejbs) {
+                if (this.getMetaDataType().isInstance(ejb)) {
+                    this.processBeanMetaData((T) ejb, phaseContext);
+                }
             }
         }
     }

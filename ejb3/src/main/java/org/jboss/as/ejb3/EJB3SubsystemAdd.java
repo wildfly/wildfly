@@ -53,6 +53,7 @@ import org.jboss.as.ejb3.deployment.processors.ResourceAdapterAnnotationProcesso
 import org.jboss.as.ejb3.deployment.processors.StartupAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionAttributeAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.dd.AssemblyDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.MessageDrivenBeanXmlDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
 import org.jboss.as.server.BootOperationContext;
@@ -110,6 +111,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_MDB_DD, new MessageDrivenBeanXmlDescriptorProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ASSEMBLY_DESC_DD, new AssemblyDescriptorProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MESSAGE_DRIVEN_ANNOTATION, new MessageDrivenAnnotationProcessor());
             // Process @DependsOn after the @Singletons have been registered.
