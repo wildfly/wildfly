@@ -35,8 +35,6 @@ import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 
 /**
  * @author Emanuel Muckenhuber
@@ -50,15 +48,23 @@ public class ServerGroupAddHandler implements ModelAddOperationHandler, Descript
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
         final ModelNode subModel = context.getSubModel();
         subModel.get(PROFILE).set(operation.require(PROFILE));
-        subModel.get(JVM).setEmptyObject();
-        subModel.get(DEPLOYMENT).setEmptyObject();
 
         if(operation.hasDefined(SOCKET_BINDING_GROUP)) {
             subModel.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
         }
+
         if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
             subModel.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
         }
+
+        if(operation.hasDefined(JVM)) {
+            subModel.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
+        }
+        else {
+            subModel.get(JVM).setEmptyObject();
+        }
+
+        subModel.get(DEPLOYMENT).setEmptyObject();
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
 
