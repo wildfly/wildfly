@@ -41,10 +41,14 @@ import org.jboss.modules.ModuleLoader;
  */
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
+    public static ModuleIdentifier RESTEASY_ATOM = ModuleIdentifier.create("org.jboss.resteasy.resteasy-atom-provider");
+    public static ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
     public static ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
     public static ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
+    public static ModuleIdentifier RESTEASY_JACKSON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson-provider");
+    public static ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
+    public static ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
     public static ModuleIdentifier ASYNC_HTTP_SERVLET_30 = ModuleIdentifier.create("org.jboss.resteasy.async-http-servlet-30");
-    public static ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
     public static ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -54,8 +58,12 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
             return;
         }
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JAXB);
+        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
+        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
+        addDepdenency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
         addDepdenency(moduleSpecification, moduleLoader, JAXB_API);
         addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
 
@@ -66,7 +74,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-            ModuleIdentifier moduleIdentifier) {
+                               ModuleIdentifier moduleIdentifier) {
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
     }
 

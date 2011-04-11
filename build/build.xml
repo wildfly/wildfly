@@ -354,6 +354,22 @@
             <maven-resource group="org.codehaus.woodstox" artifact="stax2-api" />
         </module-def>
 
+        <module-def name="org.codehaus.jackson.jackson-core-asl">
+            <maven-resource group="org.codehaus.jackson" artifact="jackson-core-asl" />
+        </module-def>
+
+        <module-def name="org.codehaus.jackson.jackson-jaxrs">
+            <maven-resource group="org.codehaus.jackson" artifact="jackson-jaxrs" />
+        </module-def>
+
+        <module-def name="org.codehaus.jackson.jackson-mapper-asl">
+            <maven-resource group="org.codehaus.jackson" artifact="jackson-mapper-asl" />
+        </module-def>
+
+        <module-def name="org.codehaus.jackson.jackson-xc">
+            <maven-resource group="org.codehaus.jackson" artifact="jackson-xc" />
+        </module-def>
+
         <module-def name="org.hibernate">
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
@@ -743,16 +759,32 @@
             <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
         </module-def>
 
-        <module-def name="org.jboss.resteasy.resteasy-jaxrs">
-            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs" jandex="true"/>
+        <module-def name="org.jboss.resteasy.resteasy-atom-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-atom-provider"  jandex="true"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-cdi">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-cdi"/>
         </module-def>
 
+        <module-def name="org.jboss.resteasy.resteasy-jackson-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jackson-provider" jandex="true"/>
+        </module-def>
+
         <module-def name="org.jboss.resteasy.resteasy-jaxb-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxb-provider" jandex="true"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-jaxrs">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs" jandex="true"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-jsapi">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jsapi" jandex="true"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-multipart-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
         </module-def>
 
         <module-def name="org.jboss.shrinkwrap.api">

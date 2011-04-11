@@ -68,7 +68,14 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
 
-    private static final ModuleIdentifier[] JAXRS_MODULES_TO_SCAN = {JaxrsDependencyProcessor.RESTEASY_JAXRS, JaxrsDependencyProcessor.RESTEASY_JAXB};
+    private static final ModuleIdentifier[] JAXRS_MODULES_TO_SCAN = {
+            JaxrsDependencyProcessor.RESTEASY_JAXRS,
+            JaxrsDependencyProcessor.RESTEASY_JAXB,
+            JaxrsDependencyProcessor.RESTEASY_ATOM,
+            JaxrsDependencyProcessor.RESTEASY_JSAPI,
+            JaxrsDependencyProcessor.RESTEASY_JACKSON,
+            JaxrsDependencyProcessor.RESTEASY_MULTIPART,
+    };
 
     private static CompositeIndex[] EMPTY_INDEXES = new CompositeIndex[0];
 
