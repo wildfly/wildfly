@@ -37,6 +37,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -154,6 +155,20 @@ public class RemotingSubsystemUnitTestCase {
                 @Override
                 public List<ModelNode> load() throws ConfigurationPersistenceException {
                     return null;
+                }
+                @Override
+                public void successfulBoot() throws ConfigurationPersistenceException {
+                }
+                @Override
+                public String snapshot() {
+                    return null;
+                }
+                @Override
+                public SnapshotInfo listSnapshots() {
+                    return NULL_SNAPSHOT_INFO;
+                }
+                @Override
+                public void deleteSnapshot(String name) {
                 }
             }, (DescriptionProvider) null);
         }

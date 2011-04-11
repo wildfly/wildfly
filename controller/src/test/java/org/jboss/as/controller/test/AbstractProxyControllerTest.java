@@ -492,6 +492,24 @@ public abstract class AbstractProxyControllerTest {
             return null;
         }
 
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public String snapshot() {
+            return null;
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            return NULL_SNAPSHOT_INFO;
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
+        }
+
     }
 
 

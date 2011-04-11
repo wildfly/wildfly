@@ -24,6 +24,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -175,6 +176,24 @@ public class BaseModelControllerUnitTestCase {
         @Override
         public List<ModelNode> load() throws ConfigurationPersistenceException {
             return null;
+        }
+
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            return NULL_SNAPSHOT_INFO;
+        }
+
+        @Override
+        public String snapshot() {
+            return null;
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
         }
 
     }

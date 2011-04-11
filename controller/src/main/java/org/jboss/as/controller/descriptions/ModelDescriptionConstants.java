@@ -59,6 +59,7 @@ public class ModelDescriptionConstants {
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DESCRIPTION = "description";
+    public static final String DIRECTORY = "directory";
     public static final String DISABLE = "disable";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
@@ -106,6 +107,7 @@ public class ModelDescriptionConstants {
     public static final String MULTICAST_ADDRESS = "multicast-address";
     public static final String MULTICAST_PORT = "multicast-port";
     public static final String NAME = "name";
+    public static final String NAMES = "names";
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
     public static final String NATIVE_INTERFACE = "native-interface";

@@ -88,6 +88,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers.Resolve
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
@@ -394,7 +395,7 @@ public class GlobalOperationsTestCase {
         checkNonRecursiveSubsystem1(subsystem1);
         assertNotNull(subsystem2);
         checkRecursiveSubsystem2(subsystem2);
-        
+
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(CHILD_TYPE).set("type2");
         result = CONTROLLER.executeForResult(operation);
@@ -972,6 +973,23 @@ public class GlobalOperationsTestCase {
             return null;
         }
 
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public String snapshot() {
+            return null;
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            return NULL_SNAPSHOT_INFO;
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
+        }
     }
 
     private static class TestModelController extends BasicModelController {

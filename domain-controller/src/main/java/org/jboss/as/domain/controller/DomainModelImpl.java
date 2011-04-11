@@ -75,6 +75,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
@@ -114,6 +115,24 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         @Override
         public List<ModelNode> load() throws ConfigurationPersistenceException {
             throw new UnsupportedOperationException("load() should not be called as part of operation handling");
+        }
+
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public String snapshot() {
+            return null;
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            return NULL_SNAPSHOT_INFO;
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
         }
 
     };
@@ -746,6 +765,24 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
                     @Override
                     public List<ModelNode> load() throws ConfigurationPersistenceException {
                         throw new UnsupportedOperationException("load() should not be called as part of operation handling");
+                    }
+
+                    @Override
+                    public void successfulBoot() throws ConfigurationPersistenceException {
+                    }
+
+                    @Override
+                    public String snapshot() {
+                        return null;
+                    }
+
+                    @Override
+                    public SnapshotInfo listSnapshots() {
+                        return NULL_SNAPSHOT_INFO;
+                    }
+
+                    @Override
+                    public void deleteSnapshot(String name) {
                     }
                 };
             }
