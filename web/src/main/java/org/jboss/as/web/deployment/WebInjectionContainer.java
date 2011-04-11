@@ -51,8 +51,8 @@ public class WebInjectionContainer implements InstanceManager {
     public WebInjectionContainer(ClassLoader classloader) {
         this.classloader = classloader;
         this.instanceMap = new ConcurrentReferenceHashMap<Object, ManagedReference>
-            (ConcurrentReferenceHashMap.DEFAULT_INITIAL_CAPACITY, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
-                    ConcurrentReferenceHashMap.DEFAULT_CONCURRENCY_LEVEL, ConcurrentReferenceHashMap.ReferenceType.STRONG,
+            (256, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
+                    Runtime.getRuntime().availableProcessors(), ConcurrentReferenceHashMap.ReferenceType.STRONG,
                     ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(Option.IDENTITY_COMPARISONS));
     }
 
@@ -62,10 +62,9 @@ public class WebInjectionContainer implements InstanceManager {
     }
 
     public void destroyInstance(Object instance) throws IllegalAccessException, InvocationTargetException {
-        final ManagedReference reference = instanceMap.get(instance);
+        final ManagedReference reference = instanceMap.remove(instance);
         if(reference != null) {
             reference.release();
-            instanceMap.remove(instance);
         }
     }
 
@@ -78,16 +77,12 @@ public class WebInjectionContainer implements InstanceManager {
         if(instantiator != null) {
             return instantiate(instantiator);
         }
-        // Instantiate
-        final Object object = clazz.newInstance();
-        // Inject
-        newInstance(object);
-        // Return
-        return object;
+        return clazz.newInstance();
     }
 
     public void newInstance(Object arg0) throws IllegalAccessException, InvocationTargetException, NamingException {
-        // FIXME delegate injections to the common injection framework..
+        // Not used for AS 7
+        throw new IllegalStateException();
     }
 
     public Object newInstance(String className, ClassLoader cl) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
@@ -95,10 +90,7 @@ public class WebInjectionContainer implements InstanceManager {
         if(instantiator != null) {
             return instantiate(instantiator);
         }
-        // Use by JspServletWrapper for example.
-        Class<?> clazz = cl.loadClass(className);
-        // Annnotations ? return newInstance(clazz.newInstance(), clazz);
-        return clazz.newInstance();
+        return cl.loadClass(className).newInstance();
     }
 
     private Object instantiate(ComponentInstantiator instantiator) {
