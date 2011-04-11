@@ -23,15 +23,16 @@ package org.jboss.as.web.deployment;
 
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.web.deployment.ConcurrentReferenceHashMap.Option;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.msc.service.ServiceName;
 
 import javax.naming.NamingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,10 +46,14 @@ public class WebInjectionContainer implements InstanceManager {
     private final ClassLoader classloader;
     private final Map<String,ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String,ComponentInstantiator>();
     private final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
-    private final Map<Object,ManagedReference> instanceMap = Collections.synchronizedMap(new IdentityHashMap<Object,ManagedReference>());
+    private final Map<Object,ManagedReference> instanceMap;
 
     public WebInjectionContainer(ClassLoader classloader) {
         this.classloader = classloader;
+        this.instanceMap = new ConcurrentReferenceHashMap<Object, ManagedReference>
+            (ConcurrentReferenceHashMap.DEFAULT_INITIAL_CAPACITY, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
+                    ConcurrentReferenceHashMap.DEFAULT_CONCURRENCY_LEVEL, ConcurrentReferenceHashMap.ReferenceType.STRONG,
+                    ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(Option.IDENTITY_COMPARISONS));
     }
 
     public void addInstantiator(String className, ComponentInstantiator instantiator) {
