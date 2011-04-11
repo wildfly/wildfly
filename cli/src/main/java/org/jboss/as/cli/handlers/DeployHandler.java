@@ -39,20 +39,18 @@ import org.jboss.dmr.ModelNode;
 public class DeployHandler extends CommandHandlerWithHelp {
 
     public DeployHandler() {
-        super("deploy");
+        super("deploy", true,
+                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-f", "-l"},
+                        FilenameTabCompleter.INSTANCE));
     }
 
     @Override
     protected void doHandle(CommandContext ctx) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
-        if(client == null) {
-            ctx.printLine("The controller client is not available. Make sure you are connected to the controller.");
-            return;
-        }
 
         if (!ctx.hasArguments()) {
-            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
+            printList(ctx, Util.getDeployments(client));
             return;
         }
 
@@ -71,7 +69,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
         }
 
         if(filePath == null) {
-            printList(ctx, Util.getDeployments(ctx.getModelControllerClient()));
+            printList(ctx, Util.getDeployments(client));
             return;
         }
 
@@ -85,7 +83,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
             name = f.getName();
         }
 
-        if(Util.isDeployed(name, ctx.getModelControllerClient())) {
+        if(Util.isDeployed(name, client)) {
             if(ctx.hasSwitch("f")) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 

@@ -61,16 +61,11 @@ echo.
 echo ===============================================================================
 echo.
 
-:RESTART
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_HOME%\modules" ^
-     org.jboss.as.cli
+     org.jboss.as.cli ^
      %*
-
-if ERRORLEVEL 10 goto RESTART
 
 :END
 if "x%NOPAUSE%" == "x" pause
-
-:END_NO_PAUSE

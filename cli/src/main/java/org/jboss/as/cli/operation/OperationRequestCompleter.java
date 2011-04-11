@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandArgumentCompleter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 
@@ -35,7 +36,9 @@ import jline.Completor;
  *
  * @author Alexey Loubyansky
  */
-public class OperationRequestCompleter implements Completor {
+public class OperationRequestCompleter implements CommandArgumentCompleter, Completor {
+
+    public static final OperationRequestCompleter INSTANCE = new OperationRequestCompleter(null);
 
     private final CommandContext ctx;
 
@@ -46,34 +49,41 @@ public class OperationRequestCompleter implements Completor {
     /* (non-Javadoc)
      * @see jline.Completor#complete(java.lang.String, int, java.util.List)
      */
-    @SuppressWarnings("rawtypes" )
+    @SuppressWarnings({ "rawtypes", "unchecked" } )
     @Override
     public int complete(String buffer, int cursor, List candidates) {
-
-        return doComplete(buffer, candidates, true);
+        return complete(ctx, buffer, cursor, candidates);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public int doComplete(String buffer, List candidates, boolean requireSlashOrDotSlash) {
+    private static String formatName(String name) {
+        for(int i = 0; i < name.length(); ++i) {
+            char ch = name.charAt(i);
+            if(ch == ':' || ch == '/' || ch == '=') {
+                // now escape the quotes
+                StringBuilder builder = new StringBuilder();
+                builder.append('"');
+                for(int j = 0; j < name.length(); ++j) {
+                    ch = name.charAt(j);
+                    if(ch == '"') {
+                        builder.append('\\');
+                    }
+                    builder.append(ch);
+                }
+                builder.append('"');
+                return builder.toString();
+            }
+        }
+        return name;
+    }
+
+    @Override
+    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
         int firstCharIndex = 0;
         while(firstCharIndex < buffer.length()) {
             if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
                 break;
             }
             ++firstCharIndex;
-        }
-
-        if(requireSlashOrDotSlash) {
-            if(firstCharIndex == buffer.length()) {
-                return -1;
-            }
-
-            if (!(buffer.startsWith("./", firstCharIndex)
-                    || buffer.charAt(firstCharIndex) == ':'
-                    || buffer.charAt(firstCharIndex) == '/' || buffer
-                    .startsWith("..", firstCharIndex))) {
-                return -1;
-            }
         }
 
         // if it ends on .. then the completion shouldn't happen
@@ -250,26 +260,5 @@ public class OperationRequestCompleter implements Completor {
 
         Collections.sort(candidates);
         return handler.getLastSeparatorIndex() + 1;
-    }
-
-    private static String formatName(String name) {
-        for(int i = 0; i < name.length(); ++i) {
-            char ch = name.charAt(i);
-            if(ch == ':' || ch == '/' || ch == '=') {
-                // now escape the quotes
-                StringBuilder builder = new StringBuilder();
-                builder.append('"');
-                for(int j = 0; j < name.length(); ++j) {
-                    ch = name.charAt(j);
-                    if(ch == '"') {
-                        builder.append('\\');
-                    }
-                    builder.append(ch);
-                }
-                builder.append('"');
-                return builder.toString();
-            }
-        }
-        return name;
     }
 }

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.cli.handlers;
 
-
 import java.util.Collections;
 import java.util.List;
 
@@ -36,11 +35,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class UndeployHandler extends CommandHandlerWithHelp {
+public class DeleteJmsQueueHandler extends CommandHandlerWithHelp {
 
-    public UndeployHandler() {
-        super("undeploy", true, new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},
-                new CommandArgumentCompleter() {
+    public DeleteJmsQueueHandler() {
+        super("delete-jms-queue", true,
+                new SimpleTabCompleterWithDelegate(new String[]{"--help"/*, "name="*/},
+                        new CommandArgumentCompleter() {
                     @Override
                     public int complete(CommandContext ctx, String buffer,
                             int cursor, List<String> candidates) {
@@ -54,7 +54,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
                         }
 
                         if(ctx.getModelControllerClient() != null) {
-                            List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+                            List<String> deployments = Util.getJmsResources(ctx.getModelControllerClient(), "queue");
                             if(deployments.isEmpty()) {
                                 return -1;
                             }
@@ -77,64 +77,51 @@ public class UndeployHandler extends CommandHandlerWithHelp {
                     }}));
     }
 
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
+     */
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        ModelControllerClient client = ctx.getModelControllerClient();
         if(!ctx.hasArguments()) {
-            printList(ctx, Util.getDeployments(client));
+            ctx.printLine("Missing required argument 'name'.");
             return;
         }
 
-        String deployment = null;
-        List<String> args = ctx.getArguments();
-        if(args.size() > 0) {
-            deployment = args.get(0);
+        String name = ctx.getNamedArgument("name");
+        if(name == null) {
+            List<String> args = ctx.getArguments();
+            if(!args.isEmpty()) {
+                name = args.get(0);
+            }
         }
 
-        if (deployment == null) {
-            printList(ctx, Util.getDeployments(client));
+        if(name == null) {
+            ctx.printLine("Missing required argument 'name'.");
             return;
         }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-
-        // undeploy
-        builder = new DefaultOperationRequestBuilder();
-        builder.setOperationName("undeploy");
-        builder.addNode("deployment", deployment);
-
-        ModelNode result;
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-         } catch(Exception e) {
-             ctx.printLine("Failed to undeploy: " + e.getLocalizedMessage());
-             return;
-         }
-
-         // TODO undeploy may fail if the content failed to deploy but remove should still be executed
-         if(!Util.isSuccess(result)) {
-             ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
-             return;
-         }
-
-        // remove
-        builder = new DefaultOperationRequestBuilder();
+        builder.addNode("subsystem", "jms");
+        builder.addNode("queue", name);
         builder.setOperationName("remove");
-        builder.addNode("deployment", deployment);
+
+        final ModelNode result;
         try {
             ModelNode request = builder.buildRequest();
             result = client.execute(request);
-        } catch(Exception e) {
-            ctx.printLine("Failed to remove the deployment content from the repository: " + e.getLocalizedMessage());
-            return;
-        }
-        if(!Util.isSuccess(result)) {
-            ctx.printLine("Remove failed: " + Util.getFailureDescription(result));
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
             return;
         }
 
-        ctx.printLine("'" + deployment + "' undeployed successfully.");
+        if (!Util.isSuccess(result)) {
+            ctx.printLine("Failed to delete queue '" + name + "': " + Util.getFailureDescription(result));
+            return;
+        }
+
+        ctx.printLine("Removed queue " + name);
     }
 }

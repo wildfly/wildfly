@@ -21,16 +21,14 @@
  */
 package org.jboss.as.cli;
 
+import java.util.List;
 
 /**
+ * Command (argument) completer.
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public interface CommandArgumentCompleter {
 
-    boolean isAvailable(CommandContext ctx);
-
-    CommandArgumentCompleter getArgumentCompleter();
-
-    void handle(CommandContext ctx);
+    int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates);
 }

@@ -21,9 +21,11 @@
  */
 package org.jboss.as.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -31,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +43,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.CreateJmsCFHandler;
+import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
+import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
+import org.jboss.as.cli.handlers.CreateJmsTopicHandler;
+import org.jboss.as.cli.handlers.DeleteJmsCFHandler;
+import org.jboss.as.cli.handlers.DeleteJmsQueueHandler;
+import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
+import org.jboss.as.cli.handlers.DeleteJmsTopicHandler;
 import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
@@ -51,7 +62,6 @@ import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
@@ -67,28 +77,27 @@ import org.jboss.as.protocol.StreamUtils;
  */
 public class CommandLineMain {
 
-    private static final Map<String, CommandHandler> handlers = new HashMap<String, CommandHandler>();
+    private static final CommandRegistry cmdRegistry = new CommandRegistry();
     static {
-        registerHandler(new HelpHandler(), "help", "h");
-        registerHandler(new QuitHandler(), "quit", "q");
-        registerHandler(new ConnectHandler(), "connect");
-        registerHandler(new PrefixHandler(), "cd", "cn");
-        registerHandler(new LsHandler(), "ls");
-        registerHandler(new HistoryHandler(), "history");
-        registerHandler(new DeployHandler(), "deploy");
-        registerHandler(new UndeployHandler(), "undeploy");
-        registerHandler(new PrintWorkingNodeHandler(), "pwn", "pwd");
-    }
+        cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
+        cmdRegistry.registerHandler(new QuitHandler(), "quit", "q");
+        cmdRegistry.registerHandler(new ConnectHandler(), "connect");
+        cmdRegistry.registerHandler(new PrefixHandler(), "cd", "cn");
+        cmdRegistry.registerHandler(new LsHandler(), "ls");
+        cmdRegistry.registerHandler(new HistoryHandler(), "history");
+        cmdRegistry.registerHandler(new DeployHandler(), "deploy");
+        cmdRegistry.registerHandler(new UndeployHandler(), "undeploy");
+        cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
 
-    private static void registerHandler(CommandHandler handler, String... names) {
-        for(String name : names) {
-            CommandHandler previous = handlers.put(name, handler);
-            if(previous != null)
-                throw new IllegalStateException("Duplicate command name '" + name + "'. Handlers: " + previous + ", " + handler);
-        }
+        cmdRegistry.registerHandler(new CreateJmsQueueHandler(), "create-jms-queue");
+        cmdRegistry.registerHandler(new DeleteJmsQueueHandler(), "delete-jms-queue");
+        cmdRegistry.registerHandler(new CreateJmsTopicHandler(), "create-jms-topic");
+        cmdRegistry.registerHandler(new DeleteJmsTopicHandler(), "delete-jms-topic");
+        cmdRegistry.registerHandler(new CreateJmsCFHandler(), "create-jms-cf");
+        cmdRegistry.registerHandler(new DeleteJmsCFHandler(), "delete-jms-cf");
+        cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
+        cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
     }
-
-    private static final CommandHandler operationHandler = new OperationRequestHandler();
 
     public static void main(String[] args) throws Exception {
 
@@ -101,10 +110,10 @@ public class CommandLineMain {
                 cmdCtx.disconnectController();
             }
         }));
-        OperationRequestCompleter opCompleter = new OperationRequestCompleter(cmdCtx);
-        console.addCompletor(new CommandCompleter(handlers.keySet(), cmdCtx, opCompleter));
-        console.addCompletor(opCompleter);
+        console.addCompletor(new CommandCompleter(cmdRegistry, cmdCtx));
 
+        String[] commands = null;
+        String fileName = null;
         boolean connect = false;
         for(String arg : args) {
             if(arg.startsWith("controller=")) {
@@ -137,6 +146,10 @@ public class CommandLineMain {
                 }
             } else if("--connect".equals(arg)) {
                 connect = true;
+            } else if(arg.startsWith("file=")) {
+                fileName = arg.substring(5);
+            } else if(arg.startsWith("commands=")) {
+                commands = arg.substring(9).split(",+");
             }
         }
 
@@ -148,41 +161,80 @@ public class CommandLineMain {
                 " 'help' for the list of supported commands.");
         }
 
-        while (!cmdCtx.terminate) {
-            String line = console.readLine(cmdCtx.getPrompt()).trim();
-
-            if (line.isEmpty()) {
-                // cmdCtx.log("Type /help for the list of supported commands.");
-                continue;
-            }
-
-            if(isOperation(line)) {
-                cmdCtx.cmdArgs = line;
-                operationHandler.handle(cmdCtx);
-
+        if(fileName != null && !fileName.isEmpty()) {
+            File f = new File(fileName);
+            if(!f.exists()) {
+                cmdCtx.printLine("File " + f.getAbsolutePath() + " doesn't exist.");
             } else {
-                String cmd = line;
-                String cmdArgs = null;
-                for (int i = 0; i < cmd.length(); ++i) {
-                    if (Character.isWhitespace(cmd.charAt(i))) {
-                        cmdArgs = cmd.substring(i + 1).trim();
-                        cmd = cmd.substring(0, i);
-                        break;
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                try {
+                    String line = reader.readLine();
+                    while(!cmdCtx.terminate && line != null) {
+                        processLine(cmdCtx, line.trim());
+                        line = reader.readLine();
                     }
+                } finally {
+                    StreamUtils.safeClose(reader);
+                    if(!cmdCtx.terminate) {
+                        cmdCtx.terminateSession();
+                    }
+                    cmdCtx.disconnectController();
                 }
-                cmdCtx.setArgs(cmdArgs);
-
-                CommandHandler handler = handlers.get(cmd.toLowerCase());
-                if (handler != null) {
-                    handler.handle(cmdCtx);
-                } else {
-                    cmdCtx.printLine("Unexpected command '"
-                            + line
-                            + "'. Type 'help' for the list of supported commands.");
-                }
+                return;
             }
         }
-        StreamUtils.safeClose(cmdCtx.client);
+
+        if(commands != null) {
+            for(int i = 0; i < commands.length && !cmdCtx.terminate; ++i) {
+                processLine(cmdCtx, commands[i]);
+            }
+            if(!cmdCtx.terminate) {
+                cmdCtx.terminateSession();
+            }
+            cmdCtx.disconnectController();
+            return;
+        }
+
+        try {
+            while (!cmdCtx.terminate) {
+                String line = console.readLine(cmdCtx.getPrompt()).trim();
+                processLine(cmdCtx, line);
+            }
+        } finally {
+            cmdCtx.disconnectController();
+        }
+    }
+
+    protected static void processLine(final CommandContextImpl cmdCtx, String line) {
+        if (line.isEmpty()) {
+            return;
+        }
+
+        if(isOperation(line)) {
+            cmdCtx.setArgs(line);
+            cmdCtx.operationHandler.handle(cmdCtx);
+
+        } else {
+            String cmd = line;
+            String cmdArgs = null;
+            for (int i = 0; i < cmd.length(); ++i) {
+                if (Character.isWhitespace(cmd.charAt(i))) {
+                    cmdArgs = cmd.substring(i + 1).trim();
+                    cmd = cmd.substring(0, i);
+                    break;
+                }
+            }
+            cmdCtx.setArgs(cmdArgs);
+
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
+            if (handler != null) {
+                handler.handle(cmdCtx);
+            } else {
+                cmdCtx.printLine("Unexpected command '"
+                        + line
+                        + "'. Type 'help' for the list of supported commands.");
+            }
+        }
     }
 
     protected static jline.ConsoleReader initConsoleReader() {
@@ -209,9 +261,11 @@ public class CommandLineMain {
         } else {
             try {
                 final InputStream in = new FileInputStream(FileDescriptor.in);
-                final Writer out = new PrintWriter(
-                        new OutputStreamWriter(System.out,
-                                System.getProperty("jline.WindowsTerminal.output.encoding",System.getProperty("file.encoding"))));
+                String encoding = SecurityActions.getSystemProperty("jline.WindowsTerminal.output.encoding");
+                if(encoding == null) {
+                    encoding = SecurityActions.getSystemProperty("file.encoding");
+                }
+                final Writer out = new PrintWriter(new OutputStreamWriter(System.out, encoding));
                 return new jline.ConsoleReader(in, out, bindingsIs);
             } catch(Exception e) {
                 throw new IllegalStateException("Failed to initialize console reader", e);
@@ -263,6 +317,8 @@ public class CommandLineMain {
         private final PrefixFormatter prefixFormatter = new DefaultPrefixFormatter();
         /** provider of operation request candidates for tab-completion */
         private final OperationCandidatesProvider operationCandidatesProvider;
+        /** operation request handler */
+        private final OperationRequestHandler operationHandler;
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
@@ -278,6 +334,8 @@ public class CommandLineMain {
 
             this.history = new HistoryImpl();
             operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
+
+            operationHandler = new OperationRequestHandler();
         }
 
         @Override
@@ -518,21 +576,13 @@ public class CommandLineMain {
                             argsList.add(arg);
 
                             int equalsIndex = arg.indexOf('=');
-                            if(equalsIndex > 0) {
-                                if(equalsIndex == arg.length() - 1 || arg.indexOf(equalsIndex + 1, '=') < 0) {
-                                } else {
-                                    final String name = arg.substring(0, equalsIndex - 1).trim();
-                                    final String value;
-                                    if(equalsIndex == arg.length() - 1) {
-                                        value = "";
-                                    } else {
-                                        value = arg.substring(equalsIndex + 1).trim();
-                                    }
-                                    if(namedArgs == null) {
-                                        namedArgs = new HashMap<String, String>();
-                                    }
-                                    namedArgs.put(name, value);
+                            if(equalsIndex > 0 && equalsIndex < arg.length() - 1 && arg.indexOf(equalsIndex + 1, '=') < 0) {
+                                final String name = arg.substring(0, equalsIndex).trim();
+                                final String value = arg.substring(equalsIndex + 1).trim();
+                                if (namedArgs == null) {
+                                    namedArgs = new HashMap<String, String>();
                                 }
+                                namedArgs.put(name, value);
                             }
                         }
                     }
@@ -558,6 +608,14 @@ public class CommandLineMain {
             switches = null;
             namedArgs = null;
             argsList = null;
+        }
+
+        @Override
+        public Set<String> getArgumentNames() {
+            if(namedArgs == null) {
+                parseArgs();
+            }
+            return namedArgs.keySet();
         }
     }
 }

@@ -124,4 +124,43 @@ public class Util {
 
         return Collections.emptyList();
     }
+
+    public static List<String> getJmsResources(ModelControllerClient client, String type) {
+
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final ModelNode request;
+        try {
+            builder.addNode("subsystem", "jms");
+            builder.operationName("read-children-names");
+            builder.addProperty("child-type", type);
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                return getList(outcome);
+            }
+        } catch (Exception e) {
+        }
+
+        return Collections.emptyList();
+    }
+
+    public static boolean isTopic(ModelControllerClient client, String name) {
+        List<String> topics = getJmsResources(client, "topic");
+        return topics.contains(name);
+    }
+
+    public static boolean isQueue(ModelControllerClient client, String name) {
+        List<String> queues = getJmsResources(client, "queue");
+        return queues.contains(name);
+    }
+
+    public static boolean isConnectionFactory(ModelControllerClient client, String name) {
+        List<String> cf = getJmsResources(client, "connection-factory");
+        return cf.contains(name);
+    }
 }
