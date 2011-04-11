@@ -86,7 +86,7 @@ public class DomainHttpServer implements HttpHandler {
 
         // Create the upload sub-directory under the server temporary directory.
         if (!this.serverTempDir.exists()) {
-            this.serverTempDir.mkdir();
+            this.serverTempDir.mkdirs();
         }
     }
 
