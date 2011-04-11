@@ -33,7 +33,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -150,6 +149,8 @@ public class CommandLineMain {
                 fileName = arg.substring(5);
             } else if(arg.startsWith("commands=")) {
                 commands = arg.substring(9).split(",+");
+            } else if(arg.startsWith("command=")) {
+                commands = new String[]{arg.substring(8)};
             }
         }
 
