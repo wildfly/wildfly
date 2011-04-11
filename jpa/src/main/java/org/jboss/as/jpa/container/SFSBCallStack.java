@@ -42,7 +42,7 @@ public class SFSBCallStack {
      * Each thread will have its own list of SFSB invocations in progress.
      */
     private static ThreadLocal<ArrayList<SFSBContextHandle>> SFSBInvocationStack = new ThreadLocal<ArrayList<SFSBContextHandle>>() {
-        protected synchronized ArrayList<SFSBContextHandle> initialValue() {
+        protected ArrayList<SFSBContextHandle> initialValue() {
             return new ArrayList<SFSBContextHandle>();
         }
     };

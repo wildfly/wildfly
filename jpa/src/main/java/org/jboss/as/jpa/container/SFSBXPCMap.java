@@ -60,6 +60,8 @@ public class SFSBXPCMap {
      * <p/>
      * Note:  We shouldn't have the case where the EntityManager list being looked up,
      * is ever null (since SFSBs should have strong references to the EntityManagers).
+     * TODO:  After switching to system lifecycle callbacks, we won't need to rely on the GC,
+     * so be ready to update this datastructure.
      */
     private ConcurrentReferenceHashMap<SFSBContextHandle, List<WeakReference<EntityManager>>> contextToXPCMap =
         new ConcurrentReferenceHashMap<SFSBContextHandle, List<WeakReference<EntityManager>>>
@@ -91,7 +93,7 @@ public class SFSBXPCMap {
      * @param entityManager represents the extended persistence context (XPC)
      * @return list of stateful session beans
      */
-    public List<SFSBContextHandle> getSFSB(EntityManager entityManager) {
+    private List<SFSBContextHandle> getSFSB(EntityManager entityManager) {
         return XPCToContextMap.get(entityManager);
     }
 
@@ -152,18 +154,24 @@ public class SFSBXPCMap {
         }
         List<WeakReference<EntityManager>> xpcList = contextToXPCMap.get(beanContextHandle);
         if (xpcList == null) {
-            xpcList = Collections.synchronizedList(new ArrayList<WeakReference<EntityManager>>());
+            // create array of entity managers owned by a bean.  No synchronization is needed as it will only
+            // be read/written to by one thread at a time (protected by the SFSB bean lock).
+            xpcList = new ArrayList<WeakReference<EntityManager>>();
             xpcList.add(new WeakReference(entityManager));
-            List<WeakReference<EntityManager>> existingList = contextToXPCMap.putIfAbsent(beanContextHandle, xpcList);
+
+            // no other thread should put at the same time on the same beanContextHandle
+            Object existingList = contextToXPCMap.put(beanContextHandle, xpcList);
             if (existingList != null) {
-                xpcList = existingList;
-                xpcList.add(new WeakReference(entityManager));
+                throw new RuntimeException("More than one thread is invoking stateful session bean '" +
+                    beanContextHandle.getBeanContextHandle() + "' at the same time." );
             }
         } else {
             // session bean was already registered, just add XPC to existing list.
             xpcList.add(new WeakReference(entityManager));
         }
 
+
+        // create array of stateful session beans that are sharing the entityManager
         List<SFSBContextHandle> sfsbList = Collections.synchronizedList(new ArrayList<SFSBContextHandle>());
         sfsbList.add(beanContextHandle);
         sfsbList = XPCToContextMap.putIfAbsent(entityManager, sfsbList);
@@ -197,7 +205,7 @@ public class SFSBXPCMap {
                                 removed.add(beanContextHandle);
                             }
                         }
-                        sfsbList.removeAll(removed);
+                        sfsbList.removeAll(removed);  // TODO:  delete this when we have system level callback
                         if (sfsbList.size() == 0) {
                             result.add(xpc);    // caller should close the xpc
                         }
