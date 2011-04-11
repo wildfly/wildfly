@@ -19,6 +19,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executor;
@@ -86,7 +87,8 @@ public class DomainHttpServer implements HttpHandler {
 
         // Create the upload sub-directory under the server temporary directory.
         if (!this.serverTempDir.exists()) {
-            this.serverTempDir.mkdirs();
+            boolean successful = this.serverTempDir.mkdirs();
+            if(!successful) log.warn("Failed to create directory: "+serverTempDir.getAbsolutePath());
         }
     }
 
@@ -114,7 +116,6 @@ public class DomainHttpServer implements HttpHandler {
     private void processUploadRequest(final HttpExchange http) throws IOException {
         File tempUploadFile = null;
         ModelNode response = null;
-        int status = 200;
 
         try {
              tempUploadFile = extractPostContent(http);
@@ -141,7 +142,7 @@ public class DomainHttpServer implements HttpHandler {
         }
 
         // TODO Determine what format the response should be in for a deployment upload request.
-        writeResponse(http, false, false, response, status, false);
+        writeResponse(http, false, false, response, 200, false);
     }
 
     /**
@@ -182,9 +183,14 @@ public class DomainHttpServer implements HttpHandler {
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-        writeResponse(http, isGet, pretty, response, status, encode);
+        writeResponse(http, isGet, pretty, response, status, encode, "text/html");
     }
 
+     private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
+            boolean encode) throws IOException {
+         String contentType = encode ? "application/dmr-encoded" : "application/json";
+         writeResponse(http, isGet, pretty, response, status, encode, contentType);
+     }
     /**
      * Writes the HTTP response to the output stream.
      *
@@ -197,9 +203,9 @@ public class DomainHttpServer implements HttpHandler {
      * @throws IOException if an error occurs while attempting to generate the HTTP response.
      */
     private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
-            boolean encode) throws IOException {
+            boolean encode, String contentType) throws IOException {
         final Headers responseHeaders = http.getResponseHeaders();
-        responseHeaders.add("Content-Type", encode ? "application/dmr-encoded" : "application/json");
+        responseHeaders.add("Content-Type", contentType);
         responseHeaders.add("Access-Control-Allow-Origin", "*");
         http.sendResponseHeaders(status, 0);
 
@@ -239,6 +245,7 @@ public class DomainHttpServer implements HttpHandler {
 
         final byte[] buffer = new byte[UPLOAD_BUFFER_SIZE];
         boolean isDeploymentPart = false;
+
 
         try {
             // Read from the stream until the deployment is found in the POST data.
