@@ -220,6 +220,8 @@ class ClassPathEjbJarScanner {
      * Determines whether this entry from the ClassPath is an EJB JAR
      */
     private static boolean isEjbJar(final String candidate) {
+        if (candidate == null || candidate.isEmpty())
+            return false;
 
         /*
         * EJB 3.1 22.2.1:
@@ -312,7 +314,7 @@ class ClassPathEjbJarScanner {
                 }
             }
         } catch (final IOException e) {
-            throw new RuntimeException("Could not mount file from ClassPath for EJB JAR module scanning", e);
+            throw new RuntimeException("Could not mount file '" + candidate + "'", e);
         }
 
     }

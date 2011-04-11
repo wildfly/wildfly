@@ -23,10 +23,27 @@ package org.jboss.as.embedded.ejb3;
 
 import org.junit.Test;
 
+import java.io.File;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class ClassPathEjbJarScannerTest {
+    @Test
+    public void testEmpty() {
+        // use surefire.test.class.path, because we don't (want to) know our test environment
+        final String oldProperty = System.setProperty("surefire.test.class.path", "non-existent");
+        // setup an empty entry in the middle
+        System.setProperty("surefire.test.class.path", "/dummy1" + File.pathSeparator + File.pathSeparator + "/dummy2");
+        try {
+            ClassPathEjbJarScanner.getEjbJars();
+        }
+        finally {
+            if (oldProperty != null)
+                System.setProperty("surefire.test.class.path", oldProperty);
+        }
+    }
+
     @Test
     public void testNonExistent() {
         // use surefire.test.class.path, because we don't (want to) know our test environment
