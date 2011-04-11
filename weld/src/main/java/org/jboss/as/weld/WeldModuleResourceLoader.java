@@ -25,6 +25,8 @@ import org.jboss.modules.Module;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.resources.spi.ResourceLoadingException;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -65,7 +67,24 @@ public class WeldModuleResourceLoader implements ResourceLoader {
             if (additionalClasses.containsKey(name)) {
                 return additionalClasses.get(name);
             }
-            return module.getClassLoader().loadClass(name);
+            final Class<?> clazz = module.getClassLoader().loadClass(name);
+            //TODO: this is a temporary workaround for an issue with weld
+            //It should be removed when WELD-880 is resolved
+            //as weld does not handle linkage errors correctly, we have
+            //to initialize the class fully here, so the exception can be wrapped
+
+            Class<?> c = clazz;
+            while(c != null && c != Object.class) {
+                for(Method method : c.getDeclaredMethods()) {
+                    method.getAnnotations();
+                }
+                for(Field field : c.getDeclaredFields()) {
+                    field.getAnnotations();
+                }
+                c.getDeclaredAnnotations();
+                c = c.getSuperclass();
+            }
+            return clazz;
         } catch (NoClassDefFoundError e) {
             throw new ResourceLoadingException(e);
         } catch (ClassNotFoundException e) {
