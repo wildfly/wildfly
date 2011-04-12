@@ -145,10 +145,12 @@
                     <path name="org/w3c/dom/bootstrap"/>
                     <path name="org/w3c/dom/css"/>
                     <path name="org/w3c/dom/events"/>
+                    <path name="org/w3c/dom/html"/>
                     <path name="org/w3c/dom/ranges"/>
                     <path name="org/w3c/dom/stylesheets"/>
                     <path name="org/w3c/dom/traversal"/>
                     <path name="org/w3c/dom/ls"/>
+                    <path name="org/w3c/dom/xpath"/>
                     <path name="org/xml/sax"/>
                     <path name="org/xml/sax/ext"/>
                     <path name="org/xml/sax/helpers"/>

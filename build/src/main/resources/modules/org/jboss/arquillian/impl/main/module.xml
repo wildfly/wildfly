@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.arquillian.api"/>
         <module name="org.jboss.arquillian.spi"/>
         <module name="org.jboss.shrinkwrap.impl"/>

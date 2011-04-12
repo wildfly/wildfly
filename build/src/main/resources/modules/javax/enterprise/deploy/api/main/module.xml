@@ -26,4 +26,10 @@
     <resources>
         <!-- Insert resources here -->
     </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="org.jboss.common-core"/>
+        <module name="org.jboss.logging"/>
+  </dependencies>
 </module>

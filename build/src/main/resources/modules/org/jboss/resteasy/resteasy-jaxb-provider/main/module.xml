@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module name="com.sun.xml.bind"/>
         <module name="javax.xml.bind.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>

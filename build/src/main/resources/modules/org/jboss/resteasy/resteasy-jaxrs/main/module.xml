@@ -29,8 +29,11 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.annotation.api"/>
         <module name="javax.activation.api"/>
         <module name="javax.ws.rs.api"/>
+        <module name="org.apache.httpcomponents" />
+        <module name="org.apache.commons.codec" />
         <module name="org.scannotation.scannotation" />
         <module name="javax.servlet.api"/>
     </dependencies>

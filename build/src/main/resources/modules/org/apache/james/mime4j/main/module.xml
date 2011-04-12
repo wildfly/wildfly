@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.apache.commons.logging"/>
     </dependencies>
 </module>

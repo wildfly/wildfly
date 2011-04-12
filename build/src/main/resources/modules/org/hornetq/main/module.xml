@@ -30,6 +30,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.jms.api" />
+        <module name="org.jboss.jts"/>
         <module name="org.jboss.netty"/>
     </dependencies>
 </module>

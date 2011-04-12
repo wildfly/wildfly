@@ -27,5 +27,7 @@
         <!-- Insert resources here -->
     </resources>
 
-    <dependencies/>
+    <dependencies>
+        <module name="javax.api"/>
+    </dependencies>
 </module>

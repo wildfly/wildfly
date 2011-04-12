@@ -29,10 +29,13 @@
     </resources>
 
     <dependencies>
+        <module name="asm.asm" />
         <module name="javax.api" />
         <module name="javax.annotation.api" />
+        <module name="javax.jms.api" />
         <module name="javax.jws.api" />
         <module name="javax.mail.api" />
+        <module name="javax.resource.api" />
         <module name="javax.servlet.api" />
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
@@ -40,6 +43,7 @@
         <module name="javax.xml.soap.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
+        <module name="org.apache.commons.lang" />
         <module name="org.apache.neethi" />
         <module name="org.apache.velocity" />
         <module name="org.apache.ws.xmlschema" />

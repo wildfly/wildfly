@@ -26,8 +26,10 @@
   <resources>
     <!-- Insert resources here -->
   </resources>
-  
+
   <dependencies>
-        <module name="javax.api" export="false"/>
+      <module name="javax.api" export="false"/>
+      <module name="com.sun.xml.bind"/>
+      <module name="javax.xml.bind.api"/>
   </dependencies>
 </module>

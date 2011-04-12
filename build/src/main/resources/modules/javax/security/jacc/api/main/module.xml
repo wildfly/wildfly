@@ -24,7 +24,8 @@
 
 <module xmlns="urn:jboss:module:1.0" name="javax.security.jacc.api">
     <dependencies>
-        <module name="javax.servlet.api" export="true"/>
+        <module name="javax.servlet.api"/>
+        <module name="org.jboss.common-core"/>
     </dependencies>
 
     <resources>
