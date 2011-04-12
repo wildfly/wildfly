@@ -84,7 +84,8 @@ The relevant marker file types are:
 .failed        -- Placed by the deployment scanner service to indicate that the 
                   given content failed to deploy into the runtime. The content 
                   of the file will include some information about the cause of 
-                  the failure.
+                  the failure. Note that with auto-deploy mode, removing this
+                  file will make the deployment eligible for deployment again.                  
 
 .isundeploying -- Placed by the deployment scanner service to indicate that it 
                   has noticed a .deployed file has been deleted and the 
@@ -107,6 +108,8 @@ The relevant marker file types are:
 Basic workflows:
 
 All examples assume variable $AS points to the root of the JBoss AS distribution.
+Windows users: the examples below use Unix shell commands; see the "Windows 
+Notes" below.
 
 A) Add new zipped content and deploy it:
 
@@ -162,3 +165,16 @@ J) Auto-deploy mode only: Redeploy currently deployed content (i.e. bounce
    it with no content change):
 
 1. touch $AS/standalone/deployments/example.war
+
+
+Windows Notes:
+
+The above examples use Unix shell commands. Windows equivalents are:
+
+cp src dest --> xcopy /y src dest
+cp -r src dest --> xcopy /e /s /y src dest
+rm afile --> del afile
+touch afile --> echo>> afile
+
+Note that the behavior of 'touch' and 'echo' are different but the
+differences are not relevant to the usages in the examples above.
