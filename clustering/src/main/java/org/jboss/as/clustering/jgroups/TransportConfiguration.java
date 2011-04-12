@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -37,11 +37,11 @@ public interface TransportConfiguration extends ProtocolConfiguration {
 
     SocketBinding getDiagnosticsSocketBinding();
 
-    Executor getThreadPool();
+    ExecutorService getDefaultExecutor();
 
-    Executor getOOBThreadPool();
+    ExecutorService getOOBExecutor();
 
-    ScheduledExecutorService getTimerThreadPool();
+    ScheduledExecutorService getTimerExecutor();
 
     ThreadFactory getThreadFactory();
 }

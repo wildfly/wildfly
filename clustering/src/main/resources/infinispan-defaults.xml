@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<!-- N.B. This is *not* meant to be a usable cache configuration -->
+<!-- This file supplies the internal configuration defaults per cache mode -->
+<infinispan xmlns="urn:infinispan:config:4.2">
+    <global>
+        <transport strictPeerToPeer="false"></transport>
+        <shutdown hookBehavior="DONT_REGISTER"/>
+    </global>
+    <default>
+        <locking isolationLevel="REPEATABLE_READ" lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
+        <lazyDeserialization enabled="true"/>
+        <clustering mode="local"></clustering>
+        <eviction strategy="NONE" maxEntries="10000"/>
+    </default>
+    <namedCache name="REPL_SYNC">
+        <clustering mode="replication">
+            <stateRetrieval timeout="60000" fetchInMemoryState="true"/>
+            <sync replTimeout="17500"/>
+        </clustering>
+    </namedCache>
+    <namedCache name="REPL_ASYNC">
+        <clustering mode="replication">
+            <stateRetrieval timeout="60000" fetchInMemoryState="true"/>
+            <async useReplQueue="true" replQueueInterval="10"/>
+        </clustering>
+    </namedCache>
+    <namedCache name="DIST_SYNC">
+        <clustering mode="distribution">
+            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
+            <sync replTimeout="17500"/>
+        </clustering>
+    </namedCache>
+    <namedCache name="DIST_ASYNC">
+        <clustering mode="distribution">
+            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
+            <async useReplQueue="true" replQueueInterval="10"/>
+        </clustering>
+    </namedCache>
+    <namedCache name="INVALIDATION_SYNC">
+        <clustering mode="replication">
+            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
+            <sync replTimeout="17500"/>
+        </clustering>
+    </namedCache>
+    <namedCache name="INVALIDATION_ASYNC">
+        <clustering mode="replication">
+            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
+            <async useReplQueue="true" replQueueInterval="10" />
+        </clustering>
+    </namedCache>
+</infinispan>

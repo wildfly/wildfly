@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -107,6 +108,24 @@ public abstract class AbstractConfigurationPersister implements ExtensibleConfig
         } catch (Exception e) {
             throw new ConfigurationPersistenceException("Failed to write configuration", e);
         }
+    }
+
+    @Override
+    public void successfulBoot() throws ConfigurationPersistenceException {
+    }
+
+    @Override
+    public String snapshot() throws ConfigurationPersistenceException{
+        return null;
+    }
+
+    @Override
+    public SnapshotInfo listSnapshots() {
+        return NULL_SNAPSHOT_INFO;
+    }
+
+    @Override
+    public void deleteSnapshot(String name) {
     }
 
     private static void safeClose(final XMLStreamWriter streamWriter) {

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -55,11 +58,16 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.JBossExecutors;
+import org.jgroups.conf.ProtocolStackConfigurator;
+import org.jgroups.conf.XmlConfigurator;
 
 /**
  * @author Paul Ferraro
  */
 public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionProvider {
+
+    private static final String DEFAULTS = "jgroups-defaults.xml";
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -72,6 +80,15 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
         ModelNode protocols = target.get(ModelKeys.PROTOCOL);
         for (ModelNode protocol: source.require(ModelKeys.PROTOCOL).asList()) {
             protocols.add(protocol);
+        }
+    }
+
+    final Map<String, Map<String, String>> defaults = new HashMap<String, Map<String, String>>();
+
+    public ProtocolStackAdd() {
+        ProtocolStackConfigurator configurator = this.load(DEFAULTS);
+        for (org.jgroups.conf.ProtocolConfiguration config: configurator.getProtocolStack()) {
+            this.defaults.put(config.getProtocolName(), config.getProperties());
         }
     }
 
@@ -97,27 +114,29 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ModelNode transport = operation.get(ModelKeys.TRANSPORT);
-                    TransportConfigurationImpl transportConfig = new TransportConfigurationImpl(transport.require(ModelKeys.TYPE).asString());
+                    String type = transport.require(ModelKeys.TYPE).asString();
+                    TransportConfigurationImpl transportConfig = new TransportConfigurationImpl(type, ProtocolStackAdd.this.defaults.get(type));
                     ProtocolStackConfigurationImpl stackConfig = new ProtocolStackConfigurationImpl(transportConfig);
                     InjectionCollector injections = new InjectionCollector();
                     this.process(transport, transportConfig, injections);
                     if (transport.has(ModelKeys.DIAGNOSTICS_SOCKET_BINDING)) {
                         injections.addSocketBindingInjector(transport.get(ModelKeys.DIAGNOSTICS_SOCKET_BINDING).asString(), transportConfig.getDiagnosticsSocketBindingInjector());
                     }
-                    if (transport.has(ModelKeys.THREAD_POOL)) {
-                        injections.addExecutorInjector(transport.get(ModelKeys.THREAD_POOL).asString(), transportConfig.getThreadPoolInjector());
+                    if (transport.has(ModelKeys.DEFAULT_EXECUTOR)) {
+                        injections.addExecutorInjector(transport.get(ModelKeys.DEFAULT_EXECUTOR).asString(), transportConfig.getDefaultExecutorInjector());
                     }
-                    if (transport.has(ModelKeys.OOB_THREAD_POOL)) {
-                        injections.addExecutorInjector(transport.get(ModelKeys.OOB_THREAD_POOL).asString(), transportConfig.getOOBThreadPoolInjector());
+                    if (transport.has(ModelKeys.OOB_EXECUTOR)) {
+                        injections.addExecutorInjector(transport.get(ModelKeys.OOB_EXECUTOR).asString(), transportConfig.getOOBExecutorInjector());
                     }
-                    if (transport.has(ModelKeys.TIMER_THREAD_POOL)) {
-                        injections.addScheduledExecutorInjector(transport.get(ModelKeys.TIMER_THREAD_POOL).asString(), transportConfig.getTimerThreadPoolInjector());
+                    if (transport.has(ModelKeys.TIMER_EXECUTOR)) {
+                        injections.addScheduledExecutorInjector(transport.get(ModelKeys.TIMER_EXECUTOR).asString(), transportConfig.getTimerExecutorInjector());
                     }
                     if (transport.has(ModelKeys.THREAD_FACTORY)) {
                         injections.addThreadFactoryInjector(transport.get(ModelKeys.THREAD_FACTORY).asString(), transportConfig.getThreadFactoryInjector());
                     }
                     for (ModelNode protocol: operation.get(ModelKeys.PROTOCOL).asList()) {
-                        ProtocolConfigurationImpl protocolConfig = new ProtocolConfigurationImpl(protocol.require(ModelKeys.TYPE).asString());
+                        type = protocol.require(ModelKeys.TYPE).asString();
+                        ProtocolConfigurationImpl protocolConfig = new ProtocolConfigurationImpl(type, ProtocolStackAdd.this.defaults.get(type));
                         this.process(protocol, protocolConfig, injections);
                         stackConfig.getProtocols().add(protocolConfig);
                     }
@@ -146,6 +165,18 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
         }
 
         return new BasicOperationResult(removeOperation);
+    }
+
+    private ProtocolStackConfigurator load(String resource) {
+        URL url = JGroupsExtension.class.getClassLoader().getResource(resource);
+        if (url == null) {
+            throw new IllegalStateException(String.format("Failed to locate %s", resource));
+        }
+        try {
+            return XmlConfigurator.getInstance(url);
+        } catch (IOException e) {
+            throw new IllegalStateException(String.format("Failed to parse %s", url), e);
+        }
     }
 
     static class InjectionCollector {
@@ -207,30 +238,30 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
 
     static class TransportConfigurationImpl extends ProtocolConfigurationImpl implements TransportConfiguration {
         private final InjectedValue<SocketBinding> diagnosticsSocketBinding = new InjectedValue<SocketBinding>();
-        private final InjectedValue<Executor> threadPool = new InjectedValue<Executor>();
-        private final InjectedValue<Executor> oobThreadPool = new InjectedValue<Executor>();
-        private final InjectedValue<ScheduledExecutorService> timerThreadPool = new InjectedValue<ScheduledExecutorService>();
+        private final InjectedValue<Executor> defaultExecutor = new InjectedValue<Executor>();
+        private final InjectedValue<Executor> oobExecutor = new InjectedValue<Executor>();
+        private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<ScheduledExecutorService>();
         private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<ThreadFactory>();
         private boolean shared = true;
 
-        TransportConfigurationImpl(String name) {
-            super(name);
+        TransportConfigurationImpl(String name, Map<String, String> defaults) {
+            super(name, defaults);
         }
 
         public Injector<SocketBinding> getDiagnosticsSocketBindingInjector() {
             return this.diagnosticsSocketBinding;
         }
 
-        public Injector<Executor> getThreadPoolInjector() {
-            return this.threadPool;
+        public Injector<Executor> getDefaultExecutorInjector() {
+            return this.defaultExecutor;
         }
 
-        public Injector<Executor> getOOBThreadPoolInjector() {
-            return this.oobThreadPool;
+        public Injector<Executor> getOOBExecutorInjector() {
+            return this.oobExecutor;
         }
 
-        public Injector<ScheduledExecutorService> getTimerThreadPoolInjector() {
-            return this.timerThreadPool;
+        public Injector<ScheduledExecutorService> getTimerExecutorInjector() {
+            return this.timerExecutor;
         }
 
         public Injector<ThreadFactory> getThreadFactoryInjector() {
@@ -251,18 +282,20 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
         }
 
         @Override
-        public Executor getThreadPool() {
-            return this.threadPool.getOptionalValue();
+        public ExecutorService getDefaultExecutor() {
+            Executor executor = this.defaultExecutor.getOptionalValue();
+            return (executor != null) ? JBossExecutors.protectedExecutorService(executor) : null;
         }
 
         @Override
-        public Executor getOOBThreadPool() {
-            return this.oobThreadPool.getOptionalValue();
+        public ExecutorService getOOBExecutor() {
+            Executor executor = this.oobExecutor.getOptionalValue();
+            return (executor != null) ? JBossExecutors.protectedExecutorService(executor) : null;
         }
 
         @Override
-        public ScheduledExecutorService getTimerThreadPool() {
-            return this.timerThreadPool.getOptionalValue();
+        public ScheduledExecutorService getTimerExecutor() {
+            return this.timerExecutor.getOptionalValue();
         }
 
         @Override
@@ -274,10 +307,11 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
     static class ProtocolConfigurationImpl implements ProtocolConfiguration {
         private final String name;
         private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<SocketBinding>();
-        private final Map<String, String> properties = new HashMap<String, String>();
+        private final Map<String, String> properties;
 
-        ProtocolConfigurationImpl(String name) {
+        ProtocolConfigurationImpl(String name, Map<String, String> defaults) {
             this.name = name;
+            this.properties = (defaults != null) ? new HashMap<String, String>(defaults) : new HashMap<String, String>();
         }
 
         public String getName() {

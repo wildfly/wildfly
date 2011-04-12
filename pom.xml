@@ -102,6 +102,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
+        <version.org.infinispan>4.2.1.FINAL</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha6</version.org.jboss.classfilewriter>
@@ -4052,6 +4053,30 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms</artifactId>
                 <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-core</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jgroups</groupId>
+                        <artifactId>jgroups</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-transaction-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>river</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>marshalling-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<!-- N.B. This is *not* a usable protocol stack -->
+<!-- This file supplies the internal defaults per protocol -->
+<config xmlns="urn:org:jgroups">
+    <UDP
+        ucast_recv_buf_size="20000000"
+        ucast_send_buf_size="640000"
+        mcast_recv_buf_size="25000000"
+        mcast_send_buf_size="640000"
+        discard_incompatible_packets="true"
+        enable_bundling="false"
+        max_bundle_size="64000"
+        max_bundle_timeout="30"
+        ip_ttl="2"
+        
+        thread_pool.enabled="true"
+        thread_pool.min_threads="20"
+        thread_pool.max_threads="200"
+        thread_pool.keep_alive_time="5000"
+        thread_pool.queue_enabled="true"
+        thread_pool.queue_max_size="1000"
+        thread_pool.rejection_policy="discard"
+        
+        oob_thread_pool.enabled="true"
+        oob_thread_pool.min_threads="20"
+        oob_thread_pool.max_threads="200"
+        oob_thread_pool.keep_alive_time="1000"
+        oob_thread_pool.queue_enabled="false"
+        oob_thread_pool.rejection_policy="discard"/>
+    <TCP
+        recv_buf_size="20000000"
+        send_buf_size="640000"
+        discard_incompatible_packets="true"
+        max_bundle_size="64000"
+        max_bundle_timeout="30"
+        enable_bundling="false"
+        use_send_queues="false"
+        sock_conn_timeout="300"
+
+        thread_pool.enabled="true"
+        thread_pool.min_threads="20"
+        thread_pool.max_threads="200"
+        thread_pool.keep_alive_time="5000"
+        thread_pool.queue_enabled="true"
+        thread_pool.queue_max_size="1000"
+        thread_pool.rejection_policy="discard"
+
+        oob_thread_pool.enabled="true"
+        oob_thread_pool.min_threads="20"
+        oob_thread_pool.max_threads="200"
+        oob_thread_pool.keep_alive_time="1000"
+        oob_thread_pool.queue_enabled="false"
+        oob_thread_pool.rejection_policy="discard"/>
+    <PING timeout="2000" num_initial_members="3"/>
+    <MPING timeout="3000" num_initial_members="3" ip_ttl="2"/>
+    <MERGE2 max_interval="100000" min_interval="20000"/>
+    <FD_SOCK/>
+    <FD timeout="6000" max_tries="5"/>
+    <VERIFY_SUSPECT timeout="1500"/>
+    <BARRIER/>
+    <pbcast.NAKACK use_mcast_xmit="true" gc_lag="0"
+        retransmit_timeout="300,600,1200,2400,4800"
+        discard_delivered_msgs="true"/>
+    <UNICAST timeout="300,600,1200,2400,3600"/>
+    <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+        max_bytes="400000"/>
+    <VIEW_SYNC avg_send_interval="10000"/>
+    <pbcast.GMS print_local_addr="true" 
+        join_timeout="3000"
+        view_bundling="true"                   
+        view_ack_collection_timeout="5000"
+        resume_task_timeout="7500"/>
+    <UFC max_credits="2000000" ignore_synchronous_response="true"/>
+    <MFC max_credits="2000000" ignore_synchronous_response="true"/>
+    <FRAG2 frag_size="60000"/>
+    <pbcast.STREAMING_STATE_TRANSFER/>
+    <pbcast.FLUSH timeout="0" start_flush_timeout="10000"/>
+</config>

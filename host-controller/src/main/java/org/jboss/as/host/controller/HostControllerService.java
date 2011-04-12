@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
@@ -97,6 +98,11 @@ public class HostControllerService implements Service<LocalHostModel> {
                 return configPersister;
             }
         };
+        try {
+            configPersister.successfulBoot();
+        } catch (ConfigurationPersistenceException e) {
+            throw new StartException(e);
+        }
     }
 
     /** {@inheritDoc} */

@@ -95,6 +95,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.threads.ThreadsExtension.NewThreadsSubsystemParser;
 import org.jboss.dmr.ModelNode;
@@ -811,6 +812,20 @@ public class ThreadsSubsystemTestCase {
                 @Override
                 public List<ModelNode> load() throws ConfigurationPersistenceException {
                     return null;
+                }
+                @Override
+                public void successfulBoot() throws ConfigurationPersistenceException {
+                }
+                @Override
+                public String snapshot() {
+                    return null;
+                }
+                @Override
+                public SnapshotInfo listSnapshots() {
+                    return NULL_SNAPSHOT_INFO;
+                }
+                @Override
+                public void deleteSnapshot(String name) {
                 }
             }, new DescriptionProvider() {
                 @Override

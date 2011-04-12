@@ -34,6 +34,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
@@ -460,6 +461,24 @@ public class ServerModelControllerImplUnitTestCase {
         @Override
         public void registerSubsystemDeploymentWriter(String name, XMLElementWriter<SubsystemMarshallingContext> writer) {
 
+        }
+
+        @Override
+        public void successfulBoot() throws ConfigurationPersistenceException {
+        }
+
+        @Override
+        public String snapshot() {
+            return null;
+        }
+
+        @Override
+        public SnapshotInfo listSnapshots() {
+            return NULL_SNAPSHOT_INFO;
+        }
+
+        @Override
+        public void deleteSnapshot(String name) {
         }
 
     }

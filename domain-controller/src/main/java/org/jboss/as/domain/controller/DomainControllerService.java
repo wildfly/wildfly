@@ -92,6 +92,11 @@ public final class DomainControllerService implements Service<DomainController> 
         this.controller = masterClient == null ? startMasterDomainController() : startSlaveDomainController(masterClient);
         backupDomainFiles();
         hostController.getValue().startServers(controller);
+        try {
+            configurationPersister.successfulBoot();
+        } catch (ConfigurationPersistenceException e) {
+            throw new StartException(e);
+        }
     }
 
     /** {@inheritDoc} */

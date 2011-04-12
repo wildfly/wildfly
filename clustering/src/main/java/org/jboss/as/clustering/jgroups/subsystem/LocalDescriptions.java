@@ -110,6 +110,6 @@ public class LocalDescriptions {
     }
 
     private static ModelNode createProtocolStackOperationDescription(String operation, ResourceBundle resources) {
-        return createOperationDescription(operation, resources, "jgroups.stack" + operation);
+        return createOperationDescription(operation, resources, "jgroups.stack." + operation);
     }
 }

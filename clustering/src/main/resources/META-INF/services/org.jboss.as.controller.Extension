@@ -21,3 +21,4 @@
 #
 
 org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension
+org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension

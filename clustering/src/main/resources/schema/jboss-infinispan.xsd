@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<xs:schema targetNamespace="urn:jboss:domain:infinispan:1.0"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:jboss:domain:infinispan:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <xs:element name="subsystem" type="tns:subsystem">
+        <xs:annotation>
+            <xs:documentation>Enumerates the cache containers available to the registry.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="subsystem">
+        <xs:sequence>
+            <xs:element name="cache-container" type="tns:cache-container" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Defines an embedded cache container.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="default-container" type="xs:IDREF">
+            <xs:annotation>
+                <xs:documentation>Identifies the default cache container.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="cache-container">
+        <xs:sequence>
+            <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="transport" type="tns:transport" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="local-cache" type="tns:local-cache">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="replicated-cache" type="tns:replicated-cache">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="invalidation-cache" type="tns:invalidation-cache">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="distributed-cache" type="tns:distributed-cache">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:ID" use="required">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="default-cache" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="listener-executor" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Defines the executor used for asynchronous cache listener notifications.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="eviction-executor" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Defines the scheduled executor used for evictions.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="replication-queue-executor" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Defines the scheduled executor used by the asynchronous replication queue.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="transport">
+        <xs:attribute name="stack" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Defines the jgroups stack used by the transport.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="executor" type="xs:string" >
+            <xs:annotation>
+                <xs:documentation>Defines the executor used for asynchronous transport communication.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="lock-timeout" type="xs:long" default="240000">
+            <xs:annotation>
+                <xs:documentation>
+                    Infinispan uses a distributed lock to maintain a coherent transaction log during state transfer or rehashing, which means that only one cache can be doing state transfer or rehashing at the same time.
+                    This constraint is in place because more than one cache could be involved in a transaction.
+                    This timeout controls the time to wait to acquire acquire a lock on the distributed lock.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="site" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Identifies the site where this node runs.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rack" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Identifies the rack where this node runs.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="machine" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Identifies the machine where this node runs.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="cache" abstract="true">
+        <xs:sequence>
+            <xs:element name="locking" type="tns:locking" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="transaction" type="tns:transaction" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="eviction" type="tns:eviction" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="expiration" type="tns:expiration" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="store" type="tns:custom-store">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="file-store" type="tns:file-store">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="batching" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="indexing" type="tns:indexing" default="NONE">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="local-cache">
+        <xs:complexContent>
+            <xs:extension base="tns:cache"></xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="locking">
+        <xs:attribute name="isolation" type="tns:isolation" default="REPEATABLE_READ">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="striping" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="acquire-timeout" type="xs:long" default="15000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="concurrency-level" type="xs:int" default="1000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="transaction">
+        <xs:attribute name="stop-timeout" type="xs:long" default="30000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sync-phase" type="tns:sync-phase" default="ALL">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="eager-locking" type="tns:eager-locking" default="SINGLE">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="eviction">
+        <xs:attribute name="strategy" type="tns:eviction-strategy" default="NONE">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-entries" type="xs:int" default="10000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="interval" type="xs:long" default="5000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="expiration">
+        <xs:attribute name="max-idle" type="xs:long" default="-1">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="lifespan" type="xs:long" default="-1">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="clustered-cache" abstract="true">
+        <xs:complexContent>
+            <xs:extension base="tns:cache">
+                <xs:attribute name="mode" type="tns:mode" use="required">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="queue-size" type="xs:int" default="1000">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="queue-flush-interval" type="xs:long" default="10">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="remote-timeout" type="xs:long" default="17500">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="invalidation-cache">
+        <xs:complexContent>
+            <xs:extension base="tns:clustered-cache"></xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="replicated-cache">
+        <xs:complexContent>
+            <xs:extension base="tns:clustered-cache">
+                <xs:sequence>
+                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation></xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="distributed-cache">
+        <xs:complexContent>
+            <xs:extension base="tns:clustered-cache">
+                <xs:sequence>
+                    <xs:element name="rehashing" type="tns:rehashing" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation></xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+                <xs:attribute name="owners" type="xs:int" default="2">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="l1-lifespan" type="xs:long" default="600000">
+                    <xs:annotation>
+                        <xs:documentation></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="store" abstract="true">
+        <xs:sequence>
+            <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="shared" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="preload" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="passivation" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="fetch-state" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="purge" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="singleton" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="custom-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:attribute name="class" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The class name of the cache store implementation.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="file-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir">
+                    <xs:annotation>
+                        <xs:documentation>The base directory in which to store the cache state.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="path" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The path within ""relative-to" in which to store the cache state.
+                            If undefined, the path defaults to the cache container name.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="state-transfer">
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="timeout" type="xs:long" default="60000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flush-timeout" type="xs:long" default="60000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="rehashing">
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="timeout" type="xs:long" default="600000">
+            <xs:annotation>
+                <xs:documentation></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="property">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Defines the name of a property.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="isolation">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="READ_UNCOMMITTED">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="READ_COMMITTED">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="REPEATABLE_READ">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="SERIALIZABLE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="sync-phase">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="COMMIT">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ROLLBACK">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ALL">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="eager-locking">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="SINGLE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ALL">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="indexing">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LOCAL">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ALL">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="eviction-strategy">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="UNORDERED">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="FIFO">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LRU">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LIRS">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="mode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ASYNC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="SYNC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
