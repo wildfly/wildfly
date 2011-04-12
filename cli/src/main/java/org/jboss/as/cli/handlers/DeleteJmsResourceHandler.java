@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
+public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
 
     public DeleteJmsResourceHandler() {
         super("delete-jms-resource", true);

@@ -218,4 +218,46 @@ public class MockCommandContext implements CommandContext {
     public Set<String> getArgumentNames() {
         return null;
     }
+
+    @Override
+    public boolean isBatchMode() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean startBatch(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean discardBatch(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean holdbackBatch(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean runBatch(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public List<String> getCurrentBatch() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getCommand() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

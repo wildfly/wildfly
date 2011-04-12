@@ -19,23 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
+import org.jboss.as.cli.CommandContext;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public class BatchHandler extends CommandHandlerWithHelp {
 
-    boolean isAvailable(CommandContext ctx);
+    public BatchHandler() {
+        super("batch", new SimpleTabCompleter(new String[]{}));
+    }
 
-    CommandArgumentCompleter getArgumentCompleter();
-
-    /**
-     * Whether the command supports batch mode or not.
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
-    boolean isBatchMode();
+    @Override
+    protected void doHandle(CommandContext ctx) {
 
-    void handle(CommandContext ctx);
+        if (ctx.isBatchMode()) {
+            ctx.printLine("Can't start a new batch while in batch mode.");
+            return;
+        }
+
+        String name = null;
+        if (ctx.hasArguments()) {
+            name = ctx.getArguments().get(0);
+        }
+
+        ctx.startBatch(name);
+
+        List<String> batch = ctx.getCurrentBatch();
+        if (!batch.isEmpty()) {
+            for (int i = 0; i < batch.size(); ++i) {
+                String line = batch.get(i);
+                ctx.printLine("#" + (i + 1) + ' ' + line);
+            }
+        }
+        return;
+    }
 }

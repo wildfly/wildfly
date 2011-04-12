@@ -19,23 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.handlers;
 
+import org.jboss.as.cli.CommandArgumentCompleter;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public abstract class BatchModeCommandHandler extends CommandHandlerWithHelp {
 
-    boolean isAvailable(CommandContext ctx);
+    public BatchModeCommandHandler(String command, boolean connectionRequired,
+            CommandArgumentCompleter argsCompleter) {
+        super(command, connectionRequired, argsCompleter);
+    }
 
-    CommandArgumentCompleter getArgumentCompleter();
+    public BatchModeCommandHandler(String command, boolean connectionRequired) {
+        super(command, connectionRequired);
+    }
 
-    /**
-     * Whether the command supports batch mode or not.
-     */
-    boolean isBatchMode();
+    public BatchModeCommandHandler(String command,
+            CommandArgumentCompleter argsCompleter) {
+        super(command, argsCompleter);
+    }
 
-    void handle(CommandContext ctx);
+    public BatchModeCommandHandler(String command) {
+        super(command);
+    }
+
+    @Override
+    public boolean isBatchMode() {
+        return true;
+    }
 }

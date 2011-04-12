@@ -124,6 +124,11 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
 
     protected abstract void doHandle(CommandContext ctx);
 
+    @Override
+    public boolean isBatchMode() {
+        return false;
+    }
+
     /**
      * Prints a list of strings. If -l switch is present then the list is printed one item per line,
      * otherwise the list is printed in columns.

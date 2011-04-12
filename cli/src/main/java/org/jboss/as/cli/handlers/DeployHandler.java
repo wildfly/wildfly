@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeployHandler extends CommandHandlerWithHelp {
+public class DeployHandler extends BatchModeCommandHandler {
 
     public DeployHandler() {
         super("deploy", true,

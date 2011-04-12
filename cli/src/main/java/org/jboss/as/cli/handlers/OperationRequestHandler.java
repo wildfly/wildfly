@@ -41,6 +41,11 @@ import org.jboss.dmr.ModelNode;
  */
 public class OperationRequestHandler implements CommandHandler {
 
+    @Override
+    public boolean isBatchMode() {
+        return true;
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
      */

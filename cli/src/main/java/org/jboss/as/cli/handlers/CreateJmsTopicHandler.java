@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class CreateJmsTopicHandler extends CommandHandlerWithHelp {
+public class CreateJmsTopicHandler extends BatchModeCommandHandler {
 
     public CreateJmsTopicHandler() {
         super("create-jms-topic", true, new SimpleTabCompleter(new String[]{"name=", "entries=", "--help"}));

@@ -19,23 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.handlers;
 
+import org.jboss.as.cli.CommandContext;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public class BatchRunHandler extends CommandHandlerWithHelp {
 
-    boolean isAvailable(CommandContext ctx);
+    public BatchRunHandler() {
+        super("batch-run");
+    }
 
-    CommandArgumentCompleter getArgumentCompleter();
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        if(!super.isAvailable(ctx)) {
+            return false;
+        }
+        return ctx.isBatchMode();
+    }
 
-    /**
-     * Whether the command supports batch mode or not.
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
-    boolean isBatchMode();
-
-    void handle(CommandContext ctx);
+    @Override
+    protected void doHandle(CommandContext ctx) {
+        String name = null;
+        if(ctx.hasArguments()) {
+            name = ctx.getArguments().get(0);
+        }
+        if(!ctx.runBatch(name)) {
+            if(name == null) {
+                ctx.printLine("There is no unnamed batch to run.");
+            } else {
+                ctx.printLine("Batch '" + name + "' doesn't exist.");
+            }
+        }
+    }
 }

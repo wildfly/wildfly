@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class UndeployHandler extends CommandHandlerWithHelp {
+public class UndeployHandler extends BatchModeCommandHandler {
 
     public UndeployHandler() {
         super("undeploy", true, new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},

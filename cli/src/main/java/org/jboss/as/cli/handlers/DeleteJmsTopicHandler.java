@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsTopicHandler extends CommandHandlerWithHelp {
+public class DeleteJmsTopicHandler extends BatchModeCommandHandler {
 
     public DeleteJmsTopicHandler() {
         super("delete-jms-topic", true,

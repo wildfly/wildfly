@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class CreateJmsResourceHandler extends CommandHandlerWithHelp {
+public class CreateJmsResourceHandler extends BatchModeCommandHandler {
 
     public CreateJmsResourceHandler() {
         super("create-jms-resource", true);

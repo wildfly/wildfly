@@ -41,6 +41,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.handlers.BatchDiscardHandler;
+import org.jboss.as.cli.handlers.BatchHandler;
+import org.jboss.as.cli.handlers.BatchHoldbackHandler;
+import org.jboss.as.cli.handlers.BatchListHandler;
+import org.jboss.as.cli.handlers.BatchRunHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
@@ -63,6 +68,7 @@ import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.PrefixFormatter;
+import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
@@ -96,6 +102,13 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new DeleteJmsCFHandler(), "delete-jms-cf");
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
+
+        cmdRegistry.registerHandler(new BatchHandler(), "batch");
+        cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
+        cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
+        cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
+        cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
+        cmdRegistry.registerHandler(new BatchRunHandler(), "clear-batch");
     }
 
     public static void main(String[] args) throws Exception {
@@ -212,8 +225,26 @@ public class CommandLineMain {
         }
 
         if(isOperation(line)) {
-            cmdCtx.setArgs(line);
-            cmdCtx.operationHandler.handle(cmdCtx);
+            cmdCtx.setArgs(null, line);
+            if(cmdCtx.isBatchMode()) {
+                OperationRequestAddress address = new DefaultOperationRequestAddress(cmdCtx.getPrefix());
+                DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(address);
+                try {
+                    cmdCtx.getOperationRequestParser().parse(line, handler);
+                    if(!handler.hasOperationName()) {
+                        cmdCtx.printLine("The request is missing the operation name");
+                    } else {
+                        StringBuilder op = new StringBuilder();
+                        op.append(cmdCtx.getPrefixFormatter().format(handler.getAddress()));
+                        op.append(line.substring(line.indexOf(':')));
+                        cmdCtx.addToBatch(op.toString());
+                    }
+                } catch (CommandFormatException e) {
+                    cmdCtx.printLine(e.getLocalizedMessage());
+                }
+            } else {
+                cmdCtx.operationHandler.handle(cmdCtx);
+            }
 
         } else {
             String cmd = line;
@@ -225,14 +256,17 @@ public class CommandLineMain {
                     break;
                 }
             }
-            cmdCtx.setArgs(cmdArgs);
+            cmdCtx.setArgs(cmd, cmdArgs);
 
             CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
-            if (handler != null) {
-                handler.handle(cmdCtx);
+            if(handler != null) {
+                if(cmdCtx.isBatchMode() && handler.isBatchMode()) {
+                    cmdCtx.addToBatch(line);
+                } else {
+                    handler.handle(cmdCtx);
+                }
             } else {
-                cmdCtx.printLine("Unexpected command '"
-                        + line
+                cmdCtx.printLine("Unexpected command '" + line
                         + "'. Type 'help' for the list of supported commands.");
             }
         }
@@ -289,6 +323,8 @@ public class CommandLineMain {
         /** whether the session should be terminated*/
         private boolean terminate;
 
+        /** current command */
+        private String cmd;
         /** current command's arguments */
         private String cmdArgs;
         /** command argument switches */
@@ -320,6 +356,12 @@ public class CommandLineMain {
         private final OperationCandidatesProvider operationCandidatesProvider;
         /** operation request handler */
         private final OperationRequestHandler operationHandler;
+        /** whether the CLI is in the batch mode */
+        private boolean batchMode;
+        /** currently saved batches */
+        private Map<String, List<String>> batches;
+        /** current batch */
+        private List<String> currentBatch;
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
@@ -471,6 +513,10 @@ public class CommandLineMain {
                     buffer.append(nodeName);
                 }
             }
+
+            if(isBatchMode()) {
+                buffer.append(" #");
+            }
             buffer.append("] ");
             return buffer.toString();
         }
@@ -604,7 +650,8 @@ public class CommandLineMain {
             }
         }
 
-        private void setArgs(String args) {
+        private void setArgs(String cmd, String args) {
+            this.cmd = cmd;
             cmdArgs = args;
             switches = null;
             namedArgs = null;
@@ -617,6 +664,103 @@ public class CommandLineMain {
                 parseArgs();
             }
             return namedArgs.keySet();
+        }
+
+        @Override
+        public boolean isBatchMode() {
+            return batchMode;
+        }
+
+        @Override
+        public boolean startBatch(String name) {
+            if(batchMode) {
+                return false;
+            }
+
+            this.batchMode = true;
+            if (batches == null) {
+                currentBatch = new ArrayList<String>();
+            } else {
+                currentBatch = batches.remove(name);
+                if (currentBatch == null) {
+                    currentBatch = new ArrayList<String>();
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean discardBatch(String name) {
+            if(batchMode) {
+                currentBatch = null;
+                batchMode = false;
+                return true;
+            }
+
+            if(batches != null) {
+                return batches.remove(name) != null;
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean holdbackBatch(String name) {
+            if(!batchMode) {
+                return false;
+            }
+            if(batches == null) {
+                batches = new HashMap<String, List<String>>();
+            } else if(batches.containsKey(name)) {
+                return false;
+            }
+            batchMode = false;
+            return batches.put(name, currentBatch) == null;
+        }
+
+        @Override
+        public boolean runBatch(String name) {
+            final List<String> batch;
+            if(!batchMode) {
+                if(batches != null) {
+                    batch = batches.remove(name);
+                } else {
+                    batch = null;
+                }
+            } else {
+                batch = currentBatch;
+            }
+
+            if(batch == null) {
+                return false;
+            }
+
+            try {
+                // do batch
+            } finally {
+                currentBatch = null;
+                batchMode = false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public List<String> getCurrentBatch() {
+            return currentBatch;
+        }
+
+        void addToBatch(String line) {
+            if(currentBatch == null) {
+                printLine("There is no active batch.");
+                return;
+            }
+            currentBatch.add(line);
+        }
+
+        @Override
+        public String getCommand() {
+            return cmd;
         }
     }
 }

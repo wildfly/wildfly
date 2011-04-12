@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsCFHandler extends CommandHandlerWithHelp {
+public class DeleteJmsCFHandler extends BatchModeCommandHandler {
 
     public DeleteJmsCFHandler() {
         super("delete-jms-cf", true,

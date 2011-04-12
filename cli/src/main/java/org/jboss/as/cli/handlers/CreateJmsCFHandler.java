@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class CreateJmsCFHandler extends CommandHandlerWithHelp {
+public class CreateJmsCFHandler extends BatchModeCommandHandler {
 
     public CreateJmsCFHandler() {
         super("create-jms-cf", true, new SimpleTabCompleter(new String[]{

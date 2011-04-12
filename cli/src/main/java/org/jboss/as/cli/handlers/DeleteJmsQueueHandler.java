@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsQueueHandler extends CommandHandlerWithHelp {
+public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
 
     public DeleteJmsQueueHandler() {
         super("delete-jms-queue", true,

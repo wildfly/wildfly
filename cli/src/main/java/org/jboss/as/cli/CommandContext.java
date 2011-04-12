@@ -40,6 +40,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
 public interface CommandContext {
 
     /**
+     * Returns the current command.
+     * @return the current command.
+     */
+    String getCommand();
+
+    /**
      * Returns the current command's arguments as a string.
      * @return current command's arguments as a string or null if the command was entered w/o arguments.
      */
@@ -202,4 +208,59 @@ public interface CommandContext {
      * @return  the history of all the commands and operations.
      */
     CommandHistory getHistory();
+
+    /**
+     * Checks whether the CLI is in the batch mode.
+     * @return true if the CLI is in the batch mode, false - otherwise.
+     */
+    boolean isBatchMode();
+
+    /**
+     * Starts batch mode.
+     * If name argument is null then if there was a previously held back unnamed batch, it is activated.
+     * If the name argument is null and there is no previously held back unnamed batch, a new batch is started.
+     * Otherwise, the name should be a name of an existing batch which had been held back previously,
+     * this batch becomes active and is removed from the storage. It can still be held back under the same
+     * or a different name, or w/o a name.
+     * The method returns true if the batch was successfully started or previously held back batch activated,
+     * otherwise (if already in the batch mode) - false;
+     */
+    boolean startBatch(String name);
+
+    /**
+     * Discards the current or a named batch w/o executing it.
+     * If invoked in the batch mode, the current batch will be discarded.
+     * If invoked not in the batch mode the held back (named or not, depending on the argument)
+     * batch will be discarded.
+     * Returns true if the batch was discarded, false is returned if the batch with the given
+     * name didn't exist.
+     * @param name  the name of the batch to discard or null for the current or a batch w/o a name.
+     */
+    boolean discardBatch(String name);
+
+    /**
+     * Hold back the current batch and quit the batch mode. If the argument is not null,
+     * the batch will be saved under the specified name. If the argument is null,
+     * the batch will be saved w/o a name.
+     * The method returns true if the batch was successfully saved. False is returned if there
+     * already is a held back batch with the given name (or unnamed if the name argument is null).
+     * @param name  the name under which to save the batch or null if the batch should be saved w/o a name.
+     */
+    boolean holdbackBatch(String name);
+
+    /**
+     * If in the batch mode, runs the current batch. If not in the batch mode,
+     * runs the batch with the given name if the argument is not null or the batch
+     * w/o a name if the argument is null.
+     * The method returns true if the batch with the given name (or no name if the argument is null)
+     * existed, otherwise false is returned.
+     * @param name  the name of the batch to run or null if the batch doesn't have a name.
+     */
+    boolean runBatch(String name);
+
+    /**
+     * Returns the current batch or null if not in the batch mode.
+     * @return the current batch or null if not in the batch mode.
+     */
+    List<String> getCurrentBatch();
 }

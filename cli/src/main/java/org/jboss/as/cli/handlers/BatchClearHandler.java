@@ -19,23 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli;
+package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
+import org.jboss.as.cli.CommandContext;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public interface CommandHandler {
+public class BatchClearHandler extends CommandHandlerWithHelp {
 
-    boolean isAvailable(CommandContext ctx);
+    public BatchClearHandler() {
+        super("batch-clear");
+    }
 
-    CommandArgumentCompleter getArgumentCompleter();
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        if(!super.isAvailable(ctx)) {
+            return false;
+        }
+        return ctx.isBatchMode();
+    }
 
-    /**
-     * Whether the command supports batch mode or not.
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
-    boolean isBatchMode();
+    @Override
+    protected void doHandle(CommandContext ctx) {
 
-    void handle(CommandContext ctx);
+        List<String> currentBatch = ctx.getCurrentBatch();
+        if(currentBatch == null) {
+            ctx.printLine("No active batch.");
+            return;
+        }
+        currentBatch.clear();
+    }
+
 }
