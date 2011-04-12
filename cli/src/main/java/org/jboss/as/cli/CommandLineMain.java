@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.monitor.MonitorNotification;
+
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
@@ -70,6 +72,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -418,13 +421,24 @@ public class CommandLineMain {
                 if(this.client != null) {
                     disconnectController();
                 }
+                printLine("Connecting to " + host + ":" + port);
+                testConnection(newClient);
                 printLine("Connected to " + host + ":" + port);
                 client = newClient;
                 this.controllerHost = host;
                 this.controllerPort = port;
             } catch (UnknownHostException e) {
                 printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+            } catch (IOException ioe) {
+                printLine("Failed to connect to host '" + host + "': " + ioe.getLocalizedMessage());
             }
+        }
+
+        private void testConnection(ModelControllerClient client) throws IOException {
+            final ModelNode operation = new ModelNode();
+            operation.get("operation").set("read-resource");
+            operation.get("address").setEmptyList();
+            client.execute(operation);
         }
 
         @Override
