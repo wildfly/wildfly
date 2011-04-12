@@ -37,6 +37,7 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.services.net.ManagedBinding;
+import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.server.services.net.SocketBindingManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -49,7 +50,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public final class BindingMetricHandlers {
 
-    private static final ServiceName BINDING_MANAGER = SocketBindingManager.SOCKET_BINDING_MANAGER;
+    private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
     private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
     abstract static class AbstractBindingMetricsHandler implements ModelQueryOperationHandler {
@@ -63,11 +64,10 @@ public final class BindingMetricHandlers {
                 context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                     @Override
                     public void execute(final RuntimeTaskContext context) throws OperationFailedException {
-                        final ServiceController<?> controller = context.getServiceRegistry().getRequiredService(BINDING_MANAGER);
+                        final ServiceController<?> controller = context.getServiceRegistry().getRequiredService(SOCKET_BINDING.append(element.getValue()));
                         if(controller != null) {
-                            final SocketBindingManager manager = SocketBindingManager.class.cast(controller.getValue());
-                            final ManagedBinding binding = manager.getNamedRegistry().getManagedBinding(element.getValue());
-                            AbstractBindingMetricsHandler.this.execute(operation, manager, binding, resultHandler);
+                            final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
+                            AbstractBindingMetricsHandler.this.execute(operation, binding, resultHandler);
                             resultHandler.handleResultComplete();
                         } else {
                             resultHandler.handleResultFragment(Util.NO_LOCATION, NO_METRICS);
@@ -82,7 +82,7 @@ public final class BindingMetricHandlers {
             return new BasicOperationResult();
         }
 
-        abstract void execute(ModelNode operation, SocketBindingManager manager, ManagedBinding binding, ResultHandler hanler);
+        abstract void execute(ModelNode operation, SocketBinding binding, ResultHandler handler);
     }
 
     public static class BoundHandler extends AbstractBindingMetricsHandler {
@@ -95,9 +95,9 @@ public final class BindingMetricHandlers {
         }
 
         @Override
-        void execute(final ModelNode operation, final SocketBindingManager manager, final ManagedBinding binding, final ResultHandler handler) {
+        void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
             // The socket should be bound when it's registered at the SocketBindingManager
-            handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(binding != null));
+            handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(binding.isBound()));
         }
     }
 

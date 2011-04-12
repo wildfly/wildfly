@@ -37,16 +37,25 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
 
     private final String name;
     private final SocketBindingManager socketBindings;
-    private final boolean metrics = true;
-    private volatile int count = 0;
+    private final boolean metrics;
+    private volatile long acceptCount = 0;
 
     ManagedServerSocketBinding(final SocketBindingManager socketBindings) throws IOException {
-        this(null, socketBindings);
+        this(null, socketBindings, false);
+    }
+
+    ManagedServerSocketBinding(final SocketBindingManager socketBindings, final boolean metrics) throws IOException {
+        this(null, socketBindings, metrics);
     }
 
     ManagedServerSocketBinding(final String name, final SocketBindingManager socketBindings) throws IOException {
+        this(name, socketBindings, false);
+    }
+
+    ManagedServerSocketBinding(final String name, final SocketBindingManager socketBindings, final boolean metrics) throws IOException {
         this.name = name;
         this.socketBindings = socketBindings;
+        this.metrics = metrics;
     }
 
     @Override
@@ -74,7 +83,7 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
         final Socket socket = metrics ? new ManagedSocketBinding(socketBindings.getUnnamedRegistry()) : new Socket();
         implAccept(socket);
         if(metrics) {
-            count++;
+            acceptCount++;
         }
         return socket;
     }
@@ -90,6 +99,10 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
                 socketBindings.getUnnamedRegistry().unregisterBinding(this);
             }
         }
+    }
+
+    public long getAcceptCount() {
+        return acceptCount;
     }
 
 }

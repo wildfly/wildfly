@@ -18,19 +18,19 @@
  */
 package org.jboss.as.server.operations.sockets;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for changing the port or multicast-port on a socket binding.
  *
- * TODO see comment on JBAS-9100 re: only requiring restart if there is an actual
- * active socket associated with the binding.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingPortHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
     public static final BindingPortHandler INSTANCE = new BindingPortHandler();
 
@@ -38,4 +38,8 @@ public class BindingPortHandler extends ServerWriteAttributeOperationHandler imp
         super(new IntRangeValidator(0, 65535, false, true));
     }
 
+    @Override
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
+        binding.setPort(attributeValue.asInt());
+    }
 }

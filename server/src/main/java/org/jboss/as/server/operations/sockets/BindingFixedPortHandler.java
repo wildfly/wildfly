@@ -21,17 +21,16 @@ package org.jboss.as.server.operations.sockets;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * Handler for changing the fixed-port setting on a socket binding.
  *
- * TODO see comment on JBAS-9100 re: only requiring restart if there is an actual
- * active socket associated with the binding.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingFixedPortHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingFixedPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
     public static final BindingFixedPortHandler INSTANCE = new BindingFixedPortHandler();
 
@@ -39,4 +38,8 @@ public class BindingFixedPortHandler extends ServerWriteAttributeOperationHandle
         super(new ModelTypeValidator(ModelType.BOOLEAN, true, true));
     }
 
+    @Override
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
+        binding.setFixedPort(attributeValue.asBoolean());
+    }
 }

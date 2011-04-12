@@ -37,7 +37,8 @@ import java.nio.channels.SocketChannel;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * The socket binding manager service.
+ * The socket binding manager represents a registry of all
+ * active (bound) sockets.
  *
  * @author Emanuel Muckenhuber
  */
@@ -129,6 +130,7 @@ public interface SocketBindingManager {
     public interface NamedManagedBindingRegistry extends ManagedBindingRegistry {
 
         ManagedBinding getManagedBinding(final String name);
+        boolean isRegistered(final String name);
 
         Closeable registerSocket(String name, Socket socket);
         Closeable registerSocket(String name, ServerSocket socket);

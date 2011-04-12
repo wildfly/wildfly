@@ -40,15 +40,15 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-public class SocketBinding {
+public final class SocketBinding {
 
     public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
 
     private final String name;
-    private int port;
-    private boolean isFixedPort;
-    private InetAddress multicastAddress;
-    private int multicastPort;
+    private volatile int port;
+    private volatile boolean isFixedPort;
+    private volatile InetAddress multicastAddress;
+    private volatile int multicastPort;
     private final NetworkInterfaceBinding networkInterface;
     private final SocketBindingManager socketBindings;
 
@@ -159,7 +159,7 @@ public class SocketBinding {
      * @throws SocketException
      */
     public DatagramSocket createDatagramSocket() throws SocketException {
-        return socketBindings.createDatagramSocket(name, getSocketAddress());
+        return socketBindings.createDatagramSocket(name, getMulticastSocketAddress());
     }
 
     /**
@@ -171,6 +171,70 @@ public class SocketBinding {
     // TODO JBAS-8470 automatically joingGroup
     public MulticastSocket createMulticastSocket() throws IOException {
         return socketBindings.createMulticastSocket(name, getSocketAddress());
+    }
+
+    /**
+     * Get the {@code ManagedBinding} associated with this {@code SocketBinding}.
+     *
+     * @return the managed binding if bound, <code>null</code> otherwise
+     */
+    public ManagedBinding getManagedBinding() {
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.socketBindings.getNamedRegistry();
+        return registry.getManagedBinding(name);
+    }
+
+    /**
+     * Check whether this {@code SocketBinding} is bound. All bound sockets
+     * have to be registered at the {@code SocketBindingManager} against which
+     * this check is performed.
+     *
+     * @return true if bound, false otherwise
+     */
+    public boolean isBound() {
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.socketBindings.getNamedRegistry();
+        return registry.isRegistered(name);
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        checkNotBound();
+        this.port = port;
+    }
+
+    public boolean isFixedPort() {
+        return isFixedPort;
+    }
+
+    public void setFixedPort(boolean fixedPort) {
+        checkNotBound();
+        isFixedPort = fixedPort;
+    }
+
+    public int getMulticastPort() {
+        return multicastPort;
+    }
+
+    public void setMulticastPort(int multicastPort) {
+        checkNotBound();
+        this.multicastPort = multicastPort;
+    }
+
+    public InetAddress getMulticastAddress() {
+        return multicastAddress;
+    }
+
+    public void setMulticastAddress(InetAddress multicastAddress) {
+        checkNotBound();
+        this.multicastAddress = multicastAddress;
+    }
+
+    void checkNotBound() {
+        if(isBound()) {
+            throw new IllegalStateException("cannot change value while the socket is bound.");
+        }
     }
 
     SocketFactory getSocketFactory() {

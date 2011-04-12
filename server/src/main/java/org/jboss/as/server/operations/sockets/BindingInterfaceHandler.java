@@ -21,16 +21,15 @@ package org.jboss.as.server.operations.sockets;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for changing the interface on a socket binding.
  *
- * TODO see comment on JBAS-9100 re: only requiring restart if there is an actual
- * active socket associated with the binding.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingInterfaceHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingInterfaceHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
     public static final BindingInterfaceHandler INSTANCE = new BindingInterfaceHandler();
 
@@ -38,4 +37,13 @@ public class BindingInterfaceHandler extends ServerWriteAttributeOperationHandle
         super(new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
     }
 
+    @Override
+    protected boolean requiresRestart() {
+        return true;
+    }
+
+    @Override
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
+        // interface change always requires a restart
+    }
 }

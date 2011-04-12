@@ -346,6 +346,12 @@ abstract class SocketBindingManagerImpl implements SocketBindingManager {
 
         /** {@inheritDoc} */
         @Override
+        public boolean isRegistered(String name) {
+            return bindings.containsKey(name);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public void registerBinding(ManagedBinding binding) {
             final String name = binding.getSocketBindingName();
             if(name == null) {
@@ -421,6 +427,9 @@ abstract class SocketBindingManagerImpl implements SocketBindingManager {
         /** {@inheritDoc} */
         @Override
         public void unregisterBinding(String name) {
+            if(name == null) {
+                return;
+            }
             bindings.remove(name);
         }
     }
