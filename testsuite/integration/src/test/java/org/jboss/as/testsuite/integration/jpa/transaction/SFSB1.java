@@ -71,4 +71,12 @@ public class SFSB1 {
 
         em.flush();         // should throw TransactionRequiredException
     }
+
+
+    @TransactionAttribute(TransactionAttributeType.NEVER)
+    public Employee getEmployeeNoTX(int id) {
+
+        return em.find(Employee.class, id);
+    }
+
 }

@@ -39,7 +39,6 @@ import javax.persistence.TransactionRequiredException;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-
 /**
  * Transaction tests
  *
@@ -111,5 +110,16 @@ public class TransactionTestCase {
 //        assertTrue(
 //            "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
 //                + " but we instead got a " + error, error instanceof TransactionRequiredException);
+    }
+
+    @Test
+    public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
+        Exception error = null;
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
+                                    // that isn't running in an transaction.  So, a new underlying
+                                    // entity manager will be obtained.  The is to ensure that we don't blow up.
+        sfsb1.getEmployeeNoTX(1);
+        sfsb1.getEmployeeNoTX(1);
     }
 }
