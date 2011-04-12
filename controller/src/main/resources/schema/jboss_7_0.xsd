@@ -267,7 +267,7 @@
     <xs:complexType name="server-groupType">
         <xs:sequence>
             <xs:element name="jvm" type="namedJvmType" minOccurs="0"/>
-            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
+            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="1"/>
 
             <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
 

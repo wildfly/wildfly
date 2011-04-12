@@ -133,12 +133,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         }
 
         final String jvmName = serverVMName != null ? serverVMName : groupVMName;
-        if(jvmName == null) {
-            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() +
-                    " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
-        }
-
-        final ModelNode hostVM = hostModel.get(JVM, jvmName);
+        final ModelNode hostVM = jvmName != null ? hostModel.get(JVM, jvmName) : null;
         this.jvmElement = new JvmElement(jvmName, hostVM, groupVM, serverVM);
     }
 
