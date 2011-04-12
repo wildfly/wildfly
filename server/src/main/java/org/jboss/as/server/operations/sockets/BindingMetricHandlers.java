@@ -28,6 +28,7 @@ import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -51,7 +52,7 @@ public final class BindingMetricHandlers {
     private static final ServiceName BINDING_MANAGER = SocketBindingManager.SOCKET_BINDING_MANAGER;
     private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
-    static abstract class AbstractBindingMetricsHandler implements ModelQueryOperationHandler {
+    abstract static class AbstractBindingMetricsHandler implements ModelQueryOperationHandler {
 
         /** {@inheritDoc} */
         @Override
@@ -87,6 +88,11 @@ public final class BindingMetricHandlers {
     public static class BoundHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound";
+        public static final OperationHandler INSTANCE = new BoundHandler();
+
+        private BoundHandler() {
+            //
+        }
 
         @Override
         void execute(final ModelNode operation, final SocketBindingManager manager, final ManagedBinding binding, final ResultHandler handler) {

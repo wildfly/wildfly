@@ -93,6 +93,7 @@ import org.jboss.as.server.operations.sockets.BindingAddHandler;
 import org.jboss.as.server.operations.sockets.BindingFixedPortHandler;
 import org.jboss.as.server.operations.sockets.BindingGroupDefaultInterfaceHandler;
 import org.jboss.as.server.operations.sockets.BindingInterfaceHandler;
+import org.jboss.as.server.operations.sockets.BindingMetricHandlers;
 import org.jboss.as.server.operations.sockets.BindingMulticastAddressHandler;
 import org.jboss.as.server.operations.sockets.BindingPortHandler;
 import org.jboss.as.server.operations.sockets.BindingRemoveHandler;
@@ -201,6 +202,7 @@ public class ServerControllerModelUtil {
         ModelNodeRegistration socketBinding = socketGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), CommonProviders.SOCKET_BINDING_PROVIDER);
         socketBinding.registerOperationHandler(BindingAddHandler.OPERATION_NAME, BindingAddHandler.INSTANCE, BindingAddHandler.INSTANCE, false);
         socketBinding.registerOperationHandler(BindingRemoveHandler.OPERATION_NAME, BindingRemoveHandler.INSTANCE, BindingRemoveHandler.INSTANCE, false);
+        socketBinding.registerMetric(BindingMetricHandlers.BoundHandler.ATTRIBUTE_NAME, BindingMetricHandlers.BoundHandler.INSTANCE);
         socketBinding.registerReadWriteAttribute(INTERFACE, null, BindingInterfaceHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(PORT, null, BindingPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(FIXED_PORT, null, BindingFixedPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);

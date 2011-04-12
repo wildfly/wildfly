@@ -58,7 +58,7 @@ public abstract class ManagedSocketFactory extends SocketFactory {
      * @throws UnknownHostException
      * @see {@linkplain SocketFactory#createSocket(String, int)}
      */
-    public abstract Socket createSocket(String name, String host, int port) throws IOException, UnknownHostException;
+    public abstract Socket createSocket(String name, String host, int port) throws IOException;
 
     /**
      * Create a socket.
@@ -85,7 +85,7 @@ public abstract class ManagedSocketFactory extends SocketFactory {
      * @throws UnknownHostException
      * @see {@linkplain SocketFactory#createSocket(String, InetAddress, int)}
      */
-    public abstract Socket createSocket(String name, String host, int port, InetAddress localHost, int localPort) throws IOException, UnknownHostException;
+    public abstract Socket createSocket(String name, String host, int port, InetAddress localHost, int localPort) throws IOException;
 
     /**
      * Create a socket.

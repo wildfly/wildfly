@@ -52,7 +52,7 @@ import java.util.Locale;
  *
  * @author Emanuel Muckenhuber
  */
-public class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider {
+class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider {
 
     static final WebVirtualHostAdd INSTANCE = new WebVirtualHostAdd();
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
