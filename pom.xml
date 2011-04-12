@@ -72,7 +72,7 @@
         <version.javax.faces.jsf-impl>2.0.4-b09</version.javax.faces.jsf-impl>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
-        <version.javax.mail.mail>1.4.2</version.javax.mail.mail>
+        <version.javax.mail.mail>1.4.4</version.javax.mail.mail>
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.jaxbintros>1.0.2.GA</version.jaxbintros>
         <version.jline>0.9.94</version.jline>
