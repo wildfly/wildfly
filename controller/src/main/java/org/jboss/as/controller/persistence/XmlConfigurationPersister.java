@@ -69,32 +69,15 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         this.rootParser = rootParser;
     }
 
-    /**
-     * Back up an old configuration file before overwriting it.
-     *
-     * @param fileName the file name being overwritten
-     * @throws ConfigurationPersistenceException if the backup fails
-     */
-    protected void backup(File fileName) throws ConfigurationPersistenceException {
-        // todo - either provide a default impl or keep this pluggable
-    }
-
-    /**
-     * Hook for when the file has been written
-     *
-     * @param fileName the file name being overwritten
-     * @throws ConfigurationPersistenceException if the backup fails
-     */
-    protected void fileWritten(File fileName) throws ConfigurationPersistenceException {
-
-    }
-
     /** {@inheritDoc} */
     @Override
     public void store(final ModelNode model) throws ConfigurationPersistenceException {
-        backup(fileName);
+        store(model, fileName);
+    }
+
+    protected void store(final ModelNode model, final File file) throws ConfigurationPersistenceException {
         try {
-            final FileOutputStream fos = new FileOutputStream(fileName);
+            final FileOutputStream fos = new FileOutputStream(file);
             try {
                 BufferedOutputStream output = new BufferedOutputStream(fos);
                 marshallAsXml(model, output);
@@ -103,7 +86,6 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
             } finally {
                 safeClose(fos);
             }
-            fileWritten(fileName);
         } catch (Exception e) {
             throw new ConfigurationPersistenceException("Failed to store configuration", e);
         }
@@ -141,21 +123,12 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         }
     }
 
-    @Override
-    public void successfulBoot() throws ConfigurationPersistenceException {
-        successfulBoot(fileName);
-    }
-
     protected void successfulBoot(File file) throws ConfigurationPersistenceException {
 
     }
 
     @Override
     public String snapshot() throws ConfigurationPersistenceException {
-        return snapshot(fileName);
-    }
-
-    protected String snapshot(File file) throws ConfigurationPersistenceException {
         return "";
     }
 }
