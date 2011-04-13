@@ -100,6 +100,7 @@ import org.jboss.as.server.operations.sockets.BindingRemoveHandler;
 import org.jboss.as.server.operations.sockets.BindingGroupAddHandler;
 import org.jboss.as.server.operations.sockets.BindingGroupPortOffsetHandler;
 import org.jboss.as.server.operations.sockets.BindingGroupRemoveHandler;
+import org.jboss.as.server.operations.sockets.BindingMulticastPortHandler;
 import org.jboss.as.server.operations.sockets.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.operations.sockets.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
@@ -207,7 +208,7 @@ public class ServerControllerModelUtil {
         socketBinding.registerReadWriteAttribute(PORT, null, BindingPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(FIXED_PORT, null, BindingFixedPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(MULTICAST_ADDRESS, null, BindingMulticastAddressHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        socketBinding.registerReadWriteAttribute(MULTICAST_PORT, null, BindingPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        socketBinding.registerReadWriteAttribute(MULTICAST_PORT, null, BindingMulticastPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // Deployments
         ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);

@@ -26,7 +26,7 @@ import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for changing the port or multicast-port on a socket binding.
+ * Handler for changing the port on a socket binding.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
