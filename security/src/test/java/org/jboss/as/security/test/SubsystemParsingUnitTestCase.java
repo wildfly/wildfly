@@ -50,61 +50,55 @@ import org.junit.Test;
  * @author anil saldhana
  */
 public class SubsystemParsingUnitTestCase {
-	private static final String namespace = "urn:jboss:domain:security:1.0";
-	private static final SecuritySubsystemParser parser = SecuritySubsystemParser
-			.getInstance();
+    private static final String namespace = "urn:jboss:domain:security:1.0";
+    private static final SecuritySubsystemParser parser = SecuritySubsystemParser.getInstance();
 
-	@Test
-	public void test() throws Exception {
+    @Test
+    public void test() throws Exception {
 
-		List<ModelNode> operations = parse("subsystem.xml");
-		assertNotNull(operations);
-		ModelNode node = operations.get(1);
-		assertNotNull(node);
-		ModelNode address = node.get(OP_ADDR);
-		List<Property> properties = address.asPropertyList();
-		assertEquals(2, properties.size());
-		for (Property prop : properties) {
-			String propName = prop.getName();
-			if (!(propName.equals(SUBSYSTEM) || propName
-					.equals(SECURITY_DOMAIN)))
-				fail("either subsystem or security-domain expected");
-			if (propName.equals(SECURITY_DOMAIN)) {
-				ModelNode securityDomainValue = prop.getValue();
-				String value = securityDomainValue.asString();
-				assertEquals("other", value);
-			}
-		}
-		ModelNode auth = node.get("authentication");
-		assertNotNull(auth);
-		List<ModelNode> domainNodes = auth.asList();
-		assertEquals(1, domainNodes.size());
+        List<ModelNode> operations = parse("subsystem.xml");
+        assertNotNull(operations);
+        ModelNode node = operations.get(1);
+        assertNotNull(node);
+        ModelNode address = node.get(OP_ADDR);
+        List<Property> properties = address.asPropertyList();
+        assertEquals(2, properties.size());
+        for (Property prop : properties) {
+            String propName = prop.getName();
+            if (!(propName.equals(SUBSYSTEM) || propName.equals(SECURITY_DOMAIN)))
+                fail("either subsystem or security-domain expected");
+            if (propName.equals(SECURITY_DOMAIN)) {
+                ModelNode securityDomainValue = prop.getValue();
+                String value = securityDomainValue.asString();
+                assertEquals("other", value);
+            }
+        }
+        ModelNode auth = node.get("authentication");
+        assertNotNull(auth);
+        List<ModelNode> domainNodes = auth.asList();
+        assertEquals(1, domainNodes.size());
 
-		ModelNode modelNode = domainNodes.get(0);
-		ModelNode code = modelNode.get("code");
-		assertEquals("org.jboss.security.auth.spi.UsersRolesLoginModule",
-				code.asString());
-		ModelNode flag = modelNode.get("flag");
-		assertEquals("required", flag.asString());
-	}
+        ModelNode modelNode = domainNodes.get(0);
+        ModelNode code = modelNode.get("code");
+        assertEquals("UsersRoles", code.asString());
+        ModelNode flag = modelNode.get("flag");
+        assertEquals("required", flag.asString());
+    }
 
-	List<ModelNode> parse(final String name) throws XMLStreamException,
-			IOException {
-		final List<ModelNode> operations = new ArrayList<ModelNode>();
+    List<ModelNode> parse(final String name) throws XMLStreamException, IOException {
+        final List<ModelNode> operations = new ArrayList<ModelNode>();
 
-		XMLMapper mapper = XMLMapper.Factory.create();
-		mapper.registerRootElement(new QName(namespace, "subsystem"), parser);
+        XMLMapper mapper = XMLMapper.Factory.create();
+        mapper.registerRootElement(new QName(namespace, "subsystem"), parser);
 
-		URL configURL = getClass().getResource(name);
-		Assert.assertNotNull(name + " url is not null", configURL);
-		System.out.println("configURL = " + configURL);
+        URL configURL = getClass().getResource(name);
+        Assert.assertNotNull(name + " url is not null", configURL);
+        System.out.println("configURL = " + configURL);
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				configURL.openStream()));
-		mapper.parseDocument(operations, XMLInputFactory.newInstance()
-				.createXMLStreamReader(reader));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
+        mapper.parseDocument(operations, XMLInputFactory.newInstance().createXMLStreamReader(reader));
 
-		return operations;
-	}
+        return operations;
+    }
 
 }

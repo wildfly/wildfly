@@ -49,7 +49,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -239,7 +238,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.AUTHENTICATION.getLocalName());
             for (ModelNode loginModule : modelNode.asList()) {
                 writer.writeStartElement(Element.LOGIN_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.AUTHENTICATION);
+                writeCommonModule(writer, loginModule);
             }
             writer.writeEndElement();
         }
@@ -250,7 +249,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
             for (ModelNode loginModule : modelNode.asList()) {
                 writer.writeStartElement(Element.POLICY_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.AUTHORIZATION);
+                writeCommonModule(writer, loginModule);
             }
             writer.writeEndElement();
         }
@@ -261,7 +260,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.ACL.getLocalName());
             for (ModelNode loginModule : modelNode.asList()) {
                 writer.writeStartElement(Element.ACL_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.ACL);
+                writeCommonModule(writer, loginModule);
             }
             writer.writeEndElement();
         }
@@ -272,7 +271,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.AUDIT.getLocalName());
             for (ModelNode loginModule : modelNode.asList()) {
                 writer.writeStartElement(Element.PROVIDER_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.AUDIT);
+                writeCommonModule(writer, loginModule);
             }
             writer.writeEndElement();
         }
@@ -283,7 +282,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.IDENTITY_TRUST.getLocalName());
             for (ModelNode loginModule : modelNode.asList()) {
                 writer.writeStartElement(Element.TRUST_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.IDENTITY_TRUST);
+                writeCommonModule(writer, loginModule);
             }
             writer.writeEndElement();
         }
@@ -294,7 +293,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeStartElement(Element.MAPPING.getLocalName());
             for (ModelNode loginModule : modelNode.asList()) {
                 writer.writeStartElement(Element.MAPPING_MODULE.getLocalName());
-                writeCommonModule(writer, loginModule, Element.MAPPING);
+                writeCommonModule(writer, loginModule);
             }
             writer.writeEndElement();
         }
@@ -325,7 +324,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     List<ModelNode> lms = loginModuleNode.asList();
                     for (ModelNode loginModule : lms) {
                         writer.writeStartElement(Element.LOGIN_MODULE.getLocalName());
-                        writeCommonModule(writer, loginModule, Element.AUTHENTICATION);
+                        writeCommonModule(writer, loginModule);
                     }
                 }
                 writer.writeEndElement();
@@ -338,15 +337,14 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             List<ModelNode> authModulesNode = modelNode.asList();
             for (ModelNode authModule : authModulesNode) {
                 writer.writeStartElement(Element.AUTH_MODULE.getLocalName());
-                writeCommonModule(writer, authModule, Element.AUTH_MODULE);
+                writeCommonModule(writer, authModule);
             }
         }
     }
 
-    private void writeCommonModule(XMLExtendedStreamWriter writer, ModelNode module, Element type) throws XMLStreamException {
+    private void writeCommonModule(XMLExtendedStreamWriter writer, ModelNode module) throws XMLStreamException {
         // check map for known modules
         String code = module.require(Attribute.CODE.getLocalName()).asString();
-        code = getCode(code, type);
         writer.writeAttribute(Attribute.CODE.getLocalName(), code);
         if (module.hasDefined(Attribute.FLAG.getLocalName()))
             writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Attribute.FLAG.getLocalName()).asString());
@@ -604,7 +602,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         case LOGIN_MODULE: {
                             EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                             EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed, Element.AUTHENTICATION);
+                            parseCommonModule(reader, op.add(), required, notAllowed);
                             break;
                         }
                         default: {
@@ -630,7 +628,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         case POLICY_MODULE: {
                             EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                             EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed, Element.AUTHORIZATION);
+                            parseCommonModule(reader, op.add(), required, notAllowed);
                             break;
                         }
                         default: {
@@ -656,7 +654,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         case ACL_MODULE: {
                             EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                             EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed, Element.ACL);
+                            parseCommonModule(reader, op.add(), required, notAllowed);
                             break;
                         }
                         default: {
@@ -682,7 +680,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         case PROVIDER_MODULE: {
                             EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
                             EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
-                            parseCommonModule(reader, op.add(), required, notAllowed, Element.AUDIT);
+                            parseCommonModule(reader, op.add(), required, notAllowed);
                             break;
                         }
                         default: {
@@ -708,7 +706,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         case TRUST_MODULE: {
                             EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                             EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE);
-                            parseCommonModule(reader, op.add(), required, notAllowed, Element.IDENTITY_TRUST);
+                            parseCommonModule(reader, op.add(), required, notAllowed);
                             break;
                         }
                         default: {
@@ -734,7 +732,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                         case MAPPING_MODULE: {
                             EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
                             EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.FLAG);
-                            parseCommonModule(reader, op.add(), required, notAllowed, Element.MAPPING);
+                            parseCommonModule(reader, op.add(), required, notAllowed);
                             break;
                         }
                         default: {
@@ -751,7 +749,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     }
 
     private void parseCommonModule(XMLExtendedStreamReader reader, ModelNode node, EnumSet<Attribute> required,
-            EnumSet<Attribute> notAllowed, Element type) throws XMLStreamException {
+            EnumSet<Attribute> notAllowed) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -762,17 +760,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case CODE: {
-                    String code = null;
-                    // check map for known modules
-                    switch (type) {
-                        case AUTHENTICATION: {
-                            code = AUTHENTICATION_MAP.get(value);
-                            break;
-                        }
-                        default: // TODO
-                    }
-                    if (code == null)
-                        code = value;
+                    String code = value;
                     node.get(Attribute.CODE.getLocalName()).set(code);
                     break;
                 }
@@ -959,27 +947,6 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
         moduleOptions.add(name, val);
         requireNoContent(reader);
-    }
-
-    private String getCode(String code, Element type) {
-        String value = null;
-        switch (type) {
-            case AUTHENTICATION: {
-                Set<Entry<String, String>> entries = AUTHENTICATION_MAP.entrySet();
-                for (Entry<String, String> mapEntry : entries) {
-                    if (mapEntry.getValue().equals(code)) {
-                        value = mapEntry.getKey();
-                        break;
-                    }
-                }
-                if (value != null)
-                    return value;
-                else
-                    return code;
-            }
-            default:
-                return code;
-        }
     }
 
 }
