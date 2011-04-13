@@ -61,7 +61,8 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
                 for (ApplicationExceptionMetaData applicationException : applicationExceptions) {
                     String exceptionClassName = applicationException.getExceptionClass();
                     boolean rollback = applicationException.isRollback();
-                    boolean inherited = applicationException.isInherited() == null ? false : applicationException.isInherited();
+                    // by default inherited is true
+                    boolean inherited = applicationException.isInherited() == null ? true : applicationException.isInherited();
                     // add the application exception to the ejb jar description
                     ejbJarDescription.addApplicationException(exceptionClassName, rollback, inherited);
                 }

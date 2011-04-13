@@ -69,7 +69,31 @@ public abstract class EJBComponent extends AbstractComponent implements org.jbos
 
     @Override
     public ApplicationException getApplicationException(Class<?> exceptionClass) {
-        return this.applicationExceptions.get(exceptionClass);
+        ApplicationException applicationException = this.applicationExceptions.get(exceptionClass);
+        if (applicationException != null) {
+            return applicationException;
+        }
+        // Check if the super class of the passed exception class, is an application exception.
+        Class<?> superClass = exceptionClass.getSuperclass();
+        while (superClass != null && !(superClass.equals(Exception.class) || superClass.equals(Object.class))) {
+            applicationException = this.applicationExceptions.get(superClass);
+            // check whether the "inherited" attribute is set. A subclass of an application exception
+            // is an application exception only if the inherited attribute on the parent application exception
+            // is set to true.
+            if (applicationException != null) {
+                if (applicationException.inherited()) {
+                    return applicationException;
+                }
+                // Once we find a super class which is an application exception,
+                // we just stop there (no need to check the grand super class), irrespective of whether the "inherited"
+                // is true or false
+                return null; // not an application exception, so return null
+            }
+            // move to next super class
+            superClass = superClass.getSuperclass();
+        }
+        // not an application exception, so return null.
+        return null;
     }
 
     @Override

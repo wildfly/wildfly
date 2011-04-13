@@ -106,7 +106,7 @@
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha6</version.org.jboss.classfilewriter>
-        <version.org.jboss.ejb3>2.0.0-alpha-2</version.org.jboss.ejb3>
+        <version.org.jboss.ejb3>2.0.0-alpha-3-SNAPSHOT</version.org.jboss.ejb3>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.interceptor>2.0.0.Alpha3</version.org.jboss.interceptor>

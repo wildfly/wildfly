@@ -70,7 +70,8 @@ public class ApplicationExceptionAnnotationProcessor implements DeploymentUnitPr
             if (rollBackAnnValue != null) {
                 rollback = rollBackAnnValue.asBoolean();
             }
-            boolean inherited = false;
+            // default "inherited" is true
+            boolean inherited = true;
             AnnotationValue inheritedAnnValue = annotationInstance.value("inherited");
             if (inheritedAnnValue != null) {
                 inherited = inheritedAnnValue.asBoolean();

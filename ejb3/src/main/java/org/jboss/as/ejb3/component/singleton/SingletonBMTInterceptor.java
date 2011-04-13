@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.ejb3.tx2.impl.StatelessBMTInterceptor;
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -49,8 +50,8 @@ public class SingletonBMTInterceptor extends StatelessBMTInterceptor implements 
     }
 
     @Override
-    protected String getComponentName() {
-        return this.singletonComponent.getComponentName();
+    protected TransactionalComponent getTransactionalComponent() {
+        return this.singletonComponent;
     }
 
     @Override
