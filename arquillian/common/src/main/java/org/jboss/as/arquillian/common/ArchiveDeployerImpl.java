@@ -18,6 +18,7 @@ package org.jboss.as.arquillian.common;
 
 import java.io.InputStream;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.api.ArchiveDeployer;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
@@ -64,7 +65,7 @@ public final class ArchiveDeployerImpl implements ArchiveDeployer {
 
     private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
-        ServerDeploymentPlanResult planResult = future.get();
+        ServerDeploymentPlanResult planResult = future.get(5, TimeUnit.SECONDS);
 
         ServerDeploymentActionResult actionResult = planResult.getDeploymentActionResult(deployAction.getId());
         if (actionResult != null) {

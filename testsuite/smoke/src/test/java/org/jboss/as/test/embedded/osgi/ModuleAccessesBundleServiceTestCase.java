@@ -40,7 +40,6 @@ import org.jboss.as.test.embedded.osgi.bundle.TargetBundleActivator;
 import org.jboss.as.test.embedded.osgi.bundle.TargetBundleEchoImpl;
 import org.jboss.as.test.embedded.osgi.module.ClientModuleActivator;
 import org.jboss.as.test.embedded.osgi.module.EchoInvokerService;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
@@ -53,6 +52,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -66,6 +66,7 @@ import org.osgi.framework.BundleContext;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
+@Ignore("[JBAS-9305] ARQ tests using ArchiveDeployer may hang in deployment API")
 public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String CLIENT_MODULE_NAME = "example-xservice-client-module";
@@ -73,8 +74,21 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     private static final String API_MODULE_NAME = "example-xservice-api-module";
 
     @Deployment
-    public static Archive<?> deployment() {
-        return ShrinkWrapUtils.createJavaArchive("osgi/xservice/bundle-access-test.jar", AbstractXServiceTestCase.class);
+    public static JavaArchive createdeployment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-bundle-access");
+        archive.addClasses(AbstractXServiceTestCase.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                // [TODO] Remove these explicit imports
+                builder.addImportPackages("org.jboss.shrinkwrap.api.exporter", "org.jboss.shrinkwrap.impl.base.path");
+                builder.addImportPackages("org.jboss.osgi.framework", "org.jboss.logging");
+                return builder.openStream();
+            }
+        });
+        return archive;
     }
 
     @Inject
