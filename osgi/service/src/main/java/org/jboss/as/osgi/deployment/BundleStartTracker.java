@@ -54,7 +54,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @author Thomas.Diesler@jboss.com
  * @since 30-Mar-2011
  */
-public class BundleStartupProcessor extends AbstractService<BundleStartupProcessor> {
+public class BundleStartTracker extends AbstractService<BundleStartTracker> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
@@ -66,14 +66,14 @@ public class BundleStartupProcessor extends AbstractService<BundleStartupProcess
     private ServiceContainer serviceContainer;
 
     public static void addService(ServiceTarget serviceTarget) {
-        BundleStartupProcessor service = new BundleStartupProcessor();
-        ServiceBuilder<BundleStartupProcessor> builder = serviceTarget.addService(SERVICE_NAME, service);
+        BundleStartTracker service = new BundleStartTracker();
+        ServiceBuilder<BundleStartTracker> builder = serviceTarget.addService(SERVICE_NAME, service);
         builder.addDependency(ServiceNames.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.setInitialMode(Mode.PASSIVE);
         builder.install();
     }
 
-    private BundleStartupProcessor() {
+    private BundleStartTracker() {
     }
 
     @Override
@@ -82,7 +82,7 @@ public class BundleStartupProcessor extends AbstractService<BundleStartupProcess
     }
 
     @Override
-    public BundleStartupProcessor getValue() throws IllegalStateException {
+    public BundleStartTracker getValue() throws IllegalStateException {
         return this;
     }
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.embedded.osgi;
+package org.jboss.as.testsuite.integration.osgi;
 
 import java.io.InputStream;
 
@@ -24,8 +24,8 @@ import org.jboss.arquillian.api.ArchiveProvider;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.DeploymentProvider;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
+import org.jboss.as.testsuite.integration.osgi.bundle.SimpleActivator;
+import org.jboss.as.testsuite.integration.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,13 +38,14 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 /**
- * Test the arquillian callback to a client provided archive
+ * Bundle gets installed through {@link BundleContext#installBundle(String, InputStream)} and
+ * gets uninstalled through {@link Bundle#uninstall()}
  *
  * @author thomas.diesler@jboss.com
- * @since 09-Sep-2010
+ * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-public class SimpleArchiveProviderTestCase {
+public class BundleDeploymentCaseOneTestCase {
 
     @Inject
     public DeploymentProvider provider;
@@ -54,7 +55,7 @@ public class SimpleArchiveProviderTestCase {
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bundle-deployment-case-one");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -67,10 +68,10 @@ public class SimpleArchiveProviderTestCase {
     }
 
     @Test
-    public void testClientDeploymentAsStream() throws Exception {
+    public void testBundleDeployment() throws Exception {
 
-        InputStream input = provider.getClientDeploymentAsStream("test-bundle");
-        Bundle bundle = context.installBundle("deployment-provider-bundle", input);
+        InputStream input = provider.getClientDeploymentAsStream("test-bundle-one");
+        Bundle bundle = context.installBundle("test-bundle", input);
         try {
             // Assert that the bundle is in state INSTALLED
             OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());

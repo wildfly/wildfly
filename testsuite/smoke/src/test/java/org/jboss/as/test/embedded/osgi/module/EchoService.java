@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.osgi.framework.Constants;
 
 /**
  * A simple MSC service that provides an echo method
@@ -43,13 +42,13 @@ import org.jboss.osgi.framework.Constants;
 public class EchoService implements Echo, Service<Echo>
 {
    private static final Logger log = Logger.getLogger(EchoService.class);
-   public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "xservice", "target");
+   public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "target", "service");
 
    public static void addService(ServiceTarget serviceTarget)
    {
       // Add the service with an alias that the OSGi layer can use to lookup the service
       ServiceBuilder<Echo> serviceBuilder = serviceTarget.addService(SERVICE_NAME, new EchoService());
-      serviceBuilder.addAliases(ServiceName.of(Constants.JBOSGI_PREFIX, Echo.class.getName()));
+      serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", Echo.class.getName()));
       serviceBuilder.setInitialMode(Mode.ACTIVE);
       serviceBuilder.install();
       log.infof("Service added: %s", SERVICE_NAME);

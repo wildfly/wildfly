@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
@@ -40,7 +39,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManagement;
 import org.jboss.osgi.framework.ServiceNames;
-import org.osgi.framework.BundleContext;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -55,9 +53,8 @@ public class BundleInstallService implements Service<BundleInstallService> {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
 
     private final Deployment deployment;
-    private InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
     private InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
-    private InjectedValue<BundleStartupProcessor> injectedStartTracker = new InjectedValue<BundleStartupProcessor>();
+    private InjectedValue<BundleStartTracker> injectedStartTracker = new InjectedValue<BundleStartTracker>();
     private ServiceName installedBundleName;
 
     private BundleInstallService(Deployment deployment) {
@@ -71,10 +68,10 @@ public class BundleInstallService implements Service<BundleInstallService> {
         final ServiceName serviceName = getServiceName(contextName);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<BundleInstallService> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependency(ServiceNames.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
         builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
-        builder.addDependency(BundleStartupProcessor.SERVICE_NAME, BundleStartupProcessor.class, service.injectedStartTracker);
-        builder.addDependency(org.jboss.as.server.deployment.Services.deploymentUnitName(contextName));
+        builder.addDependency(BundleStartTracker.SERVICE_NAME, BundleStartTracker.class, service.injectedStartTracker);
+        builder.addDependency(Services.deploymentUnitName(contextName));
+        builder.addDependency(ServiceNames.FRAMEWORK_INIT);
         builder.install();
     }
 

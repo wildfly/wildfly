@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.embedded.osgi;
+package org.jboss.as.testsuite.integration.osgi;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.ArchiveProvider;
 import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.DeploymentProvider;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
+import org.jboss.as.testsuite.integration.osgi.bundle.SimpleActivator;
+import org.jboss.as.testsuite.integration.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,61 +37,23 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 /**
- * Test the arquillian callback to a client provided archive
+ * A simple OSGi bundle test case
  *
  * @author thomas.diesler@jboss.com
- * @since 09-Sep-2010
+ * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-public class SimpleArchiveProviderTestCase {
+public class SimpleBundleTestCase {
 
     @Inject
-    public DeploymentProvider provider;
-
-    @Inject
-    public BundleContext context;
+    public Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
-        archive.setManifest(new Asset() {
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleManifestVersion(2);
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
-
-    @Test
-    public void testClientDeploymentAsStream() throws Exception {
-
-        InputStream input = provider.getClientDeploymentAsStream("test-bundle");
-        Bundle bundle = context.installBundle("deployment-provider-bundle", input);
-        try {
-            // Assert that the bundle is in state INSTALLED
-            OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());
-
-            // Start the bundle
-            bundle.start();
-            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
-
-            // Stop the bundle
-            bundle.stop();
-            OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-        } finally {
-            bundle.uninstall();
-            OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
-        }
-    }
-
-    @ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-bundle");
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -103,5 +66,38 @@ public class SimpleArchiveProviderTestCase {
             }
         });
         return archive;
+    }
+
+    @Test
+    public void testBundleInjection() throws Exception {
+
+        // Assert that the bundle is injected
+        assertNotNull("Bundle injected", bundle);
+
+        // Assert that the bundle is in state RESOLVED
+        // Note when the test bundle contains the test case it
+        // must be resolved already when this test method is called
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+
+        // Start the bundle
+        bundle.start();
+        OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+
+        // Get the service reference
+        BundleContext context = bundle.getBundleContext();
+        ServiceReference sref = context.getServiceReference(SimpleService.class.getName());
+        assertNotNull("ServiceReference not null", sref);
+
+        // Get the service for the reference
+        SimpleService service = (SimpleService) context.getService(sref);
+        assertNotNull("Service not null", service);
+
+        // Invoke the service
+        int sum = service.sum(1, 2, 3);
+        assertEquals(6, sum);
+
+        // Stop the bundle
+        bundle.stop();
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
     }
 }

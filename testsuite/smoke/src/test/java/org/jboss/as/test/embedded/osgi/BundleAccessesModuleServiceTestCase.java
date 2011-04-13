@@ -100,12 +100,15 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         assertNotNull("Deployment name not null", targetDeploymentName);
         try {
             // Check that the target service is up
-            ServiceName targetService = ServiceName.parse("jboss.osgi.xservice.target");
+            ServiceName targetService = ServiceName.parse("jboss.osgi.example.target.service");
             assertServiceState(targetService, State.UP, 5000);
 
             // Register the target module with the OSGi layer
             Bundle targetBundle = registerModule(ModuleIdentifier.create("deployment." + targetDeploymentName));
-            try {
+            try
+            {
+                assertEquals("Bundle INSTALLED", Bundle.INSTALLED, targetBundle.getState());
+
                 // Install the client bundle
                 InputStream input = deploymentProvider.getClientDeploymentAsStream(CLIENT_BUNDLE_NAME);
                 Bundle clientBundle = context.installBundle(CLIENT_BUNDLE_NAME, input);
@@ -118,7 +121,9 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
                     // Uninstall the client bundle
                     clientBundle.uninstall();
                 }
-            } finally {
+            }
+            finally {
+                // Uninstall the target bundle
                 targetBundle.uninstall();
             }
         } finally {

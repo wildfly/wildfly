@@ -214,6 +214,7 @@
                 org.jboss.arquillian.spi,
                 org.jboss.as.osgi,
                 org.jboss.shrinkwrap.api,
+                org.jboss.shrinkwrap.impl,
                 javax.inject.api,
                 org.junit
                 </property>
@@ -231,8 +232,8 @@
                 org.jboss.osgi.vfs;version=1.0,
 
                 org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.jmx, org.jboss.arquillian.osgi,
-                org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
-                org.jboss.shrinkwrap.impl.base,
+                org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.exporter, org.jboss.shrinkwrap.api.spec,
+                org.jboss.shrinkwrap.impl.base, org.jboss.shrinkwrap.impl.base.path,
                 org.junit, org.junit.runner, javax.inject
                 </property>
             </properties>

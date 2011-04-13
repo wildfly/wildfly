@@ -25,9 +25,7 @@ package org.jboss.as.osgi.deployment;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -58,15 +56,9 @@ public class DeploymentHolderService extends AbstractService<Deployment> {
         builder.install();
     }
 
-    public static void removeService(ServiceContainer container, String contextName) {
-        ServiceController<?> controller = container.getService(getServiceName(contextName));
-        if (controller != null)
-            controller.setMode(Mode.REMOVE);
-    }
-
-    public static Deployment getDeployment(ServiceRegistry registry, String contextName) {
-        ServiceController<?> controller = registry.getService(getServiceName(contextName));
-        return controller != null ? (Deployment) controller.getValue() : null;
+    @SuppressWarnings("unchecked")
+    public static ServiceController<Deployment> getDeployment(ServiceRegistry registry, String contextName) {
+        return (ServiceController<Deployment>) registry.getService(getServiceName(contextName));
     }
 
     /**

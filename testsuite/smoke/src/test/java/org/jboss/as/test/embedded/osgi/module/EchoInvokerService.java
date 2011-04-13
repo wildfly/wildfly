@@ -39,7 +39,7 @@ import org.osgi.framework.ServiceReference;
 public class EchoInvokerService implements Service<Void>
 {
    private static final Logger log = Logger.getLogger(EchoInvokerService.class);
-   public static final ServiceName SERVICE_NAME = ServiceName.parse("jboss.osgi.xservice.invoker");
+   public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "invoker", "service");
 
    private InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
 
@@ -47,7 +47,7 @@ public class EchoInvokerService implements Service<Void>
    {
       EchoInvokerService service = new EchoInvokerService();
       ServiceBuilder<?> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);
-      serviceBuilder.addDependency(ServiceName.parse("jboss.osgi.context"), BundleContext.class, service.injectedBundleContext);
+      serviceBuilder.addDependency(ServiceName.of("jbosgi", "systemcontext"), BundleContext.class, service.injectedBundleContext);
       serviceBuilder.setInitialMode(Mode.ACTIVE);
       serviceBuilder.install();
       log.infof("Service added: %s", SERVICE_NAME);

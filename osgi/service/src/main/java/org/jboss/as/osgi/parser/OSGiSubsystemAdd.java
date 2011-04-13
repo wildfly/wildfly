@@ -43,13 +43,13 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.osgi.deployment.BundleStartupProcessor;
+import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
-import org.jboss.as.osgi.service.DeployerServiceIntegration;
+import org.jboss.as.osgi.service.InstallHandlerIntegration;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
@@ -99,8 +99,8 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     ServiceTarget serviceTarget = context.getServiceTarget();
                     Activation policy = subsystemState.getActivationPolicy();
                     BundleContextService.addService(serviceTarget, policy);
-                    BundleStartupProcessor.addService(serviceTarget);
-                    DeployerServiceIntegration.addService(serviceTarget);
+                    BundleStartTracker.addService(serviceTarget);
+                    InstallHandlerIntegration.addService(serviceTarget);
                     FrameworkBootstrapService.addService(serviceTarget, subsystemState);
 
                     ConfigAdminServiceImpl.addService(serviceTarget, subsystemState);

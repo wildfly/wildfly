@@ -71,6 +71,7 @@ import org.jboss.osgi.framework.BundleReferenceClassLoader;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
 import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.SystemServicesProvider;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -123,10 +124,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             FrameworkBuilder builder = new FrameworkBuilder(props);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(context.getChildTarget());
-            builder.addProvidedService(org.jboss.osgi.framework.ServiceNames.AUTOINSTALL_PROVIDER);
-            builder.addProvidedService(org.jboss.osgi.framework.ServiceNames.DEPLOYERSERVICE_PROVIDER);
+            builder.addProvidedService(ServiceNames.AUTOINSTALL_PROVIDER);
+            builder.addProvidedService(ServiceNames.INSTALL_HANDLER);
             builder.addProvidedService(ServiceNames.FRAMEWORK_MODULE_PROVIDER);
             builder.addProvidedService(ServiceNames.MODULE_LOADER_PROVIDER);
+            builder.addProvidedService(ServiceNames.SYSTEM_SERVICES_PROVIDER);
 
             Activation activation = subsystemState.getActivationPolicy();
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
@@ -163,19 +165,16 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
-    private static final class SystemServicesIntegration extends AbstractService<Void> {
-
-        static final ServiceName SYSTEM_SERVICES = FRAMEWORK_BASE_NAME.append("services");
+    private static final class SystemServicesIntegration extends AbstractService<SystemServicesProvider> implements SystemServicesProvider {
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-        private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
-        private ServiceContainer serviceContainer;
+       private ServiceContainer serviceContainer;
 
         public static void addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
-            ServiceBuilder<?> builder = target.addService(SYSTEM_SERVICES, service);
+            ServiceBuilder<SystemServicesProvider> builder = target.addService(ServiceNames.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-            builder.addDependency(ServiceNames.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
+            builder.addDependency(ServiceNames.FRAMEWORK_CREATE);
             builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }
@@ -185,14 +184,22 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         @Override
         public void start(StartContext context) throws StartException {
+            serviceContainer = context.getController().getServiceContainer();
+        }
+
+        @Override
+        public SystemServicesProvider getValue() {
+            return this;
+        }
+
+        @Override
+        public void registerSystemServices(BundleContext systemContext) {
 
             // Register the {@link MBeanServer} as OSGi service
             MBeanServer mbeanServer = injectedMBeanServer.getValue();
-            BundleContext systemContext = injectedSystemContext.getValue();
             systemContext.registerService(MBeanServer.class.getName(), mbeanServer, null);
 
             // Register the {@link ServiceContainer} as OSGi service
-            serviceContainer = context.getController().getServiceContainer();
             systemContext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
         }
     }
@@ -351,12 +358,12 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         @Override
-        public List<URL> getAutoInstallList(BundleContext context) {
+        public List<URL> getAutoInstallList() {
             return Collections.unmodifiableList(autoInstall);
         }
 
         @Override
-        public List<URL> getAutoStartList(BundleContext context) {
+        public List<URL> getAutoStartList() {
             return Collections.unmodifiableList(autoStart);
         }
 

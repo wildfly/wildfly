@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.embedded.osgi;
+package org.jboss.as.testsuite.integration.osgi;
+
+import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.api.ArchiveDeployer;
 import org.jboss.arquillian.api.ArchiveProvider;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.DeploymentProvider;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
+import org.jboss.as.testsuite.integration.osgi.bundle.SimpleActivator;
+import org.jboss.as.testsuite.integration.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -38,13 +42,14 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 /**
- * Test the arquillian callback to a client provided archive
+ * Bundle gets installed through {@link BundleContext#installBundle(String, InputStream)} and gets uninstalled through
+ * {@link Bundle#uninstall()}
  *
  * @author thomas.diesler@jboss.com
- * @since 09-Sep-2010
+ * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-public class SimpleArchiveProviderTestCase {
+public class BundleDeploymentCaseTwoTestCase {
 
     @Inject
     public DeploymentProvider provider;
@@ -52,14 +57,19 @@ public class SimpleArchiveProviderTestCase {
     @Inject
     public BundleContext context;
 
+    @Inject
+    public ArchiveDeployer archiveDeployer;
+
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bundle-deployment-casetwo");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
+                // [TODO] Remove these explicit imports
+                builder.addImportPackages("org.jboss.shrinkwrap.api.exporter", "org.jboss.shrinkwrap.impl.base.path");
                 return builder.openStream();
             }
         });
@@ -67,15 +77,21 @@ public class SimpleArchiveProviderTestCase {
     }
 
     @Test
-    public void testClientDeploymentAsStream() throws Exception {
+    public void testBundleDeployment() throws Exception {
 
-        InputStream input = provider.getClientDeploymentAsStream("test-bundle");
-        Bundle bundle = context.installBundle("deployment-provider-bundle", input);
+        Archive<?> bundleArchive = provider.getClientDeployment("test-bundle-two");
+        String deploymentName = archiveDeployer.deploy(bundleArchive);
+        assertNotNull("Deployment name not null", deploymentName);
+        Bundle bundle = null;
         try {
-            // Assert that the bundle is in state INSTALLED
-            OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());
 
-            // Start the bundle
+            // Find the deployed bundle
+            for (Bundle aux : context.getBundles()) {
+                if (aux.getSymbolicName().equals(bundleArchive.getName()))
+                    bundle = aux;
+            }
+
+            // Start the bundle. Note, it may have started already
             bundle.start();
             OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
 
@@ -83,7 +99,7 @@ public class SimpleArchiveProviderTestCase {
             bundle.stop();
             OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
         } finally {
-            bundle.uninstall();
+            archiveDeployer.undeploy(deploymentName);
             OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
         }
     }

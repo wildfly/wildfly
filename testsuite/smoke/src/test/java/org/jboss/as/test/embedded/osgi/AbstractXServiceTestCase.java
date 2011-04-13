@@ -37,7 +37,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -45,6 +44,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.BundleManagement;
 import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.launch.Framework;
 
 /**
  * Abstract base for XService testing.
@@ -56,45 +56,22 @@ abstract class AbstractXServiceTestCase {
 
     abstract ServiceContainer getServiceContainer();
 
+    @SuppressWarnings("unchecked")
     Bundle registerModule(ModuleIdentifier moduleId) throws Exception {
-        final ServiceController<?> bundleContextService = getServiceContainer().getRequiredService(ServiceNames.FRAMEWORK_ACTIVE);
-        if (bundleContextService.getMode() == Mode.ON_DEMAND && bundleContextService.getState() == State.DOWN) {
-            final CountDownLatch latch = new CountDownLatch(1);
-            bundleContextService.addListener(new AbstractServiceListener<Object>() {
+        ServiceController<Framework> frameworkController = (ServiceController<Framework>) getServiceContainer().getRequiredService(ServiceNames.FRAMEWORK_ACTIVE);
+        new FutureServiceValue<Framework>(frameworkController).get();
 
-                @Override
-                public void serviceStarted(ServiceController<? extends Object> controller) {
-                    latch.countDown();
-                    controller.removeListener(this);
-                }
+        ServiceController<BundleManagement> bundleManagerService = (ServiceController<BundleManagement>) getServiceContainer().getRequiredService(ServiceNames.BUNDLE_MANAGER);
+        BundleManagement bundleManager = new FutureServiceValue<BundleManagement>(bundleManagerService).get();
 
-                @Override
-                public void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
-                    latch.countDown();
-                    controller.removeListener(this);
-                }
-            });
-            bundleContextService.setMode(Mode.ACTIVE);
-            latch.await(10, TimeUnit.SECONDS);
-
-            if (bundleContextService.getState() != State.UP)
-                throw new IllegalStateException("BundleContextService not started");
-        }
-
-        final ServiceController<?> bundleManagerService = getServiceContainer().getRequiredService(ServiceNames.BUNDLE_MANAGER);
-        BundleManagement bundleManager = (BundleManagement) bundleManagerService.getValue();
-        if (bundleManager == null)
-            throw new IllegalStateException("BundleManagement not started");
-
-        ServiceContainer serviceContainer = getServiceContainer();
-        ServiceTarget serviceTarget = serviceContainer.subTarget();
+        ServiceTarget serviceTarget = getServiceContainer().subTarget();
         ServiceName serviceName = bundleManager.installBundle(serviceTarget, moduleId);
-        return getBundleFromService(serviceContainer, serviceName);
+        return getBundleFromService(serviceName);
     }
 
     @SuppressWarnings("unchecked")
-    private Bundle getBundleFromService(ServiceContainer serviceContainer, ServiceName serviceName) throws ExecutionException, TimeoutException {
-        ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getService(serviceName);
+    private Bundle getBundleFromService(ServiceName serviceName) throws ExecutionException, TimeoutException {
+        ServiceController<Bundle> controller = (ServiceController<Bundle>) getServiceContainer().getService(serviceName);
         FutureServiceValue<Bundle> future = new FutureServiceValue<Bundle>(controller);
         return future.get(5, TimeUnit.SECONDS);
     }
