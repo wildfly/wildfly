@@ -16,30 +16,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
-import org.jboss.as.server.services.net.SocketBinding;
-import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for changing the port on a socket binding.
+ * Handler for changing the port-offset on a socket binding group.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
+public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
 
-    public static final BindingPortHandler INSTANCE = new BindingPortHandler();
+    public static final BindingGroupPortOffsetHandler INSTANCE = new BindingGroupPortOffsetHandler();
 
-    private BindingPortHandler() {
-        super(new IntRangeValidator(0, 65535, false, true));
+    private BindingGroupPortOffsetHandler() {
+        super(new IntRangeValidator(0, 65535, true, true));
     }
 
-    @Override
-    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
-        binding.setPort(attributeValue.asInt());
-    }
 }

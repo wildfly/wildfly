@@ -16,23 +16,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for changing the default interface on a socket binding group.
+ * Handler for changing the port on a socket binding.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
-    public static final BindingGroupDefaultInterfaceHandler INSTANCE = new BindingGroupDefaultInterfaceHandler();
+    public static final BindingPortHandler INSTANCE = new BindingPortHandler();
 
-    private BindingGroupDefaultInterfaceHandler() {
-        super(new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
+    private BindingPortHandler() {
+        super(new IntRangeValidator(0, 65535, false, true));
     }
 
+    @Override
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
+        binding.setPort(attributeValue.asInt());
+    }
 }

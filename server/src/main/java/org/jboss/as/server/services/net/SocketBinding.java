@@ -199,7 +199,7 @@ public final class SocketBinding {
         return port;
     }
 
-    public void setPort(int port) {
+    void setPort(int port) {
         checkNotBound();
         this.port = port;
     }
@@ -208,7 +208,7 @@ public final class SocketBinding {
         return isFixedPort;
     }
 
-    public void setFixedPort(boolean fixedPort) {
+    void setFixedPort(boolean fixedPort) {
         checkNotBound();
         isFixedPort = fixedPort;
     }
@@ -217,7 +217,7 @@ public final class SocketBinding {
         return multicastPort;
     }
 
-    public void setMulticastPort(int multicastPort) {
+    void setMulticastPort(int multicastPort) {
         checkNotBound();
         this.multicastPort = multicastPort;
     }
@@ -226,7 +226,7 @@ public final class SocketBinding {
         return multicastAddress;
     }
 
-    public void setMulticastAddress(InetAddress multicastAddress) {
+    void setMulticastAddress(InetAddress multicastAddress) {
         checkNotBound();
         this.multicastAddress = multicastAddress;
     }

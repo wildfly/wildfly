@@ -16,37 +16,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupRemoveHandler;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 
 /**
- * Handler for the domain socket-binding-group resource's remove operation.
- * This class implements {@link BootOperationHandler} as its runtime effect
- * can only take place at restart.
+ * Handler for changing the default interface on a socket binding group.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
-public class BindingGroupRemoveHandler
-    extends AbstractSocketBindingGroupRemoveHandler
-    implements BootOperationHandler {
+public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
 
-    public static final BindingGroupRemoveHandler INSTANCE = new BindingGroupRemoveHandler();
+    public static final BindingGroupDefaultInterfaceHandler INSTANCE = new BindingGroupDefaultInterfaceHandler();
 
-    private BindingGroupRemoveHandler() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected ModelNode getCompensatingOperation(ModelNode model, ModelNode operation) {
-        return BindingGroupAddHandler.getOperation(operation.get(OP_ADDR), model);
+    private BindingGroupDefaultInterfaceHandler() {
+        super(new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
     }
 
 }

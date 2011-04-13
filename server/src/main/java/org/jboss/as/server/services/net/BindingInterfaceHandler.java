@@ -16,23 +16,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for changing the port-offset on a socket binding group.
+ * Handler for changing the interface on a socket binding.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingInterfaceHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
-    public static final BindingGroupPortOffsetHandler INSTANCE = new BindingGroupPortOffsetHandler();
+    public static final BindingInterfaceHandler INSTANCE = new BindingInterfaceHandler();
 
-    private BindingGroupPortOffsetHandler() {
-        super(new IntRangeValidator(0, 65535, true, true));
+    private BindingInterfaceHandler() {
+        super(new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
     }
 
+    @Override
+    protected boolean requiresRestart() {
+        return true;
+    }
+
+    @Override
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
+        // interface change always requires a restart
+    }
 }

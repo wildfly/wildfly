@@ -16,12 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
-import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

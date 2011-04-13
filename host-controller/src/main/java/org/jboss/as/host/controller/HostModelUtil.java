@@ -82,8 +82,8 @@ import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
-import org.jboss.as.server.operations.sockets.SpecifiedInterfaceAddHandler;
-import org.jboss.as.server.operations.sockets.SpecifiedInterfaceRemoveHandler;
+import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
+import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
