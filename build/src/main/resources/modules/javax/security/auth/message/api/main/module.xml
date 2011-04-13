@@ -23,6 +23,12 @@
   -->
 
 <module xmlns="urn:jboss:module:1.0" name="javax.security.auth.message.api">
+
+    <dependencies>
+        <!-- Needed for javax.security.auth -->
+        <module name="javax.api" export="false"/>
+     </dependencies>
+
     <resources>
         <!-- Insert resources here -->
     </resources>

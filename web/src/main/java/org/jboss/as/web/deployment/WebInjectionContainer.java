@@ -23,15 +23,16 @@ package org.jboss.as.web.deployment;
 
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.web.deployment.ConcurrentReferenceHashMap.Option;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.msc.service.ServiceName;
 
 import javax.naming.NamingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,10 +46,14 @@ public class WebInjectionContainer implements InstanceManager {
     private final ClassLoader classloader;
     private final Map<String,ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String,ComponentInstantiator>();
     private final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
-    private final Map<Object,ManagedReference> instanceMap = Collections.synchronizedMap(new IdentityHashMap<Object,ManagedReference>());
+    private final Map<Object,ManagedReference> instanceMap;
 
     public WebInjectionContainer(ClassLoader classloader) {
         this.classloader = classloader;
+        this.instanceMap = new ConcurrentReferenceHashMap<Object, ManagedReference>
+            (256, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
+                    Runtime.getRuntime().availableProcessors(), ConcurrentReferenceHashMap.ReferenceType.STRONG,
+                    ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(Option.IDENTITY_COMPARISONS));
     }
 
     public void addInstantiator(String className, ComponentInstantiator instantiator) {
@@ -57,10 +62,9 @@ public class WebInjectionContainer implements InstanceManager {
     }
 
     public void destroyInstance(Object instance) throws IllegalAccessException, InvocationTargetException {
-        final ManagedReference reference = instanceMap.get(instance);
+        final ManagedReference reference = instanceMap.remove(instance);
         if(reference != null) {
             reference.release();
-            instanceMap.remove(instance);
         }
     }
 
@@ -73,16 +77,12 @@ public class WebInjectionContainer implements InstanceManager {
         if(instantiator != null) {
             return instantiate(instantiator);
         }
-        // Instantiate
-        final Object object = clazz.newInstance();
-        // Inject
-        newInstance(object);
-        // Return
-        return object;
+        return clazz.newInstance();
     }
 
     public void newInstance(Object arg0) throws IllegalAccessException, InvocationTargetException, NamingException {
-        // FIXME delegate injections to the common injection framework..
+        // Not used for AS 7
+        throw new IllegalStateException();
     }
 
     public Object newInstance(String className, ClassLoader cl) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
@@ -90,10 +90,7 @@ public class WebInjectionContainer implements InstanceManager {
         if(instantiator != null) {
             return instantiate(instantiator);
         }
-        // Use by JspServletWrapper for example.
-        Class<?> clazz = cl.loadClass(className);
-        // Annnotations ? return newInstance(clazz.newInstance(), clazz);
-        return clazz.newInstance();
+        return cl.loadClass(className).newInstance();
     }
 
     private Object instantiate(ComponentInstantiator instantiator) {

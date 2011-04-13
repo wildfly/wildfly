@@ -54,6 +54,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerSlaveClient;
@@ -545,6 +546,24 @@ public class ParseAndMarshalModelsTestCase {
                 @Override
                 public void registerSubsystemDeploymentWriter(String name,
                         XMLElementWriter<SubsystemMarshallingContext> writer) {
+                }
+
+                @Override
+                public void successfulBoot() throws ConfigurationPersistenceException {
+                }
+
+                @Override
+                public String snapshot() {
+                    return null;
+                }
+
+                @Override
+                public SnapshotInfo listSnapshots() {
+                    return NULL_SNAPSHOT_INFO;
+                }
+
+                @Override
+                public void deleteSnapshot(String name) {
                 }};
         }
 

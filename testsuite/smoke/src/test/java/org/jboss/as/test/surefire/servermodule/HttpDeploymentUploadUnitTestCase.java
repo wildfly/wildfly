@@ -21,16 +21,19 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
+import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.EmbeddedStandAloneServerFactory;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,6 +56,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
@@ -71,7 +75,9 @@ public class HttpDeploymentUploadUnitTestCase {
 
     private static final String TEST_WAR = "demos/war-example.war";
 
-    private static final String UPLOAD_URL = "http://localhost:9990/domain-api/add-content";
+    private static final String BASIC_URL = "http://localhost:9990/domain-api/";
+
+    private static final String UPLOAD_URL = BASIC_URL + "add-content";
 
     private static ServiceContainer container;
 
@@ -98,39 +104,70 @@ public class HttpDeploymentUploadUnitTestCase {
     }
 
     @Test
-    public void testHttpDeploymentUpload() {
+    public void testHttpDeploymentUpload() throws Exception {
         BufferedOutputStream os = null;
         BufferedInputStream is = null;
 
         try {
             // Create the HTTP connection to the upload URL
-            final HttpURLConnection connection =(HttpURLConnection) new URL(UPLOAD_URL).openConnection();
+            HttpURLConnection connection =(HttpURLConnection) new URL(UPLOAD_URL).openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod(POST_REQUEST_METHOD);
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
-            final WebArchive archive = ShrinkWrapUtils.createWebArchive(TEST_WAR);
+//            final WebArchive archive = ShrinkWrapUtils.createWebArchive(TEST_WAR, SimpleServlet.class.getPackage());
+            final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
             os = new BufferedOutputStream(connection.getOutputStream());
             is = new BufferedInputStream(archive.as(ZipExporter.class).exportZip());
 
             // Write the POST request and read the response from the HTTP server.
-            writeRequest(is, os);
-            final ModelNode node = readResult(connection.getInputStream());
+            writeUploadRequest(is, os);
+            ModelNode node = readResult(connection.getInputStream());
             assertNotNull(node);
+            System.out.println(node);
             assertEquals(SUCCESS, node.require(OUTCOME).asString());
-        } catch (final Exception e) {
-            fail("Exception not expected: " + e.getMessage());
-        } finally {
+
+            byte[] hash = node.require(RESULT).asBytes();
+
+            connection =(HttpURLConnection) new URL(BASIC_URL).openConnection();
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestMethod(POST_REQUEST_METHOD);
+            os = new BufferedOutputStream(connection.getOutputStream());
+
+            writeAddRequest(os, hash);
+
+            node = readResult(connection.getInputStream());
+            assertNotNull(node);
+            System.out.println(node);
+            assertEquals(SUCCESS, node.require(OUTCOME).asString());
+
+//        } catch (final Exception e) {
+//            fail("Exception not expected: " + e.getMessage());
+        }
+        finally {
             closeQuietly(is);
             closeQuietly(os);
         }
     }
 
-    private void writeRequest(final InputStream is, final OutputStream os) throws IOException {
-        os.write(buildPostRequestHeader());
+    private void writeUploadRequest(final InputStream is, final OutputStream os) throws IOException {
+        os.write(buildUploadPostRequestHeader());
         writePostRequestPayload(is, os);
         os.write(buildPostRequestFooter());
+        os.flush();
+    }
+
+    private void writeAddRequest(BufferedOutputStream os, byte[] hash) throws IOException {
+
+        ModelNode op = new ModelNode();
+        op.get("operation").set("add");
+        op.get("address").add("deployment", "test-deployment.sar");
+        op.get("hash").set(hash);
+        op.get("enabled").set(true);
+
+        os.write(op.toJSONString(true).getBytes());
         os.flush();
     }
 
@@ -138,7 +175,7 @@ public class HttpDeploymentUploadUnitTestCase {
         return ModelNode.fromJSONStream(is);
     }
 
-    private byte[] buildPostRequestHeader() {
+    private byte[] buildUploadPostRequestHeader() {
         final StringBuilder builder = new StringBuilder();
         builder.append(buildPostRequestHeaderSection("form-data; name=\"test1\"", "", "test1"));
         builder.append(buildPostRequestHeaderSection("form-data; name=\"test2\"", "", "test2"));

@@ -22,7 +22,9 @@
 
 package org.jboss.as.controller.persistence;
 
+import java.io.File;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.dmr.ModelNode;
@@ -55,4 +57,68 @@ public interface ConfigurationPersister {
      * executed by the controller.
      */
     List<ModelNode> load() throws ConfigurationPersistenceException;
+
+    /**
+     * Called once the xml has been successfully parsed, translated into updates, executed in the target controller
+     * and all services have started successfully
+     */
+    void successfulBoot() throws ConfigurationPersistenceException;
+
+    /**
+     * Take a snapshot of the current configuration
+     *
+     * @return the location of the snapshot
+     * @return the file location of the snapshot
+     * @throws ConfigurationPersistenceException if a problem happened when creating the snapshot
+     */
+    String snapshot() throws ConfigurationPersistenceException;
+
+    /**
+     * Gets the names of the snapshots in the snapshots directory
+     *
+     * @return the snapshot info. This will never return null
+     */
+    SnapshotInfo listSnapshots();
+
+    /**
+     * Deletes a snapshot using its name.
+     *
+     * @param The name of the snapshot (as returned by {@link SnapshotInfo#names()} returned from {@link #listSnapshots()}. The whole name is not
+     * needed, just enough to uniquely identify it.
+     * @throws IllegalArgumentException if there is no snapshot with the given name, or if the name resolves to more than one snapshot.
+     */
+    void deleteSnapshot(String name);
+
+    /**
+     * Contains the info about the configuration snapshots
+     */
+    public interface SnapshotInfo {
+        /**
+         * Gets the snapshots directory
+         *
+         * @return the snapshots directory
+         */
+        String getSnapshotDirectory();
+
+        /**
+         * Gets the names of the snapshot files in the snapshots directory
+         *
+         * @return the snapshot names. If there are none, an empty list is returned
+         */
+        List<String> names();
+    }
+
+    SnapshotInfo NULL_SNAPSHOT_INFO = new SnapshotInfo() {
+
+        @Override
+        public List<String> names() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getSnapshotDirectory() {
+            return "";
+        }
+    };
+
 }

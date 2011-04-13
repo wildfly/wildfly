@@ -25,6 +25,10 @@
 <module xmlns="urn:jboss:module:1.0" name="javax.xml.rpc.api">
     <dependencies>
         <module name="javax.xml.soap.api" export="true"/>
+        <!--  javax.xml.namespace.QName -->
+        <module name="javax.api"/>
+        <!--  javax.servlet.ServletContext -->
+        <module name="javax.servlet.api"/>
     </dependencies>
 
     <resources>

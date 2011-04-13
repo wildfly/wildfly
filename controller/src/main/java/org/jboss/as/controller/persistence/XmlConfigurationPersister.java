@@ -79,6 +79,16 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         // todo - either provide a default impl or keep this pluggable
     }
 
+    /**
+     * Hook for when the file has been written
+     *
+     * @param fileName the file name being overwritten
+     * @throws ConfigurationPersistenceException if the backup fails
+     */
+    protected void fileWritten(File fileName) throws ConfigurationPersistenceException {
+
+    }
+
     /** {@inheritDoc} */
     @Override
     public void store(final ModelNode model) throws ConfigurationPersistenceException {
@@ -93,6 +103,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
             } finally {
                 safeClose(fos);
             }
+            fileWritten(fileName);
         } catch (Exception e) {
             throw new ConfigurationPersistenceException("Failed to store configuration", e);
         }
@@ -128,5 +139,23 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         } catch (Throwable t) {
             log.errorf(t, "Failed to close resource %s", closeable);
         }
+    }
+
+    @Override
+    public void successfulBoot() throws ConfigurationPersistenceException {
+        successfulBoot(fileName);
+    }
+
+    protected void successfulBoot(File file) throws ConfigurationPersistenceException {
+
+    }
+
+    @Override
+    public String snapshot() throws ConfigurationPersistenceException {
+        return snapshot(fileName);
+    }
+
+    protected String snapshot(File file) throws ConfigurationPersistenceException {
+        return "";
     }
 }

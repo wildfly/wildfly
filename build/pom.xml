@@ -93,11 +93,6 @@
 
         <dependency>
             <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
         </dependency>
 
@@ -149,16 +144,6 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>jsr311-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.xml</groupId>
-            <artifactId>jaxrpc-api</artifactId>
         </dependency>
 
         <dependency>
@@ -685,11 +670,6 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-spec-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-validator</artifactId>
         </dependency>
 
@@ -847,6 +827,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.spec.javax.faces</groupId>
+            <artifactId>jboss-jsf-api_2.0_spec</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.interceptor</groupId>
             <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
         </dependency>
@@ -854,6 +839,11 @@
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_1.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.resource</groupId>
+            <artifactId>jboss-connector-api_1.6_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -887,6 +877,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.xml.bind</groupId>
             <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
         </dependency>
@@ -894,6 +889,11 @@
         <dependency>
             <groupId>org.jboss.spec.javax.xml.registry</groupId>
             <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.xml.rpc</groupId>
+            <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -1029,6 +1029,11 @@
         <dependency>
           <groupId>org.hornetq</groupId>
           <artifactId>hornetq-jms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
         </dependency>
 
         <dependency>

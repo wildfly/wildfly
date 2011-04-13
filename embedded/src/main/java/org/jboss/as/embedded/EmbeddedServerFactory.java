@@ -87,6 +87,8 @@ public class EmbeddedServerFactory {
             Thread.currentThread().setContextClassLoader(ctxClassLoader);
         }
 
+        __redirected.__JAXPRedirected.changeAll(ModuleIdentifier.fromString("javax.xml.jaxp-provider"), moduleLoader);
+
         // Load the server Module and get its ClassLoader
         final ModuleIdentifier serverModuleId = ModuleIdentifier.create("org.jboss.as.server");
         final Module serverModule = moduleLoader.loadModule(serverModuleId);

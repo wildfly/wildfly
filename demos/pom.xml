@@ -14,8 +14,8 @@
   <dependencies>
 
     <dependency>
-        <groupId>javax.ws.rs</groupId>
-        <artifactId>jsr311-api</artifactId>
+        <groupId>org.jboss.spec.javax.ws.rs</groupId>
+        <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
     </dependency>
 
     <dependency>
@@ -29,8 +29,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-spec-api</artifactId>
+      <groupId>org.jboss.spec.javax.resource</groupId>
+      <artifactId>jboss-connector-api_1.6_spec</artifactId>
     </dependency>
 
     <dependency>

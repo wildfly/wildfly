@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -36,7 +37,7 @@ import org.jgroups.util.TimeScheduler;
  */
 public class TimerSchedulerAdapter implements TimeScheduler {
 
-    private final ScheduledExecutorService executor;
+    final ScheduledExecutorService executor;
 
     public TimerSchedulerAdapter(ScheduledExecutorService executor) {
         this.executor = executor;
@@ -74,8 +75,32 @@ public class TimerSchedulerAdapter implements TimeScheduler {
     }
 
     @Override
-    public Future<?> scheduleWithDynamicInterval(Task task) {
-        throw new UnsupportedOperationException();
+    public Future<?> scheduleWithDynamicInterval(final Task task) {
+
+        final Future<?> future = this.executor.schedule(task, task.nextInterval(), TimeUnit.MILLISECONDS);
+        final long nextInterval = task.nextInterval();
+        if (nextInterval > 0) {
+            Runnable scheduleTask = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        future.get();
+                        long interval = nextInterval;
+                        while ((interval > 0) && !future.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                            try {
+                                TimerSchedulerAdapter.this.executor.schedule(task, interval, TimeUnit.MILLISECONDS).get();
+                            } catch (ExecutionException e) {
+                            }
+                            interval = task.nextInterval();
+                        }
+                    } catch (InterruptedException e) {
+                    } catch (ExecutionException e) {
+                    }
+                }
+            };
+            this.execute(scheduleTask);
+        }
+        return future;
     }
 
     @Override

@@ -38,6 +38,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 
 /**
@@ -95,7 +96,6 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
-
         }
     }
 
@@ -128,13 +128,13 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
             throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.TRANSPORT));
         }
 
-        this.parseProtocol(reader, stack.get(ModelKeys.TRANSPORT));
+        this.parseProtocol(reader, stack.get(ModelKeys.TRANSPORT), TP.class);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROTOCOL: {
-                    this.parseProtocol(reader, stack.get(ModelKeys.PROTOCOL).add());
+                    this.parseProtocol(reader, stack.get(ModelKeys.PROTOCOL).add(), Protocol.class);
                     break;
                 }
                 default: {
@@ -146,14 +146,14 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
         return stack;
     }
 
-    private void parseProtocol(XMLExtendedStreamReader reader, ModelNode protocol) throws XMLStreamException {
+    private void parseProtocol(XMLExtendedStreamReader reader, ModelNode protocol, Class<? extends Protocol> targetClass) throws XMLStreamException {
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case TYPE: {
                     try {
-                        Class.forName("org.jgroups.protocols." + value).asSubclass(Protocol.class).newInstance();
+                        Class.forName("org.jgroups.protocols." + value).asSubclass(targetClass).newInstance();
                         protocol.get(ModelKeys.TYPE).set(value);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
@@ -168,16 +168,16 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
                     protocol.get(ModelKeys.DIAGNOSTICS_SOCKET_BINDING).set(value);
                     break;
                 }
-                case THREAD_POOL: {
-                    protocol.get(ModelKeys.THREAD_POOL).set(value);
+                case DEFAULT_EXECUTOR: {
+                    protocol.get(ModelKeys.DEFAULT_EXECUTOR).set(value);
                     break;
                 }
-                case OOB_THREAD_POOL: {
-                    protocol.get(ModelKeys.OOB_THREAD_POOL).set(value);
+                case OOB_EXECUTOR: {
+                    protocol.get(ModelKeys.OOB_EXECUTOR).set(value);
                     break;
                 }
-                case TIMER_THREAD_POOL: {
-                    protocol.get(ModelKeys.TIMER_THREAD_POOL).set(value);
+                case TIMER_EXECUTOR: {
+                    protocol.get(ModelKeys.TIMER_EXECUTOR).set(value);
                     break;
                 }
                 case THREAD_FACTORY: {
@@ -230,9 +230,7 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
         ModelNode model = context.getModelNode();
         if (model.isDefined()) {
-            if (model.hasDefined(ModelKeys.DEFAULT_STACK)) {
-                writer.writeAttribute(Attribute.DEFAULT_STACK.getLocalName(), model.get(ModelKeys.DEFAULT_STACK).asString());
-            }
+            this.writeOptionalAttribute(writer, Attribute.DEFAULT_STACK, model, ModelKeys.DEFAULT_STACK);
             for (Property property: model.get(ModelKeys.STACK).asPropertyList()) {
                 writer.writeStartElement(Element.STACK.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
@@ -250,24 +248,12 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
     private void writeProtocol(XMLExtendedStreamWriter writer, ModelNode protocol, Element element) throws XMLStreamException {
         writer.writeStartElement(element.getLocalName());
         writer.writeAttribute(Attribute.TYPE.getLocalName(), protocol.get(ModelKeys.TYPE).asString());
-        if (protocol.has(ModelKeys.SOCKET_BINDING)) {
-            writer.writeAttribute(Attribute.SOCKET_BINDING.getLocalName(), protocol.get(ModelKeys.SOCKET_BINDING).asString());
-        }
-        if (protocol.has(ModelKeys.DIAGNOSTICS_SOCKET_BINDING)) {
-            writer.writeAttribute(Attribute.DIAGNOSTICS_SOCKET_BINDING.getLocalName(), protocol.get(ModelKeys.DIAGNOSTICS_SOCKET_BINDING).asString());
-        }
-        if (protocol.has(ModelKeys.THREAD_POOL)) {
-            writer.writeAttribute(Attribute.THREAD_POOL.getLocalName(), protocol.get(ModelKeys.THREAD_POOL).asString());
-        }
-        if (protocol.has(ModelKeys.OOB_THREAD_POOL)) {
-            writer.writeAttribute(Attribute.OOB_THREAD_POOL.getLocalName(), protocol.get(ModelKeys.OOB_THREAD_POOL).asString());
-        }
-        if (protocol.has(ModelKeys.TIMER_THREAD_POOL)) {
-            writer.writeAttribute(Attribute.TIMER_THREAD_POOL.getLocalName(), protocol.get(ModelKeys.TIMER_THREAD_POOL).asString());
-        }
-        if (protocol.has(ModelKeys.THREAD_FACTORY)) {
-            writer.writeAttribute(Attribute.THREAD_FACTORY.getLocalName(), protocol.get(ModelKeys.THREAD_FACTORY).asString());
-        }
+        this.writeOptionalAttribute(writer, Attribute.SOCKET_BINDING, protocol, ModelKeys.SOCKET_BINDING);
+        this.writeOptionalAttribute(writer, Attribute.DIAGNOSTICS_SOCKET_BINDING, protocol, ModelKeys.DIAGNOSTICS_SOCKET_BINDING);
+        this.writeOptionalAttribute(writer, Attribute.DEFAULT_EXECUTOR, protocol, ModelKeys.DEFAULT_EXECUTOR);
+        this.writeOptionalAttribute(writer, Attribute.OOB_EXECUTOR, protocol, ModelKeys.OOB_EXECUTOR);
+        this.writeOptionalAttribute(writer, Attribute.TIMER_EXECUTOR, protocol, ModelKeys.TIMER_EXECUTOR);
+        this.writeOptionalAttribute(writer, Attribute.THREAD_FACTORY, protocol, ModelKeys.THREAD_FACTORY);
         if (protocol.has(ModelKeys.PROPERTY)) {
             for (Property property: protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
@@ -277,5 +263,11 @@ public class JGroupsSubsystemParser implements XMLElementReader<List<ModelNode>>
             }
         }
         writer.writeEndElement();
+    }
+
+    private void writeOptionalAttribute(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {
+        if (model.hasDefined(key)) {
+            writer.writeAttribute(attribute.getLocalName(), model.get(key).asString());
+        }
     }
 }
