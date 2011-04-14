@@ -686,8 +686,9 @@ public class BasicModelController extends AbstractModelController<OperationContr
             final ModelNode model = modelSource.getModel();
             synchronized (model) {
                 model.set(localModel);
+                BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
             }
-            BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
+
         }
 
         protected final String getStepKey(int id) {
