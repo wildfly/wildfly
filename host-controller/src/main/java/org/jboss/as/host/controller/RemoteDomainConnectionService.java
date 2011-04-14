@@ -22,8 +22,6 @@
 
 package org.jboss.as.host.controller;
 
-import java.security.AccessController;
-import java.util.concurrent.ThreadFactory;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 import java.io.BufferedOutputStream;
@@ -37,9 +35,12 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.AccessController;
 import java.util.Enumeration;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.SocketFactory;
 
@@ -59,6 +60,7 @@ import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.Connection.ClosedCallback;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.protocol.SimpleByteDataInput;
@@ -81,7 +83,7 @@ import org.jboss.threads.JBossThreadFactory;
 /**
  * @author Kabir Khan
  */
-class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient> {
+class RemoteDomainConnectionService implements MasterDomainControllerClient, Service<MasterDomainControllerClient>, ClosedCallback {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private static final int CONNECTION_TIMEOUT = 5000;
@@ -98,6 +100,8 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     /** Handler for transactional operations */
     private volatile TransactionalModelControllerOperationHandler txOperationHandler;
     private final InjectedValue<ManagementCommunicationService> managementCommunicationService = new InjectedValue<ManagementCommunicationService>();
+    private final AtomicBoolean shutdown = new AtomicBoolean();
+    private volatile ReconnectInfo reconnectInfo;
 
     RemoteDomainConnectionService(final String name, final InetAddress host, final int port, final FileRepository localRepository){
         this.name = name;
@@ -108,7 +112,12 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void register(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
+    public void register(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
+        connect(hostName, ourAddress, ourPort, slave);
+        reconnectInfo = new ReconnectInfo(hostName, ourAddress, ourPort, slave);
+    }
+
+    private synchronized void connect(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("RemoteDomainConnection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
 
         final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
@@ -118,11 +127,17 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
         config.setSocketFactory(SocketFactory.getDefault());
         config.setServerAddress(new InetSocketAddress(host, port));
         config.setThreadFactory(threadFactory); //TODO inject
+        config.setClosedCallback(this);
         final InetAddress callbackAddress = getCallbackAddress(ourAddress, host);
         final ProtocolClient protocolClient = new ProtocolClient(config);
 
         try {
             connection = protocolClient.connect();
+
+            if (reconnectInfo != null) {
+                unregister();
+            }
+
             masterProxy = new ModelControllerClientToModelControllerAdapter(connection);
 //            operationHandler = ModelControllerOperationHandler.Factory.create(slave, initialMessageHandler);
             txOperationHandler = new SlaveDomainControllerOperationHandler(slave);
@@ -134,7 +149,10 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
 
         try {
             ModelNode node = new RegisterModelControllerRequest(callbackAddress, ourPort).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
-            slave.setInitialDomainModel(node);
+            if (reconnectInfo == null) {
+                //TODO update the domain model from the reconnected host
+                slave.setInitialDomainModel(node);
+            }
         } catch (Exception e) {
             log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
             throw new IllegalStateException(e);
@@ -238,6 +256,7 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
+        shutdown.set(true);
         StreamUtils.safeClose(connection);
     }
 
@@ -534,4 +553,72 @@ class RemoteDomainConnectionService implements MasterDomainControllerClient, Ser
             return null;
         }
     };
+
+    @Override
+    public void connectionClosed() {
+        if (!shutdown.get()) {
+            //The remote host went down, try reconnecting
+            final ReconnectInfo reconnectInfo = this.reconnectInfo;
+            if (reconnectInfo == null) {
+                log.error("Null reconnect info, cannot try to reconnect");
+                return;
+            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                    }
+
+                    while (!shutdown.get()) {
+                        log.debug("Attempting reconnection to master...");
+                        try {
+                            connect(reconnectInfo.getHostName(), reconnectInfo.getOurAddress(), reconnectInfo.getOurPort(), reconnectInfo.getSlave());
+                            log.info("Connected to master");
+                            break;
+                        } catch (Exception e) {
+                        }
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            }).start();
+        }
+    }
+
+    private static class ReconnectInfo {
+        final String hostName;
+        final InetAddress ourAddress;
+        final int ourPort;
+        final DomainControllerSlave slave;
+
+        public ReconnectInfo(String hostName, InetAddress ourAddress, int ourPort, DomainControllerSlave slave) {
+            super();
+            this.hostName = hostName;
+            this.ourAddress = ourAddress;
+            this.ourPort = ourPort;
+            this.slave = slave;
+        }
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public InetAddress getOurAddress() {
+            return ourAddress;
+        }
+
+        public int getOurPort() {
+            return ourPort;
+        }
+
+        public DomainControllerSlave getSlave() {
+            return slave;
+        }
+
+
+    }
 }

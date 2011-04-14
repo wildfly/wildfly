@@ -89,4 +89,12 @@ public interface Connection extends Closeable {
      * is used
      */
     void restoreMessageHandler();
+
+
+    /**
+     * A callback that will be triggered once the connection is closed
+     */
+    public interface ClosedCallback {
+        void connectionClosed();
+    }
 }

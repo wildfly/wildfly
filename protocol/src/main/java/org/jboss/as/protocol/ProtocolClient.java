@@ -27,6 +27,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
+
+import org.jboss.as.protocol.Connection.ClosedCallback;
 import org.jboss.logging.Logger;
 
 import javax.net.SocketFactory;
@@ -47,6 +49,7 @@ public final class ProtocolClient {
     private final int connectTimeout;
     private final int readTimeout;
     private final Executor readExecutor;
+    private final ClosedCallback callback;
 
     public ProtocolClient(final Configuration configuration) {
         threadFactory = configuration.getThreadFactory();
@@ -57,6 +60,7 @@ public final class ProtocolClient {
         serverAddress = configuration.getServerAddress();
         readTimeout = configuration.getReadTimeout();
         readExecutor = configuration.getReadExecutor();
+        callback = configuration.getClosedCallback();
         if (threadFactory == null) {
             throw new IllegalArgumentException("threadFactory is null");
         }
@@ -77,7 +81,7 @@ public final class ProtocolClient {
     public Connection connect() throws IOException {
         log.tracef("Creating connection to %s", serverAddress);
         final Socket socket = socketFactory.createSocket();
-        final ConnectionImpl connection = new ConnectionImpl(socket, messageHandler, readExecutor);
+        final ConnectionImpl connection = new ConnectionImpl(socket, messageHandler, readExecutor, callback);
         final Thread thread = threadFactory.newThread(connection.getReadTask());
         if (thread == null) {
             throw new IllegalStateException("Thread creation was refused");
@@ -100,6 +104,7 @@ public final class ProtocolClient {
         private Executor readExecutor;
         private int connectTimeout = 0;
         private int readTimeout = 0;
+        private ClosedCallback closedCallback;
 
         public Configuration() {
         }
@@ -166,6 +171,14 @@ public final class ProtocolClient {
 
         public void setReadTimeout(final int readTimeout) {
             this.readTimeout = readTimeout;
+        }
+
+        public ClosedCallback getClosedCallback() {
+            return closedCallback;
+        }
+
+        public void setClosedCallback(ClosedCallback closedCallback) {
+            this.closedCallback = closedCallback;
         }
     }
 }
