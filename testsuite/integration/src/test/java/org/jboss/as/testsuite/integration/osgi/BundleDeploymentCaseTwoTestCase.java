@@ -16,7 +16,6 @@
  */
 package org.jboss.as.testsuite.integration.osgi;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
@@ -36,7 +35,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -51,7 +49,6 @@ import org.osgi.framework.BundleContext;
  * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-@Ignore
 public class BundleDeploymentCaseTwoTestCase {
 
     @Inject
@@ -72,7 +69,7 @@ public class BundleDeploymentCaseTwoTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 // [TODO] Remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.api.exporter", "org.jboss.shrinkwrap.impl.base.path");
+                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
                 return builder.openStream();
             }
         });
@@ -82,7 +79,8 @@ public class BundleDeploymentCaseTwoTestCase {
     @Test
     public void testBundleDeployment() throws Exception {
 
-        Archive<?> bundleArchive = provider.getClientDeployment("test-bundle-two");
+        String symbolicName = "test-bundle-two";
+        Archive<?> bundleArchive = provider.getClientDeployment(symbolicName);
         String deploymentName = archiveDeployer.deploy(bundleArchive);
         assertNotNull("Deployment name not null", deploymentName);
         Bundle bundle = null;
@@ -90,9 +88,13 @@ public class BundleDeploymentCaseTwoTestCase {
 
             // Find the deployed bundle
             for (Bundle aux : context.getBundles()) {
-                if (aux.getSymbolicName().equals(bundleArchive.getName()))
+                if (symbolicName.equals(aux.getSymbolicName())) {
                     bundle = aux;
+                    break;
+                }
             }
+            // Assert that the bundle is there
+            assertNotNull("Bundle found", bundle);
 
             // Start the bundle. Note, it may have started already
             bundle.start();

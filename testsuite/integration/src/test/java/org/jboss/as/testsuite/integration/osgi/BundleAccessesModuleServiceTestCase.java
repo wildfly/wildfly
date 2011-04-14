@@ -45,13 +45,13 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.framework.ServiceNames;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -65,7 +65,6 @@ import org.osgi.framework.BundleContext;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
-@Ignore
 public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_MODULE_NAME = "example-xservice-target-module";
@@ -81,8 +80,8 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 // [TODO] Remove these explicit imports
-                builder.addImportPackages("org.jboss.shrinkwrap.api.exporter", "org.jboss.shrinkwrap.impl.base.path");
-                builder.addImportPackages("org.jboss.osgi.framework", "org.jboss.logging");
+                builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
+                builder.addImportPackages(Logger.class, ServiceNames.class);
                 return builder.openStream();
             }
         });

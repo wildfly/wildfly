@@ -89,7 +89,7 @@
             </console-handler>
 
             <periodic-rotating-file-handler name="FILE">
-                <level name="DEBUG"/>
+                <level name="INFO"/>
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -108,7 +108,7 @@
             </logger>
 
             <root-logger>
-                <level name="DEBUG"/>
+                <level name="INFO"/>
                 <handlers>
                     <handler name="CONSOLE"/>
                     <handler name="FILE"/>
