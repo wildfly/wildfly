@@ -49,6 +49,10 @@ public class DefaultOperationRequestBuilder extends ValidatingOperationCallbackH
         this.prefix = new DefaultOperationRequestAddress(prefix);
     }
 
+    public OperationRequestAddress getAddress() {
+        return prefix;
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationParser.CallbackHandler#rootNode()
      */

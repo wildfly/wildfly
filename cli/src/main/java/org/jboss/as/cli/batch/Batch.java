@@ -19,38 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.batch;
 
-import org.jboss.as.cli.CommandContext;
+import java.util.List;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class BatchDiscardHandler extends CommandHandlerWithHelp {
+public interface Batch {
 
-    public BatchDiscardHandler() {
-        super("batch-discard");
-    }
+    void add(BatchedCommand cmd);
 
-    @Override
-    public boolean isAvailable(CommandContext ctx) {
-        if(!super.isAvailable(ctx)) {
-            return false;
-        }
-        return ctx.isBatchMode();
-    }
+    List<BatchedCommand> getCommands();
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
-     */
-    @Override
-    protected void doHandle(CommandContext ctx) {
-
-        boolean result = ctx.getBatchManager().discardActiveBatch();
-        if(!result) {
-            ctx.printLine("There is no active batch to discard.");
-        }
-    }
-
+    void clear();
 }

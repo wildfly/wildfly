@@ -21,9 +21,15 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.jboss.as.cli.CommandArgumentCompleter;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
 
 /**
  *
@@ -32,7 +38,33 @@ import org.jboss.as.cli.CommandContext;
 public class BatchHandler extends CommandHandlerWithHelp {
 
     public BatchHandler() {
-        super("batch", new SimpleTabCompleter(new String[]{}));
+        super("batch", new SimpleTabCompleterWithDelegate(new String[]{"-l"}, new CommandArgumentCompleter(){
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+
+                BatchManager batchManager = ctx.getBatchManager();
+                Set<String> names = batchManager.getHeldbackNames();
+                if(names.isEmpty()) {
+                    return -1;
+                }
+
+                int nextCharIndex = 0;
+                while (nextCharIndex < buffer.length()) {
+                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+
+                String chunk = buffer.substring(nextCharIndex).trim();
+                for(String name : names) {
+                    if(name != null && name.startsWith(chunk)) {
+                        candidates.add(name);
+                    }
+                }
+                Collections.sort(candidates);
+                return nextCharIndex;
+            }}));
     }
 
     /* (non-Javadoc)
@@ -41,7 +73,24 @@ public class BatchHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        if (ctx.isBatchMode()) {
+        BatchManager batchManager = ctx.getBatchManager();
+
+        if(ctx.hasSwitch("l")) {
+            Set<String> heldbackNames = batchManager.getHeldbackNames();
+            if(!heldbackNames.isEmpty()) {
+                List<String> names = new ArrayList<String>(heldbackNames.size());
+                for (String name : heldbackNames) {
+                    names.add(name == null ? "<unnamed>" : name);
+                }
+                Collections.sort(names);
+                for (String name : names) {
+                    ctx.printLine(name);
+                }
+            }
+            return;
+        }
+
+        if(batchManager.isBatchActive()) {
             ctx.printLine("Can't start a new batch while in batch mode.");
             return;
         }
@@ -51,15 +100,30 @@ public class BatchHandler extends CommandHandlerWithHelp {
             name = ctx.getArguments().get(0);
         }
 
-        ctx.startBatch(name);
-
-        List<String> batch = ctx.getCurrentBatch();
-        if (!batch.isEmpty()) {
-            for (int i = 0; i < batch.size(); ++i) {
-                String line = batch.get(i);
-                ctx.printLine("#" + (i + 1) + ' ' + line);
+        boolean activated;
+        if(batchManager.isHeldback(name)) {
+            activated = batchManager.activateHeldbackBatch(name);
+            if (activated) {
+                final String msg = name == null ? "Re-activated batch" : "Re-activated batch '" + name + "'";
+                ctx.printLine(msg);
+                List<BatchedCommand> batch = batchManager.getActiveBatch().getCommands();
+                if (!batch.isEmpty()) {
+                    for (int i = 0; i < batch.size(); ++i) {
+                        BatchedCommand cmd = batch.get(i);
+                        ctx.printLine("#" + (i + 1) + ' ' + cmd.getCommand());
+                    }
+                }
             }
+        } else if(name != null) {
+            ctx.printLine("'" + name + "' not found among the held back batches.");
+            return;
+        } else {
+            activated = batchManager.activateNewBatch();
         }
-        return;
+
+        if(!activated) {
+            // that's more like illegal state
+            ctx.printLine("Failed to activate batch.");
+        }
     }
 }

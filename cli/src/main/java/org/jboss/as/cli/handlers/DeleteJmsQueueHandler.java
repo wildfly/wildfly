@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandArgumentCompleter;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -83,9 +84,38 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        if(!ctx.hasArguments()) {
-            ctx.printLine("Missing required argument 'name'.");
+        ModelNode request;
+        try {
+            request = buildRequest(ctx);
+        } catch (OperationFormatException e1) {
+            ctx.printLine(e1.getLocalizedMessage());
             return;
+        }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
+
+        final ModelNode result;
+        try {
+            result = client.execute(request);
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            return;
+        }
+
+        String name = ctx.getNamedArgument("name");
+        if (!Util.isSuccess(result)) {
+            ctx.printLine("Failed to delete queue '" + name + "': " + Util.getFailureDescription(result));
+            return;
+        }
+        ctx.printLine("Removed queue " + name);
+    }
+
+    @Override
+    public ModelNode buildRequest(CommandContext ctx)
+            throws OperationFormatException {
+
+        if(!ctx.hasArguments()) {
+            throw new OperationFormatException("Missing required argument 'name'.");
         }
 
         String name = ctx.getNamedArgument("name");
@@ -97,31 +127,14 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
         }
 
         if(name == null) {
-            ctx.printLine("Missing required argument 'name'.");
-            return;
+            new OperationFormatException("Missing required argument 'name'.");
         }
-
-        ModelControllerClient client = ctx.getModelControllerClient();
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
         builder.addNode("queue", name);
         builder.setOperationName("remove");
 
-        final ModelNode result;
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine("Failed to delete queue '" + name + "': " + Util.getFailureDescription(result));
-            return;
-        }
-
-        ctx.printLine("Removed queue " + name);
+        return builder.buildRequest();
     }
 }

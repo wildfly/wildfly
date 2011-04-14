@@ -21,9 +21,9 @@
  */
 package org.jboss.as.cli.handlers;
 
-import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.batch.Batch;
 
 /**
  *
@@ -49,12 +49,12 @@ public class BatchClearHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        List<String> currentBatch = ctx.getCurrentBatch();
-        if(currentBatch == null) {
+        Batch batch = ctx.getBatchManager().getActiveBatch();
+        if(batch == null) {
             ctx.printLine("No active batch.");
             return;
         }
-        currentBatch.clear();
+        batch.clear();
     }
 
 }

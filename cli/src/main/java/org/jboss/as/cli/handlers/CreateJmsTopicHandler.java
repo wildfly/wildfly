@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -43,10 +44,37 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
     @Override
     protected void doHandle(CommandContext ctx) {
 
+        ModelNode request;
+        try {
+            request = buildRequest(ctx);
+        } catch (OperationFormatException e1) {
+            ctx.printLine(e1.getLocalizedMessage());
+            return;
+        }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
+        final ModelNode result;
+        try {
+            result = client.execute(request);
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            return;
+        }
+
+        if (!Util.isSuccess(result)) {
+            ctx.printLine(Util.getFailureDescription(result));
+            return;
+        }
+
+        ctx.printLine("Created topic " + ctx.getNamedArgument("name"));
+    }
+
+    @Override
+    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+
         final String name = ctx.getNamedArgument("name");
         if(name == null) {
-            ctx.printLine("Required argument 'name' is missing.");
-            return;
+            throw new OperationFormatException("Required argument 'name' is missing.");
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
@@ -68,21 +96,6 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
             }
         }
 
-        ModelControllerClient client = ctx.getModelControllerClient();
-        final ModelNode result;
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
-
-        ctx.printLine("Created topic " + name);
+        return builder.buildRequest();
     }
 }

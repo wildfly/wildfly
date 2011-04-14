@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
+import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -226,37 +227,13 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public boolean startBatch(String name) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean discardBatch(String name) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean holdbackBatch(String name) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean runBatch(String name) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public List<String> getCurrentBatch() {
+    public String getCommand() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String getCommand() {
+    public BatchManager getBatchManager() {
         // TODO Auto-generated method stub
         return null;
     }

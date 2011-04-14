@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -48,8 +49,34 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
     @Override
     protected void doHandle(CommandContext ctx) {
 
+        ModelNode request;
+        try {
+            request = buildRequest(ctx);
+        } catch (OperationFormatException e) {
+            ctx.printLine(e.getLocalizedMessage());
+            return;
+        }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
+        final ModelNode result;
+        try {
+            result = client.execute(request);
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            return;
+        }
+
+        if (!Util.isSuccess(result)) {
+            ctx.printLine(Util.getFailureDescription(result));
+            return;
+        }
+    }
+
+    @Override
+    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+
         if(!ctx.hasArguments()) {
-            ctx.printLine("Arguments are missing");
+            throw new OperationFormatException("Arguments are missing");
         }
 
         //String target = null;
@@ -89,13 +116,11 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
         }
 
         if(restype == null) {
-            ctx.printLine("Required parameter --restype is missing.");
-            return;
+            throw new OperationFormatException("Required parameter --restype is missing.");
         }
 
         if(jndiName == null) {
-            ctx.printLine("JNDI name is missing.");
-            return;
+            throw new OperationFormatException("JNDI name is missing.");
         }
 
         String name = null;
@@ -106,15 +131,13 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
             for(String prop : propsArr) {
                 int equalsIndex = prop.indexOf('=');
                 if(equalsIndex < 0 || equalsIndex == prop.length() - 1) {
-                    ctx.printLine("Failed to parse property '" + prop + "'");
-                    return;
+                    throw new OperationFormatException("Failed to parse property '" + prop + "'");
                 }
 
                 String propName = prop.substring(0, equalsIndex).trim();
                 String propValue = prop.substring(equalsIndex + 1).trim();
                 if(propName.isEmpty()) {
-                    ctx.printLine("Failed to parse property '" + prop + "'");
-                    return;
+                    throw new OperationFormatException("Failed to parse property '" + prop + "'");
                 }
 
                 if(propName.equals("imqDestinationName") ||propName.equalsIgnoreCase("name")) {
@@ -131,7 +154,6 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
             name = jndiName.replace('/', '_');
         }
 
-        ModelControllerClient client = ctx.getModelControllerClient();
         if(restype.equals("javax.jms.Queue")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
@@ -144,21 +166,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
                 builder.addProperty(prop, props.get(prop));
             }
 
-            final ModelNode result;
-            try {
-                ModelNode request = builder.buildRequest();
-                result = client.execute(request);
-            } catch (Exception e) {
-                ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-                return;
-            }
-
-            if (!Util.isSuccess(result)) {
-                ctx.printLine(Util.getFailureDescription(result));
-                return;
-            }
-
-            ctx.printLine("Created queue " + name);
+            return builder.buildRequest();
 
         } else if(restype.equals("javax.jms.Topic")) {
 
@@ -172,21 +180,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
                 builder.addProperty(prop, props.get(prop));
             }
 
-            final ModelNode result;
-            try {
-                ModelNode request = builder.buildRequest();
-                result = client.execute(request);
-            } catch (Exception e) {
-                ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-                return;
-            }
-
-            if (!Util.isSuccess(result)) {
-                ctx.printLine(Util.getFailureDescription(result));
-                return;
-            }
-
-            ctx.printLine("Created topic " + name);
+            return builder.buildRequest();
 
         } else if(restype.equals("javax.jms.ConnectionFactory") ||
                 restype.equals("javax.jms.TopicConnectionFactory") ||
@@ -202,25 +196,10 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
                 builder.addProperty(prop, props.get(prop));
             }
 
-            final ModelNode result;
-            try {
-                ModelNode request = builder.buildRequest();
-                result = client.execute(request);
-            } catch (Exception e) {
-                ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-                return;
-            }
-
-            if (!Util.isSuccess(result)) {
-                ctx.printLine(Util.getFailureDescription(result));
-                return;
-            }
-
-            ctx.printLine("Created connection factory " + name);
+            return builder.buildRequest();
 
         } else {
-            ctx.printLine("Resource type " + restype + " isn't supported.");
-            return;
+            throw new OperationFormatException("Resource type " + restype + " isn't supported.");
         }
     }
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.batch.BatchManager;
 
 /**
  *
@@ -46,8 +47,10 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
-        if(!ctx.isBatchMode()) {
-            ctx.printLine("holdback can't executed while not in batch mode.");
+
+        BatchManager batchManager = ctx.getBatchManager();
+        if(!batchManager.isBatchActive()) {
+            ctx.printLine("No active batch to holdback.");
             return;
         }
 
@@ -56,13 +59,13 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
             name = ctx.getArguments().get(0);
         }
 
-        if(!ctx.holdbackBatch(name)) {
-            if(name == null) {
-                ctx.printLine("There already is a held back unnamed batch. Remove the existing one first or choose a unique name for the current batch.");
-            } else {
-                ctx.printLine("There already is a held back '" + name + "' batch. Remove the existing one first or choose a unique name for the current batch.");
-            }
+        if(batchManager.isHeldback(name)) {
+            ctx.printLine("There already is " + (name == null ? "unnamed" : "'" + name + "'") + " batch held back.");
+            return;
+        }
+
+        if(!batchManager.holdbackActiveBatch(name)) {
+            ctx.printLine("Failed to holdback the batch.");
         }
     }
-
 }

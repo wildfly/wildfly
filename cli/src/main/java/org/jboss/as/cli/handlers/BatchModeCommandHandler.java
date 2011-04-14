@@ -22,12 +22,13 @@
 package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.OperationCommand;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public abstract class BatchModeCommandHandler extends CommandHandlerWithHelp {
+public abstract class BatchModeCommandHandler extends CommandHandlerWithHelp implements OperationCommand {
 
     public BatchModeCommandHandler(String command, boolean connectionRequired,
             CommandArgumentCompleter argsCompleter) {

@@ -41,6 +41,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.batch.impl.DefaultBatchManager;
+import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
+import org.jboss.as.cli.handlers.BatchClearHandler;
 import org.jboss.as.cli.handlers.BatchDiscardHandler;
 import org.jboss.as.cli.handlers.BatchHandler;
 import org.jboss.as.cli.handlers.BatchHoldbackHandler;
@@ -65,16 +70,18 @@ import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.PrefixFormatter;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -108,7 +115,7 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
         cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
         cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
-        cmdRegistry.registerHandler(new BatchRunHandler(), "clear-batch");
+        cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
     }
 
     public static void main(String[] args) throws Exception {
@@ -227,18 +234,14 @@ public class CommandLineMain {
         if(isOperation(line)) {
             cmdCtx.setArgs(null, line);
             if(cmdCtx.isBatchMode()) {
-                OperationRequestAddress address = new DefaultOperationRequestAddress(cmdCtx.getPrefix());
-                DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(address);
+                DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(cmdCtx.getPrefix());
                 try {
-                    cmdCtx.getOperationRequestParser().parse(line, handler);
-                    if(!handler.hasOperationName()) {
-                        cmdCtx.printLine("The request is missing the operation name");
-                    } else {
-                        StringBuilder op = new StringBuilder();
-                        op.append(cmdCtx.getPrefixFormatter().format(handler.getAddress()));
-                        op.append(line.substring(line.indexOf(':')));
-                        cmdCtx.addToBatch(op.toString());
-                    }
+                    cmdCtx.getOperationRequestParser().parse(line, builder);
+                    ModelNode request = builder.buildRequest();
+                    StringBuilder op = new StringBuilder();
+                    op.append(cmdCtx.getPrefixFormatter().format(builder.getAddress()));
+                    op.append(line.substring(line.indexOf(':')));
+                    cmdCtx.getBatchManager().getActiveBatch().getCommands().add(new DefaultBatchedCommand(op.toString(), request));
                 } catch (CommandFormatException e) {
                     cmdCtx.printLine(e.getLocalizedMessage());
                 }
@@ -261,7 +264,17 @@ public class CommandLineMain {
             CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
             if(handler != null) {
                 if(cmdCtx.isBatchMode() && handler.isBatchMode()) {
-                    cmdCtx.addToBatch(line);
+                    if(!(handler instanceof OperationCommand)) {
+                        cmdCtx.printLine("The handler doesn't implement " + OperationCommand.class.getName());
+                    } else {
+                        try {
+                            ModelNode request = ((OperationCommand)handler).buildRequest(cmdCtx);
+                            BatchedCommand batchedCmd = new DefaultBatchedCommand(line, request);
+                            cmdCtx.getBatchManager().getActiveBatch().getCommands().add(batchedCmd);
+                        } catch (OperationFormatException e) {
+                            cmdCtx.printLine("Failed to add to batch: " + e.getLocalizedMessage());
+                        }
+                    }
                 } else {
                     handler.handle(cmdCtx);
                 }
@@ -356,12 +369,8 @@ public class CommandLineMain {
         private final OperationCandidatesProvider operationCandidatesProvider;
         /** operation request handler */
         private final OperationRequestHandler operationHandler;
-        /** whether the CLI is in the batch mode */
-        private boolean batchMode;
-        /** currently saved batches */
-        private Map<String, List<String>> batches;
-        /** current batch */
-        private List<String> currentBatch;
+        /** batches */
+        private BatchManager batchManager = new DefaultBatchManager();
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
@@ -668,99 +677,17 @@ public class CommandLineMain {
 
         @Override
         public boolean isBatchMode() {
-            return batchMode;
-        }
-
-        @Override
-        public boolean startBatch(String name) {
-            if(batchMode) {
-                return false;
-            }
-
-            this.batchMode = true;
-            if (batches == null) {
-                currentBatch = new ArrayList<String>();
-            } else {
-                currentBatch = batches.remove(name);
-                if (currentBatch == null) {
-                    currentBatch = new ArrayList<String>();
-                }
-            }
-            return true;
-        }
-
-        @Override
-        public boolean discardBatch(String name) {
-            if(batchMode) {
-                currentBatch = null;
-                batchMode = false;
-                return true;
-            }
-
-            if(batches != null) {
-                return batches.remove(name) != null;
-            }
-
-            return false;
-        }
-
-        @Override
-        public boolean holdbackBatch(String name) {
-            if(!batchMode) {
-                return false;
-            }
-            if(batches == null) {
-                batches = new HashMap<String, List<String>>();
-            } else if(batches.containsKey(name)) {
-                return false;
-            }
-            batchMode = false;
-            return batches.put(name, currentBatch) == null;
-        }
-
-        @Override
-        public boolean runBatch(String name) {
-            final List<String> batch;
-            if(!batchMode) {
-                if(batches != null) {
-                    batch = batches.remove(name);
-                } else {
-                    batch = null;
-                }
-            } else {
-                batch = currentBatch;
-            }
-
-            if(batch == null) {
-                return false;
-            }
-
-            try {
-                // do batch
-            } finally {
-                currentBatch = null;
-                batchMode = false;
-            }
-
-            return true;
-        }
-
-        @Override
-        public List<String> getCurrentBatch() {
-            return currentBatch;
-        }
-
-        void addToBatch(String line) {
-            if(currentBatch == null) {
-                printLine("There is no active batch.");
-                return;
-            }
-            currentBatch.add(line);
+            return batchManager.isBatchActive();
         }
 
         @Override
         public String getCommand() {
             return cmd;
+        }
+
+        @Override
+        public BatchManager getBatchManager() {
+            return batchManager;
         }
     }
 }

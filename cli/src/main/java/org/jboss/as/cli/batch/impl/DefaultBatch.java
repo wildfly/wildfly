@@ -19,38 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.batch.impl;
 
-import org.jboss.as.cli.CommandContext;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.cli.batch.Batch;
+import org.jboss.as.cli.batch.BatchedCommand;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class BatchDiscardHandler extends CommandHandlerWithHelp {
+public class DefaultBatch implements Batch {
 
-    public BatchDiscardHandler() {
-        super("batch-discard");
-    }
-
-    @Override
-    public boolean isAvailable(CommandContext ctx) {
-        if(!super.isAvailable(ctx)) {
-            return false;
-        }
-        return ctx.isBatchMode();
-    }
+    private final List<BatchedCommand> commands = new ArrayList<BatchedCommand>();
 
     /* (non-Javadoc)
-     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
+     * @see org.jboss.as.cli.batch.Batch#getCommands()
      */
     @Override
-    protected void doHandle(CommandContext ctx) {
-
-        boolean result = ctx.getBatchManager().discardActiveBatch();
-        if(!result) {
-            ctx.printLine("There is no active batch to discard.");
-        }
+    public List<BatchedCommand> getCommands() {
+        return commands;
     }
 
+    @Override
+    public void add(BatchedCommand cmd) {
+        if(cmd == null) {
+            throw new IllegalArgumentException("Null argument.");
+        }
+        commands.add(cmd);
+    }
+
+    @Override
+    public void clear() {
+        commands.clear();
+    }
 }

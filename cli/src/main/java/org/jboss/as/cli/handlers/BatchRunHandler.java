@@ -21,7 +21,14 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.Util;
+import org.jboss.as.cli.batch.Batch;
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -46,16 +53,38 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
-        String name = null;
-        if(ctx.hasArguments()) {
-            name = ctx.getArguments().get(0);
+
+        BatchManager batchManager = ctx.getBatchManager();
+        if(!batchManager.isBatchActive()) {
+            ctx.printLine("No active batch.");
+            return;
         }
-        if(!ctx.runBatch(name)) {
-            if(name == null) {
-                ctx.printLine("There is no unnamed batch to run.");
-            } else {
-                ctx.printLine("Batch '" + name + "' doesn't exist.");
+
+        Batch batch = batchManager.getActiveBatch();
+        List<BatchedCommand> currentBatch = batch.getCommands();
+        if(currentBatch.isEmpty()) {
+            ctx.printLine("The batch is empty.");
+            batchManager.discardActiveBatch();
+            return;
+        }
+
+        ModelNode composite = new ModelNode();
+        composite.get("operation").set("composite");
+        composite.get("address").setEmptyList();
+        ModelNode steps = composite.get("steps");
+
+        for(BatchedCommand cmd : currentBatch) {
+            steps.add(cmd.getRequest());
+        }
+
+        try {
+            ModelNode result = ctx.getModelControllerClient().execute(composite);
+            if(Util.isSuccess(result)) {
+                batchManager.discardActiveBatch();
+                ctx.printLine("The batch executed successfully.");
             }
+        } catch (Exception e) {
+            ctx.printLine("Failed to execute batch: " + e.getLocalizedMessage());
         }
     }
 }

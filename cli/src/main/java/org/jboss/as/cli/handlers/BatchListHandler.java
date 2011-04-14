@@ -24,6 +24,9 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.batch.Batch;
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
 
 /**
  *
@@ -48,12 +51,20 @@ public class BatchListHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
-        List<String> batch = ctx.getCurrentBatch();
-        if (!batch.isEmpty()) {
-            for (int i = 0; i < batch.size(); ++i) {
-                String line = batch.get(i);
-                ctx.printLine("#" + (i + 1) + ' ' + line);
+        BatchManager batchManager = ctx.getBatchManager();
+        if(!batchManager.isBatchActive()) {
+            ctx.printLine("No active batch.");
+            return;
+        }
+        Batch activeBatch = batchManager.getActiveBatch();
+        List<BatchedCommand> commands = activeBatch.getCommands();
+        if (!commands.isEmpty()) {
+            for (int i = 0; i < commands.size(); ++i) {
+                BatchedCommand cmd = commands.get(i);
+                ctx.printLine("#" + (i + 1) + ' ' + cmd.getCommand());
             }
+        } else {
+            ctx.printLine("The batch is empty.");
         }
     }
 
