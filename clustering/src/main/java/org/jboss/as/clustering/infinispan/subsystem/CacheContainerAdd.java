@@ -28,14 +28,12 @@ import java.net.URL;
 import java.security.AccessController;
 import java.util.AbstractMap;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.infinispan.config.CacheLoaderManagerConfig;
 import org.infinispan.config.Configuration;
@@ -68,6 +66,7 @@ import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
@@ -164,16 +163,22 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     String defaultCache = operation.require(ModelKeys.DEFAULT_CACHE).asString();
-                    Set<String> aliases = new HashSet<String>();
+                    ServiceName[] aliases = null;
                     if (operation.hasDefined(ModelKeys.ALIAS)) {
-                        for (ModelNode alias: operation.get(ModelKeys.ALIAS).asList()) {
-                            aliases.add(alias.asString());
+                        List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
+                        aliases = new ServiceName[list.size()];
+                        for (int i = 0; i < list.size(); i++) {
+                            aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
                         }
                     }
                     GlobalConfiguration global = CacheContainerAdd.this.global.clone();
                     String transportExecutor = null;
+                    String stack = null;
                     if (operation.hasDefined(ModelKeys.TRANSPORT)) {
                         ModelNode transport = operation.get(ModelKeys.TRANSPORT);
+                        if (transport.hasDefined(ModelKeys.STACK)) {
+                            stack = transport.get(ModelKeys.STACK).asString();
+                        }
                         if (transport.hasDefined(ModelKeys.EXECUTOR)) {
                             transportExecutor = transport.get(ModelKeys.EXECUTOR).asString();
                         }
@@ -314,8 +319,12 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     if (!configs.containsKey(defaultCache)) {
                         throw new IllegalArgumentException(String.format("%s is not a valid default cache. The %s cache container does not contain a cache with that name", defaultCache, name));
                     }
-                    EmbeddedCacheManagerService service = new EmbeddedCacheManagerService(name, defaultCache, aliases, global, CacheContainerAdd.this.defaultConfig.clone(), configs);
+                    EmbeddedCacheManagerService service = new EmbeddedCacheManagerService(name, defaultCache, global, CacheContainerAdd.this.defaultConfig.clone(), configs);
                     ServiceBuilder<CacheContainer> builder = service.build(context.getServiceTarget());
+                    if (aliases != null) {
+                        builder.addAliases(aliases);
+                    }
+                    service.addTransportDependency(builder, stack);
                     if (operation.hasDefined(ModelKeys.LISTENER_EXECUTOR)) {
                         service.addListenerExecutorDependency(builder, operation.get(ModelKeys.LISTENER_EXECUTOR).asString());
                     }

@@ -24,38 +24,41 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.ChannelFactoryRegistry;
 import org.jboss.as.clustering.jgroups.DefaultChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
  */
 public class ChannelFactoryService implements Service<ChannelFactory> {
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jgroups");
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<ChannelFactoryRegistry> registry = new InjectedValue<ChannelFactoryRegistry>();
 
     private final String name;
     private final ProtocolStackConfiguration configuration;
 
     private volatile ChannelFactory factory;
 
+    public static ServiceName getServiceName() {
+        return SERVICE_NAME;
+    }
+
     public static ServiceName getServiceName(String name) {
-        return ChannelFactoryRegistryService.SERVICE_NAME.append(name);
+        return SERVICE_NAME.append(name);
     }
 
     public ChannelFactoryService(String name, ProtocolStackConfiguration configuration) {
@@ -66,7 +69,6 @@ public class ChannelFactoryService implements Service<ChannelFactory> {
     ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
         return target.addService(getServiceName(this.name), this)
             .setInitialMode(ServiceController.Mode.ACTIVE)
-            .addDependency(ChannelFactoryRegistryService.SERVICE_NAME, ChannelFactoryRegistry.class, this.registry)
             .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
             .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, this.mbeanServer);
     }
@@ -74,12 +76,10 @@ public class ChannelFactoryService implements Service<ChannelFactory> {
     @Override
     public void start(StartContext context) throws StartException {
         this.factory = new DefaultChannelFactory(this.name, this.configuration, this.environment.getValue().getNodeName());
-        this.registry.getValue().addChannelFactory(this.name, this.factory);
     }
 
     @Override
     public void stop(StopContext context) {
-        this.registry.getValue().removeChannelFactory(this.name);
         this.factory = null;
     }
 

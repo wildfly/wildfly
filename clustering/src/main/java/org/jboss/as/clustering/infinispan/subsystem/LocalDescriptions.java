@@ -49,9 +49,9 @@ public class LocalDescriptions {
     static ModelNode getSubsystemAddDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
         ModelNode description = createSubsystemOperationDescription(ModelDescriptionConstants.ADD, resources);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CONTAINER, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CONTAINER, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.default-container"));
-        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CONTAINER, ModelDescriptionConstants.REQUIRED).set(false);
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("infinispan.default-container"));
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.DEFAULT_CACHE_CONTAINER, ModelDescriptionConstants.REQUIRED).set(false);
         return description;
     }
 

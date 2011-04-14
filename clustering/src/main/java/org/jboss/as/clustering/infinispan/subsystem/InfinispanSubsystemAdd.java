@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Locale;
 
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -38,6 +39,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
@@ -52,9 +55,7 @@ public class InfinispanSubsystemAdd implements ModelAddOperationHandler, Descrip
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        if (source.hasDefined(ModelKeys.DEFAULT_CONTAINER)) {
-            target.get(ModelKeys.DEFAULT_CONTAINER).set(source.get(ModelKeys.DEFAULT_CONTAINER));
-        }
+        target.get(ModelKeys.DEFAULT_CACHE_CONTAINER).set(source.require(ModelKeys.DEFAULT_CACHE_CONTAINER));
         target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
     }
 
@@ -82,11 +83,11 @@ public class InfinispanSubsystemAdd implements ModelAddOperationHandler, Descrip
             RuntimeTask task = new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    CacheContainerRegistryService service = new CacheContainerRegistryService();
-                    if (operation.hasDefined(ModelKeys.DEFAULT_CONTAINER)) {
-                        service.setDefaultContainer(operation.get(ModelKeys.DEFAULT_CONTAINER).asString());
-                    }
-                    service.build(context.getServiceTarget())
+                    String defaultContainer = operation.require(ModelKeys.DEFAULT_CACHE_CONTAINER).asString();
+                    InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
+                    ValueService<EmbeddedCacheManager> service = new ValueService<EmbeddedCacheManager>(container);
+                    context.getServiceTarget().addService(EmbeddedCacheManagerService.getServiceName(), service)
+                        .addDependency(EmbeddedCacheManagerService.getServiceName(defaultContainer), EmbeddedCacheManager.class, container)
                         .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                         .install();
                 }
