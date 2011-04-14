@@ -40,7 +40,7 @@ public class WSDeploymentAspectParserTestCase extends TestCase {
     public void test() throws Exception {
         InputStream is = getXmlUrl("jbossws-deployment-aspects-example.xml").openStream();
         try {
-            List<DeploymentAspect> das = WSDeploymentAspectParser.parse(is);
+            List<DeploymentAspect> das = WSDeploymentAspectParser.parse(is, this.getClass().getClassLoader());
             assertEquals(4, das.size());
             boolean da1Found = false;
             boolean da2Found = false;

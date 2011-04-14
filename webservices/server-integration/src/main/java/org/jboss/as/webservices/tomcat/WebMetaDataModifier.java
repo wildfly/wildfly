@@ -33,6 +33,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.common.integration.WSConstants;
 import org.jboss.wsf.common.integration.WSHelper;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.ServletClassProvider;
@@ -127,7 +128,8 @@ final class WebMetaDataModifier {
         String transportClassProviderName = (String) dep.getProperty(WSConstants.STACK_TRANSPORT_CLASS_PROVIDER);
         if (transportClassProviderName != null) {
             try {
-                ServletClassProvider scp = (ServletClassProvider) (Class.forName(transportClassProviderName).newInstance());
+                final ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
+                ServletClassProvider scp = (ServletClassProvider) (Class.forName(transportClassProviderName, true, cl).newInstance());
                 transportClassName = scp.getServletClassName();
             } catch (Exception e) {
                 log.warn("Cannot get transport class name from " + WSConstants.STACK_TRANSPORT_CLASS_PROVIDER, e);

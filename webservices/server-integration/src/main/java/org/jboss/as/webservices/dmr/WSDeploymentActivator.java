@@ -33,6 +33,7 @@ import org.jboss.as.webservices.deployers.WebServiceContextDeploymentUnitProcess
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.common.sort.DeploymentAspectSorter;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
 import java.io.IOException;
@@ -62,33 +63,27 @@ final class WSDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSTypeDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSModelDeploymentProcessor());
 
-        addDeploymentProcessors(WSDeploymentActivator.class.getClassLoader(), updateContext, priority);
+        addDeploymentProcessors(updateContext, priority);
     }
 
     private static List<DeploymentAspect> getDeploymentAspects(final ClassLoader cl, final String resourcePath)
     {
         try {
-            Enumeration<URL> urls = cl.getResources(resourcePath);
+            Enumeration<URL> urls = WSDeploymentActivator.class.getClassLoader().getResources(resourcePath);
             if (urls != null) {
-                ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+                URL url = urls.nextElement();
+                InputStream is = null;
                 try {
-                    SecurityActions.setContextClassLoader(cl);
-                    URL url = urls.nextElement();
-                        InputStream is = null;
-                        try {
-                            is =  url.openStream();
-                            return WSDeploymentAspectParser.parse(is);
-                        } finally {
-                            if (is != null) {
-                                try {
-                                    is.close();
-                                } catch (Exception e) {
-                                    // ignore
-                                }
-                            }
-                        }
+                    is = url.openStream();
+                    return WSDeploymentAspectParser.parse(is, cl);
                 } finally {
-                    SecurityActions.setContextClassLoader(origClassLoader);
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (Exception e) {
+                            // ignore
+                        }
+                    }
                 }
             }
             else {
@@ -99,16 +94,17 @@ final class WSDeploymentActivator {
         }
     }
 
-    private static void addDeploymentProcessors(final ClassLoader cl, final BootOperationContext updateContext, final int priority) {
+    private static void addDeploymentProcessors(final BootOperationContext updateContext, final int priority) {
         int index = 1;
-        for (final DeploymentAspect da : getSortedDeploymentAspects(cl)) {
+        for (final DeploymentAspect da : getSortedDeploymentAspects()) {
             LOGGER.tracef("Installing aspect %s", da.getClass().getName());
             updateContext.addDeploymentProcessor(Phase.INSTALL, priority + index++, new AspectDeploymentProcessor(da));
         }
     }
 
-    private static List<DeploymentAspect> getSortedDeploymentAspects(final ClassLoader cl) {
+    private static List<DeploymentAspect> getSortedDeploymentAspects() {
         final List<DeploymentAspect> deploymentAspects = new LinkedList<DeploymentAspect>();
+        ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
         deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-agnostic-deployment-aspects.xml"));
         deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-specific-deployment-aspects.xml"));
         return DeploymentAspectSorter.getInstance().sort(deploymentAspects);

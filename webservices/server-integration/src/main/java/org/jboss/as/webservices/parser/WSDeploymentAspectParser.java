@@ -27,6 +27,8 @@ import static org.jboss.wsf.spi.util.StAXUtils.match;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -65,16 +67,16 @@ public class WSDeploymentAspectParser {
     private static final String LIST = "list";
     private static final String ELEMENT_CLASS = "elementClass";
 
-    public static List<DeploymentAspect> parse(InputStream is) {
+    public static List<DeploymentAspect> parse(InputStream is, ClassLoader loader) {
         try {
             XMLStreamReader xmlr = StAXUtils.createXMLStreamReader(is);
-            return parse(xmlr);
+            return parse(xmlr, loader);
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
     }
 
-    public static List<DeploymentAspect> parse(XMLStreamReader reader) throws XMLStreamException {
+    public static List<DeploymentAspect> parse(XMLStreamReader reader, ClassLoader loader) throws XMLStreamException {
         int iterate;
         try {
             iterate = reader.nextTag();
@@ -91,7 +93,7 @@ public class WSDeploymentAspectParser {
             case START_ELEMENT: {
 
                 if (match(reader, NS, DEPLOYMENT_ASPECTS)) {
-                    deploymentAspects = parseDeploymentAspects(reader);
+                    deploymentAspects = parseDeploymentAspects(reader, loader);
                 } else {
                     throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
                 }
@@ -100,7 +102,7 @@ public class WSDeploymentAspectParser {
         return deploymentAspects;
     }
 
-    private static List<DeploymentAspect> parseDeploymentAspects(XMLStreamReader reader) throws XMLStreamException {
+    private static List<DeploymentAspect> parseDeploymentAspects(XMLStreamReader reader, ClassLoader loader) throws XMLStreamException {
         List<DeploymentAspect> deploymentAspects = new LinkedList<DeploymentAspect>();
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -113,7 +115,7 @@ public class WSDeploymentAspectParser {
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, DEPLOYMENT_ASPECT)) {
-                        deploymentAspects.add(parseDeploymentAspect(reader));
+                        deploymentAspects.add(parseDeploymentAspect(reader, loader));
                     } else {
                         throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
                     }
@@ -123,7 +125,7 @@ public class WSDeploymentAspectParser {
         throw new IllegalStateException("Reached end of xml document unexpectedly");
     }
 
-    private static DeploymentAspect parseDeploymentAspect(XMLStreamReader reader) throws XMLStreamException {
+    private static DeploymentAspect parseDeploymentAspect(XMLStreamReader reader, ClassLoader loader) throws XMLStreamException {
         String deploymentAspectClass = reader.getAttributeValue(null, CLASS);
         if (deploymentAspectClass == null) {
             throw new IllegalStateException("Could not find class attribute for deployment aspect!");
@@ -131,8 +133,14 @@ public class WSDeploymentAspectParser {
         DeploymentAspect deploymentAspect = null;
         try {
             @SuppressWarnings("unchecked")
-            Class<? extends DeploymentAspect> clazz = (Class<? extends DeploymentAspect>) Class.forName(deploymentAspectClass);
-            deploymentAspect = clazz.newInstance();
+            Class<? extends DeploymentAspect> clazz = (Class<? extends DeploymentAspect>) Class.forName(deploymentAspectClass, true, loader);
+            ClassLoader orig = getContextClassLoader();
+            try {
+                setContextClassLoader(loader);
+                deploymentAspect = clazz.newInstance();
+            } finally {
+                setContextClassLoader(orig);
+            }
         } catch (Exception e) {
             throw new IllegalStateException("Could not create a deploymeny aspect of class: " + deploymentAspectClass, e);
         }
@@ -151,7 +159,7 @@ public class WSDeploymentAspectParser {
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, PROPERTY)) {
-                        parseProperty(reader, deploymentAspect);
+                        parseProperty(reader, deploymentAspect, loader);
                     } else {
                         throw new IllegalStateException("Unexpected element: " + reader.getLocalName());
                     }
@@ -162,7 +170,7 @@ public class WSDeploymentAspectParser {
     }
 
     @SuppressWarnings("rawtypes")
-    private static void parseProperty(XMLStreamReader reader, DeploymentAspect deploymentAspect) throws XMLStreamException {
+    private static void parseProperty(XMLStreamReader reader, DeploymentAspect deploymentAspect, ClassLoader loader) throws XMLStreamException {
         Class<? extends DeploymentAspect> deploymentAspectClass = deploymentAspect.getClass();
         String propName = reader.getAttributeValue(null, NAME);
         if (propName == null) {
@@ -197,7 +205,7 @@ public class WSDeploymentAspectParser {
                         try {
                             Method m = selectMethod(deploymentAspectClass, propName, propClass);
                             Map map = parseMapProperty(reader, propClass, reader.getAttributeValue(null, KEY_CLASS),
-                                    reader.getAttributeValue(null, VALUE_CLASS));
+                                    reader.getAttributeValue(null, VALUE_CLASS), loader);
                             m.invoke(deploymentAspect, map);
                         } catch (Exception e) {
                             throw new IllegalStateException(e);
@@ -283,11 +291,11 @@ public class WSDeploymentAspectParser {
     }
 
     @SuppressWarnings("rawtypes")
-    private static Map parseMapProperty(XMLStreamReader reader, String propClass, String keyClass, String valueClass)
+    private static Map parseMapProperty(XMLStreamReader reader, String propClass, String keyClass, String valueClass, ClassLoader loader)
             throws XMLStreamException {
         Map map = null;
         try {
-            map = (Map) Class.forName(propClass).newInstance();
+            map = (Map) Class.forName(propClass, true, loader).newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Could not create map of type: " + propClass, e);
         }
@@ -342,5 +350,41 @@ public class WSDeploymentAspectParser {
             }
         }
         throw new IllegalStateException("Reached end of xml document unexpectedly");
+    }
+
+    /**
+     * Get context classloader.
+     *
+     * @return the current context classloader
+     */
+    private static ClassLoader getContextClassLoader() {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
+    }
+
+    /**
+     * Set context classloader.
+     *
+     * @param classLoader the classloader
+     */
+    private static void setContextClassLoader(final ClassLoader classLoader) {
+        if (System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(classLoader);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    Thread.currentThread().setContextClassLoader(classLoader);
+                    return null;
+                }
+            });
+        }
     }
 }

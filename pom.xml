@@ -171,7 +171,7 @@
         <version.org.jboss.weld.weld>1.1.1.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.0.Alpha2</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>2.0.0.Alpha6</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common>2.0.0.Alpha7</version.org.jboss.ws.common>
         <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha4</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.spi>2.0.0.Alpha3</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-httpserver-httpspi>
