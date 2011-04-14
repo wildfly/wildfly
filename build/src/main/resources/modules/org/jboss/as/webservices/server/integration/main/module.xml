@@ -28,8 +28,10 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.xml.bind" services="export" export="true"/>
+        <module name="javax.api" export="true"/>
         <module name="javax.wsdl4j.api" export="true"/>
+        <module name="javax.xml.ws.api" export="true"/>
+        <module name="com.sun.xml.bind" services="export" export="true"/>
         <module name="org.jboss.ws.api" export="true"/>
         <module name="org.jboss.ws.spi" export="true"/>
         <module name="org.jboss.ws.common" export="true"/>

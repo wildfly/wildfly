@@ -108,6 +108,10 @@
             <maven-resource group="dom4j" artifact="dom4j" />
         </module-def>
 
+        <module-def name="gnu.getopt">
+            <maven-resource group="gnu-getopt" artifact="getopt" />
+        </module-def>
+
         <module-def name="javaee.api"/>
 
         <module-def name="javax.api"/>
@@ -331,6 +335,10 @@
 
     	<module-def name="org.apache.santuario.xmlsec">
             <maven-resource group="org.apache.santuario" artifact="xmlsec"/>
+        </module-def>
+
+        <module-def name="org.apache.velocity">
+            <maven-resource group="org.apache.velocity" artifact="velocity" />
         </module-def>
 
         <module-def name="org.apache.xalan">
@@ -842,6 +850,12 @@
 
         <module-def name="org.jboss.ws.spi">
             <maven-resource group="org.jboss.ws" artifact="jbossws-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.tools.wsprovide">
+        </module-def>
+
+        <module-def name="org.jboss.ws.tools.wsconsume">
         </module-def>
 
         <module-def name="org.jboss.xnio">

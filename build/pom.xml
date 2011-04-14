@@ -152,6 +152,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.xalan</groupId>
             <artifactId>serializer</artifactId>
         </dependency>
@@ -1010,6 +1015,11 @@
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>gnu-getopt</groupId>
+            <artifactId>getopt</artifactId>
         </dependency>
 
         <dependency>
