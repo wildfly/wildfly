@@ -21,12 +21,14 @@
   -->
 
 <project name="module-repository-lib" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
-    
+
     <property name="src.dir" value="src"/>
     <property name="module.repo.src.dir" value="${src.dir}/main/resources/modules"/>
     <property name="output.dir" value="target/jboss-${jboss.as.release.version}"/>
     <property name="module.repo.output.dir" value="${output.dir}/modules"/>
     <property name="module.xml" value="module.xml"/>
+
+    <property name="bundle.repo.output.dir" value="${output.dir}/bundles"/>
 
 
     <taskdef name="jandex" classname="org.jboss.jandex.JandexAntTask" />
@@ -35,32 +37,66 @@
         <attribute name="name"/>
         <attribute name="slot" default="main"/>
         <element name="resources" implicit="yes" optional="yes"/>
-                
+
         <sequential>
             <echo message="Initializing module -> @{name}"/>
             <!-- Figure out the correct module path -->
             <define-module-dir name="@{name}" slot="@{slot}"/>
-            
+
             <!-- Make the module output director -->
             <mkdir dir="${module.repo.output.dir}/${current.module.path}"/>
-            
+
             <!-- Copy the module.xml and other stuff to the output director -->
             <copy todir="${module.repo.output.dir}/${current.module.path}">
                 <fileset dir="${module.repo.src.dir}/${current.module.path}">
                     <include name="**"/>
                 </fileset>
             </copy>
-            
+
             <!-- Process the resource -->
             <resources/>
 
             <!-- Some final cleanup -->
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
-              <replacetoken><![CDATA[
+                <replacetoken>
+                    <![CDATA[
         <!-- Insert resources here -->]]></replacetoken>
-              <replacevalue></replacevalue>
+                <replacevalue>
+                </replacevalue>
             </replace>
 
+        </sequential>
+    </macrodef>
+
+    <macrodef name="bundle-def">
+        <attribute name="name"/>
+        <attribute name="slot" default="main"/>
+        <element name="resources" implicit="yes" optional="yes"/>
+
+        <sequential>
+            <echo message="Initializing bundle -> @{name}"/>
+            <!-- Figure out the correct bundle path -->
+            <define-bundle-dir name="@{name}" slot="@{slot}" />
+
+            <!-- Make the bundle output director -->
+            <mkdir dir="${bundle.repo.output.dir}/${current.bundle.path}"/>
+
+            <!-- Process the resource -->
+            <resources/>
+
+        </sequential>
+    </macrodef>
+
+    <macrodef name="maven-bundle" >
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+
+        <sequential>
+            <!-- Copy the jar to the bundle dir -->
+            <copy todir="${bundle.repo.output.dir}/${current.bundle.path}" failonerror="true">
+                <fileset file="${@{group}:@{artifact}:jar}"/>
+                <mapper type="flatten" />
+            </copy>
         </sequential>
     </macrodef>
     
@@ -71,6 +107,16 @@
             name = attributes.get("name");
             name = name.replace(".", "/");
             project.setProperty("current.module.path", name + "/" + attributes.get("slot"));
+        ]]>
+    </scriptdef>
+
+    <scriptdef name="define-bundle-dir" language="javascript">
+        <attribute name="name"/>
+        <attribute name="slot"/>
+        <![CDATA[
+            name = attributes.get("name");
+            name = name.replace(".", "/");
+            project.setProperty("current.bundle.path", name + "/" + attributes.get("slot"));
         ]]>
     </scriptdef>
     
@@ -97,7 +143,6 @@
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
         </sequential>
-        
     </macrodef>
 
     <macrodef name="maven-resource-with-classifier" >
@@ -105,11 +150,12 @@
         <attribute name="artifact"/>
         <attribute name="classifier"/>
         <attribute name="jandex" default="false" />
-        
+
         <sequential>
             <!-- Copy the jar to the module dir -->
             <copy todir="${module.repo.output.dir}/${current.module.path}" failonerror="true">
-                <fileset file="${@{group}:@{artifact}:jar:@{classifier}}"/> <!-- http://jira.codehaus.org/browse/MANTRUN-159 -->
+                <fileset file="${@{group}:@{artifact}:jar:@{classifier}}"/>
+                <!-- http://jira.codehaus.org/browse/MANTRUN-159 -->
                 <mapper type="flatten" />
             </copy>
 
@@ -121,7 +167,6 @@
                 <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
         </sequential>
-        
     </macrodef>
 
 

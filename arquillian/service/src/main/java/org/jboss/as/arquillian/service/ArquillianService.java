@@ -23,14 +23,12 @@
 package org.jboss.as.arquillian.service;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.context.ContextManager;
@@ -44,7 +42,6 @@ import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
-import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
@@ -65,8 +62,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -258,21 +256,13 @@ public class ArquillianService implements Service<ArquillianService> {
                 BundleAssociation.setBundle(bundle);
                 ServiceContainerAssociation.setServiceContainer(serviceContainer);
                 ServerDeploymentManagerAssociation.setServerDeploymentManager(deploymentManager);
+                Framework framework = awaitActiveOSGiFramework();
+                BundleContextAssociation.setBundleContext(framework.getBundleContext());
                 testClass = bundle.loadClass(className);
             }
 
             if (testClass == null)
                 throw new ClassNotFoundException(className);
-
-            // [TODO] Move the startup of the OSGi subsystem to a {@link SetupAction}
-            if (isOSGiSubsystemRequired(testClass)) {
-                ServiceController<?> controller = serviceContainer.getRequiredService(BundleContextService.SERVICE_NAME);
-                if (controller.getState() != State.UP) {
-                    controller.setMode(Mode.ACTIVE);
-                    assertServiceState(BundleContextService.SERVICE_NAME, State.UP, 10000);
-                }
-                BundleContextAssociation.setBundleContext((BundleContext) controller.getValue());
-            }
 
             return testClass;
         }
@@ -280,20 +270,6 @@ public class ArquillianService implements Service<ArquillianService> {
         @Override
         public ClassLoader getServiceClassLoader() {
             return ArquillianService.class.getClassLoader();
-        }
-
-        boolean isOSGiSubsystemRequired(Class<?> testClass) {
-            for (Field field : testClass.getDeclaredFields()) {
-                Class<?> fieldType = field.getType();
-                if (field.isAnnotationPresent(Inject.class)) {
-                    if (fieldType.isAssignableFrom(BundleContext.class)) {
-                        return true;
-                    } else if (fieldType.isAssignableFrom(Bundle.class)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
 
         void assertServiceState(ServiceName serviceName, State expState, long timeout) {
@@ -311,6 +287,16 @@ public class ArquillianService implements Service<ArquillianService> {
             }
             if (expState != state)
                 throw new IllegalArgumentException(serviceName + " expected: " + expState + " but was " + state);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Framework awaitActiveOSGiFramework() {
+            ServiceController<Framework> controller = (ServiceController<Framework>) serviceContainer.getRequiredService(ServiceNames.FRAMEWORK_ACTIVE);
+            if (controller.getState() != State.UP) {
+                controller.setMode(Mode.ACTIVE);
+                assertServiceState(ServiceNames.FRAMEWORK_ACTIVE, State.UP, 10000);
+            }
+            return controller.getValue();
         }
     }
 }

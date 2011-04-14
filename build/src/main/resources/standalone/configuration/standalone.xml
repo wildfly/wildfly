@@ -89,7 +89,7 @@
             </console-handler>
 
             <periodic-rotating-file-handler name="FILE">
-                <level name="INFO"/>
+                <level name="DEBUG"/>
                 <formatter>
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -108,7 +108,7 @@
             </logger>
 
             <root-logger>
-                <level name="INFO"/>
+                <level name="DEBUG"/>
                 <handlers>
                     <handler name="CONSOLE"/>
                     <handler name="FILE"/>
@@ -200,51 +200,45 @@
 				  </resource-adapter>
 				</resource-adapters>-->
        </subsystem>
-<subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+       <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
             </configuration>
             <properties>
+                <!--
+                    A comma seperated list of module identifiers. Each system module
+                    is added as a dependency to the OSGi framework module. The packages
+                    from these system modules can be made visible as framework system packages.
+                    http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA     
+                -->
                 <property name="org.jboss.osgi.system.modules">
                 org.apache.log4j,
-                org.jboss.arquillian.api,
-                org.jboss.arquillian.junit,
-                org.jboss.arquillian.protocol.jmx,
-                org.jboss.arquillian.protocol.osgi,
-                org.jboss.arquillian.spi,
                 org.jboss.as.osgi,
-                org.jboss.shrinkwrap.api,
-                org.jboss.shrinkwrap.impl,
-                javax.inject.api,
-                org.junit
                 </property>
+                <!--
+                    Framework environment property identifying extra packages which the system bundle 
+                    must export from the current execution environment 
+                -->
                 <property name="org.osgi.framework.system.packages.extra">
-                javax.transaction;version=1.1,
                 org.apache.log4j;version=1.2,
                 org.jboss.as.osgi.service;version=7.0,
-                org.jboss.logging;version=3.0,
-                org.jboss.osgi.deployment.deployer;version=1.0,
-                org.jboss.osgi.deployment.interceptor;version=1.0,
-                org.jboss.osgi.spi;version=1.0,
                 org.jboss.osgi.spi.capability;version=1.0,
                 org.jboss.osgi.spi.util;version=1.0,
                 org.jboss.osgi.testing;version=1.0,
-                org.jboss.osgi.vfs;version=1.0,
-
-                org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.jmx, org.jboss.arquillian.osgi,
-                org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.exporter, org.jboss.shrinkwrap.api.spec,
-                org.jboss.shrinkwrap.impl.base, org.jboss.shrinkwrap.impl.base.path,
-                org.junit, org.junit.runner, javax.inject
                 </property>
             </properties>
             <modules>
-                <module identifier="org.osgi.compendium"/>
-                <module identifier="org.apache.aries.util"/>
-                <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
-                <module identifier="org.apache.felix.configadmin" start="true"/>
-                <module identifier="org.jboss.osgi.common" start="true"/>
+                <!-- modules registered with the OSGi layer on startup -->
+                <module identifier="org.jboss.as.arquillian.aggregate"/>
+                <module identifier="org.jboss.logging"/>
+                <!-- bundles installed on startup -->
                 <module identifier="org.apache.aries.jmx" start="true"/>
+                <module identifier="org.apache.aries.util"/>
+                <module identifier="org.apache.felix.configadmin" start="true"/>
+                <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
+                <module identifier="org.jboss.osgi.common" start="true"/>
                 <module identifier="org.jboss.osgi.jmx" start="true"/>
+                <module identifier="org.osgi.compendium"/>
             </modules>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">

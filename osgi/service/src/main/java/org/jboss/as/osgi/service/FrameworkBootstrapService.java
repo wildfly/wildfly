@@ -27,13 +27,7 @@ import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanServer;
@@ -41,7 +35,6 @@ import javax.management.MBeanServer;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -53,6 +46,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
@@ -65,8 +59,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.AutoInstallProvider;
-import org.jboss.osgi.framework.BundleManagement;
 import org.jboss.osgi.framework.BundleReferenceClassLoader;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
 import org.jboss.osgi.framework.ModuleLoaderProvider;
@@ -124,8 +116,8 @@ public class FrameworkBootstrapService implements Service<Void> {
             FrameworkBuilder builder = new FrameworkBuilder(props);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(context.getChildTarget());
-            builder.addProvidedService(ServiceNames.AUTOINSTALL_PROVIDER);
-            builder.addProvidedService(ServiceNames.INSTALL_HANDLER);
+            builder.addProvidedService(ServiceNames.AUTOINSTALL_BUNDLES);
+            builder.addProvidedService(ServiceNames.BUNDLE_INSTALL_HANDLER);
             builder.addProvidedService(ServiceNames.FRAMEWORK_MODULE_PROVIDER);
             builder.addProvidedService(ServiceNames.MODULE_LOADER_PROVIDER);
             builder.addProvidedService(ServiceNames.SYSTEM_SERVICES_PROVIDER);
@@ -168,7 +160,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     private static final class SystemServicesIntegration extends AbstractService<SystemServicesProvider> implements SystemServicesProvider {
 
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-       private ServiceContainer serviceContainer;
+        private ServiceContainer serviceContainer;
 
         public static void addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
@@ -271,23 +263,24 @@ public class FrameworkBootstrapService implements Service<Void> {
             ModuleIdentifier systemIdentifier = systemModule.getIdentifier();
             ModuleLoader systemLoader = systemModule.getModuleLoader();
             ModuleSpec.Builder specBuilder = ModuleSpec.build(ModuleIdentifier.create(JBOSGI_PREFIX + ".framework"));
-            specBuilder
-                    .addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.acceptAll(), systemLoader, systemIdentifier, false));
+            PathFilter acceptAll = PathFilters.acceptAll();
+            specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, systemLoader, systemIdentifier, false));
 
             // Add a dependency on the default framework module
             ModuleLoader bootLoader = Module.getBootModuleLoader();
             ModuleIdentifier frameworkIdentifier = ModuleIdentifier.create("org.jboss.osgi.framework");
-            DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.acceptAll(), bootLoader, frameworkIdentifier,
-                    false);
-            specBuilder.addDependency(moduleDep);
+            specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, frameworkIdentifier, false));
 
             // Add the user defined module dependencies
             String modulesProps = (String) subsystemState.getProperties().get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
             if (modulesProps != null) {
                 for (String moduleProp : modulesProps.split(",")) {
-                    ModuleIdentifier moduleId = ModuleIdentifier.create(moduleProp.trim());
-                    moduleDep = DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.acceptAll(), bootLoader, moduleId, false);
-                    specBuilder.addDependency(moduleDep);
+                    moduleProp = moduleProp.trim();
+                    if (moduleProp.length() > 0) {
+                        ModuleIdentifier moduleId = ModuleIdentifier.create(moduleProp);
+                        DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, moduleId, false);
+                        specBuilder.addDependency(moduleDep);
+                    }
                 }
             }
 
@@ -311,111 +304,6 @@ public class FrameworkBootstrapService implements Service<Void> {
             } catch (ModuleLoadException ex) {
                 throw new IllegalStateException(ex);
             }
-        }
-    }
-
-    private static final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implements AutoInstallProvider {
-
-        private InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
-        private InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
-        private List<URL> autoInstall = new ArrayList<URL>();
-        private List<URL> autoStart = new ArrayList<URL>();
-        private SubsystemState subsystemState;
-
-        private static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
-            AutoInstallIntegration service = new AutoInstallIntegration(subsystemState);
-            ServiceBuilder<?> builder = target.addService(org.jboss.osgi.framework.ServiceNames.AUTOINSTALL_PROVIDER, service);
-            builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
-            builder.addDependency(ServiceNames.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
-            builder.setInitialMode(Mode.ON_DEMAND);
-            builder.install();
-        }
-
-        private AutoInstallIntegration(SubsystemState subsystemState) {
-            this.subsystemState = subsystemState;
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
-            try {
-                // Create the list of {@link Deployment}s for the configured modules
-                for (OSGiModule moduleMetaData : subsystemState.getModules()) {
-                    ModuleIdentifier identifier = moduleMetaData.getIdentifier();
-                    URL fileURL = getModuleLocation(identifier);
-                    if (moduleMetaData.isStart())
-                        autoStart.add(fileURL);
-                    else
-                        autoInstall.add(fileURL);
-                }
-            } catch (IOException ex) {
-                throw new StartException("Failed to create auto install list", ex);
-            }
-        }
-
-        @Override
-        public AutoInstallProvider getValue() throws IllegalStateException {
-            return this;
-        }
-
-        @Override
-        public List<URL> getAutoInstallList() {
-            return Collections.unmodifiableList(autoInstall);
-        }
-
-        @Override
-        public List<URL> getAutoStartList() {
-            return Collections.unmodifiableList(autoStart);
-        }
-
-        private URL getModuleLocation(final ModuleIdentifier identifier) throws IOException {
-
-            String location = "module:" + identifier.getName();
-            if ("main".equals(identifier.getSlot()) == false)
-                location += ":" + identifier.getSlot();
-
-            // Check if we have a single root file
-            File repoFile = getModuleRepositoryEntry(identifier);
-            if (repoFile == null)
-                throw new IllegalArgumentException("Cannot obtain repository entry for: " + identifier);
-
-            return repoFile.toURI().toURL();
-        }
-
-        /**
-         * Get file for the singe jar that corresponds to the given identifier
-         */
-        private File getModuleRepositoryEntry(ModuleIdentifier identifier) {
-            File rootPath = new File(System.getProperty("module.path"));
-            String identifierPath = identifier.getName().replace('.', '/') + "/" + identifier.getSlot();
-            File moduleDir = new File(rootPath + "/" + identifierPath);
-            if (moduleDir.isDirectory() == false) {
-                log.warnf("Cannot obtain module directory: %s", moduleDir);
-                return null;
-            }
-
-            String[] files = moduleDir.list(new FilenameFilter() {
-
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar");
-                }
-            });
-            if (files.length == 0) {
-                log.warnf("Cannot find module jar in: %s", moduleDir);
-                return null;
-            }
-            if (files.length > 1) {
-                log.warnf("Multiple module jars in: %s", moduleDir);
-                return null;
-            }
-
-            File moduleFile = new File(moduleDir + "/" + files[0]);
-            if (moduleFile.exists() == false) {
-                log.warnf("Module file does not exist: %s", moduleFile);
-                return null;
-            }
-
-            return moduleFile;
         }
     }
 }

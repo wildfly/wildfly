@@ -37,6 +37,7 @@ import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -44,17 +45,17 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManagement;
-import org.jboss.osgi.framework.InstallHandler;
+import org.jboss.osgi.framework.BundleInstallHandler;
 import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.BundleException;
 
 /**
- * A {@link InstallHandler} that delegates to the {@link ServerDeploymentManager}.
+ * A {@link BundleInstallHandler} that delegates to the {@link ServerDeploymentManager}.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class InstallHandlerIntegration implements InstallHandler {
+public class InstallHandlerIntegration implements BundleInstallHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
@@ -64,10 +65,11 @@ public class InstallHandlerIntegration implements InstallHandler {
 
     public static void addService(final ServiceTarget target) {
         InstallHandlerIntegration service = new InstallHandlerIntegration();
-        ServiceBuilder<InstallHandler> builder = target.addService(ServiceNames.INSTALL_HANDLER, service);
+        ServiceBuilder<BundleInstallHandler> builder = target.addService(ServiceNames.BUNDLE_INSTALL_HANDLER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
         builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
         builder.addDependency(ServiceNames.FRAMEWORK_CREATE);
+        builder.setInitialMode(Mode.ON_DEMAND);
         builder.install();
     }
 
@@ -84,7 +86,7 @@ public class InstallHandlerIntegration implements InstallHandler {
     }
 
     @Override
-    public InstallHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public BundleInstallHandler getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

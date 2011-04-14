@@ -47,10 +47,9 @@ import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
-import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
-import org.jboss.as.osgi.service.InstallHandlerIntegration;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
+import org.jboss.as.osgi.service.InstallHandlerIntegration;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -97,8 +96,6 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
 
                     ServiceTarget serviceTarget = context.getServiceTarget();
-                    Activation policy = subsystemState.getActivationPolicy();
-                    BundleContextService.addService(serviceTarget, policy);
                     BundleStartTracker.addService(serviceTarget);
                     InstallHandlerIntegration.addService(serviceTarget);
                     FrameworkBootstrapService.addService(serviceTarget, subsystemState);
@@ -142,9 +139,11 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             if (configuration.has(CONFIGURATION_PROPERTIES)) {
                 ModelNode configurationProperties = configuration.get(CONFIGURATION_PROPERTIES);
                 Set<String> keys = configurationProperties.keys();
-                for (String current : keys) {
-                    String value = configurationProperties.get(current).asString();
-                    dictionary.put(current, value);
+                if (keys != null) {
+                    for (String current : keys) {
+                        String value = configurationProperties.get(current).asString();
+                        dictionary.put(current, value);
+                    }
                 }
             }
 
@@ -154,18 +153,22 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
         if (operation.has(PROPERTIES)) {
             ModelNode properties = operation.get(PROPERTIES);
             Set<String> keys = properties.keys();
-            for (String current : keys) {
-                String value = properties.get(current).asString();
-                subsystemState.addProperty(current, value);
+            if (keys != null) {
+                for (String current : keys) {
+                    String value = properties.get(current).asString();
+                    subsystemState.addProperty(current, value);
+                }
             }
         }
 
         if (operation.has(MODULES)) {
             ModelNode modules = operation.get(MODULES);
             Set<String> keys = modules.keys();
-            for (String current : keys) {
-                String value = modules.get(current).get(START).asString();
-                subsystemState.addModule(new OSGiModule(ModuleIdentifier.fromString(current), Boolean.parseBoolean(value)));
+            if (keys != null) {
+                for (String current : keys) {
+                    String value = modules.get(current).get(START).asString();
+                    subsystemState.addModule(new OSGiModule(ModuleIdentifier.fromString(current), Boolean.parseBoolean(value)));
+                }
             }
         }
 

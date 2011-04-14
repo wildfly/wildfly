@@ -16,6 +16,7 @@
  */
 package org.jboss.as.testsuite.integration.osgi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
@@ -35,6 +36,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -49,6 +51,7 @@ import org.osgi.framework.BundleContext;
  * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
+@Ignore
 public class BundleDeploymentCaseTwoTestCase {
 
     @Inject
