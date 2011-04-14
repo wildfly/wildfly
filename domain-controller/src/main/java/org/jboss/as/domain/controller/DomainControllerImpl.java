@@ -187,6 +187,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     /** {@inheritDoc} */
     @Override
     public void removeClient(final String id) {
+        Logger.getLogger("org.jboss.domain").info("unregister host " + id);
         this.hosts.remove(id);
     }
 
