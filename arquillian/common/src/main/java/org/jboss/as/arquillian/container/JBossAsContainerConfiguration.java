@@ -34,14 +34,17 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
     private int jmxPort;
     private int httpPort;
     private boolean executeWithServlet;
+    private long startupTimeout;
 
     public JBossAsContainerConfiguration() {
         bindAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
         jmxPort = 1090;
         httpPort = 8080;
+        startupTimeout = 10000;
     }
 
+    @Override
     public ContainerProfile getContainerProfile() {
         return ContainerProfile.STANDALONE;
     }
@@ -90,6 +93,14 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
 
     public void setExecuteWithServlet(boolean executeWithServlet) {
         this.executeWithServlet = executeWithServlet;
+    }
+
+    public long getStartupTimeout() {
+        return startupTimeout;
+    }
+
+    public void setStartupTimeout(long startupTimeout) {
+        this.startupTimeout = startupTimeout;
     }
 
     private InetAddress getInetAddress(String name) {

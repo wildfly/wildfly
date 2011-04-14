@@ -61,8 +61,10 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
@@ -82,6 +84,7 @@ import org.jboss.as.server.operations.NativeManagementAddHandler;
 import org.jboss.as.server.operations.ServerOperationHandlers;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
+import org.jboss.as.server.operations.ServerStateAttributeHandler;
 import org.jboss.as.server.operations.SpecifiedPathAddHandler;
 import org.jboss.as.server.operations.SpecifiedPathRemoveHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
@@ -160,6 +163,8 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
         SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(extensibleConfigurationPersister);
         root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
+
+        root.registerReadOnlyAttribute(ServerDescriptionConstants.SERVER_STATE, ServerStateAttributeHandler.INSTANCE, Storage.RUNTIME);
 
 //        root.registerOperationHandler(ServerCompositeOperationHandler.OPERATION_NAME, ServerCompositeOperationHandler.INSTANCE, ServerCompositeOperationHandler.INSTANCE, false);
 
