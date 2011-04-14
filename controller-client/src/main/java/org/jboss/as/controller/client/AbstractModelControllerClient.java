@@ -48,10 +48,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.threads.JBossThreadFactory;
 
 /**
-*
-* @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
-* @version $Revision: 1.1 $
-*/
+ * Abstract superclass for {@link ModelControllerClient} implementations.
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ */
 abstract class AbstractModelControllerClient implements ModelControllerClient {
     final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ModelControllerClient-thread"), Boolean.FALSE, Thread.NORM_PRIORITY, "%G - %t", null, null, AccessController.getContext());
     final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
@@ -97,8 +97,11 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                         }
                     }
 
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    handler.handleFailed(new ModelNode().set("Failed to execute operation: " + cause.toString()));
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to execute operation ", e);
+                    handler.handleFailed(new ModelNode().set("Failed to execute operation: " + e.toString()));
                 }
             }
         });
