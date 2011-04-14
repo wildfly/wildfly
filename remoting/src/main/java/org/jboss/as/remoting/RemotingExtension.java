@@ -219,7 +219,7 @@ public class RemotingExtension implements Extension {
             assert socketBinding != null;
 
             final ModelNode connector = new ModelNode();
-            connector.get(OP).set(ADD_CONNECTOR);
+            connector.get(OP).set(ADD);
             connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
             // requestProperties.get(NAME).set(name); // Name is part of the address
             connector.get(SOCKET_BINDING).set(socketBinding);

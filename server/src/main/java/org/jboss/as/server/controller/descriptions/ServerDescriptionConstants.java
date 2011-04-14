@@ -29,4 +29,6 @@ public final class ServerDescriptionConstants {
     private ServerDescriptionConstants() {}
 
     public static final String PROFILE_NAME = "profile-name";
+
+    public static final String SERVER_STATE = "server-state";
 }

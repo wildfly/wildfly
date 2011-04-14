@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.SERVER_STATE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -93,6 +94,12 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, PROFILE_NAME, TAIL_COMMENT_ALLOWED).set(true);
 
         root.get(ATTRIBUTES, SYSTEM_PROPERTIES).set(CommonDescriptions.getSystemPropertiesAttribute(locale));
+
+        root.get(ATTRIBUTES, SERVER_STATE, DESCRIPTION).set(bundle.getString("server.state"));
+        root.get(ATTRIBUTES, SERVER_STATE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, SERVER_STATE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, SERVER_STATE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, SERVER_STATE, MIN_LENGTH).set(1);
 
         root.get(OPERATIONS);
 

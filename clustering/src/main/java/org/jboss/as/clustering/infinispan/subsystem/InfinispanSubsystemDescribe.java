@@ -57,17 +57,17 @@ public class InfinispanSubsystemDescribe implements ModelQueryOperationHandler, 
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode result = new ModelNode();
-        final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
-        final ModelNode subModel = context.getSubModel();
+        ModelNode result = new ModelNode();
+        PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
+        ModelNode subModel = context.getSubModel();
 
         result.add(InfinispanSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 
-        if (subModel.hasDefined(ModelKeys.STACK)) {
-            for(final Property stack : subModel.get(ModelKeys.STACK).asPropertyList()) {
-                final ModelNode address = rootAddress.toModelNode();
-                address.add(ModelKeys.STACK, stack.getName());
-                result.add(CacheContainerAdd.createOperation(address, stack.getValue()));
+        if (subModel.hasDefined(ModelKeys.CACHE_CONTAINER)) {
+            for (Property container: subModel.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
+                ModelNode address = rootAddress.toModelNode();
+                address.add(ModelKeys.CACHE_CONTAINER, container.getName());
+                result.add(CacheContainerAdd.createOperation(address, container.getValue()));
             }
         }
 

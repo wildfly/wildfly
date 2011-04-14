@@ -37,6 +37,7 @@ import static org.jboss.as.remoting.CommonAttributes.NO_DICTIONARY;
 import static org.jboss.as.remoting.CommonAttributes.NO_PLAINTEXT;
 import static org.jboss.as.remoting.CommonAttributes.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.CommonAttributes.POLICY;
+import static org.jboss.as.remoting.CommonAttributes.PROPERTIES;
 import static org.jboss.as.remoting.CommonAttributes.QOP;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
@@ -128,6 +129,9 @@ public class ConnectorAdd implements ModelAddOperationHandler {
         }
         if(parameters.hasDefined(SASL)) {
             subModel.get(SASL).set(parameters.get(SASL));
+        }
+        if(parameters.hasDefined(PROPERTIES)) {
+            subModel.get(PROPERTIES).set(parameters.get(PROPERTIES));
         }
     }
 

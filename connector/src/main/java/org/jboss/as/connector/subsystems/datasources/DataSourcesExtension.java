@@ -233,6 +233,12 @@ public class DataSourcesExtension implements Extension {
                     if (!isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVERCLASS, DRIVER_CLASS);
+                        if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
+                            for (Property connectionProperty : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
+                                writeConnectionProperty(writer, dataSourceNode, connectionProperty.getName(),
+                                        connectionProperty.getValue().asString());
+                            }
+                        }
                     }
                     if (isXADataSource) {
                         // TODO - Write XA properties.
@@ -359,6 +365,17 @@ public class DataSourcesExtension implements Extension {
             if (has(node, identifier)) {
                 writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
             }
+        }
+
+        private void writeConnectionProperty(XMLExtendedStreamWriter writer, ModelNode node, String name, String value)
+                throws XMLStreamException {
+            String localName = DataSource.Tag.CONNECTIONPROPERTY.getLocalName();
+
+            writer.writeStartElement(localName);
+            writer.writeAttribute("name", name);
+            writer.writeCharacters(value);
+            writer.writeEndElement();
+
         }
 
         private void writeElementIfHas(XMLExtendedStreamWriter writer, ModelNode node, String localName, String identifier)
