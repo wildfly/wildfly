@@ -126,18 +126,19 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
 
             long timeout = getContainerConfiguration().getStartupTimeout();
 
-            boolean serverAvailable = false;
-            while (timeout > 0 && serverAvailable == false) {
-
-                serverAvailable = isServerStarted();
-
-                Thread.sleep(100);
-                timeout -= 100;
-            }
-
-            if (!serverAvailable) {
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
-            }
+            // FIXME JBAS-9312 reenable when whatever causes it to intermittently hang is resolved
+//            boolean serverAvailable = false;
+//            while (timeout > 0 && serverAvailable == false) {
+//
+//                serverAvailable = isServerStarted();
+//
+//                Thread.sleep(100);
+//                timeout -= 100;
+//            }
+//
+//            if (!serverAvailable) {
+//                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+//            }
 
             boolean testRunnerMBeanAvailable = false;
             MBeanServerConnection mbeanServer = null;
@@ -195,10 +196,10 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
     private boolean isServerStarted() {
         try {
             ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
-            op.get(NAME).set("state");
+            op.get(NAME).set("server-state");
 
             ModelNode rsp = getModelControllerClient().execute(op);
-            return SUCCESS.equals(rsp.get(OUTCOME)) && !ServerController.State.STARTING.toString().equals(rsp.get(RESULT));
+            return SUCCESS.equals(rsp.get(OUTCOME).asString()) && !ServerController.State.STARTING.toString().equals(rsp.get(RESULT).asString());
         }
         catch (Exception ignored) {
             // ignore, as we will get exceptions until the management comm services start
