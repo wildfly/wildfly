@@ -71,6 +71,15 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
     }
 
     @Override
+    protected void handleNonRecursiveProxyEntries(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
+        if (address.size() == 0 && domainModelImpl.isMaster()) {
+            for (Map.Entry<String, DomainControllerSlaveClient> entry : domainModelImpl.getRemoteHosts().entrySet()) {
+                result.get(HOST, entry.getKey());
+            }
+        }
+    }
+
+    @Override
     protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
         PathAddress addr = !domainModelImpl.isMaster() && address.size() > 0 && address.getElement(0).getKey().equals(HOST) ?
                 address.subAddress(1) : address;
