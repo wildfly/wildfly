@@ -39,6 +39,7 @@ import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
+import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -88,6 +89,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     log.info("Activating WebServices Extension");
+                    ModuleClassLoaderProvider.register();
                     WSServices.saveContainerRegistry(context.getServiceRegistry());
 
                     ServiceTarget serviceTarget = context.getServiceTarget();

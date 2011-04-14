@@ -168,10 +168,10 @@
         <version.org.jboss.web.jasper-jdt>7.0.0.Beta8</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>1.1.1.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
-        <version.org.jboss.ws.api>1.0.0.Alpha1</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>2.0.0.Alpha4</version.org.jboss.ws.common>
-        <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha3</version.org.jboss.ws.jbossws-cxf>
-        <version.org.jboss.ws.spi>2.0.0.Alpha2</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.api>1.0.0.Alpha2</version.org.jboss.ws.api>
+        <version.org.jboss.ws.common>2.0.0.Alpha5</version.org.jboss.ws.common>
+        <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha4</version.org.jboss.ws.jbossws-cxf>
+        <version.org.jboss.ws.spi>2.0.0.Alpha3</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-httpserver-httpspi>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
@@ -1364,6 +1364,22 @@
                 <artifactId>cxf-rt-transports-local</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.cxf</groupId>
+                        <artifactId>cxf-rt-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-common</artifactId>
+                <version>${version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.cxf</groupId>
+                        <artifactId>cxf-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-core</artifactId>
@@ -3760,6 +3776,10 @@
                         <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>javax.xml.stream.api</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>stax</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
@@ -3923,6 +3943,10 @@
                     <exclusion>
                         <groupId>org.jboss.spec.javax.xml.rpc</groupId>
                         <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.stream.api</groupId>
+                        <artifactId>stax-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>stax</groupId>
