@@ -20,10 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component;
+package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.Iterator;
 import java.util.Set;
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,17 +36,17 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-
 /**
- * An injection source which injects a component based upon its type.
+ * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John Bailey
  */
-public final class ComponentTypeInjectionSource extends InjectionSource {
+public class EjbBeanNameInjectionSource extends InjectionSource {
+    private final String beanName;
     private final String typeName;
 
-    public ComponentTypeInjectionSource(final String typeName) {
+    public EjbBeanNameInjectionSource(final String beanName, final String typeName) {
+        this.beanName = beanName;
         this.typeName = typeName;
     }
 
@@ -49,26 +54,29 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
         final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
-        final Iterator<ViewDescription> iterator = componentsForViewName.iterator();
-        if (! iterator.hasNext()) {
+        if (componentsForViewName.isEmpty()) {
             throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "'");
         }
-        final ViewDescription description = iterator.next();
-        if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("Multiple components found for type '" + typeName + "'");
+        for(ViewDescription description : componentsForViewName) {
+            if(beanName.equals(description.getComponentDescription().getComponentName())) {
+                serviceBuilder.addDependency(description.getServiceName(), ManagedReferenceFactory.class, injector);
+                return;
+            }
         }
-        serviceBuilder.addDependency(description.getServiceName(), ManagedReferenceFactory.class, injector);
+        throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "' and bean name '" + beanName + "'");
     }
 
     public boolean equals(final Object injectionSource) {
-        return injectionSource instanceof ComponentTypeInjectionSource && equals((ComponentTypeInjectionSource) injectionSource);
+        return injectionSource instanceof EjbBeanNameInjectionSource && equals((EjbBeanNameInjectionSource) injectionSource);
     }
 
-    private boolean equals(final ComponentTypeInjectionSource configuration) {
-        return configuration != null && typeName.equals(configuration.typeName);
+    private boolean equals(final EjbBeanNameInjectionSource configuration) {
+        return configuration != null && typeName.equals(configuration.typeName) && beanName.equals(configuration.beanName);
     }
 
     public int hashCode() {
-        return typeName.hashCode();
+        int result = beanName != null ? beanName.hashCode() : 0;
+        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
+        return result;
     }
 }

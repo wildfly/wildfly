@@ -49,13 +49,13 @@ import java.util.Map;
  * @author John Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUnitProcessor  {
+public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUnitProcessor {
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
-    private static final Map<String,String> FIXED_LOCATIONS;
+    private static final Map<String, String> FIXED_LOCATIONS;
 
     static {
-        final Map<String,String> locations = new HashMap<String,String>();
+        final Map<String, String> locations = new HashMap<String, String>();
         locations.put("javax.transaction.UserTransaction", "java:comp/UserTransaction");
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:comp/TransactionSynchronizationRegistry");
         locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
@@ -118,18 +118,37 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     private void processFieldResource(final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
-        final String localContextName;
-        if (isEmpty(name)) {
-            localContextName = fieldInfo.declaringClass().name().toString() + "/" + fieldName;
-        } else {
-            localContextName = name;
-        }
+        final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
 
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldName, fieldInfo.declaringClass().name().toString(), injectionType);
+        process(classDescription, annotation, injectionType, localContextName, targetDescription);
+    }
 
-        // TODO: all below factored out into a method
-        // our injection comes from the local lookup, no matter what.
-        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
+    private void processMethodResource(final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
+        final String methodName = methodInfo.name();
+        if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
+            throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+        }
+
+        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+        final String localContextName = isEmpty(name) ? methodInfo.declaringClass().name().toString() + "/" + contextNameSuffix : name;
+
+        final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
+        final InjectionTarget targetDescription = new MethodInjectionTarget(methodName, methodInfo.declaringClass().name().toString(), methodInfo.args()[0].name().toString());
+        process(classDescription, annotation, injectionType, localContextName, targetDescription);
+    }
+
+    private void processClassResource(final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
+        if (isEmpty(name)) {
+            throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
+        }
+        if (isEmpty(type) || type.equals(Object.class.getName())) {
+            throw new IllegalArgumentException("Class level @Resource annotations must provide a type.");
+        }
+        process(classDescription, annotation, type, name, null);
+    }
+
+    private void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription) {
         String lookup = annotation.value("lookup").asString();
         if (isEmpty(lookup) && FIXED_LOCATIONS.containsKey(injectionType)) {
             lookup = FIXED_LOCATIONS.get(injectionType);
@@ -141,7 +160,11 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         } else {
             valueSource = new LookupInjectionSource(lookup);
         }
-        final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(targetDescription, injectionSource);
+
+        // our injection comes from the local lookup, no matter what.
+        final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
+                new ResourceInjectionConfiguration(targetDescription, new LookupInjectionSource(localContextName)) : null;
+
         // Create the binding from whence our injection comes.
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
@@ -149,41 +172,11 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         classDescription.getConfigurators().add(new ClassConfigurator() {
             public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.getBindingConfigurations().add(bindingConfiguration);
-                configuration.getInjectionConfigurations().add(injectionConfiguration);
+                if(injectionConfiguration != null) {
+                    configuration.getInjectionConfigurations().add(injectionConfiguration);
+                }
             }
         });
-    }
-
-    private void processMethodResource(final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
-        final String methodName = methodInfo.name();
-        if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
-        }
-
-        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
-        final String localContextName;
-        if (name == null || name.isEmpty()) {
-            localContextName = methodInfo.declaringClass().name().toString() + "/" + contextNameSuffix;
-        } else {
-            localContextName = name;
-        }
-
-        final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
-        final BindingDescription bindingDescription = createBindingDescription(localContextName, injectionType, classDescription);
-
-        final InjectionTarget targetDescription = new MethodInjectionTarget(methodName, methodInfo.declaringClass().name().toString(), methodInfo.args()[0].name().toString());
-        bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
-        return bindingDescription;
-    }
-
-    private void processClassResource(final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
-        if (isEmpty(name)) {
-            throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
-        }
-        if (isEmpty(type)|| type.equals(Object.class.getName())) {
-            throw new IllegalArgumentException("Class level @Resource annotations must provide a type.");
-        }
-        return createBindingDescription(name, type, classDescription);
     }
 
     private boolean isEmpty(final String string) {
