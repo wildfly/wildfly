@@ -44,7 +44,7 @@ import org.osgi.framework.BundleContext;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-public class SimpleArchiveProviderTestCase {
+public class SimpleDeploymentProviderTestCase {
 
     @Inject
     public DeploymentProvider provider;

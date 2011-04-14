@@ -39,7 +39,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.osgi.spi"/>
-        <module name="org.jboss.osgi.jmx"/>
         <module name="org.jboss.shrinkwrap.api"/>
         <module name="org.jboss.shrinkwrap.impl"/>
     </dependencies>
