@@ -34,6 +34,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.metamodel.Metamodel;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -42,6 +43,14 @@ import java.util.Map;
  * @author Scott Marlow (forked from jboss-jpa)
  */
 public abstract class AbstractEntityManager implements EntityManager {
+
+    // the following list of classes determines which unwrap classes are special, in that the underlying entity
+    // manager won't be closed, even if no transaction is active on the calling thread.
+    // TODO:  move this list to PersistenceProviderAdaptor
+    private static final HashSet<String> unwrapClassNamesThatShouldSkipPostInvocationStep = new HashSet<String>();
+    static {
+        unwrapClassNamesThatShouldSkipPostInvocationStep.add("org.hibernate.Session");
+    }
 
     private final Map<Class, Object> extensions = new HashMap<Class, Object>();
 
@@ -95,7 +104,15 @@ public abstract class AbstractEntityManager implements EntityManager {
         Object x = extensions.get(cls);
         if (x != null)
             return (T) x;
+
         final EntityManager underlyingEntityManager = getEntityManager();
+
+        // postinvocation is currently used specifically for closing transactional entity manager not running in tx
+        // check if we should skip the post invocation notification.
+        if (unwrapClassNamesThatShouldSkipPostInvocationStep.contains(cls.getName())) {
+            return underlyingEntityManager.unwrap(cls);
+        }
+
         RuntimeException exceptionWasAlreadyThrown=null;
         T result = null;
         try {
