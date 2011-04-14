@@ -48,7 +48,11 @@ public class JvmElement {
     public JvmElement(final String name, ModelNode ... toCombine) {
 
         this.name = name;
-
+        if(name == null) {
+            heapSize = "64m";
+            maxHeap = "256m";
+            maxPermgen = "128m";
+        }
         for(final ModelNode node : toCombine) {
             if(node == null) {
                 continue;

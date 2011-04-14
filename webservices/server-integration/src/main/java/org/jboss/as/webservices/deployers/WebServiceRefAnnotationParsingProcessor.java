@@ -40,14 +40,12 @@ import org.jboss.as.webservices.deployers.annotation.AbstractWebServiceRefAnnota
 import org.jboss.as.webservices.deployers.annotation.WebServiceRefFieldAnnotation;
 import org.jboss.as.webservices.deployers.annotation.WebServiceRefMethodAnnotation;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -58,13 +56,11 @@ import org.jboss.util.NotImplementedException;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandlerFactory;
 import org.jboss.wsf.stack.cxf.client.serviceref.CXFServiceObjectFactoryJAXWS;
 
-import javax.management.ObjectName;
 import javax.naming.Referenceable;
 import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
@@ -89,10 +85,6 @@ public class WebServiceRefAnnotationParsingProcessor extends AbstractComponentCo
 
     /** {@inheritDoc} **/
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription description) throws DeploymentUnitProcessingException {
-        EndpointRegistry registry = (EndpointRegistry) deploymentUnit.getServiceRegistry().getService(WSServices.REGISTRY_SERVICE).getValue();
-        for (ObjectName name: registry.getEndpoints()) {
-            Logger.getLogger(this.getClass()).fatal(name.toString());
-        }
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(description.getComponentClassName()));
         if(classInfo == null) {
             return; // We can't continue without the annotation index info.

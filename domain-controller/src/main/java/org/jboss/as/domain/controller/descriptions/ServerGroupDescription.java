@@ -112,6 +112,18 @@ public class ServerGroupDescription {
         root.get(REQUEST_PROPERTIES, PROFILE, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, PROFILE, MIN_LENGTH).set(1);
 
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("server-group.socket-binding-group"));
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, REQUIRED).set(true);
+
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, DESCRIPTION).set(bundle.getString("server-group.socket-binding-port-offset"));
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
+
+        root.get(REQUEST_PROPERTIES, JVM, DESCRIPTION).set(bundle.getString("server-group.add.jvm"));
+        root.get(REQUEST_PROPERTIES, JVM, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, JVM, REQUIRED).set(false);
+
         return root;
     }
 

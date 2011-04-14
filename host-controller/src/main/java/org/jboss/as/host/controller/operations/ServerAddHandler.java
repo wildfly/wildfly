@@ -45,9 +45,9 @@ import org.jboss.as.host.controller.descriptions.HostServerDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * {@code OperationHandler} adding a new server configuration.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class ServerAddHandler implements ModelAddOperationHandler, DescriptionProvider {
 
@@ -87,6 +87,12 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
             if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
                 model.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
             }
+            if(operation.hasDefined(JVM)) {
+                model.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
+            } else {
+                model.get(JVM);
+            }
+
             final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
             resultHandler.handleResultComplete();
             return new BasicOperationResult(compensating);

@@ -71,6 +71,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     private static final Logger log = Logger.getLogger(AbstractDeployableContainer.class.getName());
 
     private JBossAsContainerConfiguration containerConfig;
+    private ModelControllerClient modelControllerClient;
     private ServerDeploymentManager deploymentManager;
 
     private final Map<Archive<?>, String> registry = new HashMap<Archive<?>, String>();
@@ -78,13 +79,17 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     @Override
     public void setup(Context context, Configuration configuration) {
         containerConfig = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
-        ModelControllerClient client = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
+        modelControllerClient = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
                 containerConfig.getManagementPort());
-        deploymentManager = ServerDeploymentManager.Factory.create(client);
+        deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
     }
 
     protected JBossAsContainerConfiguration getContainerConfiguration() {
         return containerConfig;
+    }
+
+    protected ModelControllerClient getModelControllerClient() {
+        return modelControllerClient;
     }
 
     @Override

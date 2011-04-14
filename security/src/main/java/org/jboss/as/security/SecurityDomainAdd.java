@@ -128,6 +128,8 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
             modules = node.asList();
             for (ModelNode module : modules) {
                 String codeName = module.require(Attribute.CODE.getLocalName()).asString();
+                if (ModulesMap.AUTHENTICATION_MAP.containsKey(codeName))
+                    codeName = ModulesMap.AUTHENTICATION_MAP.get(codeName);
                 LoginModuleControlFlag controlFlag = getControlFlag(module.require(Attribute.FLAG.getLocalName()).asString());
                 Map<String, Object> options = new HashMap<String, Object>();
                 if (module.hasDefined(MODULE_OPTIONS)) {

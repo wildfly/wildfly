@@ -16,6 +16,12 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
@@ -26,6 +32,10 @@ import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.AbstractDeployableContainer;
 import org.jboss.as.arquillian.container.JBossAsContainerConfiguration;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.ServerController;
+import org.jboss.dmr.ModelNode;
 
 import javax.management.MBeanServerConnection;
 import java.io.File;
@@ -36,6 +46,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 /**
@@ -97,23 +108,6 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             processBuilder.redirectErrorStream(true);
             process = processBuilder.start();
             new Thread(new ConsoleConsumer()).start();
-            long timeout = 5000;
-            boolean testRunnerMBeanAvaialble = false;
-            MBeanServerConnection mbeanServer = null;
-            while (timeout > 0 && testRunnerMBeanAvaialble == false) {
-                if (mbeanServer == null) {
-                    try {
-                        mbeanServer = getMBeanServerConnection();
-                    } catch (Exception ex) {
-                        // ignore
-                    }
-                }
-
-                testRunnerMBeanAvaialble = (mbeanServer != null && mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME));
-
-                Thread.sleep(100);
-                timeout -= 100;
-            }
             final Process proc = process;
             shutdownThread = new Thread(new Runnable() {
                 @Override
@@ -129,6 +123,42 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
                 }
             });
             Runtime.getRuntime().addShutdownHook(shutdownThread);
+
+            long timeout = getContainerConfiguration().getStartupTimeout();
+
+            boolean serverAvailable = false;
+            while (timeout > 0 && serverAvailable == false) {
+
+                serverAvailable = isServerStarted();
+
+                Thread.sleep(100);
+                timeout -= 100;
+            }
+
+            if (!serverAvailable) {
+                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+            }
+
+            boolean testRunnerMBeanAvailable = false;
+            MBeanServerConnection mbeanServer = null;
+            while (timeout > 0 && testRunnerMBeanAvailable == false) {
+                if (mbeanServer == null) {
+                    try {
+                        mbeanServer = getMBeanServerConnection();
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
+
+                testRunnerMBeanAvailable = (mbeanServer != null && mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME));
+
+                Thread.sleep(100);
+                timeout -= 100;
+            }
+
+            if (!testRunnerMBeanAvailable) {
+                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer within [%d] ms", timeout));
+            }
 
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
@@ -161,6 +191,20 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
     protected ContainerMethodExecutor getContainerMethodExecutor() {
         return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.REMOTE);
    }
+
+    private boolean isServerStarted() {
+        try {
+            ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
+            op.get(NAME).set("state");
+
+            ModelNode rsp = getModelControllerClient().execute(op);
+            return SUCCESS.equals(rsp.get(OUTCOME)) && !ServerController.State.STARTING.toString().equals(rsp.get(RESULT));
+        }
+        catch (Exception ignored) {
+            // ignore, as we will get exceptions until the management comm services start
+        }
+        return false;
+    }
 
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms

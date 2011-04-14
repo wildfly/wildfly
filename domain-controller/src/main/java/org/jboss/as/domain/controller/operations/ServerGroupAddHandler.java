@@ -61,10 +61,10 @@ public class ServerGroupAddHandler implements ModelAddOperationHandler, Descript
             subModel.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
         }
         else {
-            subModel.get(JVM).setEmptyObject();
+            subModel.get(JVM);
         }
 
-        subModel.get(DEPLOYMENT).setEmptyObject();
+        subModel.get(DEPLOYMENT);
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
 

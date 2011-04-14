@@ -21,40 +21,13 @@
  */
 package org.jboss.as.host.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  *
@@ -143,7 +116,26 @@ public class HostServerDescription {
     public static ModelNode getServerAddOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        //TODO
+
+        root.get(OPERATION_NAME).set(ADD);
+        root.get(DESCRIPTION).set(bundle.getString("server.add"));
+
+        root.get(REQUEST_PROPERTIES, GROUP, DESCRIPTION).set(bundle.getString("server.group"));
+        root.get(REQUEST_PROPERTIES, GROUP, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, GROUP, REQUIRED).set(false);
+
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("server.socket-binding-group"));
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, REQUIRED).set(false);
+
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, DESCRIPTION).set(bundle.getString("server.socket-binding-port-offset"));
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
+        root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
+
+        root.get(REQUEST_PROPERTIES, JVM, DESCRIPTION).set(bundle.getString("server.add.jvm"));
+        root.get(REQUEST_PROPERTIES, JVM, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, JVM, REQUIRED).set(false);
+
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -152,7 +144,8 @@ public class HostServerDescription {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(REMOVE);
-        //TODO
+        root.get(DESCRIPTION).set(bundle.getString("server.remove"));
+
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
