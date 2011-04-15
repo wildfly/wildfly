@@ -42,21 +42,19 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final JndiInjectionPointStore moduleInjectionPointStore;
-        moduleInjectionPointStore = new JndiInjectionPointStore();
-        deploymentUnit.putAttachment(Attachments.MODULE_INJECTIONS,moduleInjectionPointStore);
+        final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
 
-        for(BindingDescription binding : moduleDescription.getBindingsContainer().getMergedBindings()) {
-            addJndiBinding(moduleDescription,moduleDescription.getModuleName(),binding,phaseContext,moduleInjectionPointStore);
+        // bindings
+        for (BindingConfiguration binding : moduleConfiguration.getBindingConfigurations()) {
+            addJndiBinding(moduleConfiguration, binding, phaseContext);
         }
+
     }
 
 
-    protected void addJndiBinding(final EEModuleDescription module, final String componentName, final BindingDescription bindingDescription, final DeploymentPhaseContext phaseContext, final JndiInjectionPointStore injectionPointStore) throws DeploymentUnitProcessingException {
+    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         // Gather information about the dependency
-        final String bindingName = bindingDescription.getBindingName();
-        final String bindingType = bindingDescription.getBindingType();
+        final String bindingName = bindingConfiguration.getName();
 
         Value<ManagedReferenceFactory> resourceValue;
 
@@ -72,22 +70,25 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 serviceBindingName = bindingName.substring(idx + 1);
             }
             final BinderService service = new BinderService(serviceBindingName);
-            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(module.getApplicationName(), module.getModuleName(), componentName, bindingName);
+            final ServiceName bindingServiceName = ContextNames.serviceNameOfContext(module.getApplicationName(), module.getModuleName(), module.getModuleName(), bindingName);
             if (bindingServiceName == null) {
                 throw new IllegalArgumentException("Invalid context name '" + bindingName + "' for binding");
             }
             // The service builder for the binding
             ServiceBuilder<ManagedReferenceFactory> sourceServiceBuilder = phaseContext.getServiceTarget().addService(bindingServiceName, service);
+            InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
+                    true,
+                    module.getModuleName(),
+                    module.getModuleName(),
+                    module.getApplicationName()
+            );
             // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
-            bindingDescription.getReferenceSourceDescription().getResourceValue(bindingDescription, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
+            bindingConfiguration.getSource().getResourceValue(resolutionContext, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
             resourceValue = sourceServiceBuilder
                     .addDependency(bindingServiceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
                     .install();
-            for(final InjectionTarget injectionTarget : bindingDescription.getInjectionTargetDescriptions()) {
-                injectionPointStore.addInjectedValue(injectionTarget, resourceValue, bindingServiceName);
-            }
         } else {
-            throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingDescription);
+            throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingConfiguration);
         }
     }
 

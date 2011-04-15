@@ -22,14 +22,17 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 
@@ -43,12 +46,21 @@ public final class EEModuleConfiguration {
     private final Map<String, ComponentConfiguration> componentsByName;
     private final Map<String, ComponentConfiguration> componentsByClassName;
 
+    // Module Bindings
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+
     EEModuleConfiguration(EEModuleDescription description, DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         Module module = deploymentUnit.getAttachment(MODULE);
         ModuleClassLoader classLoader = module.getClassLoader();
         applicationName = description.getApplicationName();
         moduleName = description.getModuleName();
+
+        // run this configuration through the module configurators
+        for (EEModuleConfigurator configurator : description.getConfigurators()) {
+            configurator.configure(context, description, this);
+        }
+
         final Map<String, EEModuleClassConfiguration> classesByName = new HashMap<String, EEModuleClassConfiguration>();
         for (EEModuleClassDescription classDescription : description.getClassDescriptions()) {
             String className = classDescription.getClassName();
@@ -99,5 +111,9 @@ public final class EEModuleConfiguration {
 
     public Collection<ComponentConfiguration> getComponentConfigurations() {
         return componentsByName.values();
+    }
+
+    public List<BindingConfiguration> getBindingConfigurations() {
+        return this.bindingConfigurations;
     }
 }

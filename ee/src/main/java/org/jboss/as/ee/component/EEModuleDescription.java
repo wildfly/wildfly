@@ -22,7 +22,9 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,8 @@ public final class EEModuleDescription {
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, ComponentDescription> componentsByClassName = new HashMap<String, ComponentDescription>();
     private final Map<String, EEModuleClassDescription> classesByName = new HashMap<String, EEModuleClassDescription>();
+
+    private final Deque<EEModuleConfigurator> moduleConfigurators = new ArrayDeque<EEModuleConfigurator>();
 
     /**
      * Construct a new instance.
@@ -120,5 +124,9 @@ public final class EEModuleDescription {
 
     public Collection<EEModuleClassDescription> getClassDescriptions() {
         return classesByName.values();
+    }
+
+    public Deque<EEModuleConfigurator> getConfigurators() {
+        return this.moduleConfigurators;
     }
 }

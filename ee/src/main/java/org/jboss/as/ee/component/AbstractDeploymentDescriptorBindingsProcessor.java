@@ -54,9 +54,13 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
             return;
         }
         if (environment != null) {
-            List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
-            // TODO: Need to add the bindings at module description level
-            throw new RuntimeException("Configuring bindings at module level not yet implemented");
+            final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
+            description.getConfigurators().add(new EEModuleConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleDescription description, EEModuleConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.getBindingConfigurations().addAll(bindings);
+                }
+            });
         }
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
