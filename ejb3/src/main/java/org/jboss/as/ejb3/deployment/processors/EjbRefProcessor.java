@@ -22,10 +22,13 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.LookupInjectionSource;
+import org.jboss.as.ee.component.ServiceInjectionSource;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -47,60 +50,54 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
      * Resolves ejb-ref and ejb-local-ref elements
      *
      * @param deploymentUnit
-     * @param environment The environment to resolve the elements for
-     * @param classLoader The deployment class loader
+     * @param environment               The environment to resolve the elements for
+     * @param classLoader               The deployment class loader
      * @param deploymentReflectionIndex The reflection index
      * @return The bindings for the environment entries
      */
-     protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         EJBLocalReferencesMetaData ejbLocalRefs = environment.getEnvironment().getEjbLocalReferences();
-        List<BindingDescription> bindingDescriptions = new ArrayList<BindingDescription>();
+        List<BindingConfiguration> bindingDescriptions = new ArrayList<BindingConfiguration>();
         //TODO: this needs a lot more work
-        if(ejbLocalRefs != null) {
-            for(EJBLocalReferenceMetaData ejbRef : ejbLocalRefs) {
+        if (ejbLocalRefs != null) {
+            for (EJBLocalReferenceMetaData ejbRef : ejbLocalRefs) {
                 String name = ejbRef.getEjbRefName();
                 String ejbName = ejbRef.getLink();
                 String lookup = ejbRef.getLookupName();
                 String localInterface = ejbRef.getLocal();
                 Class<?> localInterfaceType = null;
 
-                if(!isEmpty(localInterface)) {
+                if (!isEmpty(localInterface)) {
                     try {
                         classLoader.loadClass(localInterface);
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load local interface type " + localInterface,e);
+                        throw new DeploymentUnitProcessingException("Could not load local interface type " + localInterface, e);
                     }
                 }
 
-                if(!name.startsWith("java:")) {
+                if (!name.startsWith("java:")) {
                     name = environment.getDefaultContext() + name;
                 }
 
-                BindingDescription bindingDescription = new BindingDescription(name);
-                bindingDescriptions.add(bindingDescription);
-
+                // our injection (source) comes from the local (ENC) lookup, no matter what.
+                LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
                 //add any injection targets
-                localInterfaceType = processInjectionTargets(classLoader,deploymentReflectionIndex,ejbRef,bindingDescription,localInterfaceType);
+                localInterfaceType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
 
-                if(localInterfaceType == null) {
+                if (localInterfaceType == null) {
                     throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for component " + componentDescription);
                 }
-                bindingDescription.setBindingType(localInterfaceType.getName());
-
+                BindingConfiguration bindingConfiguration = null;
                 if (!isEmpty(lookup)) {
-                    if(componentDescription != null ) {
-                        bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookup,componentDescription));
-                    } else {
-                        bindingDescription.setReferenceSourceDescription(new LookupBindingSourceDescription(lookup,moduleDescription));
-                    }
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                 } else if (!isEmpty(ejbName)) {
                     //TODO: implement cross deployment references
                     final ServiceName beanServiceName = deploymentUnit.getServiceName()
-                        .append("component").append(ejbName).append("VIEW").append(bindingDescription.getBindingType());
-                    bindingDescription.setReferenceSourceDescription(new ServiceBindingSourceDescription(beanServiceName));
+                            .append("component").append(ejbName).append("VIEW").append(localInterfaceType.getName());
+                    bindingConfiguration = new BindingConfiguration(name, new ServiceInjectionSource(beanServiceName));
                 } else {
-                    bindingDescription.setReferenceSourceDescription(new LazyBindingSourceDescription());
+                    throw new RuntimeException("Support for ejb-local-ref without lookup or ejb-link isn't yet implemented");
                 }
             }
         }

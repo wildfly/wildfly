@@ -31,10 +31,10 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ServiceInjectionSource extends InjectionSource {
+public final class ServiceInjectionSource extends InjectionSource {
     private final ServiceName serviceName;
 
-    ServiceInjectionSource(final ServiceName serviceName) {
+    public ServiceInjectionSource(final ServiceName serviceName) {
         this.serviceName = serviceName;
     }
 
