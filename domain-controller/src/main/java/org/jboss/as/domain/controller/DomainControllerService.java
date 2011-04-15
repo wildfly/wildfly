@@ -165,7 +165,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         // By having a remote repo as a secondary content will be synced only if needed
         FallbackRepository fileRepository = new FallbackRepository(localFileRepository, masterClient.getRemoteFileRepository());
-        domainModel.initialiseAsSlaveDC(configurationPersister, deploymentRepository, localFileRepository, hostRegistry.getValue());
+        domainModel.initialiseAsSlaveDC(configurationPersister, deploymentRepository, fileRepository, hostRegistry.getValue());
         final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient, hostRegistry.getValue());
         try {
             masterClient.register(hostController.getValue().getName(), mgmtInterface.getValue().getAddress(), mgmtPort, controller);
