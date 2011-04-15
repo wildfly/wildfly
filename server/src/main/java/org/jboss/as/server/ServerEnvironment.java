@@ -93,14 +93,6 @@ public class ServerEnvironment implements Serializable {
 
     /**
      * Constant that holds the name of the environment property
-     * for specifying the server configuration URL.
-     *
-     * <p>Defaults to <tt><em>SERVER_CONFIG_DIR</em>/standalone.xml</tt> .
-     */
-    public static final String SERVER_CONFIG_FILE = "jboss.server.config.file";
-
-    /**
-     * Constant that holds the name of the environment property
      * for specifying the directory which JBoss will use for
      * persistent data file storage.
      *
@@ -186,7 +178,7 @@ public class ServerEnvironment implements Serializable {
     private final boolean standalone;
     private final File serverSystemDeployDir;
 
-    public ServerEnvironment(Properties props, Map<String, String> env, boolean standalone) {
+    public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, boolean standalone) {
         this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
@@ -272,7 +264,7 @@ public class ServerEnvironment implements Serializable {
         }
         serverConfigurationDir = tmp;
 
-        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, "standalone.xml", props.getProperty(SERVER_CONFIG_FILE, "standalone.xml")) : null;
+        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, "standalone.xml", serverConfig) : null;
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {

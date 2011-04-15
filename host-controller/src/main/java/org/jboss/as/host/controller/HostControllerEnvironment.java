@@ -56,22 +56,6 @@ public class HostControllerEnvironment {
 
     /**
      * Constant that holds the name of the environment property
-     * for specifying the server configuration URL.
-     *
-     * <p>Defaults to <tt><em>SERVER_CONFIG_DIR</em>/host.xml</tt> .
-     */
-    public static final String DOMAIN_CONFIG_HOST = "jboss.domain.config.host";
-
-    /**
-     * Constant that holds the name of the environment property
-     * for specifying the server configuration URL.
-     *
-     * <p>Defaults to <tt><em>SERVER_CONFIG_DIR</em>/domain.xml</tt> .
-     */
-    public static final String DOMAIN_CONFIG_DOMAIN = "jboss.domain.config.domain";
-
-    /**
-     * Constant that holds the name of the environment property
      * for specifying the directory which JBoss will use for
      * persistent data file storage.
      *
@@ -150,7 +134,7 @@ public class HostControllerEnvironment {
 
     public HostControllerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-            Integer hostControllerPort, String defaultJVM, boolean backupDomainFiles, boolean useCachedDc) {
+            Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig, boolean backupDomainFiles, boolean useCachedDc) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -223,8 +207,8 @@ public class HostControllerEnvironment {
         this.domainConfigurationDir = tmp;
         System.setProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
 
-        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", props.getProperty(DOMAIN_CONFIG_HOST, "host.xml"));
-        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", props.getProperty(DOMAIN_CONFIG_DOMAIN, "domain.xml"));
+        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", hostConfig);
+        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", domainConfig);
 
         tmp = getFileFromProperty(DOMAIN_DEPLOYMENT_DIR);
         if (tmp == null) {

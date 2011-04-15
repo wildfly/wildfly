@@ -66,10 +66,6 @@ public class ConfigurationFile {
 
 
     public ConfigurationFile(final File configurationDir, final String rawName, final String name) {
-        this(configurationDir, rawName, name, false);
-    }
-
-    public ConfigurationFile(final File configurationDir, final String rawName, final String name, boolean validate) {
         if (!configurationDir.exists() || !configurationDir.isDirectory()) {
             throw new IllegalArgumentException("No directory " + configurationDir.getAbsolutePath() + " was found");
         }
@@ -78,7 +74,7 @@ public class ConfigurationFile {
         this.historyRoot = mkdir(new File(configurationDir, rawName.replace('.', '_')));
         this.currentHistory = new File(historyRoot, "current");
         this.snapshotsDirectory = mkdir(new File(historyRoot, "snapshot"));
-        this.bootFile = name.equals(rawName) ? mainFile : determineBootFile(configurationDir, name);
+        this.bootFile = name != null && name.equals(rawName) ? mainFile : determineBootFile(configurationDir, name == null ? rawName : name);
     }
 
     private File determineBootFile(final File configurationDir, final String name) {
