@@ -33,7 +33,7 @@ import jline.Completor;
  *
  * @author Alexey Loubyansky
  */
-public class CommandCompleter implements Completor {
+public class CommandCompleter implements Completor, CommandLineCompleter {
 
     private final CommandContext ctx;
     private final CommandRegistry cmdRegistry;
@@ -48,6 +48,11 @@ public class CommandCompleter implements Completor {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public int complete(String buffer, int cursor, List candidates) {
+        return complete(ctx, buffer, cursor, candidates);
+    }
+
+    @Override
+    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
         int cmdFirstIndex = 0;
         while(cmdFirstIndex < buffer.length()) {
@@ -81,7 +86,7 @@ public class CommandCompleter implements Completor {
         if(cmdLastIndex < buffer.length()) {
             CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
             if (handler != null) {
-                CommandArgumentCompleter argsCompleter = handler.getArgumentCompleter();
+                CommandLineCompleter argsCompleter = handler.getArgumentCompleter();
                 if (argsCompleter != null) {
 
                     int nextCharIndex = cmdLastIndex + 1;

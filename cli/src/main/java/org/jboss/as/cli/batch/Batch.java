@@ -34,4 +34,10 @@ public interface Batch {
     List<BatchedCommand> getCommands();
 
     void clear();
+
+    void remove(int index);
+
+    void set(int index, BatchedCommand cmd);
+
+    int size();
 }

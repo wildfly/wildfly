@@ -19,23 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
-
-import java.util.List;
+package org.jboss.as.cli.handlers.batch;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
-import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class BatchListHandler extends CommandHandlerWithHelp {
+public class BatchHoldbackHandler extends CommandHandlerWithHelp {
 
-    public BatchListHandler() {
-        super("batch-list");
+    public BatchHoldbackHandler() {
+        super("batch-holdback");
     }
 
     @Override
@@ -51,21 +48,25 @@ public class BatchListHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
+
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch.");
+            ctx.printLine("No active batch to holdback.");
             return;
         }
-        Batch activeBatch = batchManager.getActiveBatch();
-        List<BatchedCommand> commands = activeBatch.getCommands();
-        if (!commands.isEmpty()) {
-            for (int i = 0; i < commands.size(); ++i) {
-                BatchedCommand cmd = commands.get(i);
-                ctx.printLine("#" + (i + 1) + ' ' + cmd.getCommand());
-            }
-        } else {
-            ctx.printLine("The batch is empty.");
+
+        String name = null;
+        if(ctx.hasArguments()) {
+            name = ctx.getArguments().get(0);
+        }
+
+        if(batchManager.isHeldback(name)) {
+            ctx.printLine("There already is " + (name == null ? "unnamed" : "'" + name + "'") + " batch held back.");
+            return;
+        }
+
+        if(!batchManager.holdbackActiveBatch(name)) {
+            ctx.printLine("Failed to holdback the batch.");
         }
     }
-
 }

@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.PrefixFormatter;
@@ -221,4 +223,19 @@ public interface CommandContext {
      * @return batch manager
      */
     BatchManager getBatchManager();
+
+    /**
+     * Builds an operation request from the passed in command line.
+     *
+     * @param line the command line which can be an operation request or a command that can be translated into an operation request.
+     * @return  the operation request
+     * @throws OperationFormatException  if the operation request couldn't be built.
+     */
+    BatchedCommand toBatchedCommand(String line) throws OperationFormatException;
+
+    /**
+     * Returns the default command line completer.
+     * @return  the default command line completer.
+     */
+    CommandLineCompleter getDefaultCommandCompleter();
 }

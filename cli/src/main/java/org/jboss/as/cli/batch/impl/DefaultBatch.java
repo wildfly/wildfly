@@ -55,4 +55,27 @@ public class DefaultBatch implements Batch {
     public void clear() {
         commands.clear();
     }
+
+    @Override
+    public void remove(int lineNumber) {
+        ensureRange(lineNumber);
+        commands.remove(lineNumber);
+    }
+
+    @Override
+    public void set(int index, BatchedCommand cmd) {
+        ensureRange(index);
+        commands.set(index, cmd);
+    }
+
+    protected void ensureRange(int lineNumber) {
+        if(lineNumber < 0 || lineNumber > commands.size() - 1) {
+            throw new IndexOutOfBoundsException(lineNumber + " isn't in range [0.." + (commands.size() - 1) + "]");
+        }
+    }
+
+    @Override
+    public int size() {
+        return commands.size();
+    }
 }

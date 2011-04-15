@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.handlers;
 
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.OperationCommand;
 
 /**
@@ -31,7 +31,7 @@ import org.jboss.as.cli.OperationCommand;
 public abstract class BatchModeCommandHandler extends CommandHandlerWithHelp implements OperationCommand {
 
     public BatchModeCommandHandler(String command, boolean connectionRequired,
-            CommandArgumentCompleter argsCompleter) {
+            CommandLineCompleter argsCompleter) {
         super(command, connectionRequired, argsCompleter);
     }
 
@@ -40,7 +40,7 @@ public abstract class BatchModeCommandHandler extends CommandHandlerWithHelp imp
     }
 
     public BatchModeCommandHandler(String command,
-            CommandArgumentCompleter argsCompleter) {
+            CommandLineCompleter argsCompleter) {
         super(command, argsCompleter);
     }
 

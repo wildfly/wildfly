@@ -19,17 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.handlers.batch;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
+import org.jboss.as.cli.handlers.SimpleTabCompleterWithDelegate;
 
 /**
  *
@@ -38,7 +40,7 @@ import org.jboss.as.cli.batch.BatchedCommand;
 public class BatchHandler extends CommandHandlerWithHelp {
 
     public BatchHandler() {
-        super("batch", new SimpleTabCompleterWithDelegate(new String[]{"-l"}, new CommandArgumentCompleter(){
+        super("batch", new SimpleTabCompleterWithDelegate(new String[]{"-l", "--help"}, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 

@@ -24,7 +24,7 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 
 /**
  *
@@ -32,9 +32,9 @@ import org.jboss.as.cli.CommandArgumentCompleter;
  */
 public class SimpleTabCompleterWithDelegate extends SimpleTabCompleter {
 
-    private final CommandArgumentCompleter delegate;
+    private final CommandLineCompleter delegate;
 
-    public SimpleTabCompleterWithDelegate(String[] candidates, CommandArgumentCompleter delegate) {
+    public SimpleTabCompleterWithDelegate(String[] candidates, CommandLineCompleter delegate) {
         super(candidates);
         if(delegate == null) {
             throw new IllegalStateException("delegate can't be null");
@@ -46,12 +46,11 @@ public class SimpleTabCompleterWithDelegate extends SimpleTabCompleter {
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
         int result = super.complete(ctx, buffer, cursor, candidates);
         if(/*candidates.isEmpty() && */delegate != null) {
-            String delegateBuffer = result == buffer.length() ? "" : buffer.substring(result);
-            int delegateResult = delegate.complete(ctx, delegateBuffer, result, candidates);
+            int delegateResult = delegate.complete(ctx, buffer, result, candidates);
             if(delegateResult < 0) {
                 return result;
             } else {
-                return result + delegateResult;
+                return delegateResult;
             }
         }
         return result;

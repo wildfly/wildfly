@@ -28,7 +28,7 @@ import java.util.concurrent.CancellationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
@@ -85,7 +85,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
     }
 
     @Override
-    public CommandArgumentCompleter getArgumentCompleter() {
+    public CommandLineCompleter getArgumentCompleter() {
         return OperationRequestCompleter.INSTANCE;
     }
 

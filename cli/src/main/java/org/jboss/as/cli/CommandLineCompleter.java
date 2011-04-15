@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author Alexey Loubyansky
  */
-public interface CommandArgumentCompleter {
+public interface CommandLineCompleter {
 
     int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates);
 }

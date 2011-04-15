@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
@@ -41,7 +41,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
     public DeleteJmsQueueHandler() {
         super("delete-jms-queue", true,
                 new SimpleTabCompleterWithDelegate(new String[]{"--help"/*, "name="*/},
-                        new CommandArgumentCompleter() {
+                        new CommandLineCompleter() {
                     @Override
                     public int complete(CommandContext ctx, String buffer,
                             int cursor, List<String> candidates) {

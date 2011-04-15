@@ -19,34 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.handlers.batch;
 
-import java.util.List;
-
-import jline.FileNameCompletor;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.batch.Batch;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class FilenameTabCompleter implements CommandLineCompleter {
+public class BatchClearHandler extends CommandHandlerWithHelp {
 
-    private static final FileNameCompletor fnCompleter = new FileNameCompletor();
-    public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
+    public BatchClearHandler() {
+        super("batch-clear");
+    }
+
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        if(!super.isAvailable(ctx)) {
+            return false;
+        }
+        return ctx.isBatchMode();
+    }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-        if(cursor > 0 && cursor <= buffer.length()) {
-            buffer = buffer.substring(cursor);
+    protected void doHandle(CommandContext ctx) {
+
+        Batch batch = ctx.getBatchManager().getActiveBatch();
+        if(batch == null) {
+            ctx.printLine("No active batch.");
+            return;
         }
-        int result = fnCompleter.complete(buffer, cursor, candidates);
-        return result < 0 ? result : cursor + result;
+        batch.clear();
     }
 
 }

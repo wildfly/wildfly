@@ -202,7 +202,6 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         File f = new File(filePath);
         if(!f.exists()) {
-            ctx.printLine("The path doesn't exist: " + f.getAbsolutePath());
             throw new OperationFormatException(f.getAbsolutePath() + " doesn't exist.");
         }
 

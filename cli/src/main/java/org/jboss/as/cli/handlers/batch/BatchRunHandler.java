@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.handlers.batch;
 
 import java.util.List;
 
@@ -28,6 +28,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 import org.jboss.dmr.ModelNode;
 
 /**

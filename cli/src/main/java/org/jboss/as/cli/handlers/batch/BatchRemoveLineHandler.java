@@ -19,28 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.handlers.batch;
+
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class BatchHoldbackHandler extends CommandHandlerWithHelp {
+public class BatchRemoveLineHandler extends CommandHandlerWithHelp {
 
-    public BatchHoldbackHandler() {
-        super("batch-holdback");
+    public BatchRemoveLineHandler() {
+        super("remove-batch-line");
     }
 
-    @Override
-    public boolean isAvailable(CommandContext ctx) {
-        if(!super.isAvailable(ctx)) {
-            return false;
-        }
-        return ctx.isBatchMode();
-    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
@@ -50,22 +47,42 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
-            ctx.printLine("No active batch to holdback.");
+            ctx.printLine("No active batch.");
             return;
         }
 
-        String name = null;
-        if(ctx.hasArguments()) {
-            name = ctx.getArguments().get(0);
-        }
-
-        if(batchManager.isHeldback(name)) {
-            ctx.printLine("There already is " + (name == null ? "unnamed" : "'" + name + "'") + " batch held back.");
+        Batch batch = batchManager.getActiveBatch();
+        final int batchSize = batch.size();
+        if(batchSize == 0) {
+            ctx.printLine("The batch is empty.");
             return;
         }
 
-        if(!batchManager.holdbackActiveBatch(name)) {
-            ctx.printLine("Failed to holdback the batch.");
+        List<String> arguments = ctx.getArguments();
+        if(arguments.isEmpty()) {
+            ctx.printLine("Missing line number.");
+            return;
         }
+
+        if(arguments.size() != 1) {
+            ctx.printLine("Expected only one argument - the line number but received: " + arguments);
+            return;
+        }
+
+        String intStr = arguments.get(0);
+        int lineNumber;
+        try {
+            lineNumber = Integer.parseInt(intStr);
+        } catch(NumberFormatException e) {
+            ctx.printLine("Failed to parse line number '" + intStr + "': " + e.getLocalizedMessage());
+            return;
+        }
+
+        if(lineNumber < 1 || lineNumber > batchSize) {
+            ctx.printLine(lineNumber + " isn't in range [1.." + batchSize + "].");
+            return;
+        }
+
+        batch.remove(lineNumber - 1);
     }
 }

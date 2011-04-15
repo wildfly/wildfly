@@ -45,12 +45,6 @@ import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
-import org.jboss.as.cli.handlers.BatchClearHandler;
-import org.jboss.as.cli.handlers.BatchDiscardHandler;
-import org.jboss.as.cli.handlers.BatchHandler;
-import org.jboss.as.cli.handlers.BatchHoldbackHandler;
-import org.jboss.as.cli.handlers.BatchListHandler;
-import org.jboss.as.cli.handlers.BatchRunHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
@@ -69,6 +63,14 @@ import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
+import org.jboss.as.cli.handlers.batch.BatchClearHandler;
+import org.jboss.as.cli.handlers.batch.BatchDiscardHandler;
+import org.jboss.as.cli.handlers.batch.BatchEditLineHandler;
+import org.jboss.as.cli.handlers.batch.BatchHandler;
+import org.jboss.as.cli.handlers.batch.BatchHoldbackHandler;
+import org.jboss.as.cli.handlers.batch.BatchListHandler;
+import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
+import org.jboss.as.cli.handlers.batch.BatchRunHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -116,6 +118,8 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
         cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
         cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
+        cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
+        cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
     }
 
     public static void main(String[] args) throws Exception {
@@ -129,7 +133,7 @@ public class CommandLineMain {
                 cmdCtx.disconnectController();
             }
         }));
-        console.addCompletor(new CommandCompleter(cmdRegistry, cmdCtx));
+        console.addCompletor(cmdCtx.cmdCompleter);
 
         String[] commands = null;
         String fileName = null;
@@ -265,12 +269,12 @@ public class CommandLineMain {
             if(handler != null) {
                 if(cmdCtx.isBatchMode() && handler.isBatchMode()) {
                     if(!(handler instanceof OperationCommand)) {
-                        cmdCtx.printLine("The handler doesn't implement " + OperationCommand.class.getName());
+                        cmdCtx.printLine("The command is not allowed in a batch.");
                     } else {
                         try {
                             ModelNode request = ((OperationCommand)handler).buildRequest(cmdCtx);
                             BatchedCommand batchedCmd = new DefaultBatchedCommand(line, request);
-                            cmdCtx.getBatchManager().getActiveBatch().getCommands().add(batchedCmd);
+                            cmdCtx.getBatchManager().getActiveBatch().add(batchedCmd);
                         } catch (OperationFormatException e) {
                             cmdCtx.printLine("Failed to add to batch: " + e.getLocalizedMessage());
                         }
@@ -371,6 +375,8 @@ public class CommandLineMain {
         private final OperationRequestHandler operationHandler;
         /** batches */
         private BatchManager batchManager = new DefaultBatchManager();
+        /** the default command completer */
+        private final CommandCompleter cmdCompleter;
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
@@ -388,6 +394,8 @@ public class CommandLineMain {
             operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
 
             operationHandler = new OperationRequestHandler();
+
+            cmdCompleter = new CommandCompleter(cmdRegistry, this);
         }
 
         @Override
@@ -688,6 +696,65 @@ public class CommandLineMain {
         @Override
         public BatchManager getBatchManager() {
             return batchManager;
+        }
+
+        @Override
+        public BatchedCommand toBatchedCommand(String line) throws OperationFormatException {
+
+            if (line.isEmpty()) {
+                throw new IllegalArgumentException("Null command line.");
+            }
+
+            final String originalCommand = this.cmd;
+            final String originalArguments = this.cmdArgs;
+            if(isOperation(line)) {
+                try {
+                    setArgs(null, line);
+                    DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(getPrefix());
+                    parser.parse(line, builder);
+                    ModelNode request = builder.buildRequest();
+                    StringBuilder op = new StringBuilder();
+                    op.append(prefixFormatter.format(builder.getAddress()));
+                    op.append(line.substring(line.indexOf(':')));
+                    return new DefaultBatchedCommand(op.toString(), request);
+                } finally {
+                    setArgs(originalCommand, originalArguments);
+                }
+            }
+
+
+
+
+            String cmd = line;
+            String cmdArgs = null;
+            for (int i = 0; i < cmd.length(); ++i) {
+                if (Character.isWhitespace(cmd.charAt(i))) {
+                    cmdArgs = cmd.substring(i + 1).trim();
+                    cmd = cmd.substring(0, i);
+                    break;
+                }
+            }
+
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
+            if(handler == null) {
+                throw new OperationFormatException("No command handler for '" + cmd + "'.");
+            }
+            if(!(handler instanceof OperationCommand)) {
+                throw new OperationFormatException("The handler doesn't implement " + OperationCommand.class.getName());
+            }
+
+            try {
+                setArgs(cmd, cmdArgs);
+                ModelNode request = ((OperationCommand)handler).buildRequest(this);
+                return new DefaultBatchedCommand(line, request);
+            } finally {
+                setArgs(originalCommand, originalArguments);
+            }
+        }
+
+        @Override
+        public CommandLineCompleter getDefaultCommandCompleter() {
+            return cmdCompleter;
         }
     }
 }

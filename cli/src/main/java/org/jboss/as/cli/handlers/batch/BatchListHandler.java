@@ -19,20 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.handlers.batch;
 
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.Batch;
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class BatchClearHandler extends CommandHandlerWithHelp {
+public class BatchListHandler extends CommandHandlerWithHelp {
 
-    public BatchClearHandler() {
-        super("batch-clear");
+    public BatchListHandler() {
+        super("batch-list");
     }
 
     @Override
@@ -48,13 +52,21 @@ public class BatchClearHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) {
-
-        Batch batch = ctx.getBatchManager().getActiveBatch();
-        if(batch == null) {
+        BatchManager batchManager = ctx.getBatchManager();
+        if(!batchManager.isBatchActive()) {
             ctx.printLine("No active batch.");
             return;
         }
-        batch.clear();
+        Batch activeBatch = batchManager.getActiveBatch();
+        List<BatchedCommand> commands = activeBatch.getCommands();
+        if (!commands.isEmpty()) {
+            for (int i = 0; i < commands.size(); ++i) {
+                BatchedCommand cmd = commands.get(i);
+                ctx.printLine("#" + (i + 1) + ' ' + cmd.getCommand());
+            }
+        } else {
+            ctx.printLine("The batch is empty.");
+        }
     }
 
 }
