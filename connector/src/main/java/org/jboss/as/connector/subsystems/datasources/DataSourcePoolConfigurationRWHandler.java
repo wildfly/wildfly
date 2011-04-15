@@ -205,12 +205,14 @@ class DataSourcePoolConfigurationRWHandler {
                                     }
                                 }
 
-                                modelChanged(context, operation, resultHandler, parameterName, newValue, currentValue);
+                                resultHandler.handleResultComplete();
 
                             } catch (Exception e) {
                                 throw new OperationFailedException(new ModelNode().set("failed to set attribute"
                                         + e.getMessage()));
                             }
+                        } else {
+                            resultHandler.handleResultComplete();
                         }
                     }
                 });

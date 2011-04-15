@@ -62,8 +62,8 @@ class RaConfigRWHandler {
     static final String[] NO_LOCATION = new String[0];
 
     static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
-        IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
-        USE_FAST_FAIL };
+            IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
+            USE_FAST_FAIL };
 
     static class RaConfigReadHandler implements ModelQueryOperationHandler {
         static RaConfigReadHandler INSTANCE = new RaConfigReadHandler();
@@ -89,8 +89,7 @@ class RaConfigRWHandler {
 
     static class RaConfigWriteHandler extends ServerWriteAttributeOperationHandler {
 
-        static RaConfigWriteHandler INSTANCE = new RaConfigWriteHandler(
-            new PoolConfigurationValidator());
+        static RaConfigWriteHandler INSTANCE = new RaConfigWriteHandler(new PoolConfigurationValidator());
 
         protected RaConfigWriteHandler(ParameterValidator validator) {
             super(validator);
@@ -114,7 +113,8 @@ class RaConfigRWHandler {
                                 if (repository.getConnectors() != null) {
                                     for (Connector conn : repository.getConnectors()) {
                                         if (jndiName.equalsIgnoreCase(conn.getUniqueId())) {
-                                            if (conn.getConnectionFactories() == null || conn.getConnectionFactories().get(0) == null)
+                                            if (conn.getConnectionFactories() == null
+                                                    || conn.getConnectionFactories().get(0) == null)
                                                 continue;
                                             PoolConfiguration pc = conn.getConnectionFactories().get(0).getPoolConfiguration();
                                             if (MAX_POOL_SIZE.equals(parameterName)) {
@@ -136,12 +136,14 @@ class RaConfigRWHandler {
                                     }
                                 }
 
-                                modelChanged(context, operation, resultHandler, parameterName, newValue, currentValue);
+                                resultHandler.handleResultComplete();
 
                             } catch (Exception e) {
                                 throw new OperationFailedException(new ModelNode().set("failed to set attribute"
                                         + e.getMessage()));
                             }
+                        } else {
+                            resultHandler.handleResultComplete();
                         }
                     }
                 });

@@ -62,8 +62,8 @@ class XaDataSourcePoolConfigurationRWHandler {
     static final String[] NO_LOCATION = new String[0];
 
     static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
-        IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
-        USE_FAST_FAIL };
+            IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
+            USE_FAST_FAIL };
 
     static class XaDataSourcePoolConfigurationReadHandler implements ModelQueryOperationHandler {
         static XaDataSourcePoolConfigurationReadHandler INSTANCE = new XaDataSourcePoolConfigurationReadHandler();
@@ -90,7 +90,7 @@ class XaDataSourcePoolConfigurationRWHandler {
     static class XaDataSourcePoolConfigurationWriteHandler extends ServerWriteAttributeOperationHandler {
 
         static XaDataSourcePoolConfigurationWriteHandler INSTANCE = new XaDataSourcePoolConfigurationWriteHandler(
-            new PoolConfigurationValidator());
+                new PoolConfigurationValidator());
 
         protected XaDataSourcePoolConfigurationWriteHandler(ParameterValidator validator) {
             super(validator);
@@ -133,12 +133,14 @@ class XaDataSourcePoolConfigurationRWHandler {
                                     }
                                 }
 
-                                modelChanged(context, operation, resultHandler, parameterName, newValue, currentValue);
+                                resultHandler.handleResultComplete();
 
                             } catch (Exception e) {
                                 throw new OperationFailedException(new ModelNode().set("failed to set attribute"
                                         + e.getMessage()));
                             }
+                        } else {
+                            resultHandler.handleResultComplete();
                         }
                     }
                 });

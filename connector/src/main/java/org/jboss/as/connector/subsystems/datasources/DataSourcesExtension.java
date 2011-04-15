@@ -192,7 +192,7 @@ public class DataSourcesExtension implements Extension {
 
         for (final String attributeName : DataSourcePoolConfigurationRWHandler.ATTRIBUTES) {
             dataSources.registerReadWriteAttribute(attributeName, DataSourcePoolConfigurationReadHandler.INSTANCE,
-                    DataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.RUNTIME);
+                    DataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
         }
 
         final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
@@ -208,7 +208,7 @@ public class DataSourcesExtension implements Extension {
 
         for (final String attributeName : XaDataSourcePoolConfigurationRWHandler.ATTRIBUTES) {
             xaDataSources.registerReadWriteAttribute(attributeName, XaDataSourcePoolConfigurationReadHandler.INSTANCE,
-                    XaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.RUNTIME);
+                    XaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
         }
 
     }

@@ -150,7 +150,7 @@ public class ResourceAdaptersExtension implements Extension {
 
         for (final String attributeName : RaConfigRWHandler.ATTRIBUTES) {
             resourceadapter.registerReadWriteAttribute(attributeName, RaConfigReadHandler.INSTANCE,
-                    RaConfigWriteHandler.INSTANCE, Storage.RUNTIME);
+                    RaConfigWriteHandler.INSTANCE, Storage.CONFIGURATION);
         }
     }
 
