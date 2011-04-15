@@ -31,18 +31,14 @@ import org.jboss.as.controller.OperationHandler;
 public final class AttributeAccess {
 
     /**
-     * The {@link AttributeAccess.AccessType}.
-     *
-     * <ul>
-     *   <li>{@code READ_ONLY} defines a read-only attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME}.</li>
-     *   <li>{@code READ_WRITE} defines a read-write attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME}.</li>
-     *   <li>{@code METRIC} implies a read-only {@code Storage.RUNTIME} attribute.</li>
-     * </ul>
-     *
+     * Indicates how an attributed is accessed.
      */
     public static enum AccessType {
+        /** A read-only attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME} */
         READ_ONLY("read-only"),
+        /** A read-write attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME} */
         READ_WRITE("read-write"),
+        /** A read-only {@code Storage.RUNTIME} attribute */
         METRIC("metric");
 
         private final String label;
@@ -58,12 +54,18 @@ public final class AttributeAccess {
     }
 
     /**
-     * The {@link AttributeAccess.Storage} indicates whether the attribute is
-     * derived from the configuration or is a runtime attribute.
+     * Indicates whether an attribute is derived from the persistent configuration or is a purely runtime attribute.
      */
     public static enum Storage {
-
+        /**
+         * An attribute whose value is stored in the persistent configuration.
+         * The value may also be stored in runtime services.
+         */
         CONFIGURATION("configuration"),
+        /**
+         * An attribute whose value is only stored in runtime services, and
+         * isn't stored in the persistent configuration.
+         */
         RUNTIME("runtime");
 
         private final String label;
