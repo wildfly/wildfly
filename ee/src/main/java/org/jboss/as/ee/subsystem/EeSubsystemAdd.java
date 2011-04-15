@@ -28,12 +28,12 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
+import org.jboss.as.ee.component.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ComponentInstallProcessor;
-import org.jboss.as.ee.component.ComponentInterceptorAnnotationParsingProcessor;
+import org.jboss.as.ee.component.InterceptorsAnnotationParsingProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.EEModuleNameProcessor;
 import org.jboss.as.ee.component.EnvEntryProcessor;
-import org.jboss.as.ee.component.InterceptorAnnotationParsingProcessor;
 import org.jboss.as.ee.component.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ModuleJndiBindingProcessor;
 import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
@@ -94,9 +94,9 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MANAGED_BEAN_ANNOTATION, new ManagedBeanAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EE_MODULE_NAME, new EEModuleNameProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_LIB_CLASS_PATH, new EarLibManifestClassPathProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_BEAN_INTERCEPTOR_ANNOTATION, new ComponentInterceptorAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_INTERCEPTORS_ANNOTATION, new InterceptorsAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDINVOKE_ANNOTATION, new InterceptorAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDINVOKE_ANNOTATION, new AroundInvokeAnnotationParsingProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
 
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());

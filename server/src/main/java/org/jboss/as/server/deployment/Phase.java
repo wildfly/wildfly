@@ -250,7 +250,7 @@ public enum Phase {
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
     public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x3000;
-    public static final int PARSE_BEAN_INTERCEPTOR_ANNOTATION           = 0x3100;
+    public static final int PARSE_INTERCEPTORS_ANNOTATION               = 0x3100;
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x3400;
