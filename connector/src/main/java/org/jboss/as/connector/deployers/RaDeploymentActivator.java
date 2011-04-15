@@ -30,7 +30,6 @@ import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.RaStructureProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarDependencyProcessor;
-import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
@@ -68,9 +67,6 @@ public class RaDeploymentActivator {
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
         serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR).install();
-
-        JndiStrategyService jndiStrategyService = new JndiStrategyService();
-        serviceTarget.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService).install();
 
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_RAR_CONFIG, new RarDependencyProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RA_DEPLOYMENT, new RaDeploymentParsingProcessor());

@@ -59,8 +59,6 @@ public final class ConnectorServices {
 
     public static final ServiceName DATASOURCES_SERVICE = ServiceName.JBOSS.append("datasources");
 
-    public static final ServiceName JNDI_STRATEGY_SERVICE = ServiceName.JBOSS.append("jndistrategy");
-
     private ConnectorServices() {
     }
 
