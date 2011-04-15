@@ -63,7 +63,7 @@ public final class FixedInjectionSource extends InjectionSource {
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         injector.inject(managedReferenceFactory);
     }
 }

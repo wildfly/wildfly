@@ -22,10 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.Iterator;
 import java.util.Set;
 import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-import org.jboss.as.ee.component.ComponentConfiguration;
+
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
@@ -50,7 +49,7 @@ public class EjbBeanNameInjectionSource extends InjectionSource {
         this.typeName = typeName;
     }
 
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
         final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName);

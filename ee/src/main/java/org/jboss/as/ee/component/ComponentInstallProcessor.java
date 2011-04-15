@@ -90,6 +90,13 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         // START depends on CREATE
         startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
 
+        InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
+                configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.USE_MODULE,
+                configuration.getComponentName(),
+                configuration.getModuleName(),
+                configuration.getApplicationName()
+        );
+
         // Iterate through each view, creating the services for each
         for (ViewConfiguration viewConfiguration : configuration.getViews()) {
             final ServiceName serviceName = viewConfiguration.getViewServiceName();
@@ -103,7 +110,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final String bindingName = bindingConfiguration.getName();
                 final BinderService service = new BinderService(bindingName);
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
-                bindingConfiguration.getSource().getResourceValue(configuration, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+                bindingConfiguration.getSource().getResourceValue(serviceBuilder, phaseContext, service.getManagedObjectInjector());
             }
         }
 
@@ -112,7 +119,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             final String bindingName = bindingConfiguration.getName();
             final BinderService service = new BinderService(bindingName);
             ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
-            bindingConfiguration.getSource().getResourceValue(configuration, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+            bindingConfiguration.getSource().getResourceValue(serviceBuilder, phaseContext, service.getManagedObjectInjector());
         }
 
         createBuilder.install();

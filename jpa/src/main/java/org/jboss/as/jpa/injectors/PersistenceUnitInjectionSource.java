@@ -23,8 +23,9 @@
 package org.jboss.as.jpa.injectors;
 
 
+
 import org.hibernate.ejb.EntityManagerFactoryImpl;
-import org.jboss.as.ee.component.ComponentConfiguration;
+
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.naming.ManagedReference;
@@ -59,7 +60,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         this.puServiceName=puServiceName;
     }
 
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         serviceBuilder.addDependencies(puServiceName);
         injector.inject(injectable);
     }

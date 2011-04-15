@@ -39,7 +39,7 @@ public final class ServiceInjectionSource extends InjectionSource {
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 

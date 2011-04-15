@@ -47,7 +47,7 @@ public final class EnvEntryInjectionSource extends InjectionSource {
         this.value = value;
     }
 
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(value)));
     }
 

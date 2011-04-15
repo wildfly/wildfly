@@ -42,7 +42,7 @@ final class ViewBindingInjectionSource extends InjectionSource {
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         serviceBuilder.addDependency(serviceName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
     }
 

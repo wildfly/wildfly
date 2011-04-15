@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -74,7 +73,7 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
     };
 
     private final InjectionSource directEjbContextReferenceSource = new InjectionSource() {
-        public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
             injector.inject(ejbContextManagedReferenceFactory);
         }
 

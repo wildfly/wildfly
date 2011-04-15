@@ -537,7 +537,13 @@ public class ComponentDescription {
         }
 
         public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
-            injectionConfiguration.getSource().getResourceValue(configuration, serviceBuilder, context, managedReferenceFactoryValue);
+            InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
+                    configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.USE_MODULE,
+                    configuration.getComponentName(),
+                    configuration.getModuleName(),
+                    configuration.getApplicationName()
+            );
+            injectionConfiguration.getSource().getResourceValue(serviceBuilder, context, managedReferenceFactoryValue);
         }
     }
 }

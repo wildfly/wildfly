@@ -39,10 +39,63 @@ public abstract class InjectionSource {
      * for every time the reference source is injected.  The given binder service builder may be used to apply any
      * dependencies for this binding (i.e. the source for the binding's value).
      *
-     * @param componentConfiguration the configuration of the component with respect to which this injection is to be resolved
+     * @param resolutionContext the resolution context to use
      * @param serviceBuilder the builder for the binder service
      * @param phaseContext the deployment phase context
      * @param injector the injector into which the value should be placed
      */
-    public abstract void getResourceValue(ComponentConfiguration componentConfiguration, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException;
+    public abstract void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException;
+
+    /**
+     * A resolution context for the injection source.
+     */
+    public static class ResolutionContext {
+        private final boolean compUsesModule;
+        private final String componentName;
+        private final String moduleName;
+        private final String applicationName;
+
+        ResolutionContext(final boolean compUsesModule, final String componentName, final String moduleName, final String applicationName) {
+            this.compUsesModule = compUsesModule;
+            this.componentName = componentName;
+            this.moduleName = moduleName;
+            this.applicationName = applicationName;
+        }
+
+        /**
+         * Determine whether the resolution context has a combined "comp" and "module" namespace.
+         *
+         * @return {@code true} if "comp" is an alias for "module", {@code false} otherwise
+         */
+        public boolean isCompUsesModule() {
+            return compUsesModule;
+        }
+
+        /**
+         * Get the current component name, or {@code null} if there is none.
+         *
+         * @return the current component name
+         */
+        public String getComponentName() {
+            return componentName;
+        }
+
+        /**
+         * Get the current module name, or {@code null} if there is none.
+         *
+         * @return the current module name
+         */
+        public String getModuleName() {
+            return moduleName;
+        }
+
+        /**
+         * Get the current application name, or {@code null} if there is none.
+         *
+         * @return the current application name
+         */
+        public String getApplicationName() {
+            return applicationName;
+        }
+    }
 }

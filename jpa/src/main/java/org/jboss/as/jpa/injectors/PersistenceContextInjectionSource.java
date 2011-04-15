@@ -22,7 +22,6 @@
 
 package org.jboss.as.jpa.injectors;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.NonTxEmCloser;
@@ -93,7 +92,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         this.puServiceName=puServiceName;
     }
 
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         serviceBuilder.addDependencies(puServiceName);
         injector.inject(injectable);
     }

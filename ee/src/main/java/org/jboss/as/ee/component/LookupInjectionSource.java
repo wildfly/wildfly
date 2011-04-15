@@ -50,21 +50,26 @@ public final class LookupInjectionSource extends InjectionSource {
     }
 
     /** {@inheritDoc} */
-    public void getResourceValue(final ComponentConfiguration componentConfiguration, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
-        final ComponentNamingMode namingMode = componentConfiguration.getComponentDescription().getNamingMode();
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+        final String applicationName = resolutionContext.getApplicationName();
+        final String moduleName = resolutionContext.getModuleName();
+        final String componentName = resolutionContext.getComponentName();
+        final boolean compUsesModule = resolutionContext.isCompUsesModule();
         final String lookupName;
         if(! this.lookupName.startsWith("java:")) {
-            if(namingMode == ComponentNamingMode.CREATE) {
+            if (componentName != null) {
                 lookupName = "java:comp/env/" + this.lookupName;
-            } else {
+            } else if (compUsesModule) {
                 lookupName = "java:module/env/" + this.lookupName;
+            } else {
+                lookupName = "java:jboss/env" + this.lookupName;
             }
-        } else if (this.lookupName.startsWith("java:comp/") && namingMode == ComponentNamingMode.USE_MODULE) {
+        } else if (this.lookupName.startsWith("java:comp/") && compUsesModule) {
             lookupName = "java:module/" + this.lookupName.substring(10);
         } else {
             lookupName = this.lookupName;
         }
-        final ServiceName serviceName = ContextNames.serviceNameOfContext(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentName(), lookupName);
+        final ServiceName serviceName = ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, lookupName);
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 

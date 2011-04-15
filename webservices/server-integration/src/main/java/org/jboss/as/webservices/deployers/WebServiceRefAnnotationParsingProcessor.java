@@ -21,13 +21,9 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -65,12 +61,15 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandlerFactory;
+import org.jboss.wsf.stack.cxf.client.serviceref.CXFServiceObjectFactoryJAXWS;
 
 import javax.naming.Referenceable;
 import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.List;
-import org.jboss.wsf.stack.cxf.client.serviceref.CXFServiceObjectFactoryJAXWS;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
@@ -203,7 +202,7 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
             this.serviceRef = serviceRef;
         }
 
-        public void getResourceValue(ComponentConfiguration componentConfiguration, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        public void getResourceValue(final ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             final EEApplicationDescription applicationComponentDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
             if (applicationComponentDescription == null) {
