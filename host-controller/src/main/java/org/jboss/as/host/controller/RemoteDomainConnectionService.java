@@ -225,7 +225,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         try {
             new UnregisterModelControllerRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.errorf(e, "Error unregistering from master");
         }
         finally {
             managementCommunicationService.getValue().removeHandler(txOperationHandler);

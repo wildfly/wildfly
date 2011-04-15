@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.OperationBuilder;
 
-import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;

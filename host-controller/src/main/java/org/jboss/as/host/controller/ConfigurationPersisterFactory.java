@@ -31,6 +31,7 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.modules.Module;
 
 /**
@@ -40,9 +41,6 @@ import org.jboss.modules.Module;
  */
 public class ConfigurationPersisterFactory {
 
-    private static final String HOST_XML = "host.xml";
-    private static final String DOMAIN_XML = "domain.xml";
-
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
         HostXml hostXml = new HostXml(Module.getBootModuleLoader());
         return new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
@@ -51,5 +49,11 @@ public class ConfigurationPersisterFactory {
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
         return new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+    }
+
+    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
+        File file = new File(configDir, "domain.cached-remote.xml");
+        return new XmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 }

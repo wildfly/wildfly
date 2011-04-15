@@ -133,15 +133,15 @@ public class DomainControllerAddUtil {
     }
 
     /**
-* Create the domain.xml configuration persister, in case the DC is running in process.
-*
-* @param configDir the domain configuration directory
-* @param isSlave true if we are a slave
-* @return the configuration persister
-*/
+     * Create the domain.xml configuration persister, in case the DC is running in process.
+     *
+     * @param configDir the domain configuration directory
+     * @param isSlave true if we are a slave
+     * @return the configuration persister
+     */
     static ExtensibleConfigurationPersister createDomainConfigurationPersister(final File configDir, final ConfigurationFile configurationFile, boolean isSlave) {
-        if (isSlave && !configurationFile.isMainFile()) {
-            configurationFile.overrideFile("cached-remote-domain.xml");
+        if (isSlave) {
+            return ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir);
         }
         return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, configurationFile);
     }

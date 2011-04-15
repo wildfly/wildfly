@@ -58,8 +58,10 @@ public class ConfigurationFile {
     private final AtomicInteger sequence = new AtomicInteger();
     private final AtomicBoolean doneBootup = new AtomicBoolean();
     private final File configurationDir;
+    private final String rawFileName;
+    private final String bootFileName;
     private volatile File bootFile;
-    private volatile File mainFile;
+    private final File mainFile;
     private final File historyRoot;
     private final File currentHistory;
     private final File snapshotsDirectory;
@@ -69,12 +71,29 @@ public class ConfigurationFile {
         if (!configurationDir.exists() || !configurationDir.isDirectory()) {
             throw new IllegalArgumentException("No directory " + configurationDir.getAbsolutePath() + " was found");
         }
+        this.rawFileName = rawName;
+        this.bootFileName = name != null ? name : rawName;
         this.configurationDir = configurationDir;
         this.mainFile = new File(configurationDir, rawName);
-        this.historyRoot = mkdir(new File(configurationDir, rawName.replace('.', '_')));
+        this.historyRoot = new File(configurationDir, rawName.replace('.', '_'));
         this.currentHistory = new File(historyRoot, "current");
-        this.snapshotsDirectory = mkdir(new File(historyRoot, "snapshot"));
-        this.bootFile = name != null && name.equals(rawName) ? mainFile : determineBootFile(configurationDir, name == null ? rawName : name);
+        this.snapshotsDirectory = new File(historyRoot, "snapshot");
+    }
+
+    File getBootFile() {
+        //System.out.println("----- Boot file " + bootFile.getAbsolutePath());
+        if (bootFile == null) {
+            synchronized (this) {
+                if (bootFile == null) {
+                    if (bootFileName.equals(rawFileName)) {
+                        bootFile = mainFile;
+                    } else {
+                        bootFile = determineBootFile(configurationDir, bootFileName);
+                    }
+                }
+            }
+        }
+        return bootFile;
     }
 
     private File determineBootFile(final File configurationDir, final String name) {
@@ -98,11 +117,6 @@ public class ConfigurationFile {
         throw new IllegalArgumentException("Neither " + directoryFile.getAbsolutePath() + " nor " + absoluteFile.getAbsolutePath() + " exist");
     }
 
-    File getBootFile() {
-        //System.out.println("----- Boot file " + bootFile.getAbsolutePath());
-        return bootFile;
-    }
-
     File getMainFile() {
         //System.out.println("----- Using file " + mainFile.getAbsolutePath());
         return mainFile;
@@ -110,19 +124,7 @@ public class ConfigurationFile {
 
 
     public boolean isMainFile() {
-        return mainFile.equals(bootFile);
-    }
-
-    public void overrideFile(final String name) {
-        if (doneBootup.get()) {
-            throw new IllegalArgumentException("Cannot change files in already booted server");
-        }
-        final File file = new File(configurationDir, name);
-        if (!file.exists()) {
-            throw new IllegalArgumentException(file.getAbsolutePath() + " does not exist");
-        }
-        mainFile = file;
-        bootFile = file;
+        return mainFile.equals(getBootFile());
     }
 
     void successfulBoot() throws ConfigurationPersistenceException {
@@ -252,6 +254,8 @@ public class ConfigurationFile {
     }
 
     private void createHistoryDirectory() throws IOException {
+        mkdir(this.historyRoot);
+        mkdir(this.snapshotsDirectory);
         if (currentHistory.exists()) {
             if (!currentHistory.isDirectory()) {
                 throw new IllegalStateException(currentHistory.getAbsolutePath() + " is not a directory");
