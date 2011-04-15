@@ -58,11 +58,26 @@ public final class FixedInjectionSource extends InjectionSource {
         return configuration != null && value.equals(configuration.value);
     }
 
+    @Override
     public int hashCode() {
         return FixedInjectionSource.class.hashCode() * 127 + value.hashCode();
     }
 
-    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof FixedInjectionSource == false) {
+            return false;
+        }
+        FixedInjectionSource other = (FixedInjectionSource) obj;
+        return this.equals(other);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         injector.inject(managedReferenceFactory);
     }

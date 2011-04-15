@@ -51,11 +51,17 @@ public final class EnvEntryInjectionSource extends InjectionSource {
         injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(value)));
     }
 
+    @Override
     public boolean equals(final Object injectionSource) {
         return injectionSource instanceof EnvEntryInjectionSource && equals((EnvEntryInjectionSource) injectionSource);
     }
 
     private boolean equals(final EnvEntryInjectionSource injectionSource) {
         return injectionSource != null && value.equals(injectionSource.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return EnvEntryInjectionSource.class.hashCode() * 127 + value.hashCode();
     }
 }

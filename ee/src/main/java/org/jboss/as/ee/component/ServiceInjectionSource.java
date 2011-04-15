@@ -38,7 +38,9 @@ public final class ServiceInjectionSource extends InjectionSource {
         this.serviceName = serviceName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
@@ -47,7 +49,20 @@ public final class ServiceInjectionSource extends InjectionSource {
         return configuration != null && serviceName.equals(configuration.serviceName);
     }
 
+    @Override
     public int hashCode() {
         return ServiceInjectionSource.class.hashCode() * 127 + serviceName.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof ServiceInjectionSource == false) {
+            return false;
+        }
+        ServiceInjectionSource other = (ServiceInjectionSource) obj;
+        return this.equals(other);
     }
 }
