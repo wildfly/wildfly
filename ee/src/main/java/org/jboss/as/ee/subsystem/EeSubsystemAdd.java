@@ -29,7 +29,10 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.AroundInvokeAnnotationParsingProcessor;
+import org.jboss.as.ee.component.ClassConfiguratorProcessor;
+import org.jboss.as.ee.component.ComponentConfiguratorProcessor;
 import org.jboss.as.ee.component.ComponentInstallProcessor;
+import org.jboss.as.ee.component.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.InterceptorsAnnotationParsingProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.EEModuleNameProcessor;
@@ -109,6 +112,9 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_MODULE_CONFIG, new EEModuleConfigurationProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_CLASS_CONFIG, new ClassConfiguratorProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT_CONFIG, new ComponentConfiguratorProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EAR_AGGREGATE_COMPONENT_INDEX, new ComponentAggregationProcessor());
         }
