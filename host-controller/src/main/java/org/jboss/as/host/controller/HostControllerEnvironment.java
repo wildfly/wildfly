@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
 
 /**
@@ -52,6 +53,22 @@ public class HostControllerEnvironment {
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/configuration</tt> .
      */
     public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
+
+    /**
+     * Constant that holds the name of the environment property
+     * for specifying the server configuration URL.
+     *
+     * <p>Defaults to <tt><em>SERVER_CONFIG_DIR</em>/host.xml</tt> .
+     */
+    public static final String DOMAIN_CONFIG_HOST = "jboss.domain.config.host";
+
+    /**
+     * Constant that holds the name of the environment property
+     * for specifying the server configuration URL.
+     *
+     * <p>Defaults to <tt><em>SERVER_CONFIG_DIR</em>/domain.xml</tt> .
+     */
+    public static final String DOMAIN_CONFIG_DOMAIN = "jboss.domain.config.domain";
 
     /**
      * Constant that holds the name of the environment property
@@ -113,6 +130,8 @@ public class HostControllerEnvironment {
     private final File modulesDir;
     private final File domainBaseDir;
     private final File domainConfigurationDir;
+    private final ConfigurationFile hostConfigurationFile;
+    private final ConfigurationFile domainConfigurationFile;
     private final File domainDeploymentDir;
     private final File domainSystemDeploymentDir;
     private final File domainDataDir;
@@ -203,6 +222,9 @@ public class HostControllerEnvironment {
         }
         this.domainConfigurationDir = tmp;
         System.setProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
+
+        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", props.getProperty(DOMAIN_CONFIG_HOST, "host.xml"));
+        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", props.getProperty(DOMAIN_CONFIG_DOMAIN, "domain.xml"));
 
         tmp = getFileFromProperty(DOMAIN_DEPLOYMENT_DIR);
         if (tmp == null) {
@@ -408,6 +430,15 @@ public class HostControllerEnvironment {
     public File getDefaultJVM() {
         return defaultJVM;
     }
+
+    public ConfigurationFile getHostConfigurationFile() {
+        return hostConfigurationFile;
+    }
+
+    public ConfigurationFile getDomainConfigurationFile() {
+        return domainConfigurationFile;
+    }
+
 
     /**
      * Get a File from configuration.

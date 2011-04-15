@@ -53,6 +53,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainController;
@@ -112,8 +113,9 @@ public class HostControllerBootstrap {
      */
     public void start() throws Exception {
         final File configDir = environment.getDomainConfigurationDir();
+        final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
         final ModelNode hostModelNode = HostModelUtil.createCoreModel();
-        final ExtensibleConfigurationPersister configurationPersister = createHostConfigurationPersister(configDir);
+        final ExtensibleConfigurationPersister configurationPersister = createHostConfigurationPersister(configDir, configurationFile);
         final ModelNodeRegistration hostRegistry = HostModelUtil.createHostRegistry(configurationPersister);
 
         // Load the host model
@@ -267,7 +269,8 @@ public class HostControllerBootstrap {
         serviceTarget.addService(HostRegistryService.SERVICE_NAME, new HostRegistryService()).install();
 
         final File configDir = environment.getDomainConfigurationDir();
-        final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, isSlave);
+        final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
+        final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, configurationFile, isSlave);
         DeploymentRepository deploymentRepository = new DomainDeploymentRepository(environment.getDomainDeploymentDir());
         final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, mgmtPort, deploymentRepository, fileRepository, backupDomainFiles, useCachedDc);
         ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
@@ -333,10 +336,11 @@ public class HostControllerBootstrap {
      * Create the host.xml configuration persister.
      *
      * @param configDir the domain configuration directory
+     * @param configurationFile the configuration file
      * @return the configuration persister
      */
-    static ExtensibleConfigurationPersister createHostConfigurationPersister(final File configDir) {
-        return ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir);
+    static ExtensibleConfigurationPersister createHostConfigurationPersister(final File configDir, final ConfigurationFile configurationFile) {
+        return ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir, configurationFile);
     }
 
     /**
@@ -346,12 +350,11 @@ public class HostControllerBootstrap {
      * @param isSlave true if we are a slave
      * @return the configuration persister
      */
-    static ExtensibleConfigurationPersister createDomainConfigurationPersister(final File configDir, boolean isSlave) {
-        if (isSlave) {
-            return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, "cached-remote-domain.xml");
-        } else {
-            return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir);
+    static ExtensibleConfigurationPersister createDomainConfigurationPersister(final File configDir, final ConfigurationFile configurationFile, boolean isSlave) {
+        if (isSlave && !configurationFile.isMainFile()) {
+            configurationFile.overrideFile("cached-remote-domain.xml");
         }
+        return ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, configurationFile);
     }
 
     static final class HostControllerExecutorService implements Service<Executor> {

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.web;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -30,6 +31,7 @@ import java.util.concurrent.Executor;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11AprProtocol;
 import org.apache.coyote.http11.Http11Protocol;
+import org.jboss.as.server.services.net.ManagedBinding;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -223,10 +225,14 @@ class WebConnectorService implements Service<Connector> {
         } catch (Exception e) {
             throw new StartException(e);
         }
+        // Register the binding after the connector is started
+        binding.getSocketBindings().getNamedRegistry().registerBinding(new ConnectorBinding(binding));
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
+        final SocketBinding binding = this.binding.getValue();
+        binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
         final Connector connector = this.connector;
         getWebServer().removeConnector(connector);
         this.connector = null;
@@ -327,6 +333,30 @@ class WebConnectorService implements Service<Connector> {
 
     private WebServer getWebServer() {
         return server.getValue();
+    }
+
+    static class ConnectorBinding implements ManagedBinding {
+
+        private final SocketBinding binding;
+
+        private ConnectorBinding(final SocketBinding binding) {
+            this.binding = binding;
+        }
+
+        @Override
+        public String getSocketBindingName() {
+            return binding.getName();
+        }
+
+        @Override
+        public InetSocketAddress getBindAddress() {
+            return binding.getSocketAddress();
+        }
+
+        @Override
+        public void close() throws IOException {
+            // TODO should this do something?
+        }
     }
 
 }

@@ -16,21 +16,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Handler for changing the interface on a socket binding.
  *
- * TODO see comment on JBAS-9100 re: only requiring restart if there is an actual
- * active socket associated with the binding.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingMulticastAddressHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
     public static final BindingMulticastAddressHandler INSTANCE = new BindingMulticastAddressHandler();
 
@@ -38,4 +39,18 @@ public class BindingMulticastAddressHandler extends ServerWriteAttributeOperatio
         super(new InetAddressValidator(true, true));
     }
 
+    @Override
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) throws OperationFailedException {
+        final InetAddress address;
+        if(attributeValue.isDefined()) {
+            try {
+                address = InetAddress.getByName(attributeValue.asString());
+            } catch (UnknownHostException e) {
+                throw new OperationFailedException(new ModelNode().set("failed to get multi-cast address for " + attributeValue));
+            }
+        } else {
+            address = null;
+        }
+        binding.setMulticastAddress(address);
+    }
 }

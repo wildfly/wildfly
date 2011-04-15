@@ -50,119 +50,129 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public Socket createSocket(String serviceName) throws IOException {
-        return this.register(this.factory.createSocket(serviceName));
+        return this.register(serviceName, this.factory.createSocket(serviceName));
     }
 
     @Override
     public Socket createSocket(String serviceName, String host, int port) throws IOException {
-        return this.register(this.factory.createSocket(serviceName, host, port));
+        return this.register(serviceName, this.factory.createSocket(serviceName, host, port));
     }
 
     @Override
     public Socket createSocket(String serviceName, InetAddress address, int port) throws IOException {
-        return this.register(this.factory.createSocket(serviceName, address, port));
+        return this.register(serviceName, this.factory.createSocket(serviceName, address, port));
     }
 
     @Override
     public Socket createSocket(String serviceName, String host, int port, InetAddress localAddress, int localPort) throws IOException {
-        return this.register(this.factory.createSocket(serviceName, host, port, localAddress, localPort));
+        return this.register(serviceName, this.factory.createSocket(serviceName, host, port, localAddress, localPort));
     }
 
     @Override
     public Socket createSocket(String serviceName, InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-        return this.register(this.factory.createSocket(serviceName, address, port, localAddress, localPort));
+        return this.register(serviceName, this.factory.createSocket(serviceName, address, port, localAddress, localPort));
     }
 
-    private Socket register(Socket socket) {
-        this.manager.registerSocket(socket);
+    private Socket register(final String name, final Socket socket) {
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        registry.registerSocket(name, socket);
         return socket;
     }
 
     @Override
     public ServerSocket createServerSocket(String serviceName) throws IOException {
-        return this.register(this.factory.createServerSocket(serviceName));
+        return this.register(serviceName, this.factory.createServerSocket(serviceName));
     }
 
     @Override
     public ServerSocket createServerSocket(String serviceName, int port) throws IOException {
-        return this.register(this.factory.createServerSocket(serviceName, port));
+        return this.register(serviceName, this.factory.createServerSocket(serviceName, port));
     }
 
     @Override
     public ServerSocket createServerSocket(String serviceName, int port, int backlog) throws IOException {
-        return this.register(this.factory.createServerSocket(serviceName, port, backlog));
+        return this.register(serviceName, this.factory.createServerSocket(serviceName, port, backlog));
     }
 
     @Override
     public ServerSocket createServerSocket(String serviceName, int port, int backlog, InetAddress bindAddr) throws IOException {
-        return this.register(this.factory.createServerSocket(serviceName, port, backlog, bindAddr));
+        return this.register(serviceName, this.factory.createServerSocket(serviceName, port, backlog, bindAddr));
     }
 
-    private ServerSocket register(ServerSocket socket) {
-        this.manager.registerSocket(socket);
+    private ServerSocket register(final String name, ServerSocket socket) {
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        registry.registerSocket(name, socket);
         return socket;
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String serviceName) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(serviceName));
+        return this.register(serviceName, this.factory.createDatagramSocket(serviceName));
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String serviceName, SocketAddress bindAddress) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(serviceName, bindAddress));
+        return this.register(serviceName, this.factory.createDatagramSocket(serviceName, bindAddress));
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String serviceName, int port) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(serviceName, port));
+        return this.register(serviceName, this.factory.createDatagramSocket(serviceName, port));
     }
 
     @Override
     public DatagramSocket createDatagramSocket(String serviceName, int port, InetAddress localAddress) throws SocketException {
-        return this.register(this.factory.createDatagramSocket(serviceName, port, localAddress));
+        return this.register(serviceName, this.factory.createDatagramSocket(serviceName, port, localAddress));
     }
 
-    private DatagramSocket register(DatagramSocket socket) {
-        this.manager.registerSocket(socket);
+    private DatagramSocket register(final String name, final DatagramSocket socket) {
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        registry.registerSocket(name, socket);
         return socket;
     }
 
     @Override
     public MulticastSocket createMulticastSocket(String serviceName) throws IOException {
-        return this.register(this.factory.createMulticastSocket(serviceName));
+        return this.register(serviceName, this.factory.createMulticastSocket(serviceName));
     }
 
     @Override
     public MulticastSocket createMulticastSocket(String serviceName, int port) throws IOException {
-        return this.register(this.factory.createMulticastSocket(serviceName, port));
+        return this.register(serviceName, this.factory.createMulticastSocket(serviceName, port));
     }
 
     @Override
     public MulticastSocket createMulticastSocket(String serviceName, SocketAddress bindAddress) throws IOException {
-        return this.register(this.factory.createMulticastSocket(serviceName, bindAddress));
+        return this.register(serviceName, this.factory.createMulticastSocket(serviceName, bindAddress));
     }
 
-    private MulticastSocket register(MulticastSocket socket) {
-        this.manager.registerSocket(socket);
+    private MulticastSocket register(final String name, final MulticastSocket socket) {
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        registry.registerSocket(name, socket);
         return socket;
     }
 
     @Override
     public void close(Socket sock) throws IOException {
-        this.manager.unregisterSocket(sock);
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        final String name = getSockets().get(sock);
+        registry.unregisterBinding(name);
         this.factory.close(sock);
     }
 
     @Override
     public void close(ServerSocket sock) throws IOException {
-        this.manager.unregisterSocket(sock);
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        final String name = getSockets().get(sock);
+        registry.unregisterBinding(name);
         this.factory.close(sock);
     }
 
     @Override
     public void close(DatagramSocket sock) {
-        this.manager.unregisterSocket(sock);
+        final SocketBindingManager.NamedManagedBindingRegistry registry = this.manager.getNamedRegistry();
+        final String name = getSockets().get(sock);
+        registry.unregisterBinding(name);
         this.factory.close(sock);
     }
 

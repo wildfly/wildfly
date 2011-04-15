@@ -311,6 +311,14 @@ public class FileSystemDeploymentServiceUnitTestCase {
         Assert.assertFalse(f10.exists());
         Assert.assertFalse(f11.exists());
         Assert.assertFalse(f12.exists());
+
+        f1 = createFile("spurious" + FileSystemDeploymentService.DEPLOYED);
+        f2 = createFile(new File(tmpDir, "nested"), "nested" + FileSystemDeploymentService.DEPLOYED);
+
+        ts.testee.scan();
+
+        Assert.assertFalse(f1.exists());
+        Assert.assertFalse(f2.exists());
     }
 
     @Test
@@ -925,6 +933,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         ts.testee.scan();
 
         assertFalse(deployed.exists());
+        assertFalse(dodeploy.exists());
         assertTrue(failed.exists());
     }
 

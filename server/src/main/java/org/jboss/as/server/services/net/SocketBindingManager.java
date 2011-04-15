@@ -33,14 +33,13 @@ import java.net.SocketException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Collection;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * The socket binding manager represents a registry of all
+ * active (bound) sockets.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface SocketBindingManager {
@@ -52,14 +51,24 @@ public interface SocketBindingManager {
      *
      * @return the server socket factory
      */
-    ServerSocketFactory getServerSocketFactory();
+    ManagedServerSocketFactory getServerSocketFactory();
 
     /**
      * Get the socket factory.
      *
      * @return the socket factory
      */
-    SocketFactory getSocketFactory();
+    ManagedSocketFactory getSocketFactory();
+
+    /**
+     * Create a datagram socket.
+     *
+     * @param name the name for managed binding
+     * @param address the socket address
+     * @return the datagram socket
+     * @throws SocketException
+     */
+    DatagramSocket createDatagramSocket(final String name, final SocketAddress address) throws SocketException;
 
     /**
      * Create a datagram socket.
@@ -68,7 +77,17 @@ public interface SocketBindingManager {
      * @return the datagram socket
      * @throws SocketException
      */
-    DatagramSocket createDatagramSocket(final SocketAddress address) throws SocketException ;
+    DatagramSocket createDatagramSocket(final SocketAddress address) throws SocketException;
+
+    /**
+     * Create a multicast socket.
+     *
+     * @param name the name for the managed binding
+     * @param address the socket address
+     * @return the multicast socket
+     * @throws IOException
+     */
+    MulticastSocket createMulticastSocket(final String name, final SocketAddress address) throws IOException;
 
     /**
      * Create a multicast socket.
@@ -95,40 +114,52 @@ public interface SocketBindingManager {
     int getPortOffset();
 
     /**
-     * List the activate bindings.
+     * Get the named binding registry.
      *
-     * @return the registered bindings
+     * @return the named registry
      */
-    Collection<ManagedBinding> listActiveBindings();
+    NamedManagedBindingRegistry getNamedRegistry();
 
     /**
-     * Register an active socket binding.
+     * Get the registry for unnamed open sockets.
      *
-     * @param binding the managed binding
-     * @param bindingName the binding name
+     * @return the unnamed registry
      */
-    Closeable registerBinding(final ManagedBinding binding);
+    UnnamedBindingRegistry getUnnamedRegistry();
 
-    Closeable registerSocket(final Socket socket);
-    Closeable registerSocket(final ServerSocket socket);
-    Closeable registerSocket(final DatagramSocket socket);
-    Closeable registerChannel(final SocketChannel channel);
-    Closeable registerChannel(final ServerSocketChannel channel);
-    Closeable registerChannel(final DatagramChannel channel);
+    public interface NamedManagedBindingRegistry extends ManagedBindingRegistry {
 
-    /**
-     * Unregister a socket binding.
-     *
-     * @param binding the managed socket binding
-     */
-    void unregisterBinding(ManagedBinding binding);
+        ManagedBinding getManagedBinding(final String name);
+        boolean isRegistered(final String name);
 
-    void unregisterSocket(final Socket socket);
-    void unregisterSocket(final ServerSocket socket);
-    void unregisterSocket(final DatagramSocket socket);
-    void unregisterChannel(final SocketChannel channel);
-    void unregisterChannel(final ServerSocketChannel channel);
-    void unregisterChannel(final DatagramChannel channel);
+        Closeable registerSocket(String name, Socket socket);
+        Closeable registerSocket(String name, ServerSocket socket);
+        Closeable registerSocket(String name, DatagramSocket socket);
+        Closeable registerChannel(String name, SocketChannel channel);
+        Closeable registerChannel(String name, ServerSocketChannel channel);
+        Closeable registerChannel(String name, DatagramChannel channel);
+
+        void unregisterBinding(String name);
+
+    }
+
+    public interface UnnamedBindingRegistry extends ManagedBindingRegistry {
+
+        Closeable registerSocket(Socket socket);
+        Closeable registerSocket(ServerSocket socket);
+        Closeable registerSocket(DatagramSocket socket);
+        Closeable registerChannel(SocketChannel channel);
+        Closeable registerChannel(ServerSocketChannel channel);
+        Closeable registerChannel(DatagramChannel channel);
+
+        void unregisterSocket(Socket socket);
+        void unregisterSocket(ServerSocket socket);
+        void unregisterSocket(DatagramSocket socket);
+        void unregisterChannel(SocketChannel channel);
+        void unregisterChannel(ServerSocketChannel channel);
+        void unregisterChannel(DatagramChannel channel);
+
+    }
 
 }
 

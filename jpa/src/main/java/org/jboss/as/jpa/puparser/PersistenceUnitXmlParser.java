@@ -24,6 +24,7 @@ package org.jboss.as.jpa.puparser;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.logging.Logger;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 
 import javax.persistence.SharedCacheMode;
@@ -36,8 +37,6 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
@@ -87,6 +86,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                 version = Version.JPA_2_0;
             } else if ("2".equals(versionString)) {
                 version = Version.JPA_2_0;
+            } else {
+                version = Version.JPA_2_0;
             }
         }
 
@@ -123,8 +124,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
         }
         PersistenceUnitMetadataHolder result = new PersistenceUnitMetadataHolder().setPersistenceUnits(PUs);
-        if (log.isLoggable(Level.FINEST))
-            log.finest(result.toString());
+        if (log.isTraceEnabled())
+            log.trace(result.toString());
 
         return result;
     }

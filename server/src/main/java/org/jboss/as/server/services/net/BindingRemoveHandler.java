@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
@@ -25,28 +25,30 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * Handler for removing a fully-specified interface.
+ * Handler for the server socket-binding resource's remove operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ *
  */
-public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
+public class BindingRemoveHandler extends SocketBindingRemoveHandler {
 
-    public static SpecifiedInterfaceRemoveHandler INSTANCE = new SpecifiedInterfaceRemoveHandler();
+    public static final BindingRemoveHandler INSTANCE = new BindingRemoveHandler();
+
+    private BindingRemoveHandler() {
+    }
 
     @Override
-    protected OperationResult uninstallInterface(final String name, final ModelNode criteria, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
+    protected OperationResult uninstallSocketBinding(final String name, final ModelNode model, final OperationContext context, final ResultHandler resultHandler, final ModelNode compensatingOp) {
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry()
-                            .getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
+                            .getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
                     if (controller != null) {
                         controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
                     } else {
@@ -59,4 +61,5 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
         }
         return new BasicOperationResult(compensatingOp);
     }
+
 }

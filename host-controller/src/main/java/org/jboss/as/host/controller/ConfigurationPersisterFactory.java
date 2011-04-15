@@ -29,6 +29,7 @@ import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.modules.Module;
 
@@ -42,35 +43,13 @@ public class ConfigurationPersisterFactory {
     private static final String HOST_XML = "host.xml";
     private static final String DOMAIN_XML = "domain.xml";
 
-    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir) {
+    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
         HostXml hostXml = new HostXml(Module.getBootModuleLoader());
-        return new BackupXmlConfigurationPersister(getFile(configDir, HOST_XML), new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
+        return new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
     }
 
-    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir) {
-        return createDomainXmlConfigurationPersister(configDir, DOMAIN_XML);
-    }
-
-    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, String name) {
+    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
-        return new BackupXmlConfigurationPersister(getFile(configDir, name), new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
-    }
-
-    private static File getFile(final File configDir, final String file) {
-        if (configDir == null)
-            throw new IllegalArgumentException("Domain configuration directory is null");
-        File configFile = new File(configDir, file);
-        if (configFile.exists()) {
-            if (configFile.isDirectory()) {
-                throw new IllegalArgumentException(configFile.getAbsolutePath() + " is a directory");
-            }
-        }
-        else {
-            if (configFile.isDirectory() || !configDir.canWrite()) {
-                throw new IllegalArgumentException(configFile.getAbsolutePath() + " is not a writable");
-            }
-        }
-        return configFile;
-
+        return new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 }

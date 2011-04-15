@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.net.ServerSocketFactory;
 
+import org.jboss.as.protocol.Connection.ClosedCallback;
 import org.jboss.logging.Logger;
 
 /**
@@ -52,6 +53,7 @@ public final class ProtocolServer {
     private volatile Thread thread;
     private volatile ServerSocket serverSocket;
     private volatile InetSocketAddress boundAddress;
+    private final ClosedCallback callback;
 
     public ProtocolServer(final Configuration configuration) throws IOException {
         threadFactory = configuration.getThreadFactory();
@@ -61,6 +63,7 @@ public final class ProtocolServer {
         backlog = configuration.getBacklog();
         readTimeout = configuration.getReadTimeout();
         readExecutor = configuration.getReadExecutor();
+        callback = configuration.getClosedCallback();
         if (bindAddress == null) {
             throw new IllegalArgumentException("bindAddress is null");
         }
@@ -134,7 +137,7 @@ public final class ProtocolServer {
     private void safeHandleConnection(final Socket socket) {
         boolean ok = false;
         try {
-            final ConnectionImpl connection = new ConnectionImpl(socket, MessageHandler.NULL, readExecutor);
+            final ConnectionImpl connection = new ConnectionImpl(socket, MessageHandler.NULL, readExecutor, callback);
             connection.setMessageHandler(connectionHandler.handleConnected(connection));
             final Thread thread = threadFactory.newThread(connection.getReadTask());
             if (thread == null) {
@@ -169,6 +172,7 @@ public final class ProtocolServer {
         private int backlog;
         private int readTimeout;
         private Executor readExecutor;
+        private ClosedCallback closedCallback;
 
         public ThreadFactory getThreadFactory() {
             return threadFactory;
@@ -232,6 +236,15 @@ public final class ProtocolServer {
 
         public void setReadExecutor(final Executor readExecutor) {
             this.readExecutor = readExecutor;
+        }
+
+
+        public ClosedCallback getClosedCallback() {
+            return closedCallback;
+        }
+
+        public void setCallback(ClosedCallback closedCallback) {
+            this.closedCallback = closedCallback;
         }
     }
 }

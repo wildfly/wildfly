@@ -103,6 +103,10 @@ public final class DomainControllerService implements Service<DomainController> 
     @Override
     public synchronized void stop(final StopContext context) {
         hostController.getValue().stopServers();
+        MasterDomainControllerClient masterClient = masterDomainControllerClient.getOptionalValue();
+        if (masterClient != null) {
+            masterClient.unregister();
+        }
         this.controller = null;
     }
 

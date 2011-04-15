@@ -66,6 +66,7 @@
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
         <version.dom4j>1.6.1</version.dom4j>
+        <version.gnu.getopt>1.0.12-brew</version.gnu.getopt>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-impl>2.0.4-b09</version.javax.faces.jsf-impl>
@@ -88,6 +89,7 @@
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.httpcomponents>4.0.1</version.org.apache.httpcomponents>
         <version.org.apache.neethi>2.0.4</version.org.apache.neethi>
+        <version.org.apache.velocity>1.6.2</version.org.apache.velocity>
         <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
         <version.org.apache.santuario.xmlsec>1.4.3</version.org.apache.santuario.xmlsec>
@@ -169,7 +171,7 @@
         <version.org.jboss.weld.weld>1.1.1.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.0.Alpha2</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>2.0.0.Alpha5</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common>2.0.0.Alpha6</version.org.jboss.ws.common>
         <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha4</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.spi>2.0.0.Alpha3</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-httpserver-httpspi>
@@ -816,6 +818,12 @@
             </dependency>
 
             <dependency>
+                <groupId>gnu-getopt</groupId>
+                <artifactId>getopt</artifactId>
+                <version>${version.gnu.getopt}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>net.sourceforge.htmlunit</groupId>
                 <artifactId>htmlunit</artifactId>
                 <version>${version.net.sourceforge.htmlunit.htmlunit}</version>
@@ -853,6 +861,12 @@
                 <groupId>org.apache.aries</groupId>
                 <artifactId>org.apache.aries.util</artifactId>
                 <version>${version.org.apache.aries.jmx}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.velocity</groupId>
+                <artifactId>velocity</artifactId>
+                <version>${version.org.apache.velocity}</version>
             </dependency>
 
             <dependency>

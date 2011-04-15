@@ -36,7 +36,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ListValdidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -197,7 +197,7 @@ public class WriteAttributeHandlers {
         }
 
         public ListValidatatingHandler(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
-            super(new ListValdidator(elementValidator, nullable, minSize, maxSize));
+            super(new ListValidator(elementValidator, nullable, minSize, maxSize));
         }
     }
 

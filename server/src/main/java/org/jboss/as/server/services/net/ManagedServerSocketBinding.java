@@ -35,33 +35,74 @@ import java.net.SocketAddress;
  */
 class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {
 
+    private final String name;
     private final SocketBindingManager socketBindings;
+    private final boolean metrics;
+    private volatile long acceptCount = 0;
 
     ManagedServerSocketBinding(final SocketBindingManager socketBindings) throws IOException {
-        this.socketBindings = socketBindings;
+        this(null, socketBindings, false);
     }
 
+    ManagedServerSocketBinding(final SocketBindingManager socketBindings, final boolean metrics) throws IOException {
+        this(null, socketBindings, metrics);
+    }
+
+    ManagedServerSocketBinding(final String name, final SocketBindingManager socketBindings) throws IOException {
+        this(name, socketBindings, false);
+    }
+
+    ManagedServerSocketBinding(final String name, final SocketBindingManager socketBindings, final boolean metrics) throws IOException {
+        this.name = name;
+        this.socketBindings = socketBindings;
+        this.metrics = metrics;
+    }
+
+    @Override
+    public String getSocketBindingName() {
+        return name;
+    }
+
+    @Override
     public InetSocketAddress getBindAddress() {
         return InetSocketAddress.class.cast(getLocalSocketAddress());
     }
 
+    @Override
     public void bind(SocketAddress endpoint, int backlog) throws IOException {
         super.bind(endpoint, backlog);
-        socketBindings.registerBinding(this);
+        if(name != null) {
+            socketBindings.getNamedRegistry().registerBinding(this);
+        } else {
+            socketBindings.getUnnamedRegistry().registerBinding(this);
+        }
     }
 
+    @Override
     public Socket accept() throws IOException {
-        final ManagedSocketBinding socket = new ManagedSocketBinding(socketBindings);
+        final Socket socket = metrics ? new ManagedSocketBinding(socketBindings.getUnnamedRegistry()) : new Socket();
         implAccept(socket);
+        if(metrics) {
+            acceptCount++;
+        }
         return socket;
     }
 
+    @Override
     public void close() throws IOException {
         try {
             super.close();
         } finally {
-            socketBindings.unregisterBinding(this);
+            if(name != null) {
+                socketBindings.getNamedRegistry().unregisterBinding(this);
+            } else {
+                socketBindings.getUnnamedRegistry().unregisterBinding(this);
+            }
         }
+    }
+
+    public long getAcceptCount() {
+        return acceptCount;
     }
 
 }

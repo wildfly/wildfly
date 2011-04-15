@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.injectors;
 
+import org.hibernate.ejb.EntityManagerFactoryImpl;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.jpa.service.PersistenceUnitService;
@@ -97,8 +98,14 @@ public class PersistenceUnitBindingSourceDescription extends BindingSourceDescri
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
                 }
-                Object targetValueToInject = emf;   // TODO:  test this
-                new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
+                // TODO:  when/if jpa supports unwrap, change to
+                //   Object targetValueToInject = emf.unwrap(extensionClass);
+                // Until jpa supports unwrap on sessionfactory, only support hibernate
+                if (! (emf instanceof EntityManagerFactoryImpl)) {
+                    throw new RuntimeException("Can only inject from a Hibernate EntityManagerFactoryImpl");
+                }
+                Object targetValueToInject = ((EntityManagerFactoryImpl) emf).getSessionFactory();
+                return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
             }
 
             return new ValueManagedReference(new ImmediateValue<Object>(emf));

@@ -42,9 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -454,11 +452,11 @@ public class HostXml extends CommonXml {
         }
 
         final ModelNode address = parentAddress.clone().add(SERVER_CONFIG, name);
-        final ModelNode addUpdate = new ModelNode();
-        addUpdate.get(OP_ADDR).set(address);
-        addUpdate.get(OP).set(ADD);
-        addUpdate.get(NAME).set(name);
+        final ModelNode addUpdate = Util.getEmptyOperation(ADD, address);
         addUpdate.get(GROUP).set(group);
+        if (start != null) {
+            addUpdate.get(AUTO_START).set(start.booleanValue());
+        }
         list.add(addUpdate);
 
         // Handle elements
@@ -511,9 +509,6 @@ public class HostXml extends CommonXml {
             }
         }
 
-        final boolean isStart = start == null ? true : start.booleanValue();
-        final ModelNode startUpdate = Util.getWriteAttributeOperation(address, AUTO_START, isStart);
-        list.add(startUpdate);
     }
 
     private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {

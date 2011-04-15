@@ -34,11 +34,18 @@ import java.net.SocketException;
  */
 class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
 
-    private final SocketBindingManager socketBindings;
+    private final String name;
+    private final ManagedBindingRegistry registry;
 
-    ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
+    ManagedDatagramSocketBinding(final String name, final ManagedBindingRegistry socketBindings, SocketAddress address) throws SocketException {
         super(address);
-        this.socketBindings = socketBindings;
+        this.name = name;
+        this.registry = socketBindings;
+    }
+
+    @Override
+    public String getSocketBindingName() {
+        return name;
     }
 
     public InetSocketAddress getBindAddress() {
@@ -47,14 +54,14 @@ class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBind
 
     public synchronized void bind(SocketAddress addr) throws SocketException {
         super.bind(addr);
-        socketBindings.registerBinding(this);
+        registry.registerBinding(this);
     }
 
     public void close() {
         try {
             super.close();
         } finally {
-            socketBindings.unregisterBinding(this);
+            registry.unregisterBinding(this);
         }
     }
 

@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.BootOperationHandler;

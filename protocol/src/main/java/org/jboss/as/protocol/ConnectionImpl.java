@@ -65,10 +65,13 @@ final class ConnectionImpl implements Connection {
 
     private volatile MessageHandler backupHandler;
 
-    ConnectionImpl(final Socket socket, final MessageHandler handler, final Executor readExecutor) {
+    private final ClosedCallback callback;
+
+    ConnectionImpl(final Socket socket, final MessageHandler handler, final Executor readExecutor, final ClosedCallback callback) {
         this.socket = socket;
         messageHandler = handler;
         this.readExecutor = readExecutor;
+        this.callback = callback;
     }
 
     public OutputStream writeMessage() throws IOException {
@@ -172,6 +175,7 @@ final class ConnectionImpl implements Connection {
     Runnable getReadTask() {
         return new Runnable() {
             public void run() {
+                boolean closed = false;
                 try {
                     Pipe pipe = null;
                     final InputStream is = socket.getInputStream();
@@ -199,6 +203,8 @@ final class ConnectionImpl implements Connection {
                                     StreamUtils.safeClose(socket);
                                     safeHandleFinished();
                                 }
+                                closed = true;
+                                closed();
                                 return;
                             }
                             case CHUNK_START: {
@@ -244,6 +250,10 @@ final class ConnectionImpl implements Connection {
                     }
                 } catch (IOException e) {
                     safeHandlerFailure(e);
+                } finally {
+                    if (!closed) {
+                        closed();
+                    }
                 }
             }
         };
@@ -376,4 +386,10 @@ final class ConnectionImpl implements Connection {
         }
     }
 
+    private void closed() {
+        ClosedCallback callback = this.callback;
+        if (callback != null) {
+            callback.connectionClosed();
+        }
+    }
 }

@@ -35,29 +35,38 @@ import java.net.SocketException;
  */
 class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
 
-    private final SocketBindingManager socketBindings;
+    private final String name;
+    private final ManagedBindingRegistry socketBindings;
 
-    ManagedMulticastSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws IOException {
+    ManagedMulticastSocketBinding(final String name, final ManagedBindingRegistry socketBindings, SocketAddress address) throws IOException {
         super(address);
+        this.name = name;
         this.socketBindings = socketBindings;
     }
 
+    @Override
+    public String getSocketBindingName() {
+        return name;
+    }
+
+    @Override
     public InetSocketAddress getBindAddress() {
         return (InetSocketAddress) getLocalSocketAddress();
     }
 
+    @Override
     public synchronized void bind(SocketAddress addr) throws SocketException {
         super.bind(addr);
         this.socketBindings.registerBinding(this);
     }
 
+    @Override
     public void close() {
         try {
             super.close();
         } finally {
             socketBindings.unregisterBinding(this);
         }
-
     }
 
 }

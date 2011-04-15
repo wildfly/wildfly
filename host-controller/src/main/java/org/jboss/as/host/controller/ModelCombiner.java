@@ -71,7 +71,7 @@ import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.operations.sockets.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 

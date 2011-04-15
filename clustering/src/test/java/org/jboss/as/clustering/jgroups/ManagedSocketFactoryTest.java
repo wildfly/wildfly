@@ -35,6 +35,7 @@ import java.net.SocketAddress;
 
 import org.jboss.as.server.services.net.SocketBindingManager;
 import org.jgroups.util.SocketFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -44,8 +45,14 @@ public class ManagedSocketFactoryTest {
 
     private SocketFactory factory = mock(SocketFactory.class);
     private SocketBindingManager manager = mock(SocketBindingManager.class);
+    private SocketBindingManager.NamedManagedBindingRegistry registry = mock(SocketBindingManager.NamedManagedBindingRegistry.class);
 
     private ManagedSocketFactory subject = new ManagedSocketFactory(this.factory, this.manager);
+
+    @Before
+    public void setUp() {
+        when(this.manager.getNamedRegistry()).thenReturn(registry);
+    }
 
     @Test
     public void createSocket() throws IOException {
@@ -69,11 +76,11 @@ public class ManagedSocketFactoryTest {
         Socket result4 = this.subject.createSocket("test", localhost, 1, localhost, 2);
         Socket result5 = this.subject.createSocket("test", "host", 1, localhost, 2);
 
-        verify(this.manager).registerSocket(socket1);
-        verify(this.manager).registerSocket(socket2);
-        verify(this.manager).registerSocket(socket3);
-        verify(this.manager).registerSocket(socket4);
-        verify(this.manager).registerSocket(socket5);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket1);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket2);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket3);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket4);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket5);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -101,10 +108,10 @@ public class ManagedSocketFactoryTest {
         ServerSocket result3 = this.subject.createServerSocket("test", 1, 0);
         ServerSocket result4 = this.subject.createServerSocket("test", 1, 0, localhost);
 
-        verify(this.manager).registerSocket(socket1);
-        verify(this.manager).registerSocket(socket2);
-        verify(this.manager).registerSocket(socket3);
-        verify(this.manager).registerSocket(socket4);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket1);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket2);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket3);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket4);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -132,10 +139,10 @@ public class ManagedSocketFactoryTest {
         DatagramSocket result3 = this.subject.createDatagramSocket("test", socketAddress);
         DatagramSocket result4 = this.subject.createDatagramSocket("test", 1, localhost);
 
-        verify(this.manager).registerSocket(socket1);
-        verify(this.manager).registerSocket(socket2);
-        verify(this.manager).registerSocket(socket3);
-        verify(this.manager).registerSocket(socket4);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket1);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket2);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket3);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket4);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -159,9 +166,9 @@ public class ManagedSocketFactoryTest {
         MulticastSocket result2 = this.subject.createMulticastSocket("test", 1);
         MulticastSocket result3 = this.subject.createMulticastSocket("test", address);
 
-        verify(this.manager).registerSocket(socket1);
-        verify(this.manager).registerSocket(socket2);
-        verify(this.manager).registerSocket(socket3);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket1);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket2);
+        verify(this.manager.getNamedRegistry()).registerSocket("test", socket3);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -176,7 +183,7 @@ public class ManagedSocketFactoryTest {
         this.subject.close(socket);
 
         verify(this.factory).close(socket);
-        verify(this.manager).unregisterSocket(socket);
+        verify(this.manager.getNamedRegistry()).unregisterBinding((String) null);
     }
 
     @Test
@@ -187,7 +194,7 @@ public class ManagedSocketFactoryTest {
         this.subject.close(socket);
 
         verify(this.factory).close(socket);
-        verify(this.manager).unregisterSocket(socket);
+        verify(this.manager.getNamedRegistry()).unregisterBinding((String) null);
     }
 
     @Test
@@ -198,7 +205,7 @@ public class ManagedSocketFactoryTest {
         this.subject.close(socket);
 
         verify(this.factory).close(socket);
-        verify(this.manager).unregisterSocket(socket);
+        verify(this.manager.getNamedRegistry()).unregisterBinding((String) null);
     }
 
     @Test
@@ -209,6 +216,6 @@ public class ManagedSocketFactoryTest {
         this.subject.close(socket);
 
         verify(this.factory).close(socket);
-        verify(this.manager).unregisterSocket(socket);
+        verify(this.manager.getNamedRegistry()).unregisterBinding((String) null);
     }
 }

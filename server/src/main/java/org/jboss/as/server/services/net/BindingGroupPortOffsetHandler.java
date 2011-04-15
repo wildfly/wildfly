@@ -16,26 +16,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 
 /**
- * Handler for changing the interface on a socket binding.
- *
- * TODO see comment on JBAS-9100 re: only requiring restart if there is an actual
- * active socket associated with the binding.
+ * Handler for changing the port-offset on a socket binding group.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingInterfaceHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
 
-    public static final BindingInterfaceHandler INSTANCE = new BindingInterfaceHandler();
+    public static final BindingGroupPortOffsetHandler INSTANCE = new BindingGroupPortOffsetHandler();
 
-    private BindingInterfaceHandler() {
-        super(new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
+    private BindingGroupPortOffsetHandler() {
+        super(new IntRangeValidator(0, 65535, true, true));
     }
 
 }

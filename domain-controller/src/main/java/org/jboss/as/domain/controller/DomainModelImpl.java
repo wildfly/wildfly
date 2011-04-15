@@ -868,12 +868,12 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
             final ModelNode model = modelSource.getModel();
             synchronized (model) {
                 model.set(localModel);
-            }
-            if (modelUpdated) {
-                DomainModelImpl.this.persistConfiguration(model, injectedConfigPersisterProvider);
-            }
-            if (hostModelUpdated) {
-                DomainModelImpl.this.persistConfiguration(model, hostPersisterProvider);
+                if (modelUpdated) {
+                    DomainModelImpl.this.persistConfiguration(model, injectedConfigPersisterProvider);
+                }
+                if (hostModelUpdated) {
+                    DomainModelImpl.this.persistConfiguration(model, hostPersisterProvider);
+                }
             }
         }
 

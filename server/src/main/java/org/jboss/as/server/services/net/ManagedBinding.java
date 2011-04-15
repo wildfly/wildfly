@@ -34,6 +34,13 @@ import java.net.InetSocketAddress;
 public interface ManagedBinding extends Closeable {
 
     /**
+     * Get the optional socket binding configuration name.
+     *
+     * @return the socket binding name, <code>null</code> if not available
+     */
+    String getSocketBindingName();
+
+    /**
      * Get the bind address.
      *
      * @return the bind address.
@@ -42,6 +49,8 @@ public interface ManagedBinding extends Closeable {
 
     /**
      * Close and unregister this binding.
+     *
+     * @throws IOException if an I/O error occurs
      */
     void close() throws IOException;
 

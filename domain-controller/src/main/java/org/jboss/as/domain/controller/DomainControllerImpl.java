@@ -187,6 +187,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     /** {@inheritDoc} */
     @Override
     public void removeClient(final String id) {
+        Logger.getLogger("org.jboss.domain").info("unregister host " + id);
         this.hosts.remove(id);
     }
 
@@ -826,8 +827,8 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     private OperationResult executeOnHost(String hostName, Operation operation, ResultHandler handler) {
         DomainControllerSlaveClient client = hosts.get(hostName);
         if (client == null) {
-            // TODO deal with host disappearance
-            return null;
+            handler.handleFailed(new ModelNode().set("No host called " + hostName + " exists"));
+            return new BasicOperationResult();
         }
         else if (hostName.equals(localHostName)) {
             return client.execute(operation, handler);

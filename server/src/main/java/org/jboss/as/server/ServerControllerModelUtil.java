@@ -89,18 +89,20 @@ import org.jboss.as.server.operations.SpecifiedPathAddHandler;
 import org.jboss.as.server.operations.SpecifiedPathRemoveHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
-import org.jboss.as.server.operations.sockets.BindingAddHandler;
-import org.jboss.as.server.operations.sockets.BindingFixedPortHandler;
-import org.jboss.as.server.operations.sockets.BindingGroupDefaultInterfaceHandler;
-import org.jboss.as.server.operations.sockets.BindingInterfaceHandler;
-import org.jboss.as.server.operations.sockets.BindingMulticastAddressHandler;
-import org.jboss.as.server.operations.sockets.BindingPortHandler;
-import org.jboss.as.server.operations.sockets.BindingRemoveHandler;
-import org.jboss.as.server.operations.sockets.BindingGroupAddHandler;
-import org.jboss.as.server.operations.sockets.BindingGroupPortOffsetHandler;
-import org.jboss.as.server.operations.sockets.BindingGroupRemoveHandler;
-import org.jboss.as.server.operations.sockets.SpecifiedInterfaceAddHandler;
-import org.jboss.as.server.operations.sockets.SpecifiedInterfaceRemoveHandler;
+import org.jboss.as.server.services.net.BindingAddHandler;
+import org.jboss.as.server.services.net.BindingFixedPortHandler;
+import org.jboss.as.server.services.net.BindingGroupDefaultInterfaceHandler;
+import org.jboss.as.server.services.net.BindingGroupRemoveHandler;
+import org.jboss.as.server.services.net.BindingInterfaceHandler;
+import org.jboss.as.server.services.net.BindingMetricHandlers;
+import org.jboss.as.server.services.net.BindingMulticastAddressHandler;
+import org.jboss.as.server.services.net.BindingPortHandler;
+import org.jboss.as.server.services.net.BindingRemoveHandler;
+import org.jboss.as.server.services.net.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.BindingGroupPortOffsetHandler;
+import org.jboss.as.server.services.net.BindingMulticastPortHandler;
+import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
+import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -201,11 +203,12 @@ public class ServerControllerModelUtil {
         ModelNodeRegistration socketBinding = socketGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), CommonProviders.SOCKET_BINDING_PROVIDER);
         socketBinding.registerOperationHandler(BindingAddHandler.OPERATION_NAME, BindingAddHandler.INSTANCE, BindingAddHandler.INSTANCE, false);
         socketBinding.registerOperationHandler(BindingRemoveHandler.OPERATION_NAME, BindingRemoveHandler.INSTANCE, BindingRemoveHandler.INSTANCE, false);
+        socketBinding.registerMetric(BindingMetricHandlers.BoundHandler.ATTRIBUTE_NAME, BindingMetricHandlers.BoundHandler.INSTANCE);
         socketBinding.registerReadWriteAttribute(INTERFACE, null, BindingInterfaceHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(PORT, null, BindingPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(FIXED_PORT, null, BindingFixedPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(MULTICAST_ADDRESS, null, BindingMulticastAddressHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        socketBinding.registerReadWriteAttribute(MULTICAST_PORT, null, BindingPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        socketBinding.registerReadWriteAttribute(MULTICAST_PORT, null, BindingMulticastPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // Deployments
         ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);

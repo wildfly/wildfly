@@ -16,37 +16,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupRemoveHandler;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * Handler for the domain socket-binding-group resource's remove operation.
- * This class implements {@link BootOperationHandler} as its runtime effect
- * can only take place at restart.
+ * Handler for changing the fixed-port setting on a socket binding.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
-public class BindingGroupRemoveHandler
-    extends AbstractSocketBindingGroupRemoveHandler
-    implements BootOperationHandler {
+public class BindingFixedPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
 
-    public static final BindingGroupRemoveHandler INSTANCE = new BindingGroupRemoveHandler();
+    public static final BindingFixedPortHandler INSTANCE = new BindingFixedPortHandler();
 
-    private BindingGroupRemoveHandler() {
+    private BindingFixedPortHandler() {
+        super(new ModelTypeValidator(ModelType.BOOLEAN, true, true));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    protected ModelNode getCompensatingOperation(ModelNode model, ModelNode operation) {
-        return BindingGroupAddHandler.getOperation(operation.get(OP_ADDR), model);
+    void handleRuntimeChange(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
+        binding.setFixedPort(attributeValue.asBoolean());
     }
-
 }

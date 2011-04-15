@@ -16,23 +16,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.server.operations.sockets;
+package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupRemoveHandler;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for changing the port-offset on a socket binding group.
+ * Handler for the domain socket-binding-group resource's remove operation.
+ * This class implements {@link BootOperationHandler} as its runtime effect
+ * can only take place at restart.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ *
  */
-public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingGroupRemoveHandler
+    extends AbstractSocketBindingGroupRemoveHandler
+    implements BootOperationHandler {
 
-    public static final BindingGroupPortOffsetHandler INSTANCE = new BindingGroupPortOffsetHandler();
+    public static final BindingGroupRemoveHandler INSTANCE = new BindingGroupRemoveHandler();
 
-    private BindingGroupPortOffsetHandler() {
-        super(new IntRangeValidator(0, 65535, true, true));
+    private BindingGroupRemoveHandler() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected ModelNode getCompensatingOperation(ModelNode model, ModelNode operation) {
+        return BindingGroupAddHandler.getOperation(operation.get(OP_ADDR), model);
     }
 
 }

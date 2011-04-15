@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.persistence.ConfigurationFile;
+
 /**
  * Encapsulates the runtime environment for a server.
  *
@@ -88,6 +90,14 @@ public class ServerEnvironment implements Serializable {
      * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/configuration</tt> .
      */
     public static final String SERVER_CONFIG_DIR = "jboss.server.config.dir";
+
+    /**
+     * Constant that holds the name of the environment property
+     * for specifying the server configuration URL.
+     *
+     * <p>Defaults to <tt><em>SERVER_CONFIG_DIR</em>/standalone.xml</tt> .
+     */
+    public static final String SERVER_CONFIG_FILE = "jboss.server.config.file";
 
     /**
      * Constant that holds the name of the environment property
@@ -168,6 +178,7 @@ public class ServerEnvironment implements Serializable {
     private final File modulesDir;
     private final File serverBaseDir;
     private final File serverConfigurationDir;
+    private final ConfigurationFile serverConfigurationFile;
     private final File serverDataDir;
     private final File serverDeployDir;
     private final File serverLogDir;
@@ -260,6 +271,8 @@ public class ServerEnvironment implements Serializable {
             tmp = new File(serverBaseDir, "configuration");
         }
         serverConfigurationDir = tmp;
+
+        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, "standalone.xml", props.getProperty(SERVER_CONFIG_FILE, "standalone.xml")) : null;
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
@@ -371,6 +384,10 @@ public class ServerEnvironment implements Serializable {
 
     public File getServerConfigurationDir() {
         return serverConfigurationDir;
+    }
+
+    public ConfigurationFile getServerConfigurationFile() {
+        return serverConfigurationFile;
     }
 
     public File getServerDataDir() {

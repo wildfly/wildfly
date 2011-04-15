@@ -36,17 +36,14 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentException;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 
@@ -58,6 +55,8 @@ import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
 public final class WSEJBAdapterDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(WSEJBAdapterDeployer.class);
+    private static final DotName WEB_SERVICE_ANNOTATION = DotName.createSimple(WebService.class.getName());
+    private static final DotName WEB_SERVICE_PROVIDER_ANNOTATION = DotName.createSimple(WebServiceProvider.class.getName());
 
    /**
     * Deploys WebServiceDeployment meta data.
@@ -67,33 +66,43 @@ public final class WSEJBAdapterDeployer {
     */
    public static void internalDeploy(final DeploymentUnit unit) {
        final WebServiceDeploymentAdapter wsDeploymentAdapter = new WebServiceDeploymentAdapter();
-       processAnnotation(unit, WebService.class, wsDeploymentAdapter);
-       processAnnotation(unit, WebServiceProvider.class, wsDeploymentAdapter);
+       processAnnotation(unit, WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
+       processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
        unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
    }
 
-   private static void processAnnotation(final DeploymentUnit unit, final Class<?> annClass, final WebServiceDeploymentAdapter wsDeploymentAdapter) {
-       final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annClass);
+   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeploymentAdapter wsDeploymentAdapter) {
+       final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
        final List<WebServiceDeclaration> endpoints = wsDeploymentAdapter.getServiceEndpoints();
-       if (webServiceAnnotations != null && !webServiceAnnotations.isEmpty()) {
-           final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
-           for (AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
-               final AnnotationTarget target = webServiceAnnotation.target();
-               final ClassInfo webServiceClassInfo = (ClassInfo) target;
-               final String beanClassName = webServiceClassInfo.name().toString();
-               AbstractComponentDescription absCD = moduleDescription.getComponentByClassName(beanClassName);
-
-               final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1);
-               final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: hacky, hacky, hacky :(
-               if (absCD instanceof StatelessComponentDescription || absCD instanceof SingletonComponentDescription) {
-                   endpoints.add(new WebServiceDeclarationAdapter((SessionBeanComponentDescription)absCD, webServiceClassInfo, baseName.getCanonicalName()));
-               }
+       final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
+       for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
+           final ClassInfo webServiceClassInfo = (ClassInfo) webServiceAnnotation.target();
+           final String beanClassName = webServiceClassInfo.name().toString();
+           final AbstractComponentDescription component = moduleDescription.getComponentByClassName(beanClassName);
+           if (isStatelessEJB(component) || isSingletonEJB(component)) {
+               final SessionBeanComponentDescription sessionComponent = (SessionBeanComponentDescription)component;
+               final String ejbContainerName = newEJBContainerName(unit, component);
+               endpoints.add(new WebServiceDeclarationAdapter(sessionComponent, webServiceClassInfo, ejbContainerName));
            }
        }
    }
-   private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final Class<?> annClass) {
+
+   private static String newEJBContainerName(final DeploymentUnit unit, final AbstractComponentDescription componentDescription) {
+       // TODO: algorithm copied from org.jboss.as.ee.component.ComponentInstallProcessor.deployComponent() method - remove this construction code duplicity
+       return unit.getServiceName().append("component").append(componentDescription.getComponentName()).append("START").getCanonicalName();
+   }
+
+   private static boolean isStatelessEJB(final AbstractComponentDescription componentDescription) {
+       return componentDescription instanceof StatelessComponentDescription;
+   }
+
+   private static boolean isSingletonEJB(final AbstractComponentDescription componentDescription) {
+       return componentDescription instanceof SingletonComponentDescription;
+   }
+
+   private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
        final Index compositeIndex = ASHelper.getRootAnnotationIndex(unit);
-       return compositeIndex.getAnnotations(DotName.createSimple(annClass.getName()));
+       return compositeIndex.getAnnotations(annotation);
    }
 
    /**
@@ -127,7 +136,6 @@ public final class WSEJBAdapterDeployer {
        */
       public String getContainerName() {
          return containerName;
-         //return "jboss.deployment.unit.\"jaxws-jbws1283.jar\".component.JBWS1283EndpointImpl.START"; // TODO: P1
       }
 
       /**
@@ -177,7 +185,7 @@ public final class WSEJBAdapterDeployer {
     * {@link org.jboss.wsf.spi.deployment.integration.WebServiceDeployment}.
     */
    private static final class WebServiceDeploymentAdapter implements WebServiceDeployment {
-      /** List of endpoints. */
+      /** List of EJB endpoints. */
       private final List<WebServiceDeclaration> endpoints = new ArrayList<WebServiceDeclaration>();
 
       /**
@@ -196,4 +204,5 @@ public final class WSEJBAdapterDeployer {
          return this.endpoints;
       }
    }
+
 }
