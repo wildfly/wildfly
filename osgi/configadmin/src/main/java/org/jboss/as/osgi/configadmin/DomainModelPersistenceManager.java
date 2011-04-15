@@ -40,8 +40,8 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
 /**
- * An implementation of the Apache Felix ConfigAdmin {@link PersistenceManager} that delegates to the {@link ConfigAdminServiceImpl}
- * .
+ * An implementation of the Apache Felix ConfigAdmin {@link PersistenceManager} that delegates
+ * to the {@link ConfigAdminServiceImpl}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 01-Dec-2010

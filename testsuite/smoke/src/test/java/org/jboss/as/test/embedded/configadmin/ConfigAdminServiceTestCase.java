@@ -32,6 +32,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
@@ -44,7 +45,6 @@ import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-public class ConfigAdminTestCase {
+public class ConfigAdminServiceTestCase {
 
     @Inject
     public ServiceContainer serviceContainer;
@@ -166,18 +166,8 @@ public class ConfigAdminTestCase {
         configAdmin.putConfiguration(ConfiguredService.SERVICE_PID, config);
         try {
             ConfiguredService.addService(serviceContainer);
-
-            ServiceController<?> controller = serviceContainer.getService(ConfiguredService.SERVICE_NAME);
-
-            // Wait a little for the service to come up.
-            while (controller == null || controller.getState() != State.UP) {
-                Thread.sleep(200);
-                controller = serviceContainer.getService(ConfiguredService.SERVICE_NAME);
-            }
-
-            ConfiguredService service = (ConfiguredService) controller.getValue();
+            ConfiguredService service = ConfiguredService.await(serviceContainer, 5, TimeUnit.SECONDS);
             assertEquals("bar", service.getConfigValue("foo"));
-
         } finally {
             configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);
         }
