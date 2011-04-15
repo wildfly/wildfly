@@ -33,16 +33,51 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
-import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.IDENTITY_TRUST_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.MODULE_OPTIONS;
-import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
-import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
+import static org.jboss.as.security.Constants.ACL;
+import static org.jboss.as.security.Constants.AUDIT;
+import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.AUTHENTICATION_JASPI;
+import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHORIZATION;
+import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CLIENT_ALIAS;
+import static org.jboss.as.security.Constants.CLIENT_AUTH;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
+import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
+import static org.jboss.as.security.Constants.EXTENDS;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.JSSE;
+import static org.jboss.as.security.Constants.KEYSTORE_ALIAS;
+import static org.jboss.as.security.Constants.KEYSTORE_PASSWORD;
+import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER;
+import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER_ARGUMENT;
+import static org.jboss.as.security.Constants.KEYSTORE_TYPE;
+import static org.jboss.as.security.Constants.KEYSTORE_URL;
+import static org.jboss.as.security.Constants.KEY_MANAGER_FACTORY_ALGORITHM;
+import static org.jboss.as.security.Constants.KEY_MANAGER_FACTORY_PROVIDER;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
+import static org.jboss.as.security.Constants.MAPPING;
+import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.NAME;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SERVER_ALIAS;
+import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
+import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
+import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
+import static org.jboss.as.security.Constants.TRUSTSTORE_PROVIDER;
+import static org.jboss.as.security.Constants.TRUSTSTORE_PROVIDER_ARGUMENT;
+import static org.jboss.as.security.Constants.TRUSTSTORE_TYPE;
+import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
+import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_ALGORITHM;
+import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_PROVIDER;
+import static org.jboss.as.security.Constants.TYPE;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -179,9 +214,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 writer.writeStartElement(Element.SECURITY_DOMAIN.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), policy.getName());
                 ModelNode policyDetails = policy.getValue();
-                if (policyDetails.hasDefined(Attribute.EXTENDS.getLocalName())) {
-                    writer.writeAttribute(Attribute.EXTENDS.getLocalName(), policyDetails.get(Attribute.EXTENDS.getLocalName())
-                            .asString());
+                if (policyDetails.hasDefined(EXTENDS)) {
+                    writeAttribute(writer, Attribute.EXTENDS, policyDetails.get(EXTENDS));
                 }
                 writeSecurityDomainContent(writer, policyDetails);
                 writer.writeEndElement();
@@ -193,38 +227,42 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
     private void writeSecurityDomainContent(XMLExtendedStreamWriter writer, ModelNode policyDetails) throws XMLStreamException {
         Set<String> keys = new HashSet<String>(policyDetails.keys());
-        keys.remove(Attribute.NAME.getLocalName());
-        keys.remove(Attribute.EXTENDS.getLocalName());
+        keys.remove(NAME);
+        keys.remove(EXTENDS);
 
         for (String key : keys) {
             Element element = Element.forName(key);
             switch (element) {
                 case AUTHENTICATION: {
-                    writeAuthentication(writer, policyDetails.get(Element.AUTHENTICATION.getLocalName()));
+                    writeAuthentication(writer, policyDetails.get(AUTHENTICATION));
                     break;
                 }
                 case AUTHORIZATION: {
-                    writeAuthorization(writer, policyDetails.get(Element.AUTHORIZATION.getLocalName()));
+                    writeAuthorization(writer, policyDetails.get(AUTHORIZATION));
                     break;
                 }
                 case ACL: {
-                    writeACL(writer, policyDetails.get(Element.ACL.getLocalName()));
+                    writeACL(writer, policyDetails.get(ACL));
                     break;
                 }
                 case AUDIT: {
-                    writeAudit(writer, policyDetails.get(Element.AUDIT.getLocalName()));
+                    writeAudit(writer, policyDetails.get(AUDIT));
                     break;
                 }
                 case IDENTITY_TRUST: {
-                    writeIdentityTrust(writer, policyDetails.get(Element.IDENTITY_TRUST.getLocalName()));
+                    writeIdentityTrust(writer, policyDetails.get(IDENTITY_TRUST));
                     break;
                 }
                 case MAPPING: {
-                    writeMapping(writer, policyDetails.get(Element.MAPPING.getLocalName()));
+                    writeMapping(writer, policyDetails.get(MAPPING));
                     break;
                 }
                 case AUTHENTICATION_JASPI: {
-                    writeAuthenticationJaspi(writer, policyDetails.get(Element.AUTHENTICATION_JASPI.getLocalName()));
+                    writeAuthenticationJaspi(writer, policyDetails.get(AUTHENTICATION_JASPI));
+                    break;
+                }
+                case JSSE: {
+                    writeJSSE(writer, policyDetails.get(JSSE));
                     break;
                 }
                 default:
@@ -302,9 +340,9 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void writeAuthenticationJaspi(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.AUTHENTICATION_JASPI.getLocalName());
-            ModelNode moduleStack = modelNode.get(Element.LOGIN_MODULE_STACK.getLocalName());
+            ModelNode moduleStack = modelNode.get(LOGIN_MODULE_STACK);
             writeLoginModuleStack(writer, moduleStack);
-            ModelNode authModule = modelNode.get(Element.AUTH_MODULE.getLocalName());
+            ModelNode authModule = modelNode.get(AUTH_MODULE);
             writeAuthModule(writer, authModule);
             writer.writeEndElement();
         }
@@ -318,7 +356,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 List<ModelNode> nodes = stack.asList();
                 Iterator<ModelNode> iter = nodes.iterator();
                 ModelNode nameNode = iter.next();
-                writer.writeAttribute(Attribute.NAME.getLocalName(), nameNode.require(Attribute.NAME.getLocalName()).asString());
+                writeAttribute(writer, Attribute.NAME, nameNode.require(NAME));
                 while (iter.hasNext()) {
                     ModelNode loginModuleNode = iter.next();
                     List<ModelNode> lms = loginModuleNode.asList();
@@ -343,16 +381,14 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     }
 
     private void writeCommonModule(XMLExtendedStreamWriter writer, ModelNode module) throws XMLStreamException {
-        // check map for known modules
-        String code = module.require(Attribute.CODE.getLocalName()).asString();
+        String code = module.require(CODE).asString();
         writer.writeAttribute(Attribute.CODE.getLocalName(), code);
-        if (module.hasDefined(Attribute.FLAG.getLocalName()))
-            writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Attribute.FLAG.getLocalName()).asString());
-        if (module.hasDefined(Attribute.TYPE.getLocalName()))
-            writer.writeAttribute(Attribute.TYPE.getLocalName(), module.get(Attribute.TYPE.getLocalName()).asString());
-        if (module.hasDefined(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()))
-            writer.writeAttribute(Attribute.LOGIN_MODULE_STACK_REF.getLocalName(),
-                    module.get(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()).asString());
+        if (module.hasDefined(FLAG))
+            writeAttribute(writer, Attribute.FLAG, module.get(Attribute.FLAG.getLocalName()));
+        if (module.hasDefined(TYPE))
+            writeAttribute(writer, Attribute.TYPE, module.get(Attribute.TYPE.getLocalName()));
+        if (module.hasDefined(LOGIN_MODULE_STACK_REF))
+            writeAttribute(writer, Attribute.LOGIN_MODULE_STACK_REF, module.get(LOGIN_MODULE_STACK_REF));
         if (module.hasDefined(MODULE_OPTIONS) && module.get(MODULE_OPTIONS).asInt() > 0) {
             writeModuleOptions(writer, module.get(MODULE_OPTIONS));
         }
@@ -364,6 +400,59 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             writer.writeEmptyElement(Element.MODULE_OPTION.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
             writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+        }
+    }
+
+    private void writeJSSE(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
+        if (modelNode.isDefined() && modelNode.asInt() > 0) {
+            writer.writeStartElement(Element.JSSE.getLocalName());
+            if (modelNode.hasDefined(KEYSTORE_PASSWORD))
+                writeAttribute(writer, Attribute.KEYSTORE_PASSWORD, modelNode.get(Attribute.KEYSTORE_PASSWORD.getLocalName()));
+            if (modelNode.hasDefined(KEYSTORE_URL))
+                writeAttribute(writer, Attribute.KEYSTORE_URL, modelNode.get(Attribute.KEYSTORE_URL.getLocalName()));
+            if (modelNode.hasDefined(KEYSTORE_TYPE))
+                writeAttribute(writer, Attribute.KEYSTORE_TYPE, modelNode.get(Attribute.KEYSTORE_TYPE.getLocalName()));
+            if (modelNode.hasDefined(KEYSTORE_ALIAS))
+                writeAttribute(writer, Attribute.KEYSTORE_ALIAS, modelNode.get(Attribute.KEYSTORE_ALIAS.getLocalName()));
+            if (modelNode.hasDefined(KEYSTORE_PROVIDER))
+                writeAttribute(writer, Attribute.KEYSTORE_PROVIDER, modelNode.get(Attribute.KEYSTORE_PROVIDER.getLocalName()));
+            if (modelNode.hasDefined(KEYSTORE_PROVIDER_ARGUMENT))
+                writeAttribute(writer, Attribute.KEYSTORE_PROVIDER_ARGUMENT,
+                        modelNode.get(Attribute.KEYSTORE_PROVIDER_ARGUMENT.getLocalName()));
+            if (modelNode.hasDefined(KEY_MANAGER_FACTORY_PROVIDER))
+                writeAttribute(writer, Attribute.KEY_MANAGER_FACTORY_PROVIDER,
+                        modelNode.get(Attribute.KEY_MANAGER_FACTORY_PROVIDER.getLocalName()));
+            if (modelNode.hasDefined(KEY_MANAGER_FACTORY_ALGORITHM))
+                writeAttribute(writer, Attribute.KEY_MANAGER_FACTORY_ALGORITHM,
+                        modelNode.get(Attribute.KEY_MANAGER_FACTORY_ALGORITHM.getLocalName()));
+            if (modelNode.hasDefined(TRUSTSTORE_PASSWORD))
+                writeAttribute(writer, Attribute.TRUSTSTORE_PASSWORD,
+                        modelNode.get(Attribute.TRUSTSTORE_PASSWORD.getLocalName()));
+            if (modelNode.hasDefined(TRUSTSTORE_URL))
+                writeAttribute(writer, Attribute.TRUSTSTORE_URL, modelNode.get(Attribute.TRUSTSTORE_URL.getLocalName()));
+            if (modelNode.hasDefined(TRUSTSTORE_TYPE))
+                writeAttribute(writer, Attribute.TRUSTSTORE_TYPE, modelNode.get(Attribute.TRUSTSTORE_TYPE.getLocalName()));
+            if (modelNode.hasDefined(TRUSTSTORE_PROVIDER))
+                writeAttribute(writer, Attribute.TRUSTSTORE_PROVIDER,
+                        modelNode.get(Attribute.TRUSTSTORE_PROVIDER.getLocalName()));
+            if (modelNode.hasDefined(TRUSTSTORE_PROVIDER_ARGUMENT))
+                writeAttribute(writer, Attribute.TRUSTSTORE_PROVIDER_ARGUMENT,
+                        modelNode.get(Attribute.TRUSTSTORE_PROVIDER_ARGUMENT.getLocalName()));
+            if (modelNode.hasDefined(TRUST_MANAGER_FACTORY_PROVIDER))
+                writeAttribute(writer, Attribute.TRUST_MANAGER_FACTORY_PROVIDER,
+                        modelNode.get(Attribute.TRUST_MANAGER_FACTORY_PROVIDER.getLocalName()));
+            if (modelNode.hasDefined(TRUST_MANAGER_FACTORY_ALGORITHM))
+                writeAttribute(writer, Attribute.TRUST_MANAGER_FACTORY_ALGORITHM,
+                        modelNode.get(Attribute.TRUST_MANAGER_FACTORY_ALGORITHM.getLocalName()));
+            if (modelNode.hasDefined(CLIENT_ALIAS))
+                writeAttribute(writer, Attribute.CLIENT_ALIAS, modelNode.get(Attribute.CLIENT_ALIAS.getLocalName()));
+            if (modelNode.hasDefined(SERVER_ALIAS))
+                writeAttribute(writer, Attribute.SERVER_ALIAS, modelNode.get(Attribute.SERVER_ALIAS.getLocalName()));
+            if (modelNode.hasDefined(CLIENT_AUTH))
+                writeAttribute(writer, Attribute.CLIENT_AUTH, modelNode.get(Attribute.CLIENT_AUTH.getLocalName()));
+            if (modelNode.hasDefined(SERVICE_AUTH_TOKEN))
+                writeAttribute(writer, Attribute.SERVICE_AUTH_TOKEN, modelNode.get(Attribute.SERVICE_AUTH_TOKEN.getLocalName()));
+            writer.writeEndElement();
         }
     }
 
@@ -518,7 +607,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     break;
                 }
                 case EXTENDS: {
-                    op.get(attribute.getLocalName()).set(value);
+                    op.get(EXTENDS).set(value);
                     break;
                 }
                 default:
@@ -544,27 +633,27 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                                 throw new XMLStreamException(
                                         "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
                                         reader.getLocation());
-                            parseAuthentication(reader, op.get(Element.AUTHENTICATION.getLocalName()), true);
+                            parseAuthentication(reader, op.get(AUTHENTICATION), true);
                             break;
                         }
                         case AUTHORIZATION: {
-                            parseAuthorization(reader, op.get(Element.AUTHORIZATION.getLocalName()));
+                            parseAuthorization(reader, op.get(AUTHORIZATION));
                             break;
                         }
                         case ACL: {
-                            parseACL(reader, op.get(Element.ACL.getLocalName()));
+                            parseACL(reader, op.get(ACL));
                             break;
                         }
                         case AUDIT: {
-                            parseAudit(reader, op.get(Element.AUDIT.getLocalName()));
+                            parseAudit(reader, op.get(AUDIT));
                             break;
                         }
                         case IDENTITY_TRUST: {
-                            parseIdentityTrust(reader, op.get(Element.IDENTITY_TRUST.getLocalName()));
+                            parseIdentityTrust(reader, op.get(IDENTITY_TRUST));
                             break;
                         }
                         case MAPPING: {
-                            parseMapping(reader, op.get(Element.MAPPING.getLocalName()));
+                            parseMapping(reader, op.get(MAPPING));
                             break;
                         }
                         case AUTHENTICATION_JASPI: {
@@ -572,7 +661,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                                 throw new XMLStreamException(
                                         "A security domain can have either an <authentication> or <authentication-jaspi> element, not both",
                                         reader.getLocation());
-                            parseAuthenticationJaspi(reader, op.get(Element.AUTHENTICATION_JASPI.getLocalName()));
+                            parseAuthenticationJaspi(reader, op.get(AUTHENTICATION_JASPI));
+                            break;
+                        }
+                        case JSSE: {
+                            parseJSSE(reader, op.get(JSSE));
                             break;
                         }
                         default: {
@@ -761,17 +854,17 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (attribute) {
                 case CODE: {
                     String code = value;
-                    node.get(Attribute.CODE.getLocalName()).set(code);
+                    node.get(CODE).set(code);
                     break;
                 }
                 case FLAG: {
                     validateFlag(value, reader, i);
-                    node.get(Attribute.FLAG.getLocalName()).set(value);
+                    node.get(FLAG).set(value);
                     break;
                 }
                 case TYPE: {
                     validateType(value, reader, i);
-                    node.get(Attribute.TYPE.getLocalName()).set(value);
+                    node.get(TYPE).set(value);
                     break;
                 }
                 default:
@@ -813,12 +906,12 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGIN_MODULE_STACK: {
-                            ModelNode node = op.get(Element.LOGIN_MODULE_STACK.getLocalName());
+                            ModelNode node = op.get(LOGIN_MODULE_STACK);
                             parseLoginModuleStack(reader, node.add());
                             break;
                         }
                         case AUTH_MODULE: {
-                            ModelNode node = op.get(Element.AUTH_MODULE.getLocalName());
+                            ModelNode node = op.get(AUTH_MODULE);
                             parseAuthModule(reader, node.add());
                             break;
                         }
@@ -845,7 +938,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    op.add().get(Attribute.NAME.getLocalName()).set(value);
+                    op.add().get(NAME).set(value);
                     break;
                 }
                 default:
@@ -869,11 +962,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case CODE: {
-                    op.get(Attribute.CODE.getLocalName()).set(value);
+                    op.get(CODE).set(value);
                     break;
                 }
                 case LOGIN_MODULE_STACK_REF: {
-                    op.get(Attribute.LOGIN_MODULE_STACK_REF.getLocalName()).set(value);
+                    op.get(LOGIN_MODULE_STACK_REF).set(value);
                     break;
                 }
                 default:
@@ -946,6 +1039,105 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         moduleOptions.add(name, val);
+        requireNoContent(reader);
+    }
+
+    private void parseJSSE(XMLExtendedStreamReader reader, ModelNode op) throws XMLStreamException {
+        EnumSet<Attribute> visited = EnumSet.noneOf(Attribute.class);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case KEYSTORE_PASSWORD: {
+                    op.get(KEYSTORE_PASSWORD).set(value);
+                    visited.add(attribute);
+                    break;
+                }
+                case KEYSTORE_TYPE: {
+                    op.get(KEYSTORE_TYPE).set(value);
+                    break;
+                }
+                case KEYSTORE_URL: {
+                    op.get(KEYSTORE_URL).set(value);
+                    break;
+                }
+                case KEYSTORE_ALIAS: {
+                    op.get(KEYSTORE_ALIAS).set(value);
+                    break;
+                }
+                case KEYSTORE_PROVIDER: {
+                    op.get(KEYSTORE_PROVIDER).set(value);
+                    break;
+                }
+                case KEYSTORE_PROVIDER_ARGUMENT: {
+                    op.get(KEYSTORE_PROVIDER_ARGUMENT).set(value);
+                    break;
+                }
+                case KEY_MANAGER_FACTORY_PROVIDER: {
+                    op.get(KEY_MANAGER_FACTORY_PROVIDER).set(value);
+                    break;
+                }
+                case KEY_MANAGER_FACTORY_ALGORITHM: {
+                    op.get(KEY_MANAGER_FACTORY_ALGORITHM).set(value);
+                    break;
+                }
+                case TRUSTSTORE_PASSWORD: {
+                    op.get(TRUSTSTORE_PASSWORD).set(value);
+                    visited.add(attribute);
+                    break;
+                }
+                case TRUSTSTORE_TYPE: {
+                    op.get(TRUSTSTORE_TYPE).set(value);
+                    break;
+                }
+                case TRUSTSTORE_URL: {
+                    op.get(TRUSTSTORE_URL).set(value);
+                    break;
+                }
+                case TRUSTSTORE_PROVIDER: {
+                    op.get(TRUSTSTORE_PROVIDER).set(value);
+                    break;
+                }
+                case TRUSTSTORE_PROVIDER_ARGUMENT: {
+                    op.get(TRUSTSTORE_PROVIDER_ARGUMENT).set(value);
+                    break;
+                }
+                case TRUST_MANAGER_FACTORY_PROVIDER: {
+                    op.get(TRUST_MANAGER_FACTORY_PROVIDER).set(value);
+                    break;
+                }
+                case TRUST_MANAGER_FACTORY_ALGORITHM: {
+                    op.get(TRUST_MANAGER_FACTORY_ALGORITHM).set(value);
+                    break;
+                }
+                case CLIENT_ALIAS: {
+                    op.get(CLIENT_ALIAS).set(value);
+                    break;
+                }
+                case SERVER_ALIAS: {
+                    op.get(SERVER_ALIAS).set(value);
+                    break;
+                }
+                case CLIENT_AUTH: {
+                    op.get(CLIENT_AUTH).set(value);
+                    break;
+                }
+                case SERVICE_AUTH_TOKEN: {
+                    op.get(SERVICE_AUTH_TOKEN).set(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (visited.size() == 0) {
+            throw new XMLStreamException("Missing required attribute: either " + Attribute.KEYSTORE_PASSWORD.getLocalName()
+                    + " or " + Attribute.TRUSTSTORE_PASSWORD.getLocalName() + " must be present", reader.getLocation());
+        }
+
         requireNoContent(reader);
     }
 

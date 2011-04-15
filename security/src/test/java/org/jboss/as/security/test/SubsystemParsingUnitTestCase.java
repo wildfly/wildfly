@@ -23,7 +23,7 @@ package org.jboss.as.security.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;

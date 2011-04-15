@@ -23,15 +23,15 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
-import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.IDENTITY_TRUST_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
-import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
+import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
 
 import javax.security.auth.login.Configuration;
 

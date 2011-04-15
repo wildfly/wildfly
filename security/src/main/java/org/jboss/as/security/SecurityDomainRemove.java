@@ -22,22 +22,21 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.security.service.JaasConfigurationService;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.security.config.ApplicationPolicyRegistration;
 
 /**
  * Remove a security domain configuration.
@@ -69,13 +68,13 @@ class SecurityDomainRemove implements ModelAddOperationHandler {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     // remove security domain
-                    final ServiceController<?> jaasConfigurationService = context.getServiceRegistry().getService(
-                            JaasConfigurationService.SERVICE_NAME);
-                    if (jaasConfigurationService != null) {
-                        ApplicationPolicyRegistration config = (ApplicationPolicyRegistration) jaasConfigurationService.getValue();
-                        config.removeApplicationPolicy(securityDomain);
+                    final ServiceController<?> service = context.getServiceRegistry().getService(
+                            SecurityDomainService.SERVICE_NAME.append(securityDomain));
+                    if (service != null) {
+                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    } else {
+                        resultHandler.handleResultComplete();
                     }
-                    resultHandler.handleResultComplete();
                 }
             });
         } else {

@@ -42,6 +42,7 @@ enum Element {
     AUTHENTICATION_JASPI("authentication-jaspi"),
     AUTHORIZATION("authorization"),
     IDENTITY_TRUST("identity-trust"),
+    JSSE("jsse"),
     LOGIN_MODULE("login-module"),
     LOGIN_MODULE_STACK("login-module-stack"),
     MAPPING("mapping"),

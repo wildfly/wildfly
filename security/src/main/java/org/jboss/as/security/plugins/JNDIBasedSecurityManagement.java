@@ -34,6 +34,7 @@ import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.ISecurityManagement;
+import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.identitytrust.IdentityTrustManager;
@@ -59,6 +60,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private transient ConcurrentHashMap<String, AuditManager> auditMgrMap = new ConcurrentHashMap<String, AuditManager>();
     private transient ConcurrentHashMap<String, IdentityTrustManager> idmMgrMap = new ConcurrentHashMap<String, IdentityTrustManager>();
     private transient ConcurrentHashMap<String, MappingManager> mappingMgrMap = new ConcurrentHashMap<String, MappingManager>();
+    private transient ConcurrentHashMap<String, JSSESecurityDomain> jsseMap = new ConcurrentHashMap<String, JSSESecurityDomain>();
 
     private String authenticationManagerClassName;
     private boolean deepCopySubjectMode;
@@ -155,6 +157,21 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
         return mm;
     }
 
+    /** {@inheritDoc} */
+    public JSSESecurityDomain getJSSE(String securityDomain) {
+        JSSESecurityDomain jsse = null;
+        try {
+            jsse = jsseMap.get(securityDomain);
+            if (jsse == null) {
+                jsse = (JSSESecurityDomain) lookUpJNDI(securityDomain + "/jsse");
+                jsseMap.put(securityDomain, jsse);
+            }
+        } catch (Exception e) {
+            log.trace("Exception getting JSSESecurityDomain for domain=" + securityDomain, e);
+        }
+        return jsse;
+    }
+
     public String getAuthenticationManagerClassName() {
         return authenticationManagerClassName;
     }
@@ -209,6 +226,20 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     public void setMappingManagerClassName(String mappingManagerClassName) {
         this.mappingManagerClassName = mappingManagerClassName;
+    }
+
+    /**
+     * Removes one security domain from the maps
+     * @param securityDomain name of the security domain
+     */
+    public void removeSecurityDomain(String securityDomain) {
+        securityMgrMap.remove(securityDomain);
+        auditMgrMap.remove(securityDomain);
+        authMgrMap.remove(securityDomain);
+        authzMgrMap.remove(securityDomain);
+        idmMgrMap.remove(securityDomain);
+        mappingMgrMap.remove(securityDomain);
+        jsseMap.remove(securityDomain);
     }
 
     /**

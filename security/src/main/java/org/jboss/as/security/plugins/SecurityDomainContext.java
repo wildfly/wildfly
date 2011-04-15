@@ -30,6 +30,7 @@ import javax.security.jacc.PolicyContextException;
 
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
+import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.identitytrust.IdentityTrustManager;
@@ -53,12 +54,14 @@ public class SecurityDomainContext {
     static final String IDENTITY_TRUST_MGR = "identityTrustMgr";
     static final String AUTH_CACHE = "authenticationCache";
     static final String DOMAIN_CONTEXT = "domainContext";
+    static final String JSSE = "jsse";
 
     AuthenticationManager authenticationMgr;
     AuthorizationManager authorizationMgr;
     AuditManager auditMgr;
     MappingManager mappingMgr;
     IdentityTrustManager identityTrustMgr;
+    JSSESecurityDomain jsseSecurityDomain;
     // FIXME
     Object authenticationCache;
 
@@ -93,6 +96,8 @@ public class SecurityDomainContext {
             binding = authenticationCache;
         else if (name.equals(DOMAIN_CONTEXT))
             binding = this;
+        else if (name.equals(JSSE))
+            binding = getJSSE();
 
         return binding;
     }
@@ -164,5 +169,13 @@ public class SecurityDomainContext {
 
     public void setIdentityTrustMgr(IdentityTrustManager identityTrustMgr) {
         this.identityTrustMgr = identityTrustMgr;
+    }
+
+    public JSSESecurityDomain getJSSE() {
+        return jsseSecurityDomain;
+    }
+
+    public void setJSSE(JSSESecurityDomain jsseSecurityDomain) {
+        this.jsseSecurityDomain = jsseSecurityDomain;
     }
 }

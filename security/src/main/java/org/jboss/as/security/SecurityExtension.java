@@ -27,15 +27,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.CommonAttributes.AUDIT_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.AUTHENTICATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.AUTHORIZATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.DEEP_COPY_SUBJECT_MODE;
-import static org.jboss.as.security.CommonAttributes.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.IDENTITY_TRUST_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.MAPPING_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.CommonAttributes.SECURITY_DOMAIN;
-import static org.jboss.as.security.CommonAttributes.SUBJECT_FACTORY_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
+import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
@@ -83,8 +83,8 @@ public class SecurityExtension implements Extension {
                 SecuritySubsystemDescriptions.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
 
         // security domains
-        final ModelNodeRegistration securityDomain = registration.registerSubModel(PathElement
-                .pathElement(CommonAttributes.SECURITY_DOMAIN), SecuritySubsystemDescriptions.SECURITY_DOMAIN);
+        final ModelNodeRegistration securityDomain = registration.registerSubModel(PathElement.pathElement(SECURITY_DOMAIN),
+                SecuritySubsystemDescriptions.SECURITY_DOMAIN);
         securityDomain.registerOperationHandler(SecurityDomainAdd.OPERATION_NAME, SecurityDomainAdd.INSTANCE,
                 SecuritySubsystemDescriptions.SECURITY_DOMAIN_ADD, false);
         securityDomain.registerOperationHandler(SecurityDomainRemove.OPERATION_NAME, SecurityDomainRemove.INSTANCE,
@@ -102,7 +102,8 @@ public class SecurityExtension implements Extension {
         static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
 
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation,
+                final ResultHandler resultHandler) {
             final ModelNode model = context.getSubModel();
 
             final ModelNode subsystem = new ModelNode();
