@@ -22,13 +22,9 @@
 
 package org.jboss.as.ee.naming;
 
-import java.util.Hashtable;
-
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.jboss.as.naming.InMemoryNamingStore;
-import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -38,7 +34,7 @@ import org.jboss.msc.service.StopContext;
 /**
  * Service responsible for managing the creation and life-cycle of a naming context.
  * <p>
- * Contexts created by this service use a seperate in-memory store
+ * Contexts created by this service use a separate in-memory store
  *
  * @author John E. Bailey
  * @author Stuart Douglas

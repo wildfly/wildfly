@@ -41,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * Service responsible for managing the creation and life-cycle of a global naming context.
  * <p>
- * Contexts created by this service use a seperate in-memory store
+ * Contexts created by this service use a separate in-memory store
  *
  * @author John E. Bailey
  * @author Stuart Douglas

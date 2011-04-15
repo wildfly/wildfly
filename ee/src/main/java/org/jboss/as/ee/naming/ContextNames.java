@@ -30,6 +30,16 @@ import org.jboss.msc.service.ServiceName;
  */
 public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
     /**
+     * Jndi name for java:jboss namespace
+     */
+    public static final JndiName JBOSS_CONTEXT_NAME = JndiName.of("java:jboss");
+
+    /**
+     * ServiceName for java:jboss namespace
+     */
+    public static final ServiceName JBOSS_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("jboss");
+
+    /**
      * Jndi name for java:global namespace
      */
     public static final JndiName GLOBAL_CONTEXT_NAME = JndiName.of("java:global");
@@ -122,6 +132,8 @@ public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
             }
             if (namespace.equals("global")) {
                 return GLOBAL_CONTEXT_SERVICE_NAME.append(context.substring(12));
+            } else if (namespace.equals("jboss")) {
+                return JBOSS_CONTEXT_SERVICE_NAME.append(context.substring(11));
             } else if (namespace.equals("app")) {
                 return contextServiceNameOfApplication(app).append(context.substring(9));
             } else if (namespace.equals("module")) {
