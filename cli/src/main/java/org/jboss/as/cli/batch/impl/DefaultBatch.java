@@ -78,4 +78,20 @@ public class DefaultBatch implements Batch {
     public int size() {
         return commands.size();
     }
+
+    @Override
+    public void move(int currentIndex, int newIndex) {
+        ensureRange(currentIndex);
+        ensureRange(newIndex);
+        if(currentIndex == newIndex) {
+            return;
+        }
+
+        BatchedCommand cmd = commands.get(currentIndex);
+        int step = newIndex > currentIndex ? 1 : -1;
+        for(int i = currentIndex; i != newIndex; i += step) {
+            commands.set(i, commands.get(i + step));
+        }
+        commands.set(newIndex, cmd);
+    }
 }

@@ -29,7 +29,6 @@ import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.cli.handlers.SimpleTabCompleterWithDelegate;
 import org.jboss.as.cli.operation.OperationFormatException;
 
 /**
@@ -39,7 +38,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
     public BatchEditLineHandler() {
-        super("edit-batch-line", new SimpleTabCompleterWithDelegate(new String[]{"--help"}, new CommandLineCompleter() {
+        super("edit-batch-line", new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -97,26 +96,28 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
                     ++nextCharIndex;
                 }
 
-                final String chunk;
-                if(nextCharIndex == buffer.length()) {
-                    chunk = null;
-                } else {
-                    chunk = buffer.substring(nextCharIndex);
+                String cmd = buffer.substring(nextCharIndex);
+                if("--help".startsWith(cmd)) {
+                    candidates.add("--help");
                 }
 
-/*                String cmd = buffer.substring(nextCharIndex);
                 int cmdResult = ctx.getDefaultCommandCompleter().complete(ctx, cmd, 0, candidates);
+
+                final String batchedCmd = batch.getCommands().get(lineNumber - 1).getCommand();
+                if(cmd.isEmpty() || batchedCmd.startsWith(cmd)) {
+                    int lastWsIndex = cmd.lastIndexOf(' ');
+                    if(lastWsIndex > 0) {
+                        candidates.add(batchedCmd.substring(lastWsIndex + 1).trim());
+                    } else {
+                        candidates.add(batchedCmd);
+                    }
+                }
+
                 if(cmdResult < 0) {
-                    return -1;
+                    return candidates.isEmpty() ? -1 : nextCharIndex;
                 }
-*/
-                final BatchedCommand batched = batch.getCommands().get(lineNumber - 1);
-                final String cmd = batched.getCommand();
-                if(chunk == null || cmd.isEmpty() || cmd.startsWith(chunk)) {
-                    candidates.add(cmd);
-                }
-                return nextCharIndex;
-            }}));
+                return nextCharIndex + cmdResult;
+            }});
     }
 
 

@@ -69,6 +69,7 @@ import org.jboss.as.cli.handlers.batch.BatchEditLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchHandler;
 import org.jboss.as.cli.handlers.batch.BatchHoldbackHandler;
 import org.jboss.as.cli.handlers.batch.BatchListHandler;
+import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -119,6 +120,7 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
         cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
         cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
+        cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
     }
 
@@ -740,7 +742,7 @@ public class CommandLineMain {
                 throw new OperationFormatException("No command handler for '" + cmd + "'.");
             }
             if(!(handler instanceof OperationCommand)) {
-                throw new OperationFormatException("The handler doesn't implement " + OperationCommand.class.getName());
+                throw new OperationFormatException("The command is not allowed in a batch.");
             }
 
             try {

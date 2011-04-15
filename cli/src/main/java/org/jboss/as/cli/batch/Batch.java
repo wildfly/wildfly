@@ -37,6 +37,8 @@ public interface Batch {
 
     void remove(int index);
 
+    void move(int currentIndex, int newIndex);
+
     void set(int index, BatchedCommand cmd);
 
     int size();

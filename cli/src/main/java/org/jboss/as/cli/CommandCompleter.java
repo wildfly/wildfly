@@ -22,6 +22,7 @@
 package org.jboss.as.cli;
 
 
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.operation.OperationRequestCompleter;
@@ -121,6 +122,7 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
                 candidates.add(command);
             }
         }
+        Collections.sort(candidates);
         return buffer.length() - cmd.length();
     }
 }
