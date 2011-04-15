@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author Stuart Douglas
  */
-public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements DeploymentUnitProcessor {
+public abstract class AbstractDeploymentDescriptorBindingsProcessor implements DeploymentUnitProcessor {
 
     @Override
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -50,22 +50,29 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if(description == null) {
+        if (description == null) {
             return;
         }
-        if(environment != null) {
-            List<BindingDescription> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
-            description.getBindingsContainer().addBindings(bindings);
+        if (environment != null) {
+            List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
+            // TODO: Need to add the bindings at module description level
+            throw new RuntimeException("Configuring bindings at module level not yet implemented");
         }
-        for(final ComponentDescription componentDescription : description.getComponentDescriptions()) {
-            if(componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                List<BindingDescription> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, null, module.getClassLoader(), deploymentReflectionIndex);
-                componentDescription.addBindings(bindings);
+        for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
+            if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
+                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, null, module.getClassLoader(), deploymentReflectionIndex);
+                componentDescription.getConfigurators().add(new ComponentConfigurator() {
+
+                    @Override
+                    public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                        configuration.getBindingConfigurations().addAll(bindings);
+                    }
+                });
             }
         }
     }
 
-    protected abstract List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException;
+    protected abstract List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException;
 
     @Override
     public void undeploy(DeploymentUnit context) {
@@ -74,26 +81,28 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
     /**
      * Processes the injection targets of a resource binding
      *
-     * @param classLoader The module class loader
+     * @param eeModuleClassDescription  The class description
+     * @param injectionSource           The injection source for the injection target
+     * @param classLoader               The module class loader
      * @param deploymentReflectionIndex The deployment reflection index
-     * @param entry The resource with injection targets
-     * @param description The binding description
-     * @param classType The expected type of the injection point, may be null if this is to be inferred from the injection target
+     * @param entry                     The resource with injection targets
+     * @param classType                 The expected type of the injection point, may be null if this is to be inferred from the injection target
      * @return The actual class type of the injection point
-     * @throws DeploymentUnitProcessingException If the injection points could not be resolved
+     * @throws DeploymentUnitProcessingException
+     *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, BindingDescription description, Class<?> classType) throws DeploymentUnitProcessingException {
-        if(entry.getInjectionTargets() != null) {
-            for(ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
+    protected Class<?> processInjectionTargets(EEModuleClassDescription eeModuleClassDescription, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
+        if (entry.getInjectionTargets() != null) {
+            for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
 
                 final Class<?> injectionTargetClass;
                 try {
                     injectionTargetClass = classLoader.loadClass(injectionTarget.getInjectionTargetClass());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + injectionTarget.getInjectionTargetClass() + " referenced in env-entry injection point ",e);
+                    throw new DeploymentUnitProcessingException("Could not load " + injectionTarget.getInjectionTargetClass() + " referenced in env-entry injection point ", e);
                 }
                 final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
-                String methodName = "set" + injectionTarget.getInjectionTargetName().substring(0,1).toUpperCase() + injectionTarget.getInjectionTargetName().substring(1);
+                String methodName = "set" + injectionTarget.getInjectionTargetName().substring(0, 1).toUpperCase() + injectionTarget.getInjectionTargetName().substring(1);
 
                 boolean methodFound = false;
                 Method method = null;
@@ -101,14 +110,14 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
                 Class<?> injectionTargetType = null;
                 String memberName = injectionTarget.getInjectionTargetName();
                 Class<?> current = injectionTargetClass;
-                while(current != Object.class && current != null && !methodFound) {
+                while (current != Object.class && current != null && !methodFound) {
                     final Collection<Method> methods = index.getAllMethods(methodName);
-                    for(Method m : methods) {
-                        if(m.getParameterTypes().length == 1) {
-                            if(m.isBridge() || m.isSynthetic()) {
+                    for (Method m : methods) {
+                        if (m.getParameterTypes().length == 1) {
+                            if (m.isBridge() || m.isSynthetic()) {
                                 continue;
                             }
-                            if(methodFound) {
+                            if (methodFound) {
                                 throw new DeploymentUnitProcessingException("Two setter methods for " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " found when applying <injection-target> for env-entry");
                             }
                             methodFound = true;
@@ -119,11 +128,11 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
                     }
                     current = current.getSuperclass();
                 }
-                if(method == null) {
+                if (method == null) {
                     current = injectionTargetClass;
-                    while(current != Object.class && current != null && field == null) {
+                    while (current != Object.class && current != null && field == null) {
                         field = index.getField(injectionTarget.getInjectionTargetName());
-                        if(field != null) {
+                        if (field != null) {
                             injectionTargetType = field.getType();
                             memberName = injectionTarget.getInjectionTargetName();
                             break;
@@ -131,12 +140,12 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
                         current = current.getSuperclass();
                     }
                 }
-                if(field == null && method == null) {
+                if (field == null && method == null) {
                     throw new DeploymentUnitProcessingException("Could not resolve injection point " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " specified in web.xml");
                 }
-                if(classType != null) {
-                    if(!classType.isAssignableFrom(injectionTargetType)) {
-                         throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection");
+                if (classType != null) {
+                    if (!classType.isAssignableFrom(injectionTargetType)) {
+                        throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection");
                     }
                 } else {
                     classType = injectionTargetType;
@@ -145,7 +154,15 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor  implements 
                 final InjectionTarget injectionTargetDescription = method == null ?
                         new FieldInjectionTarget(injectionTargetName, memberName, classType.getName()) :
                         new MethodInjectionTarget(injectionTargetName, memberName, classType.getName());
-                description.getInjectionTargetDescriptions().add(injectionTargetDescription);
+
+                final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
+                eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+                    @Override
+                    public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                        configuration.getInjectionConfigurations().add(injectionConfiguration);
+                    }
+                });
+
             }
         }
         return classType;

@@ -42,134 +42,124 @@ import java.util.List;
 public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
     @Override
-    protected List<BindingDescription> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
-        bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex));
+    protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
+        bindings.addAll(getEnvironmentEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
         bindings.addAll(getResourceEnvRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
         bindings.addAll(getResourceRefEntries(environment, classLoader, deploymentReflectionIndex, moduleDescription, componentDescription));
         return bindings;
     }
 
-    private List<BindingDescription> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+    private List<BindingConfiguration> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final ResourceEnvironmentReferencesMetaData entries = environment.getEnvironment().getResourceEnvironmentReferences();
-        if(entries == null) {
+        if (entries == null) {
             return bindings;
         }
-        for(ResourceEnvironmentReferenceMetaData envEntry : entries) {
+        for (ResourceEnvironmentReferenceMetaData envEntry : entries) {
             final String name;
-            if(envEntry.getName().startsWith("java:")) {
+            if (envEntry.getName().startsWith("java:")) {
                 name = envEntry.getName();
             } else {
                 name = environment.getDefaultContext() + envEntry.getName();
             }
-            BindingDescription description  = new BindingDescription(name);
-
             Class<?> classType = null;
-            if(envEntry.getType() != null) {
+            if (envEntry.getType() != null) {
                 try {
                     classType = classLoader.loadClass(envEntry.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ",e);
+                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
                 }
             }
+            // our injection (source) comes from the local (ENC) lookup, no matter what.
+            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
-            description.setDependency(true);
-            classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
-            description.setBindingType(classType.getName());
+            classType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
 
-            if(!isEmpty(envEntry.getLookupName())) {
-                if(componentDescription != null) {
-                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),componentDescription));
-                } else {
-                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),moduleDescription));
-                }
+            BindingConfiguration bindingConfiguration = null;
+            if (!isEmpty(envEntry.getLookupName())) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
             } else {
                 //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
-                description.setReferenceSourceDescription(new LazyBindingSourceDescription());
+                throw new RuntimeException("res-env-ref without a lookup-name isn't yet supported");
             }
-            bindings.add(description);
+            bindings.add(bindingConfiguration);
         }
         return bindings;
     }
 
-    private List<BindingDescription> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+    private List<BindingConfiguration> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final ResourceReferencesMetaData entries = environment.getEnvironment().getResourceReferences();
-        if(entries == null) {
+        if (entries == null) {
             return bindings;
         }
-        for(ResourceReferenceMetaData envEntry : entries) {
+        for (ResourceReferenceMetaData envEntry : entries) {
             final String name;
-            if(envEntry.getName().startsWith("java:")) {
+            if (envEntry.getName().startsWith("java:")) {
                 name = envEntry.getName();
             } else {
                 name = environment.getDefaultContext() + envEntry.getName();
             }
-            BindingDescription description  = new BindingDescription(name);
 
             Class<?> classType = null;
-            if(envEntry.getType() != null) {
+            if (envEntry.getType() != null) {
                 try {
                     classType = classLoader.loadClass(envEntry.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ",e);
+                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
                 }
             }
 
-            description.setDependency(true);
-            classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
-            description.setBindingType(classType.getName());
+            // our injection (source) comes from the local (ENC) lookup, no matter what.
+            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+            classType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
 
-            if(!isEmpty(envEntry.getLookupName())) {
-                if(componentDescription != null) {
-                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),componentDescription));
-                } else {
-                    description.setReferenceSourceDescription(new LookupBindingSourceDescription(envEntry.getLookupName(),moduleDescription));
-                }
+            BindingConfiguration bindingConfiguration = null;
+            if (!isEmpty(envEntry.getLookupName())) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
             } else {
                 //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
-                description.setReferenceSourceDescription(new LazyBindingSourceDescription());
+                throw new RuntimeException("resource-ref without a lookup-name isn't yet supported");
             }
-            bindings.add(description);
+            bindings.add(bindingConfiguration);
         }
         return bindings;
     }
 
-    private List<BindingDescription> getEnvironmentEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        List<BindingDescription> bindings = new ArrayList<BindingDescription>();
+    private List<BindingConfiguration> getEnvironmentEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+        List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final EnvironmentEntriesMetaData entries = environment.getEnvironment().getEnvironmentEntries();
-        if(entries == null) {
+        if (entries == null) {
             return bindings;
         }
-        for(EnvironmentEntryMetaData envEntry : entries) {
+        for (EnvironmentEntryMetaData envEntry : entries) {
             final String name;
-            if(envEntry.getName().startsWith("java:")) {
+            if (envEntry.getName().startsWith("java:")) {
                 name = envEntry.getName();
             } else {
                 name = environment.getDefaultContext() + envEntry.getEnvEntryName();
             }
-            BindingDescription description  = new BindingDescription(name);
 
             Class<?> classType = null;
-            if(envEntry.getType() != null) {
+            if (envEntry.getType() != null) {
                 try {
                     classType = classLoader.loadClass(envEntry.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ",e);
+                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
                 }
             }
 
-            description.setDependency(true);
-
-            classType = processInjectionTargets(classLoader, deploymentReflectionIndex, envEntry, description, classType);
-            if(classType == null) {
+            // our injection (source) comes from the local (ENC) lookup, no matter what.
+            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+            classType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>. Component");
             }
 
             final String value = envEntry.getValue();
 
-            if(isEmpty(value) ) {
+            if (isEmpty(value)) {
                 //if no value is provided then it is not an error
                 //this reference should simply be ignored
                 // (Java ee platform spec 6.0 fr pg 80)
@@ -177,41 +167,40 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             }
 
             final String type = classType.getName();
-            description.setBindingType(classType.getName());
-
-            if(type.equals(String.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(value));
-            } else if(type.equals(Integer.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Integer.valueOf(value)));
-            } else if(type.equals(Short.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Short.valueOf(value)));
-            } else if(type.equals(Long.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Long.valueOf(value)));
-            } else if(type.equals(Byte.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Byte.valueOf(value)));
-            }  else if(type.equals(Double.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Double.valueOf(value)));
-            } else if(type.equals(Float.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Float.valueOf(value)));
-            } else if(type.equals(Boolean.class.getName())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Boolean.valueOf(value)));
-            } else if(type.equals(Character.class.getName())) {
-                if(value.length() != 1) {
+            BindingConfiguration bindingConfiguration = null;
+            if (type.equals(String.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(value));
+            } else if (type.equals(Integer.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Integer.valueOf(value)));
+            } else if (type.equals(Short.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Short.valueOf(value)));
+            } else if (type.equals(Long.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Long.valueOf(value)));
+            } else if (type.equals(Byte.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Byte.valueOf(value)));
+            } else if (type.equals(Double.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Double.valueOf(value)));
+            } else if (type.equals(Float.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Float.valueOf(value)));
+            } else if (type.equals(Boolean.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Boolean.valueOf(value)));
+            } else if (type.equals(Character.class.getName())) {
+                if (value.length() != 1) {
                     throw new DeploymentUnitProcessingException("env-entry of type java.lang.Character is not exactly one character long " + value);
                 }
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(value.charAt(0)));
-            } else if(type.equals(Class.class.getName())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(value.charAt(0)));
+            } else if (type.equals(Class.class.getName())) {
                 try {
-                    description.setReferenceSourceDescription(new EnvEntryInjectionSource(classLoader.loadClass(value)));
+                    bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(classLoader.loadClass(value)));
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Could not load class " + value + " specified in env-entry");
                 }
-            }  else if(classType.isEnum() || (classType.getEnclosingClass() != null && classType.getEnclosingClass().isEnum())) {
-                description.setReferenceSourceDescription(new EnvEntryInjectionSource(Enum.valueOf((Class)classType,value)));
+            } else if (classType.isEnum() || (classType.getEnclosingClass() != null && classType.getEnclosingClass().isEnum())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Enum.valueOf((Class) classType, value)));
             } else {
                 throw new DeploymentUnitProcessingException("Unkown env-entry type " + type);
             }
-            bindings.add(description);
+            bindings.add(bindingConfiguration);
         }
         return bindings;
     }
@@ -219,7 +208,6 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
     private boolean isEmpty(String string) {
         return string == null || string.isEmpty();
     }
-
 
 
     @Override
