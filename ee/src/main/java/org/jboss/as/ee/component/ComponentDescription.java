@@ -52,7 +52,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ComponentDescription extends LifecycleCapableDescription {
+public class ComponentDescription {
 
     private static final DefaultFirstConfigurator FIRST_CONFIGURATOR = new DefaultFirstConfigurator();
 

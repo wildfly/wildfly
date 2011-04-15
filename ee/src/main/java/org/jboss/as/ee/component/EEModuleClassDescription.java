@@ -46,7 +46,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class EEModuleClassDescription extends LifecycleCapableDescription {
+public final class EEModuleClassDescription {
 
     private static final DefaultConfigurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 

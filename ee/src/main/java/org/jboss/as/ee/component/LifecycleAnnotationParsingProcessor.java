@@ -25,7 +25,9 @@ package org.jboss.as.ee.component;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -37,87 +39,59 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link ComponentDescription} instance to configure
- * required life-cycle methods.
+ * Deployment processor responsible for finding @PostConstruct and @PreDestroy annotated methods.
  *
  * @author John Bailey
  * @author Stuart Douglas
  */
-public class LifecycleAnnotationParsingProcessor extends AbstractComponentConfigProcessor {
+public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProcessor {
     private static final DotName POST_CONSTRUCT_ANNOTATION = DotName.createSimple(PostConstruct.class.getName());
     private static final DotName PRE_DESTROY_ANNOTATION = DotName.createSimple(PreDestroy.class.getName());
+    private static DotName[] LIFE_CYCLE_ANNOTATIONS = {POST_CONSTRUCT_ANNOTATION, PRE_DESTROY_ANNOTATION};
 
-    /**
-     * {@inheritDoc} *
-     */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        processClass(index, componentDescription, DotName.createSimple(componentDescription.getComponentClassName()), componentDescription.getComponentClassName(), true);
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
-        for (InterceptorDescription description : componentDescription.getClassInterceptors()) {
-            processClass(index, description, DotName.createSimple(description.getInterceptorClassName()), description.getInterceptorClassName(), false);
+        for (DotName annotationName : LIFE_CYCLE_ANNOTATIONS) {
+            final List<AnnotationInstance> postConstructInstances = index.getAnnotations(annotationName);
+            for (AnnotationInstance annotation : postConstructInstances) {
+                processLifeCycle(eeModuleDescription, annotation.target(), annotationName);
+            }
         }
     }
 
-    private void processClass(final CompositeIndex index, final LifecycleCapableDescription lifecycleCapableDescription, final DotName className, final String actualClassName, boolean declaredOnTargetClass) {
-        final ClassInfo classInfo = index.getClassByName(className);
-        if (classInfo == null) {
-            return;
-        }
-
-        final DotName superName = classInfo.superName();
-        if (superName != null) {
-            processClass(index, lifecycleCapableDescription, superName, actualClassName, declaredOnTargetClass);
-        }
-
-        final InterceptorMethodDescription postConstructMethod = getLifeCycle(classInfo, actualClassName, POST_CONSTRUCT_ANNOTATION, declaredOnTargetClass);
-        if (postConstructMethod != null) {
-            lifecycleCapableDescription.addPostConstruct(postConstructMethod);
-        }
-        final InterceptorMethodDescription preDestroyMethod = getLifeCycle(classInfo, actualClassName, PRE_DESTROY_ANNOTATION, declaredOnTargetClass);
-        if (preDestroyMethod != null) {
-            lifecycleCapableDescription.addPreDestroy(preDestroyMethod);
-        }
+    public void undeploy(DeploymentUnit context) {
     }
 
-    private InterceptorMethodDescription getLifeCycle(final ClassInfo classInfo, final String actualClass, final DotName annotationType, boolean declaredOnTargetClass) {
-        if (classInfo == null) {
-            return null; // No index info
-        }
-
-        // Try to resolve with the help of the annotation index
-        final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
-
-        final List<AnnotationInstance> instances = classAnnotations.get(annotationType);
-        if (instances == null || instances.isEmpty()) {
-            return null;
-        }
-
-        if (instances.size() > 1) {
-            throw new IllegalArgumentException("Only one method may be annotated with " + annotationType + " per bean.");
-        }
-
-        final AnnotationTarget target = instances.get(0).target();
+    private void processLifeCycle(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType) {
         if (!(target instanceof MethodInfo)) {
             throw new IllegalArgumentException(annotationType + " is only valid on method targets.");
         }
-
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
+        final ClassInfo classInfo = methodInfo.declaringClass();
+        final EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
+
         final Type[] args = methodInfo.args();
-        if (declaredOnTargetClass) {
-            if (args.length == 0) {
-                return InterceptorMethodDescription.create(classInfo.name().toString(), methodInfo);
-            } else {
-                throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
-            }
+        if (args.length > 1) {
+            throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
+        } else if (args.length == 1 && !args[0].name().toString().equals(InvocationContext.class.getName())) {
+            throw new IllegalArgumentException("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() + ", signature must be void methodName(InvocationContext ctx)");
+        }
+
+        final MethodIdentifier methodIdentifier;
+        if (args.length == 0) {
+            methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name());
         } else {
-            if (args.length == 1 && args[0].name().toString().equals(InvocationContext.class.getName())) {
-                return InterceptorMethodDescription.create(classInfo.name().toString(), methodInfo);
-            } else {
-                throw new IllegalArgumentException("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() + ", signature must be void methodName(InvocationContext ctx)");
-            }
+            methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name(), InvocationContext.class);
+        }
+        if (annotationType == POST_CONSTRUCT_ANNOTATION) {
+            classDescription.setPostConstructMethod(methodIdentifier);
+        } else {
+            classDescription.setPreDestroyMethod(methodIdentifier);
         }
     }
 }
