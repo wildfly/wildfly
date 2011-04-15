@@ -543,7 +543,7 @@ public class ComponentDescription {
                     configuration.getModuleName(),
                     configuration.getApplicationName()
             );
-            injectionConfiguration.getSource().getResourceValue(serviceBuilder, context, managedReferenceFactoryValue);
+            injectionConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, context, managedReferenceFactoryValue);
         }
     }
 }
