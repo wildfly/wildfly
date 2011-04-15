@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
  */
-public class ListValdidator extends ModelTypeValidator implements ParameterValidator {
+public class ListValidator extends ModelTypeValidator implements ParameterValidator {
 
     private final int min;
     private final int max;
@@ -39,7 +39,7 @@ public class ListValdidator extends ModelTypeValidator implements ParameterValid
     /**
      * @param type
      */
-    public ListValdidator(ParameterValidator elementValidator) {
+    public ListValidator(ParameterValidator elementValidator) {
         this(elementValidator, false, 1, Integer.MAX_VALUE);
     }
 
@@ -47,7 +47,7 @@ public class ListValdidator extends ModelTypeValidator implements ParameterValid
      * @param type
      * @param nullable
      */
-    public ListValdidator(ParameterValidator elementValidator, boolean nullable) {
+    public ListValidator(ParameterValidator elementValidator, boolean nullable) {
         this(elementValidator, nullable, 1, Integer.MAX_VALUE);
     }
 
@@ -56,7 +56,7 @@ public class ListValdidator extends ModelTypeValidator implements ParameterValid
      * @param nullable
      * @param allowExpressions
      */
-    public ListValdidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
+    public ListValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.LIST, nullable, false, true);
         this.min = minSize;
         this.max = maxSize;

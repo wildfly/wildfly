@@ -56,19 +56,19 @@ public class HostServerDescription {
         root.get(ATTRIBUTES, GROUP, REQUIRED).set(true);
         root.get(ATTRIBUTES, GROUP, MIN_LENGTH).set(1);
 
-        root.get(ATTRIBUTES, AUTO_START, DESCRIPTION).set(bundle.getString("server.start"));
+        root.get(ATTRIBUTES, AUTO_START, DESCRIPTION).set(bundle.getString("server.auto-start"));
         root.get(ATTRIBUTES, AUTO_START, TYPE).set(ModelType.BOOLEAN);
         root.get(ATTRIBUTES, AUTO_START, REQUIRED).set(true);
 
-        root.get(ATTRIBUTES, PRIORITY, DESCRIPTION).set(bundle.getString("server.priority"));
-        root.get(ATTRIBUTES, PRIORITY, TYPE).set(ModelType.INT);
-        root.get(ATTRIBUTES, PRIORITY, REQUIRED).set(false);
-        root.get(ATTRIBUTES, PRIORITY, MIN_VALUE).set(0);
-
-        root.get(ATTRIBUTES, CPU_AFFINITY, DESCRIPTION).set(bundle.getString("server.cpu-affinity"));
-        root.get(ATTRIBUTES, CPU_AFFINITY, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, CPU_AFFINITY, REQUIRED).set(false);
-        root.get(ATTRIBUTES, CPU_AFFINITY, MIN_LENGTH).set(1);
+//        root.get(ATTRIBUTES, PRIORITY, DESCRIPTION).set(bundle.getString("server.priority"));
+//        root.get(ATTRIBUTES, PRIORITY, TYPE).set(ModelType.INT);
+//        root.get(ATTRIBUTES, PRIORITY, REQUIRED).set(false);
+//        root.get(ATTRIBUTES, PRIORITY, MIN_VALUE).set(0);
+//
+//        root.get(ATTRIBUTES, CPU_AFFINITY, DESCRIPTION).set(bundle.getString("server.cpu-affinity"));
+//        root.get(ATTRIBUTES, CPU_AFFINITY, TYPE).set(ModelType.STRING);
+//        root.get(ATTRIBUTES, CPU_AFFINITY, REQUIRED).set(false);
+//        root.get(ATTRIBUTES, CPU_AFFINITY, MIN_LENGTH).set(1);
 
         root.get(ATTRIBUTES, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("server.socket-binding-group"));
         root.get(ATTRIBUTES, SOCKET_BINDING_GROUP, TYPE).set(ModelType.STRING);
@@ -122,7 +122,7 @@ public class HostServerDescription {
 
         root.get(REQUEST_PROPERTIES, GROUP, DESCRIPTION).set(bundle.getString("server.group"));
         root.get(REQUEST_PROPERTIES, GROUP, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, GROUP, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, GROUP, REQUIRED).set(true);
 
         root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("server.socket-binding-group"));
         root.get(REQUEST_PROPERTIES, SOCKET_BINDING_GROUP, TYPE).set(ModelType.STRING);
@@ -132,9 +132,9 @@ public class HostServerDescription {
         root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
 
-        root.get(REQUEST_PROPERTIES, JVM, DESCRIPTION).set(bundle.getString("server.add.jvm"));
-        root.get(REQUEST_PROPERTIES, JVM, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, JVM, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, AUTO_START, DESCRIPTION).set(bundle.getString("server.auto-start"));
+        root.get(REQUEST_PROPERTIES, AUTO_START, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, AUTO_START, REQUIRED).set(false);
 
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;

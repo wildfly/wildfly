@@ -60,7 +60,7 @@ public class ServerRemoveHandler implements ModelRemoveOperationHandler, Descrip
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         try {
-            ModelNode compensating = ServerAddHandler.getAddServerOperation(operation.get(OP_ADDR), operation.get(NAME), operation.get(GROUP));
+            ModelNode compensating = ServerAddHandler.getAddServerOperation(operation.get(OP_ADDR), context.getSubModel());
             resultHandler.handleResultComplete();
             return new BasicOperationResult(compensating);
         }
