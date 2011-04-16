@@ -39,21 +39,25 @@ public abstract class AbstractMessageHandler implements MessageHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.management");
 
     /** {@inheritDoc} */
+    @Override
     public void handleShutdown(Connection connection) throws IOException {
         connection.shutdownWrites();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void handleFailure(Connection connection, IOException e) throws IOException {
         log.error(e);
         connection.shutdownWrites();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void handleFinished(Connection connection) throws IOException {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void handleMessage(final Connection connection, final InputStream inputStream) throws IOException {
         try {
             handle(connection, inputStream);

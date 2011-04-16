@@ -30,6 +30,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
+import org.junit.Before;
 
 /**
  *
@@ -39,9 +40,14 @@ import org.jboss.dmr.ModelNode;
 
 public class ProxyControllerTestCase extends AbstractProxyControllerTest {
 
+    @Before
+    public void start() throws Exception {
+        setupNodes();
+    }
+
     @Override
-    protected ProxyController createProxyController(final ModelController targetController, final PathAddress proxyNodeAddress) {
-        return new TestProxyController(targetController, proxyNodeAddress);
+    protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
+        return new TestProxyController(proxiedController, proxyNodeAddress);
     }
 
     static class TestProxyController implements ProxyController {

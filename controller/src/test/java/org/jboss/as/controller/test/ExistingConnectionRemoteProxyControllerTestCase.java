@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.concurrent.CancellationException;
+import java.security.AccessController;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -34,40 +34,45 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
-import org.jboss.dmr.ModelNode;
+import org.jboss.threads.JBossThreadFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 
 /**
+ * Tests a proxy controller where the main side uses an existing connection opened by the proxied side.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class ExistingConnectionRemoteProxyControllerTestCase extends AbstractProxyControllerTest implements ConnectionHandler {
+@Ignore("Disabled as it intermittently fails which proves that duplexing over jboss-as-protocol connections is invalid")
+public class ExistingConnectionRemoteProxyControllerTestCase extends AbstractProxyControllerTest {
 
-    ModelController proxyController;
+    ModelController proxiedController;
     PathAddress proxyNodeAddress;
-    DelegatingProxyController testController = new DelegatingProxyController();
+    DelegatingProxyController proxyController = new DelegatingProxyController();
+    // Server running on the mainController side
     ProtocolServer server;
-    CountDownLatch connectionLatch = new CountDownLatch(1);
+    // Conn to main side opened by proxied side
     Connection clientConn;
+    // Main side end of clientConn
     Connection serverConn;
 
     @Before
     public void start() throws Exception {
+
+        setupNodes();
+
+        // Set up the main-controller-side comm server
         final ProtocolServer.Configuration config = new ProtocolServer.Configuration();
         config.setBindAddress(new InetSocketAddress(InetAddress.getByName("localhost"), 0));
         final AtomicInteger increment = new AtomicInteger();
@@ -77,104 +82,69 @@ public class ExistingConnectionRemoteProxyControllerTestCase extends AbstractPro
                 return new Thread(r, "Server-" + increment.incrementAndGet());
             }
         });
-        config.setReadExecutor(Executors.newCachedThreadPool());
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("MainController-ProtocolServer-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        config.setThreadFactory(threadFactory);
+        config.setReadExecutor(Executors.newCachedThreadPool(threadFactory));
         config.setSocketFactory(ServerSocketFactory.getDefault());
         config.setBacklog(50);
-        config.setConnectionHandler(this);
+
+        final CountDownLatch connectionLatch = new CountDownLatch(1);
+        config.setConnectionHandler(new ConnectionHandler() {
+            @Override
+            public MessageHandler handleConnected(Connection connection) throws IOException {
+
+                serverConn = connection;
+                try {
+                    MessageHandler handler = new TestManagementHeaderMessageHandler();
+                    return handler;
+                } finally {
+                    connectionLatch.countDown();
+                }
+            }});
 
         server = new ProtocolServer(config);
         server.start();
         int port = server.getBoundAddress().getPort();
 
-        Connection clientConn = new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(
+        // Connect to it from the proxied side
+        final ThreadFactory clientThreadFactory = new JBossThreadFactory(new ThreadGroup("ProxiedController-ProtocolServer-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        clientConn = new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(
                 InetAddress.getByName("localhost"),
                 port,
                 5000,
-                Executors.newCachedThreadPool(),
-                Executors.defaultThreadFactory()).getConnection();
+                Executors.newCachedThreadPool(clientThreadFactory),
+                clientThreadFactory).getConnection();
 
         connectionLatch.await();
         System.out.println("connected");
 
-        MessageHandler handler = new RemoteModelControllerSetup.SetupManagementHeaderMessageHandler(proxyController);
+        // Configure client conn to handle requests
+        MessageHandler handler = new RemoteModelControllerSetup.SetupManagementHeaderMessageHandler(proxiedController);
         clientConn.setMessageHandler(handler);
 
-        testController.setDelegate(RemoteProxyController.create(serverConn, proxyNodeAddress));
+        // Configure main side proxy-controller to use main-side of clientConn
+        proxyController.setDelegate(RemoteProxyController.create(serverConn, proxyNodeAddress));
     }
 
     @After
     public void stop() {
         StreamUtils.safeClose(clientConn);
+        StreamUtils.safeClose(serverConn);
         server.stop();
-        testController.setDelegate(null);
+        proxyController.setDelegate(null);
     }
 
     @Override
-    protected ProxyController createProxyController(final ModelController targetController, final PathAddress proxyNodeAddress) {
-        this.proxyController = targetController;
+    protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
+        this.proxiedController = proxiedController;
         this.proxyNodeAddress = proxyNodeAddress;
-        return testController;
+        return proxyController;
     }
 
-    @Override
-    public MessageHandler handleConnected(Connection connection) throws IOException {
-        serverConn = connection;
-        try {
-            MessageHandler handler = new TestManagementHeaderMessageHandler();
-            return handler;
-        } finally {
-            connectionLatch.countDown();
-        }
-    }
-
-    private class TestManagementHeaderMessageHandler extends ManagementHeaderMessageHandler {
+    private class TestManagementHeaderMessageHandler extends AbstractMessageHandler {
         @Override
-        protected MessageHandler getHandlerForId(byte handlerId) {
-            return new MessageHandler() {
-
-                @Override
-                public void handleShutdown(Connection connection) throws IOException {
-                }
-
-                @Override
-                public void handleMessage(Connection connection, InputStream dataStream)
-                        throws IOException {
-                }
-
-                @Override
-                public void handleFinished(Connection connection) throws IOException {
-                }
-
-                @Override
-                public void handleFailure(Connection connection, IOException e)
-                        throws IOException {
-                }
-            };
+        public void handle(Connection connection, InputStream dataStream) throws IOException {
+            throw new IllegalStateException("[JBAS-8930] The request handler on the main side should not be invoked");
         }
-    }
-
-    private static class DelegatingProxyController implements ProxyController {
-
-        ProxyController delegate;
-
-        void setDelegate(ProxyController delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public OperationResult execute(Operation operation, ResultHandler handler) {
-            return delegate.execute(operation, handler);
-        }
-
-        @Override
-        public ModelNode execute(Operation operation) throws CancellationException {
-            return delegate.execute(operation);
-        }
-
-        @Override
-        public PathAddress getProxyNodeAddress() {
-            return delegate.getProxyNodeAddress();
-        }
-
     }
 }
