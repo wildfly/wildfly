@@ -22,12 +22,24 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
+import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
+import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
@@ -41,6 +53,7 @@ import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -54,8 +67,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceUnit;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +77,7 @@ import java.util.Map;
  *
  * @author Scott Marlow (based on ResourceInjectionAnnotationParsingProcessor)
  */
-public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcessor {
+public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
 
     private static final DotName PERSISTENCE_CONTEXT_ANNOTATION_NAME = DotName.createSimple(PersistenceContext.class.getName());
@@ -74,95 +86,68 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
     private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
     private static final String ENTITY_MANAGERFACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
-    /**
-     * Check the deployment annotation index for all classes with the @PersistenceContext annotation.  For each class with the
-     * annotation, collect all the required information to create a managed bean instance, and attach it to the context.
-     *
-     * @param phaseContext the deployment unit context
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
-     *
-     */
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit,
-                                          final DeploymentPhaseContext phaseContext,
-                                          final CompositeIndex compositeIndex,
-                                          final ComponentDescription componentDescription)
-        throws DeploymentUnitProcessingException {
+    @Override
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
-        final ClassInfo classInfo = compositeIndex.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
-        if (classInfo == null) {
-            return; // We can't continue without the annotation index info.
-        }
-        componentDescription.addAnnotationBindings(getConfigurations(deploymentUnit, classInfo, componentDescription, phaseContext));
-        final Collection<InterceptorDescription> interceptorConfigurations = componentDescription.getAllInterceptors().values();
-        for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
-            final ClassInfo interceptorClassInfo = compositeIndex.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
-            if (interceptorClassInfo == null) {
-                continue;
-            }
-            componentDescription.addAnnotationBindings(getConfigurations(deploymentUnit, interceptorClassInfo, componentDescription, phaseContext));
-        }
-    }
+        // @PersistenceContext
+        List<AnnotationInstance> persistenceContexts = index.getAnnotations(PERSISTENCE_CONTEXT_ANNOTATION_NAME);
+        // create binding and injection configurations out of the @PersistenceContext annotations
+        this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceContexts);
 
-    private List<BindingDescription> getConfigurations(final DeploymentUnit deploymentUnit,
-                                                       final ClassInfo classInfo,
-                                                       final ComponentDescription componentDescription,
-                                                       final DeploymentPhaseContext phaseContext)
-        throws DeploymentUnitProcessingException {
+        // @PersistenceUnit
+        List<AnnotationInstance> persistenceUnits = index.getAnnotations(PERSISTENCE_UNIT_ANNOTATION_NAME);
+        // create binding and injection configurations out of the @PersistenceUnit annotaitons
+        this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceUnits);
 
-        final List<BindingDescription> configurations = new ArrayList<BindingDescription>();
-        boolean isJPADeploymentMarker = false;
-        final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
-        if (classAnnotations != null) {
-            List<AnnotationInstance> resourceAnnotations = classAnnotations.get(PERSISTENCE_UNIT_ANNOTATION_NAME);
-            if (resourceAnnotations != null && resourceAnnotations.size() > 0) {
-                isJPADeploymentMarker = true;
-                for (AnnotationInstance annotation : resourceAnnotations) {
-                    configurations.add(getConfiguration(deploymentUnit, annotation, componentDescription, phaseContext));
-                }
-            }
-            resourceAnnotations = classAnnotations.get(PERSISTENCE_CONTEXT_ANNOTATION_NAME);
-            if (resourceAnnotations != null && resourceAnnotations.size() > 0) {
-                isJPADeploymentMarker = true;
-                for (AnnotationInstance annotation : resourceAnnotations) {
-                    configurations.add(getConfiguration(deploymentUnit, annotation, componentDescription, phaseContext));
-                }
-            }
-        }
-
-        if (isJPADeploymentMarker) {
+        // if we found any @PersistenceContext or @PersistenceUnit annotations then mark this as a JPA deployment
+        if (!persistenceContexts.isEmpty() || !persistenceUnits.isEmpty()) {
             JPADeploymentMarker.mark(deploymentUnit);
         }
-
-        return configurations;
     }
 
-    private BindingDescription getConfiguration(final DeploymentUnit deploymentUnit,
-                                                final AnnotationInstance annotation,
-                                                final ComponentDescription componentDescription,
-                                                final DeploymentPhaseContext phaseContext)
-        throws DeploymentUnitProcessingException {
+    @Override
+    public void undeploy(DeploymentUnit context) {
 
-        final AnnotationTarget annotationTarget = annotation.target();
-        final BindingDescription resourceConfiguration;
-        registerInterceptors(componentDescription, annotation);
-        if (annotationTarget instanceof FieldInfo) {
-            resourceConfiguration = processField(deploymentUnit, annotation, FieldInfo.class.cast(annotationTarget), componentDescription, phaseContext);
-        } else if (annotationTarget instanceof MethodInfo) {
-            resourceConfiguration = processMethod(deploymentUnit, annotation, MethodInfo.class.cast(annotationTarget), componentDescription, phaseContext);
-        } else if (annotationTarget instanceof ClassInfo) {
-            resourceConfiguration = processClassResource(deploymentUnit, annotation, ClassInfo.class.cast(annotationTarget), componentDescription, phaseContext);
-        } else {
-            resourceConfiguration = null;
+    }
+
+    private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts) throws DeploymentUnitProcessingException {
+        for (AnnotationInstance annotation : persistenceContexts) {
+            ClassInfo declaringClass = null;
+            final AnnotationTarget annotationTarget = annotation.target();
+            if (annotationTarget instanceof FieldInfo) {
+                FieldInfo fieldInfo = (FieldInfo) annotationTarget;
+                declaringClass = fieldInfo.declaringClass();
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
+                this.processField(deploymentUnit, annotation, fieldInfo, eeModuleClassDescription);
+            } else if (annotationTarget instanceof MethodInfo) {
+                MethodInfo methodInfo = (MethodInfo) annotationTarget;
+                declaringClass = methodInfo.declaringClass();
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
+                this.processMethod(deploymentUnit, annotation, methodInfo, eeModuleClassDescription);
+            } else if (annotationTarget instanceof ClassInfo) {
+                declaringClass = (ClassInfo) annotationTarget;
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.getOrAddClassByName(declaringClass.name().toString());
+                this.processClass(deploymentUnit, annotation, declaringClass, eeModuleClassDescription);
+            }
+
+            // setup interceptors if the annotation is on a component
+            if (declaringClass != null) {
+                // TODO: This may not always work? For example : What if this deployer runs before the components have been
+                // added to the EEModuleDescription?
+                ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(declaringClass.name().toString());
+                // if it's a component then setup the interceptors
+                if (componentDescription != null) {
+                    this.registerInterceptorsForExtendedPersistenceContext(componentDescription, annotation);
+                }
+            }
         }
-        return resourceConfiguration;
     }
 
-    private BindingDescription processField(final DeploymentUnit deploymentUnit,
-                                            final AnnotationInstance annotation,
-                                            final FieldInfo fieldInfo,
-                                            final ComponentDescription componentDescription,
-                                            final DeploymentPhaseContext phaseContext)
-        throws DeploymentUnitProcessingException {
+    private void processField(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final FieldInfo fieldInfo,
+                              final EEModuleClassDescription eeModuleClassDescription) throws DeploymentUnitProcessingException {
 
         final String fieldName = fieldInfo.name();
         final AnnotationValue declaredNameValue = annotation.value("name");
@@ -175,29 +160,35 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         }
 
         //final AnnotationValue declaredTypeValue = annotation.value("type");
-        final DotName declaredType = fieldInfo.type().name();
-        final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? fieldInfo.type().name() : declaredType;
+        final DotName declaredTypeDotName = fieldInfo.type().name();
+        final DotName injectionTypeDotName = declaredTypeDotName == null || declaredTypeDotName.toString().equals(Object.class.getName()) ? fieldInfo.type().name() : declaredTypeDotName;
 
-        BindingDescription bindingDescription = new BindingDescription(localContextName,componentDescription);
-        bindingDescription.setDependency(true);
-        final String injectionTypeName = injectionType.toString();
-        bindingDescription.setBindingType(injectionTypeName);
-
-        bindingDescription.setReferenceSourceDescription(getBindingSource(deploymentUnit,annotation,injectionTypeName));
+        final String injectionType = injectionTypeDotName.toString();
+        final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType);
+        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
+        // add the binding configuration to the class description
+        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getBindingConfigurations().add(bindingConfiguration);
+            }
+        });
 
         // setup the injection target
-        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldName, fieldInfo.declaringClass().name().toString(), fieldInfo.type().name().toString());
-        bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
-
-        return bindingDescription;
+        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldName, fieldInfo.declaringClass().name().toString(), fieldInfo.type().name().toString());
+        // source is always local ENC jndi
+        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
+        final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
+        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getInjectionConfigurations().add(injectionConfiguration);
+            }
+        });
     }
 
-    private BindingDescription processMethod(final DeploymentUnit deploymentUnit,
-                                             final AnnotationInstance annotation,
-                                             final MethodInfo methodInfo,
-                                             final ComponentDescription componentDescription,
-                                             final DeploymentPhaseContext phaseContext)
-        throws DeploymentUnitProcessingException {
+    private void processMethod(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final MethodInfo methodInfo,
+                               final EEModuleClassDescription eeModuleClassDescription) throws DeploymentUnitProcessingException {
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
@@ -214,70 +205,76 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
             localContextName = declaredName;
         }
 
-        final DotName declaredType = methodInfo.returnType().name();
-        final DotName injectionType = declaredType == null || declaredType.toString().equals(Object.class.getName()) ? methodInfo.returnType().name() : declaredType;
-        final BindingDescription bindingDescription = new BindingDescription(localContextName,componentDescription);
-        bindingDescription.setDependency(true);
-        final String injectionTypeName = injectionType.toString();
-        bindingDescription.setBindingType(injectionTypeName);
+        final DotName declaredTypeDotName = methodInfo.returnType().name();
+        final DotName injectionTypeDotName = declaredTypeDotName == null || declaredTypeDotName.toString().equals(Object.class.getName()) ? methodInfo.returnType().name() : declaredTypeDotName;
+        final String injectionType = injectionTypeDotName.toString();
+        final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType);
+        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
+        // setup the binding configuration in the class description
+        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getBindingConfigurations().add(bindingConfiguration);
+            }
+        });
 
-        bindingDescription.setReferenceSourceDescription(getBindingSource(deploymentUnit,annotation,injectionTypeName));
+        // setup the injection configuration
+        final InjectionTarget injectionTarget = new MethodInjectionTarget(methodName, methodInfo.declaringClass().name().toString(), methodInfo.returnType().name().toString());
+        // source is always local ENC jndi name
+        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
+        final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
 
-        // setup the injection target
-        final InjectionTarget targetDescription = new MethodInjectionTarget(methodName, methodInfo.declaringClass().name().toString(), methodInfo.returnType().name().toString());
-        bindingDescription.getInjectionTargetDescriptions().add(targetDescription);
-        return bindingDescription;
+        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getInjectionConfigurations().add(injectionConfiguration);
+            }
+        });
     }
 
-    private BindingDescription processClassResource(
-        final DeploymentUnit deploymentUnit,
-        final AnnotationInstance annotation,
-        final ClassInfo classInfo,
-        final ComponentDescription componentDescription,
-        final DeploymentPhaseContext phaseContext)
-        throws DeploymentUnitProcessingException {
+    private void processClass(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final ClassInfo classInfo,
+                              final EEModuleClassDescription eeModuleClassDescription) throws DeploymentUnitProcessingException {
 
         final AnnotationValue nameValue = annotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
             throw new IllegalArgumentException("Class level annotations must provide a name.");
         }
         final String name = nameValue.asString();
-        final BindingDescription bindingDescription = new BindingDescription(name,componentDescription);
-        bindingDescription.setDependency(true);
         String type = getClassLevelInjectionType(annotation);
-        bindingDescription.setBindingType(type);
-        bindingDescription.setReferenceSourceDescription(
-            getBindingSource(deploymentUnit,annotation,type));
-        return bindingDescription;
+        InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, type);
+        final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
+        // setup the binding configuration in the class description
+        eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getBindingConfigurations().add(bindingConfiguration);
+            }
+        });
     }
 
-    private InjectionSource getBindingSource(
-        final DeploymentUnit deploymentUnit,
-        final AnnotationInstance annotation,
-        String injectionTypeName)
-        throws DeploymentUnitProcessingException {
+    private InjectionSource getBindingSource(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, String injectionTypeName)
+            throws DeploymentUnitProcessingException {
 
         String scopedPuName = getScopedPuName(deploymentUnit, annotation);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
             AnnotationValue pcType = annotation.value("type");
             PersistenceContextType type = (pcType == null || PersistenceContextType.TRANSACTION.name().equals(pcType.asString()))
-            ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
+                    ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
 
             Map properties;
             AnnotationValue value = annotation.value("properties");
             AnnotationInstance[] props = value != null ? value.asNestedArray() : null;
             if (props != null) {
                 properties = new HashMap();
-                for(int source=0; source < props.length; source ++) {
+                for (int source = 0; source < props.length; source++) {
                     properties.put(props[source].value("name"), props[source].value("value"));
                 }
-            }
-            else {
+            } else {
                 properties = null;
             }
 
-            return new PersistenceContextInjectionSource(type,properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
+            return new PersistenceContextInjectionSource(type, properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         } else {
             return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, scopedPuName, injectionTypeName);
         }
@@ -286,7 +283,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
     private boolean isExtendedPersistenceContext(final AnnotationInstance annotation) {
         AnnotationValue value = annotation.value("type");
         return annotation.name().local().equals("PersistenceContext") &&
-            (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
+                (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
 
     }
 
@@ -296,6 +293,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
 
     /**
      * Based on the the annotation type, its either entitymanager or entitymanagerfactory
+     *
      * @param annotation
      * @return
      */
@@ -305,7 +303,7 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
     }
 
     private String getScopedPuName(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation)
-        throws DeploymentUnitProcessingException {
+            throws DeploymentUnitProcessingException {
 
         final AnnotationValue puName = annotation.value("unitName");
         String scopedPuName;
@@ -322,17 +320,40 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
     }
 
     private ServiceName getPuServiceName(String scopedPuName)
-        throws DeploymentUnitProcessingException {
+            throws DeploymentUnitProcessingException {
 
         return PersistenceUnitService.getPUServiceName(scopedPuName);
     }
 
     // Register our listeners on SFSB that will be created
-    private void registerInterceptors(ComponentDescription componentDescription, AnnotationInstance annotation) {
+    private void registerInterceptorsForExtendedPersistenceContext(ComponentDescription componentDescription, AnnotationInstance annotation) {
+        // if it's a SFSB and extended persistence context then setup appropriate interceptors
         if (componentDescription instanceof StatefulComponentDescription && isExtendedPersistenceContext(annotation)) {
-            componentDescription.addPostConstructInterceptorFactory(new SFSBCreateInterceptorFactory());
-            componentDescription.addPreDestroyInterceptorFactory(new SFSBDestroyInterceptorFactory());
-            componentDescription.addInterceptorFactory(SFSBInvocationInterceptorFactory.getInstance());
+            // first setup the post construct and pre destroy component interceptors
+            componentDescription.getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.getPostConstructInterceptors().add(new SFSBCreateInterceptorFactory());
+                    configuration.getPreDestroyInterceptors().add(new SFSBDestroyInterceptorFactory());
+                }
+            });
+
+            // now for each view and each method on that view, setup the SFSB invocation interceptor factory
+            // TODO: Is there a better/efficient way of doing this? Why do we need to fetch all methods of the view
+            // and then setup the interceptors on each of those methods? Why not just have a construct "applies to all
+            // invocations on the view"?
+            List<ViewDescription> views = componentDescription.getViews();
+            for (ViewDescription view : views) {
+                view.getConfigurators().add(new ViewConfigurator() {
+                    @Override
+                    public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                        Method[] viewMethods = configuration.getProxyFactory().getCachedMethods();
+                        for (Method viewMethod : viewMethods) {
+                            configuration.getViewInterceptorDeque(viewMethod).add(SFSBInvocationInterceptorFactory.getInstance());
+                        }
+                    }
+                });
+            }
         }
         // register interceptor on stateful/stateless SB with transactional entity manager.
         if (!isExtendedPersistenceContext(annotation) &&
