@@ -222,9 +222,11 @@ public class ConfigurationFile {
 
     private File findSnapshotWithPrefix(final String prefix, boolean errorIfNoFiles) {
         List<String> names = new ArrayList<String>();
-        for (String curr : snapshotsDirectory.list()) {
-            if (curr.startsWith(prefix)) {
-                names.add(curr);
+        if (snapshotsDirectory.exists() && snapshotsDirectory.isDirectory()) {
+            for (String curr : snapshotsDirectory.list()) {
+                if (curr.startsWith(prefix)) {
+                    names.add(curr);
+                }
             }
         }
         if (names.size() == 0 && errorIfNoFiles) {
