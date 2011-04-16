@@ -22,13 +22,19 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
-import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -36,65 +42,85 @@ import org.jboss.jandex.DotName;
 import javax.annotation.sql.DataSourceDefinition;
 import javax.annotation.sql.DataSourceDefinitions;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.*;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.DATABASE_NAME_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.DESCRIPTION_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.INITIAL_POOL_SIZE_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.ISOLATION_LEVEL_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.LOGIN_TIMEOUT_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MAX_IDLE_TIME_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MAX_POOL_SIZE_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MAX_STATEMENTS_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.MIN_POOL_SIZE_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.PASSWORD_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.PORT_NUMBER_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.PROPERTIES_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.SERVER_NAME_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.TRANSACTIONAL_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.URL_PROP;
+import static org.jboss.as.connector.deployers.processors.DirectDataSourceInjectionSource.USER_PROP;
 
 /**
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
- * required DataSourceDefinition annotations.
- * <p/>
- * TODO: This should belong to EE subsystem
+ * Deployment processor responsible for processing {@link DataSourceDefinition} and {@link DataSourceDefinitions}
+ * and creating {@link BindingConfiguration}s out of them
  *
  * @author John Bailey
  * @author Jason T. Greene
  */
-public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcessor {
+public class DataSourceDefinitionDeployer implements DeploymentUnitProcessor {
 
     private static final DotName DATASOURCE_DEFINITION = DotName.createSimple(DataSourceDefinition.class.getName());
     private static final DotName DATASOURCE_DEFINITIONS = DotName.createSimple(DataSourceDefinitions.class.getName());
 
-    /** {@inheritDoc} **/
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription description) throws DeploymentUnitProcessingException {
-        final ClassInfo classInfo = index.getClassByName(DotName.createSimple(description.getComponentClassName()));
-        if (classInfo == null) {
-            return; // We can't continue without the annotation index info.
-        }
-        description.addAnnotationBindings(getDatasourceDefinitions(classInfo));
+    @Override
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+        // @DataSourceDefinitions
+        List<AnnotationInstance> datasourceDefinitions = index.getAnnotations(DATASOURCE_DEFINITIONS);
+        // get the nested @DataSourceDefinition out of the outer @DataSourceDefinitions
+        List<AnnotationInstance> nestedDataSources = this.getNestedDataSourceAnnotations(datasourceDefinitions);
+        // create binding configurations out of it
+        this.processDataSourceDefinitions(eeModuleDescription, nestedDataSources);
 
-        final Collection<InterceptorDescription> interceptorConfigurations = description.getAllInterceptors().values();
-        for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
-            final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
-            if (interceptorClassInfo == null) {
-                continue;
-            }
-            description.addAnnotationBindings(getDatasourceDefinitions(interceptorClassInfo));
-        }
+        // @DataSourceDefinition
+        List<AnnotationInstance> datasources = index.getAnnotations(DATASOURCE_DEFINITION);
+        // create binding configurations out of it
+        this.processDataSourceDefinitions(eeModuleDescription, datasources);
     }
 
-    private List<BindingDescription> getDatasourceDefinitions(final ClassInfo classInfo) {
-        final List<BindingDescription> configurations = new ArrayList<BindingDescription>();
+    @Override
+    public void undeploy(DeploymentUnit context) {
+    }
 
-        final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
-        if (classAnnotations != null) {
-            final List<AnnotationInstance> definitions = classAnnotations.get(DATASOURCE_DEFINITION);
-            if (definitions != null) for (AnnotationInstance annotation : definitions) {
-                if (annotation.target() instanceof ClassInfo) {
-                    configurations.add(processDefinition(annotation));
+    private void processDataSourceDefinitions(final EEModuleDescription eeModuleDescription, final List<AnnotationInstance> datasourceDefinitions) throws DeploymentUnitProcessingException {
+        for (AnnotationInstance annotation : datasourceDefinitions) {
+            final AnnotationTarget annotationTarget = annotation.target();
+            if (annotationTarget instanceof ClassInfo == false) {
+                throw new DeploymentUnitProcessingException("@DataSourceDefinition can only be applied " +
+                        "on class. " + annotationTarget + " is not a class");
+            }
+            // create BindingConfiguration out of the @DataSource annotation
+            final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(annotation);
+            ClassInfo targetClass = (ClassInfo) annotationTarget;
+            EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(targetClass.name().toString());
+            // add the binding configuration via a class configurator
+            classDescription.getConfigurators().add(new ClassConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.getBindingConfigurations().add(bindingConfiguration);
                 }
-            }
-            configurations.addAll(processDefinitions(classAnnotations));
+            });
         }
-
-        return configurations;
     }
 
-    private BindingDescription processDefinition(final AnnotationInstance annotation) {
+    private BindingConfiguration getBindingConfiguration(final AnnotationInstance datasourceAnnotation) {
 
-        final AnnotationValue nameValue = annotation.value("name");
+        final AnnotationValue nameValue = datasourceAnnotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
             throw new IllegalArgumentException("@DataSourceDefinition annotations must provide a name.");
         }
@@ -104,36 +130,33 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
             name = "java:comp/env/" + name;
         }
 
-        final AnnotationValue classValue = annotation.value("className");
+        final AnnotationValue classValue = datasourceAnnotation.value("className");
         if (classValue == null || classValue.asString().equals(Object.class.getName())) {
             throw new IllegalArgumentException("@DataSourceDefinition annotations must provide a driver class name.");
         }
 
         final String type = classValue.asString();
-        final DirectDataSourceInjectionSource desc = new DirectDataSourceInjectionSource();
-        desc.setClassName(type);
-        desc.setDatabaseName(asString(annotation, DATABASE_NAME_PROP));
-        desc.setDescription(asString(annotation, DESCRIPTION_PROP));
-        desc.setInitialPoolSize(asInt(annotation, INITIAL_POOL_SIZE_PROP));
-        desc.setIsolationLevel(asInt(annotation, ISOLATION_LEVEL_PROP));
-        desc.setLoginTimeout(asInt(annotation, LOGIN_TIMEOUT_PROP));
-        desc.setMaxIdleTime(asInt(annotation, MAX_IDLE_TIME_PROP));
-        desc.setMaxStatements(asInt(annotation, MAX_STATEMENTS_PROP));
-        desc.setMaxPoolSize(asInt(annotation, MAX_POOL_SIZE_PROP));
-        desc.setMinPoolSize(asInt(annotation, MIN_POOL_SIZE_PROP));
-        desc.setPassword(asString(annotation, PASSWORD_PROP));
-        desc.setPortNumber(asInt(annotation, PORT_NUMBER_PROP));
-        desc.setProperties(asArray(annotation, PROPERTIES_PROP));
-        desc.setServerName(asString(annotation, SERVER_NAME_PROP));
-        desc.setTransactional(asBool(annotation, TRANSACTIONAL_PROP));
-        desc.setUrl(asString(annotation, URL_PROP));
-        desc.setUser(asString(annotation, USER_PROP));
+        final DirectDataSourceInjectionSource directDataSourceInjectionSource = new DirectDataSourceInjectionSource();
+        directDataSourceInjectionSource.setClassName(type);
+        directDataSourceInjectionSource.setDatabaseName(asString(datasourceAnnotation, DATABASE_NAME_PROP));
+        directDataSourceInjectionSource.setDescription(asString(datasourceAnnotation, DESCRIPTION_PROP));
+        directDataSourceInjectionSource.setInitialPoolSize(asInt(datasourceAnnotation, INITIAL_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setIsolationLevel(asInt(datasourceAnnotation, ISOLATION_LEVEL_PROP));
+        directDataSourceInjectionSource.setLoginTimeout(asInt(datasourceAnnotation, LOGIN_TIMEOUT_PROP));
+        directDataSourceInjectionSource.setMaxIdleTime(asInt(datasourceAnnotation, MAX_IDLE_TIME_PROP));
+        directDataSourceInjectionSource.setMaxStatements(asInt(datasourceAnnotation, MAX_STATEMENTS_PROP));
+        directDataSourceInjectionSource.setMaxPoolSize(asInt(datasourceAnnotation, MAX_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setMinPoolSize(asInt(datasourceAnnotation, MIN_POOL_SIZE_PROP));
+        directDataSourceInjectionSource.setPassword(asString(datasourceAnnotation, PASSWORD_PROP));
+        directDataSourceInjectionSource.setPortNumber(asInt(datasourceAnnotation, PORT_NUMBER_PROP));
+        directDataSourceInjectionSource.setProperties(asArray(datasourceAnnotation, PROPERTIES_PROP));
+        directDataSourceInjectionSource.setServerName(asString(datasourceAnnotation, SERVER_NAME_PROP));
+        directDataSourceInjectionSource.setTransactional(asBool(datasourceAnnotation, TRANSACTIONAL_PROP));
+        directDataSourceInjectionSource.setUrl(asString(datasourceAnnotation, URL_PROP));
+        directDataSourceInjectionSource.setUser(asString(datasourceAnnotation, USER_PROP));
 
 
-        final BindingDescription bindingDescription = new BindingDescription(name);
-        bindingDescription.setDependency(true);
-        bindingDescription.setBindingType(type);
-        bindingDescription.setReferenceSourceDescription(desc);
+        final BindingConfiguration bindingDescription = new BindingConfiguration(name, directDataSourceInjectionSource);
         return bindingDescription;
     }
 
@@ -157,19 +180,23 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
         return value == null ? null : value.asStringArray();
     }
 
-    private List<BindingDescription> processDefinitions(final Map<DotName, List<AnnotationInstance>> classAnnotations) {
-        final List<AnnotationInstance> definitionsAnnotation = classAnnotations.get(DATASOURCE_DEFINITIONS);
-        if (definitionsAnnotation == null || definitionsAnnotation.isEmpty()) {
+    /**
+     * Returns the nested {@link DataSourceDefinition} annotations out of the outer {@link DataSourceDefinitions} annotations
+     *
+     * @param datasourceDefinitions The outer {@link DataSourceDefinitions} annotations
+     * @return
+     */
+    private List<AnnotationInstance> getNestedDataSourceAnnotations(List<AnnotationInstance> datasourceDefinitions) {
+        if (datasourceDefinitions == null || datasourceDefinitions.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final AnnotationInstance resourcesInstance = definitionsAnnotation.get(0);
-        final AnnotationInstance[] definitions = resourcesInstance.value().asNestedArray();
-
-        final List<BindingDescription> definitionDescriptions = new ArrayList<BindingDescription>(definitions.length);
-        for (AnnotationInstance definition : definitions) {
-            definitionDescriptions.add(processDefinition(definition));
+        List<AnnotationInstance> nestedDataSources = new ArrayList<AnnotationInstance>();
+        for (AnnotationInstance datasources : datasourceDefinitions) {
+            AnnotationInstance[] nested = datasources.value().asNestedArray();
+            nestedDataSources.addAll(Arrays.asList(nested));
         }
-        return definitionDescriptions;
+        return nestedDataSources;
     }
+
 }
