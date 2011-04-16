@@ -30,7 +30,6 @@ import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -55,16 +54,22 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     /**
      * Construct a new instance.
      *
-     * @param configuration the component configuration
+     * @param ejbComponentCreateService the component configuration
      */
-    protected EJBComponent(final EJBComponentConfiguration configuration) {
-        super(configuration);
+    protected EJBComponent(final EJBComponentCreateService ejbComponentCreateService) {
+        super(ejbComponentCreateService);
 
-        this.utilities = configuration.getInjectionValue(EJBUtilities.SERVICE_NAME, EJBUtilities.class);
-        this.applicationExceptions = configuration.getEjbJarConfiguration().getApplicationExceptions();
+
+        //this.applicationExceptions = configuration.getEjbJarConfiguration().getApplicationExceptions();
+
+        // TODO: FIXME: Fix these initialization once we have migrated to the new EE framework
+        // constructs
+        this.utilities = null; //ejbComponentCreateService.getInjectionValue(EJBUtilities.SERVICE_NAME, EJBUtilities.class);
+
+
         // slurp some memory
-        txAttrs = configuration.getTxAttrs();
-        isBeanManagedTransaction = configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN);
+        txAttrs = null; //ejbComponentCreateService.getTxAttrs();
+        isBeanManagedTransaction = false; //ejbComponentCreateService.getTransactionManagementType().equals(TransactionManagementType.BEAN);
     }
 
     @Override

@@ -25,15 +25,13 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.Interceptors;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -47,17 +45,16 @@ import java.util.concurrent.TimeUnit;
  * Author : Jaikiran Pai
  */
 public class StatelessSessionComponent extends SessionBeanComponent implements PooledComponent<StatelessSessionComponentInstance> {
-    // some more injectable resources
-    // @Resource
+
     private Pool<StatelessSessionComponentInstance> pool;
 
     /**
      * Constructs a StatelessEJBComponent for a stateless session bean
      *
-     * @param componentConfiguration
+     * @param ejbComponentCreateService
      */
-    public StatelessSessionComponent(final StatelessSessionComponentConfiguration componentConfiguration) {
-        super(componentConfiguration);
+    public StatelessSessionComponent(final EJBComponentCreateService ejbComponentCreateService) {
+        super(ejbComponentCreateService);
 
         StatelessObjectFactory<StatelessSessionComponentInstance> factory = new StatelessObjectFactory<StatelessSessionComponentInstance>() {
             @Override
@@ -67,11 +64,40 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
             @Override
             public void destroy(StatelessSessionComponentInstance obj) {
-                destroyInstance(obj);
+                throw new RuntimeException("NYI");
+                //destroyInstance(obj);
             }
         };
         this.pool = new StrictMaxPool<StatelessSessionComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
     }
+
+
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> viewClass) {
+//        return new Interceptor() {
+//            @Override
+//            public Object processInvocation(InterceptorContext context) throws Exception {
+//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+//                // runs on remote clients.
+//                context.putPrivateData(Component.class, StatelessSessionComponent.this);
+//                try {
+//                    final Method method = context.getMethod();
+//                    if(isAsynchronous(method)) {
+//                        return invokeAsynchronous(method, context);
+//                    }
+//                    return context.proceed();
+//                }
+//                finally {
+//                    context.putPrivateData(Component.class, null);
+//                }
+//            }
+//        };
+//    }
+//
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+//        return createClientInterceptor(view);
+//    }
 
     //TODO: This should be getInstance()
     @Override
@@ -81,8 +107,8 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     }
 
     @Override
-    protected BasicComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
-        return new StatelessSessionComponentInstance(this, instance, context);
+    protected BasicComponentInstance constructComponentInstance() {
+        return new StatelessSessionComponentInstance(this);
     }
 
     @Override
@@ -101,6 +127,8 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         context.setContextData(contextData);
         context.setMethod(beanMethod);
         context.setParameters(args);
-        return getComponentInterceptor().processInvocation(context);
+        // FIXME:
+        //return getComponentInterceptor().processInvocation(context);
+        throw new RuntimeException("NYI");
     }
 }

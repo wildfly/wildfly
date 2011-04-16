@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,36 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbJarDescription;
-
 /**
- * User: jpai
+ * @author Jaikiran Pai
  */
-public class StatefulComponentDescription extends SessionBeanComponentDescription {
+public class EJBComponentCreateService extends BasicComponentCreateService {
 
     /**
      * Construct a new instance.
      *
-     * @param componentName      the component name
-     * @param componentClassName the component instance class name
-     * @param ejbModuleDescription  the module description
+     * @param componentConfiguration the component configuration
      */
-    public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription) {
-        super(componentName, componentClassName, ejbModuleDescription);
-    }
-
-    @Override
-    public boolean allowsConcurrentAccess() {
-        return true;
-    }
-
-    @Override
-    public SessionBeanType getSessionBeanType() {
-        return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
+    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration) {
+        super(componentConfiguration);
     }
 }

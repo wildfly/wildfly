@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
@@ -42,16 +43,12 @@ import javax.ejb.AccessTimeout;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -69,45 +66,46 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     /**
      * Construct a new instance.
      *
-     * @param configuration the component configuration
+     * @param ejbComponentCreateService the component configuration
      */
-    protected SessionBeanComponent(final SessionBeanComponentConfiguration configuration) {
-        super(configuration);
+    protected SessionBeanComponent(final EJBComponentCreateService ejbComponentCreateService) {
+        super(ejbComponentCreateService);
 
-        AccessTimeout accessTimeout = configuration.getBeanLevelAccessTimeout();
-        // TODO: the configuration should always have an access timeout
-        if (accessTimeout == null) {
-            accessTimeout = new AccessTimeout() {
-                @Override
-                public long value() {
-                    return 5;
-                }
-
-                @Override
-                public TimeUnit unit() {
-                    return MINUTES;
-                }
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return AccessTimeout.class;
-                }
-            };
-        }
-        this.beanLevelAccessTimeout = accessTimeout;
-        this.asynchronousMethods = configuration.getAsynchronousMethods();
-        this.asyncExecutor = (Executor) configuration.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
+//        AccessTimeout accessTimeout = ejbComponentCreateService.getBeanLevelAccessTimeout();
+//        // TODO: the configuration should always have an access timeout
+//        if (accessTimeout == null) {
+//            accessTimeout = new AccessTimeout() {
+//                @Override
+//                public long value() {
+//                    return 5;
+//                }
+//
+//                @Override
+//                public TimeUnit unit() {
+//                    return MINUTES;
+//                }
+//
+//                @Override
+//                public Class<? extends Annotation> annotationType() {
+//                    return AccessTimeout.class;
+//                }
+//            };
+//        }
+//        this.beanLevelAccessTimeout = accessTimeout;
+        this.asynchronousMethods = null; //ejbComponentCreateService.getAsynchronousMethods();
+//        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
     }
 
     @Override
     public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
-        final ComponentView view = getComponentView(businessInterface);
-        if (view == null)
-            throw new IllegalStateException("Stateful bean " + getComponentName() + " does not have a view " + businessInterface);
-        // see SessionBeanComponentInstance
-        Serializable sessionId = ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
-        Object proxy = view.getViewForInstance(sessionId);
-        return businessInterface.cast(proxy);
+//        final ComponentView view = getComponentView(businessInterface);
+//        if (view == null)
+//            throw new IllegalStateException("Stateful bean " + getComponentName() + " does not have a view " + businessInterface);
+//        // see SessionBeanComponentInstance
+//        Serializable sessionId = ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
+//        Object proxy = view.getViewForInstance(sessionId);
+//        return businessInterface.cast(proxy);
+        throw new RuntimeException("NYI");
     }
 
     @Override

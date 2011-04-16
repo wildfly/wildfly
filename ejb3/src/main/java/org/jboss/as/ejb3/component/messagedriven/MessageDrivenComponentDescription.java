@@ -57,11 +57,6 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return MethodIntf.BEAN;
     }
 
-    @Override
-    protected MessageDrivenComponentConfiguration constructComponentConfiguration() {
-        return new MessageDrivenComponentConfiguration(this);
-    }
-
     String getMessageListenerInterfaceName() {
         return messageListenerInterfaceName;
     }
@@ -70,26 +65,26 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return resourceAdapterName;
     }
 
-    @Override
-    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        super.prepareComponentConfiguration(configuration, phaseContext);
+//    @Override
+//    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+//        super.prepareComponentConfiguration(configuration, phaseContext);
+//
+//        final MessageDrivenComponentConfiguration messageDrivenComponentConfiguration = (MessageDrivenComponentConfiguration) configuration;
+//        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+//        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+//        final ClassLoader classLoader = module.getClassLoader();
+//
+//        try {
+//            messageDrivenComponentConfiguration.setMessageListenerInterface(classLoader.loadClass(getMessageListenerInterfaceName()));
+//        } catch (ClassNotFoundException e) {
+//            throw new DeploymentUnitProcessingException("Failed to load message listener interface " + getMessageListenerInterfaceName());
+//        }
+//    }
 
-        final MessageDrivenComponentConfiguration messageDrivenComponentConfiguration = (MessageDrivenComponentConfiguration) configuration;
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final ClassLoader classLoader = module.getClassLoader();
-
-        try {
-            messageDrivenComponentConfiguration.setMessageListenerInterface(classLoader.loadClass(getMessageListenerInterfaceName()));
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Failed to load message listener interface " + getMessageListenerInterfaceName());
-        }
-    }
-
-    public void setMessageListenerInterfaceName(String messageListenerInterfaceName) {
-        getViewClassNames().add(messageListenerInterfaceName);
-        this.messageListenerInterfaceName = messageListenerInterfaceName;
-    }
+//    public void setMessageListenerInterfaceName(String messageListenerInterfaceName) {
+//        getViewClassNames().add(messageListenerInterfaceName);
+//        this.messageListenerInterfaceName = messageListenerInterfaceName;
+//    }
 
     public void setResourceAdapterName(String resourceAdapterName) {
         this.resourceAdapterName = resourceAdapterName;

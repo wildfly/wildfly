@@ -21,8 +21,10 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
@@ -62,10 +64,10 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     /**
      * Construct a new instance.
      *
-     * @param configuration the component configuration
+     * @param ejbComponentCreateService the component configuration
      */
-    protected MessageDrivenComponent(final MessageDrivenComponentConfiguration configuration) {
-        super(configuration);
+    protected MessageDrivenComponent(final EJBComponentCreateService ejbComponentCreateService) {
+        super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
             @Override
@@ -75,12 +77,13 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
 
             @Override
             public void destroy(MessageDrivenComponentInstance obj) {
-                destroyInstance(obj);
+                throw new RuntimeException("NYI");
+                //destroyInstance(obj);
             }
         };
         this.pool = new StrictMaxPool<MessageDrivenComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
 
-        this.messageListenerInterface = configuration.getMessageListenerInterface();
+        this.messageListenerInterface = null; //ejbComponentCreateService.getMessageListenerInterface();
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
             public Class<Object> getMessageListenerInterface() {
@@ -101,7 +104,8 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
             @Override
             public Object obtain(long timeout, TimeUnit unit) {
                 // like this it's a disconnected invocation
-                return getComponentView(messageListenerInterface).getViewForInstance(null);
+//                return getComponentView(messageListenerInterface).getViewForInstance(null);
+                throw new RuntimeException("NYI");
             }
 
             @Override
@@ -113,32 +117,32 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    protected MessageDrivenComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
-        return new MessageDrivenComponentInstance(this, instance, context);
+    protected BasicComponentInstance constructComponentInstance() {
+        return new MessageDrivenComponentInstance(this);
     }
 
-    @Override
-    public Interceptor createClientInterceptor(Class<?> view) {
-        return createClientInterceptor(view, null);
-    }
-
-    @Override
-    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-        return new Interceptor() {
-            @Override
-            public Object processInvocation(InterceptorContext context) throws Exception {
-                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-                // runs on remote clients.
-                context.putPrivateData(Component.class, MessageDrivenComponent.this);
-                try {
-                    return context.proceed();
-                }
-                finally {
-                    context.putPrivateData(Component.class, null);
-                }
-            }
-        };
-    }
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> view) {
+//        return createClientInterceptor(view, null);
+//    }
+//
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+//        return new Interceptor() {
+//            @Override
+//            public Object processInvocation(InterceptorContext context) throws Exception {
+//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+//                // runs on remote clients.
+//                context.putPrivateData(Component.class, MessageDrivenComponent.this);
+//                try {
+//                    return context.proceed();
+//                }
+//                finally {
+//                    context.putPrivateData(Component.class, null);
+//                }
+//            }
+//        };
+//    }
 
     @Override
     public Pool<MessageDrivenComponentInstance> getPool() {

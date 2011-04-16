@@ -36,10 +36,9 @@ public class StatelessSessionComponentInstance extends SessionBeanComponentInsta
      * Construct a new instance.
      *
      * @param component   the component
-     * @param instance    the object instance
      */
-    protected StatelessSessionComponentInstance(final StatelessSessionComponent component, final Object instance, InterceptorFactoryContext context) {
-        super(component, instance, context);
+    protected StatelessSessionComponentInstance(final StatelessSessionComponent component) {
+        super(component);
     }
 
     @Override

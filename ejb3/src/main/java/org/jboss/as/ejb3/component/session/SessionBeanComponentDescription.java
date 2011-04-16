@@ -22,14 +22,15 @@
 
 package org.jboss.as.ejb3.component.session;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Future;
 import org.jboss.as.ee.component.ComponentConfiguration;
+
 
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 
+
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
@@ -37,16 +38,21 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.msc.service.ServiceBuilder;
+
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.msc.service.ServiceBuilder;
+import java.util.concurrent.Future;
 
 /**
  * @author Jaikiran Pai
@@ -131,7 +137,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public abstract boolean allowsConcurrentAccess();
 
     public void addLocalBusinessInterfaceViews(Collection<String> classNames) {
-        this.getViewClassNames().addAll(classNames);
         for (String viewClassName : classNames) {
             // EJB 3.1 spec, section 4.9.7:
             // The same business interface cannot be both a local and a remote business interface of the bean.
@@ -141,8 +146,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
                         + " as local view since it's already marked as remote view for bean: " + this.getEJBName());
             }
-
+            // add it to our map
             viewTypes.put(viewClassName, MethodIntf.LOCAL);
+            // setup the ViewDescription
+            ViewDescription viewDescription = new ViewDescription(this, viewClassName);
+            this.getViews().add(viewDescription);
         }
     }
 
@@ -152,12 +160,14 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     public void addNoInterfaceView() {
         this.noInterfaceViewPresent = true;
-        this.getViewClassNames().add(this.getEJBClassName());
+        // add it to our map
         viewTypes.put(getEJBClassName(), MethodIntf.LOCAL);
+        // setup the ViewDescription
+        ViewDescription viewDescription = new ViewDescription(this, this.getEJBClassName());
+        this.getViews().add(viewDescription);
     }
 
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
-        this.getViewClassNames().addAll(classNames);
         for (String viewClassName : classNames) {
             // EJB 3.1 spec, section 4.9.7:
             // The same business interface cannot be both a local and a remote business interface of the bean.
@@ -167,7 +177,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
                         + " as remote view since it's already marked as local view for bean: " + this.getEJBName());
             }
+            // add it to our map
             viewTypes.put(viewClassName, MethodIntf.REMOTE);
+            // setup the ViewDescription
+            ViewDescription viewDescription = new ViewDescription(this, viewClassName);
+            this.getViews().add(viewDescription);
         }
     }
 
@@ -340,17 +354,17 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         }
     }
 
-    @Override
-    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        // let super do it's job first
-        super.prepareComponentConfiguration(configuration, phaseContext);
-
-        SessionBeanComponentConfiguration sessionBeanComponentConfiguration = (SessionBeanComponentConfiguration) configuration;
-        // update the SessionBeanConfiguration with the method level LockType info
-        this.prepareLockConfiguration(sessionBeanComponentConfiguration, phaseContext);
-        // update the SessionBeanConfiguration with the method level @AccessTimeout info
-        this.prepareAccessTimeoutConfiguration(sessionBeanComponentConfiguration, phaseContext);
-    }
+//    @Override
+//    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+//        // let super do it's job first
+//        super.prepareComponentConfiguration(configuration, phaseContext);
+//
+//        SessionBeanComponentConfiguration sessionBeanComponentConfiguration = (SessionBeanComponentConfiguration) configuration;
+//        // update the SessionBeanConfiguration with the method level LockType info
+//        this.prepareLockConfiguration(sessionBeanComponentConfiguration, phaseContext);
+//        // update the SessionBeanConfiguration with the method level @AccessTimeout info
+//        this.prepareAccessTimeoutConfiguration(sessionBeanComponentConfiguration, phaseContext);
+//    }
 
     private void prepareAccessTimeoutConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();

@@ -34,8 +34,8 @@ import java.io.Serializable;
 public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
     private final GUID id;
 
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final Object instance, InterceptorFactoryContext context) {
-        super(component, instance, context);
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component) {
+        super(component);
         this.id = new GUID();
     }
 

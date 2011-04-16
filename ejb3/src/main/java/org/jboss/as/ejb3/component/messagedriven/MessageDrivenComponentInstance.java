@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.ejb3.context.base.BaseMessageDrivenContext;
 import org.jboss.ejb3.context.spi.MessageDrivenContext;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -42,9 +41,8 @@ public class MessageDrivenComponentInstance extends BasicComponentInstance {
      * Construct a new instance.
      *
      * @param component the component
-     * @param instance  the object instance
      */
-    protected MessageDrivenComponentInstance(final MessageDrivenComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
+    protected MessageDrivenComponentInstance(final MessageDrivenComponent component) {
         super(component);
     }
 

@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
@@ -48,10 +49,10 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     /**
      * Construct a new instance.
      *
-     * @param configuration the component configuration
+     * @param ejbComponentCreateService the component configuration
      */
-    protected StatefulSessionComponent(final StatefulSessionComponentConfiguration configuration) {
-        super(configuration);
+    protected StatefulSessionComponent(final EJBComponentCreateService ejbComponentCreateService) {
+        super(ejbComponentCreateService);
 
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
@@ -63,49 +64,51 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
             @Override
             public void destroyInstance(StatefulSessionComponentInstance instance) {
-                StatefulSessionComponent.this.destroyInstance(instance);
+                //StatefulSessionComponent.this.destroyInstance(instance);
+                throw new RuntimeException("NYI");
             }
         });
     }
 
-    @Override
-    public Interceptor createClientInterceptor(Class<?> view) {
-        final Serializable sessionId = createSession();
-        return createClientInterceptor(view, sessionId);
-    }
 
-    @Override
-    public Interceptor createClientInterceptor(final Class<?> view, final Serializable sessionId) {
-        return new Interceptor() {
-            @Override
-            public Object processInvocation(InterceptorContext context) throws Exception {
-                final Method method = context.getMethod();
-                // if no-interface view, then check whether invocation on the method is allowed
-                // (for ex: invocation on protected methods isn't allowed)
-                if (StatefulSessionComponent.this.getComponentClass().equals(view)) {
-                    if (!StatefulSessionComponent.this.isInvocationAllowed(method)) {
-                        throw new javax.ejb.EJBException("Cannot invoke method " + method
-                                + " on nointerface view of bean " + StatefulSessionComponent.this.getComponentName());
-
-                    }
-                }
-                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-                // runs on remote clients.
-                context.putPrivateData(Component.class, StatefulSessionComponent.this);
-                // TODO: attaching as Serializable.class is a bit wicked
-                context.putPrivateData(Serializable.class, sessionId);
-                try {
-                    if (isAsynchronous(method)) {
-                        return invokeAsynchronous(method, context);
-                    }
-                    return context.proceed();
-                } finally {
-                    context.putPrivateData(Component.class, null);
-                    context.putPrivateData(Serializable.class, null);
-                }
-            }
-        };
-    }
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> view) {
+//        final Serializable sessionId = createSession();
+//        return createClientInterceptor(view, sessionId);
+//    }
+//
+//    @Override
+//    public Interceptor createClientInterceptor(final Class<?> view, final Serializable sessionId) {
+//        return new Interceptor() {
+//            @Override
+//            public Object processInvocation(InterceptorContext context) throws Exception {
+//                final Method method = context.getMethod();
+//                // if no-interface view, then check whether invocation on the method is allowed
+//                // (for ex: invocation on protected methods isn't allowed)
+//                if (StatefulSessionComponent.this.getComponentClass().equals(view)) {
+//                    if (!StatefulSessionComponent.this.isInvocationAllowed(method)) {
+//                        throw new javax.ejb.EJBException("Cannot invoke method " + method
+//                                + " on nointerface view of bean " + StatefulSessionComponent.this.getComponentName());
+//
+//                    }
+//                }
+//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+//                // runs on remote clients.
+//                context.putPrivateData(Component.class, StatefulSessionComponent.this);
+//                // TODO: attaching as Serializable.class is a bit wicked
+//                context.putPrivateData(Serializable.class, sessionId);
+//                try {
+//                    if (isAsynchronous(method)) {
+//                        return invokeAsynchronous(method, context);
+//                    }
+//                    return context.proceed();
+//                } finally {
+//                    context.putPrivateData(Component.class, null);
+//                    context.putPrivateData(Serializable.class, null);
+//                }
+//            }
+//        };
+//    }
 
     public Serializable createSession() {
         return getCache().create().getId();
@@ -116,8 +119,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     @Override
-    protected BasicComponentInstance constructComponentInstance(Object instance, InterceptorFactoryContext context) {
-        return new StatefulSessionComponentInstance(this, instance, context);
+    protected BasicComponentInstance constructComponentInstance() {
+        return new StatefulSessionComponentInstance(this);
     }
 
     @Override
@@ -133,6 +136,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         context.setContextData(contextData);
         context.setMethod(beanMethod);
         context.setParameters(args);
-        return getComponentInterceptor().processInvocation(context);
+        throw new RuntimeException("NYI");
+        //return getComponentInterceptor().processInvocation(context);
     }
 }

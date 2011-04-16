@@ -52,9 +52,8 @@ public abstract class SessionBeanComponentInstance extends BasicComponentInstanc
      * Construct a new instance.
      *
      * @param component the component
-     * @param instance  the object instance
      */
-    protected SessionBeanComponentInstance(final SessionBeanComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
+    protected SessionBeanComponentInstance(final SessionBeanComponent component) {
         super(component);
 
         this.sessionContext = new SessionBeanComponentInstanceContext();
