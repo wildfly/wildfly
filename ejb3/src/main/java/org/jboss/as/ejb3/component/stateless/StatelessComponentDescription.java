@@ -22,10 +22,15 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * User: jpai
@@ -39,13 +44,9 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
      * @param componentClassName the component instance class name
      * @param ejbModuleDescription  the module description
      */
-    public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription) {
-        super(componentName, componentClassName, ejbModuleDescription);
-    }
-
-    @Override
-    protected ComponentConfiguration constructComponentConfiguration() {
-        return new StatelessSessionComponentConfiguration(this);
+    public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
+                                         final ServiceName deploymentUnitServiceName) {
+        super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName);
     }
 
     @Override

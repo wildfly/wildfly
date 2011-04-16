@@ -22,10 +22,10 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * User: jpai
@@ -39,8 +39,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
      * @param componentClassName the component instance class name
      * @param ejbModuleDescription  the module description
      */
-    public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription) {
-        super(componentName, componentClassName, ejbModuleDescription);
+    public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
+                                        final ServiceName deploymentUnitServiceName) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
     }
 
     @Override

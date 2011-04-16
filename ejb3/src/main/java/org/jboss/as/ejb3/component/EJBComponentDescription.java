@@ -21,15 +21,11 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
@@ -83,12 +79,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * Construct a new instance.
      *
-     * @param componentName            the component name
-     * @param componentClassName       the component instance class name
-     * @param ejbDeploymentDescription the module
+     * @param componentName      the component name
+     * @param componentClassName the component instance class name
+     * @param moduleDescription  the module
      */
-    public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbDeploymentDescription) {
-        super(componentName, componentClassName, ejbDeploymentDescription.getEEModuleDescription(), classDescription, deploymentUnitServiceName);
+    public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
+        super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), ejbJarDescription.getEEModuleDescription().getOrAddClassByName(componentClassName), deploymentUnitServiceName);
         //TODO: This should not be create for EJB's in a war
         setNamingMode(ComponentNamingMode.CREATE);
     }
@@ -184,21 +180,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return this.getComponentClassName();
     }
 
-    protected void processComponentMethod(ComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
-        super.processComponentMethod(configuration, componentMethod);
 
-        // TODO: a temporary measure until EJBTHREE-2120 is fully resolved
-        MethodIntf methodIntf = MethodIntf.BEAN;
-        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, componentMethod);
-    }
-
-    @Override
-    protected void processViewMethod(ComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
-        super.processViewMethod(configuration, viewClass, viewMethod, componentMethod);
-
-        MethodIntf methodIntf = getMethodIntf(viewClass.getName());
-        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, viewMethod);
-    }
+//    protected void processComponentMethod(ComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
+//        super.processComponentMethod(configuration, componentMethod);
+//
+//        // TODO: a temporary measure until EJBTHREE-2120 is fully resolved
+//        MethodIntf methodIntf = MethodIntf.BEAN;
+//        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, componentMethod);
+//    }
+//
+//    @Override
+//    protected void processViewMethod(ComponentConfiguration configuration, Class<?> viewClass, Method viewMethod, Method componentMethod) {
+//        super.processViewMethod(configuration, viewClass, viewMethod, componentMethod);
+//
+//        MethodIntf methodIntf = getMethodIntf(viewClass.getName());
+//        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, viewMethod);
+//    }
 
     private void processTxAttr(EJBComponentConfiguration configuration, MethodIntf methodIntf, Method method) {
         if (configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {

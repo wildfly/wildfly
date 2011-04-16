@@ -23,6 +23,9 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
+import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -37,10 +40,8 @@ import org.jboss.ejb3.context.CurrentEJBContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
-import javax.ejb.EJBContext;
-
 /**
- * Deployment processor responsible for detecting EJB components and adding a {@link BindingDescription} for the
+ * Deployment processor responsible for detecting EJB components and adding a {@link BindingConfiguration} for the
  * java:comp/EJBContext entry.
  *
  * @author John Bailey
@@ -50,11 +51,14 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit) || !(componentDescription instanceof EJBComponentDescription)) {
             return;  // Only process EJB deployments
         }
-
-        final BindingDescription ejbContextBinding = new BindingDescription("java:comp/EJBContext");
-        ejbContextBinding.setBindingType(EJBContext.class.getName());
-        ejbContextBinding.setReferenceSourceDescription(directEjbContextReferenceSource);
-        componentDescription.addBinding(ejbContextBinding);
+        final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
+        // add the binding configuration to the component description
+        componentDescription.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getBindingConfigurations().add(ejbContextBinding);
+            }
+        });
     }
 
     private static final ManagedReference ejbContextManagedReference = new ManagedReference() {

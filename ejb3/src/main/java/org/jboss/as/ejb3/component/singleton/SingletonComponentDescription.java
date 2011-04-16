@@ -22,13 +22,10 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-
-import org.jboss.as.ee.component.AbstractComponentConfiguration;
-
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Component description for a singleton bean
@@ -49,13 +46,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      * @param componentClassName the component instance class name
      * @param ejbModuleDescription  the module description
      */
-    public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription) {
-        super(componentName, componentClassName, ejbModuleDescription);
-    }
-
-    @Override
-    protected ComponentConfiguration constructComponentConfiguration() {
-        return new SingletonComponentConfiguration(this);
+    public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
+                                         final ServiceName deploymentUnitServiceName) {
+        super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
     }
 
     /**

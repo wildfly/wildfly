@@ -100,13 +100,13 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         SessionBeanComponentDescription sessionBeanDescription = null;
         switch (sessionType) {
             case Stateless:
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription);
+                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
                 break;
             case Stateful:
-                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription);
+                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
                 break;
             case Singleton:
-                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription);
+                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);

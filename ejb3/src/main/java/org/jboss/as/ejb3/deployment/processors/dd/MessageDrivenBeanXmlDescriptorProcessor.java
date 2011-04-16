@@ -50,7 +50,7 @@ public class MessageDrivenBeanXmlDescriptorProcessor extends AbstractEjbXmlDescr
 
         String ejbName = mdb.getEjbName();
         String ejbClassName = mdb.getEjbClass();
-        MessageDrivenComponentDescription mdbDescription = new MessageDrivenComponentDescription(ejbName, ejbClassName, ejbModuleDescription);
+        MessageDrivenComponentDescription mdbDescription = new MessageDrivenComponentDescription(ejbName, ejbClassName, ejbModuleDescription, deploymentUnit.getServiceName());
 
         mdbDescription.setMessageListenerInterfaceName(mdb.getMessagingType());
 

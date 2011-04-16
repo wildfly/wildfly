@@ -50,7 +50,6 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
@@ -80,7 +79,8 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
             final String messageListenerInterfaceName = instance.value("messageListenerInterface").asClass().name().toString();
             // TODO: if messageListenerInterface is not set use the implemented interface
 
-            MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription);
+            MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName());
+
             messageDrivenComponentDescription.setMessageListenerInterfaceName(messageListenerInterfaceName);
 
             // add the mdb description to the module description

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -94,12 +95,13 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
         }
     }
 
-    private void processViewAnnotations(CompositeIndex index, EJBComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        for (String viewClassName : componentDescription.getViewClassNames()) {
-            MethodIntf methodIntf = componentDescription.getMethodIntf(viewClassName);
+    private void processViewAnnotations(CompositeIndex index, EJBComponentDescription ejbComponentDescription) throws DeploymentUnitProcessingException {
+        for (ViewDescription viewDescription : ejbComponentDescription.getViews()) {
+            String viewClassName = viewDescription.getViewClassName();
+            MethodIntf methodIntf = ejbComponentDescription.getMethodIntf(viewClassName);
             ClassInfo viewClass = index.getClassByName(DotName.createSimple(viewClassName));
             if (viewClass != null)
-                processClassAnnotations(viewClass, methodIntf, index, componentDescription);
+                processClassAnnotations(viewClass, methodIntf, index, ejbComponentDescription);
         }
     }
 

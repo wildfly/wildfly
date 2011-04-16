@@ -44,6 +44,7 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
@@ -121,7 +122,7 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         }
 
         final String applicationName = moduleDescription.getApplicationName();
-
+        final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
         // process these session bean annotations and create component descriptions out of it
         for (final AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {
             final AnnotationTarget target = sessionBeanAnnotation.target();
@@ -139,13 +140,13 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             SessionBeanComponentDescription sessionBeanDescription = null;
             switch (sessionBeanType) {
                 case STATELESS:
-                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription);
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName);
                     break;
                 case STATEFUL:
-                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription);
+                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName);
                     break;
                 case SINGLETON:
-                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription);
+                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);

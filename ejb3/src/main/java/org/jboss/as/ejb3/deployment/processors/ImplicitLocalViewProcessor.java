@@ -65,7 +65,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
             return;
         }
         // if the bean already exposes some view(s) then it isn't eligible for an implicit no-interface view.
-        if (!sessionBeanComponentDescription.getViewClassNames().isEmpty()) {
+        if (!sessionBeanComponentDescription.getViews().isEmpty()) {
             return;
         }
         String ejbClassName = sessionBeanComponentDescription.getComponentClassName();
