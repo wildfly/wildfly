@@ -36,6 +36,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.TransactionRequiredException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -122,4 +123,13 @@ public class TransactionTestCase {
         sfsb1.getEmployeeNoTX(1);
         sfsb1.getEmployeeNoTX(1);
     }
+
+    @Test
+    public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
+        Exception error = null;
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        String name = sfsb1.queryEmployeeNameNoTX(1);
+        assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'","success", name);
+    }
+
 }
