@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -39,7 +41,7 @@ import org.jboss.as.protocol.StreamUtils;
 /**
  * Encapsulates the configuration file and manages its history
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author Brian Stansberry
  */
 public class ConfigurationFile {
 
@@ -47,12 +49,18 @@ public class ConfigurationFile {
     private static final String INITIAL = "initial";
     private static final String ORIGINAL = "original";
 
+    private static final String LAST_SUFFIX = LAST + ".xml";
+    private static final String INITIAL_SUFFIX = INITIAL + ".xml";
+    private static final String ORIGINAL_SUFFIX = ORIGINAL + ".xml";
+
     private static final int CURRENT_HISTORY_LENGTH = 100;
     private static final int HISTORY_DAYS = 30;
     private static final String TIMESTAMP_STRING = "\\d\\d\\d\\d\\d\\d\\d\\d-\\d\\d\\d\\d\\d\\d\\d\\d\\d";
     private static final Pattern TIMESTAMP_PATTERN = Pattern.compile(TIMESTAMP_STRING);
+    private static final String TIMESTAMP_FORMAT = "yyyyMMdd-HHmmssSSS";
     private static final Pattern VERSION_PATTERN = Pattern.compile("v\\d+");
-    private static final Pattern SNAPSHOT_XML = Pattern.compile(TIMESTAMP_STRING + ".xml");
+    private static final Pattern FILE_WITH_VERSION_PATTERN = Pattern.compile("\\S*\\.v\\d+\\.xml");
+    private static final Pattern SNAPSHOT_XML = Pattern.compile(TIMESTAMP_STRING + "\\S*\\.xml");
 
 
     private final AtomicInteger sequence = new AtomicInteger();
@@ -62,6 +70,7 @@ public class ConfigurationFile {
     private final String bootFileName;
     private volatile File bootFile;
     private final File mainFile;
+    private final String mainFileName;
     private final File historyRoot;
     private final File currentHistory;
     private final File snapshotsDirectory;
@@ -74,10 +83,11 @@ public class ConfigurationFile {
         this.rawFileName = rawName;
         this.bootFileName = name != null ? name : rawName;
         this.configurationDir = configurationDir;
-        this.mainFile = new File(configurationDir, rawName);
         this.historyRoot = new File(configurationDir, rawName.replace('.', '_'));
         this.currentHistory = new File(historyRoot, "current");
         this.snapshotsDirectory = new File(historyRoot, "snapshot");
+        this.mainFile = determineMainFile(configurationDir, rawName, name);
+        this.mainFileName = mainFile.getName();
     }
 
     File getBootFile() {
@@ -96,11 +106,149 @@ public class ConfigurationFile {
         return bootFile;
     }
 
+    private File determineMainFile(final File configurationDir, final String rawName, final String name) {
+
+        String mainName = null;
+
+        if (name == null) {
+            mainName = rawName;
+        }
+        else if (name.equals(LAST) || name.equals(INITIAL) || name.equals(ORIGINAL)) {
+            // Search for a *single* file in the configuration dir with suffix == name.xml
+            mainName = findMainFileFromBackupSuffix(configurationDir, name);
+        } else if (VERSION_PATTERN.matcher(name).matches()) {
+            // Search for a *single* file in the currentHistory dir with suffix == name.xml
+            mainName = findMainFileFromBackupSuffix(currentHistory, name);
+        }
+
+        if (mainName == null) {
+            // Search for a *single* file in the snapshots dir with prefix == name.xml
+            mainName = findMainFileFromSnapshotPrefix(name);
+        }
+        if (mainName == null) {
+            final File directoryFile = new File(configurationDir, name);
+            if (directoryFile.exists()) {
+                mainName = stripPrefixSuffix(name);
+            }
+            else {
+                final File absoluteFile = new File(name);
+                if (absoluteFile.exists()) {
+                    mainName = stripPrefixSuffix(absoluteFile.getName());
+                }
+                else {
+                    throw new IllegalArgumentException("Neither " + directoryFile.getAbsolutePath() + " nor " + absoluteFile.getAbsolutePath() + " exist");
+                }
+            }
+        }
+
+        return new File(configurationDir, mainName);
+    }
+
+    /**
+     * Finds a single file in {@code searchDir} whose name ends with "{@code .backupType.xml}"
+     * and returns its name with {@code .backupType} removed.
+     *
+     * @param searchDir the directory to search
+     * @param suffix the backup type; {@link #LAST}, {@link #ORIGINAL}, {@link #INITIAL} or {@code v\d+}
+     *
+     * @return the single file that meets the criteria. Will not return {@code null}
+     *
+     * @throws IllegalStateException if no files meet the criteria or more than one does
+     * @throws IllegalArgumentException if they file that meets the criteria's full name is "{@code backupType.xml}"
+     */
+    private String findMainFileFromBackupSuffix(File searchDir, String backupType) {
+
+        final String suffix = "." + backupType + ".xml";
+        File[] files = null;
+        if (searchDir.exists() && searchDir.isDirectory()) {
+            files = searchDir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(suffix);
+                }
+
+            });
+        }
+
+        if (files == null || files.length == 0) {
+            throw new IllegalStateException(String.format("No configuration file ending in %s found in %s", suffix, searchDir));
+        }
+        else if (files.length > 1) {
+            throw new IllegalStateException(String.format("Ambiguous configuration file name '%s' as there are multiple files " +
+                    "in %s that end in %s", backupType, searchDir, suffix));
+        }
+
+        String matchName = files[0].getName();
+        if (matchName.equals(suffix)) {
+            throw new IllegalArgumentException(String.format("Configuration files whose complete name is %s are not allowed", backupType));
+        }
+        String prefix = matchName.substring(0, matchName.length() - suffix.length());
+        return prefix + ".xml";
+    }
+
+    /**
+     * Finds a single file in the snapshots directory whose name starts with {@code prefix} and
+     * returns its name with the prefix removed.
+     *
+     * @param prefix the prefix
+     *
+     * @return the single file that meets the criteriaor {@code null} if none do
+     *
+     * @throws IllegalStateException if more than one file meets the criteria
+     */
+    private String findMainFileFromSnapshotPrefix(final String prefix) {
+
+        File[] files = null;
+        if (snapshotsDirectory.exists() && snapshotsDirectory.isDirectory()) {
+            files = snapshotsDirectory.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(prefix);
+                }
+
+            });
+        }
+
+        if (files == null || files.length == 0) {
+            return null;
+        }
+        else if (files.length > 1) {
+            throw new IllegalStateException(String.format("Ambiguous configuration file name '%s' as there are multiple files " +
+                    "in %s that start with %s", prefix, snapshotsDirectory, prefix));
+        }
+
+        String matchName = files[0].getName();
+        return matchName.substring(TIMESTAMP_FORMAT.length());
+    }
+
+    private String stripPrefixSuffix(String name) {
+        if (SNAPSHOT_XML.matcher(name).matches()) {
+            name = name.substring(TIMESTAMP_FORMAT.length());
+        }
+        if (FILE_WITH_VERSION_PATTERN.matcher(name).matches()) {
+            int last = name.lastIndexOf('v');
+            name = name.substring(0, last) + "xml";
+        }
+        else if (name.endsWith(LAST_SUFFIX)) {
+            name = name.substring(0, name.length() - (LAST_SUFFIX).length()) + "xml";
+        }
+        else if (name.endsWith(ORIGINAL_SUFFIX)) {
+            name = name.substring(0, name.length() - (ORIGINAL_SUFFIX).length()) + "xml";
+        }
+        else if (name.endsWith(INITIAL_SUFFIX)) {
+            name = name.substring(0, name.length() - (INITIAL_SUFFIX).length()) + "xml";
+        }
+        return name;
+    }
+
     private File determineBootFile(final File configurationDir, final String name) {
         if (name.equals(LAST) || name.equals(INITIAL) || name.equals(ORIGINAL)) {
             return addSuffixToFile(mainFile, name);
         } else if (VERSION_PATTERN.matcher(name).matches()) {
-            return getVersionedFile(mainFile, name);
+            File versioned = getVersionedFile(mainFile, name);
+            if (versioned.exists()) {
+                return versioned;
+            }
         }
         final File snapshot = findSnapshotWithPrefix(name, false);
         if (snapshot != null) {
@@ -134,6 +282,10 @@ public class ConfigurationFile {
             }
 
             try {
+                if (!bootFile.equals(mainFile)) {
+                    copyFile(bootFile, mainFile);
+                }
+
                 createHistoryDirectory();
 
                 final File last = addSuffixToFile(mainFile, LAST);
@@ -148,8 +300,7 @@ public class ConfigurationFile {
                 copyFile(mainFile, original);
                 snapshot();
             } catch (IOException e) {
-                // AutoGenerated
-                throw new RuntimeException(e);
+                throw new ConfigurationPersistenceException(String.format("Failed to create backup copies of configuration file %s", bootFile), e);
             }
             doneBootup.set(true);
         }
@@ -198,11 +349,7 @@ public class ConfigurationFile {
     }
 
     String snapshot() throws ConfigurationPersistenceException {
-        return snapshot(mainFile);
-    }
-
-    private String snapshot(File file) throws ConfigurationPersistenceException {
-        String name = getTimeStamp(new Date()) + ".xml";
+        String name = getTimeStamp(new Date()) + mainFileName;
         File snapshot = new File(snapshotsDirectory, name);
         try {
             copyFile(mainFile, snapshot);
@@ -263,16 +410,14 @@ public class ConfigurationFile {
                 throw new IllegalStateException(currentHistory.getAbsolutePath() + " is not a directory");
             }
 
-            if (!bootFile.equals(mainFile)) {
-                copyFile(bootFile, mainFile);
-            }
-
             //Copy any existing history directory to a timestamped backup directory
             final Date date = new Date();
-            final String backupName = getTimeStamp(date);
-            final File old = new File(historyRoot, backupName);
-            if (!new File(currentHistory.getAbsolutePath()).renameTo(old)) {
-                throw new IllegalStateException("Could not rename " + currentHistory.getAbsolutePath() + " to " + old.getAbsolutePath());
+            if (currentHistory.listFiles().length > 0) {
+                final String backupName = getTimeStamp(date);
+                final File old = new File(historyRoot, backupName);
+                if (!new File(currentHistory.getAbsolutePath()).renameTo(old)) {
+                    throw new IllegalStateException("Could not rename " + currentHistory.getAbsolutePath() + " to " + old.getAbsolutePath());
+                }
             }
 
             //Delete any old history directories
@@ -337,7 +482,7 @@ public class ConfigurationFile {
     }
 
     private static String getTimeStamp(final Date date) {
-        final SimpleDateFormat sfd = new SimpleDateFormat("yyyyMMdd-HHmmssSSS");
+        final SimpleDateFormat sfd = new SimpleDateFormat(TIMESTAMP_FORMAT);
         return sfd.format(date);
     }
 
