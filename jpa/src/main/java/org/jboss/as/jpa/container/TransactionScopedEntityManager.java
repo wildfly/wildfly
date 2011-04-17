@@ -41,10 +41,9 @@ import java.util.Map;
  */
 public class TransactionScopedEntityManager extends AbstractEntityManager {
 
-    private String puScopedName;          // Scoped name of the persistent unit
-    private Map properties;
-    private EntityManagerFactory emf;
-    private boolean isInTx;
+    private final String puScopedName;          // Scoped name of the persistent unit
+    private final Map properties;
+    private final EntityManagerFactory emf;
 
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
@@ -58,6 +57,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     @Override
     protected EntityManager getEntityManager() {
         EntityManager result = null;
+        boolean isInTx;
 
         isInTx = TransactionUtil.getInstance().isInTx();
 
@@ -103,7 +103,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
 
     @Override
     protected boolean isInTx() {
-        return isInTx;
+        return TransactionUtil.getInstance().isInTx();
     }
 
     /**
