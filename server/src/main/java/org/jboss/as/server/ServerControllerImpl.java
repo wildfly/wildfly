@@ -275,7 +275,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
      * A service listener to track container status.  Must be present when the service is created, or results will
      * be unpredictable.
      */
-    private class ServerStateMonitorListener extends AbstractServiceListener<Object> {
+    class ServerStateMonitorListener extends AbstractServiceListener<Object> {
         private final ServiceRegistry serviceRegistry;
         private final AtomicInteger busyServiceCount = new AtomicInteger();
 

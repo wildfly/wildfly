@@ -21,7 +21,6 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -139,6 +138,7 @@
         <version.org.jboss.mod_cluster>1.1.2.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.0.0.CR3</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta8</version.org.jboss.msc.jboss-msc>
+        <version.org.jboss.msc.jboss-msc>1.0.0.Beta9-SNAPSHOT</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.3.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
@@ -207,10 +207,10 @@
         <version.sun.jaxb>2.2</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.2</version.sun.saaj-impl>
         <version.wsdl4j>1.6.2</version.wsdl4j>
-        
+
         <!-- Plugin versions -->
         <version.surefire.plugin>2.8.1</version.surefire.plugin>
-        
+
         <!-- Surefire args -->
         <surefire.jpda.args />
         <surefire.system.args>-da ${surefire.jpda.args}</surefire.system.args>
@@ -941,7 +941,7 @@
                 <artifactId>jacorb</artifactId>
                 <version>${version.jacorb}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>jboss.jaxbintros</groupId>
                 <artifactId>jboss-jaxb-intros</artifactId>
@@ -2742,25 +2742,25 @@
               <artifactId>arquillian-container-spi</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-test-api</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-test-spi</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-test-impl-base</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.arquillian.core</groupId>
                 <artifactId>arquillian-core-api</artifactId>
@@ -2784,7 +2784,7 @@
                 <artifactId>arquillian-junit-core</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.arquillian.junit</groupId>
               <artifactId>arquillian-junit-container</artifactId>
@@ -2820,7 +2820,7 @@
                 <artifactId>arquillian-test-impl-base</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-cdi</artifactId>
@@ -3878,7 +3878,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-spi</artifactId>
