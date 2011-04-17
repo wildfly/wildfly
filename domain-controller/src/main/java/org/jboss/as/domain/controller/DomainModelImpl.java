@@ -47,10 +47,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.controller.ControllerTransactionContext;
+import org.jboss.as.controller.ControllerTransactionSynchronization;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelController;
@@ -125,6 +127,8 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     private Map<String, DomainControllerSlaveClient> hosts;
     // The ExtensionContext for this DC.
     private ExtensionContext extensionContext;
+    // The write lock we use. Not thread based to allow transaction commit from another thread
+    private final Semaphore mutex = new Semaphore(1);
 
     // The persister for the domain configuration.
     private DelegatingConfigurationPersister domainPersister;
@@ -312,28 +316,21 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     protected OperationControllerContext getOperationControllerContext(final Operation operation, final ControllerTransactionContext transaction) {
         boolean forHost = isOperationForHost(operation.getOperation());
         final ConfigurationPersisterProvider persisterProvider = new DualRootConfigurationPersisterProvider(getConfigurationPersisterProvider(), hostPersisterProvider, forHost);
-        return new OperationControllerContext() {
+        final TransactionAwareOperationControllerContext occ = new TransactionAwareOperationControllerContext(persisterProvider, transaction);
+        if (transaction != null) {
+            transaction.registerSynchronization(new ControllerTransactionSynchronization() {
 
-            @Override
-            public ModelProvider getModelProvider() {
-                return DomainModelImpl.this.getModelProvider();
-            }
+                @Override
+                public void beforeCompletion() {
+                    // no-op
+                }
 
-            @Override
-            public OperationContextFactory getOperationContextFactory() {
-                return DomainModelImpl.this.getOperationContextFactory();
-            }
-
-            @Override
-            public ConfigurationPersisterProvider getConfigurationPersisterProvider() {
-                return persisterProvider;
-            }
-
-            @Override
-            public ControllerTransactionContext getControllerTransactionContext() {
-                return transaction;
-            }
-        };
+                @Override
+                public void afterCompletion(boolean status) {
+                    occ.doUnlock();
+                }});
+        }
+        return occ;
     }
 
     @Override
@@ -396,8 +393,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
         DualRootConfigurationPersisterProvider confPerstProvider =
             (DualRootConfigurationPersisterProvider) operationControllerContext.getConfigurationPersisterProvider();
-        return new TransactionalMultiStepOperationController(executionContext, handler, operationControllerContext.getModelProvider(),
-                confPerstProvider, operationControllerContext.getControllerTransactionContext());
+        return new TransactionalMultiStepOperationController(executionContext, handler, operationControllerContext, confPerstProvider);
     }
 
     protected ControllerResource getControllerResource(final OperationContext context, final ModelNode operation, final OperationHandler operationHandler,
@@ -837,6 +833,11 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
             delegate.setRollbackOnly();
         }
 
+        @Override
+        public void registerSynchronization(ControllerTransactionSynchronization synchronization) {
+            delegate.registerSynchronization(synchronization);
+        }
+
     }
 
     /**
@@ -893,6 +894,64 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
     }
 
+    private class TransactionAwareOperationControllerContext implements OperationControllerContext {
+
+        private final ConfigurationPersisterProvider persisterProvider;
+        private final ControllerTransactionContext transaction;
+        private boolean locked = false;
+
+        private TransactionAwareOperationControllerContext(final ConfigurationPersisterProvider persisterProvider,
+                final ControllerTransactionContext transaction) {
+            this.persisterProvider = persisterProvider;
+            this.transaction = transaction;
+        }
+
+        @Override
+        public ModelProvider getModelProvider() {
+            return DomainModelImpl.this.getModelProvider();
+        }
+
+        @Override
+        public OperationContextFactory getOperationContextFactory() {
+            return DomainModelImpl.this.getOperationContextFactory();
+        }
+
+        @Override
+        public ConfigurationPersisterProvider getConfigurationPersisterProvider() {
+            return persisterProvider;
+        }
+
+        @Override
+        public ControllerTransactionContext getControllerTransactionContext() {
+            return transaction;
+        }
+
+        @Override
+        public boolean lockInterruptibly() throws InterruptedException {
+            boolean acquire = !locked;
+            if (acquire) {
+                mutex.acquireUninterruptibly();
+                locked = true;
+            }
+            return acquire;
+        }
+
+        @Override
+        public void unlock() {
+            if (transaction == null) {
+                doUnlock();
+            }
+        }
+
+        // Hook for the transaction synchronization
+        void doUnlock() {
+            if (locked) {
+                mutex.release();
+            }
+        }
+
+    }
+
     protected class TransactionalMultiStepOperationController extends MultiStepOperationController {
 
         protected final ControllerTransactionContext transaction;
@@ -942,11 +1001,12 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         };
 
         protected TransactionalMultiStepOperationController(final Operation operation, final ResultHandler resultHandler,
-                final ModelProvider modelSource, final DualRootConfigurationPersisterProvider persisterProvider,
-                final ControllerTransactionContext transaction) throws OperationFailedException {
+                final OperationControllerContext injectedOperationControllerContext,
+                final DualRootConfigurationPersisterProvider persisterProvider) throws OperationFailedException {
 
-            super(operation, resultHandler, modelSource, persisterProvider.domainProvider);
-            this.transaction = transaction;
+            super(operation, resultHandler, injectedOperationControllerContext, injectedOperationControllerContext.getModelProvider(),
+                    persisterProvider.domainProvider);
+            this.transaction = injectedOperationControllerContext.getControllerTransactionContext();
             this.hostPersisterProvider = persisterProvider.hostProvider;
         }
 
@@ -978,6 +1038,19 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
                 @Override
                 public ConfigurationPersisterProvider getConfigurationPersisterProvider() {
                     return persisterProvider;
+                }
+
+                @Override
+                public boolean lockInterruptibly() throws InterruptedException {
+                    // Ignore the request for nested calls. The outermost call gets the lock.
+                    // This allows controllers to control the locking using whatever impl
+                    // they have for the outer call's OperationControllerContext
+                    return false;
+                }
+
+                @Override
+                public void unlock() {
+                    // Ignore the request for nested calls. See lockInterruptibly()
                 }
             };
         }
@@ -1067,6 +1140,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
                     }
                     persistConfiguration(model, operationControllerContext.getConfigurationPersisterProvider());
                 }
+
             }
         }
 
