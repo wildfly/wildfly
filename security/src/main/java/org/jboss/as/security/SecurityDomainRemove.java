@@ -70,10 +70,9 @@ class SecurityDomainRemove implements ModelRemoveOperationHandler {
                     final ServiceController<?> service = context.getServiceRegistry().getService(
                             SecurityDomainService.SERVICE_NAME.append(securityDomain));
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {
