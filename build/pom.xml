@@ -147,6 +147,11 @@
         </dependency>
 
         <dependency>
+            <groupId>jboss.jaxbintros</groupId>
+            <artifactId>jboss-jaxb-intros</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
@@ -1005,6 +1010,11 @@
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
         </dependency>
 
         <dependency>

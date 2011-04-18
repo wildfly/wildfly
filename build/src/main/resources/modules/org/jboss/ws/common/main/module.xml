@@ -44,5 +44,6 @@
         <module name="org.jboss.common-core"/>
         <module name="org.apache.log4j"/>
         <module name="org.apache.xerces" services="import"/>
+        <module name="org.jboss.jaxbintros"/>
     </dependencies>
 </module>

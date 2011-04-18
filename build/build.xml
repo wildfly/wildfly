@@ -257,6 +257,10 @@
             <maven-resource group="org.apache.aries" artifact="org.apache.aries.util"/>
         </module-def>
 
+        <module-def name="org.apache.commons.beanutils">
+            <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
+        </module-def>
+
         <module-def name="org.apache.commons.codec">
             <maven-resource group="commons-codec" artifact="commons-codec"/>
         </module-def>
@@ -659,6 +663,10 @@
 
         <module-def name="org.jboss.jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
+        </module-def>
+
+        <module-def name="org.jboss.jaxbintros">
+            <maven-resource group="jboss.jaxbintros" artifact="jboss-jaxb-intros"/>
         </module-def>
 
         <module-def name="org.jboss.jsfunit.arquillian">
