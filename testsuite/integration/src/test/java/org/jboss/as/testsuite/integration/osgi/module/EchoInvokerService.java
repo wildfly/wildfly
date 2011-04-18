@@ -33,6 +33,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
@@ -47,7 +48,7 @@ public class EchoInvokerService implements Service<Void>
    {
       EchoInvokerService service = new EchoInvokerService();
       ServiceBuilder<?> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);
-      serviceBuilder.addDependency(ServiceName.of("jbosgi", "systemcontext"), BundleContext.class, service.injectedBundleContext);
+      serviceBuilder.addDependency(ServiceNames.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
       serviceBuilder.setInitialMode(Mode.ACTIVE);
       serviceBuilder.install();
       log.infof("Service added: %s", SERVICE_NAME);

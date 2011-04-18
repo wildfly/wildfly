@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Dependencies: org.osgi.core,org.jboss.modules,org.jboss.logging,deployment.example-xservice-api-module
+Dependencies: org.osgi.core,org.jboss.modules,org.jboss.logging,org.jboss.osgi.framework,deployment.example-xservice-api-module
 

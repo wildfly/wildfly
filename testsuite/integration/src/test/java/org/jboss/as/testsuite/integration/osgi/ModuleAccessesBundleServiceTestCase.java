@@ -53,7 +53,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -67,7 +66,6 @@ import org.osgi.framework.BundleContext;
  * @since 14-Oct-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[JBAS-9305] ARQ tests using ArchiveDeployer may hang in deployment API")
 public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String CLIENT_MODULE_NAME = "example-xservice-client-module";
@@ -83,7 +81,6 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                // [TODO] Remove these explicit imports
                 // [TODO] Remove these explicit imports
                 builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
                 builder.addImportPackages(Logger.class, ServiceNames.class);
