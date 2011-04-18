@@ -67,7 +67,7 @@ public class JPAExtension implements Extension {
     private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            return JPASubsystemProviders.SUBSYSTEM.getModelDescription(locale);
         }
     };
 
@@ -84,7 +84,7 @@ public class JPAExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
         // registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
-        nodeRegistration.registerOperationHandler(ADD, JPASubsystemAdd.INSTANCE, DESCRIPTION, false);
+        nodeRegistration.registerOperationHandler(ADD, JPASubsystemAdd.INSTANCE, JPASubsystemAdd.INSTANCE, false);
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerXMLElementWriter(parser);
 

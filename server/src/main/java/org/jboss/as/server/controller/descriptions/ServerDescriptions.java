@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,11 +33,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerDeploymentDescription {
+public class ServerDescriptions {
 
-    private static final String RESOURCE_NAME = ServerDeploymentDescription.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    private ServerDeploymentDescription() {
+    private ServerDescriptions() {
     }
 
     public static final ModelNode getRemoveDeploymentOperation(Locale locale) {
@@ -44,6 +45,15 @@ public class ServerDeploymentDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(DeploymentRemoveHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("deployment.remove"));
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
+    public static final ModelNode getServerReloadOperation(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(ServerReloadHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("reload"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }

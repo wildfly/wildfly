@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -35,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -56,6 +58,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -117,7 +120,8 @@ public class HostRootDescription {
         root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
 
-        ManagementDescription.getManagementDescription(root.get(CHILDREN), locale);
+        root.get(CHILDREN, NATIVE_INTERFACE).set(ManagementDescription.getNativeManagementDescription(locale));
+        root.get(CHILDREN, HTTP_INTERFACE).set(ManagementDescription.getHttpManagementDescription(locale));
 
         root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("host.system-property"));
         root.get(CHILDREN, SYSTEM_PROPERTY, TYPE).set(ModelType.LIST);

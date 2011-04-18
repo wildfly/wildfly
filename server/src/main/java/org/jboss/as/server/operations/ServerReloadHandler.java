@@ -34,6 +34,7 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.ServerOperationHandler;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
@@ -82,7 +83,6 @@ public class ServerReloadHandler implements ServerOperationHandler, DescriptionP
 
     /** {@inheritDoc} */
     public ModelNode getModelDescription(final Locale locale) {
-        // TODO - fill out
-        return new ModelNode();
+        return ServerDescriptionProviders.RELOAD_PROVIDER.getModelDescription(locale);
     }
 }

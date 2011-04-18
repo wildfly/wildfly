@@ -114,8 +114,10 @@ public class RemotingExtension implements Extension {
 
         // Remoting connectors
         final ModelNodeRegistration connectors = subsystem.registerSubModel(PathElement.pathElement(CONNECTOR), RemotingSubsystemProviders.CONNECTOR_SPEC);
-        connectors.registerOperationHandler(ADD, ConnectorAdd.INSTANCE, RemotingSubsystemProviders.CONNECTOR_ADD, false);
-        connectors.registerOperationHandler(REMOVE, ConnectorRemove.INSTANCE, RemotingSubsystemProviders.CONNECTOR_REMOVE, false);
+        connectors.registerOperationHandler(ADD, ConnectorAdd.INSTANCE, ConnectorAdd.INSTANCE, false);
+        connectors.registerOperationHandler(REMOVE, ConnectorRemove.INSTANCE, ConnectorRemove.INSTANCE, false);
+
+        connectors.registerSubModel(PathElement.pathElement(SASL), RemotingSubsystemProviders.SASL_SPEC);
     }
 
     /** {@inheritDoc} */

@@ -22,7 +22,17 @@
 
 package org.jboss.as.jaxrs;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -41,14 +51,25 @@ class JaxrsSubsystemProviders {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode subsystem = new ModelNode();
         subsystem.get(DESCRIPTION).set(bundle.getString("jaxrs"));
+        subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
+        subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+        subsystem.get(NAMESPACE).set(JaxrsExtension.NAMESPACE);
+
+        subsystem.get(ATTRIBUTES).setEmptyObject();
+        subsystem.get(CHILDREN).setEmptyObject();
+        subsystem.get(OPERATIONS);
+
         return subsystem;
     }
 
     static ModelNode getSubsystemAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(DESCRIPTION).set(bundle.getString("jaxrs.add"));
-        return subsystem;
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("jaxrs.add"));
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        return op;
     }
 
     private static ResourceBundle getResourceBundle(Locale locale) {

@@ -123,10 +123,6 @@ public class ServerRootDescription {
         root.get(CHILDREN, SOCKET_BINDING_GROUP, MIN_OCCURS).set(0);
         root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION);
 
-        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server.system-property"));
-        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION);
-
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("server.deployment"));
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);

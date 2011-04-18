@@ -36,6 +36,7 @@ import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_MAX_RATE;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_WINDOW_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_GROUP_NAME;
+import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT;
 import static org.jboss.as.messaging.jms.CommonAttributes.DUPS_OK_BATCH_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.jms.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
@@ -55,12 +56,13 @@ import static org.jboss.as.messaging.jms.CommonAttributes.TRANSACTION_BATCH_SIZE
 import static org.jboss.as.messaging.jms.CommonAttributes.USE_GLOBAL_POOLS;
 
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class JMSServices {
+class JMSServices {
 
     public static final ServiceName JMS = MessagingServices.JBOSS_MESSAGING.append("jms");
     public static final ServiceName JMS_MANAGER = JMS.append("manager");
@@ -68,10 +70,74 @@ public class JMSServices {
     public static final ServiceName JMS_TOPIC_BASE = JMS.append("topic");
     public static final ServiceName JMS_CF_BASE = JMS.append("connection-factory");
 
-    static String[] CF_ATTRIBUTES = new String[] { AUTO_GROUP, ENTRIES, CONNECTOR, BLOCK_ON_ACK, BLOCK_ON_DURABLE_SEND, BLOCK_ON_NON_DURABLE_SEND, CACHE_LARGE_MESSAGE_CLIENT,
-        CALL_TIMEOUT, CLIENT_FAILURE_CHECK_PERIOD, CLIENT_ID, CONFIRMATION_WINDOW_SIZE, CONNECTION_TTL, CONNECTOR, CONSUMER_MAX_RATE, CONSUMER_WINDOW_SIZE, DISCOVERY_GROUP_NAME,
-        DUPS_OK_BATCH_SIZE, FAILOVER_ON_INITIAL_CONNECTION, FAILOVER_ON_SERVER_SHUTDOWN, GROUP_ID, MAX_RETRY_INTERVAL, MIN_LARGE_MESSAGE_SIZE, PRE_ACK, PRODUCER_MAX_RATE,
-        PRODUCER_WINDOW_SIZE, RECONNECT_ATTEMPTS, RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, SCHEDULED_THREAD_POOL_MAX_SIZE, THREAD_POOL_MAX_SIZE, TRANSACTION_BATCH_SIZE,
-        USE_GLOBAL_POOLS,  };
+    static NodeAttribute[] CONNECTION_FACTORY_ATTRS = new NodeAttribute[] {
+        //Do these 2 most frequently used ones out of alphabetical order
+        new NodeAttribute(CONNECTOR, ModelType.OBJECT, false),   //<------
+        new NodeAttribute(ENTRIES, ModelType.LIST, ModelType.STRING, false),
 
+        new NodeAttribute(AUTO_GROUP, ModelType.BOOLEAN, false),
+        new NodeAttribute(BLOCK_ON_ACK, ModelType.BOOLEAN, false),
+        new NodeAttribute(BLOCK_ON_DURABLE_SEND, ModelType.BOOLEAN, false),
+        new NodeAttribute(BLOCK_ON_NON_DURABLE_SEND, ModelType.BOOLEAN, false),
+        new NodeAttribute(CACHE_LARGE_MESSAGE_CLIENT, ModelType.BOOLEAN, false),
+        new NodeAttribute(CALL_TIMEOUT, ModelType.LONG, false),
+        new NodeAttribute(CLIENT_FAILURE_CHECK_PERIOD, ModelType.LONG, false),
+        new NodeAttribute(CLIENT_ID, ModelType.STRING, false),
+        new NodeAttribute(CONFIRMATION_WINDOW_SIZE, ModelType.INT, false),
+        new NodeAttribute(CONNECTION_TTL, ModelType.LONG, false),
+        new NodeAttribute(CONSUMER_MAX_RATE, ModelType.INT, false),
+        new NodeAttribute(CONSUMER_WINDOW_SIZE, ModelType.INT, false),
+        new NodeAttribute(DISCOVERY_GROUP_NAME, ModelType.STRING, false),
+        new NodeAttribute(DISCOVERY_INITIAL_WAIT_TIMEOUT, ModelType.LONG, false),
+        new NodeAttribute(DUPS_OK_BATCH_SIZE, ModelType.INT, false),
+        new NodeAttribute(FAILOVER_ON_INITIAL_CONNECTION, ModelType.BOOLEAN, false),
+        new NodeAttribute(FAILOVER_ON_SERVER_SHUTDOWN, ModelType.BOOLEAN, false),
+        new NodeAttribute(GROUP_ID, ModelType.STRING, false),
+        new NodeAttribute(MAX_RETRY_INTERVAL, ModelType.LONG, false),
+        new NodeAttribute(MIN_LARGE_MESSAGE_SIZE, ModelType.LONG, false),
+        new NodeAttribute(PRE_ACK, ModelType.BOOLEAN, false),
+        new NodeAttribute(PRODUCER_MAX_RATE, ModelType.INT, false),
+        new NodeAttribute(PRODUCER_WINDOW_SIZE, ModelType.INT, false),
+        new NodeAttribute(RECONNECT_ATTEMPTS, ModelType.INT, false),
+        new NodeAttribute(RETRY_INTERVAL, ModelType.LONG, false),
+        new NodeAttribute(RETRY_INTERVAL_MULTIPLIER, ModelType.BIG_DECIMAL, false),
+        new NodeAttribute(SCHEDULED_THREAD_POOL_MAX_SIZE, ModelType.INT, false),
+        new NodeAttribute(THREAD_POOL_MAX_SIZE, ModelType.INT, false),
+        new NodeAttribute(TRANSACTION_BATCH_SIZE, ModelType.INT, false),
+        new NodeAttribute(USE_GLOBAL_POOLS, ModelType.BOOLEAN, false)};
+
+    static class NodeAttribute {
+        private final String name;
+        private final ModelType type;
+        private final ModelType valueType;
+        private final boolean required;
+
+        NodeAttribute(String name, ModelType type, boolean required) {
+            this(name, type, null, required);
+        }
+
+
+        NodeAttribute(String name, ModelType type, ModelType valueType, boolean required) {
+            this.name = name;
+            this.type = type;
+            this.required = required;
+            this.valueType = valueType;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        ModelType getType() {
+            return type;
+        }
+
+        ModelType getValueType() {
+            return valueType;
+        }
+
+        boolean isRequired() {
+            return required;
+        }
+    }
 }

@@ -67,7 +67,7 @@ public class DeploymentSubsystemDescriptions {
         subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
         subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
-        subsystem.get(ATTRIBUTES);
+        subsystem.get(ATTRIBUTES).setEmptyObject();
         subsystem.get(OPERATIONS);
         subsystem.get(CHILDREN, CommonAttributes.SCANNER, DESCRIPTION).set(bundle.getString("deployment.scanner.subsystem.scanners"));
 

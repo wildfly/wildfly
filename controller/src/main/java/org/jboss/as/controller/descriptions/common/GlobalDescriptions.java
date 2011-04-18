@@ -205,8 +205,10 @@ public class GlobalDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("global.read-operation"));
         node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("global.read-operation.type"));
-        node.get(REQUEST_PROPERTIES, TYPE, NILLABLE).set(false);
+        node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+        node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
         node.get(REQUEST_PROPERTIES, LOCALE, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, LOCALE, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, LOCALE, DESCRIPTION).set(bundle.getString("global.read-operation.locale"));
 
@@ -226,11 +228,18 @@ public class GlobalDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("global.read-resource-description"));
         node.get(REQUEST_PROPERTIES, OPERATIONS, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, OPERATIONS, DESCRIPTION).set(bundle.getString("global.read-resource-description.operations"));
+        node.get(REQUEST_PROPERTIES, OPERATIONS, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, OPERATIONS, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INHERITED, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INHERITED, DESCRIPTION).set(bundle.getString("global.read-resource-description.inherited"));
+        node.get(REQUEST_PROPERTIES, RECURSIVE, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, INHERITED, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-resource-description.recursive"));
+        node.get(REQUEST_PROPERTIES, RECURSIVE, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, LOCALE, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, LOCALE, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, LOCALE, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, LOCALE, DESCRIPTION).set(bundle.getString("global.read-resource-description.locale"));
 

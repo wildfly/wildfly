@@ -132,8 +132,8 @@ class ThreadsSubsystemProviders {
             node.get(ATTRIBUTES, PRIORITY, REQUIRED).set(false);
 
             node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadfactory.properties"));
-            node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.LIST);
-            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
+            node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.OBJECT);
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, PROPERTIES, REQUIRED).set(false);
 
             return node;
@@ -236,8 +236,8 @@ class ThreadsSubsystemProviders {
         node.get(ATTRIBUTES, THREAD_FACTORY, REQUIRED).set(false);
 
         node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadpool.common.properties"));
-        node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.LIST);
-        node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
+        node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.OBJECT);
+        node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, PROPERTIES, REQUIRED).set(false);
 
         node.get(ATTRIBUTES, MAX_THREADS, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads"));
@@ -285,9 +285,6 @@ class ThreadsSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("threadfactory.add"));
-            operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("threadfactory.name"));
-            operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
             operation.get(REQUEST_PROPERTIES, GROUP_NAME, DESCRIPTION).set(bundle.getString("threadfactory.groupname"));
             operation.get(REQUEST_PROPERTIES, GROUP_NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, GROUP_NAME, REQUIRED).set(false);
@@ -298,8 +295,8 @@ class ThreadsSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, PRIORITY, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, PRIORITY, REQUIRED).set(false);
             operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadfactory.properties"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.OBJECT);
+            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
             operation.get(REPLY_PROPERTIES).setEmptyObject();
             return operation;
@@ -407,36 +404,33 @@ class ThreadsSubsystemProviders {
         final ModelNode operation = new ModelNode();
         operation.get(OPERATION_NAME).set(operationName);
         operation.get(DESCRIPTION).set(description);
-        operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("threadpool.common.name"));
-        operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, DESCRIPTION).set(bundle.getString("threadpool.common.threadfactory"));
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, TYPE).set(ModelType.STRING);
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, REQUIRED).set(false);
         operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadpool.common.properties"));
-        operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
-        operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
+        operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.OBJECT);
+        operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
         operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
 
-        operation.get(ATTRIBUTES, MAX_THREADS, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads"));
-        operation.get(ATTRIBUTES, MAX_THREADS, TYPE).set(ModelType.OBJECT);
-        operation.get(ATTRIBUTES, MAX_THREADS, REQUIRED).set(true);
-        operation.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads.count"));
-        operation.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
-        operation.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, REQUIRED).set(true);
-        operation.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads.percpu"));
-        operation.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
-        operation.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads"));
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, TYPE).set(ModelType.OBJECT);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, REQUIRED).set(true);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads.count"));
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, REQUIRED).set(true);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, DESCRIPTION).set(bundle.getString("threadpool.common.maxthreads.percpu"));
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive"));
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, TYPE).set(ModelType.OBJECT);
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, REQUIRED).set(false);
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, VALUE_TYPE, TIME, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive.time"));
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, VALUE_TYPE, TIME, TYPE).set(ModelType.LONG);
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, VALUE_TYPE, TIME, REQUIRED).set(true);
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, VALUE_TYPE, UNIT, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive.unit"));
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, VALUE_TYPE, UNIT, TYPE).set(ModelType.STRING);
-        operation.get(ATTRIBUTES, KEEPALIVE_TIME, VALUE_TYPE, UNIT, REQUIRED).set(true);
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive"));
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, TYPE).set(ModelType.OBJECT);
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, REQUIRED).set(false);
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, VALUE_TYPE, TIME, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive.time"));
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, VALUE_TYPE, TIME, TYPE).set(ModelType.LONG);
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, VALUE_TYPE, TIME, REQUIRED).set(true);
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, VALUE_TYPE, UNIT, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive.unit"));
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, VALUE_TYPE, UNIT, TYPE).set(ModelType.STRING);
+        operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, VALUE_TYPE, UNIT, REQUIRED).set(true);
 
         operation.get(REPLY_PROPERTIES).setEmptyObject();
         return operation;

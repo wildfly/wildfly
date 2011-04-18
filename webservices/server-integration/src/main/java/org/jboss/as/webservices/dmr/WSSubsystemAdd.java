@@ -70,7 +70,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         configValidator.registerValidator(WEBSERVICE_HOST, new ModelTypeValidator(ModelType.STRING));
         configValidator.registerValidator(MODIFY_SOAP_ADDRESS, new ModelTypeValidator(ModelType.BOOLEAN));
         configValidator.registerValidator(WEBSERVICE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
-        configValidator.registerValidator(WEBSERVICE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
+        configValidator.registerValidator(WEBSERVICE_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
     }
 
     @Override

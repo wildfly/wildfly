@@ -21,11 +21,6 @@
  */
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
@@ -33,11 +28,18 @@ import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 
+import java.util.Locale;
+
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -47,9 +49,9 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ThreadFactoryRemove implements ModelRemoveOperationHandler {
+public class ThreadFactoryRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
-    static final OperationHandler INSTANCE = new ThreadFactoryRemove();
+    static final ThreadFactoryRemove INSTANCE = new ThreadFactoryRemove();
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -81,6 +83,11 @@ public class ThreadFactoryRemove implements ModelRemoveOperationHandler {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(compensating);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ThreadsSubsystemProviders.REMOVE_THREAD_FACTORY_DESC.getModelDescription(locale);
     }
 
 }

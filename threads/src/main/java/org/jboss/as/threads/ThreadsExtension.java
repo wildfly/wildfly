@@ -21,8 +21,6 @@
  */
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -57,20 +55,9 @@ import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.ADD_BOUNDED_QUEUE_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.ADD_QUEUELESS_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.ADD_SCHEDULED_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.ADD_THREAD_FACTORY_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.ADD_UNBOUNDED_QUEUE_THREAD_POOL_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.QUEUELESS_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.REMOVE_BOUNDED_QUEUE_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.REMOVE_QUEUELESS_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.REMOVE_SCHEDULED_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.REMOVE_THREAD_FACTORY_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.REMOVE_UNBOUNDED_QUEUE_THREAD_POOL_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.SCHEDULED_THREAD_POOL_DESC;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.SUBSYSTEM_PROVIDER;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.THREAD_FACTORY_DESC;
 import static org.jboss.as.threads.ThreadsSubsystemProviders.UNBOUNDED_QUEUE_THREAD_POOL_DESC;
@@ -86,10 +73,12 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResultHandler;
@@ -132,31 +121,31 @@ public class ThreadsExtension implements Extension {
         registration.registerXMLElementWriter(NewThreadsSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM_PROVIDER);
-        subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(ADD, ThreadsSubsystemAdd.INSTANCE, ThreadsSubsystemAdd.INSTANCE, false);
         subsystem.registerOperationHandler(DESCRIBE, ThreadsSubsystemDescribeHandler.INSTANCE, ThreadsSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         final ModelNodeRegistration threadFactories = subsystem.registerSubModel(PathElement.pathElement(THREAD_FACTORY), THREAD_FACTORY_DESC);
-        threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ADD_THREAD_FACTORY_DESC, false);
-        threadFactories.registerOperationHandler(REMOVE, ThreadFactoryRemove.INSTANCE, REMOVE_THREAD_FACTORY_DESC, false);
+        threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ThreadFactoryAdd.INSTANCE, false);
+        threadFactories.registerOperationHandler(REMOVE, ThreadFactoryRemove.INSTANCE, ThreadFactoryRemove.INSTANCE, false);
         threadFactories.registerReadWriteAttribute(THREAD_NAME_PATTERN, null, ThreadFactoryThreadNamePatternUpdate.INSTANCE, Storage.CONFIGURATION);
         threadFactories.registerReadWriteAttribute(GROUP_NAME, null, ThreadFactoryGroupNameUpdate.INSTANCE, Storage.CONFIGURATION);
         threadFactories.registerReadWriteAttribute(PRIORITY, null, ThreadFactoryPriorityUpdate.INSTANCE, Storage.CONFIGURATION);
 
         final ModelNodeRegistration boundedQueueThreadPools = subsystem.registerSubModel(PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
-        boundedQueueThreadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, ADD_BOUNDED_QUEUE_THREAD_POOL_DESC, false);
-        boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, REMOVE_BOUNDED_QUEUE_THREAD_POOL_DESC, false);
+        boundedQueueThreadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, BoundedQueueThreadPoolAdd.INSTANCE, false);
+        boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, BoundedQueueThreadPoolRemove.INSTANCE, false);
 
         final ModelNodeRegistration unboundedQueueThreadPools = subsystem.registerSubModel(PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL), UNBOUNDED_QUEUE_THREAD_POOL_DESC);
-        unboundedQueueThreadPools.registerOperationHandler(ADD, UnboundedQueueThreadPoolAdd.INSTANCE, ADD_UNBOUNDED_QUEUE_THREAD_POOL_DESC, false);
-        unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE, REMOVE_UNBOUNDED_QUEUE_THREAD_POOL_DESC, false);
+        unboundedQueueThreadPools.registerOperationHandler(ADD, UnboundedQueueThreadPoolAdd.INSTANCE, UnboundedQueueThreadPoolAdd.INSTANCE, false);
+        unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE, UnboundedQueueThreadPoolRemove.INSTANCE, false);
 
         final ModelNodeRegistration queuelessThreadPools = subsystem.registerSubModel(PathElement.pathElement(QUEUELESS_THREAD_POOL), QUEUELESS_THREAD_POOL_DESC);
-        queuelessThreadPools.registerOperationHandler(ADD, QueuelessThreadPoolAdd.INSTANCE, ADD_QUEUELESS_THREAD_POOL_DESC, false);
-        queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE, REMOVE_QUEUELESS_THREAD_POOL_DESC, false);
+        queuelessThreadPools.registerOperationHandler(ADD, QueuelessThreadPoolAdd.INSTANCE, QueuelessThreadPoolAdd.INSTANCE, false);
+        queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE, QueuelessThreadPoolRemove.INSTANCE, false);
 
         final ModelNodeRegistration scheduledThreadPools = subsystem.registerSubModel(PathElement.pathElement(SCHEDULED_THREAD_POOL), SCHEDULED_THREAD_POOL_DESC);
-        scheduledThreadPools.registerOperationHandler(ADD, ScheduledThreadPoolAdd.INSTANCE, ADD_SCHEDULED_THREAD_POOL_DESC, false);
-        scheduledThreadPools.registerOperationHandler(REMOVE, ScheduledThreadPoolRemove.INSTANCE, REMOVE_SCHEDULED_THREAD_POOL_DESC, false);
+        scheduledThreadPools.registerOperationHandler(ADD, ScheduledThreadPoolAdd.INSTANCE, ScheduledThreadPoolAdd.INSTANCE, false);
+        scheduledThreadPools.registerOperationHandler(REMOVE, ScheduledThreadPoolRemove.INSTANCE, ScheduledThreadPoolRemove.INSTANCE, false);
     }
 
     @Override
@@ -236,7 +225,6 @@ public class ThreadsExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                 case NAME: {
-                    op.get(NAME).set(value);
                     name = value;
                     break;
                 }
@@ -303,7 +291,6 @@ public class ThreadsExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                 case NAME: {
-                    op.get(NAME).set(value);
                     name = value;
                     break;
                 } case BLOCKING : {
@@ -395,7 +382,6 @@ public class ThreadsExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                 case NAME: {
-                    op.get(NAME).set(value);
                     name = value;
                     break;
                 }
@@ -461,7 +447,6 @@ public class ThreadsExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                 case NAME: {
-                    op.get(NAME).set(value);
                     name = value;
                     break;
                 }
@@ -527,7 +512,6 @@ public class ThreadsExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                 case NAME: {
-                    op.get(NAME).set(value);
                     name = value;
                     break;
                 } case BLOCKING : {

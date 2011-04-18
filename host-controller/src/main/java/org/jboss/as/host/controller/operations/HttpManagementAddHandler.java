@@ -40,6 +40,7 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.server.mgmt.HttpManagementService;
@@ -115,7 +116,6 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
     /** {@inheritDoc} */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        // TODO - Define the ModelDescription.
-        return new ModelNode();
+        return ManagementDescription.getAddHttpManagementDescription(locale);
     }
 }

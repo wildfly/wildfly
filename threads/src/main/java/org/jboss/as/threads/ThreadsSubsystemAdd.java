@@ -22,8 +22,6 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
@@ -31,10 +29,14 @@ import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 
+import java.util.Locale;
+
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -45,9 +47,9 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-class ThreadsSubsystemAdd implements ModelAddOperationHandler {
+class ThreadsSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
 
-    static final OperationHandler INSTANCE = new ThreadsSubsystemAdd();
+    static final ThreadsSubsystemAdd INSTANCE = new ThreadsSubsystemAdd();
 
     /** {@inheritDoc} */
     @Override
@@ -63,5 +65,10 @@ class ThreadsSubsystemAdd implements ModelAddOperationHandler {
         final ModelNode compensating = Util.getResourceRemoveOperation(operation.require(ADDRESS));
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensating);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ThreadsSubsystemProviders.SUBSYSTEM_ADD_DESC.getModelDescription(locale);
     }
 }

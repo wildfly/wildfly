@@ -29,6 +29,7 @@ import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORK
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -115,16 +116,19 @@ class ConnectorSubsystemProviders {
                     bundle.getString("connector.archive-validation.enabled"));
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, DEFAULT).set(false);
 
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DESCRIPTION).set(
                     bundle.getString("connector.archive-validation.fail-on-error"));
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, TYPE).set(ModelType.BOOLEAN);
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DEFAULT).set(true);
 
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DESCRIPTION).set(
                     bundle.getString("connector.archive-validation.fail-on-warn"));
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, TYPE).set(ModelType.BOOLEAN);
             operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DEFAULT).set(false);
 
             operation.get(REQUEST_PROPERTIES, BEAN_VALIDATION_ENABLED, DESCRIPTION).set(
                     bundle.getString("connector.archive-validation.fail-on-warn"));
