@@ -22,8 +22,8 @@
 
 package org.jboss.as.web.deployment.component;
 
-import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -52,17 +52,16 @@ import java.util.Set;
  * Processor that figures out what type of component a servlet/listener is, and registers the appropriate metadata.
  * The different types are:
  * <ul>
- *     <li>Managed Bean - If the servlet is annotated with the <code>ManagedBean</code> annotation</li>
- *     <li>CDI Bean - If the servlet is deployed in a bean archive</li>
- *     <li>EE Component - If this is an EE deployment and the servlet is not one of the above</li>
- *     <li>Normal Servlet - If the EE subsystem is disabled</li>
+ * <li>Managed Bean - If the servlet is annotated with the <code>ManagedBean</code> annotation</li>
+ * <li>CDI Bean - If the servlet is deployed in a bean archive</li>
+ * <li>EE Component - If this is an EE deployment and the servlet is not one of the above</li>
+ * <li>Normal Servlet - If the EE subsystem is disabled</li>
  * </ul>
- *
+ * <p/>
  * For ManagedBean Servlets no action is necessary at this stage, as the servlet is already registered as a component.
  * For CDI and EE components a component definition is added to the deployment.
  * <p/>
  * For now we are just using managed bean components as servlets. We may need a custom component type in future.
- *
  */
 public class WebComponentProcessor implements DeploymentUnitProcessor {
 
@@ -70,42 +69,42 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        if(!DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return;
         }
 
-        final Map<String, ComponentDescription> componentByClass = new HashMap<String,ComponentDescription>();
-        final Map<String, ComponentInstantiator> webComponents = new HashMap<String,ComponentInstantiator>();
-        final EEModuleDescription moduleDescription =  deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Map<String, ComponentDescription> componentByClass = new HashMap<String, ComponentDescription>();
+        final Map<String, ComponentInstantiator> webComponents = new HashMap<String, ComponentInstantiator>();
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final String applicationName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName();
-        if(moduleDescription == null) {
+        if (moduleDescription == null) {
             return; //not an ee deployment
         }
-        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+        for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             componentByClass.put(component.getComponentClassName(), component);
         }
 
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
-        final Set<String> classes  = getAllComponentClasses(warMetaData, tldsMetaData);
-        for(String clazz : classes) {
+        final Set<String> classes = getAllComponentClasses(warMetaData, tldsMetaData);
+        for (String clazz : classes) {
             ComponentDescription description = componentByClass.get(clazz);
-            if(description != null) {
+            if (description != null) {
                 //for now just make sure it has a single view
                 //this will generally be a managed bean, but it could also be an EJB
                 //TODO: make sure the component is a managed bean
-                if(!(description.getViewClassNames().size() == 1)){
+                if (!(description.getViews().size() == 1)) {
                     throw new RuntimeException(clazz + " has the wrong component type, is cannot be used as a web component");
                 }
-                ManagedBeanComponentInstantiator instantiator  = new ManagedBeanComponentInstantiator(deploymentUnit,description);
-                webComponents.put(clazz,instantiator);
+                ManagedBeanComponentInstantiator instantiator = new ManagedBeanComponentInstantiator(deploymentUnit, description);
+                webComponents.put(clazz, instantiator);
             } else {
-                description = new WebComponentDescription(clazz,clazz,moduleDescription);
+                description = new WebComponentDescription(clazz, clazz, moduleDescription, deploymentUnit.getServiceName());
                 moduleDescription.addComponent(description);
-                webComponents.put(clazz,new WebComponentInstantiator(deploymentUnit, description));
+                webComponents.put(clazz, new WebComponentInstantiator(deploymentUnit, description));
             }
         }
-        deploymentUnit.putAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS,webComponents);
+        deploymentUnit.putAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS, webComponents);
     }
 
     @Override
@@ -114,64 +113,65 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
 
     /**
      * Gets all classes that are eligible for injection etc
+     *
      * @param metaData
      * @return
      */
     private Set<String> getAllComponentClasses(WarMetaData metaData, TldsMetaData tldsMetaData) {
         final Set<String> classes = new HashSet<String>();
-        if(metaData.getAnnotationsMetaData() != null)
-            for(Map.Entry<String, WebMetaData> webMetaData : metaData.getAnnotationsMetaData().entrySet()) {
-                getAllComponentClasses(webMetaData.getValue(),classes);
+        if (metaData.getAnnotationsMetaData() != null)
+            for (Map.Entry<String, WebMetaData> webMetaData : metaData.getAnnotationsMetaData().entrySet()) {
+                getAllComponentClasses(webMetaData.getValue(), classes);
             }
-        if(metaData.getSharedWebMetaData() != null)
-            getAllComponentClasses(metaData.getSharedWebMetaData(),classes);
-        if(metaData.getWebFragmentsMetaData() != null)
-            for(Map.Entry<String, WebFragmentMetaData> webMetaData : metaData.getWebFragmentsMetaData().entrySet()) {
-                getAllComponentClasses(webMetaData.getValue(),classes);
+        if (metaData.getSharedWebMetaData() != null)
+            getAllComponentClasses(metaData.getSharedWebMetaData(), classes);
+        if (metaData.getWebFragmentsMetaData() != null)
+            for (Map.Entry<String, WebFragmentMetaData> webMetaData : metaData.getWebFragmentsMetaData().entrySet()) {
+                getAllComponentClasses(webMetaData.getValue(), classes);
             }
-        if(metaData.getWebMetaData() != null)
-            getAllComponentClasses(metaData.getWebMetaData(),classes);
+        if (metaData.getWebMetaData() != null)
+            getAllComponentClasses(metaData.getWebMetaData(), classes);
         if (tldsMetaData == null)
             return classes;
         if (tldsMetaData.getSharedTlds() != null)
             for (TldMetaData tldMetaData : tldsMetaData.getSharedTlds()) {
-                getAllComponentClasses(tldMetaData,classes);
+                getAllComponentClasses(tldMetaData, classes);
             }
         if (tldsMetaData.getTlds() != null)
-            for(Map.Entry<String, TldMetaData> tldMetaData : tldsMetaData.getTlds().entrySet()) {
-                getAllComponentClasses(tldMetaData.getValue(),classes);
+            for (Map.Entry<String, TldMetaData> tldMetaData : tldsMetaData.getTlds().entrySet()) {
+                getAllComponentClasses(tldMetaData.getValue(), classes);
             }
         return classes;
     }
 
-     private void getAllComponentClasses(WebCommonMetaData metaData,Set<String> classes) {
-         if(metaData.getServlets() != null)
-             for(ServletMetaData servlet : metaData.getServlets()) {
-                 if (servlet.getServletClass() != null) {
-                     classes.add(servlet.getServletClass());
-                 }
-             }
-         if(metaData.getFilters() != null)
-             for(FilterMetaData filter : metaData.getFilters()) {
-                 classes.add(filter.getFilterClass());
-             }
-         if(metaData.getListeners() != null)
-             for(ListenerMetaData listener : metaData.getListeners()) {
-                 classes.add(listener.getListenerClass());
-             }
-     }
+    private void getAllComponentClasses(WebCommonMetaData metaData, Set<String> classes) {
+        if (metaData.getServlets() != null)
+            for (ServletMetaData servlet : metaData.getServlets()) {
+                if (servlet.getServletClass() != null) {
+                    classes.add(servlet.getServletClass());
+                }
+            }
+        if (metaData.getFilters() != null)
+            for (FilterMetaData filter : metaData.getFilters()) {
+                classes.add(filter.getFilterClass());
+            }
+        if (metaData.getListeners() != null)
+            for (ListenerMetaData listener : metaData.getListeners()) {
+                classes.add(listener.getListenerClass());
+            }
+    }
 
-     private void getAllComponentClasses(TldMetaData metaData,Set<String> classes) {
-         if (metaData.getValidator() != null) {
-             classes.add(metaData.getValidator().getValidatorClass());
-         }
-         if(metaData.getListeners() != null)
-             for(ListenerMetaData listener : metaData.getListeners()) {
-                 classes.add(listener.getListenerClass());
-             }
-         if(metaData.getTags() != null)
-             for(TagMetaData tag : metaData.getTags()) {
-                 classes.add(tag.getTagClass());
-             }
-     }
+    private void getAllComponentClasses(TldMetaData metaData, Set<String> classes) {
+        if (metaData.getValidator() != null) {
+            classes.add(metaData.getValidator().getValidatorClass());
+        }
+        if (metaData.getListeners() != null)
+            for (ListenerMetaData listener : metaData.getListeners()) {
+                classes.add(listener.getListenerClass());
+            }
+        if (metaData.getTags() != null)
+            for (TagMetaData tag : metaData.getTags()) {
+                classes.add(tag.getTagClass());
+            }
+    }
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 
 /**
  * The component configuration web components
@@ -36,7 +37,7 @@ public class WebComponentConfiguration extends ComponentConfiguration {
      *
      * @param description the original description
      */
-    public WebComponentConfiguration(final WebComponentDescription description) {
-        super(description, INIT_ME);
+    public WebComponentConfiguration(final WebComponentDescription description, final EEModuleClassConfiguration eeModuleClassConfiguration) {
+        super(description, eeModuleClassConfiguration);
     }
 }

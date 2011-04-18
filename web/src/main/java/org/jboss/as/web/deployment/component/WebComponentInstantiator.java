@@ -65,8 +65,10 @@ public class WebComponentInstantiator implements ComponentInstantiator {
             @Override
             public synchronized void release() {
                 if (!destroyed) {
-                    instance.getComponent().destroyInstance(instance);
+                    // TODO: Implement destroyInstance
+//                    instance.getComponent().destroyInstance(instance);
                     destroyed = true;
+                    throw new RuntimeException("destroyInstance for web components not yet implemented");
                 }
             }
 

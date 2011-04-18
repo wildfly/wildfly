@@ -23,11 +23,8 @@
 package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.io.Serializable;
+import org.jboss.as.ee.component.BasicComponentCreateService;
+import org.jboss.as.ee.component.ComponentInstance;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} for web components
@@ -39,27 +36,25 @@ public class WebComponent extends BasicComponent {
     /**
      * Construct a new instance.
      *
-     * @param configuration the component configuration
+     * @param componentCreateService the component configuration
      */
-    public WebComponent(final WebComponentConfiguration configuration) {
-        super(configuration);
-    }
-
-    /** {@inheritDoc} */
-    protected BasicComponentInstance constructComponentInstance(final Object instance, InterceptorFactoryContext context) {
-        return new WebComponentInstance(this, instance, context);
-    }
-
-
-
-    /** {@inheritDoc} */
-    @Override
-    public Interceptor createClientInterceptor(final Class<?> viewClass) {
-        return null; //not applicable
+    public WebComponent(final BasicComponentCreateService componentCreateService) {
+        super(componentCreateService);
     }
 
     @Override
-    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-        return null;  //not applicable
+    public ComponentInstance createInstance() {
+        return new WebComponentInstance(this);
     }
+
+    //    /** {@inheritDoc} */
+//    @Override
+//    public Interceptor createClientInterceptor(final Class<?> viewClass) {
+//        return null; //not applicable
+//    }
+//
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+//        return null;  //not applicable
+//    }
 }

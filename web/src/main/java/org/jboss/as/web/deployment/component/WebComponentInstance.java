@@ -23,7 +23,6 @@
 package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * A managed bean component instance.
@@ -38,9 +37,9 @@ public final class WebComponentInstance extends BasicComponentInstance {
      * Construct a new instance.
      *
      * @param component the component
-     * @param instance the object instance
+     *
      */
-    protected WebComponentInstance(final WebComponent component, final Object instance, InterceptorFactoryContext context) {
+    protected WebComponentInstance(final WebComponent component) {
         super(component);
     }
 }

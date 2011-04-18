@@ -22,6 +22,8 @@
 package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceController;
@@ -47,11 +49,12 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
         final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName());
         serviceRegistry = deploymentUnit.getServiceRegistry();
         serviceNames.add(baseName.append("START"));
-        if(componentDescription.getViewClassNames().size() != 1) {
+        if(componentDescription.getViews() == null || componentDescription.getViews().size() != 1) {
             throw new RuntimeException("Servlet components must have exactly one view: " + componentDescription.getComponentName());
         }
-        String name = componentDescription.getViewClassNames().iterator().next();
-        serviceName = baseName.append("VIEW").append(name);
+        ViewDescription view = componentDescription.getViews().iterator().next();
+        String viewClassName = view.getViewClassName();
+        serviceName = baseName.append("VIEW").append(viewClassName);
         serviceNames.add(serviceName);
 
     }
@@ -66,7 +69,8 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
 
             }
         }
-        return viewServiceServiceController.getValue().getReference();
+        throw new RuntimeException("Not yet implemented");
+        //return viewServiceServiceController.getValue().getReference();
     }
 
     @Override
