@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.deployment;
 
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -39,24 +40,28 @@ import java.util.Set;
 
 /**
  * Implementation of EjbDescriptor
+ *
  * @author Stuart Douglas
  */
-public class EjbDescriptorImpl<T> implements EjbDescriptor<T>{
+public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
 
     private final EJBComponentDescription componentDescription;
     private final BeanDeploymentArchiveImpl beanDeploymentArchive;
     private final Set<BusinessInterfaceDescriptor<?>> localInterfaces;
     private final ServiceName baseName;
 
-    public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive,DeploymentUnit deploymentUnit) {
+    public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive, DeploymentUnit deploymentUnit) {
         this.componentDescription = componentDescription;
         this.beanDeploymentArchive = beanDeploymentArchive;
         final Set<BusinessInterfaceDescriptor<?>> localInterfaces = new HashSet<BusinessInterfaceDescriptor<?>>();
-        for(String className : componentDescription.getViewClassNames()) {
-            localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive,className));
+        if (componentDescription.getViews() != null) {
+            for (ViewDescription view : componentDescription.getViews()) {
+                String viewClassName = view.getViewClassName();
+                localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, viewClassName));
+            }
         }
-        this.localInterfaces=localInterfaces;
-        this.baseName =  deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName());
+        this.localInterfaces = localInterfaces;
+        this.baseName = deploymentUnit.getServiceName().append("component").append(componentDescription.getComponentName());
     }
 
 
