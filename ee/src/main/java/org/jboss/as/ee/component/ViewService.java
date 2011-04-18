@@ -35,6 +35,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -46,6 +47,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ViewService implements Service<ComponentView> {
+    private static final Logger logger = Logger.getLogger(ViewService.class);
     private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
@@ -216,7 +218,7 @@ final class ViewService implements Service<ComponentView> {
                 try {
                     preDestroyInterceptor.processInvocation(new InterceptorContext());
                 } catch (Exception e) {
-                    // todo: log the warning
+                    logger.warn("Exception while invoking pre-destroy interceptor for component class: " + this.getComponent().getComponentClass(), e);
                 }
             }
         }

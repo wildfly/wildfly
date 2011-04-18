@@ -182,4 +182,32 @@ public class ViewConfiguration {
     public Class<?> getViewClass() {
         return viewClass;
     }
+
+    /**
+     * Adds a "server side" interceptor which will be applicable for all methods exposed by this view.
+     * 
+     * @param  interceptorFactory The interceptor to add
+     * @see #getViewInterceptorDeque(java.lang.reflect.Method)
+     */
+    public void addViewInterceptor(InterceptorFactory interceptorFactory) {
+        Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
+        for (Method method : allMethodsOnView) {
+            Deque<InterceptorFactory> interceptorsForMethod = this.getViewInterceptorDeque(method);
+            interceptorsForMethod.add(interceptorFactory);
+        }
+    }
+
+    /**
+     * Adds a "client side" interceptor which will be applicable for all methods exposed by this view.
+     *
+     * @param  interceptorFactory The interceptor to add
+     * @see #getClientInterceptorDeque(java.lang.reflect.Method) 
+     */
+    public void addClientViewInterceptor(InterceptorFactory interceptorFactory) {
+        Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
+        for (Method method : allMethodsOnView) {
+            Deque<InterceptorFactory> interceptorsForMethod = this.getClientInterceptorDeque(method);
+            interceptorsForMethod.add(interceptorFactory);
+        }
+    }
 }

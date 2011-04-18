@@ -22,13 +22,19 @@
 
 package org.jboss.as.ejb3.component.session;
 
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 
 
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 
 
+
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
@@ -36,15 +42,22 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
+import javax.ejb.TransactionManagementType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,6 +70,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Jaikiran Pai
  */
 public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
+
+    private static final Logger logger = Logger.getLogger(SessionBeanComponentDescription.class);
 
     /**
      * Flag marking the presence/absence of a no-interface view on the session bean
@@ -117,7 +132,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param ejbModuleDescription  the module description
+     * @param ejbJarDescription  the module description
      */
     public SessionBeanComponentDescription(final String componentName, final String componentClassName,
                                            final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
@@ -151,6 +166,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             // setup the ViewDescription
             ViewDescription viewDescription = new ViewDescription(this, viewClassName);
             this.getViews().add(viewDescription);
+
+            // add the tx interceptor for the view
+            this.addTxManagementInterceptorForView(viewDescription);
         }
     }
 
@@ -165,6 +183,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // setup the ViewDescription
         ViewDescription viewDescription = new ViewDescription(this, this.getEJBClassName());
         this.getViews().add(viewDescription);
+        // add the tx interceptor for the view
+        this.addTxManagementInterceptorForView(viewDescription);
+
     }
 
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
@@ -182,6 +203,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             // setup the ViewDescription
             ViewDescription viewDescription = new ViewDescription(this, viewClassName);
             this.getViews().add(viewDescription);
+            // add the tx interceptor for the view
+            this.addTxManagementInterceptorForView(viewDescription);
+
         }
     }
 
@@ -414,5 +438,37 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             paramTypes[i++] = PrimitiveClassLoaderUtil.loadClass(type.toString(), classLoader);
         }
         return new EJBBusinessMethod(methodName, paramTypes);
+    }
+
+    /**
+     * Sets up the transaction management interceptor for all methods of the passed view.
+     *
+     * @param view The EJB bean view
+     */
+    private void addTxManagementInterceptorForView(ViewDescription view) {
+        // add a Tx configurator
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+                // Add CMT interceptor factory
+                if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
+                    configuration.addViewInterceptor(new InterceptorFactory() {
+                        @Override
+                        public Interceptor create(InterceptorFactoryContext context) {
+                            Component component = (Component) context.getContextData().get(Component.class);
+                            if (component == null) {
+                                throw new IllegalStateException("Component not set in InterceptorFactoryContext: " + context);
+                            }
+                            if (component instanceof TransactionalComponent == false) {
+                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
+                                        " isn't a transactional component. Tx interceptors cannot be applied");
+                            }
+                            return new CMTTxInterceptor((TransactionalComponent) component);
+                        }
+                    });
+                }
+            }
+        });
     }
 }
