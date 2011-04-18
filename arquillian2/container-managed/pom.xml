@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Parent -->
+  <parent>
+    <groupId>org.jboss.as.arquillian2</groupId>
+    <artifactId>jboss-as-arquillian2</artifactId>
+    <version>7.0.0.Beta3-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>jboss-as-arquillian2-container-managed</artifactId>
+  <name>JBoss Application Server: Arquillian Container Managed</name>
+  <description>JBoss AS Managed 7.x Container integration for the Arquillian Project</description>
+
+  <packaging>jar</packaging>
+
+  <properties>
+
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.as.arquillian2</groupId>
+      <artifactId>jboss-as-arquillian2-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-controller-client</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.arquillian</groupId>
+      <artifactId>arquillian-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-build</artifactId>
+      <version>${project.version}</version>
+      <type>pom</type>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-service</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-osgi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-jmx</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-msc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.logging</groupId>
+          <artifactId>jboss-logging-spi</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.5</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <!-- here the phase you need -->
+            <phase>process-test-classes</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
+                  <includes>
+                    <include>**</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+</project>

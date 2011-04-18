@@ -204,6 +204,7 @@
     </properties>
 
     <modules>
+        <module>arquillian2</module>
         <module>build</module>
         <module>build-config</module>
         <module>arquillian</module>
@@ -236,6 +237,7 @@
         <module>security</module>
         <module>server</module>
         <module>testsuite</module>
+        <module>testsuite2</module>
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>
