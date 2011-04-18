@@ -128,7 +128,7 @@ class WebConnectorService implements Service<Connector> {
                 if (connector.getProtocolHandler() instanceof Http11AprProtocol) {
                     nativeSSL = true;
                 } else if (!(connector.getProtocolHandler() instanceof Http11Protocol)) {
-                    throw new StartException("Non HTTP connectors dor not support SSL");
+                    throw new StartException("Non HTTP connectors do not support SSL");
                 }
                 // Enable SSL
                 try {

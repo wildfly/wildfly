@@ -21,7 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.websecurity;
 
-import java.io.File;
 import java.net.URL;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -30,7 +29,7 @@ import org.junit.Test;
 
 /**
  * Base class for web security tests that are based on passwords
- * 
+ *
  * @author Anil Saldhana
  */
 public abstract class WebSecurityPasswordBasedBase {
@@ -39,7 +38,7 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Base method to create a {@link WebArchive}
-     * 
+     *
      * @param name Name of the war file
      * @param servletClass a class that is the servlet
      * @param addProps should we add users.properties and roles.properties to war
@@ -64,14 +63,14 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Obtain the context path of the {@link WebArchive}
-     * 
+     *
      * @return
      */
     public abstract String getContextPath();
 
     /**
      * Print the contents of the {@link WebArchive}
-     * 
+     *
      * @param war
      */
     public static void printWar(WebArchive war) {
@@ -80,7 +79,7 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Test with user "anil" who has the right password and the right role to access the servlet
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -95,7 +94,7 @@ public abstract class WebSecurityPasswordBasedBase {
      * <p>
      * Should be a HTTP/403
      * </p>
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -105,7 +104,7 @@ public abstract class WebSecurityPasswordBasedBase {
 
     /**
      * Method that needs to be overridden with the HTTPClient code
-     * 
+     *
      * @param user username
      * @param pass password
      * @param expectedCode http status code

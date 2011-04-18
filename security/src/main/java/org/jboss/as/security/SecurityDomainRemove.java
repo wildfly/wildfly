@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
+import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -44,7 +44,7 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Brian Stansberry
  */
-class SecurityDomainRemove implements ModelAddOperationHandler {
+class SecurityDomainRemove implements ModelRemoveOperationHandler {
 
     static final String OPERATION_NAME = REMOVE;
 
@@ -56,7 +56,6 @@ class SecurityDomainRemove implements ModelAddOperationHandler {
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
         ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String securityDomain = address.getLastElement().getValue();

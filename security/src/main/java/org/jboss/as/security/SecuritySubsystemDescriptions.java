@@ -58,7 +58,6 @@ import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.KEYSTORE_ALIAS;
 import static org.jboss.as.security.Constants.KEYSTORE_PASSWORD;
 import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER;
 import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER_ARGUMENT;
@@ -692,9 +691,6 @@ class SecuritySubsystemDescriptions {
             node.get(ATTRIBUTES, KEYSTORE_URL, DESCRIPTION).set(bundle.getString("keystore-url"));
             node.get(ATTRIBUTES, KEYSTORE_URL, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, KEYSTORE_URL, REQUIRED).set(false);
-            node.get(ATTRIBUTES, KEYSTORE_ALIAS, DESCRIPTION).set(bundle.getString("keystore-alias"));
-            node.get(ATTRIBUTES, KEYSTORE_ALIAS, TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, KEYSTORE_ALIAS, REQUIRED).set(false);
             node.get(ATTRIBUTES, KEYSTORE_PROVIDER, DESCRIPTION).set(bundle.getString("keystore-provider"));
             node.get(ATTRIBUTES, KEYSTORE_PROVIDER, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, KEYSTORE_PROVIDER, REQUIRED).set(false);
@@ -765,9 +761,6 @@ class SecuritySubsystemDescriptions {
             node.get(REQUEST_PROPERTIES, KEYSTORE_URL, DESCRIPTION).set(bundle.getString("keystore-url"));
             node.get(REQUEST_PROPERTIES, KEYSTORE_URL, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, KEYSTORE_URL, REQUIRED).set(false);
-            node.get(REQUEST_PROPERTIES, KEYSTORE_ALIAS, DESCRIPTION).set(bundle.getString("keystore-alias"));
-            node.get(REQUEST_PROPERTIES, KEYSTORE_ALIAS, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, KEYSTORE_ALIAS, REQUIRED).set(false);
             node.get(REQUEST_PROPERTIES, KEYSTORE_PROVIDER, DESCRIPTION).set(bundle.getString("keystore-provider"));
             node.get(REQUEST_PROPERTIES, KEYSTORE_PROVIDER, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, KEYSTORE_PROVIDER, REQUIRED).set(false);

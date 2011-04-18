@@ -125,14 +125,15 @@
       </xs:annotation>
       <xs:sequence>
          <xs:choice>
-            <xs:element name="authentication" type="authenticationType"/>
-            <xs:element name="authentication-jaspi" type="authenticationJaspiType"/>
+            <xs:element name="authentication" type="authenticationType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="authentication-jaspi" type="authenticationJaspiType" minOccurs="0" maxOccurs="1"/>
          </xs:choice>
-         <xs:element name="authorization" type="authorizationType" minOccurs="0" maxOccurs="unbounded"/>
-         <xs:element name="acl" type="aclType" minOccurs="0"/>
-         <xs:element name="mapping" type="mappingType" minOccurs="0"/>
-         <xs:element name="audit" type="auditType" minOccurs="0"/>
-         <xs:element name="identity-trust" type="identityTrustType" minOccurs="0"/>
+         <xs:element name="authorization" type="authorizationType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="acl" type="aclType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="mapping" type="mappingType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="audit" type="auditType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="identity-trust" type="identityTrustType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="jsse" type="jsseType" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="extends" type="xs:string" use="optional"/>
@@ -401,6 +402,34 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
+   </xs:complexType>
+   
+   <xs:complexType name="jsseType">
+      <xs:annotation>
+         <xs:documentation>
+               <![CDATA[
+                    JSSE configuration.
+                ]]>
+         </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="keystore-password" type="xs:string" use="optional"/>
+      <xs:attribute name="keystore-type" type="xs:string" use="optional"/>
+      <xs:attribute name="keystore-url" type="xs:string" use="optional"/>
+      <xs:attribute name="keystore-provider" type="xs:string" use="optional"/>
+      <xs:attribute name="keystore-provider-argument" type="xs:string" use="optional"/>
+      <xs:attribute name="key-manager-factory-algorithm" type="xs:string" use="optional"/>
+      <xs:attribute name="key-manager-factory-provider" type="xs:string" use="optional"/>
+      <xs:attribute name="truststore-password" type="xs:string" use="optional"/>
+      <xs:attribute name="truststore-type" type="xs:string" use="optional"/>
+      <xs:attribute name="truststore-url" type="xs:string" use="optional"/>
+      <xs:attribute name="truststore-provider" type="xs:string" use="optional"/>
+      <xs:attribute name="truststore-provider-argument" type="xs:string" use="optional"/>
+      <xs:attribute name="trust-manager-factory-algorithm" type="xs:string" use="optional"/>
+      <xs:attribute name="trust-manager-factory-provider" type="xs:string" use="optional"/>
+      <xs:attribute name="client-alias" type="xs:string" use="optional"/>
+      <xs:attribute name="server-alias" type="xs:string" use="optional"/>
+      <xs:attribute name="service-auth-token" type="xs:string" use="optional"/>
+      <xs:attribute name="client-auth" type="xs:boolean" use="optional"/>
    </xs:complexType>
    
 </xs:schema>

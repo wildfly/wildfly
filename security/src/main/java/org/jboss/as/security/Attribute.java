@@ -47,7 +47,6 @@ public enum Attribute {
     IDENTITY_TRUST_MANAGER_CLASS_NAME("identity-trust-manager-class-name"),
     KEY_MANAGER_FACTORY_ALGORITHM("key-manager-factory-algorithm"),
     KEY_MANAGER_FACTORY_PROVIDER("key-manager-factory-provider"),
-    KEYSTORE_ALIAS("keystore-alias"),
     KEYSTORE_PASSWORD("keystore-password"),
     KEYSTORE_PROVIDER("keystore-provider"),
     KEYSTORE_PROVIDER_ARGUMENT("keystore-provider-argument"),

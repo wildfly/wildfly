@@ -84,6 +84,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
                     .getValue();
             try {
                 securityDomainContext = securityManagement.createSecurityDomainContext(name);
+                jsseSecurityDomain.reloadKeyAndTrustStore();
             } catch (Exception e) {
                 throw new StartException(e);
             }

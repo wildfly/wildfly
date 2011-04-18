@@ -102,6 +102,10 @@
                           <name>jboss.home</name>
                           <value>${jboss.home}</value>
                         </property>
+                        <property>
+                          <name>jboss.options</name>
+                          <value>-Djavax.net.ssl.trustStore=${project.build.directory}/test-classes/security/server.keystore -Djavax.net.ssl.trustStorePassword=changeit</value>
+                        </property>
                      </systemProperties>
                     <includes>
                         <include>**/*TestCase.java</include>

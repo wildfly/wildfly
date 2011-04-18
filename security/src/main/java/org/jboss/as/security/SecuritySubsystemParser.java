@@ -52,7 +52,6 @@ import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.KEYSTORE_ALIAS;
 import static org.jboss.as.security.Constants.KEYSTORE_PASSWORD;
 import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER;
 import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER_ARGUMENT;
@@ -412,8 +411,6 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 writeAttribute(writer, Attribute.KEYSTORE_URL, modelNode.get(Attribute.KEYSTORE_URL.getLocalName()));
             if (modelNode.hasDefined(KEYSTORE_TYPE))
                 writeAttribute(writer, Attribute.KEYSTORE_TYPE, modelNode.get(Attribute.KEYSTORE_TYPE.getLocalName()));
-            if (modelNode.hasDefined(KEYSTORE_ALIAS))
-                writeAttribute(writer, Attribute.KEYSTORE_ALIAS, modelNode.get(Attribute.KEYSTORE_ALIAS.getLocalName()));
             if (modelNode.hasDefined(KEYSTORE_PROVIDER))
                 writeAttribute(writer, Attribute.KEYSTORE_PROVIDER, modelNode.get(Attribute.KEYSTORE_PROVIDER.getLocalName()));
             if (modelNode.hasDefined(KEYSTORE_PROVIDER_ARGUMENT))
@@ -1061,10 +1058,6 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case KEYSTORE_URL: {
                     op.get(KEYSTORE_URL).set(value);
-                    break;
-                }
-                case KEYSTORE_ALIAS: {
-                    op.get(KEYSTORE_ALIAS).set(value);
                     break;
                 }
                 case KEYSTORE_PROVIDER: {

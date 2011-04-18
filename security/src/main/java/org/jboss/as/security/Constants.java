@@ -50,7 +50,6 @@ public interface Constants {
     String JSSE = "jsse";
     String KEY_MANAGER_FACTORY_ALGORITHM = "key-manager-factory-algorithm";
     String KEY_MANAGER_FACTORY_PROVIDER = "key-manager-factory-provider";
-    String KEYSTORE_ALIAS = "keystore-alias";
     String KEYSTORE_PASSWORD = "keystore-password";
     String KEYSTORE_PROVIDER = "keystore-provider";
     String KEYSTORE_PROVIDER_ARGUMENT = "keystore-provider-argument";

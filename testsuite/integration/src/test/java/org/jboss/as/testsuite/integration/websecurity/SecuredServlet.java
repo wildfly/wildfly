@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * A simple servlet that just writes back a string
- * 
+ *
  * @author Anil Saldhana
  */
 @WebServlet(urlPatterns = { "/secured/" })

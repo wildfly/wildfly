@@ -22,6 +22,17 @@
 
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.security.AccessController;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.ServletContext;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
@@ -49,16 +60,9 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
+import org.jboss.util.loading.ContextClassLoaderSwitcher;
+import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 import org.jboss.vfs.VirtualFile;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -176,10 +180,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
-        // Set the current tccl and save it
-        ClassLoader tcl = SecurityActions.getContextClassLoader();
         // Set the Module Class loader as the tccl such that the JNDI lookup of the JBoss Authentication/Authz managers succeed
-        SecurityActions.setContextClassLoader(classLoader);
+        @SuppressWarnings("unchecked")
+        ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController
+                .doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
+        SwitchContext switchContext = switcher.getSwitchContext(classLoader);
 
         try {
             AuthenticationManager authM = getAuthenticationManager(securityDomain);
@@ -192,14 +197,15 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (NamingException e1) {
             throw new RuntimeException(e1);
         } finally {
-            SecurityActions.setContextClassLoader(tcl);
+            // restore previous tccl
+            switchContext.reset();
         }
 
         // Setup an deployer configured ServletContext attributes
         final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
-        if(attributes != null) {
+        if (attributes != null) {
             final ServletContext context = webContext.getServletContext();
-            for(ServletContextAttribute attribute : attributes) {
+            for (ServletContextAttribute attribute : attributes) {
                 context.setAttribute(attribute.getName(), attribute.getValue());
             }
         }
@@ -207,16 +213,16 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
-            ServiceBuilder<Context> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService);
+            ServiceBuilder<Context> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName),
+                    webDeploymentService);
             builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class,
-                            new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
+                    new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
             builder.addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
-                            webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE);
+                    webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE);
 
             builder.addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES));
 
             builder.install();
-
 
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);

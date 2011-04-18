@@ -36,7 +36,6 @@ import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.IDENTITY_TRUST;
 import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.KEYSTORE_ALIAS;
 import static org.jboss.as.security.Constants.KEYSTORE_PASSWORD;
 import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER;
 import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER_ARGUMENT;
@@ -401,10 +400,6 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
                 } catch (IOException ioe) {
                     throw new IllegalArgumentException(ioe);
                 }
-            }
-            if (node.hasDefined(KEYSTORE_ALIAS)) {
-                value = node.get(KEYSTORE_ALIAS).asString();
-                jsseSecurityDomain.setKeyStoreAlias(value);
             }
             if (node.hasDefined(KEYSTORE_PROVIDER)) {
                 value = node.get(KEYSTORE_PROVIDER).asString();

@@ -23,7 +23,6 @@ package org.jboss.as.testsuite.integration.websecurity;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Unit Test web security
- * 
+ *
  * @author Anil Saldhana
  */
 @RunWith(Arquillian.class)
@@ -61,9 +60,6 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure.war/web.xml");
         WebArchive war = WebSecurityPasswordBasedBase.create("web-secure.war", SecuredServlet.class, true, webxml);
-
-        File loginJSP = new File(tccl.getResource("web-secure.war/login.jsp").getPath());
-        File errorJSP = new File(tccl.getResource("web-secure.war/error.jsp").getPath());
 
         war.addResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
         war.addResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
