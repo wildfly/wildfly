@@ -1,0 +1,13 @@
+Synopsis:	batch [heldback_name]
+
+Description:	Starts the batch mode by creating a new batch or, depending on the existing
+				held back batches, re-activates one.
+				If there are no held back batches this command invoked w/o arguments
+				will start a new batch. If there is an unnamed held back batch, this
+				command will re-activate it. If there are named held back batches,
+				they can be activated by executing this command with the name of the
+				held back batch as the argument.
+
+Arguments:
+
+	heldback_name	- optional, the name of a held back batch.

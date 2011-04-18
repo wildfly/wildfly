@@ -1,0 +1,13 @@
+Synopsis:	holdback-batch [holdback_name]
+
+Description:	saves the currently active batch and exits the batch mode
+				w/o executing the batch. The held back batch can later be
+				re-activated by invoking batch commands.
+
+Arguments:
+
+	holdback_name	- optional, the name under which to store the batch.
+					If the name isn't provided, the batch will be saved unnamed.
+					If the holdback name is provided, the name must be unique.
+					If there already is a held back batch with the same name,
+					holdback-batch will fail and the CLI will stay in the batch mode.

@@ -1,0 +1,4 @@
+Synopsis:	list-batch
+
+Description:	lists all the commands in the currently active batch.
+				The CLI must be in the batch mode when this command in invoked.
