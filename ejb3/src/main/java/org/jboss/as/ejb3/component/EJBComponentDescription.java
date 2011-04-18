@@ -232,10 +232,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     protected void setupViewInterceptors(ViewDescription view) {
-
+        this.addCurrentInvocationContextFactory(view);
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {
 
     }
+
+    protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
 }

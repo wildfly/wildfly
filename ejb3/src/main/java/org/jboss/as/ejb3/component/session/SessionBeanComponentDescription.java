@@ -39,6 +39,7 @@ import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -442,8 +443,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // let super do it's job first
         super.setupViewInterceptors(view);
 
+        // current invocation
+
         // tx management interceptor(s)
         this.addTxManagementInterceptorForView(view);
+
     }
 
     /**
@@ -470,6 +474,16 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                         }
                     });
                 }
+            }
+        });
+    }
+
+    @Override
+    protected void addCurrentInvocationContextFactory(ViewDescription view) {
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
             }
         });
     }

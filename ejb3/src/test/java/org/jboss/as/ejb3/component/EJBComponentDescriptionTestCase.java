@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
@@ -53,15 +53,19 @@ public class EJBComponentDescriptionTestCase {
         final EJBComponentConfiguration configuration = mock(EJBComponentConfiguration.class);
         when(configuration.getTransactionManagementType()).thenReturn(TransactionManagementType.BEAN);
 
-        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp","TestModule");
         final ServiceName duServiceName = Services.deploymentUnitName("Dummy Deployment Unit");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
         final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", ejbJarDescription, duServiceName) {
 
             @Override
             public MethodIntf getMethodIntf(String viewClassName) {
                 return MethodIntf.LOCAL;
+            }
+
+            @Override
+            protected void addCurrentInvocationContextFactory(ViewDescription view) {
+                // no-op
             }
         };
         Class<?> viewClass = TestBean.class;
