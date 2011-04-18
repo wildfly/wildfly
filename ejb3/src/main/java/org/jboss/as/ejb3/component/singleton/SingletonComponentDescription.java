@@ -22,10 +22,22 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.List;
 
 /**
  * Component description for a singleton bean
@@ -44,7 +56,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param ejbModuleDescription  the module description
+     * @param ejbJarDescription  the module description
      */
     public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                          final ServiceName deploymentUnitServiceName) {
@@ -78,5 +90,19 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     @Override
     public SessionBeanType getSessionBeanType() {
         return SessionBeanComponentDescription.SessionBeanType.SINGLETON;
+    }
+
+    @Override
+    protected void setupViewInterceptors(ViewDescription view) {
+        // let super do its job first
+        super.setupViewInterceptors(view);
+        // add instance associating interceptor at the start of the interceptor chain
+        view.getConfigurators().addFirst(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                // add the singleton component instance associating interceptor
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
+            }
+        });
     }
 }

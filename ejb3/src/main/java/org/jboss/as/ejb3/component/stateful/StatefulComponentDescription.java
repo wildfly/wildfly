@@ -25,19 +25,39 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
+
+import javax.ejb.TransactionManagementType;
 
 /**
  * User: jpai
  */
 public class StatefulComponentDescription extends SessionBeanComponentDescription {
 
+    private static final Logger logger = Logger.getLogger(StatefulComponentDescription.class);
+
     /**
      * Construct a new instance.
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param ejbModuleDescription  the module description
+     * @param ejbJarDescription  the module description
      */
     public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                         final ServiceName deploymentUnitServiceName) {
@@ -52,5 +72,49 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     @Override
     public SessionBeanType getSessionBeanType() {
         return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
+    }
+
+    @Override
+    protected void setupViewInterceptors(ViewDescription view) {
+        // let super do its job
+        super.setupViewInterceptors(view);
+
+        // add the instance associating interceptor at the start of the interceptor chain
+        view.getConfigurators().addFirst(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                // add the stateful component instance associator
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
+            }
+        });
+
+        // for CMT, setup the session sychronization tx interceptor
+        if (TransactionManagementType.CONTAINER.equals(this.getTransactionManagementType())) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    logger.warn("Interceptors at ComponentInstance level aren't supported yet - SessionSynchronization semantics for Stateful beans with CMT won't work!");
+                }
+            });
+        } else { // setup BMT interceptor
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    final ComponentInterceptorFactory bmtComponentInterceptorFactory = new ComponentInterceptorFactory() {
+                        @Override
+                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                            if (component instanceof StatefulComponentDescription == false) {
+                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
+                                        " isn't a stateful component");
+                            }
+                            return new StatefulBMTInterceptor((StatefulSessionComponent) component);
+                        }
+                    };
+                    // add the bmt interceptor factory to the view
+                    configuration.addViewInterceptor(bmtComponentInterceptorFactory);
+                }
+            });
+        }
+
     }
 }

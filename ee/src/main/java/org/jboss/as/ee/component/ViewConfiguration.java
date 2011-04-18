@@ -29,6 +29,7 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
@@ -54,10 +55,10 @@ public class ViewConfiguration {
     /**
      * Construct a new instance.
      *
-     * @param viewClass the view class
+     * @param viewClass              the view class
      * @param componentConfiguration the associated component configuration
-     * @param viewServiceName the service name of this view
-     * @param proxyFactory the proxy factory to use to locally construct client proxy instances
+     * @param viewServiceName        the service name of this view
+     * @param proxyFactory           the proxy factory to use to locally construct client proxy instances
      */
     public ViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ServiceName viewServiceName, final ProxyFactory<?> proxyFactory) {
         this.componentConfiguration = componentConfiguration;
@@ -185,8 +186,8 @@ public class ViewConfiguration {
 
     /**
      * Adds a "server side" interceptor which will be applicable for all methods exposed by this view.
-     * 
-     * @param  interceptorFactory The interceptor to add
+     *
+     * @param interceptorFactory The interceptor to add
      * @see #getViewInterceptorDeque(java.lang.reflect.Method)
      */
     public void addViewInterceptor(InterceptorFactory interceptorFactory) {
@@ -200,8 +201,8 @@ public class ViewConfiguration {
     /**
      * Adds a "client side" interceptor which will be applicable for all methods exposed by this view.
      *
-     * @param  interceptorFactory The interceptor to add
-     * @see #getClientInterceptorDeque(java.lang.reflect.Method) 
+     * @param interceptorFactory The interceptor to add
+     * @see #getClientInterceptorDeque(java.lang.reflect.Method)
      */
     public void addClientViewInterceptor(InterceptorFactory interceptorFactory) {
         Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
