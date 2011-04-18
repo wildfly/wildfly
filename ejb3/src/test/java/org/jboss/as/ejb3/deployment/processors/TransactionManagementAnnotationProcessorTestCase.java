@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.Indexer;
 import org.jboss.msc.service.ServiceName;
@@ -61,7 +62,7 @@ public class TransactionManagementAnnotationProcessorTestCase {
 
     @Test
     public void test1() throws Exception {
-        DeploymentUnit deploymentUnit = this.getDeploymentUnit();
+        DeploymentUnit deploymentUnit = this.getDeploymentUnit("test1 Dummy DU");
         // Mark the deployment unit as a EJB deployment
         EjbDeploymentMarker.mark(deploymentUnit);
         DeploymentPhaseContext phaseContext = null;
@@ -70,9 +71,11 @@ public class TransactionManagementAnnotationProcessorTestCase {
         index(indexer, SubBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription);
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final ServiceName duServiceName = deploymentUnit.getServiceName();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
@@ -84,9 +87,11 @@ public class TransactionManagementAnnotationProcessorTestCase {
      */
     @Test
     public void testDefault() {
-        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
-        EJBComponentDescription componentDescription = new StatelessComponentDescription("TestBean", "TestClass", ejbJarDescription);
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final ServiceName duServiceName = Services.deploymentUnitName("Dummy deployment unit");
+        EJBComponentDescription componentDescription = new StatelessComponentDescription("TestBean", "TestClass", ejbJarDescription, duServiceName);
         assertEquals(TransactionManagementType.CONTAINER, componentDescription.getTransactionManagementType());
     }
 
@@ -95,7 +100,7 @@ public class TransactionManagementAnnotationProcessorTestCase {
      */
     @Test
     public void testSubClass() throws Exception {
-        DeploymentUnit deploymentUnit = this.getDeploymentUnit();
+        DeploymentUnit deploymentUnit = this.getDeploymentUnit("testSubClass dummy DU");
         // Mark the deployment unit as a EJB deployment
         EjbDeploymentMarker.mark(deploymentUnit);
         DeploymentPhaseContext phaseContext = null;
@@ -104,32 +109,34 @@ public class TransactionManagementAnnotationProcessorTestCase {
         index(indexer, SubBean.class);
         CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
 
-        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
-        EJBComponentDescription componentDescription = new StatelessComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), ejbJarDescription);
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final ServiceName duServiceName = deploymentUnit.getServiceName();
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(SubBean.class.getSimpleName(), SubBean.class.getName(), ejbJarDescription, duServiceName);
         TransactionManagementAnnotationProcessor processor = new TransactionManagementAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
         assertEquals(TransactionManagementType.CONTAINER, componentDescription.getTransactionManagementType());
     }
 
-    private DeploymentUnit getDeploymentUnit() {
+    private DeploymentUnit getDeploymentUnit(final String duName) {
         return new DeploymentUnit() {
             private Map<AttachmentKey<?>, Object> attachments = new HashMap();
 
             @Override
             public ServiceName getServiceName() {
-                throw new RuntimeException("NYI");
+                return Services.deploymentUnitName(duName);
             }
 
             @Override
             public DeploymentUnit getParent() {
-                throw new RuntimeException("NYI");
+                return null;
             }
 
             @Override
             public String getName() {
-                throw new RuntimeException("NYI");
+                return duName;
             }
 
             @Override

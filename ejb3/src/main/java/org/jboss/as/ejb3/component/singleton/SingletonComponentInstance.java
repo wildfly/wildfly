@@ -30,7 +30,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * @author  Jaikiran Pai
+ * @author Jaikiran Pai
  */
 public class SingletonComponentInstance extends SessionBeanComponentInstance {
 
@@ -38,10 +38,9 @@ public class SingletonComponentInstance extends SessionBeanComponentInstance {
      * Construct a new instance.
      *
      * @param component the component
-     * @param instance  the object instance
      */
-    public SingletonComponentInstance(final SingletonComponent component, final Object instance, final InterceptorFactoryContext factoryContext) {
-        super(component, instance, factoryContext);
+    public SingletonComponentInstance(final SingletonComponent component) {
+        super(component);
     }
 
     @Override

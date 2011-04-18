@@ -24,8 +24,11 @@ package org.jboss.as.ejb3;
 import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.jandex.Indexer;
+import org.jboss.msc.ServiceNamed;
+import org.jboss.msc.service.ServiceName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -74,6 +77,8 @@ public class TestHelper {
                 return attachable.putAttachment(key, value);
             }
         });
+        ServiceName deploymentUnitServiceName = Services.deploymentUnitName(duName);
+        when(deploymentUnit.getServiceName()).thenReturn(deploymentUnitServiceName);
         return deploymentUnit;
     }
 }

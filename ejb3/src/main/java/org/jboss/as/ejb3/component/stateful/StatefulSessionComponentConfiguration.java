@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
@@ -36,8 +37,8 @@ import javax.ejb.TransactionManagementType;
  */
 public class StatefulSessionComponentConfiguration extends SessionBeanComponentConfiguration {
 
-    public StatefulSessionComponentConfiguration(final StatefulComponentDescription description) {
-        super(description);
+    public StatefulSessionComponentConfiguration(final StatefulComponentDescription description, final EEModuleClassConfiguration ejbClassConfiguration) {
+        super(description, ejbClassConfiguration);
 
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
 
@@ -49,12 +50,13 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
                 }
             });
         } else {
-            addComponentInstanceSystemInterceptorFactory(new InterceptorFactory() {
-                @Override
-                public Interceptor create(InterceptorFactoryContext context) {
-                    return new StatefulSessionSynchronizationInterceptor();
-                }
-            });
+//            addComponentInstanceSystemInterceptorFactory(new InterceptorFactory() {
+//                @Override
+//                public Interceptor create(InterceptorFactoryContext context) {
+//                    return new StatefulSessionSynchronizationInterceptor();
+//                }
+//            });
+            throw new RuntimeException("Adding a interceptor at ComponentInstance level (for ex: locking interceptor) is not yet implemented");
         }
     }
 }

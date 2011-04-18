@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,8 +42,8 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
      *
      * @param description the original component description
      */
-    public MessageDrivenComponentConfiguration(final MessageDrivenComponentDescription description) {
-        super(description);
+    public MessageDrivenComponentConfiguration(final MessageDrivenComponentDescription description, final EEModuleClassConfiguration ejbClassConfiguration) {
+        super(description, ejbClassConfiguration);
 
         this.resourceAdapterName = description.getResourceAdapterName();
         if (this.resourceAdapterName == null)

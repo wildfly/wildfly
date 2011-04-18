@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -42,8 +43,8 @@ public class StatelessSessionComponentConfiguration extends SessionBeanComponent
      *
      * @param description the original component description
      */
-    public StatelessSessionComponentConfiguration(final StatelessComponentDescription description) {
-        super(description);
+    public StatelessSessionComponentConfiguration(final StatelessComponentDescription description, final EEModuleClassConfiguration ejbClassConfiguration) {
+        super(description, ejbClassConfiguration);
 
         addComponentSystemInterceptorFactory(pooled());
 

@@ -28,6 +28,7 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptor;
@@ -63,8 +64,8 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
      *
      * @param description the original component description
      */
-    public SessionBeanComponentConfiguration(final SessionBeanComponentDescription description) {
-        super(description);
+    public SessionBeanComponentConfiguration(final SessionBeanComponentDescription description, final EEModuleClassConfiguration ejbClassConfiguration) {
+        super(description, ejbClassConfiguration);
 
         // Bean level @AccessTimeout
         this.beanLevelAccessTimeout = description.getBeanLevelAccessTimeout();
@@ -75,25 +76,26 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
             // container managed concurrency interceptor
             if (description.getConcurrencyManagementType() != ConcurrencyManagementType.BEAN) {
                 // Add ComponentInstance level interceptor
-                this.addComponentInstanceSystemInterceptorFactory(new ComponentInterceptorFactory() {
-                    @Override
-                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                        if (component instanceof LockableComponent) {
-                            return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
-                        } else {
-                            // TODO: This shouldn't be required
-                            return new Interceptor() {
-                                @Override
-                                public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-                                    return interceptorContext.proceed();
-                                }
-
-                            };
-                        }
-
-
-                    }
-                });
+//                this.addComponentInstanceSystemInterceptorFactory(new ComponentInterceptorFactory() {
+//                    @Override
+//                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
+//                        if (component instanceof LockableComponent) {
+//                            return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
+//                        } else {
+//                            // TODO: This shouldn't be required
+//                            return new Interceptor() {
+//                                @Override
+//                                public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+//                                    return interceptorContext.proceed();
+//                                }
+//
+//                            };
+//                        }
+//
+//
+//                    }
+//                });
+                throw new RuntimeException("Adding a interceptor at ComponentInstance level (for ex: locking interceptor) is not yet implemented");
             }
 
         }

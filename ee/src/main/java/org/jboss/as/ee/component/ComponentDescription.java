@@ -96,7 +96,6 @@ public class ComponentDescription {
     public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final EEModuleClassDescription classDescription, final ServiceName deploymentUnitServiceName) {
         this.moduleDescription = moduleDescription;
         this.classDescription = classDescription;
-        serviceName = deploymentUnitServiceName.append("component");
         if (componentName == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -112,6 +111,7 @@ public class ComponentDescription {
         if (deploymentUnitServiceName == null) {
             throw new IllegalArgumentException("deploymentUnitServiceName is null");
         }
+        serviceName = deploymentUnitServiceName.append("component");
         this.componentName = componentName;
         this.componentClassName = componentClassName;
         configurators.addLast(FIRST_CONFIGURATOR);
