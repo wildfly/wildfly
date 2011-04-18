@@ -84,8 +84,8 @@ public class ScheduledThreadPoolAdd implements ModelAddOperationHandler {
                     final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
                     final ServiceBuilder<ScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
                     ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     serviceBuilder.install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

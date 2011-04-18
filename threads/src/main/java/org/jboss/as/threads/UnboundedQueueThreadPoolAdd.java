@@ -84,8 +84,8 @@ public class UnboundedQueueThreadPoolAdd implements ModelAddOperationHandler {
                     final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
                     final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
                     ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     serviceBuilder.install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

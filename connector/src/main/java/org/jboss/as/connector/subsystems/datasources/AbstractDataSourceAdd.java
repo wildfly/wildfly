@@ -144,14 +144,13 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                     if (enabled) {
                         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                         referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler)).install();
+                        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
                     } else {
                         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
                         referenceBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
                         binderBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
-                        resultHandler.handleResultComplete();
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

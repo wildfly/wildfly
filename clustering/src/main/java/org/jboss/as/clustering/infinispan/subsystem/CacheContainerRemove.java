@@ -64,10 +64,9 @@ public class CacheContainerRemove implements ModelRemoveOperationHandler, Descri
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceController<?> service = context.getServiceRegistry().getService(EmbeddedCacheManagerService.getServiceName(name));
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             };
             runtime.setRuntimeTask(task);

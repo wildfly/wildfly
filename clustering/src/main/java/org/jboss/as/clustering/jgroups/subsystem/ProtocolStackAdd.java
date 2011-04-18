@@ -142,8 +142,8 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
                     }
                     ServiceBuilder<ChannelFactory> builder = new ChannelFactoryService(name, stackConfig).build(context.getServiceTarget());
                     injections.addDependencies(builder);
-                    builder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     builder.install();
+                    resultHandler.handleResultComplete();
                 }
 
                 private void process(ModelNode protocol, ProtocolConfigurationImpl protocolConfig, InjectionCollector injections) {

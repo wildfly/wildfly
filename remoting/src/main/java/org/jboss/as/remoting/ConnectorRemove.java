@@ -77,10 +77,9 @@ public class ConnectorRemove implements ModelRemoveOperationHandler {
                     ServiceName connectorServiceName = RemotingServices.connectorServiceName(name);
                     final ServiceController<?> controller = context.getServiceRegistry().getService(connectorServiceName);
                     if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        controller.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

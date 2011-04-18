@@ -47,10 +47,9 @@ public class QueueRemove implements ModelRemoveOperationHandler, DescriptionProv
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> service = context.getServiceRegistry().getService(MessagingServices.CORE_QUEUE_BASE.append(name));
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

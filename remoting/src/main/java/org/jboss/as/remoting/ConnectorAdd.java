@@ -103,8 +103,8 @@ public class ConnectorAdd implements ModelAddOperationHandler {
                                 .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
                                 .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
                                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                                 .install();
+                        resultHandler.handleResultComplete();
 
                         // TODO create XNIO connector service from socket-binding, with dependency on connectorName
                     } catch (ServiceRegistryException e) {

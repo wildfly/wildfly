@@ -69,10 +69,9 @@ class LoggerHandlerRemove implements ModelRemoveOperationHandler {
                     try {
                         final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
                         if (controller != null) {
-                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                        } else {
-                            resultHandler.handleResultComplete();
+                            controller.setMode(ServiceController.Mode.REMOVE);
                         }
+                        resultHandler.handleResultComplete();
                     } catch (Throwable t) {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }

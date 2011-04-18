@@ -88,16 +88,15 @@ public class InfinispanSubsystemAdd implements ModelAddOperationHandler, Descrip
                     ValueService<EmbeddedCacheManager> service = new ValueService<EmbeddedCacheManager>(container);
                     context.getServiceTarget().addService(EmbeddedCacheManagerService.getServiceName(), service)
                         .addDependency(EmbeddedCacheManagerService.getServiceName(defaultContainer), EmbeddedCacheManager.class, container)
-                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                         .install();
                 }
             };
 
             runtime.setRuntimeTask(task);
         } else {
-            resultHandler.handleResultComplete();
         }
-
-        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        BasicOperationResult operationResult = new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        resultHandler.handleResultComplete();
+        return operationResult;
     }
 }

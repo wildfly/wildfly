@@ -85,7 +85,8 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, D
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry();
                     final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                    controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                    controller.setMode(ServiceController.Mode.REMOVE);
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

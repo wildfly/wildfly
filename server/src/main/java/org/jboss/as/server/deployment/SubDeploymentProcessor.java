@@ -51,7 +51,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
 
                 final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                 final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());
-                final ServiceName serviceName = deploymentUnit.getServiceName().append(relativePath);
+                final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getName(), relativePath);
 
                 serviceTarget.addService(serviceName, service)
                         .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
@@ -74,7 +74,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
                 if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
                     continue;
                 }
-                final ServiceName serviceName = deploymentUnit.getServiceName().append(childRoot.getRootName());
+                final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getName(), childRoot.getRootName());
                 final ServiceController<?> serviceController = serviceRegistry.getService(serviceName);
                 if (serviceController != null) {
                     serviceController.setMode(ServiceController.Mode.REMOVE);

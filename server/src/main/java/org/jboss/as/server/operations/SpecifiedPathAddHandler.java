@@ -50,12 +50,12 @@ public class SpecifiedPathAddHandler extends PathAddHandler {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget().subTarget();
-                    target.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     if (relativeTo == null) {
                         AbsolutePathService.addService(name, path, target);
                     } else {
                         RelativePathService.addService(name, path, relativeTo, target);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

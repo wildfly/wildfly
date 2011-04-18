@@ -95,9 +95,9 @@ public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
                     final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
                     context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
                             .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                             .setInitialMode(Mode.ACTIVE)
                             .install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

@@ -69,10 +69,9 @@ class WebConnectorRemove implements ModelRemoveOperationHandler, DescriptionProv
                     final ServiceController<?> service = context.getServiceRegistry()
                             .getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

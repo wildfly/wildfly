@@ -79,8 +79,8 @@ class RemotingSubsystemAdd implements ModelAddOperationHandler {
                     context.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
                             .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                             .install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

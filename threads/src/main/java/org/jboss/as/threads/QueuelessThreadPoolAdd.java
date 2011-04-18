@@ -92,8 +92,8 @@ public class QueuelessThreadPoolAdd implements ModelAddOperationHandler {
 
                     final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
                     ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     serviceBuilder.install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

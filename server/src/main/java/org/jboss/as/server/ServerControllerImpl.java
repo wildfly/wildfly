@@ -219,6 +219,10 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 } catch (Exception e) {
                     resultHandler.handleFailed(new ModelNode().set(e.toString()));
                 }
+                if (state.getReference() != State.STARTING) {
+                    // todo - append result
+                    serverStateMonitorListener.awaitUninterruptibly();
+                }
             }
         }
         return result;
@@ -271,36 +275,40 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private final Set<ServiceController<?>> servicesWithMissingDeps = identitySet();
         private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
 
-        public ServerStateMonitorListener(final ServiceRegistry registry) {
+        ServerStateMonitorListener(final ServiceRegistry registry) {
             serviceRegistry = registry;
         }
 
-        public void listenerAdded(final ServiceController<?> serviceController) {
-            untick();
+        public void listenerAdded(final ServiceController<?> controller) {
+            if (controller.getName().equals(Services.JBOSS_SERVER_CONTROLLER)) {
+                controller.removeListener(this);
+            } else {
+                untick(controller);
+            }
         }
 
         public void serviceWaiting(final ServiceController<?> controller) {
-            tick();
+            tick(controller);
         }
 
         public void serviceWaitingCleared(final ServiceController<?> controller) {
-            untick();
+            untick(controller);
         }
 
         public void serviceWontStart(final ServiceController<?> controller) {
-            tick();
+            tick(controller);
         }
 
         public void serviceWontStartCleared(final ServiceController<?> controller) {
-            untick();
+            untick(controller);
         }
 
-        public void dependencyProblem(final ServiceController<?> serviceController) {
-            tick();
+        public void dependencyProblem(final ServiceController<?> controller) {
+            tick(controller);
         }
 
-        public void dependencyProblemCleared(final ServiceController<?> serviceController) {
-            untick();
+        public void dependencyProblemCleared(final ServiceController<?> controller) {
+            untick(controller);
         }
 
         public void serviceStarting(final ServiceController<?> controller) {
@@ -308,14 +316,14 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         }
 
         public void serviceStarted(final ServiceController<?> controller) {
-            tick();
+            tick(controller);
         }
 
         public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             synchronized (this) {
                 failedControllers.put(controller, reason.toString());
             }
-            tick();
+            tick(controller);
         }
 
         public void serviceRemoved(final ServiceController<?> controller) {
@@ -323,15 +331,15 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 failedControllers.remove(controller);
                 servicesWithMissingDeps.remove(controller);
             }
-            tick();
+            tick(controller);
         }
 
         public void serviceStopRequested(final ServiceController<?> controller) {
-            untick();
+            untick(controller);
         }
 
         public void serviceStopRequestCleared(final ServiceController<?> controller) {
-            tick();
+            tick(controller);
         }
 
         public void serviceStopping(final ServiceController<?> controller) {
@@ -342,14 +350,14 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             synchronized (this) {
                 failedControllers.remove(controller);
             }
-            untick();
+            untick(controller);
         }
 
         public void failedServiceStopped(final ServiceController<?> controller) {
             synchronized (this) {
                 failedControllers.remove(controller);
             }
-            untick();
+            untick(controller);
         }
 
         public void immediateDependencyAvailable(final ServiceController<?> controller) {
@@ -364,13 +372,35 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             }
         }
 
+        void awaitUninterruptibly() {
+            boolean intr = false;
+            // todo - atomically return the last status summary, or something
+            try {
+                synchronized (this) {
+                    while (busyServiceCount.get() > 0) {
+                        try {
+                            wait();
+                        } catch (InterruptedException e) {
+                            intr = true;
+                        }
+                    }
+                }
+            } finally {
+                if (intr) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
         /**
          * Tick down the count, triggering a deployment status report when the count is zero.
          */
-        private void tick() {
+        private void tick(final ServiceController<?> tickController) {
             int tick = busyServiceCount.decrementAndGet();
+//            System.out.println("TICK -> " + tick + " (" + Thread.currentThread().getStackTrace()[2].getMethodName() + ") -> " + tickController);
             if (tick == 0) {
                 synchronized (this) {
+                    notifyAll();
                     final Set<ServiceName> missingDeps = new HashSet<ServiceName>();
                     for (ServiceController<?> controller : servicesWithMissingDeps) {
                         missingDeps.addAll(controller.getImmediateUnavailableDependencies());
@@ -438,8 +468,9 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             }
         }
 
-        private void untick() {
-            busyServiceCount.incrementAndGet();
+        private void untick(final ServiceController<?> controller) {
+            int tick = busyServiceCount.incrementAndGet();
+//            System.out.println("UNTICK -> " + tick + " (" + Thread.currentThread().getStackTrace()[2].getMethodName() + ") -> ");
         }
     }
 
@@ -714,6 +745,10 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                     } catch (Throwable t) {
                         stepResultHandlers.get(id).handleFailed(new ModelNode().set(t.toString()));
                     }
+                }
+                if (state.getReference() != State.STARTING) {
+                    // todo - append result
+                    serverStateMonitorListener.awaitUninterruptibly();
                 }
             }
         }

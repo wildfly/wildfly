@@ -108,8 +108,8 @@ class JMSQueueAdd implements ModelAddOperationHandler {
                     context.getServiceTarget().addService(serviceName, service)
                             .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
                             .setInitialMode(Mode.ACTIVE)
-                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                             .install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

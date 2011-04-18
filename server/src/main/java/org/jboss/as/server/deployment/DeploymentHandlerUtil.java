@@ -51,7 +51,7 @@ public class DeploymentHandlerUtil {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext runtimeContext) throws OperationFailedException {
-                    deploy(deploymentModel, runtimeContext);
+                    deploy(deploymentModel, runtimeContext, resultHandler);
                 }
             });
         } else {
@@ -59,7 +59,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    private static void deploy(final ModelNode deploymentModel, RuntimeTaskContext context) {
+    private static void deploy(final ModelNode deploymentModel, RuntimeTaskContext context, final ResultHandler resultHandler) {
         String deploymentUnitName = deploymentModel.require(NAME).asString();
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry();
@@ -76,6 +76,7 @@ public class DeploymentHandlerUtil {
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            resultHandler.handleResultComplete();
         }
     }
 
@@ -84,7 +85,7 @@ public class DeploymentHandlerUtil {
             operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(final RuntimeTaskContext context) throws OperationFailedException {
                     final String deploymentUnitName = deploymentModel.require(NAME).asString();
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(Services.JBOSS_DEPLOYMENT_UNIT.append(deploymentUnitName));
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(Services.deploymentUnitName(deploymentUnitName));
                     if (controller != null) {
                         controller.addListener(new AbstractServiceListener<Object>() {
 
@@ -101,7 +102,7 @@ public class DeploymentHandlerUtil {
                             }
                         });
                     } else {
-                        deploy(deploymentModel, context);
+                        deploy(deploymentModel, context, resultHandler);
                     }
                 }
             });
@@ -116,7 +117,7 @@ public class DeploymentHandlerUtil {
                 @Override
                 public void execute(final RuntimeTaskContext runtimeContext) throws OperationFailedException {
                     final ServiceController<?> controller = runtimeContext.getServiceRegistry()
-                            .getService(Services.JBOSS_DEPLOYMENT_UNIT.append(toReplace));
+                            .getService(Services.deploymentUnitName(toReplace));
                     if (controller != null) {
                         controller.addListener(new AbstractServiceListener<Object>() {
                             @Override
@@ -128,11 +129,11 @@ public class DeploymentHandlerUtil {
                             @Override
                             public void serviceRemoved(ServiceController<? extends Object> serviceController) {
                                 controller.removeListener(this);
-                                deploy(deploymentModel, runtimeContext);
+                                deploy(deploymentModel, runtimeContext, resultHandler);
                             }
                         });
                     } else {
-                        deploy(deploymentModel, runtimeContext);
+                        deploy(deploymentModel, runtimeContext, resultHandler);
                     }
                 }
             });

@@ -50,7 +50,7 @@ public class ServiceActivator implements org.jboss.msc.service.ServiceActivator 
         final Injector<Context> injector = rebindService.getLookupContextInjector();
 
         serviceTarget.addService(ServiceName.JBOSS.append("BeanWithSimpleInjected", "rebind"), rebindService)
-            .addDependency(ServiceName.JBOSS.append("deployment", "unit","managedbean-example.ear", "managedbean-example.jar", "component", "BeanWithSimpleInjected","START"))
+            .addDependency(ServiceName.JBOSS.append("deployment", "subunit","managedbean-example.ear", "managedbean-example.jar", "component", "BeanWithSimpleInjected","START"))
             .addDependency(ContextNames.contextServiceNameOfModule("managedbean-example", "managedbean-example"), NamingStore.class, new Injector<NamingStore>() {
                 public void inject(final NamingStore value) throws InjectionException {
                     try {

@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.ear.spec.Ear6xMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -59,7 +60,7 @@ public class InitalizeInOrderProcessor implements DeploymentUnitProcessor{
                             }
                         }
                         if(previous != null) {
-                            final ServiceName serviceName = deploymentUnit.getParent().getServiceName().append(previous.getFileName());
+                            final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getParent().getName(), previous.getFileName());
                             phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS,serviceName.append(Phase.INSTALL.name()));
                         }
                     }

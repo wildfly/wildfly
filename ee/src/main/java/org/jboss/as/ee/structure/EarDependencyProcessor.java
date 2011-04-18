@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Services;
 
 import static org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS;
 import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
@@ -42,7 +43,7 @@ public final class EarDependencyProcessor implements DeploymentUnitProcessor {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             // Make sure the next phase of this EAR depends on this phase of not just the EAR but also all subdeployments
             for (DeploymentUnit subdeployment : deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS)) {
-                phaseContext.addToAttachmentList(NEXT_PHASE_DEPS, subdeployment.getServiceName().append(phaseContext.getPhase().name()));
+                phaseContext.addToAttachmentList(NEXT_PHASE_DEPS, Services.deploymentUnitName(deploymentUnit.getName(), subdeployment.getName(), phaseContext.getPhase()));
             }
         }
     }

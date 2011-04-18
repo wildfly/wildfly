@@ -66,10 +66,9 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler, DescriptionPr
                     final ServiceController<?> service = context.getServiceRegistry()
                             .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

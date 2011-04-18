@@ -62,10 +62,9 @@ class JMSQueueRemove implements ModelRemoveOperationHandler {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_QUEUE_BASE.append(name));
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

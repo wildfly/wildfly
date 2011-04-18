@@ -85,7 +85,7 @@ public class JdbcDriverRemove implements ModelRemoveOperationHandler {
                         final ServiceName serviceName = ServiceName.JBOSS.append("jdbc-driver", driver.getClass().getName(), Integer.toString(majorVersion), Integer.toString(minorVersion));
                         final ServiceController<?> controller = registry.getService(serviceName);
                         if (controller != null) {
-                            controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
+                            controller.setMode(ServiceController.Mode.REMOVE);
                         }
                     }
                     resultHandler.handleResultComplete();
