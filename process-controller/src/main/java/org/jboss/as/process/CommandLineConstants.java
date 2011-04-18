@@ -63,6 +63,15 @@ public class CommandLineConstants {
     /** Output usage */
     public static final String HELP = "-help";
 
+    /** Passed in to a DC to choose the domain.xml file */
+    public static final String DOMAIN_CONFIG = "-domain-config";
+
+    /** Passed in to a HC to choose the domain.xml file */
+    public static final String HOST_CONFIG = "-host-config";
+
+    /** Passed in to a standalone instance to choose the standalone.xml file */
+    public static final String SERVER_CONFIG = "-server-config";
+
     private CommandLineConstants() {
     }
 }

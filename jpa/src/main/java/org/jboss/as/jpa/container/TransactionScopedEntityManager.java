@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.container;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
+import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
@@ -44,6 +45,8 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     private Map properties;
     private EntityManagerFactory emf;
     private boolean isInTx;
+
+    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
         super(puScopedName, false);
@@ -98,6 +101,32 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     protected boolean isInTx() {
         return isInTx;
     }
+
+    @Override
+    // JPA 7.6.1 If the entity manager is invoked outside the scope of a transaction, any entities loaded from the database
+    // will immediately become detached at the end of the method call.
+    // Rather than detach, we will close the underlying entity manager, since it has no state (since its not closed elsewhere).
+    protected void postInvocation(EntityManager underlyingEntityManager, RuntimeException exceptionWasAlreadyThrown) {
+        try {
+            if ( ! isInTx()) {
+                underlyingEntityManager.close();
+            }
+        }
+        catch(RuntimeException closeError) {
+            if (exceptionWasAlreadyThrown != null) {
+                log.error("failure occurred while checking for active transaction or closing underlying entity manager." +
+                    "Original error was: " + exceptionWasAlreadyThrown.getMessage(), closeError);
+            }
+            else {
+                throw closeError;
+            }
+
+        }
+        if (exceptionWasAlreadyThrown != null) {
+            throw exceptionWasAlreadyThrown;
+        }
+    }
+
 
     /**
      * Catch the application trying to close the container managed entity manager and throw an IllegalStateException

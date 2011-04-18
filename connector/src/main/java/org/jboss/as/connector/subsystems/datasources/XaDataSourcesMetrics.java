@@ -48,18 +48,18 @@ class XaDataSourcesMetrics implements ModelQueryOperationHandler {
     static XaDataSourcesMetrics INSTANCE = new XaDataSourcesMetrics();
 
     static final String[] NO_LOCATION = new String[0];
-    private static final String MAX_POOL_SIZE = "max-pool-size";
-    private static final String MIN_POOL_SIZE = "min-pool-size";
-    private static final String BLOCKING_TIMEOUT = "blocking-timeout-wait-millis";
-    private static final String IDLE_TIMEOUT_MINUTES = "idle-timeout-minutes";
-    private static final String BACKGROUND_VALIDATION = "background-validation";
-    private static final String BACKGROUND_VALIDATION_MINUTES = "background-validation-minutes";
-    private static final String POOL_PREFILL = "pool-prefill";
-    private static final String POOL_USE_STRICT_MIN = "pool-use-strict-min";
-    private static final String USE_FAST_FAIL = "use-fast-fail";
+    private static final String MAX_POOL_SIZE = "metrics-max-pool-size";
+    private static final String MIN_POOL_SIZE = "metrics-min-pool-size";
+    private static final String BLOCKING_TIMEOUT = "metrics-blocking-timeout-wait-millis";
+    private static final String IDLE_TIMEOUT_MINUTES = "metrics-idle-timeout-minutes";
+    private static final String BACKGROUND_VALIDATION = "metrics-background-validation";
+    private static final String BACKGROUND_VALIDATION_MINUTES = "metrics-background-validation-minutes";
+    private static final String POOL_PREFILL = "metrics-pool-prefill";
+    private static final String POOL_USE_STRICT_MIN = "metrics-pool-use-strict-min";
+    private static final String USE_FAST_FAIL = "metrics-use-fast-fail";
 
     static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT, IDLE_TIMEOUT_MINUTES,
-        BACKGROUND_VALIDATION, BACKGROUND_VALIDATION_MINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN, USE_FAST_FAIL};
+        BACKGROUND_VALIDATION, BACKGROUND_VALIDATION_MINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN, USE_FAST_FAIL };
 
     /** {@inheritDoc} */
     @Override

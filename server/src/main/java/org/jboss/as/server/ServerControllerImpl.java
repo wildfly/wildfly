@@ -218,6 +218,15 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     }
 
     @Override
+    protected boolean isReadOnly(OperationHandler operationHandler) {
+        // Minor optimization: Assume nothing is RO during boot
+        if (getState() == State.STARTING) {
+            return false;
+        }
+        return super.isReadOnly(operationHandler);
+    }
+
+    @Override
     protected MultiStepOperationController getMultiStepOperationController(final Operation operation, final ResultHandler handler,
             final OperationControllerContext operationControllerContext) throws OperationFailedException {
         return new ServerMultiStepOperationController(operation, handler, operationControllerContext);

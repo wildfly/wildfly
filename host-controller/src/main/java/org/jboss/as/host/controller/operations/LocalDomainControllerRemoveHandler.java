@@ -69,6 +69,7 @@ public class LocalDomainControllerRemoveHandler implements ModelUpdateOperationH
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        return InterfaceDescription.getInterfaceRemoveOperation(locale);
+        // TODO - Add the ModelDescription
+        return new ModelNode();
     }
 }

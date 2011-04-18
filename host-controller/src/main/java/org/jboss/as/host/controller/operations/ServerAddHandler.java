@@ -19,10 +19,8 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -35,14 +33,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 
 import java.util.Locale;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.host.controller.descriptions.HostServerDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * {@code OperationHandler} adding a new server configuration.
@@ -53,20 +59,32 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
 
     public static final String OPERATION_NAME = ADD;
 
-    public static ModelNode getAddServerOperation(ModelNode address, ModelNode name, ModelNode group) {
+    public static ModelNode getAddServerOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(ADD, address);
-        op.get(NAME).set(name);
-        op.get(GROUP).set(group);
+        op.get(GROUP).set(existing.get(GROUP));
+        op.get(AUTO_START).set(existing.get(AUTO_START));
+        if (existing.hasDefined(SOCKET_BINDING_GROUP)) {
+            op.get(SOCKET_BINDING_GROUP).set(existing.get(SOCKET_BINDING_GROUP));
+        }
+        if (existing.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+            op.get(SOCKET_BINDING_PORT_OFFSET).set(existing.get(SOCKET_BINDING_PORT_OFFSET));
+        }
 
         return op;
     }
 
     public static final ServerAddHandler INSTANCE = new ServerAddHandler();
 
+    private final ParametersValidator validator = new ParametersValidator();
+
     /**
      * Create the ServerAddHandler
      */
-    ServerAddHandler() {
+    private ServerAddHandler() {
+        validator.registerValidator(GROUP, new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
+        validator.registerValidator(SOCKET_BINDING_GROUP, new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
+        validator.registerValidator(SOCKET_BINDING_PORT_OFFSET, new IntRangeValidator(0, 65535, true, true));
+        validator.registerValidator(AUTO_START, new ModelTypeValidator(ModelType.BOOLEAN, true, true));
     }
 
     /**
@@ -74,32 +92,27 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
      */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String name = address.getLastElement().getValue();
-            final ModelNode model = context.getSubModel();
-            createCoreModel(model);
-            model.get(NAME).set(name);
-            model.get(GROUP).set(operation.require(GROUP));
-            if(operation.hasDefined(SOCKET_BINDING_GROUP)) {
-                model.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
-            }
-            if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
-                model.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
-            }
-            if(operation.hasDefined(JVM)) {
-                model.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
-            } else {
-                model.get(JVM);
-            }
 
-            final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensating);
+        validator.validate(operation);
+
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        final ModelNode model = context.getSubModel();
+        createCoreModel(model);
+        model.get(NAME).set(name);
+        model.get(GROUP).set(operation.require(GROUP));
+        if(operation.hasDefined(SOCKET_BINDING_GROUP)) {
+            model.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
         }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+            model.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
         }
+        ModelNode autoStart = operation.hasDefined(AUTO_START) ? operation.get(AUTO_START) : new ModelNode().set(true);
+        model.get(AUTO_START).set(autoStart);
+
+        final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
+        resultHandler.handleResultComplete();
+        return new BasicOperationResult(compensating);
     }
 
     private void createCoreModel(ModelNode root) {

@@ -182,8 +182,12 @@ public class GlobalOperationHandlers {
                             }
                         }
                     }
+                    handleNonRecursiveProxyEntries(context, address, readOperation, result, registry);
                 }
             return result;
+        }
+
+        protected void handleNonRecursiveProxyEntries(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
         }
 
         protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {

@@ -73,7 +73,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A mapper between {@code domain.xml} and a model.
+ * A mapper between an AS server's configuration model and XML representations, particularly  {@code domain.xml}.
  *
  * @author Emanuel Muckenhuber
  */

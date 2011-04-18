@@ -23,6 +23,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Locale;
 
+import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -37,6 +38,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Handler for JGroups subsystem add operations.
@@ -52,9 +55,7 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
     }
 
     private static void populate(ModelNode source, ModelNode target) {
-        if (source.hasDefined(ModelKeys.DEFAULT_STACK)) {
-            target.get(ModelKeys.DEFAULT_STACK).set(source.get(ModelKeys.DEFAULT_STACK));
-        }
+        target.get(ModelKeys.DEFAULT_STACK).set(source.require(ModelKeys.DEFAULT_STACK));
         target.get(ModelKeys.STACK).setEmptyObject();
     }
 
@@ -82,11 +83,11 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
             RuntimeTask task = new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ChannelFactoryRegistryService service = new ChannelFactoryRegistryService();
-                    if (operation.hasDefined(ModelKeys.DEFAULT_STACK)) {
-                        service.setDefaultStack(operation.get(ModelKeys.DEFAULT_STACK).asString());
-                    }
-                    service.build(context.getServiceTarget())
+                    String stack = operation.require(ModelKeys.DEFAULT_STACK).asString();
+                    InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
+                    ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
+                    context.getServiceTarget().addService(ChannelFactoryService.getServiceName(), service)
+                        .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
                         .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                         .install();
                 }

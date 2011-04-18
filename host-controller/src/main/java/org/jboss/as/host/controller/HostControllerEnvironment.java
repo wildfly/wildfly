@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
 
 /**
@@ -113,6 +114,8 @@ public class HostControllerEnvironment {
     private final File modulesDir;
     private final File domainBaseDir;
     private final File domainConfigurationDir;
+    private final ConfigurationFile hostConfigurationFile;
+    private final ConfigurationFile domainConfigurationFile;
     private final File domainDeploymentDir;
     private final File domainSystemDeploymentDir;
     private final File domainDataDir;
@@ -131,7 +134,7 @@ public class HostControllerEnvironment {
 
     public HostControllerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-            Integer hostControllerPort, String defaultJVM, boolean backupDomainFiles, boolean useCachedDc) {
+            Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig, boolean backupDomainFiles, boolean useCachedDc) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -203,6 +206,9 @@ public class HostControllerEnvironment {
         }
         this.domainConfigurationDir = tmp;
         System.setProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
+
+        hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, "host.xml", hostConfig);
+        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, "domain.xml", domainConfig);
 
         tmp = getFileFromProperty(DOMAIN_DEPLOYMENT_DIR);
         if (tmp == null) {
@@ -408,6 +414,15 @@ public class HostControllerEnvironment {
     public File getDefaultJVM() {
         return defaultJVM;
     }
+
+    public ConfigurationFile getHostConfigurationFile() {
+        return hostConfigurationFile;
+    }
+
+    public ConfigurationFile getDomainConfigurationFile() {
+        return domainConfigurationFile;
+    }
+
 
     /**
      * Get a File from configuration.

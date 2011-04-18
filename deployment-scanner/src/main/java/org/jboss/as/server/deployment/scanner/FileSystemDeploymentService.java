@@ -350,7 +350,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             futureResults.cancel(true);
                             final ModelNode failure = new ModelNode();
                             failure.get(OUTCOME).set(FAILED);
-                            failure.get(FAILURE_DESCRIPTION).set("Failed to execute deployment operation in allowed timeout [" + deploymentTimeout + "]");
+                            failure.get(FAILURE_DESCRIPTION).set("Did not receive a response to the deployment operation within " +
+                                    "the allowed timeout period [" + deploymentTimeout + " seconds]. Check the server configuration" +
+                                    "file and the server logs to find more about the status of the deployment.");
                             for (ScannerTask task : scannerTasks) {
                                 task.handleFailureResult(failure);
                             }
@@ -412,7 +414,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (!deployed.containsKey(deploymentName)) {
                     removeExtraneousMarker(child, fileName);
                 }
-                if (deployed.get(deploymentName).lastModified != child.lastModified()) {
+                else if (deployed.get(deploymentName).lastModified != child.lastModified()) {
                     scanContext.scannerTasks.add(new RedeployTask(deploymentName, child.lastModified(), directory));
                 }
             }

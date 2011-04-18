@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-container="cluster">
+<subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="cluster">
 
     <cache-container name="cluster" default-cache="default" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
         <alias>ha-partition</alias>

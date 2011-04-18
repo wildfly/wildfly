@@ -10,7 +10,7 @@ import java.util.Locale;
  *
  * @author Emanuel Muckenhuber
  */
-public class WebSubsystemDescriptionProviders {
+class WebSubsystemDescriptionProviders {
 
     public static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
         @Override

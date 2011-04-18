@@ -95,7 +95,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         } else {
             AbsolutePathService.addService(pathService, path, serviceTarget);
         }
-        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeplooymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeploymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
 
         serviceTarget.addService(serviceName, service)

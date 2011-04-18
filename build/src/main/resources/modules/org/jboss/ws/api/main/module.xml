@@ -30,6 +30,9 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="com.sun.xml.messaging.saaj" services="export" export="true"/>
+        <module name="javax.xml.ws.api"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.modules"/>
     </dependencies>
 </module>

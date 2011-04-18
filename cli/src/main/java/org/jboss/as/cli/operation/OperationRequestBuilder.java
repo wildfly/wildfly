@@ -24,7 +24,6 @@ package org.jboss.as.cli.operation;
 import org.jboss.dmr.ModelNode;
 
 /**
- * TODO this is not used for now...
  *
  * @author Alexey Loubyansky
  */

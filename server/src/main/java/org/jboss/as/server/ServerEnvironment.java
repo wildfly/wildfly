@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.persistence.ConfigurationFile;
+
 /**
  * Encapsulates the runtime environment for a server.
  *
@@ -168,6 +170,7 @@ public class ServerEnvironment implements Serializable {
     private final File modulesDir;
     private final File serverBaseDir;
     private final File serverConfigurationDir;
+    private final ConfigurationFile serverConfigurationFile;
     private final File serverDataDir;
     private final File serverDeployDir;
     private final File serverLogDir;
@@ -175,7 +178,7 @@ public class ServerEnvironment implements Serializable {
     private final boolean standalone;
     private final File serverSystemDeployDir;
 
-    public ServerEnvironment(Properties props, Map<String, String> env, boolean standalone) {
+    public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, boolean standalone) {
         this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
@@ -260,6 +263,8 @@ public class ServerEnvironment implements Serializable {
             tmp = new File(serverBaseDir, "configuration");
         }
         serverConfigurationDir = tmp;
+
+        serverConfigurationFile = standalone ? new ConfigurationFile(serverConfigurationDir, "standalone.xml", serverConfig) : null;
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
@@ -371,6 +376,10 @@ public class ServerEnvironment implements Serializable {
 
     public File getServerConfigurationDir() {
         return serverConfigurationDir;
+    }
+
+    public ConfigurationFile getServerConfigurationFile() {
+        return serverConfigurationFile;
     }
 
     public File getServerDataDir() {

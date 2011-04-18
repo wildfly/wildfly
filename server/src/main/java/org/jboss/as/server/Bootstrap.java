@@ -138,7 +138,7 @@ public interface Bootstrap {
                 else {
                     QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                     StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
-                    configurationPersister = new BackupXmlConfigurationPersister(new File(serverEnvironment.getServerConfigurationDir(), "standalone.xml"), rootElement, parser, parser);
+                    configurationPersister = new BackupXmlConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
                 }
             }
             return configurationPersister;

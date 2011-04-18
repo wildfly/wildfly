@@ -28,7 +28,7 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Controls reads of and modifications to a managment model.
+ * Controls reads of and modifications to a management model.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

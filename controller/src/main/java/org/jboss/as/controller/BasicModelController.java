@@ -51,6 +51,8 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -63,7 +65,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
-import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -80,6 +81,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
+    private final Lock writeLock = new ReentrantLock(true);
     private final ModelNodeRegistration registry;
     private final ModelNode model;
     private final ConfigurationPersister configurationPersister;
@@ -209,6 +211,17 @@ public class BasicModelController extends AbstractModelController<OperationContr
                 return null;
             }
 
+            @Override
+            public boolean lockInterruptibly() throws InterruptedException {
+                writeLock.lockInterruptibly();
+                return true;
+            }
+
+            @Override
+            public void unlock() {
+                writeLock.unlock();
+            }
+
         };
     }
 
@@ -229,6 +242,8 @@ public class BasicModelController extends AbstractModelController<OperationContr
      */
     protected OperationResult execute(final Operation operation, final ResultHandler handler,
             final OperationControllerContext operationExecutionContext, boolean resolve) {
+
+        boolean locked = false;
         try {
             final PathAddress address = PathAddress.pathAddress(operation.getOperation().get(ModelDescriptionConstants.OP_ADDR));
             final boolean multiTarget = address.isMultiTarget();
@@ -244,31 +259,51 @@ public class BasicModelController extends AbstractModelController<OperationContr
                 return proxyExecutor.execute(newContext, handler);
             }
 
-            try {
-                if (isMultiStepOperation(operation, address)) {
-                    MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, operationExecutionContext);
-                    return multistepController.execute(handler);
-                }
 
-                final String operationName = operation.getOperation().require(ModelDescriptionConstants.OP).asString();
-                final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
-                if (operationHandler == null) {
-                    throw new IllegalStateException("No handler for " + operationName + " at address " + address);
-                }
-
-                final OperationContext context = operationExecutionContext.getOperationContextFactory().getOperationContext(operationExecutionContext.getModelProvider(), address, operationHandler, operation);
-
-                return doExecute(context, operation, operationHandler, handler, address, operationExecutionContext);
-            } catch (OperationFailedException e) {
-                log.debugf(e, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
-                handler.handleFailed(e.getFailureDescription());
-                return new BasicOperationResult();
+            if (isMultiStepOperation(operation.getOperation(), address)) {
+                MultiStepOperationController multistepController = getMultiStepOperationController(operation, handler, operationExecutionContext);
+                return multistepController.execute(handler);
             }
+
+            final OperationHandler operationHandler = getHandlerForOperation(operation.getOperation(), address);
+            if (!isReadOnly(operationHandler)) {
+                locked = acquireWriteLock(operationExecutionContext);
+            }
+
+            final OperationContext context = operationExecutionContext.getOperationContextFactory().getOperationContext(operationExecutionContext.getModelProvider(), address, operationHandler, operation);
+
+            return doExecute(context, operation, operationHandler, handler, address, operationExecutionContext);
+        } catch (OperationFailedException e) {
+            log.debugf(e, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
+            handler.handleFailed(e.getFailureDescription());
+            return new BasicOperationResult();
         } catch (final Throwable t) {
             log.errorf(t, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
             handler.handleFailed(getFailureResult(t));
             return new BasicOperationResult();
         }
+        finally {
+            if (locked) {
+                operationExecutionContext.unlock();
+            }
+        }
+    }
+
+    protected OperationHandler getHandlerForOperation(final ModelNode operation, final PathAddress address)
+            throws OperationFailedException {
+        final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
+        final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
+        if (operationHandler == null) {
+            throw new OperationFailedException(new ModelNode().set(String.format("No handler for %s at address %s", operationName, address)));
+        }
+        return operationHandler;
+    }
+
+    protected boolean isReadOnly(OperationHandler operationHandler) {
+        // If it updates the model it's not RO.
+        // For now, if it doesn't read the model, assume it mutates the runtime.
+        // TODO add registry hooks to allow this to be explicitly stated
+        return (operationHandler instanceof ModelQueryOperationHandler) && !(operationHandler instanceof ModelUpdateOperationHandler);
     }
 
     protected MultiStepOperationController getMultiStepOperationController(final Operation operation, final ResultHandler handler,
@@ -293,8 +328,8 @@ public class BasicModelController extends AbstractModelController<OperationContr
         return subModel;
     }
 
-    protected boolean isMultiStepOperation(Operation operation, PathAddress address) {
-        return address.size() == 0 && COMPOSITE.equals(operation.getOperation().require(OP).asString());
+    protected boolean isMultiStepOperation(ModelNode operation, PathAddress address) {
+        return address.size() == 0 && COMPOSITE.equals(operation.require(OP).asString());
     }
 
     /**
@@ -341,7 +376,6 @@ public class BasicModelController extends AbstractModelController<OperationContr
      * @param operationHandler the operation handler which will run the operation
      * @param executionContext the exectution context
      * @param modelProvider source for the overall model
-     * @param operation the operation itself
      * @return the operation context
      */
     protected OperationContext getOperationContext(final ModelNode subModel, final OperationHandler operationHandler, final Operation executionContext, ModelProvider modelProvider) {
@@ -360,7 +394,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
      * @param resultHandler the result handler for this operation
      * @param address the address the operation targets
      * @param operationControllerContext context to be used by the controller
-     * @param subModel @return a handle which can be used to asynchronously cancel the operation
+     * @return a handle which can be used to asynchronously cancel the operation
      */
     protected OperationResult doExecute(final OperationContext operationHandlerContext, final Operation operation,
             final OperationHandler operationHandler, final ResultHandler resultHandler,
@@ -475,6 +509,24 @@ public class BasicModelController extends AbstractModelController<OperationContr
         }
     }
 
+    /**
+     * Attempts to acquire the {@link OperationControllerContext#lockInterruptibly() context's write lock},
+     * translating any InterruptedException to OperationFailedException.
+     *
+     * @param context the context
+     * @return true if the lock was acquired
+     * @throws OperationFailedException if an InterruptedException was thrown
+     */
+    private static boolean acquireWriteLock(OperationControllerContext context) throws OperationFailedException {
+        try {
+            return context.lockInterruptibly();
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OperationFailedException(new ModelNode().set("Interrupted while attempting to acquire the operation execution write lock"));
+        }
+    }
+
     protected class MultiStepOperationController implements ModelProvider, OperationContextFactory, ConfigurationPersisterProvider {
 
         private final ParameterValidator stepsValidator = new ModelTypeValidator(ModelType.LIST);
@@ -550,6 +602,9 @@ public class BasicModelController extends AbstractModelController<OperationContr
             public void deleteSnapshot(String name) {
             }
         };
+        /** The OperationControllerContext we were provided */
+        protected final OperationControllerContext injectedOperationControllerContext;
+        /** The OperationControllerContext we provide to nested operations */
         protected final OperationControllerContext localOperationExecutionContext = new OperationControllerContext() {
 
             @Override
@@ -572,16 +627,30 @@ public class BasicModelController extends AbstractModelController<OperationContr
                 return null;
             }
 
+            @Override
+            public boolean lockInterruptibly() throws InterruptedException {
+                // Ignore the request for nested calls. The outermost call gets the lock.
+                // This allows controllers to control the locking using whatever impl
+                // they have for the outer call's OperationControllerContext
+                return false;
+            }
+
+            @Override
+            public void unlock() {
+                // Ignore the request for nested calls. See lockInterruptibly()
+            }
+
         };
         /** Flag indicating whether wildcards should be resolved or not. */
         protected boolean resolve = true;
 
         protected MultiStepOperationController(final Operation operation, final ResultHandler resultHandler,
                 final OperationControllerContext operationControllerContext) throws OperationFailedException {
-            this(operation, resultHandler, operationControllerContext.getModelProvider(), operationControllerContext.getConfigurationPersisterProvider());
+            this(operation, resultHandler, operationControllerContext, operationControllerContext.getModelProvider(), operationControllerContext.getConfigurationPersisterProvider());
         }
 
         protected MultiStepOperationController(final Operation operation, final ResultHandler resultHandler,
+                final OperationControllerContext injectedOperationControllerContext,
                 final ModelProvider modelProvider, final ConfigurationPersisterProvider injectedConfigPersisterProvider) throws OperationFailedException {
             this.operation = operation;
             final ModelNode operationNode = operation.getOperation();
@@ -595,6 +664,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
             this.modelSource = modelProvider;
             this.localModel = this.modelSource.getModel().clone();
             this.injectedConfigPersisterProvider = injectedConfigPersisterProvider;
+            this.injectedOperationControllerContext = injectedOperationControllerContext;
             // Ensure the outcome and result fields come first for each result
             for (int i = 0; i < unfinishedCount.get(); i++) {
                 ModelNode stepResult = getStepResultNode(i);
@@ -686,8 +756,9 @@ public class BasicModelController extends AbstractModelController<OperationContr
             final ModelNode model = modelSource.getModel();
             synchronized (model) {
                 model.set(localModel);
+                BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
             }
-            BasicModelController.this.persistConfiguration(model, injectedConfigPersisterProvider);
+
         }
 
         protected final String getStepKey(int id) {
@@ -701,34 +772,47 @@ public class BasicModelController extends AbstractModelController<OperationContr
         // --------- Methods called by other classes in this file
 
         /** Executes the multi-step op. The call in point from the ModelController */
-        OperationResult execute(ResultHandler handler) {
+        OperationResult execute(ResultHandler handler) throws OperationFailedException {
+            boolean locked = false;
 
-            for (int i = 0; i < steps.size(); i++) {
-                currentOperation = i;
-                final ModelNode step = steps.get(i).clone();
-                // Do not auto-rollback individual steps
-                step.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            try {
+
+                if (isReadOnly(operation.getOperation())) {
+                    locked = acquireWriteLock(injectedOperationControllerContext);
+                }
+
+                for (int i = 0; i < steps.size(); i++) {
+                    currentOperation = i;
+                    final ModelNode step = steps.get(i).clone();
+                    // Do not auto-rollback individual steps
+                    step.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+                    if (hasFailures()) {
+                        recordCancellation(Integer.valueOf(i));
+                    }
+                    else {
+                        final Integer id = Integer.valueOf(i);
+                        final ResultHandler stepResultHandler = getStepResultHandler(id);
+                        final OperationResult result = executeStep(step, stepResultHandler);
+                        recordRollbackOp(id, result.getCompensatingOperation());
+                    }
+                }
+
                 if (hasFailures()) {
-                    recordCancellation(Integer.valueOf(i));
+                    handleFailures();
+                    return new BasicOperationResult();
                 }
                 else {
-                    final Integer id = Integer.valueOf(i);
-                    final ResultHandler stepResultHandler = getStepResultHandler(id);
-                    final OperationResult result = executeStep(step, stepResultHandler);
-                    recordRollbackOp(id, result.getCompensatingOperation());
+                    ModelNode compensatingOp = getOverallCompensatingOperation();
+
+                    recordModelComplete();
+
+                    return new BasicOperationResult(compensatingOp);
                 }
-            }
 
-            if (hasFailures()) {
-                handleFailures();
-                return new BasicOperationResult();
-            }
-            else {
-                ModelNode compensatingOp = getOverallCompensatingOperation();
-
-                recordModelComplete();
-
-                return new BasicOperationResult(compensatingOp);
+            } finally {
+                if (locked) {
+                    injectedOperationControllerContext.unlock();
+                }
             }
         }
 
@@ -782,6 +866,26 @@ public class BasicModelController extends AbstractModelController<OperationContr
         }
 
         // ----------------------------------------------------------- Private to this class
+
+        private boolean isReadOnly(ModelNode operation) throws OperationFailedException {
+            List<ModelNode> opSteps = operation.require(STEPS).asList();
+            for (ModelNode step : opSteps) {
+                PathAddress stepAddr = PathAddress.pathAddress(step.get(OP_ADDR));
+                if (isMultiStepOperation(step, stepAddr)) {
+                    if (!isReadOnly(step)) {
+                        return false;
+                    }
+                }
+                else {
+                    OperationHandler handler = getHandlerForOperation(step, stepAddr);
+                    if (!BasicModelController.this.isReadOnly(handler)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
 
         private ResultHandler getStepResultHandler(Integer id) {
             StepResultHandler handler = new StepResultHandler(id, this);

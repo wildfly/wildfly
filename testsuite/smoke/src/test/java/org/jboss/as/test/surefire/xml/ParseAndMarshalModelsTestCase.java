@@ -21,6 +21,8 @@
 */
 package org.jboss.as.test.surefire.xml;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -30,11 +32,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.Set;
+import java.util.HashMap;
 
 import javax.xml.namespace.QName;
 
@@ -49,32 +50,26 @@ import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
-import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerSlaveClient;
 import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.LocalHostModel;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.server.ServerControllerModelUtil;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
 public class ParseAndMarshalModelsTestCase {
@@ -231,13 +226,19 @@ public class ParseAndMarshalModelsTestCase {
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         final List<ModelNode> ops = persister.load();
 
-        TestHostController controller = new TestHostController(persister);
+        final ModelNodeRegistration hostRegistry = HostModelUtil.createHostRegistry(persister, null, null);
+        final ModelNodeRegistration rootRegistration = HostModelUtil.createBootstrapHostRegistry(hostRegistry, null);
+
+        TestHostController controller = new TestHostController(persister, rootRegistration);
         executeOperations(controller, ops);
 
         ModelNode model = controller.getHostModel();
+
+        System.out.println(model);
         persister.store(model);
         return model;
     }
+
 
     private ModelNode loadDomainModel(File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
@@ -245,7 +246,10 @@ public class ParseAndMarshalModelsTestCase {
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         final List<ModelNode> ops = persister.load();
 
-        TestDomainController controller = new TestDomainController(persister);
+        final ModelNodeRegistration hostRegistry = HostModelUtil.createHostRegistry(persister, null, null);
+        final ModelNodeRegistration rootRegistration = HostModelUtil.createBootstrapHostRegistry(hostRegistry, null);
+        TestDomainController controller = new TestDomainController(persister, rootRegistration);
+
         executeOperations(controller, ops);
 
         ModelNode model = controller.getDomainModel().clone();
@@ -414,12 +418,21 @@ public class ParseAndMarshalModelsTestCase {
 
     private static class TestHostController extends BasicModelController {
 
-        public TestHostController(ExtensibleConfigurationPersister configurationPersister) {
-            super(HostModelUtil.createCoreModel(), configurationPersister, HostModelUtil.createHostRegistry(configurationPersister));
+        // TODO - This really shows these depencies need to be handled better.
+        public TestHostController(ExtensibleConfigurationPersister configurationPersister, ModelNodeRegistration rootRegistration) {
+            super(createBaseModel(), configurationPersister, rootRegistration);
+        }
+
+        static ModelNode createBaseModel() {
+            final ModelNode baseModel = new ModelNode();
+            baseModel.get(HOST);
+            return baseModel;
         }
 
         public ModelNode getHostModel() {
-            return getModel().clone();
+            ModelNode model =  getModel().clone();
+
+            return model.get(HOST, "local");
         }
 
         @Override
@@ -430,8 +443,10 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private static class TestDomainController extends DomainModelImpl {
-        protected TestDomainController(ExtensibleConfigurationPersister configurationPersister) {
-            super(configurationPersister, MockHostControllerProxy.INSTANCE, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
+        protected TestDomainController(ExtensibleConfigurationPersister configurationPersister, ModelNodeRegistration rootRegistration) {
+            super(rootRegistration, null, configurationPersister);
+            setLocalHostName("local");
+            super.initialiseAsMasterDC(configurationPersister, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
         }
 
         @Override
@@ -488,84 +503,4 @@ public class ParseAndMarshalModelsTestCase {
 
     }
 
-    private static class MockHostControllerProxy implements LocalHostModel {
-
-        private static final MockHostControllerProxy INSTANCE = new MockHostControllerProxy();
-
-        @Override
-        public String getName() {
-            return "mock";
-        }
-
-        @Override
-        public ModelNode getHostModel() {
-            return new ModelNode();
-        }
-
-        @Override
-        public ModelNodeRegistration getRegistry() {
-            return ModelNodeRegistration.Factory.create(new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return new ModelNode();
-                }});
-        }
-
-        @Override
-        public void startServers(DomainController domainController) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void stopServers() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ExtensibleConfigurationPersister getConfigurationPersister() {
-            return new ExtensibleConfigurationPersister(){
-
-                @Override
-                public void store(ModelNode model) throws ConfigurationPersistenceException {
-                }
-
-                @Override
-                public void marshallAsXml(ModelNode model, OutputStream output)
-                        throws ConfigurationPersistenceException {
-                }
-
-                @Override
-                public List<ModelNode> load() throws ConfigurationPersistenceException {
-                    return null;
-                }
-
-                @Override
-                public void registerSubsystemWriter(String name, XMLElementWriter<SubsystemMarshallingContext> writer) {
-                }
-
-                @Override
-                public void registerSubsystemDeploymentWriter(String name,
-                        XMLElementWriter<SubsystemMarshallingContext> writer) {
-                }
-
-                @Override
-                public void successfulBoot() throws ConfigurationPersistenceException {
-                }
-
-                @Override
-                public String snapshot() {
-                    return null;
-                }
-
-                @Override
-                public SnapshotInfo listSnapshots() {
-                    return NULL_SNAPSHOT_INFO;
-                }
-
-                @Override
-                public void deleteSnapshot(String name) {
-                }};
-        }
-
-    }
 }

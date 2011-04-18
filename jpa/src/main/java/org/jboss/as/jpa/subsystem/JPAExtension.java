@@ -46,7 +46,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -63,7 +62,6 @@ public class JPAExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jpa";
 
-    private static final Logger LOG = Logger.getLogger("org.jboss.jpa");
     private static final JPASubsystemElementParser parser = new JPASubsystemElementParser();
 
     private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {

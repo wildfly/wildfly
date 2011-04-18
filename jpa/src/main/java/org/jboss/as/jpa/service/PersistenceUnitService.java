@@ -23,13 +23,9 @@
 package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
-import org.jboss.as.jpa.container.PersistenceUnitSearch;
-import org.jboss.as.jpa.hibernate.HibernateAnnotationScanner;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -38,7 +34,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import javax.persistence.spi.PersistenceProvider;
@@ -48,8 +43,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
@@ -71,13 +64,6 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     private EntityManagerFactory entityManagerFactory;
     private PersistenceUnitMetadata pu;
 
-    /**
-     * Map of PersistenceUnitService keyed by the scoped persistence unit name.  The scoped name identifies the deployment
-     * location.
-     * <p/>
-     */
-    private static ConcurrentHashMap<String, PersistenceUnitService> persistenceServiceBackdoor = new ConcurrentHashMap<String, PersistenceUnitService>();
-
     public PersistenceUnitService(PersistenceUnitMetadata pu, ResourceRoot resourceRoot) {
         this.pu = pu;
     }
@@ -90,7 +76,6 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
             pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
             this.entityManagerFactory = createContainerEntityManagerFactory(provider);
-            register(this);
 
         } finally {
             pu.setTempClassloader(null);    // release the temp classloader (only needed when creating the EMF)
@@ -99,13 +84,9 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     @Override
     public void stop(StopContext context) {
-        try {
-            if (entityManagerFactory != null) {
-                entityManagerFactory.close();
-                entityManagerFactory = null;
-            }
-        } finally {
-            unregister(this);
+        if (entityManagerFactory != null) {
+            entityManagerFactory.close();
+            entityManagerFactory = null;
         }
     }
 
@@ -115,41 +96,12 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     }
 
     /**
-     * Creates an entity manager via EntityManagerFactory.createContainerEntityManagerFactory
-     *
-     * @param scopedPersistenceUnitName identifies the deployment target
-     * @return created EntityManager
-     */
-    public EntityManager createEntityManager(String scopedPersistenceUnitName) {
-        return entityManagerFactory.createEntityManager(properties.getValue());
-    }
-
-    /**
      * Get the entity manager factory
      *
-     * @return
+     * @return the entity manager factory
      */
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManagerFactory;
-    }
-
-    private String createScopedName(String appName, DeploymentUnit deploymentUnit, Module module, String persistenceUnitName) {
-        // persistenceUnitName must be a simple name
-        assert persistenceUnitName.indexOf('/') == -1;
-        assert persistenceUnitName.indexOf('#') == -1;
-
-        String modulePath = "";//module.getModuleLoader().toString(); // javaEEModuleInformer.getModulePath(deploymentUnit);
-        String unitName = (appName != null ? appName + "/" : "") + modulePath + "#" + persistenceUnitName;
-        return "persistence.unit:unitName=" + unitName;
-    }
-
-    /**
-     * Resolve persistence unit by persistence unit name within the specified deployment.
-     * <p/>
-     * returns fully qualified (scoped) persistence unit name
-     */
-    public String resolvePersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
-        return PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
     }
 
     public Injector<Map> getPropertiesInjector() {
@@ -177,28 +129,6 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     public static ServiceName getPUServiceName(String scopedPersistenceUnitName) {
         return PersistenceUnitService.SERVICE_NAME.append(scopedPersistenceUnitName);
-    }
-
-
-    public static PersistenceUnitService getPersistenceUnitService(String scopedPersistenceUnitName) {
-        return persistenceServiceBackdoor.get(scopedPersistenceUnitName);
-    }
-
-    private static void register(PersistenceUnitService service) {
-
-        if (persistenceServiceBackdoor.containsKey(service.pu.getScopedPersistenceUnitName()))
-            throw new RuntimeException("Persistence Unit is already registered: " + service.pu.getScopedPersistenceUnitName());
-        persistenceServiceBackdoor.put(service.pu.getScopedPersistenceUnitName(), service);
-    }
-
-    private static void unregister(PersistenceUnitService service) {
-        String name = service.pu.getScopedPersistenceUnitName();
-        Object removedValue = persistenceServiceBackdoor.remove(name);
-        // if we have a leak due to have the wrong name, we need to know.
-        // Also need to know if we attempt to remove the same unit multiple times.
-        if (removedValue == null) {
-            throw new RuntimeException("Could not remove Persistence Unit Service" + name);
-        }
     }
 
     /**

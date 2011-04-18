@@ -140,6 +140,7 @@ public class ServerInModuleStartupTestCase {
             request.get("operation").set("read-resource-description");
             request.get("address").setEmptyList();
             request.get("recursive").set(true);
+            request.get("operations").set(true);
             r = client.execute(OperationBuilder.Factory.create(request).build());
 
             Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());

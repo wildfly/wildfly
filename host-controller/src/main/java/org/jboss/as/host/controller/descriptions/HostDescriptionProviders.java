@@ -31,12 +31,34 @@ import org.jboss.dmr.ModelNode;
  * in the host model.
  *
  * @author Brian Stansberry
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  *
  */
 public final class HostDescriptionProviders {
 
     // Prevent instantiation
     private HostDescriptionProviders() {}
+
+    /**
+     * Provider for the host bootstrap model.
+     */
+    public static final DescriptionProvider BOOTSTRAP_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return HostBootstrapDescription.getDescription(locale);
+        }
+    };
+
+    /**
+     * Provider for the top level host model.
+     */
+    public static final DescriptionProvider HOST_ROOT_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            // TODO - Revisit once booting.
+            return new ModelNode();
+        }
+    };
 
     /**
      * Provider for the host model root.

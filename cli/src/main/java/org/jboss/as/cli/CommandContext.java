@@ -25,7 +25,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.PrefixFormatter;
@@ -38,6 +41,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
  * @author Alexey Loubyansky
  */
 public interface CommandContext {
+
+    /**
+     * Returns the current command.
+     * @return the current command.
+     */
+    String getCommand();
 
     /**
      * Returns the current command's arguments as a string.
@@ -202,4 +211,31 @@ public interface CommandContext {
      * @return  the history of all the commands and operations.
      */
     CommandHistory getHistory();
+
+    /**
+     * Checks whether the CLI is in the batch mode.
+     * @return true if the CLI is in the batch mode, false - otherwise.
+     */
+    boolean isBatchMode();
+
+    /**
+     * Returns batch manager.
+     * @return batch manager
+     */
+    BatchManager getBatchManager();
+
+    /**
+     * Builds an operation request from the passed in command line.
+     *
+     * @param line the command line which can be an operation request or a command that can be translated into an operation request.
+     * @return  the operation request
+     * @throws OperationFormatException  if the operation request couldn't be built.
+     */
+    BatchedCommand toBatchedCommand(String line) throws OperationFormatException;
+
+    /**
+     * Returns the default command line completer.
+     * @return  the default command line completer.
+     */
+    CommandLineCompleter getDefaultCommandCompleter();
 }

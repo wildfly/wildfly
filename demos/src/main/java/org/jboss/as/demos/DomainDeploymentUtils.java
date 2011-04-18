@@ -180,12 +180,15 @@ public class DomainDeploymentUtils implements Closeable {
             return result.get("result");
         }
         else if (result.hasDefined("failure-description")) {
+            System.out.println(result);
             throw new RuntimeException(result.get("failure-description").toString());
         }
         else if (result.hasDefined("domain-failure-description")) {
+            System.out.println(result);
             throw new RuntimeException(result.get("domain-failure-description").toString());
         }
         else if (result.hasDefined("host-failure-descriptions")) {
+            System.out.println(result);
             throw new RuntimeException(result.get("host-failure-descriptions").toString());
         }
         else {

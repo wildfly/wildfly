@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -36,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeployHandler extends CommandHandlerWithHelp {
+public class DeployHandler extends BatchModeCommandHandler {
 
     public DeployHandler() {
         super("deploy", true,
@@ -124,7 +125,7 @@ public class DeployHandler extends CommandHandlerWithHelp {
             return;
         } else {
 
-            DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+            DefaultOperationRequestBuilder builder;
 
             ModelNode result;
 
@@ -173,5 +174,104 @@ public class DeployHandler extends CommandHandlerWithHelp {
             }
             ctx.printLine("'" + name + "' deployed successfully.");
         }
+    }
+
+    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+
+        if (!ctx.hasArguments()) {
+            throw new OperationFormatException("Required arguments are missing.");
+        }
+
+        String filePath = null;
+        String name = null;
+        String runtimeName = null;
+
+        for(String arg : ctx.getArguments()) {
+            if (filePath == null) {
+                filePath = arg;
+            } else if (name == null) {
+                name = arg;
+            } else {
+                runtimeName = arg;
+            }
+        }
+
+        if(filePath == null) {
+            throw new OperationFormatException("File path is missing.");
+        }
+
+        File f = new File(filePath);
+        if(!f.exists()) {
+            throw new OperationFormatException(f.getAbsolutePath() + " doesn't exist.");
+        }
+
+        if(name == null) {
+            name = f.getName();
+        }
+
+        if(Util.isDeployed(name, ctx.getModelControllerClient())) {
+            if(ctx.hasSwitch("f")) {
+                DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+
+                // replace
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName("full-replace-deployment");
+                builder.addProperty("name", name);
+                if(runtimeName != null) {
+                    builder.addProperty("runtime-name", runtimeName);
+                }
+
+                byte[] bytes = readBytes(f);
+                builder.getModelNode().get("bytes").set(bytes);
+                return builder.buildRequest();
+            } else {
+                throw new OperationFormatException("'" + name + "' is already deployed (use -f to force re-deploy).");
+            }
+        }
+
+        ModelNode composite = new ModelNode();
+        composite.get("operation").set("composite");
+        composite.get("address").setEmptyList();
+        ModelNode steps = composite.get("steps");
+
+        DefaultOperationRequestBuilder builder;
+
+        // add
+        builder = new DefaultOperationRequestBuilder();
+        builder.setOperationName("add");
+        builder.addNode("deployment", name);
+        if (runtimeName != null) {
+            builder.addProperty("runtime-name", runtimeName);
+        }
+
+        byte[] bytes = readBytes(f);
+        builder.getModelNode().get("bytes").set(bytes);
+        steps.add(builder.buildRequest());
+
+        // deploy
+        builder = new DefaultOperationRequestBuilder();
+        builder.setOperationName("deploy");
+        builder.addNode("deployment", name);
+        steps.add(builder.buildRequest());
+
+        return composite;
+    }
+
+    protected byte[] readBytes(File f) throws OperationFormatException {
+        byte[] bytes;
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(f);
+            bytes = new byte[(int) f.length()];
+            int read = is.read(bytes);
+            if(read != bytes.length) {
+                throw new OperationFormatException("Failed to read bytes from " + f.getAbsolutePath() + ": " + read + " from " + f.length());
+            }
+        } catch (Exception e) {
+            throw new OperationFormatException("Failed to read file " + f.getAbsolutePath(), e);
+        } finally {
+            StreamUtils.safeClose(is);
+        }
+        return bytes;
     }
 }

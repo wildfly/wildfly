@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -72,18 +73,21 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.operations.SystemPropertyAddHandler;
 import org.jboss.as.domain.controller.operations.SystemPropertyRemoveHandler;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
+import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
+import org.jboss.as.host.controller.operations.LocalHostAddHandler;
+import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
-import org.jboss.as.server.operations.HttpManagementAddHandler;
-import org.jboss.as.server.operations.NativeManagementAddHandler;
-import org.jboss.as.server.operations.sockets.SpecifiedInterfaceAddHandler;
-import org.jboss.as.server.operations.sockets.SpecifiedInterfaceRemoveHandler;
+
+import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
+import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -92,11 +96,11 @@ import org.jboss.dmr.ModelType;
  * for an individual host's portion of the model.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class HostModelUtil {
 
-    public static ModelNode createCoreModel() {
-        ModelNode root = new ModelNode();
+    public static void initCoreModel(final ModelNode root) {
         root.get(NAME);
         root.get(NAMESPACES).setEmptyList();
         root.get(SCHEMA_LOCATIONS).setEmptyList();
@@ -109,10 +113,24 @@ public class HostModelUtil {
         root.get(INTERFACE);
         root.get(JVM);
         root.get(RUNNING_SERVER);
+    }
+
+    /**
+     * Create and return the base bootstrap host registry to allow the initial host registration.
+     *
+     * @return the ModelNodeRegistration
+     */
+    public static ModelNodeRegistration createBootstrapHostRegistry(ModelNodeRegistration hostRegistry, DomainModelProxy domainModelProxy) {
+        final ModelNodeRegistration root = ModelNodeRegistration.Factory.create(HostDescriptionProviders.BOOTSTRAP_PROVIDER);
+
+        ModelNodeRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
+        LocalHostAddHandler handler = LocalHostAddHandler.getInstance(hostRegistry, domainModelProxy);
+        hostRegistration.registerOperationHandler(LocalHostAddHandler.OPERATION_NAME, handler, handler, false, OperationEntry.EntryType.PRIVATE);
+
         return root;
     }
 
-    public static ModelNodeRegistration createHostRegistry(final ExtensibleConfigurationPersister configurationPersister) {
+    public static ModelNodeRegistration createHostRegistry(final ExtensibleConfigurationPersister configurationPersister, HostControllerEnvironment environment, DomainModelProxy domainModelProxy) {
 
         final ModelNodeRegistration root = ModelNodeRegistration.Factory.create(HostDescriptionProviders.ROOT_PROVIDER);
         // Global operations
@@ -140,12 +158,17 @@ public class HostModelUtil {
         managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
 
         ModelNodeRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACES, HTTP_INTERFACE), CommonProviders.MANAGEMENT_PROVIDER);
-        managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, HttpManagementAddHandler.INSTANCE, HttpManagementAddHandler.INSTANCE, false);
+        HttpManagementAddHandler httpAddHandler = HttpManagementAddHandler.getInstance(environment);
+        managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, httpAddHandler, httpAddHandler, false);
         // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACES, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
         //root.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, LocalDomainControllerAddHandler.INSTANCE, LocalDomainControllerAddHandler.INSTANCE, false);
+
+        // TODO The DomainControllerAddHandlers need to be able to register the service and also associate with the DomainModel in use.
+        LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(domainModelProxy, environment);
+        root.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         root.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, RemoteDomainControllerAddHandler.INSTANCE, RemoteDomainControllerAddHandler.INSTANCE, false);
+        RemoteDomainControllerAddHandler remoteDcAddHandler = RemoteDomainControllerAddHandler.getInstance(domainModelProxy, environment);
+        root.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         root.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister);
         root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);

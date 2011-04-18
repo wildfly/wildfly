@@ -27,7 +27,11 @@ import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
+import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.PrefixFormatter;
@@ -216,6 +220,37 @@ public class MockCommandContext implements CommandContext {
 
     @Override
     public Set<String> getArgumentNames() {
+        return null;
+    }
+
+    @Override
+    public boolean isBatchMode() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public String getCommand() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public BatchManager getBatchManager() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public BatchedCommand toBatchedCommand(String line)
+            throws OperationFormatException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public CommandLineCompleter getDefaultCommandCompleter() {
+        // TODO Auto-generated method stub
         return null;
     }
 }

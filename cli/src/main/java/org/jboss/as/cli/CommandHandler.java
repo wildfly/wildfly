@@ -30,7 +30,12 @@ public interface CommandHandler {
 
     boolean isAvailable(CommandContext ctx);
 
-    CommandArgumentCompleter getArgumentCompleter();
+    CommandLineCompleter getArgumentCompleter();
+
+    /**
+     * Whether the command supports batch mode or not.
+     */
+    boolean isBatchMode();
 
     void handle(CommandContext ctx);
 }

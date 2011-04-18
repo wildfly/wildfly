@@ -3,21 +3,24 @@
  */
 package org.jboss.as.controller;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
- * TODO add class javadoc for ControllerTransaction
+ * A transactional context in which operations on a {@link ModelController} execute.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
 public class ControllerTransaction implements ControllerTransactionContext {
 
-    private final Set<ControllerResource> resources = new HashSet<ControllerResource>();
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
+
+    private final Set<ControllerResource> resources = new LinkedHashSet<ControllerResource>();
+    private final Set<ControllerTransactionSynchronization> synchronizations = new LinkedHashSet<ControllerTransactionSynchronization>();
     private volatile boolean rollbackOnly;
     private final ModelNode id;
     private final long creationTime = System.currentTimeMillis();
@@ -34,11 +37,42 @@ public class ControllerTransaction implements ControllerTransactionContext {
     }
 
     public void commit() {
+
+        for (ControllerTransactionSynchronization sync : synchronizations) {
+            try {
+                sync.beforeCompletion();
+            } catch (Exception e) {
+                log.errorf(e, "Caught exception applying beforeCompletion notification for transaction %s on synchronization %s", id, sync);
+                // TODO further actions?
+            }
+
+        }
+
         for (ControllerResource resource : resources) {
-            if (rollbackOnly)
-                resource.rollback();
-            else
-                resource.commit();
+            try {
+                if (rollbackOnly)
+                    resource.rollback();
+                else
+                    resource.commit();
+            } catch (Exception e) {
+                if (rollbackOnly ) {
+                    log.errorf(e, "Caught exception rolling back transaction %s on resource %s", id, resource);
+                }
+                else {
+                    log.errorf(e, "Caught exception committing transaction %s on resource %s", id, resource);
+                }
+                // TODO further actions?
+            }
+        }
+
+        for (ControllerTransactionSynchronization sync : synchronizations) {
+            try {
+                sync.afterCompletion(!rollbackOnly);
+            } catch (Exception e) {
+                log.errorf(e, "Caught exception applying beforeCompletion notification for transaction %s on synchronization %s", id, sync);
+                // TODO further actions?
+            }
+
         }
     }
 
@@ -68,5 +102,10 @@ public class ControllerTransaction implements ControllerTransactionContext {
 
     public boolean isRollbackOnly() {
         return rollbackOnly;
+    }
+
+    @Override
+    public void registerSynchronization(ControllerTransactionSynchronization synchronization) {
+        synchronizations.add(synchronization);
     }
 }

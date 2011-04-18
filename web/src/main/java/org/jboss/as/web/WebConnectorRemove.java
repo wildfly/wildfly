@@ -44,7 +44,7 @@ import java.util.Locale;
  *
  * @author Emanuel Muckenhuber
  */
-public class WebConnectorRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+class WebConnectorRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
     static final WebConnectorRemove INSTANCE = new WebConnectorRemove();
 

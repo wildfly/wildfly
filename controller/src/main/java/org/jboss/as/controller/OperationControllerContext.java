@@ -19,4 +19,22 @@ public interface OperationControllerContext {
     ConfigurationPersisterProvider getConfigurationPersisterProvider();
 
     ControllerTransactionContext getControllerTransactionContext();
+
+    /**
+     * Attempts to acquire the controller's exclusive lock, possibly blocking until acquired.
+     * If the call acquires the lock, the caller must ensure {@link #unlock()} is called.
+     * If the call does not acquire the lock (i.e. this method returns {@code false} or throws an exception)
+     * the caller must not attempt to call {@link #unlock()}.
+     *
+     * @return {@code true} if the call acquired the lock, {@code false} if not. A return
+     *         value of {@code false} should not be regarded as an error condition
+     *
+     * @throws InterruptedException if the thread is interrupted while trying to acquire the lock.
+     */
+    boolean lockInterruptibly() throws InterruptedException;
+
+    /**
+     * Releases any lock acquired in {@link #lockInterruptibly()}.
+     */
+    void unlock();
 }

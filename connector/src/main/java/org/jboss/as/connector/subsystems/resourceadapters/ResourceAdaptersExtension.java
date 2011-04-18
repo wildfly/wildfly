@@ -61,26 +61,27 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_F
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_RESOURCEADAPTER_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_RESOURCEADAPTER_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.connector.subsystems.resourceadapters.RaConfigRWHandler.RaConfigReadHandler;
+import org.jboss.as.connector.subsystems.resourceadapters.RaConfigRWHandler.RaConfigWriteHandler;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -99,6 +100,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -146,6 +148,10 @@ public class ResourceAdaptersExtension implements Extension {
         resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
         resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
 
+        for (final String attributeName : RaConfigRWHandler.ATTRIBUTES) {
+            resourceadapter.registerReadWriteAttribute(attributeName, RaConfigReadHandler.INSTANCE,
+                    RaConfigWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        }
     }
 
     @Override

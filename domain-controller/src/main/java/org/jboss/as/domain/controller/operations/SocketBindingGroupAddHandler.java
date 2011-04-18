@@ -27,7 +27,7 @@ import java.util.Locale;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ListValdidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
@@ -42,7 +42,7 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
 
     private static final ParametersValidator VALIDATOR = new ParametersValidator();
     static {
-        VALIDATOR.registerValidator(INCLUDE, new ListValdidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true), true, 0, Integer.MAX_VALUE));
+        VALIDATOR.registerValidator(INCLUDE, new ListValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true), true, 0, Integer.MAX_VALUE));
     }
 
     public static final ModelNode getOperation(ModelNode address, ModelNode model) {

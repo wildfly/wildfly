@@ -34,10 +34,21 @@ import java.net.SocketAddress;
  */
 class ManagedSocketBinding extends Socket implements ManagedBinding {
 
-    private final SocketBindingManager socketBindings;
+    private final String name;
+    private final ManagedBindingRegistry socketBindings;
 
-    ManagedSocketBinding(final SocketBindingManager socketBindings) {
+    ManagedSocketBinding(final ManagedBindingRegistry socketBindings) {
+        this(null, socketBindings);
+    }
+
+    ManagedSocketBinding(final String name, final ManagedBindingRegistry socketBindings) {
+        this.name = name;
         this.socketBindings = socketBindings;
+    }
+
+    @Override
+    public String getSocketBindingName() {
+        return name;
     }
 
     public InetSocketAddress getBindAddress() {

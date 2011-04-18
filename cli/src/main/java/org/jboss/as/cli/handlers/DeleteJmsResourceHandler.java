@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -31,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
+public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
 
     public DeleteJmsResourceHandler() {
         super("delete-jms-resource", true);
@@ -43,9 +44,36 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        if(!ctx.hasArguments()) {
-            ctx.printLine("Arguments are missing");
+        ModelNode request;
+        try {
+            request = buildRequest(ctx);
+        } catch (OperationFormatException e1) {
+            ctx.printLine(e1.getLocalizedMessage());
             return;
+        }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
+
+        final ModelNode result;
+        try {
+            result = client.execute(request);
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            return;
+        }
+
+        if (!Util.isSuccess(result)) {
+            ctx.printLine(Util.getFailureDescription(result));
+            return;
+        }
+    }
+
+    @Override
+    public ModelNode buildRequest(CommandContext ctx)
+            throws OperationFormatException {
+
+        if(!ctx.hasArguments()) {
+            throw new OperationFormatException("Arguments are missing");
         }
 
         //String target = null;
@@ -65,8 +93,7 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
         }
 
         if(jndiName == null) {
-            ctx.printLine("name is missing.");
-            return;
+            throw new OperationFormatException("name is missing.");
         }
 
         ModelControllerClient client = ctx.getModelControllerClient();
@@ -78,29 +105,13 @@ public class DeleteJmsResourceHandler extends CommandHandlerWithHelp {
         } else if(Util.isConnectionFactory(client, jndiName)) {
             resource = "connection-factory";
         } else {
-            ctx.printLine("'" + jndiName +"' wasn't found among existing JMS resources.");
-            return;
+            throw new OperationFormatException("'" + jndiName +"' wasn't found among existing JMS resources.");
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
         builder.addNode(resource, jndiName);
         builder.setOperationName("remove");
-
-        final ModelNode result;
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
-
-        ctx.printLine("Removed " + resource + ' ' + jndiName);
+        return builder.buildRequest();
     }
 }

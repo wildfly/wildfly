@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 
@@ -36,7 +36,7 @@ import jline.Completor;
  *
  * @author Alexey Loubyansky
  */
-public class OperationRequestCompleter implements CommandArgumentCompleter, Completor {
+public class OperationRequestCompleter implements CommandLineCompleter, Completor {
 
     public static final OperationRequestCompleter INSTANCE = new OperationRequestCompleter(null);
 

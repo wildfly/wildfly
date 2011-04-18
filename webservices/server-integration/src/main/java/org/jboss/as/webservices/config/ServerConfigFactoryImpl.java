@@ -24,6 +24,7 @@ package org.jboss.as.webservices.config;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.ioc.IoCContainerProxy;
 import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
 import org.jboss.wsf.spi.management.ServerConfig;
@@ -49,8 +50,9 @@ public final class ServerConfigFactoryImpl extends ServerConfigFactory {
      * @return config
      */
     public ServerConfig getServerConfig() {
-        final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-        final IoCContainerProxyFactory iocContainerFactory = spiProvider.getSPI(IoCContainerProxyFactory.class);
+        final ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
+        final SPIProvider spiProvider = SPIProviderResolver.getInstance(cl).getProvider();
+        final IoCContainerProxyFactory iocContainerFactory = spiProvider.getSPI(IoCContainerProxyFactory.class, cl);
         final IoCContainerProxy iocContainer = iocContainerFactory.getContainer();
 
         // TODO review IoCContainer spi to avoid conversion to/from String/Service
