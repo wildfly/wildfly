@@ -70,7 +70,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
- * A mapper between {@code standalone.xml} and a model.
+ * A mapper between an AS server's configuration model and XML representations, particularly {@code standalone.xml}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

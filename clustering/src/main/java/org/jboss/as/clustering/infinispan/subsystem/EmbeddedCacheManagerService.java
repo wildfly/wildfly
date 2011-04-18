@@ -23,7 +23,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.security.AccessController;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -35,14 +34,13 @@ import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.CacheContainerRegistry;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
-import org.jboss.as.clustering.jgroups.ChannelFactoryRegistry;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryRegistryService;
+import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.threads.ThreadsServices;
@@ -63,17 +61,21 @@ import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerService implements Service<CacheContainer> {
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("infinispan");
+
+    public static ServiceName getServiceName() {
+        return SERVICE_NAME;
+    }
 
     public static ServiceName getServiceName(String name) {
-        return CacheContainerRegistryService.SERVICE_NAME.append(name);
+        return SERVICE_NAME.append(name);
     }
 
     @SuppressWarnings("unchecked")
     private final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<ChannelFactoryRegistry> channelFactoryRegistry = new InjectedValue<ChannelFactoryRegistry>();
-    private final InjectedValue<CacheContainerRegistry> registry = new InjectedValue<CacheContainerRegistry>();
+    private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
     private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
@@ -86,32 +88,27 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     private final Map<String, Configuration> configurations;
     private final String name;
     private final String defaultCache;
-    private final Set<String> aliases;
 
     private volatile CacheContainer container;
-    private volatile String stack;
 
-    public EmbeddedCacheManagerService(String name, String defaultCache, Set<String> aliases, GlobalConfiguration globalConfiguration, Configuration defaultConfiguration, Map<String, Configuration> configurations) {
+    public EmbeddedCacheManagerService(String name, String defaultCache, GlobalConfiguration globalConfiguration, Configuration defaultConfiguration, Map<String, Configuration> configurations) {
         this.name = name;
         this.defaultCache = defaultCache;
-        this.aliases = aliases;
         this.globalConfiguration = globalConfiguration;
         this.defaultConfiguration = defaultConfiguration;
         this.configurations = configurations;
     }
 
-    public void setStack(String stack) {
-        this.stack = stack;
-    }
-
     ServiceBuilder<CacheContainer> build(ServiceTarget target) {
         return target.addService(getServiceName(this.name), this)
             .setInitialMode(ServiceController.Mode.ACTIVE)
-            .addDependency(CacheContainerRegistryService.SERVICE_NAME, CacheContainerRegistry.class, this.registry)
             .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
-            .addDependency(ChannelFactoryRegistryService.SERVICE_NAME, ChannelFactoryRegistry.class, this.channelFactoryRegistry)
             .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, this.transactionManager)
             .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, this.mbeanServer);
+    }
+
+    void addTransportDependency(ServiceBuilder<CacheContainer> builder, String stack) {
+        builder.addDependency((stack != null) ? ChannelFactoryService.getServiceName(stack) : ChannelFactoryService.getServiceName(), ChannelFactory.class, this.channelFactory);
     }
 
     void addListenerExecutorDependency(ServiceBuilder<CacheContainer> builder, String executor) {
@@ -151,9 +148,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         this.globalConfiguration.setTransportNodeName(nodeName);
         this.globalConfiguration.setClusterName(String.format("%s:%s", nodeName, this.name));
 
-        ChannelFactoryRegistry registry = this.channelFactoryRegistry.getValue();
-        String stack = (this.stack != null) ? this.stack : registry.getDefaultStack();
-        ChannelProvider.init(this.globalConfiguration, registry.getChannelFactory(stack));
+        ChannelProvider.init(this.globalConfiguration, this.channelFactory.getValue());
 
         MBeanServer server = this.mbeanServer.getOptionalValue();
         if (server != null) {
@@ -203,7 +198,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         } finally {
             switchContext.reset();
         }
-        this.registry.getValue().addCacheContainer(this.name, this.aliases, this.container);
     }
 
     /**
@@ -213,7 +207,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     @Override
     public void stop(StopContext context) {
         this.container.stop();
-        this.registry.getValue().removeCacheContainer(this.name);
         this.container = null;
     }
 }

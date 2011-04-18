@@ -125,7 +125,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class, raDeployementService.getRaRepositoryInjector())
                     .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class, raDeployementService.getManagementRepositoryInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeployementService.getRegistryInjector())
-                    .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, raDeployementService.getJndiInjector())
                     .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeployementService.getTxIntegrationInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class, raDeployementService.getConfigInjector())
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeployementService.getSubjectFactoryInjector())

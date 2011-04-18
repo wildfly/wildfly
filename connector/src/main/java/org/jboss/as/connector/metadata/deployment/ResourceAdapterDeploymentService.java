@@ -222,7 +222,10 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                     .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                             binderService.getManagedObjectInjector())
                     .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
-                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                            binderService.getNamingStoreInjector())
+                    .addDependency(
+                            ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()))
+                    .addListener(new AbstractServiceListener<Object>() {
                         public void serviceStarted(ServiceController<?> controller) {
                             log.infof("Bound JCA ConnectionFactory [%s]", jndi);
                         }
@@ -299,12 +302,12 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                     raMcfClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
                 } else {
                     ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
-                    if (ra != null && ra.getOutboundResourceadapter() != null &&
-                        ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
+                    if (ra != null && ra.getOutboundResourceadapter() != null
+                            && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
                         List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
                         if (cdMetas.size() > 0) {
                             for (ConnectionDefinition cdMeta : cdMetas) {
-                               raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
+                                raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
                             }
                         }
                     }
@@ -312,15 +315,15 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                     if (ra != null && ra.getAdminObjects() != null) {
                         List<AdminObject> aoMetas = ra.getAdminObjects();
                         if (aoMetas.size() > 0) {
-                           for (AdminObject aoMeta : aoMetas) {
-                              raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
-                           }
+                            for (AdminObject aoMeta : aoMetas) {
+                                raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
+                            }
                         }
                     }
 
                     // Pure inflow
                     if (raMcfClasses.size() == 0 && raAoClasses.size() == 0)
-                       return true;
+                        return true;
                 }
 
                 if (ijmd != null) {
@@ -338,43 +341,43 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                             String clz = def.getClassName();
 
                             if (clz == null) {
-                               if (raMcfClasses.size() == 1) {
-                                  mcfSingle = true;
-                               }
+                                if (raMcfClasses.size() == 1) {
+                                    mcfSingle = true;
+                                }
                             } else {
-                               ijMcfClasses.add(clz);
+                                ijMcfClasses.add(clz);
                             }
                         }
                     }
 
                     if (!mcfSingle) {
-                       Iterator<String> it = raMcfClasses.iterator();
-                       while (mcfOk && it.hasNext()) {
-                          String clz = it.next();
-                          if (!ijMcfClasses.contains(clz))
-                             mcfOk = false;
-                       }
+                        Iterator<String> it = raMcfClasses.iterator();
+                        while (mcfOk && it.hasNext()) {
+                            String clz = it.next();
+                            if (!ijMcfClasses.contains(clz))
+                                mcfOk = false;
+                        }
                     }
 
                     if (ijmd.getAdminObjects() != null) {
                         for (org.jboss.jca.common.api.metadata.common.CommonAdminObject def : ijmd.getAdminObjects()) {
-                           String clz = def.getClassName();
-                           if (clz == null) {
-                              if (raAoClasses.size() == 1) {
-                                 aoSingle = true;
-                              }
-                           } else {
-                              ijAoClasses.add(clz);
-                           }
+                            String clz = def.getClassName();
+                            if (clz == null) {
+                                if (raAoClasses.size() == 1) {
+                                    aoSingle = true;
+                                }
+                            } else {
+                                ijAoClasses.add(clz);
+                            }
                         }
                     }
 
                     if (!aoSingle) {
                         Iterator<String> it = raAoClasses.iterator();
                         while (aoOk && it.hasNext()) {
-                           String clz = it.next();
-                           if (!ijAoClasses.contains(clz))
-                              aoOk = false;
+                            String clz = it.next();
+                            if (!ijAoClasses.contains(clz))
+                                aoOk = false;
                         }
                     }
 

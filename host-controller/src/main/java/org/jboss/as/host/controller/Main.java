@@ -171,6 +171,8 @@ public final class Main {
         boolean isRestart = false;
         boolean backupDomainFiles = false;
         boolean cachedDc = false;
+        String domainConfig = null;
+        String hostConfig = null;
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -241,6 +243,10 @@ public final class Main {
                     cachedDc = true;
                 } else if(CommandLineConstants.DEFAULT_JVM.equals(arg)) {
                     defaultJVM = args[++i];
+                } else if (CommandLineConstants.DOMAIN_CONFIG.equals(arg)) {
+                    domainConfig = args[++i];
+                } else if (CommandLineConstants.HOST_CONFIG.equals(arg)) {
+                    hostConfig = args[++i];
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -266,7 +272,8 @@ public final class Main {
             }
         }
 
-        return new HostControllerEnvironment(systemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM, backupDomainFiles, cachedDc);
+        return new HostControllerEnvironment(systemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM,
+                domainConfig, hostConfig, backupDomainFiles, cachedDc);
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

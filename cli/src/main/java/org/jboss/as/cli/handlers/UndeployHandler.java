@@ -26,8 +26,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -36,11 +37,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class UndeployHandler extends CommandHandlerWithHelp {
+public class UndeployHandler extends BatchModeCommandHandler {
 
     public UndeployHandler() {
         super("undeploy", true, new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},
-                new CommandArgumentCompleter() {
+                new CommandLineCompleter() {
                     @Override
                     public int complete(CommandContext ctx, String buffer,
                             int cursor, List<String> candidates) {
@@ -97,7 +98,7 @@ public class UndeployHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        DefaultOperationRequestBuilder builder;
 
         // undeploy
         builder = new DefaultOperationRequestBuilder();
@@ -136,5 +137,38 @@ public class UndeployHandler extends CommandHandlerWithHelp {
         }
 
         ctx.printLine("'" + deployment + "' undeployed successfully.");
+    }
+
+    @Override
+    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+
+        ModelNode composite = new ModelNode();
+        composite.get("operation").set("composite");
+        composite.get("address").setEmptyList();
+        ModelNode steps = composite.get("steps");
+
+        if(!ctx.hasArguments()) {
+            throw new OperationFormatException("Required arguments are missing.");
+        }
+
+        String deployment = null;
+        List<String> args = ctx.getArguments();
+        if(args.size() > 0) {
+            deployment = args.get(0);
+        }
+
+        DefaultOperationRequestBuilder builder;
+
+        // undeploy
+        builder = new DefaultOperationRequestBuilder();
+        builder.setOperationName("undeploy");
+        builder.addNode("deployment", deployment);
+        steps.add(builder.buildRequest());
+
+        builder = new DefaultOperationRequestBuilder();
+        builder.setOperationName("remove");
+        builder.addNode("deployment", deployment);
+        steps.add(builder.buildRequest());
+        return composite;
     }
 }

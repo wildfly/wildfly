@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -43,13 +43,13 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
 
     private final String filename;
     private final boolean connectionRequired;
-    private final CommandArgumentCompleter argsCompleter;
+    private final CommandLineCompleter argsCompleter;
 
     public CommandHandlerWithHelp(String command) {
         this(command, false);
     }
 
-    public CommandHandlerWithHelp(String command, CommandArgumentCompleter argsCompleter) {
+    public CommandHandlerWithHelp(String command, CommandLineCompleter argsCompleter) {
         this(command, false, argsCompleter);
     }
 
@@ -57,7 +57,7 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
         this(command, connectionRequired, new SimpleTabCompleter(new String[]{"--help"}));
     }
 
-    public CommandHandlerWithHelp(String command, boolean connectionRequired, CommandArgumentCompleter argsCompleter) {
+    public CommandHandlerWithHelp(String command, boolean connectionRequired, CommandLineCompleter argsCompleter) {
         if(command == null) {
             throw new IllegalArgumentException("command can't be null");
         }
@@ -75,7 +75,7 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
     }
 
     @Override
-    public CommandArgumentCompleter getArgumentCompleter() {
+    public CommandLineCompleter getArgumentCompleter() {
         return argsCompleter;
     }
 
@@ -123,6 +123,11 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
     }
 
     protected abstract void doHandle(CommandContext ctx);
+
+    @Override
+    public boolean isBatchMode() {
+        return false;
+    }
 
     /**
      * Prints a list of strings. If -l switch is present then the list is printed one item per line,

@@ -32,7 +32,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemParser;
 import org.jboss.as.clustering.jgroups.subsystem.Namespace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
@@ -41,7 +40,7 @@ import org.junit.Test;
 
 public class JGroupsSubsystemParserTest {
 
-    private JGroupsSubsystemParser parser = new JGroupsSubsystemParser();
+    private JGroupsExtension parser = new JGroupsExtension();
 
     @Test
     public void parse() throws Exception {

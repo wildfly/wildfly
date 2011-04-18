@@ -27,13 +27,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class SimpleTabCompleter implements CommandArgumentCompleter {
+public class SimpleTabCompleter implements CommandLineCompleter {
 
     private final List<String> all;
 

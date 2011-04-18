@@ -34,7 +34,7 @@ public class ModelKeys {
     static final String CLASS = "class";
     static final String CONCURRENCY_LEVEL = "concurrency-level";
     static final String DEFAULT_CACHE = "default-cache";
-    static final String DEFAULT_CONTAINER = "default-container";
+    static final String DEFAULT_CACHE_CONTAINER = "default-cache-container";
     static final String DISTRIBUTED_CACHE = "distributed-cache";
     static final String EAGER_LOCKING = "eager-locking";
     static final String ENABLED = "enabled";

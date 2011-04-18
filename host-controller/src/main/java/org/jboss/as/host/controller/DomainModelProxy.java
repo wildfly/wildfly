@@ -20,20 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.host.controller;
 
-import java.util.Set;
-
-import org.infinispan.manager.CacheContainer;
+import org.jboss.as.domain.controller.DomainModelImpl;
 
 /**
- * @author Paul Ferraro
+ * On bootstrapping the host controller process some operations require access to the DomainModel, however the
+ * DomainModel is created after the registrations have taken place, the implementation of this interface will
+ * bridge that gap.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface CacheContainerRegistry {
-    String getDefaultCacheContainerName();
-    Set<String> getCacheContainerNames();
-    CacheContainer getCacheContainer(String name);
+public interface DomainModelProxy {
 
-    boolean addCacheContainer(String name, Set<String> aliases, CacheContainer container);
-    boolean removeCacheContainer(String name);
+    /**
+     * @return The central DomainModel for this HostController.
+     */
+    DomainModelImpl getDomainModel();
+
 }

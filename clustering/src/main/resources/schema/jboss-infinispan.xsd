@@ -41,7 +41,7 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
-        <xs:attribute name="default-container" type="xs:IDREF">
+        <xs:attribute name="default-cache-container" type="xs:IDREF" use="required">
             <xs:annotation>
                 <xs:documentation>Identifies the default cache container.</xs:documentation>
             </xs:annotation>
@@ -50,7 +50,7 @@
     
     <xs:complexType name="cache-container">
         <xs:sequence>
-            <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="alias" type="xs:ID" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
                 </xs:annotation>

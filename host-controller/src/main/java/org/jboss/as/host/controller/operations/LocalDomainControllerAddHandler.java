@@ -26,20 +26,29 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installLocalDomainController;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.host.controller.descriptions.HostServerDescription;
+import org.jboss.as.domain.controller.DomainModelImpl;
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.host.controller.DomainModelProxy;
+import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.LocalFileRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
 public class LocalDomainControllerAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
@@ -51,12 +60,19 @@ public class LocalDomainControllerAddHandler implements ModelUpdateOperationHand
         return op;
     }
 
-    public static final LocalDomainControllerAddHandler INSTANCE = new LocalDomainControllerAddHandler();
+    private final DomainModelProxy domainModelProxy;
+    private final HostControllerEnvironment environment;
+
+    public static LocalDomainControllerAddHandler getInstance(final DomainModelProxy domainModelProxy, final HostControllerEnvironment environment) {
+        return new LocalDomainControllerAddHandler(domainModelProxy, environment);
+    }
 
     /**
      * Create the ServerAddHandler
      */
-    LocalDomainControllerAddHandler() {
+    LocalDomainControllerAddHandler(DomainModelProxy domainModelProxy, HostControllerEnvironment environment) {
+        this.domainModelProxy = domainModelProxy;
+        this.environment = environment;
     }
 
     /**
@@ -67,17 +83,30 @@ public class LocalDomainControllerAddHandler implements ModelUpdateOperationHand
         try {
             final ModelNode model = context.getSubModel();
             model.get(DOMAIN_CONTROLLER).get(LOCAL).setEmptyObject();
+
+            if (context.getRuntimeContext() != null) {
+                final DomainModelImpl domainModel = domainModelProxy.getDomainModel();
+
+                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                    public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                        final ServiceTarget serviceTarget = context.getServiceTarget();
+                        final FileRepository fileRepository = new LocalFileRepository(environment);
+                        installLocalDomainController(environment, domainModel.getHostModel(), serviceTarget, false, fileRepository, domainModelProxy.getDomainModel());
+                    }
+                });
+            }
+
             ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
             resultHandler.handleResultComplete();
             return new BasicOperationResult(compensating);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
     }
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        return HostServerDescription.getServerAddOperation(locale);
+        // TODO - Return valid ModelDescription.
+        return new ModelNode();
     }
 }

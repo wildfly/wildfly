@@ -109,6 +109,10 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.connector.subsystems.datasources.DataSourcePoolConfigurationRWHandler.DataSourcePoolConfigurationReadHandler;
+import org.jboss.as.connector.subsystems.datasources.DataSourcePoolConfigurationRWHandler.DataSourcePoolConfigurationWriteHandler;
+import org.jboss.as.connector.subsystems.datasources.XaDataSourcePoolConfigurationRWHandler.XaDataSourcePoolConfigurationReadHandler;
+import org.jboss.as.connector.subsystems.datasources.XaDataSourcePoolConfigurationRWHandler.XaDataSourcePoolConfigurationWriteHandler;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -127,6 +131,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
@@ -185,6 +190,11 @@ public class DataSourcesExtension implements Extension {
             dataSources.registerMetric(attributeName, DataSourcesMetrics.INSTANCE);
         }
 
+        for (final String attributeName : DataSourcePoolConfigurationRWHandler.ATTRIBUTES) {
+            dataSources.registerReadWriteAttribute(attributeName, DataSourcePoolConfigurationReadHandler.INSTANCE,
+                    DataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        }
+
         final ModelNodeRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATA_SOURCE),
                 XA_DATA_SOURCE_DESC);
         xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
@@ -195,6 +205,12 @@ public class DataSourcesExtension implements Extension {
         for (final String attributeName : XaDataSourcesMetrics.ATTRIBUTES) {
             xaDataSources.registerMetric(attributeName, XaDataSourcesMetrics.INSTANCE);
         }
+
+        for (final String attributeName : XaDataSourcePoolConfigurationRWHandler.ATTRIBUTES) {
+            xaDataSources.registerReadWriteAttribute(attributeName, XaDataSourcePoolConfigurationReadHandler.INSTANCE,
+                    XaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+        }
+
     }
 
     @Override
@@ -223,6 +239,19 @@ public class DataSourcesExtension implements Extension {
                             XADATASOURCEPROPERTIES);
                     writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
                             : DataSources.Tag.DATASOURCE.getLocalName());
+
+                    if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
+                        // connectionProperties = new HashMap<String,
+                        // String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList().size());
+                        for (Property prop : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
+                            writer.writeStartElement(DataSource.Tag.CONNECTIONPROPERTY.getLocalName());
+                            writer.writeAttribute("name", prop.getName());
+                            writer.writeCharacters(prop.getValue().asString());
+                            writer.writeEndElement();
+
+                        }
+
+                    }
 
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JNDINAME, JNDINAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.POOL_NAME, POOLNAME);
@@ -482,7 +511,7 @@ public class DataSourcesExtension implements Extension {
                     case DATASOURCES_1_0: {
                         localName = reader.getLocalName();
                         Element element = Element.forName(reader.getLocalName());
-                        log.infof("%s -> %s", localName, element);
+                        log.tracef("%s -> %s", localName, element);
                         switch (element) {
                             case SUBSYSTEM: {
 

@@ -56,8 +56,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     protected final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<ManagementRepository>();
 
-    protected final InjectedValue<JndiStrategy> jndiStrategy = new InjectedValue<JndiStrategy>();
-
     public ResourceAdapterDeployment getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
@@ -95,16 +93,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
 
-            if (value.getDeployment() != null && value.getDeployment().getCfs() != null
-                    && value.getDeployment().getCfJndiNames() != null) {
-                try {
-                    jndiStrategy.getValue().unbindConnectionFactories(value.getDeployment().getDeploymentName(),
-                            value.getDeployment().getCfs(), value.getDeployment().getCfJndiNames());
-                } catch (Throwable t) {
-                    log.warn("Exception during JNDI unbinding", t);
-                }
-            }
-
             if (mdr != null && mdr.getValue() != null && value.getDeployment().getAos() != null
                     && value.getDeployment().getAoJndiNames() != null) {
                 for (int i = 0; i < value.getDeployment().getAos().length; i++) {
@@ -116,16 +104,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     } catch (NotFoundException nfe) {
                         log.warn("Exception during JNDI unbinding", nfe);
                     }
-                }
-            }
-
-            if (value.getDeployment() != null && value.getDeployment().getAos() != null
-                    && value.getDeployment().getAoJndiNames() != null) {
-                try {
-                    jndiStrategy.getValue().unbindConnectionFactories(value.getDeployment().getDeploymentName(),
-                            value.getDeployment().getAos(), value.getDeployment().getAoJndiNames());
-                } catch (Throwable t) {
-                    log.warn("Exception during JNDI unbinding", t);
                 }
             }
 
@@ -151,7 +129,4 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return registry;
     }
 
-    public Injector<JndiStrategy> getJndiInjector() {
-        return jndiStrategy;
-    }
 }

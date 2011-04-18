@@ -33,7 +33,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +41,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.batch.BatchManager;
+import org.jboss.as.cli.batch.BatchedCommand;
+import org.jboss.as.cli.batch.impl.DefaultBatchManager;
+import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
@@ -60,16 +63,28 @@ import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
+import org.jboss.as.cli.handlers.batch.BatchClearHandler;
+import org.jboss.as.cli.handlers.batch.BatchDiscardHandler;
+import org.jboss.as.cli.handlers.batch.BatchEditLineHandler;
+import org.jboss.as.cli.handlers.batch.BatchHandler;
+import org.jboss.as.cli.handlers.batch.BatchHoldbackHandler;
+import org.jboss.as.cli.handlers.batch.BatchListHandler;
+import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
+import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
+import org.jboss.as.cli.handlers.batch.BatchRunHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.PrefixFormatter;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -97,6 +112,16 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new DeleteJmsCFHandler(), "delete-jms-cf");
         cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
         cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
+
+        cmdRegistry.registerHandler(new BatchHandler(), "batch");
+        cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
+        cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
+        cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
+        cmdRegistry.registerHandler(new BatchRunHandler(), "run-batch");
+        cmdRegistry.registerHandler(new BatchClearHandler(), "clear-batch");
+        cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
+        cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
+        cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
     }
 
     public static void main(String[] args) throws Exception {
@@ -110,7 +135,7 @@ public class CommandLineMain {
                 cmdCtx.disconnectController();
             }
         }));
-        console.addCompletor(new CommandCompleter(cmdRegistry, cmdCtx));
+        console.addCompletor(cmdCtx.cmdCompleter);
 
         String[] commands = null;
         String fileName = null;
@@ -150,6 +175,8 @@ public class CommandLineMain {
                 fileName = arg.substring(5);
             } else if(arg.startsWith("commands=")) {
                 commands = arg.substring(9).split(",+");
+            } else if(arg.startsWith("command=")) {
+                commands = new String[]{arg.substring(8)};
             }
         }
 
@@ -211,8 +238,22 @@ public class CommandLineMain {
         }
 
         if(isOperation(line)) {
-            cmdCtx.setArgs(line);
-            cmdCtx.operationHandler.handle(cmdCtx);
+            cmdCtx.setArgs(null, line);
+            if(cmdCtx.isBatchMode()) {
+                DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(cmdCtx.getPrefix());
+                try {
+                    cmdCtx.getOperationRequestParser().parse(line, builder);
+                    ModelNode request = builder.buildRequest();
+                    StringBuilder op = new StringBuilder();
+                    op.append(cmdCtx.getPrefixFormatter().format(builder.getAddress()));
+                    op.append(line.substring(line.indexOf(':')));
+                    cmdCtx.getBatchManager().getActiveBatch().getCommands().add(new DefaultBatchedCommand(op.toString(), request));
+                } catch (CommandFormatException e) {
+                    cmdCtx.printLine(e.getLocalizedMessage());
+                }
+            } else {
+                cmdCtx.operationHandler.handle(cmdCtx);
+            }
 
         } else {
             String cmd = line;
@@ -224,14 +265,27 @@ public class CommandLineMain {
                     break;
                 }
             }
-            cmdCtx.setArgs(cmdArgs);
+            cmdCtx.setArgs(cmd, cmdArgs);
 
             CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
-            if (handler != null) {
-                handler.handle(cmdCtx);
+            if(handler != null) {
+                if(cmdCtx.isBatchMode() && handler.isBatchMode()) {
+                    if(!(handler instanceof OperationCommand)) {
+                        cmdCtx.printLine("The command is not allowed in a batch.");
+                    } else {
+                        try {
+                            ModelNode request = ((OperationCommand)handler).buildRequest(cmdCtx);
+                            BatchedCommand batchedCmd = new DefaultBatchedCommand(line, request);
+                            cmdCtx.getBatchManager().getActiveBatch().add(batchedCmd);
+                        } catch (OperationFormatException e) {
+                            cmdCtx.printLine("Failed to add to batch: " + e.getLocalizedMessage());
+                        }
+                    }
+                } else {
+                    handler.handle(cmdCtx);
+                }
             } else {
-                cmdCtx.printLine("Unexpected command '"
-                        + line
+                cmdCtx.printLine("Unexpected command '" + line
                         + "'. Type 'help' for the list of supported commands.");
             }
         }
@@ -288,6 +342,8 @@ public class CommandLineMain {
         /** whether the session should be terminated*/
         private boolean terminate;
 
+        /** current command */
+        private String cmd;
         /** current command's arguments */
         private String cmdArgs;
         /** command argument switches */
@@ -319,6 +375,10 @@ public class CommandLineMain {
         private final OperationCandidatesProvider operationCandidatesProvider;
         /** operation request handler */
         private final OperationRequestHandler operationHandler;
+        /** batches */
+        private BatchManager batchManager = new DefaultBatchManager();
+        /** the default command completer */
+        private final CommandCompleter cmdCompleter;
 
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
@@ -336,6 +396,8 @@ public class CommandLineMain {
             operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
 
             operationHandler = new OperationRequestHandler();
+
+            cmdCompleter = new CommandCompleter(cmdRegistry, this);
         }
 
         @Override
@@ -470,6 +532,10 @@ public class CommandLineMain {
                     buffer.append(nodeName);
                 }
             }
+
+            if(isBatchMode()) {
+                buffer.append(" #");
+            }
             buffer.append("] ");
             return buffer.toString();
         }
@@ -603,7 +669,8 @@ public class CommandLineMain {
             }
         }
 
-        private void setArgs(String args) {
+        private void setArgs(String cmd, String args) {
+            this.cmd = cmd;
             cmdArgs = args;
             switches = null;
             namedArgs = null;
@@ -616,6 +683,80 @@ public class CommandLineMain {
                 parseArgs();
             }
             return namedArgs.keySet();
+        }
+
+        @Override
+        public boolean isBatchMode() {
+            return batchManager.isBatchActive();
+        }
+
+        @Override
+        public String getCommand() {
+            return cmd;
+        }
+
+        @Override
+        public BatchManager getBatchManager() {
+            return batchManager;
+        }
+
+        @Override
+        public BatchedCommand toBatchedCommand(String line) throws OperationFormatException {
+
+            if (line.isEmpty()) {
+                throw new IllegalArgumentException("Null command line.");
+            }
+
+            final String originalCommand = this.cmd;
+            final String originalArguments = this.cmdArgs;
+            if(isOperation(line)) {
+                try {
+                    setArgs(null, line);
+                    DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(getPrefix());
+                    parser.parse(line, builder);
+                    ModelNode request = builder.buildRequest();
+                    StringBuilder op = new StringBuilder();
+                    op.append(prefixFormatter.format(builder.getAddress()));
+                    op.append(line.substring(line.indexOf(':')));
+                    return new DefaultBatchedCommand(op.toString(), request);
+                } finally {
+                    setArgs(originalCommand, originalArguments);
+                }
+            }
+
+
+
+
+            String cmd = line;
+            String cmdArgs = null;
+            for (int i = 0; i < cmd.length(); ++i) {
+                if (Character.isWhitespace(cmd.charAt(i))) {
+                    cmdArgs = cmd.substring(i + 1).trim();
+                    cmd = cmd.substring(0, i);
+                    break;
+                }
+            }
+
+            CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
+            if(handler == null) {
+                throw new OperationFormatException("No command handler for '" + cmd + "'.");
+            }
+            if(!(handler instanceof OperationCommand)) {
+                throw new OperationFormatException("The command is not allowed in a batch.");
+            }
+
+            try {
+                setArgs(cmd, cmdArgs);
+                ModelNode request = ((OperationCommand)handler).buildRequest(this);
+                return new DefaultBatchedCommand(line, request);
+            } finally {
+                setArgs(originalCommand, originalArguments);
+            }
+        }
+
+        @Override
+        public CommandLineCompleter getDefaultCommandCompleter() {
+            return cmdCompleter;
         }
     }
 }

@@ -26,13 +26,13 @@ import java.util.List;
 import jline.FileNameCompletor;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class FilenameTabCompleter implements CommandArgumentCompleter {
+public class FilenameTabCompleter implements CommandLineCompleter {
 
     private static final FileNameCompletor fnCompleter = new FileNameCompletor();
     public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
@@ -42,7 +42,11 @@ public class FilenameTabCompleter implements CommandArgumentCompleter {
      */
     @Override
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-        return fnCompleter.complete(buffer, cursor, candidates);
+        if(cursor > 0 && cursor <= buffer.length()) {
+            buffer = buffer.substring(cursor);
+        }
+        int result = fnCompleter.complete(buffer, cursor, candidates);
+        return result < 0 ? result : cursor + result;
     }
 
 }

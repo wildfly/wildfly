@@ -59,7 +59,7 @@ public interface OperationContext extends OperationAttachments {
     /**
      * Gets a read-only view of the sub-model at the given address.
      *
-     * @param the address. Cannot be {@code null}
+     * @param address Cannot be {@code null}
      *
      * @return the sub-model view
      * @throws IllegalArgumentException if no sub-model is associated with this operation

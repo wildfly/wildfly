@@ -72,10 +72,12 @@ public final class DomainControllerService implements Service<DomainController> 
     private final boolean backupDomainFiles;
     private final boolean useCachedDc;
     private final int mgmtPort;
+    private final DomainModelImpl domainModel;
     private DomainController controller;
 
     public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName, final int mgmtPort,
-            final DeploymentRepository deploymentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles, final boolean useCachedDc) {
+                                   final DeploymentRepository deploymentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles,
+                                   final boolean useCachedDc, final DomainModelImpl domainModel) {
         this.configurationPersister = configurationPersister;
         this.localHostName = localHostName;
         this.mgmtPort = mgmtPort;
@@ -83,6 +85,7 @@ public final class DomainControllerService implements Service<DomainController> 
         this.localFileRepository = localFileRepository;
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
+        this.domainModel = domainModel;
     }
 
     /** {@inheritDoc} */
@@ -133,7 +136,6 @@ public final class DomainControllerService implements Service<DomainController> 
     }
 
     public Injector<NetworkInterfaceBinding> getInterfaceInjector() {
-        // TODO Auto-generated method stub
         return mgmtInterface;
     }
 
@@ -142,9 +144,8 @@ public final class DomainControllerService implements Service<DomainController> 
     }
 
     private DomainController startMasterDomainController() throws StartException {
-
         log.info("Starting Domain Controller");
-        DomainModel domainModel = loadLocalDomainModel();
+        loadLocalDomainModel();
         return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, deploymentRepository, hostRegistry.getValue());
     }
 
@@ -164,7 +165,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         // By having a remote repo as a secondary content will be synced only if needed
         FallbackRepository fileRepository = new FallbackRepository(localFileRepository, masterClient.getRemoteFileRepository());
-        final DomainModelImpl domainModel = new DomainModelImpl(new ModelNode(), configurationPersister, hostController.getValue(), deploymentRepository, fileRepository, hostRegistry.getValue());
+        domainModel.initialiseAsSlaveDC(configurationPersister, deploymentRepository, fileRepository, hostRegistry.getValue());
         final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient, hostRegistry.getValue());
         try {
             masterClient.register(hostController.getValue().getName(), mgmtInterface.getValue().getAddress(), mgmtPort, controller);
@@ -178,18 +179,17 @@ public final class DomainControllerService implements Service<DomainController> 
             log.error("Could not cache domain model", e);
         }
 
-        //Here
-
         return controller;
     }
 
     private DomainController startLocalCopySlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
-        final DomainModel domainModel = loadLocalDomainModel();
+        loadLocalDomainModel();
         return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient, hostRegistry.getValue());
     }
 
-    private DomainModel loadLocalDomainModel() throws StartException {
-        DomainModelImpl domainModel = new DomainModelImpl(configurationPersister, hostController.getValue(), deploymentRepository, localFileRepository, hostRegistry.getValue());
+    private void loadLocalDomainModel() throws StartException {
+        domainModel.initialiseAsMasterDC(configurationPersister, deploymentRepository, localFileRepository, hostRegistry.getValue());
+
         final List<ModelNode> updates;
         try {
              updates = configurationPersister.load();
@@ -233,7 +233,6 @@ public final class DomainControllerService implements Service<DomainController> 
         if (count.decrementAndGet() == 0) {
             // some action?
         }
-        return domainModel;
     }
 
     private void backupDomainFiles() {

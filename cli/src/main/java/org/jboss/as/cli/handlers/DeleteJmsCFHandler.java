@@ -25,8 +25,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandArgumentCompleter;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -35,12 +36,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Alexey Loubyansky
  */
-public class DeleteJmsCFHandler extends CommandHandlerWithHelp {
+public class DeleteJmsCFHandler extends BatchModeCommandHandler {
 
     public DeleteJmsCFHandler() {
         super("delete-jms-cf", true,
                 new SimpleTabCompleterWithDelegate(new String[]{"--help"/*, "name="*/},
-                        new CommandArgumentCompleter() {
+                        new CommandLineCompleter() {
                     @Override
                     public int complete(CommandContext ctx, String buffer,
                             int cursor, List<String> candidates) {
@@ -83,9 +84,39 @@ public class DeleteJmsCFHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        if(!ctx.hasArguments()) {
-            ctx.printLine("Missing required argument 'name'.");
+        ModelNode request;
+        try {
+            request = buildRequest(ctx);
+        } catch (OperationFormatException e1) {
+            ctx.printLine(e1.getLocalizedMessage());
             return;
+        }
+
+        ModelControllerClient client = ctx.getModelControllerClient();
+
+        final ModelNode result;
+        try {
+            result = client.execute(request);
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            return;
+        }
+
+        String name = ctx.getNamedArgument("name");
+        if (!Util.isSuccess(result)) {
+            ctx.printLine("Failed to delete connection factory '" + name + "': " + Util.getFailureDescription(result));
+            return;
+        }
+
+        ctx.printLine("Removed connection factory " + name);
+    }
+
+    @Override
+    public ModelNode buildRequest(CommandContext ctx)
+            throws OperationFormatException {
+
+        if(!ctx.hasArguments()) {
+            throw new OperationFormatException("Missing required argument 'name'.");
         }
 
         String name = ctx.getNamedArgument("name");
@@ -97,31 +128,14 @@ public class DeleteJmsCFHandler extends CommandHandlerWithHelp {
         }
 
         if(name == null) {
-            ctx.printLine("Missing required argument 'name'.");
-            return;
+            throw new OperationFormatException("Missing required argument 'name'.");
         }
-
-        ModelControllerClient client = ctx.getModelControllerClient();
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
         builder.addNode("connection-factory", name);
         builder.setOperationName("remove");
 
-        final ModelNode result;
-        try {
-            ModelNode request = builder.buildRequest();
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine("Failed to delete connection factory '" + name + "': " + Util.getFailureDescription(result));
-            return;
-        }
-
-        ctx.printLine("Removed connection factory " + name);
+        return builder.buildRequest();
     }
 }
