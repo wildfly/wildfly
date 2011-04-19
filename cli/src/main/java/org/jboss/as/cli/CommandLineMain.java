@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
@@ -247,7 +248,10 @@ public class CommandLineMain {
                     StringBuilder op = new StringBuilder();
                     op.append(cmdCtx.getPrefixFormatter().format(builder.getAddress()));
                     op.append(line.substring(line.indexOf(':')));
-                    cmdCtx.getBatchManager().getActiveBatch().getCommands().add(new DefaultBatchedCommand(op.toString(), request));
+                    DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
+                    Batch batch = cmdCtx.getBatchManager().getActiveBatch();
+                    batch.add(batchedCmd);
+                    cmdCtx.printLine("#" + batch.size() + " " + batchedCmd.getCommand());
                 } catch (CommandFormatException e) {
                     cmdCtx.printLine(e.getLocalizedMessage());
                 }
@@ -276,7 +280,9 @@ public class CommandLineMain {
                         try {
                             ModelNode request = ((OperationCommand)handler).buildRequest(cmdCtx);
                             BatchedCommand batchedCmd = new DefaultBatchedCommand(line, request);
-                            cmdCtx.getBatchManager().getActiveBatch().add(batchedCmd);
+                            Batch batch = cmdCtx.getBatchManager().getActiveBatch();
+                            batch.add(batchedCmd);
+                            cmdCtx.printLine("#" + batch.size() + " " + batchedCmd.getCommand());
                         } catch (OperationFormatException e) {
                             cmdCtx.printLine("Failed to add to batch: " + e.getLocalizedMessage());
                         }
