@@ -227,6 +227,9 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, OPERATIONS, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, OPERATIONS, DESCRIPTION).set(bundle.getString("global.read-resource-description.operations"));
         node.get(REQUEST_PROPERTIES, OPERATIONS, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INHERITED, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, INHERITED, DESCRIPTION).set(bundle.getString("global.read-resource-description.inherited"));
+        node.get(REQUEST_PROPERTIES, INHERITED, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, LOCALE, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, LOCALE, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, LOCALE, DESCRIPTION).set(bundle.getString("global.read-resource-description.locale"));
