@@ -17,7 +17,6 @@ import static org.jboss.as.server.ServerModelControllerImplUnitTestCase.getOpera
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Executors;
@@ -38,9 +37,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceController.State;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -56,16 +55,13 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     private ServiceContainer container;
     private TestModelController controller;
 
-    private static final AtomicBoolean runtimeState = ServerModelControllerImplUnitTestCase.runtimeState;
-
     @Before
     public void setupController() {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        controller = new TestModelController(container, target);
+        controller = new TestModelController(container, target, new AtomicBoolean(true));
         container.addListener(controller.getServerStateMonitorListener());
         controller.finishBoot();
-        runtimeState.set(true);
     }
 
     @After
@@ -114,7 +110,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals(2, result.get("compensating-operation", "steps").asInt());
 
         // 2 ops set it from true to false to true
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(2, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(1, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -130,7 +126,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertTrue(description.contains("this request is bad"));
         assertTrue(description.contains(" and was rolled back."));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -145,7 +141,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(op);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(2, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(1, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -162,7 +158,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertTrue(description.contains("this handler is evil"));
         assertTrue(description.contains(" and was rolled back."));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -177,7 +173,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(op);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(2, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(1, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -203,7 +199,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertTrue(description.contains("handleFailed"));
         assertTrue(description.contains(" and was rolled back."));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -218,7 +214,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(op);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         assertEquals(2, controller.execute(getOperation("good", "attr1", 3)).get("result").asInt());
         assertEquals(1, controller.execute(getOperation("good", "attr2", 3)).get("result").asInt());
@@ -279,6 +275,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     @Test
     public void testGoodServiceCompositeExecution() throws Exception {
 
+        assertTrue(controller.state.get());
         Operation step1 = getOperation("good", "attr1", 2);
         Operation step2 = getOperation("good-service", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2));
@@ -297,7 +294,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals(new ModelNode().setEmptyList(), result.get("compensating-operation", "address"));
         assertEquals(2, result.get("compensating-operation", "steps").asInt());
 
-        assertFalse(runtimeState.get());
+        assertFalse(controller.state.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("good-service"));
         assertNotNull(sc);
@@ -331,7 +328,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals(20, controller.execute(getOperation("good", "attr1", 3)).get(RESULT).asInt());
         assertEquals(10, controller.execute(getOperation("good", "attr2", 3)).get(RESULT).asInt());
 
-        assertFalse(runtimeState.get());
+        assertFalse(controller.state.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("good-service"));
         assertNotNull(sc);
@@ -347,7 +344,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("bad-service"));
         if (sc != null) {
@@ -367,7 +364,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("missing-service"));
         if (sc != null) {
@@ -393,7 +390,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals("failed", result.get("outcome").asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("bad-service"));
         if (sc != null) {
@@ -419,7 +416,7 @@ public class ServerCompositeOperationHandlerUnitTestCase {
         assertEquals("failed", result.get("outcome").asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("missing-service"));
         if (sc != null) {
@@ -445,15 +442,17 @@ public class ServerCompositeOperationHandlerUnitTestCase {
     }
 
     private static class TestModelController extends ServerControllerImpl {
-        protected TestModelController(ServiceContainer container, ServiceTarget target) {
-            super(container, target, null, new NullConfigurationPersister(), NULL_REPO , Executors.newCachedThreadPool());
 
+        private final AtomicBoolean state;
+        protected TestModelController(ServiceContainer container, ServiceTarget target, AtomicBoolean state) {
+            super(container, target, null, new NullConfigurationPersister(), NULL_REPO , Executors.newCachedThreadPool());
+            this.state = state;
             getModel().set(createTestNode());
 
-            getRegistry().registerOperationHandler("good", new GoodHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("bad", new BadHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("evil", new EvilHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("handleFailed", new HandleFailedHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("good", new GoodHandler(state), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("bad", new BadHandler(state), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("evil", new EvilHandler(state), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("handleFailed", new HandleFailedHandler(state), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("bad-service", new BadServiceHandler(), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("missing-service", new MissingServiceHandler(), DESC_PROVIDER, false);

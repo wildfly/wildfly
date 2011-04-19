@@ -11,7 +11,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -27,7 +26,6 @@ import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
@@ -66,16 +64,20 @@ public class ServerModelControllerImplUnitTestCase {
     private ServiceContainer container;
     private TestModelController controller;
 
-    public static final AtomicBoolean runtimeState = new AtomicBoolean(true);
+    public static final void toggleRuntimeState(AtomicBoolean state) {
+        boolean runtimeVal = false;
+        while (!state.compareAndSet(runtimeVal, !runtimeVal)) {
+            runtimeVal = !runtimeVal;
+        }
+    }
 
     @Before
     public void setupController() {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        controller = new TestModelController(container, target);
+        controller = new TestModelController(container, target, new AtomicBoolean(true));
         container.addListener(controller.getServerStateMonitorListener());
         controller.finishBoot();
-        runtimeState.set(true);
     }
 
     @After
@@ -110,13 +112,13 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
 
-        assertFalse(runtimeState.get());
+        assertFalse(controller.state.get());
 
         result = controller.execute(getOperation("good", "attr1", 1, async));
         assertEquals("success", result.get("outcome").asString());
         assertEquals(5, result.get("result").asInt());
 
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
     }
 
     @Test
@@ -126,7 +128,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals("this request is bad", result.get("failure-description").asString());
 
         // Confirm runtime state was unchanged
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         // Confirm model was unchanged
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -141,7 +143,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
 
         // Confirm runtime state was unchanged
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         // Confirm model was unchanged
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -166,7 +168,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals("handleFailed", result.get("failure-description").asString());
 
         // Confirm runtime state was unchanged
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         // Confirm model was unchanged
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -184,7 +186,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals("this request is bad", result.get("failure-description").asString());
 
         // Confirm runtime state was changed
-        assertFalse(runtimeState.get());
+        assertFalse(controller.state.get());
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -202,7 +204,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals("handleFailed", result.get("failure-description").asString());
 
         // Confirm runtime state was changed
-        assertFalse(runtimeState.get());
+        assertFalse(controller.state.get());
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -220,7 +222,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertTrue(result.get("failure-description").toString().indexOf("this handler is evil") > - 1);
 
         // Confirm runtime state was changed
-        assertFalse(runtimeState.get());
+        assertFalse(controller.state.get());
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -245,7 +247,7 @@ public class ServerModelControllerImplUnitTestCase {
         assertEquals("this request is bad", result.get("failure-description").asString());
 
         // Confirm runtime state was unchanged
-        assertTrue(runtimeState.get());
+        assertTrue(controller.state.get());
 
         // Confirm model was unchanged
         result = controller.execute(getOperation("good", "attr1", 1));
@@ -332,6 +334,13 @@ public class ServerModelControllerImplUnitTestCase {
     }
 
     public static class GoodHandler implements ModelUpdateOperationHandler {
+
+        private final AtomicBoolean state;
+
+        public GoodHandler(AtomicBoolean state) {
+            this.state = state;
+        }
+
         @Override
         public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
                 throws OperationFailedException {
@@ -358,7 +367,7 @@ public class ServerModelControllerImplUnitTestCase {
                                 }
                             }
                             resultHandler.handleResultFragment(new String[0], new ModelNode().set(current));
-                            runtimeState.set(!runtimeState.get());
+                            toggleRuntimeState(state);
                             resultHandler.handleResultComplete();
                         }
                     };
@@ -377,6 +386,13 @@ public class ServerModelControllerImplUnitTestCase {
     }
 
     public static class BadHandler implements ModelUpdateOperationHandler {
+
+        private final AtomicBoolean state;
+
+        public BadHandler(AtomicBoolean state) {
+            this.state = state;
+        }
+
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
                 throws OperationFailedException {
@@ -392,7 +408,7 @@ public class ServerModelControllerImplUnitTestCase {
 
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    runtimeState.set(!runtimeState.get());
+                    toggleRuntimeState(state);
                     throw new OperationFailedException(new ModelNode().set("this request is bad"));
                 }
             });
@@ -402,6 +418,13 @@ public class ServerModelControllerImplUnitTestCase {
     }
 
     public static class EvilHandler implements ModelUpdateOperationHandler {
+
+        private final AtomicBoolean state;
+
+        public EvilHandler(AtomicBoolean state) {
+            this.state = state;
+        }
+
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
                 throws OperationFailedException {
@@ -416,7 +439,7 @@ public class ServerModelControllerImplUnitTestCase {
 
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    runtimeState.set(!runtimeState.get());
+                    toggleRuntimeState(state);
                     throw new RuntimeException("this handler is evil");
                 }
             });
@@ -427,6 +450,13 @@ public class ServerModelControllerImplUnitTestCase {
     }
 
     public static class HandleFailedHandler implements ModelUpdateOperationHandler {
+
+        private final AtomicBoolean state;
+
+        public HandleFailedHandler(AtomicBoolean state) {
+            this.state = state;
+        }
+
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler)
                 throws OperationFailedException {
@@ -454,18 +484,18 @@ public class ServerModelControllerImplUnitTestCase {
                                     Thread.currentThread().interrupt();
                                 }
                             }
-                            runtimeState.set(!runtimeState.get());
-                    resultHandler.handleFailed(new ModelNode().set("handleFailed"));
-                }
-            };
+                            toggleRuntimeState(state);
+                            resultHandler.handleFailed(new ModelNode().set("handleFailed"));
+                        }
+                    };
 
-            if (async) {
-                Thread t = new Thread(r);
-                t.start();
-            }
-            else {
-                r.run();
-            }
+                    if (async) {
+                        Thread t = new Thread(r);
+                        t.start();
+                    }
+                    else {
+                        r.run();
+                    }
                 }
             });
 
@@ -616,15 +646,18 @@ public class ServerModelControllerImplUnitTestCase {
     };
 
     private static class TestModelController extends ServerControllerImpl {
-        protected TestModelController(ServiceContainer container, ServiceTarget target) {
-            super(container, target, null, new NullConfigurationPersister(), NULL_REPO , Executors.newCachedThreadPool());
 
+        private final AtomicBoolean state;
+
+        protected TestModelController(ServiceContainer container, ServiceTarget target, AtomicBoolean state) {
+            super(container, target, null, new NullConfigurationPersister(), NULL_REPO , Executors.newCachedThreadPool());
+            this.state = state;
             getModel().set(createTestNode());
 
-            getRegistry().registerOperationHandler("good", new GoodHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("bad", new BadHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("evil", new EvilHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("handleFailed", new HandleFailedHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("good", new GoodHandler(state), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("bad", new BadHandler(state), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("evil", new EvilHandler(state), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("handleFailed", new HandleFailedHandler(state), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("bad-service", new BadServiceHandler(), DESC_PROVIDER, false);
             getRegistry().registerOperationHandler("missing-service", new MissingServiceHandler(), DESC_PROVIDER, false);
