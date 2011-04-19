@@ -531,11 +531,10 @@ public class CommandLineMain {
             if(prefix.isEmpty()) {
                 buffer.append('/');
             } else {
+                buffer.append(prefix.getNodeType());
                 final String nodeName = prefix.getNodeName();
-                if(nodeName == null) {
-                    buffer.append(prefix.getNodeType());
-                } else {
-                    buffer.append(nodeName);
+                if(nodeName != null) {
+                    buffer.append('=').append(nodeName);
                 }
             }
 
