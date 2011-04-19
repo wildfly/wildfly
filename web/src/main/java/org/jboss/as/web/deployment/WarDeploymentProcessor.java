@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -60,6 +61,7 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
+import org.jboss.security.mapping.MappingManager;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 import org.jboss.vfs.VirtualFile;
@@ -193,9 +195,15 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             AuthorizationManager authzM = getAuthorizationManager(securityDomain);
             realm.setAuthorizationManager(authzM);
 
+            MappingManager mapM = getMappingManager(securityDomain);
+            realm.setMappingManager(mapM);
+
+            Map<String, Set<String>> principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
+            realm.setPrincipalVersusRolesMap(principalVersusRolesMap);
+
             webContext.setRealm(realm);
-        } catch (NamingException e1) {
-            throw new RuntimeException(e1);
+        } catch (NamingException ne) {
+            throw new RuntimeException(ne);
         } finally {
             // restore previous tccl
             switchContext.reset();
@@ -237,6 +245,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     private AuthorizationManager getAuthorizationManager(String secDomain) throws NamingException {
         InitialContext ic = new InitialContext();
         return (AuthorizationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/authorizationMgr");
+    }
+
+    private MappingManager getMappingManager(String secDomain) throws NamingException {
+        InitialContext ic = new InitialContext();
+        return (MappingManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/mappingMgr");
     }
 
 }

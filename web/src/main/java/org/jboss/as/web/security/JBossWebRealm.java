@@ -26,6 +26,8 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 
@@ -36,11 +38,15 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.CertificatePrincipal;
 import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.auth.certs.SubjectDNMapping;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+import org.jboss.security.mapping.MappingContext;
+import org.jboss.security.mapping.MappingManager;
+import org.jboss.security.mapping.MappingType;
 
 /**
  * A {@code RealmBase} implementation
@@ -65,6 +71,11 @@ public class JBossWebRealm extends RealmBase {
     protected AuthorizationManager authorizationManager = null;
 
     /**
+     * The {@code MappingManager} instance to perform principal, role, attribute and credential mapping
+     */
+    protected MappingManager mappingManager = null;
+
+    /**
      * Set the {@code AuthenticationManager}
      *
      * @param authenticationManager
@@ -83,9 +94,20 @@ public class JBossWebRealm extends RealmBase {
     }
 
     /**
+     * Set the {@code MappingManager}
+     *
+     * @param mappingManager
+     */
+    public void setMappingManager(MappingManager mappingManager) {
+        this.mappingManager = mappingManager;
+    }
+
+    /**
      * The converter from X509 certificate chain to Principal
      */
     protected CertificatePrincipal certMapping = new SubjectDNMapping();
+
+    protected Map<String, Set<String>> principalVersusRolesMap;
 
     @Override
     public Principal authenticate(String username, String credentials) {
@@ -108,12 +130,28 @@ public class JBossWebRealm extends RealmBase {
             sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
             SecurityActions.setSecurityContextOnAssociation(sc);
             SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
+            if (mappingManager != null) {
+                // if there are mapping modules let them handle the role mapping
+                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                if (mc != null && mc.hasModules()) {
+                    SecurityRolesAssociation.setSecurityRoles(principalVersusRolesMap);
+                }
+            }
             RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
             List<Role> rolesAsList = roles.getRoles();
             List<String> rolesAsStringList = new ArrayList<String>();
             for (Role role : rolesAsList) {
                 rolesAsStringList.add(role.getRoleName());
             }
+            if (mappingManager != null) {
+                // if there are no mapping modules handle role mapping here
+                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                if (mc == null || !mc.hasModules()) {
+                    rolesAsStringList = mapUserRoles(rolesAsStringList);
+                }
+            }
+            else // if mapping manager is not set, handle role mapping here too
+                rolesAsStringList = mapUserRoles(rolesAsStringList);
             return new GenericPrincipal(this, username, credentials, rolesAsStringList);
         }
 
@@ -142,12 +180,28 @@ public class JBossWebRealm extends RealmBase {
                 sc.getUtil().createSubjectInfo(userPrincipal, certs, subject);
                 SecurityActions.setSecurityContextOnAssociation(sc);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
+                if (mappingManager != null) {
+                    // if there are mapping modules let them handle the role mapping
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc != null && mc.hasModules()) {
+                        SecurityRolesAssociation.setSecurityRoles(principalVersusRolesMap);
+                    }
+                }
                 RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
                 List<Role> rolesAsList = roles.getRoles();
                 List<String> rolesAsStringList = new ArrayList<String>();
                 for (Role role : rolesAsList) {
                     rolesAsStringList.add(role.getRoleName());
                 }
+                if (mappingManager != null) {
+                    // if there are no mapping modules handle role mapping here
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc == null || !mc.hasModules()) {
+                        rolesAsStringList = mapUserRoles(rolesAsStringList);
+                    }
+                }
+                else // if mapping manager is not set, handle role mapping here too
+                    rolesAsStringList = mapUserRoles(rolesAsStringList);
                 userPrincipal = new GenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList);
             } else {
                 if (log.isTraceEnabled()) {
@@ -175,5 +229,35 @@ public class JBossWebRealm extends RealmBase {
     @Override
     protected Principal getPrincipal(String username) {
         return new SimplePrincipal(username);
+    }
+
+    public Map<String, Set<String>> getPrincipalVersusRolesMap() {
+        return principalVersusRolesMap;
+    }
+
+    public void setPrincipalVersusRolesMap(Map<String, Set<String>> principalVersusRolesMap) {
+        this.principalVersusRolesMap = principalVersusRolesMap;
+    }
+
+    protected List<String> mapUserRoles(List<String> rolesList) {
+        if (principalVersusRolesMap != null && principalVersusRolesMap.size() > 0) {
+            List<String> mappedRoles = new ArrayList<String>();
+            for (String role : rolesList) {
+                Set<String> roles = principalVersusRolesMap.get(role);
+                if (roles != null && roles.size() > 0) {
+                    for (String r : roles) {
+                        if (!mappedRoles.contains(r))
+                            mappedRoles.add(r);
+                    }
+                }
+                else {
+                    if (!mappedRoles.contains(role))
+                        mappedRoles.add(role);
+                }
+            }
+            return mappedRoles;
+        }
+
+        return rolesList;
     }
 }
