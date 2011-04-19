@@ -44,6 +44,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.parsing.DomainXml;
@@ -445,7 +446,15 @@ public class ParseAndMarshalModelsTestCase {
     private static class TestDomainController extends DomainModelImpl {
         protected TestDomainController(ExtensibleConfigurationPersister configurationPersister, ModelNodeRegistration rootRegistration) {
             super(rootRegistration, null, configurationPersister);
+            // Ensure the steps that would have occurred during the LocalHostAddHandler do occur.
             setLocalHostName("local");
+            rootRegistration.registerSubModel(PathElement.pathElement(HOST, "local"),new DescriptionProvider() {
+                @Override
+                public ModelNode getModelDescription(Locale locale) {
+                    return new ModelNode();
+                }
+            });
+
             super.initialiseAsMasterDC(configurationPersister, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
         }
 
