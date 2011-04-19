@@ -21,31 +21,6 @@
  */
 package org.jboss.as.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
-
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
@@ -76,7 +51,7 @@ import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
@@ -91,19 +66,50 @@ import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.as.server.services.net.BindingAddHandler;
 import org.jboss.as.server.services.net.BindingFixedPortHandler;
+import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.BindingGroupDefaultInterfaceHandler;
+import org.jboss.as.server.services.net.BindingGroupPortOffsetHandler;
 import org.jboss.as.server.services.net.BindingGroupRemoveHandler;
 import org.jboss.as.server.services.net.BindingInterfaceHandler;
 import org.jboss.as.server.services.net.BindingMetricHandlers;
 import org.jboss.as.server.services.net.BindingMulticastAddressHandler;
+import org.jboss.as.server.services.net.BindingMulticastPortHandler;
 import org.jboss.as.server.services.net.BindingPortHandler;
 import org.jboss.as.server.services.net.BindingRemoveHandler;
-import org.jboss.as.server.services.net.BindingGroupAddHandler;
-import org.jboss.as.server.services.net.BindingGroupPortOffsetHandler;
-import org.jboss.as.server.services.net.BindingMulticastPortHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
 /**
  *
@@ -129,7 +135,7 @@ public class ServerControllerModelUtil {
         return root;
     }
 
-    public static void initOperations(final ModelNodeRegistration root, final DeploymentRepository deploymentRepository, final ExtensibleConfigurationPersister extensibleConfigurationPersister, ServerEnvironment serverEnvironment) {
+    public static void initOperations(final ModelNodeRegistration root, final ContentRepository contentRepository, final ExtensibleConfigurationPersister extensibleConfigurationPersister, ServerEnvironment serverEnvironment) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
         // Global operations
@@ -150,14 +156,14 @@ public class ServerControllerModelUtil {
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(deploymentRepository);
+        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(deploymentRepository);
+        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(deploymentRepository);
+        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
         root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, DeploymentReplaceHandler.INSTANCE, DeploymentReplaceHandler.INSTANCE, false);
-        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepository);
+        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(contentRepository);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);
         root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
@@ -214,7 +220,7 @@ public class ServerControllerModelUtil {
 
         // Deployments
         ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepository);
+        DeploymentAddHandler dah = new DeploymentAddHandler(contentRepository);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE, false);
         deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);

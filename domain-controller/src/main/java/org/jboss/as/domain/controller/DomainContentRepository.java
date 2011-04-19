@@ -20,34 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.api;
+package org.jboss.as.domain.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
+import org.jboss.as.server.deployment.impl.ContentRepositoryImpl;
+import org.jboss.logging.Logger;
+
+import java.io.File;
 
 /**
- * Repository for deployment content.
+ * Domain implementation of {@link org.jboss.as.server.deployment.impl.ContentRepositoryImpl}.
  *
- * @author John Bailey
+ * @author Brian Stansberry
  */
-public interface DeploymentRepository {
+public class DomainContentRepository extends ContentRepositoryImpl {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
 
     /**
-     * Add the given content to the repository.
-     *
-     * @param stream stream from which the content can be read. Cannot be <code>null</code>
-     * @return the hash of the content that will be used as an internal identifier
-     *         for the content. Will not be <code>null</code>
-     * @throws IOException
+     * Creates a new DomainContentRepository.
      */
-    byte[] addDeploymentContent(InputStream stream) throws IOException;
+    public DomainContentRepository(File deployDir) {
+        super(deployDir);
+    }
 
-    /**
-     * Gets whether content with the given hash is stored in the repository.
-     *
-     * @param hash the hash. Cannot be {@code null}
-     *
-     * @return {@code true} if the repository has content with the given hash
-     */
-    boolean hasDeploymentContent(byte[] hash);
+
+
 }

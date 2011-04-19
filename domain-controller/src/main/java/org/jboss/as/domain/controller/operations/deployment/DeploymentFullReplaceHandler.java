@@ -31,7 +31,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -66,13 +66,13 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
     private static final List<String> VALID_DEPLOYMENT_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, HASH, URL);
 
-    private final DeploymentRepository deploymentRepository;
+    private final ContentRepository contentRepository;
     private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
 
-    public DeploymentFullReplaceHandler(final DeploymentRepository deploymentRepository, final boolean isMaster) {
-        this.deploymentRepository = deploymentRepository;
+    public DeploymentFullReplaceHandler(final ContentRepository contentRepository, final boolean isMaster) {
+        this.contentRepository = contentRepository;
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
@@ -103,7 +103,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         } else if (operation.hasDefined(HASH)) {
 
             hash = operation.get(HASH).asBytes();
-            if (!deploymentRepository.hasDeploymentContent(hash)) {
+            if (!contentRepository.hasContent(hash)) {
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
             }
         } else if (hasValidDeploymentParameterDefined(operation)) {
@@ -113,7 +113,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             }
 
             try {
-                hash = DeploymentUploadUtil.storeDeploymentContent(context, operation, deploymentRepository);
+                hash = DeploymentUploadUtil.storeDeploymentContent(context, operation, contentRepository);
             } catch (IOException e) {
                 throw createFailureException(e.toString());
             }

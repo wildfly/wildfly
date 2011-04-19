@@ -22,14 +22,6 @@
 
 package org.jboss.as.controller.parsing;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -41,6 +33,15 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -65,7 +66,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
@@ -295,7 +295,6 @@ public class StandaloneXml extends CommonXml {
             // Handle attributes
             String uniqueName = null;
             String runtimeName = null;
-            byte[] hash = null;
             String startInput = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
@@ -316,18 +315,6 @@ public class StandaloneXml extends CommonXml {
                             runtimeName = value;
                             break;
                         }
-                        case SHA1: {
-                            try {
-                                hash = HashUtil.hexStringToByteArray(value);
-                            }
-                            catch (final Exception e) {
-                               throw new XMLStreamException("Value " + value +
-                                       " for attribute " + attribute.getLocalName() +
-                                       " does not represent a properly hex-encoded SHA1 hash",
-                                       reader.getLocation(), e);
-                            }
-                            break;
-                        }
                         case ENABLED: {
                             startInput = value;
                             break;
@@ -343,18 +330,33 @@ public class StandaloneXml extends CommonXml {
             if (runtimeName == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
             }
-            if (hash == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
-            }
             final boolean enabled = startInput == null ? true : Boolean.parseBoolean(startInput);
-
-            // Handle elements
-            requireNoContent(reader);
 
             final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
             final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
+
+            // Handle elements
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+                    throw unexpectedElement(reader);
+                }
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case CONTENT:
+                        parseContentType(reader, deploymentAdd);
+                        break;
+                    case FS_ARCHIVE:
+                        parseFSBaseType(reader, deploymentAdd, true);
+                        break;
+                    case FS_EXPLODED:
+                        parseFSBaseType(reader, deploymentAdd, false);
+                        break;
+                    default:
+                        throw unexpectedElement(reader);
+                }
+            }
+
             deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
-            deploymentAdd.get(HASH).set(hash);
             deploymentAdd.get(ENABLED).set(enabled);
             list.add(deploymentAdd);
         }

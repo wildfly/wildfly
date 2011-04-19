@@ -21,6 +21,69 @@
  */
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ExtensionContextImpl;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.InterfaceAddHandler;
+import org.jboss.as.controller.operations.common.JVMHandlers;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.PathAddHandler;
+import org.jboss.as.controller.operations.common.PathRemoveHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
+import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
+import org.jboss.as.controller.operations.common.SnapshotListHandler;
+import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
+import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeRemoveHandler;
+import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.InetAddressValidatingHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRangeValidatingHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ListValidatatingHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ModelTypeValidatingHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.domain.controller.operations.ProfileAddHandler;
+import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
+import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
+import org.jboss.as.domain.controller.operations.ReadChildrenNamesHandler;
+import org.jboss.as.domain.controller.operations.ReadResourceHandler;
+import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
+import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
+import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
+import org.jboss.as.domain.controller.operations.SocketBindingGroupRemoveHandler;
+import org.jboss.as.domain.controller.operations.SystemPropertyAddHandler;
+import org.jboss.as.domain.controller.operations.SystemPropertyRemoveHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentAddHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentDeployHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRedeployHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRemoveHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.operations.ExtensionAddHandler;
+import org.jboss.as.server.operations.ExtensionRemoveHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -54,69 +117,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.JVMHandlers;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
-import org.jboss.as.controller.operations.common.PathAddHandler;
-import org.jboss.as.controller.operations.common.PathRemoveHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
-import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
-import org.jboss.as.controller.operations.common.SnapshotListHandler;
-import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
-import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
-import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeAddHandler;
-import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeRemoveHandler;
-import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.InetAddressValidatingHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRangeValidatingHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ModelTypeValidatingHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.ListValidatatingHandler;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
-import org.jboss.as.domain.controller.operations.ProfileAddHandler;
-import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
-import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
-import org.jboss.as.domain.controller.operations.ReadChildrenNamesHandler;
-import org.jboss.as.domain.controller.operations.ReadResourceHandler;
-import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
-import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
-import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
-import org.jboss.as.domain.controller.operations.SocketBindingGroupRemoveHandler;
-import org.jboss.as.domain.controller.operations.SystemPropertyAddHandler;
-import org.jboss.as.domain.controller.operations.SystemPropertyRemoveHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentAddHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentDeployHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRedeployHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRemoveHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
-import org.jboss.as.server.operations.ExtensionAddHandler;
-import org.jboss.as.server.operations.ExtensionRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Utilities related to the domain model.
@@ -157,17 +157,17 @@ class DomainModelUtil {
     }
 
     static ExtensionContext initializeMasterDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, DomainModelImpl model) {
-        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, true, model);
+            final ContentRepository contentRepo, final FileRepository fileRepository, DomainModelImpl model) {
+        return initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, true, model);
     }
 
     static ExtensionContext initializeSlaveDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, DomainModelImpl model) {
-        return initializeDomainRegistry(root, configurationPersister, deploymentRepo, fileRepository, false, model);
+            final ContentRepository contentRepo, final FileRepository fileRepository, DomainModelImpl model) {
+        return initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, false, model);
     }
 
     private static ExtensionContext initializeDomainRegistry(final ModelNodeRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-            final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final boolean isMaster, DomainModelImpl model) {
+            final ContentRepository contentRepo, final FileRepository fileRepository, final boolean isMaster, DomainModelImpl model) {
         // Global operations
 
         root.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
@@ -188,13 +188,13 @@ class DomainModelUtil {
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE, SystemPropertyAddHandler.INSTANCE, false);
         root.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(isMaster ? deploymentRepo: null);
+        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(isMaster ? contentRepo : null);
         root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(isMaster ? deploymentRepo: null);
+        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(isMaster ? contentRepo : null);
         root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(isMaster ? deploymentRepo: null);
+        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(isMaster ? contentRepo : null);
         root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush);
-        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(deploymentRepo, isMaster);
+        DeploymentFullReplaceHandler dfrh = new DeploymentFullReplaceHandler(contentRepo, isMaster);
         root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh);
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister);
         root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
@@ -255,7 +255,7 @@ class DomainModelUtil {
 
         // Root Deployments
         final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = new DeploymentAddHandler(deploymentRepo, isMaster);
+        DeploymentAddHandler dah = new DeploymentAddHandler(contentRepo, isMaster);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);
 

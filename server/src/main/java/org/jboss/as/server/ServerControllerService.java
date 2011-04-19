@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.ServiceLoaderProcessor;
 import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
@@ -102,6 +103,7 @@ final class ServerControllerService implements Service<ServerController> {
     private final Bootstrap.Configuration configuration;
 
     private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
+    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
 
     private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
@@ -117,6 +119,7 @@ final class ServerControllerService implements Service<ServerController> {
         ServerControllerService service = new ServerControllerService(configuration);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
+        serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
         serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,
                 service.injectedExternalModuleService);
@@ -137,7 +140,7 @@ final class ServerControllerService implements Service<ServerController> {
         final ThreadGroup threadGroup = new ThreadGroup("ServerController-threads");
         final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         final ExecutorService executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE, threadFactory);
-        final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedDeploymentRepository.getValue(), executorService);
+        final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedContentRepository.getValue(), executorService);
         serverController.init();
         serviceTarget.addListener(serverController.getServerStateMonitorListener());
 

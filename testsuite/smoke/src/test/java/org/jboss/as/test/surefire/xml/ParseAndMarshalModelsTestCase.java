@@ -21,27 +21,8 @@
 */
 package org.jboss.as.test.surefire.xml;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.HashMap;
-
-import javax.xml.namespace.QName;
-
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathElement;
@@ -60,12 +41,30 @@ import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.server.ServerControllerModelUtil;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
+import org.jboss.vfs.VirtualFile;
 import org.junit.Test;
+
+import javax.xml.namespace.QName;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
 /**
  *
@@ -390,16 +389,26 @@ public class ParseAndMarshalModelsTestCase {
 
             ServerControllerModelUtil.initOperations(
                     getRegistry(),
-                    new DeploymentRepository() {
+                    new ContentRepository() {
 
                         @Override
-                        public boolean hasDeploymentContent(byte[] hash) {
+                        public boolean hasContent(byte[] hash) {
                             return false;
                         }
 
                         @Override
-                        public byte[] addDeploymentContent(InputStream stream) throws IOException {
+                        public void removeContent(byte[] hash) {
+                            throw new RuntimeException("NYI: .removeContent");
+                        }
+
+                        @Override
+                        public byte[] addContent(InputStream stream) throws IOException {
                             return null;
+                        }
+
+                        @Override
+                        public VirtualFile getContent(byte[] hash) {
+                            throw new RuntimeException("NYI: .getContent");
                         }
                     },
                     configurationPersister, null);
@@ -455,7 +464,7 @@ public class ParseAndMarshalModelsTestCase {
                 }
             });
 
-            super.initialiseAsMasterDC(configurationPersister, MockDeploymentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
+            super.initialiseAsMasterDC(configurationPersister, MockContentRepository.INSTANCE, MockFileRepository.INSTANCE, new HashMap<String, DomainControllerSlaveClient>());
         }
 
         @Override
@@ -470,18 +479,28 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private static class MockDeploymentRepository implements DeploymentRepository {
+    private static class MockContentRepository implements ContentRepository {
 
-        private static final MockDeploymentRepository INSTANCE = new MockDeploymentRepository();
+        private static final MockContentRepository INSTANCE = new MockContentRepository();
 
         @Override
-        public byte[] addDeploymentContent(InputStream stream) throws IOException {
+        public byte[] addContent(InputStream stream) throws IOException {
             return null;
         }
 
         @Override
-        public boolean hasDeploymentContent(byte[] hash) {
+        public VirtualFile getContent(byte[] hash) {
+            throw new RuntimeException("NYI: org.jboss.as.test.surefire.xml.ParseAndMarshalModelsTestCase.MockContentRepository.getContent");
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
             return true;
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+            throw new RuntimeException("NYI: org.jboss.as.test.surefire.xml.ParseAndMarshalModelsTestCase.MockContentRepository.removeContent");
         }
 
     }

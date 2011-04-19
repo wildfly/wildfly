@@ -22,17 +22,9 @@
 
 package org.jboss.as.server;
 
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.server.Bootstrap.Configuration;
+import org.jboss.as.server.deployment.impl.ContentRepositoryImpl;
 import org.jboss.as.server.deployment.impl.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
@@ -57,6 +49,14 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossExecutors;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -118,7 +118,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, configuration);
         serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
-        ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir());
+        ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
+        ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir(), contentRepository);
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);

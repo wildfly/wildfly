@@ -32,7 +32,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -68,13 +68,13 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
 
     private static final List<String> VALID_DEPLOYMENT_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, HASH, URL);
 
-    private final DeploymentRepository deploymentRepository;
+    private final ContentRepository contentRepository;
     private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
 
-    public DeploymentAddHandler(final DeploymentRepository deploymentRepository, final boolean isMaster) {
-        this.deploymentRepository = deploymentRepository;
+    public DeploymentAddHandler(final ContentRepository contentRepository, final boolean isMaster) {
+        this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
         this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
@@ -114,7 +114,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             }
 
             try {
-                hash = DeploymentUploadUtil.storeDeploymentContent(context, operation, deploymentRepository);
+                hash = DeploymentUploadUtil.storeDeploymentContent(context, operation, contentRepository);
             } catch (IOException e) {
                 throw createFailureException(e.toString());
             }
@@ -122,7 +122,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             throw createFailureException("None of the following parameters were defined %s.", VALID_DEPLOYMENT_PARAMETERS);
         }
 
-        if (!isMaster || deploymentRepository.hasDeploymentContent(hash)) {
+        if (!isMaster || contentRepository.hasContent(hash)) {
             ModelNode subModel = context.getSubModel();
             subModel.get(NAME).set(name);
             subModel.get(RUNTIME_NAME).set(runtimeName);

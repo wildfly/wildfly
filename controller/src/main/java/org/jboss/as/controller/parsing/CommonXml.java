@@ -22,14 +22,48 @@
 
 package org.jboss.as.controller.parsing;
 
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.JVMHandlers;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -54,7 +88,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -68,38 +101,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.JVMHandlers;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -274,6 +275,28 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 list.add(add);
             } catch (final ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
+            }
+        }
+    }
+
+    protected void parseFSBaseType(final XMLExtendedStreamReader reader, final ModelNode parent, final boolean isArchive) throws XMLStreamException {
+        final ModelNode content = parent.get("content").add();
+        content.get(ARCHIVE).set(isArchive);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            final String value = reader.getAttributeValue(i);
+            switch (attribute) {
+                case PATH:
+                    content.get(PATH).set(value);
+                    break;
+                case RELATIVE_TO:
+                    content.get(RELATIVE_TO).set(value);
+                    break;
+                default: throw unexpectedAttribute(reader, i);
             }
         }
     }
@@ -1044,6 +1067,32 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoAttributes(reader);
         while (reader.nextTag() != END_ELEMENT) {
             parseSimpleInterfaceCriterion(reader, criterion.add());
+        }
+    }
+
+    protected void parseContentType(final XMLExtendedStreamReader reader, final ModelNode parent) throws XMLStreamException {
+        final ModelNode content = parent.get("content").add();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            final String value = reader.getAttributeValue(i);
+            switch (attribute) {
+                case SHA1:
+                    try {
+                        content.get(HASH).set(HashUtil.hexStringToByteArray(value));
+                    }
+                    catch (final Exception e) {
+                       throw new XMLStreamException("Value " + value +
+                               " for attribute " + attribute.getLocalName() +
+                               " does not represent a properly hex-encoded SHA1 hash",
+                               reader.getLocation(), e);
+                    }
+                    break;
+                default: throw unexpectedAttribute(reader, i);
+            }
         }
     }
 

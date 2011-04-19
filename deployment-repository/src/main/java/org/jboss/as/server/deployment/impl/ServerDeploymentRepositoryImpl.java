@@ -22,6 +22,19 @@
 
 package org.jboss.as.server.deployment.impl;
 
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.threads.JBossThreadFactory;
+import org.jboss.vfs.TempFileProvider;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -36,44 +49,35 @@ import java.security.AccessController;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.concurrent.Executors;
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.threads.JBossThreadFactory;
-import org.jboss.vfs.TempFileProvider;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.server.deployment.impl.ContentRepositoryImpl.safeClose;
 
 /**
  * Default implementation of {@link ServerDeploymentRepository}.
  *
  * @author Brian Stansberry
  */
-public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
+public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     private static final String EXTERNAL = "external";
     private final File systemDeployDir;
     private TempFileProvider tempFileProvider;
+    private final ContentRepositoryImpl contentRepository;
 
 
-    public static void addService(final ServiceTarget serviceTarget, final File repoRoot, final File systemDeployDir) {
+    public static void addService(final ServiceTarget serviceTarget, final File repoRoot, final File systemDeployDir, final ContentRepositoryImpl contentRepository) {
         serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
-                new ServerDeploymentRepositoryImpl(repoRoot, systemDeployDir))
+                new ServerDeploymentRepositoryImpl(repoRoot, systemDeployDir, contentRepository))
                 .install();
     }
 
     /**
      * Creates a new ServerDeploymentRepositoryImpl.
      */
-    public ServerDeploymentRepositoryImpl(final File repoRoot, final File systemDeployDir) {
-        super(repoRoot);
+    public ServerDeploymentRepositoryImpl(final File repoRoot, final File systemDeployDir, final ContentRepositoryImpl contentRepository) {
         this.systemDeployDir = systemDeployDir;
+        this.contentRepository = contentRepository;
     }
 
     /** {@inheritDoc} */
@@ -81,7 +85,7 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
     public byte[] addExternalFileReference(File file) throws IOException {
         byte[] sha1Bytes = null;
         final String fileName = file.getAbsolutePath();
-        final MessageDigest messageDigest = this.messageDigest;
+        final MessageDigest messageDigest = contentRepository.messageDigest;
         synchronized(messageDigest) {
             messageDigest.reset();
             if(! file.exists()) {
@@ -124,16 +128,15 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
         }
     }
 
-    @Override
     public boolean hasDeploymentContent(byte[] hash) {
         if(getExternalFileReference(hash, false).exists()) {
             return true;
         }
-        return super.hasDeploymentContent(hash);
+        return contentRepository.hasContent(hash);
     }
 
     private File getExternalFileReference(byte[] deploymentHash, boolean validate) {
-        final File hashDir = getDeploymentHashDir(deploymentHash, validate);
+        final File hashDir = contentRepository.getDeploymentHashDir(deploymentHash, validate);
         return new File(hashDir, EXTERNAL);
     }
 
@@ -165,7 +168,7 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
             }
         }
 
-        final File content = getDeploymentContentFile(deploymentHash);
+        final File content = contentRepository.getDeploymentContentFile(deploymentHash);
         if(mountExpanded) {
             return VFS.mountZipExpanded(content, mountPoint, tempFileProvider);
         } else {
