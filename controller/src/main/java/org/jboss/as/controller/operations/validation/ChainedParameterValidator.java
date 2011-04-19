@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.controller.operations.validation;
 
-package org.jboss.as.domain.controller;
-
-import java.io.File;
-
-import org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl;
-import org.jboss.logging.Logger;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Domain implementation of {@link org.jboss.as.server.deployment.impl.DeploymentRepositoryImpl}.
- *
- * @author Brian Stansberry
+ * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class DomainDeploymentRepository extends DeploymentRepositoryImpl {
+public class ChainedParameterValidator extends AbstractParameterValidator {
+    private final ParameterValidator[] validators;
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-
-    /**
-     * Creates a new DomainDeploymentRepository.
-     */
-    public DomainDeploymentRepository(File deployDir) {
-        super(deployDir);
+    public ChainedParameterValidator(final ParameterValidator... validators) {
+        assert validators != null : "validators is null";
+        this.validators = validators;
     }
 
+    public static ParameterValidator chain(ParameterValidator... validators) {
+        return new ChainedParameterValidator(validators);
+    }
 
-
+    @Override
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        for (final ParameterValidator validator : validators)
+            validator.validateParameter(parameterName, value);
+    }
 }

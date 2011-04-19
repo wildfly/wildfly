@@ -29,6 +29,7 @@ package org.jboss.as.controller.client.helpers;
 public class ClientConstants {
     public static final String ADD = "add";
     public static final String COMPOSITE = "composite";
+    public static final String CONTENT = "content";
     public static final String DEPLOYMENT = "deployment";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String NAME = "name";

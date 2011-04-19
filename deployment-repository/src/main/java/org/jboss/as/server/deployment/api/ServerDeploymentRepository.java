@@ -22,19 +22,19 @@
 
 package org.jboss.as.server.deployment.api;
 
+import org.jboss.msc.service.ServiceName;
+import org.jboss.vfs.VirtualFile;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * A server-level repository for deployment content.
  *
  * @author Brian Stansberry
  */
-public interface ServerDeploymentRepository extends DeploymentRepository {
+public interface ServerDeploymentRepository {
 
     /**
      * Standard ServiceName under which a service controller for an instance of

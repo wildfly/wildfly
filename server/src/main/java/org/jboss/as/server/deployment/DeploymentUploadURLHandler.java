@@ -18,8 +18,14 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,14 +33,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 
 /**
  * Handler for the upload-deployment-url operation.
@@ -49,7 +49,7 @@ implements DescriptionProvider {
 
     private final ParametersValidator urlValidator = new ParametersValidator();
 
-    public DeploymentUploadURLHandler(final DeploymentRepository repository) {
+    public DeploymentUploadURLHandler(final ContentRepository repository) {
         super(repository);
         this.urlValidator.registerValidator(URL, new StringLengthValidator(1));
     }

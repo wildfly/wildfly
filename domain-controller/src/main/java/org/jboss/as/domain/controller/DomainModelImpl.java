@@ -22,33 +22,6 @@
 
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Semaphore;
-
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ControllerResource;
 import org.jboss.as.controller.ControllerTransactionContext;
@@ -84,7 +57,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -93,6 +66,33 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * @author Emanuel Muckenhuber
@@ -213,7 +213,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     /**
      * Initialise the remaining domain management aspects of this DomainModel for use with a master domain controller.
      */
-    public void initialiseAsMasterDC(final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
+    public void initialiseAsMasterDC(final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
         // Disable providing a RuntimeContext to operation handlers once DC initialisation occurs.
         alwaysProvideRuntimeContext = false;
 
@@ -222,7 +222,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         master = true;
         domainPersister.setDelegate(configurationPersister);
         ModelNodeRegistration registry = getRegistry();
-        extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
+        extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, contentRepo, fileRepository, this);
 
         registerInternalOperations();
         ModelNodeRegistration hostRegistry = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST,getLocalHostName())));
@@ -237,14 +237,14 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
     /**
      * Initialise the remaining domain management aspects of this DomainMode for use with a slave domain controller.
      */
-    public void initialiseAsSlaveDC(final ExtensibleConfigurationPersister configurationPersister, final DeploymentRepository deploymentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
+    public void initialiseAsSlaveDC(final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepo, final FileRepository fileRepository, final Map<String, DomainControllerSlaveClient> hosts) {
         // Disable providing a RuntimeContext to operation handlers once DC initialisation occurs.
         alwaysProvideRuntimeContext = false;
 
         master = false;
         domainPersister.setDelegate(configurationPersister);
         ModelNodeRegistration registry = getRegistry();
-        extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
+        extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, contentRepo, fileRepository, this);
 
         registerInternalOperations();
         ModelNodeRegistration hostRegistry = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST,getLocalHostName())));

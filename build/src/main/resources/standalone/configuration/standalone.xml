@@ -374,5 +374,13 @@
         <property name="foo" value="bar"/>
         <property name="key" value="value"/>
     </system-properties>
+
+    <!-- TODO: Soon my love, you'll know the joy of unmanaged content
+    <deployments>
+        <deployment name="welcome.war" runtime-name="welcome.war">
+            <fs-archive path="content/welcome.war" relative-to="jboss.home"/>
+        </deployment>
+    </deployments>
+    -->
 </server>
 

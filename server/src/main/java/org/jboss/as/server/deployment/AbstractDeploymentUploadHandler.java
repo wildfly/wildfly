@@ -18,9 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,9 +25,12 @@ import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Base class for operation handlers that can handle the upload of deployment content.
@@ -42,12 +42,12 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private static final String[] EMPTY = new String[0];
-    private final DeploymentRepository deploymentRepository;
+    private final ContentRepository contentRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
 
-    protected AbstractDeploymentUploadHandler(final DeploymentRepository deploymentRepository) {
-        this.deploymentRepository = deploymentRepository;
+    protected AbstractDeploymentUploadHandler(final ContentRepository contentRepository) {
+        this.contentRepository = contentRepository;
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
 
             InputStream is = getContentInputStream(context, operation);
             try {
-                byte[] hash = deploymentRepository.addDeploymentContent(is);
+                byte[] hash = contentRepository.addContent(is);
                 resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
             }
             finally {

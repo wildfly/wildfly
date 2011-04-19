@@ -21,11 +21,12 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -37,12 +38,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.NoSuchElementException;
 
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -129,7 +129,7 @@ public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTest
         ModelNode op = new ModelNode();
         op.get("operation").set("add");
         op.get("address").add("deployment", "test-deployment.sar");
-        op.get("hash").set(hash);
+        op.get("content").get(0).get("hash").set(hash);
         op.get("enabled").set(true);
 
         os.write(op.toJSONString(true).getBytes());

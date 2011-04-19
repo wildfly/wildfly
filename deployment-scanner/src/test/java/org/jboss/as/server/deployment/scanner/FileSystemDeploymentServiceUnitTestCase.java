@@ -3,15 +3,54 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.server.ServerController;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.vfs.VirtualFile;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
@@ -30,44 +69,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.server.ServerController;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.vfs.VirtualFile;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Unit tests of {@link FileSystemDeploymentService}.
@@ -953,7 +954,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private TesteeSet createTestee(final MockServerController sc, final ScheduledExecutorService executor) throws OperationFailedException {
         final MockDeploymentRepository repo = new MockDeploymentRepository();
-        final FileSystemDeploymentService testee = new FileSystemDeploymentService(tmpDir, sc, executor, repo);
+        final FileSystemDeploymentService testee = new FileSystemDeploymentService(tmpDir, sc, executor, repo, repo);
         testee.startScanner();
         return new TesteeSet(testee, repo, sc);
     }
@@ -1008,12 +1009,12 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
     }
 
-    private static class MockDeploymentRepository implements ServerDeploymentRepository {
+    private static class MockDeploymentRepository implements ServerDeploymentRepository, ContentRepository {
 
         private Set<byte[]> content = new HashSet<byte[]>(2);
 
         @Override
-        public byte[] addDeploymentContent(InputStream stream) throws IOException {
+        public byte[] addContent(InputStream stream) throws IOException {
             byte[] bytes = new byte[20];
             random.nextBytes(bytes);
             content.add(bytes);
@@ -1021,8 +1022,18 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public boolean hasDeploymentContent(byte[] hash) {
+        public VirtualFile getContent(byte[] hash) {
+            throw new RuntimeException("NYI: org.jboss.as.server.deployment.scanner.FileSystemDeploymentServiceUnitTestCase.MockDeploymentRepository.getContent");
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
             return content.contains(hash);
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+            throw new RuntimeException("NYI: org.jboss.as.server.deployment.scanner.FileSystemDeploymentServiceUnitTestCase.MockDeploymentRepository.removeContent");
         }
 
         @Override
@@ -1073,10 +1084,10 @@ public class FileSystemDeploymentServiceUnitTestCase {
             }
         }
 
-        MockServerController(DeploymentRepository repo, String... existingDeployments) {
+        MockServerController(ContentRepository repo, String... existingDeployments) {
             for (String dep : existingDeployments) {
                 try {
-                    added.put(dep, repo.addDeploymentContent(null));
+                    added.put(dep, repo.addContent(null));
                 } catch (IOException e) {
                     // impossible
                 }
@@ -1174,7 +1185,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
                     PathAddress address = PathAddress.pathAddress(child.require(OP_ADDR));
                     if (ADD.equals(opName)) {
-                        added.put(address.getLastElement().getValue(), child.require(HASH).asBytes());
+                        added.put(address.getLastElement().getValue(), child.require(CONTENT).require(0).require(HASH).asBytes());
                     }
                     else if (REMOVE.equals(opName)) {
                         added.remove(address.getLastElement().getValue());
@@ -1270,8 +1281,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
             try {
                 return callable.call();
             } catch (Exception e) {
-                // Ignore
-                return null;
+                throw new RuntimeException(e);
             }
         }
 

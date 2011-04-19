@@ -29,11 +29,14 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -47,14 +50,19 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
 
 /**
  * Handles addition of a deployment to the model.
@@ -75,17 +83,32 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
 
     private static final List<String> VALID_DEPLOYMENT_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, HASH, URL);
 
-    private final DeploymentRepository deploymentRepository;
+    private final ContentRepository contentRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
 
-    public DeploymentAddHandler(final DeploymentRepository deploymentRepository) {
-        this.deploymentRepository = deploymentRepository;
+    public DeploymentAddHandler(final ContentRepository contentRepository) {
+        this.contentRepository = contentRepository;
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
-        this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
-        this.validator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
-        this.validator.registerValidator(URL, new StringLengthValidator(1, true));
+        this.validator.registerValidator(ENABLED, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        final ParametersValidator contentValidator = new ParametersValidator();
+        // existing managed content
+        contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
+        // existing unmanaged content
+        contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        contentValidator.registerValidator(PATH, new ModelTypeValidator(ModelType.STRING, true));
+        contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
+        // content additions
+        contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
+        contentValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
+        contentValidator.registerValidator(URL, new StringLengthValidator(1, true));
+        this.validator.registerValidator(CONTENT, chain(new ListValidator(new ParametersOfValidator(contentValidator)),
+                new AbstractParameterValidator() {
+                    @Override
+                    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                        validateOnePieceOfContent(value);
+                    }
+                }));
     }
 
     @Override
@@ -106,16 +129,17 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         String name = address.getLastElement().getValue();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
 
-        byte[] hash;
-        if (tooManyDeploymentParametersDefined(operation)) {
-            throw createFailureException("Only allowed one of the following parameters is allowed %s.", VALID_DEPLOYMENT_PARAMETERS);
-        } else if (operation.hasDefined(HASH)) {
-            hash = operation.get(HASH).asBytes();
-        } else if (hasValidDeploymentParameterDefined(operation)) {
-            InputStream in = getContents(context, operation);
+        final byte[] hash;
+        final ModelNode content = operation.require(CONTENT);
+        // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
+        final ModelNode contentItem = content.require(0);
+        if (contentItem.hasDefined(HASH)) {
+            hash = contentItem.require(HASH).asBytes();
+        } else if (hasValidContentParameterDefined(contentItem)) {
+            InputStream in = getContents(context, contentItem);
             try {
                 try {
-                    hash = deploymentRepository.addDeploymentContent(in);
+                    hash = contentRepository.addContent(in);
                 } catch (IOException e) {
                     throw createFailureException(e.toString());
                 }
@@ -124,11 +148,12 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
                 StreamUtils.safeClose(in);
             }
         } else {
+            // TODO: implement unmanaged content
             throw createFailureException("None of the following parameters were defined %s.", VALID_DEPLOYMENT_PARAMETERS);
         }
 
         boolean isResultComplete = false;
-        if (deploymentRepository.hasDeploymentContent(hash)) {
+        if (contentRepository.hasContent(hash)) {
             ModelNode subModel = context.getSubModel();
             subModel.get(NAME).set(name);
             subModel.get(RUNTIME_NAME).set(runtimeName);
@@ -185,7 +210,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
      *
      * @return {@code true} of the parameter is valid, otherwise {@code false}.
      */
-    private boolean hasValidDeploymentParameterDefined(ModelNode operation) {
+    private boolean hasValidContentParameterDefined(ModelNode operation) {
         for (String s : VALID_DEPLOYMENT_PARAMETERS) {
             if (operation.hasDefined(s)) {
                 return true;
@@ -194,36 +219,25 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         return false;
     }
 
-    /**
-     * Checks to see if too many deployment parameters have been defined.
-     *
-     * @param operation the operation.
-     *
-     * @return {@code true} if there are too many deployment parameters, otherwise {@code false}.
-     */
-    private boolean tooManyDeploymentParametersDefined(ModelNode operation) {
-        int count = 0;
-        for (String s : VALID_DEPLOYMENT_PARAMETERS) {
-            if (operation.hasDefined(s)) {
-                count++;
-            }
-        }
-        return (count > 1);
-    }
-
-    private OperationFailedException createFailureException(String format, Object... params) {
+    private static OperationFailedException createFailureException(String format, Object... params) {
         return createFailureException(String.format(format, params));
     }
 
-    private OperationFailedException createFailureException(Throwable cause, String format, Object... params) {
+    private static OperationFailedException createFailureException(Throwable cause, String format, Object... params) {
         return createFailureException(cause, String.format(format, params));
     }
 
-    private OperationFailedException createFailureException(String msg) {
+    private static OperationFailedException createFailureException(String msg) {
         return new OperationFailedException(new ModelNode().set(msg));
     }
 
-    private OperationFailedException createFailureException(Throwable cause, String msg) {
+    private static OperationFailedException createFailureException(Throwable cause, String msg) {
         return new OperationFailedException(cause, new ModelNode().set(msg));
+    }
+
+    private static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
+        // TODO: implement overlays
+        if (content.asList().size() != 1)
+            throw createFailureException("Only 1 piece of content is current supported (JBAS-9020)");
     }
 }
