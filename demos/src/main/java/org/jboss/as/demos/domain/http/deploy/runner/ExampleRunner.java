@@ -60,7 +60,7 @@ public class ExampleRunner {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type","multipart/form-data;boundary=-----------------------------261773107125236");
+            connection.setRequestProperty("Content-Type","multipart/form-data;boundary=---------------------------261773107125236");
             os = new BufferedOutputStream(connection.getOutputStream());
 
             StringBuilder builder = new StringBuilder();
