@@ -102,12 +102,11 @@ public class DeleteJmsTopicHandler extends BatchModeCommandHandler {
             return;
         }
 
-        String name = ctx.getNamedArgument("name");
         if (!Util.isSuccess(result)) {
-            ctx.printLine("Failed to delete topic '" + name + "': " + Util.getFailureDescription(result));
+            ctx.printLine("Failed to delete topic: " + Util.getFailureDescription(result));
             return;
         }
-        ctx.printLine("Removed topic " + name);
+        ctx.printLine("Removed topic.");
     }
 
     @Override
