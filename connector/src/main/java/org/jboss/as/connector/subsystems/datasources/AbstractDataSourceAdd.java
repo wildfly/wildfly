@@ -67,6 +67,7 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
+    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
             throws OperationFailedException {
         final ModelNode subModel = context.getSubModel();
@@ -88,6 +89,7 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -144,7 +146,7 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                     if (enabled) {
                         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                         referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+                        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                     } else {
                         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
                         referenceBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
