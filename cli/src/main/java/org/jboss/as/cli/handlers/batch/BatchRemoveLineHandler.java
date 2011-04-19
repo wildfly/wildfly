@@ -38,6 +38,13 @@ public class BatchRemoveLineHandler extends CommandHandlerWithHelp {
         super("batch-line-remove");
     }
 
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        if(!super.isAvailable(ctx)) {
+            return false;
+        }
+        return ctx.isBatchMode();
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
