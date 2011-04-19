@@ -40,6 +40,10 @@ public final class Services {
      */
     public static final ServiceName JBOSS_DEPLOYMENT_UNIT = JBOSS_DEPLOYMENT.append("unit");
     /**
+     * The base name for sub-deployment unit services and phase services.
+     */
+    public static final ServiceName JBOSS_DEPLOYMENT_SUB_UNIT = JBOSS_DEPLOYMENT.append("subunit");
+    /**
      * The service name of the deployment chains service.
      */
     public static final ServiceName JBOSS_DEPLOYMENT_CHAINS = JBOSS_DEPLOYMENT.append("chains");
@@ -66,7 +70,7 @@ public final class Services {
      * @return the service name
      */
     public static ServiceName deploymentUnitName(String parent, String name) {
-        return JBOSS_DEPLOYMENT_UNIT.append(parent, name);
+        return JBOSS_DEPLOYMENT_SUB_UNIT.append(parent, name);
     }
 
     /**
@@ -89,6 +93,6 @@ public final class Services {
      * @return the service name
      */
     public static ServiceName deploymentUnitName(String parent, String name, Phase phase) {
-        return JBOSS_DEPLOYMENT_UNIT.append(parent, name, phase.name());
+        return JBOSS_DEPLOYMENT_SUB_UNIT.append(parent, name, phase.name());
     }
 }

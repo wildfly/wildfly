@@ -29,7 +29,9 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -72,7 +74,6 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-
         // get the annotation index
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
@@ -82,13 +83,10 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        // get the module description
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-
         // Find and process any @Stateless bean annotations
         final List<AnnotationInstance> slsbAnnotations = compositeIndex.getAnnotations(STATELESS_ANNOTATION);
         if (!slsbAnnotations.isEmpty()) {
-            processSessionBeans(moduleDescription, slsbAnnotations, SessionBeanType.STATELESS);
+            processSessionBeans(deploymentUnit, slsbAnnotations, SessionBeanType.STATELESS);
             // mark this as an EJB deployment
             EjbDeploymentMarker.mark(deploymentUnit);
         }
@@ -96,7 +94,7 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         // Find and process any @Stateful bean annotations
         final List<AnnotationInstance> sfsbAnnotations = compositeIndex.getAnnotations(STATEFUL_ANNOTATION);
         if (!sfsbAnnotations.isEmpty()) {
-            processSessionBeans(moduleDescription, sfsbAnnotations, SessionBeanType.STATEFUL);
+            processSessionBeans(deploymentUnit, sfsbAnnotations, SessionBeanType.STATEFUL);
             // mark this as an EJB deployment
             EjbDeploymentMarker.mark(deploymentUnit);
         }
@@ -104,13 +102,20 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
         // Find and process any @Singleton bean annotations
         final List<AnnotationInstance> sbAnnotations = compositeIndex.getAnnotations(SINGLETON_ANNOTATION);
         if (!sbAnnotations.isEmpty()) {
-            processSessionBeans(moduleDescription, sbAnnotations, SessionBeanType.SINGLETON);
+            processSessionBeans(deploymentUnit, sbAnnotations, SessionBeanType.SINGLETON);
             // mark this as an EJB deployment
             EjbDeploymentMarker.mark(deploymentUnit);
         }
     }
 
-    private void processSessionBeans(final EEModuleDescription moduleDescription, final List<AnnotationInstance> sessionBeanAnnotations, final SessionBeanType sessionBeanType) {
+    private void processSessionBeans(final DeploymentUnit deploymentUnit, final List<AnnotationInstance> sessionBeanAnnotations, final SessionBeanType sessionBeanType) {
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
+        if (ejbJarDescription == null) {
+            ejbJarDescription = new EjbJarDescription(moduleDescription);
+            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
+        }
+
         // process these session bean annotations and create component descriptions out of it
         for (final AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {
             final AnnotationTarget target = sessionBeanAnnotation.target();
@@ -128,21 +133,21 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
             SessionBeanComponentDescription sessionBeanDescription = null;
             switch (sessionBeanType) {
                 case STATELESS:
-                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription);
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription);
                     break;
                 case STATEFUL:
-                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription);
+                    sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription);
                     break;
                 case SINGLETON:
-                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, moduleDescription);
+                    sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
 
             // Add this component description to module description
-            if (moduleDescription.getComponentByName(sessionBeanDescription.getComponentName()) == null) {
-                moduleDescription.addComponent(sessionBeanDescription);
+            if (ejbJarDescription.getEEModuleDescription().getComponentByName(sessionBeanDescription.getComponentName()) == null) {
+                ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
             }
         }
     }

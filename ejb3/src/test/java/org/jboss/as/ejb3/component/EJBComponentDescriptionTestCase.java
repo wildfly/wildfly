@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.junit.Test;
 
 import javax.ejb.TransactionManagementType;
@@ -36,11 +37,13 @@ import static org.mockito.Mockito.when;
  */
 public class EJBComponentDescriptionTestCase {
     private static class TestBean {
-        public void someMethod() {}
+        public void someMethod() {
+        }
     }
 
     /**
      * If a bean is BMT then txAttrs won't be available.
+     *
      * @throws Exception
      */
     @Test
@@ -48,9 +51,10 @@ public class EJBComponentDescriptionTestCase {
         final EJBComponentConfiguration configuration = mock(EJBComponentConfiguration.class);
         when(configuration.getTransactionManagementType()).thenReturn(TransactionManagementType.BEAN);
 
-        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp","TestModule");
+        final EEModuleDescription eeModuleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(eeModuleDescription);
 
-        final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", moduleDescription) {
+        final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", ejbJarDescription) {
             @Override
             public MethodIntf getMethodIntf(String viewClassName) {
                 return MethodIntf.LOCAL;

@@ -65,10 +65,9 @@ public class ConnectorSubSystemRemove implements ModelRemoveOperationHandler {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry().getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
                     if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        controller.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

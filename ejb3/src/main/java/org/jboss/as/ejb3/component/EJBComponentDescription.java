@@ -24,7 +24,12 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
 import org.jboss.as.ee.component.AbstractComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
-import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
@@ -33,7 +38,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -79,12 +83,12 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     /**
      * Construct a new instance.
      *
-     * @param componentName      the component name
-     * @param componentClassName the component instance class name
-     * @param moduleDescription the module
+     * @param componentName            the component name
+     * @param componentClassName       the component instance class name
+     * @param ejbDeploymentDescription the module
      */
-    public EJBComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
-        super(componentName, componentClassName, moduleDescription);
+    public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbDeploymentDescription) {
+        super(componentName, componentClassName, ejbDeploymentDescription.getEEModuleDescription());
         //TODO: This should not be create for EJB's in a war
         setNamingMode(ComponentNamingMode.CREATE);
     }
@@ -181,6 +185,20 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     }
 
     @Override
+    protected void prepareComponentConfiguration(AbstractComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        super.prepareComponentConfiguration(configuration, phaseContext);
+
+        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        EjbJarConfiguration ejbModuleConfiguration = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_CONFIGURATION);
+        if (ejbModuleConfiguration == null) {
+            throw new DeploymentUnitProcessingException(EjbJarConfiguration.class.getSimpleName() + " not found in unit " + deploymentUnit);
+        }
+        // set the EJB module configuration on the EJB component configuration
+        ((EJBComponentConfiguration) configuration).setEjbJarConfiguration(ejbModuleConfiguration);
+    }
+
+    @Override
     protected void processComponentMethod(AbstractComponentConfiguration configuration, Method componentMethod) throws DeploymentUnitProcessingException {
         super.processComponentMethod(configuration, componentMethod);
 
@@ -198,7 +216,7 @@ public abstract class EJBComponentDescription extends AbstractComponentDescripti
     }
 
     private void processTxAttr(EJBComponentConfiguration configuration, MethodIntf methodIntf, Method method) {
-        if(configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
+        if (configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
             // it's a BMT bean
             return;
         }

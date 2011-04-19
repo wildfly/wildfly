@@ -109,11 +109,11 @@ class FileHandlerAdd implements ModelAddOperationHandler {
                         if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
                         if (operation.hasDefined(FORMATTER)) service.setFormatterSpec(createFormatterSpec(operation));
                         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                         serviceBuilder.install();
                     } catch (Throwable t) {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

@@ -69,10 +69,9 @@ class JMXConnectorRemove implements ModelUpdateOperationHandler {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceController<?> service = context.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
                     if (service != null) {
-                        service.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

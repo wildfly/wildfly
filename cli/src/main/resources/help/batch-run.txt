@@ -1,0 +1,5 @@
+Synopsis:	run-batch
+
+Description:	runs the currently active batch. The command must be invoked while
+				in the batch mode. Executed batch will be discarded and the CLI
+				will exit the batch mode.

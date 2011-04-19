@@ -90,10 +90,9 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
-                        dataSourceController.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        dataSourceController.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

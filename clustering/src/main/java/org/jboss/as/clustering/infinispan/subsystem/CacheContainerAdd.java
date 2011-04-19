@@ -340,8 +340,8 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     for (Map.Entry<String, Injector<String>> injector: locationInjectors) {
                         builder.addDependency(AbstractPathService.pathNameOf(injector.getKey()), String.class, injector.getValue());
                     }
-                    builder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     builder.install();
+                    resultHandler.handleResultComplete();
                 }
 
                 private CacheStoreConfig createCacheLoaderConfig(ModelNode store, List<Map.Entry<String, Injector<String>>> injectors) {

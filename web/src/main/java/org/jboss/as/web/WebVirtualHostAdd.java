@@ -98,8 +98,8 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
                         service.setRewrite(operation.get(Constants.REWRITE).clone());
                     }
                     if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
-                    serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                     serviceBuilder.install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

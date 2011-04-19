@@ -64,15 +64,11 @@ public final class ServerConfigService implements Service<ServerConfig> {
     @Override
     public void start(final StartContext context) throws StartException {
         log.tracef("Starting %s", ServerConfigService.class.getName());
-        final ClassLoader origClassloader = SecurityActions.getContextClassLoader();
         try {
-            SecurityActions.setContextClassLoader(this.getClass().getClassLoader());
             serverConfig.create();
         } catch (final Exception e) {
             log.fatal("Error while creating configuration service", e);
             throw new StartException(e);
-        } finally {
-            SecurityActions.setContextClassLoader(origClassloader);
         }
     }
 

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -37,8 +38,8 @@ class StatefulBMTInterceptor extends org.jboss.ejb3.tx2.impl.StatefulBMTIntercep
     }
 
     @Override
-    protected String getComponentName() {
-        return component.getComponentName();
+    protected TransactionalComponent getTransactionalComponent() {
+        return this.component;
     }
 
     @Override

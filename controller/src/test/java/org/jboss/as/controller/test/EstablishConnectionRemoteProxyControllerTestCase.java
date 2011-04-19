@@ -22,20 +22,16 @@
 package org.jboss.as.controller.test;
 
 import java.net.InetAddress;
-import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.RemoteProxyController;
-import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
 
 /**
+ * Tests a proxy controller where the main side establishes a connection to the proxied side.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -43,52 +39,30 @@ import org.junit.Before;
 public class EstablishConnectionRemoteProxyControllerTestCase extends AbstractProxyControllerTest {
 
     RemoteModelControllerSetup server;
-    ModelController proxyController;
+    ModelController proxiedController;
     PathAddress proxyNodeAddress;
-    DelegatingProxyController testController = new DelegatingProxyController();
+    DelegatingProxyController proxyController = new DelegatingProxyController();
 
     @Before
     public void start() throws Exception {
-        server = new RemoteModelControllerSetup(proxyController, 0);
+
+        setupNodes();
+
+        server = new RemoteModelControllerSetup(proxiedController, 0);
         server.start();
-        testController.setDelegate(RemoteProxyController.create(InetAddress.getByName("localhost"), server.getPort(), proxyNodeAddress));
+        proxyController.setDelegate(RemoteProxyController.create(InetAddress.getByName("localhost"), server.getPort(), proxyNodeAddress));
     }
 
     @After
     public void stop() {
         server.stop();
-        testController.setDelegate(null);
+        proxyController.setDelegate(null);
     }
 
     @Override
-    protected ProxyController createProxyController(final ModelController targetController, final PathAddress proxyNodeAddress) {
-        this.proxyController = targetController;
+    protected ProxyController createProxyController(final ModelController proxiedController, final PathAddress proxyNodeAddress) {
+        this.proxiedController = proxiedController;
         this.proxyNodeAddress = proxyNodeAddress;
-        return testController;
-    }
-
-    private static class DelegatingProxyController implements ProxyController {
-
-        ProxyController delegate;
-
-        void setDelegate(ProxyController delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public OperationResult execute(Operation operation, ResultHandler handler) {
-            return delegate.execute(operation, handler);
-        }
-
-        @Override
-        public ModelNode execute(Operation operation) throws CancellationException {
-            return delegate.execute(operation);
-        }
-
-        @Override
-        public PathAddress getProxyNodeAddress() {
-            return delegate.getProxyNodeAddress();
-        }
-
+        return proxyController;
     }
 }

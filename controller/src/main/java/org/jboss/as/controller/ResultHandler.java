@@ -23,9 +23,6 @@
 package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StartException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -59,66 +56,4 @@ public interface ResultHandler {
      * Signify that this operation was cancelled.
      */
     void handleCancellation();
-
-    /**
-     * A listener which invokes a {@link ResultHandler} when the service it is attached to has been removed.
-     *
-     */
-    class ServiceRemoveListener extends AbstractServiceListener<Object> {
-        private final ResultHandler resultHandler;
-
-        public ServiceRemoveListener(final ResultHandler resultHandler) {
-            this.resultHandler = resultHandler;
-        }
-
-        @Override
-        public void listenerAdded(final ServiceController<?> controller) {
-            controller.setMode(ServiceController.Mode.REMOVE);
-        }
-
-        @Override
-        public void serviceRemoved(final ServiceController<?> controller) {
-            resultHandler.handleResultComplete();
-        }
-    }
-
-    /**
-     * A listener which invokes a {@link ResultHandler} when the service it is attached to has been added and
-     * started successfully.
-     *
-     */
-    class ServiceStartListener extends AbstractServiceListener<Object> {
-        private final ResultHandler resultHandler;
-
-        public ServiceStartListener(final ResultHandler resultHandler) {
-            this.resultHandler = resultHandler;
-        }
-
-        @Override
-        public void serviceStarted(final ServiceController<?> controller) {
-            try {
-                resultHandler.handleResultComplete();
-            } finally {
-                controller.removeListener(this);
-            }
-        }
-
-        @Override
-        public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-            try {
-                resultHandler.handleFailed(new ModelNode().set(reason.getLocalizedMessage()));
-            } finally {
-                controller.removeListener(this);
-            }
-        }
-
-        @Override
-        public void serviceRemoved(final ServiceController<?> controller) {
-            try {
-                resultHandler.handleCancellation();
-            } finally {
-                controller.removeListener(this);
-            }
-        }
-    }
 }

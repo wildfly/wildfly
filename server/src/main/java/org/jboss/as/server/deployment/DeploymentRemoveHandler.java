@@ -73,10 +73,9 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry();
                     final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
                     if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        controller.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

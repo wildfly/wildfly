@@ -29,8 +29,10 @@ import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.ee.component.InjectionTargetDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceUnitBindingSourceDescription;
+import org.jboss.as.jpa.interceptor.SBInvocationInterceptorFactory;
 import org.jboss.as.jpa.interceptor.SFSBCreateInterceptorFactory;
 import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptorFactory;
 import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptorFactory;
@@ -333,12 +335,19 @@ public class JPAAnnotationParseProcessor extends AbstractComponentConfigProcesso
         return PersistenceUnitService.getPUServiceName(scopedPuName);
     }
 
-    // Register our listeners on SFSB that will be created
+
     private void registerInterceptors(AbstractComponentDescription componentDescription, AnnotationInstance annotation) {
+        // Register our listeners on SFSB that will be created
         if (componentDescription instanceof StatefulComponentDescription && isExtendedPersistenceContext(annotation)) {
             componentDescription.addPostConstructInterceptorFactory(new SFSBCreateInterceptorFactory());
             componentDescription.addPreDestroyInterceptorFactory(new SFSBDestroyInterceptorFactory());
             componentDescription.addInterceptorFactory(SFSBInvocationInterceptorFactory.getInstance());
+        }
+        // register interceptor on stateful/stateless SB with transactional entity manager.
+        if (!isExtendedPersistenceContext(annotation) &&
+            (componentDescription instanceof  StatefulComponentDescription ||
+            componentDescription instanceof StatelessComponentDescription)) {
+            componentDescription.addInterceptorFactory(SBInvocationInterceptorFactory.getInstance());
         }
     }
 

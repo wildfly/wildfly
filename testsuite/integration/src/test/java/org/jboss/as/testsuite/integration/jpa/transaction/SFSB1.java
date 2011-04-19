@@ -30,7 +30,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.transaction.UserTransaction;
 
 /**
@@ -78,5 +80,22 @@ public class SFSB1 {
 
         return em.find(Employee.class, id);
     }
+
+    @TransactionAttribute(TransactionAttributeType.NEVER)
+    public String queryEmployeeNameNoTX(int id) {
+        Query q = em.createQuery("SELECT e.name FROM Employee e");
+        try {
+            String name = (String)q.getSingleResult();
+            return name;
+        }
+        catch (NoResultException expected) {
+            return "success";
+        }
+        catch (Exception unexpected) {
+            return unexpected.getMessage();
+        }
+
+    }
+
 
 }

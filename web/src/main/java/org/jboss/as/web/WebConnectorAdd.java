@@ -150,13 +150,8 @@ class WebConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
                             .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
                             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
                             .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
-                    if (enabled) {
-                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
-                        serviceBuilder.install();
-                    } else {
-                        serviceBuilder.install();
-                        resultHandler.handleResultComplete();
-                    }
+                    serviceBuilder.install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

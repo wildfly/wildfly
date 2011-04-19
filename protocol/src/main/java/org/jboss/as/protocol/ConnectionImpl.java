@@ -74,6 +74,7 @@ final class ConnectionImpl implements Connection {
         this.callback = callback;
     }
 
+    @Override
     public OutputStream writeMessage() throws IOException {
         final OutputStream os;
         synchronized (lock) {
@@ -103,6 +104,7 @@ final class ConnectionImpl implements Connection {
         return os;
     }
 
+    @Override
     public void shutdownWrites() throws IOException {
         synchronized (lock) {
             if (writeDone) return;
@@ -124,6 +126,7 @@ final class ConnectionImpl implements Connection {
         }
     }
 
+    @Override
     public void close() throws IOException {
         synchronized (lock) {
             lock.notifyAll();
@@ -135,6 +138,7 @@ final class ConnectionImpl implements Connection {
         }
     }
 
+    @Override
     public void setMessageHandler(final MessageHandler messageHandler) {
         if (messageHandler == null) {
             throw new IllegalArgumentException("messageHandler is null");
@@ -142,6 +146,7 @@ final class ConnectionImpl implements Connection {
         this.messageHandler = messageHandler;
     }
 
+    @Override
     public InetAddress getPeerAddress() {
         synchronized (lock) {
             final Socket socket = this.socket;
@@ -153,10 +158,12 @@ final class ConnectionImpl implements Connection {
         }
     }
 
+    @Override
     public void attach(final Object attachment) {
         this.attachment = attachment;
     }
 
+    @Override
     public Object getAttachment() {
         return attachment;
     }
@@ -174,12 +181,13 @@ final class ConnectionImpl implements Connection {
 
     Runnable getReadTask() {
         return new Runnable() {
+            @Override
             public void run() {
                 boolean closed = false;
+                OutputStream mos = null;
                 try {
                     Pipe pipe = null;
                     final InputStream is = socket.getInputStream();
-                    OutputStream mos = null;
                     final int bufferSize = 8192;
                     final byte[] buffer = new byte[bufferSize];
                     for (;;) {
@@ -215,6 +223,7 @@ final class ConnectionImpl implements Connection {
                                     mos = pipe.getOut();
 
                                     readExecutor.execute(new Runnable() {
+                                        @Override
                                         public void run() {
                                             safeHandleMessage(new MessageInputStream(pis));
                                         }
@@ -251,6 +260,7 @@ final class ConnectionImpl implements Connection {
                 } catch (IOException e) {
                     safeHandlerFailure(e);
                 } finally {
+                    StreamUtils.safeClose(mos);
                     if (!closed) {
                         closed();
                     }
@@ -364,6 +374,7 @@ final class ConnectionImpl implements Connection {
                 if (writeDone) throw new IOException("Write channel closed");
                 if (readDone) {
                     readExecutor.execute(new Runnable() {
+                        @Override
                         public void run() {
                             safeHandleFinished();
                         }

@@ -47,10 +47,9 @@ public class SpecifiedInterfaceRemoveHandler extends InterfaceRemoveHandler {
                     final ServiceController<?> controller = context.getServiceRegistry()
                             .getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name));
                     if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        controller.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

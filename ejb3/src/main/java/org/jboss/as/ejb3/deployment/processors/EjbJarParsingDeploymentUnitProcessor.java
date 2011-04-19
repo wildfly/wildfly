@@ -23,14 +23,10 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -127,6 +123,11 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         }
         // Mark it as a EJB deployment
         EjbDeploymentMarker.mark(deploymentUnit);
+        if (!deploymentUnit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION)) {
+            final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            final EjbJarDescription ejbModuleDescription = new EjbJarDescription(moduleDescription);
+            deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbModuleDescription);
+        }
 
         // get the XMLStreamReader and parse the ejb-jar.xml
         MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();

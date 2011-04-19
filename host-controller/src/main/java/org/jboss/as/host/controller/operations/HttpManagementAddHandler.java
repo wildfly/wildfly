@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -103,14 +103,13 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
                             .addInjection(service.getPortInjector(), port)
                             .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                             .install();
                 }
             });
-        } else {
-            resultHandler.handleResultComplete();
         }
-        return new BasicOperationResult(compensatingOperation);
+        BasicOperationResult operationResult = new BasicOperationResult(compensatingOperation);
+        resultHandler.handleResultComplete();
+        return operationResult;
     }
 
     /** {@inheritDoc} */

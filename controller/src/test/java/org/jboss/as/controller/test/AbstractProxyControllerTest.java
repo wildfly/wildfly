@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
@@ -83,23 +84,21 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * Base class for tests of invocations from a main controller to a remote proxied controller.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public abstract class AbstractProxyControllerTest {
 
     private ModelNode proxyModel;
     private ModelNode mainModel;
     private TestMainModelController mainController;
-    private TestProxyModelController proxyController;
+    private TestProxyModelController proxiedController;
 
-    @Before
-    public void setupNodes() {
+    protected void setupNodes() {
         proxyModel = new ModelNode();
         proxyModel.get("hostchild", "hcA", "name").set("hostA");
         proxyModel.get("hostchild", "hcA", "child", "childA", "name").set("childName");
@@ -110,7 +109,10 @@ public abstract class AbstractProxyControllerTest {
         mainModel.get("profile", "profileA").get(NAME).set("Profile A");
 
         mainController = new TestMainModelController(mainModel);
-        proxyController = new TestProxyModelController(proxyModel);
+        proxiedController = new TestProxyModelController(proxyModel);
+
+        PathElement hostAElement = PathElement.pathElement(HOST, "hostA");
+        mainController.getRegistry().registerProxyController(hostAElement, createProxyController(proxiedController, PathAddress.pathAddress(hostAElement)));
     }
 
     @Test
@@ -118,7 +120,7 @@ public abstract class AbstractProxyControllerTest {
         Operation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.getOperation().get(RECURSIVE).set(true);
 
-        ModelNode result = proxyController.execute(operation);
+        ModelNode result = proxiedController.execute(operation);
 
         checkHostSubModelDescription(result.get(RESULT), false);
 
@@ -157,7 +159,7 @@ public abstract class AbstractProxyControllerTest {
         Operation operation = createOperation(READ_RESOURCE_OPERATION);
         operation.getOperation().get(RECURSIVE).set(true);
 
-        ModelNode result = proxyController.execute(operation);
+        ModelNode result = proxiedController.execute(operation);
         checkHostNode(result.get(RESULT));
 
         result = mainController.execute(operation);
@@ -178,13 +180,13 @@ public abstract class AbstractProxyControllerTest {
         Operation write = createOperation(WRITE_ATTRIBUTE_OPERATION, "hostchild", "hcA", "child", "childA");
         write.getOperation().get(NAME).set("value");
         write.getOperation().get(VALUE).set("NewValue");
-        proxyController.execute(write);
+        proxiedController.execute(write);
 
         assertEquals("NewValue", proxyModel.get("hostchild", "hcA", "child", "childA", "value").asString());
 
         Operation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        ModelNode result = proxyController.execute(read);
+        ModelNode result = proxiedController.execute(read);
         assertEquals("NewValue", result.get(RESULT, "value").asString());
 
         read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
@@ -204,7 +206,7 @@ public abstract class AbstractProxyControllerTest {
 
         Operation read = createOperation(READ_RESOURCE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(RECURSIVE).set(true);
-        ModelNode result = proxyController.execute(read);
+        ModelNode result = proxiedController.execute(read);
         assertEquals("NewValue2", result.get(RESULT, "value").asString());
 
         read = createOperation(READ_RESOURCE_OPERATION, "host", "hostA", "hostchild", "hcA", "child", "childA");
@@ -217,11 +219,11 @@ public abstract class AbstractProxyControllerTest {
     public void testReadAttributeOperationInChildController() throws Exception {
         Operation read = createOperation(READ_ATTRIBUTE_OPERATION, "hostchild", "hcA", "child", "childA");
         read.getOperation().get(NAME).set("name");
-        ModelNode result = proxyController.execute(read);
+        ModelNode result = proxiedController.execute(read);
         assertEquals("childName", result.get(RESULT).asString());
 
         read.getOperation().get(NAME).set("metric");
-        result = proxyController.execute(read);
+        result = proxiedController.execute(read);
         assertEquals(ModelType.INT, result.get(RESULT).getType());
     }
 
@@ -475,7 +477,7 @@ public abstract class AbstractProxyControllerTest {
         return OperationBuilder.Factory.create(operation).build();
     }
 
-    protected abstract ProxyController createProxyController(ModelController targetController, PathAddress proxyNodeAddress);
+    protected abstract ProxyController createProxyController(ModelController proxiedController, PathAddress proxyNodeAddress);
 
     private static class NullConfigurationPersister implements ConfigurationPersister{
 
@@ -538,7 +540,7 @@ public abstract class AbstractProxyControllerTest {
             getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
-            ModelNodeRegistration profileReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
+            getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
@@ -602,9 +604,6 @@ public abstract class AbstractProxyControllerTest {
                     true);
 
 
-            PathElement hostAElement = PathElement.pathElement(HOST, "hostA");
-            mainController.getRegistry().registerProxyController(hostAElement, createProxyController(this, PathAddress.pathAddress(hostAElement)));
-
             ModelNodeRegistration hostReg = getRegistry().registerSubModel(PathElement.pathElement("hostchild", "*"), new DescriptionProvider() {
 
                 @Override
@@ -664,5 +663,30 @@ public abstract class AbstractProxyControllerTest {
                     },
                     false);
         }
+    }
+
+    static class DelegatingProxyController implements ProxyController {
+
+        ProxyController delegate;
+
+        void setDelegate(ProxyController delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public OperationResult execute(Operation operation, ResultHandler handler) {
+            return delegate.execute(operation, handler);
+        }
+
+        @Override
+        public ModelNode execute(Operation operation) throws CancellationException {
+            return delegate.execute(operation);
+        }
+
+        @Override
+        public PathAddress getProxyNodeAddress() {
+            return delegate.getProxyNodeAddress();
+        }
+
     }
 }

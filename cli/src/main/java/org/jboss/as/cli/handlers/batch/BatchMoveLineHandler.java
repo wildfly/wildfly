@@ -35,7 +35,7 @@ import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 public class BatchMoveLineHandler extends CommandHandlerWithHelp {
 
     public BatchMoveLineHandler() {
-        super("move-batch-line");
+        super("batch-move-line");
     }
 
 

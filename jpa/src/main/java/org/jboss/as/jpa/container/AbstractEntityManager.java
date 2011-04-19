@@ -44,13 +44,6 @@ import java.util.Map;
  */
 public abstract class AbstractEntityManager implements EntityManager {
 
-    // the following list of classes determines which unwrap classes are special, in that the underlying entity
-    // manager won't be closed, even if no transaction is active on the calling thread.
-    // TODO:  move this list to PersistenceProviderAdaptor
-    private static final HashSet<String> unwrapClassNamesThatShouldSkipPostInvocationStep = new HashSet<String>();
-    static {
-        unwrapClassNamesThatShouldSkipPostInvocationStep.add("org.hibernate.Session");
-    }
 
     private final Map<Class, Object> extensions = new HashMap<Class, Object>();
 
@@ -104,558 +97,192 @@ public abstract class AbstractEntityManager implements EntityManager {
         Object x = extensions.get(cls);
         if (x != null)
             return (T) x;
-
-        final EntityManager underlyingEntityManager = getEntityManager();
-
-        // postinvocation is currently used specifically for closing transactional entity manager not running in tx
-        // check if we should skip the post invocation notification.
-        if (unwrapClassNamesThatShouldSkipPostInvocationStep.contains(cls.getName())) {
-            return underlyingEntityManager.unwrap(cls);
-        }
-
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            result = underlyingEntityManager.unwrap(cls);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+         return getEntityManager().unwrap(cls);
     }
 
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        TypedQuery<T> result = null;
-        try {
-            result = underlyingEntityManager.createNamedQuery(name, resultClass);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createNamedQuery(name, resultClass);
     }
 
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        TypedQuery<T> result = null;
-        try {
-            result = underlyingEntityManager.createQuery(criteriaQuery);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createQuery(criteriaQuery);
     }
 
     public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        TypedQuery<T> result = null;
-        try {
-            result = underlyingEntityManager.createQuery(qlString, resultClass);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createQuery(qlString, resultClass);
     }
 
     public void detach(Object entity) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.detach(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().detach(entity);
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
         final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            result = underlyingEntityManager.find(entityClass, primaryKey, properties);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        T result = underlyingEntityManager.find(entityClass, primaryKey, properties);
+        detachNonTxInvocation(underlyingEntityManager);
         return result;
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode) {
         final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            result = underlyingEntityManager.find(entityClass, primaryKey, lockMode);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode);
+        detachNonTxInvocation(underlyingEntityManager);
         return result;
+
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode, Map<String, Object> properties) {
         final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            result = underlyingEntityManager.find(entityClass, primaryKey, lockMode, properties);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode, properties);
+        detachNonTxInvocation(underlyingEntityManager);
         return result;
     }
 
     public CriteriaBuilder getCriteriaBuilder() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        CriteriaBuilder result = null;
-        try {
-            result = underlyingEntityManager.getCriteriaBuilder();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getCriteriaBuilder();
     }
 
     public EntityManagerFactory getEntityManagerFactory() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        EntityManagerFactory result = null;
-        try {
-            result = underlyingEntityManager.getEntityManagerFactory();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getEntityManagerFactory();
     }
 
     public LockModeType getLockMode(Object entity) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        LockModeType result = null;
-        try {
-            result = underlyingEntityManager.getLockMode(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getLockMode(entity);
     }
 
     public Metamodel getMetamodel() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Metamodel result = null;
-        try {
-            result = underlyingEntityManager.getMetamodel();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getMetamodel();
     }
 
     public Map<String, Object> getProperties() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Map<String, Object> result = null;
-        try {
-            result = underlyingEntityManager.getProperties();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getProperties();
     }
 
     public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.lock(entity, lockMode, properties);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().lock(entity, lockMode, properties);
     }
 
     public void setProperty(String propertyName, Object value) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.setProperty(propertyName, value);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().setProperty(propertyName, value);
     }
 
     public void clear() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.clear();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().clear();
     }
 
     public void close() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.close();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().close();
     }
 
     public boolean contains(Object entity) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        boolean result = false;
-        try {
-            result = underlyingEntityManager.contains(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().contains(entity);
     }
 
     public Query createNamedQuery(String name) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Query result = null;
-        try {
-            result = underlyingEntityManager.createNamedQuery(name);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createNamedQuery(name);
     }
 
     @SuppressWarnings("unchecked")
     public Query createNativeQuery(String sqlString, Class resultClass) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Query result = null;
-        try {
-            result = underlyingEntityManager.createNativeQuery(sqlString, resultClass);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createNativeQuery(sqlString, resultClass);
     }
 
     public Query createNativeQuery(String sqlString, String resultSetMapping) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Query result = null;
-        try {
-            result = underlyingEntityManager.createNativeQuery(sqlString, resultSetMapping);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createNativeQuery(sqlString, resultSetMapping);
     }
 
     public Query createNativeQuery(String sqlString) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Query result = null;
-        try {
-            result = underlyingEntityManager.createNativeQuery(sqlString);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createNativeQuery(sqlString);
     }
 
     public Query createQuery(String ejbqlString) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Query result = null;
-        try {
-            result = underlyingEntityManager.createQuery(ejbqlString);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().createQuery(ejbqlString);
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            result = underlyingEntityManager.find(entityClass, primaryKey);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().find(entityClass, primaryKey);
     }
 
     public void flush() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.flush();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().flush();
     }
 
     public Object getDelegate() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        Object result = null;
-        try {
-            result = underlyingEntityManager.getDelegate();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getDelegate();
     }
 
     public FlushModeType getFlushMode() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        FlushModeType result = null;
-        try {
-            result = underlyingEntityManager.getFlushMode();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getFlushMode();
     }
 
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
         final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            result = underlyingEntityManager.getReference(entityClass, primaryKey);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        T result = getEntityManager().getReference(entityClass, primaryKey);
+        detachNonTxInvocation(underlyingEntityManager);
         return result;
     }
 
     public EntityTransaction getTransaction() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        EntityTransaction result = null;
-        try {
-            result = underlyingEntityManager.getTransaction();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().getTransaction();
     }
 
     public boolean isOpen() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        boolean result = false;
-        try {
-            result = underlyingEntityManager.isOpen();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        return getEntityManager().isOpen();
     }
 
     public void joinTransaction() {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.joinTransaction();
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().joinTransaction();
     }
 
     public void lock(Object entity, LockModeType lockMode) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.lock(entity, lockMode);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().lock(entity, lockMode);
     }
 
     public <T> T merge(T entity) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        T result = null;
-        try {
-            transactionIsRequired();
-            result = underlyingEntityManager.merge(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
-        return result;
+        transactionIsRequired();
+        return getEntityManager().merge(entity);
     }
 
     public void persist(Object entity) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            transactionIsRequired();
-            underlyingEntityManager.persist(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        transactionIsRequired();
+        getEntityManager().persist(entity);
     }
 
     public void refresh(Object entity) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            transactionIsRequired();
-            underlyingEntityManager.refresh(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        transactionIsRequired();
+        getEntityManager().refresh(entity);
     }
 
     public void refresh(Object entity, Map<String, Object> properties) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            transactionIsRequired();
-            underlyingEntityManager.refresh(entity, properties);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        transactionIsRequired();
+        getEntityManager().refresh(entity, properties);
     }
 
     public void refresh(Object entity, LockModeType lockMode) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            transactionIsRequired();
-            underlyingEntityManager.refresh(entity, lockMode);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        transactionIsRequired();
+        getEntityManager().refresh(entity, lockMode);
     }
 
     public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            transactionIsRequired();
-            underlyingEntityManager.refresh(entity, lockMode, properties);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        transactionIsRequired();
+        getEntityManager().refresh(entity, lockMode, properties);
     }
 
     public void remove(Object entity) {
-        EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            transactionIsRequired();
-            underlyingEntityManager.remove(entity);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        transactionIsRequired();
+        getEntityManager().remove(entity);
     }
 
     public void setFlushMode(FlushModeType flushMode) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        RuntimeException exceptionWasAlreadyThrown=null;
-        try {
-            underlyingEntityManager.setFlushMode(flushMode);
-        } catch(RuntimeException re) {
-            exceptionWasAlreadyThrown = re;
-        } finally {
-            postInvocation(underlyingEntityManager, exceptionWasAlreadyThrown);
-        }
+        getEntityManager().setFlushMode(flushMode);
     }
 
     // perform any cleanup needed after an invocation.
     // currently used by TransactionScopedEntityManager to autoclose the
     // underlying entitymanager after each invocation.
-    protected void postInvocation(
-        EntityManager underlyingEntityManager, RuntimeException exceptionWasAlreadyThrown) {
-        if (exceptionWasAlreadyThrown != null) {
-            throw exceptionWasAlreadyThrown;
+    protected void detachNonTxInvocation(EntityManager underlyingEntityManager) {
+        if ( ! this.isExtendedPersistenceContext() && ! this.isInTx()) {
+            underlyingEntityManager.clear();
         }
     }
 

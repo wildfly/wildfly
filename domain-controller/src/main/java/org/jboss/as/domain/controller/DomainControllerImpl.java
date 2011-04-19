@@ -232,156 +232,189 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     @Override
     public OperationResult execute(final Operation operation, final ResultHandler handler, Void handback) {
 
-        ModelNode operationNode = operation.getOperation();
-
-        // System.out.println("------ operation " + operation);
-
-        // See who handles this op
-        OperationRouting routing = determineRouting(operationNode);
-        if ((routing.isRouteToMaster() || !routing.isLocalOnly()) && masterDomainControllerClient != null) {
-            // System.out.println("------ route to master ");
-            // Per discussion on 2011/03/07, routing requests from a slave to the
-            // master may overly complicate the security infrastructure. Therefore,
-            // the ability to do this is being disabled until it's clear that it's
-            // not a problem
-//            return masterDomainControllerClient.execute(operationContext, handler);
-            PathAddress addr = PathAddress.pathAddress(operationNode.get(OP_ADDR));
-            handler.handleFailed(new ModelNode().set("Operations for address " + addr +
-                    " can only handled by the master Domain Controller; this host is not the master Domain Controller"));
-            return new BasicOperationResult();
-        }
-        else if (!routing.isTwoStep()) {
-            // It's either for a read of a domain-level resource or it's for a single host-level resource,
-            // either of which a single host client can handle directly
-            String host = routing.getSingleHost();
-            // System.out.println("------ route to host " + host);
-            return executeOnHost(host, operation, handler);
-        }
-
-        // System.out.println("---- Push to hosts");
-        // Else we are responsible for coordinating a two-step op
-        // -- apply to DomainController models across domain and then push to servers
-
-        // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
-        ModelNode rolloutPlan = operationNode.hasDefined(OPERATION_HEADERS) && operationNode.get(OPERATION_HEADERS).has(ROLLOUT_PLAN)
-            ? operationNode.get(OPERATION_HEADERS).remove(ROLLOUT_PLAN) : null;
-
-        // Push to hosts, formulate plan, push to servers
-        ControllerTransaction  transaction = new ControllerTransaction();
-        Map<String, ModelNode> hostResults = null;
+        // FIXME JBAS-9338 Prevent concurrent write requests
         try {
-            hostResults = pushToHosts(operation, routing, transaction);
-        }
-        catch (Exception e) {
-            transaction.setRollbackOnly();
-            transaction.commit();
-            handler.handleResultFragment(new String[]{DOMAIN_FAILURE_DESCRIPTION}, new ModelNode().set(e.toString()));
-            handler.handleFailed(null);
+            ModelNode operationNode = operation.getOperation();
+
+            // System.out.println("------ operation " + operation);
+
+            // See who handles this op
+            OperationRouting routing = determineRouting(operationNode);
+            if ((routing.isRouteToMaster() || !routing.isLocalOnly()) && masterDomainControllerClient != null) {
+                // System.out.println("------ route to master ");
+                // Per discussion on 2011/03/07, routing requests from a slave to the
+                // master may overly complicate the security infrastructure. Therefore,
+                // the ability to do this is being disabled until it's clear that it's
+                // not a problem
+    //            return masterDomainControllerClient.execute(operationContext, handler);
+                PathAddress addr = PathAddress.pathAddress(operationNode.get(OP_ADDR));
+                handler.handleFailed(new ModelNode().set("Operations for address " + addr +
+                        " can only handled by the master Domain Controller; this host is not the master Domain Controller"));
+                return new BasicOperationResult();
+            }
+            else if (!routing.isTwoStep()) {
+                // It's either for a read of a domain-level resource or it's for a single host-level resource,
+                // either of which a single host client can handle directly
+                String host = routing.getSingleHost();
+                // System.out.println("------ route to host " + host);
+                return executeOnHost(host, operation, handler);
+            }
+            else {
+                // Else we are responsible for coordinating a two-phase op
+                // -- apply to DomainController models across domain and then push to servers
+                return executeTwoPhaseOperation(operation, handler, operationNode, routing);
+            }
+        } catch (OperationFailedException e) {
+            log.debugf(e, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
+            handler.handleFailed(e.getFailureDescription());
+            return new BasicOperationResult();
+        } catch (final Throwable t) {
+            log.errorf(t, "operation (%s) failed - address: (%s)", operation.getOperation().get(OP), operation.getOperation().get(OP_ADDR));
+            handler.handleFailed(getFailureResult(t));
             return new BasicOperationResult();
         }
+    }
 
-        // System.out.println("---- Pushed to hosts");
-        ModelNode masterFailureResult = null;
-        ModelNode hostFailureResults = null;
-        ModelNode masterResult = hostResults.get(localHostName);
-        // System.out.println("-----Checking host results");
-        if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
-            transaction.setRollbackOnly();
-            masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
-        }
-        else {
-            for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
-                ModelNode hostResult = entry.getValue();
-                if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
-                    if (hostFailureResults == null) {
-                        transaction.setRollbackOnly();
-                        hostFailureResults = new ModelNode();
-                    }
-                    ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
-                    hostFailureResults.add(entry.getKey(), desc);
+    private OperationResult executeTwoPhaseOperation(final Operation operation, final ResultHandler handler,
+            ModelNode operationNode, OperationRouting routing) throws OperationFailedException {
+
+        DomainLevelResult domainResult = executeOnDomainControllers(operation, handler, routing);
+        if(domainResult.singleHostResult != null) {
+            // FIXME Reformat a single domain-result
+            if(domainResult.singleHostResult.hasDefined(DOMAIN_RESULTS) && ! domainResult.singleHostResult.hasDefined(SERVER_OPERATIONS)) {
+                final List<Property> steps = domainResult.singleHostResult.get(DOMAIN_RESULTS).asPropertyList();
+                if(steps.size() == 1) {
+                    final ModelNode fragment = domainResult.singleHostResult.get(DOMAIN_RESULTS).get("step-1");
+                    handler.handleResultFragment(Util.NO_LOCATION, fragment);
                 }
             }
+
+            handler.handleResultComplete();
+            return new BasicOperationResult(domainResult.compensatingOperation);
         }
 
-        // for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
-        //    System.out.println("======================================================");
-        //    System.out.println(entry.getKey());
-        //    System.out.println("======================================================");
-        //    System.out.println(entry.getValue());
-        // }
+        // Push to servers (via hosts)
+        RolloutPlanController controller = new RolloutPlanController(domainResult.opsByGroup, domainResult.rolloutPlan, handler, serverOperationExecutor, scheduledExecutorService, false);
+        RolloutPlanController.Result controllerResult = controller.execute();
 
-        if (transaction.isRollbackOnly()) {
-            transaction.commit();
-            if (masterFailureResult != null) {
-                handler.handleResultFragment(new String[]{DOMAIN_FAILURE_DESCRIPTION}, masterFailureResult);
+        // Rollback if necessary
+        switch (controllerResult) {
+            case FAILED: {
+                controller.rollback();
+                handler.handleFailed(new ModelNode().set("Operation was not applied successfully to any servers"));
+                return new BasicOperationResult(domainResult.compensatingOperation);
             }
-            else if (hostFailureResults != null) {
-                handler.handleResultFragment(new String[]{HOST_FAILURE_DESCRIPTIONS}, hostFailureResults);
+            case PARTIAL: {
+                controller.rollback();
+                // fall through
             }
-            handler.handleFailed(null);
-            return new BasicOperationResult();
-        } else {
+            case SUCCESS: {
+                handler.handleResultComplete();
+                return new BasicOperationResult(domainResult.compensatingOperation);
+            }
+            default:
+                throw new IllegalStateException(String.format("Unknown %s %s", RolloutPlanController.Result.class.getCanonicalName(), controllerResult));
+        }
+
+    }
+
+    private DomainLevelResult executeOnDomainControllers(Operation operation, ResultHandler handler, OperationRouting routing) throws OperationFailedException {
+        ControllerTransaction  transaction = new ControllerTransaction();
+        try {
+            ModelNode operationNode = operation.getOperation();
+            // Get a copy of the rollout plan so it doesn't get disrupted by any handlers
+            ModelNode rolloutPlan = operationNode.hasDefined(OPERATION_HEADERS) && operationNode.get(OPERATION_HEADERS).has(ROLLOUT_PLAN)
+                ? operationNode.get(OPERATION_HEADERS).remove(ROLLOUT_PLAN) : null;
+
+            // System.out.println("---- Push to hosts");
+            // Push to hosts, formulate plan, push to servers
+            Map<String, ModelNode> hostResults = null;
+            try {
+                hostResults = pushToHosts(operation, routing, transaction);
+            }
+            catch (Exception e) {
+                ModelNode failureMsg = new ModelNode();
+                failureMsg.get(DOMAIN_FAILURE_DESCRIPTION).set(e.toString());
+                throw new OperationFailedException(failureMsg);
+            }
+
+            // System.out.println("---- Pushed to hosts");
+            ModelNode masterFailureResult = null;
+            ModelNode hostFailureResults = null;
+            ModelNode masterResult = hostResults.get(localHostName);
+            // System.out.println("-----Checking host results");
+            if (masterResult != null && masterResult.hasDefined(OUTCOME) && FAILED.equals(masterResult.get(OUTCOME).asString())) {
+                transaction.setRollbackOnly();
+                masterFailureResult = masterResult.hasDefined(FAILURE_DESCRIPTION) ? masterResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+            }
+            else {
+                for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+                    ModelNode hostResult = entry.getValue();
+                    if (hostResult.hasDefined(OUTCOME) && FAILED.equals(hostResult.get(OUTCOME).asString())) {
+                        if (hostFailureResults == null) {
+                            transaction.setRollbackOnly();
+                            hostFailureResults = new ModelNode();
+                        }
+                        ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set("Unexplained failure");
+                        hostFailureResults.add(entry.getKey(), desc);
+                    }
+                }
+            }
+
+            // for (Map.Entry<String, ModelNode> entry : hostResults.entrySet()) {
+            //    System.out.println("======================================================");
+            //    System.out.println(entry.getKey());
+            //    System.out.println("======================================================");
+            //    System.out.println(entry.getValue());
+            // }
+
+            if (transaction.isRollbackOnly()) {
+                ModelNode failureMsg = new ModelNode();
+                if (masterFailureResult != null) {
+                    failureMsg.get(DOMAIN_FAILURE_DESCRIPTION).set(masterFailureResult);
+                }
+                else if (hostFailureResults != null) {
+                    failureMsg.get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureResults);
+                }
+                throw new OperationFailedException(failureMsg);
+            }
+
             // TODO formulate the domain-level result
             //....
 
             // Formulate plan
             Map<String, Map<ServerIdentity, ModelNode>> opsByGroup = getOpsByGroup(hostResults);
-            try {
-                rolloutPlan = getRolloutPlan(rolloutPlan, opsByGroup);
-            }
-            catch (OperationFailedException ofe) {
-                transaction.setRollbackOnly();
-                // treat as a master DC failure
-                handler.handleResultFragment(new String[]{DOMAIN_FAILURE_DESCRIPTION}, ofe.getFailureDescription());
-                handler.handleFailed(null);
-                return new BasicOperationResult();
-            }
-            finally {
-                transaction.commit();
-            }
-
-            // System.out.println(rolloutPlan);
             ModelNode compensatingOperation = getCompensatingOperation(operationNode, hostResults);
             // System.out.println(compensatingOperation);
 
-            if(opsByGroup.size() == 0) {
-                // FIXME Reformat a single domain-result
-                final ModelNode result = getSingleHostResult(hostResults);
-                if(result.hasDefined(DOMAIN_RESULTS) && ! result.hasDefined(SERVER_OPERATIONS)) {
-                    final List<Property> steps = result.get(DOMAIN_RESULTS).asPropertyList();
-                    if(steps.size() == 1) {
-                        final ModelNode fragment = result.get(DOMAIN_RESULTS).get("step-1");
-                        handler.handleResultFragment(Util.NO_LOCATION, fragment);
-                    }
+            DomainLevelResult result;
+            if (opsByGroup.size() == 0) {
+                ModelNode singleHostResult = getSingleHostResult(hostResults);
+                result = new DomainLevelResult(singleHostResult, compensatingOperation);
+            }
+            else {
+                try {
+                    rolloutPlan = getRolloutPlan(rolloutPlan, opsByGroup);
+                    // System.out.println(rolloutPlan);
                 }
-
-                handler.handleResultComplete();
-                return new BasicOperationResult(compensatingOperation);
+                catch (OperationFailedException ofe) {
+                    // treat as a master DC failure
+                    ModelNode failureMsg = new ModelNode();
+                    failureMsg.get(DOMAIN_FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
+                    throw new OperationFailedException(failureMsg);
+                }
+                result = new DomainLevelResult(opsByGroup, compensatingOperation, rolloutPlan);
             }
 
-            // Push to servers (via hosts)
-            RolloutPlanController controller = new RolloutPlanController(opsByGroup, rolloutPlan, handler, serverOperationExecutor, scheduledExecutorService, false);
-            RolloutPlanController.Result controllerResult = controller.execute();
+            return result;
 
-            // Rollback if necessary
-            switch (controllerResult) {
-                case FAILED: {
-                    controller.rollback();
-                    handler.handleFailed(new ModelNode().set("Operation was not applied successfully to any servers"));
-                    return new BasicOperationResult(compensatingOperation);
-                }
-                case PARTIAL: {
-                    controller.rollback();
-                    // fall through
-                }
-                case SUCCESS: {
-                    handler.handleResultComplete();
-                    return new BasicOperationResult(compensatingOperation);
-                }
-                default:
-                    throw new IllegalStateException("Unknown result " + controllerResult);
-            }
+        } catch (OperationFailedException ofe) {
+            transaction.setRollbackOnly();
+            throw ofe;
+        } finally {
+            transaction.commit();
         }
+
     }
 
     @Override
@@ -894,6 +927,28 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
 
         private boolean isLocalOnly() {
             return localHostName.equals(getSingleHost());
+        }
+    }
+
+    private class DomainLevelResult {
+        private final ModelNode compensatingOperation;
+        private final ModelNode rolloutPlan;
+        private final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup;
+        private final ModelNode singleHostResult;
+
+        private DomainLevelResult(final ModelNode singleHostResult, final ModelNode compensatingOperation) {
+            this.singleHostResult = singleHostResult;
+            this.compensatingOperation = compensatingOperation;
+            this.rolloutPlan = null;
+            this.opsByGroup = null;
+        }
+
+        private DomainLevelResult(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
+                final ModelNode compensatingOperation, final ModelNode rolloutPlan) {
+            this.opsByGroup = opsByGroup;
+            this.compensatingOperation = compensatingOperation;
+            this.rolloutPlan = rolloutPlan;
+            this.singleHostResult = null;
         }
     }
 

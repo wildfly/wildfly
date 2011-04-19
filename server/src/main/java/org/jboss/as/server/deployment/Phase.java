@@ -215,6 +215,7 @@ public enum Phase {
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     public static final int PARSE_EJB_MDB_DD                            = 0x1300;
+    public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x1301;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_ANNOTATION                        = 0x1400;
     public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1500;
@@ -222,6 +223,7 @@ public enum Phase {
     public static final int PARSE_EJB_BUSINESS_VIEW_ANNOTATION          = 0x1700;
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
     public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
+    public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     // should be after ConcurrencyManagement annotation processor
@@ -290,6 +292,7 @@ public enum Phase {
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x0700;
     public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x0800;
+    public static final int POST_MODULE_EJB_MODULE_CONFIGURATION        = 0x0801;
 
     public static final int POST_INITIALIZE_IN_ORDER                    = 0x0900;
 

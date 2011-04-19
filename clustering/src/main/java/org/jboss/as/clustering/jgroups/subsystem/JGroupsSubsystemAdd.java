@@ -88,16 +88,15 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
                     ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
                     context.getServiceTarget().addService(ChannelFactoryService.getServiceName(), service)
                         .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
-                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                         .install();
                 }
             };
 
             runtime.setRuntimeTask(task);
-        } else {
-            resultHandler.handleResultComplete();
         }
 
-        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        BasicOperationResult operationResult = new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        resultHandler.handleResultComplete();
+        return operationResult;
     }
 }

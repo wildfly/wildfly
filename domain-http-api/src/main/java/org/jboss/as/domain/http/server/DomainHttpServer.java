@@ -3,11 +3,8 @@ package org.jboss.as.domain.http.server;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,15 +16,16 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
-import org.jboss.as.domain.http.server.multipart.MultipartHeader;
+import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -43,16 +41,17 @@ import com.sun.net.httpserver.HttpServer;
  */
 public class DomainHttpServer implements HttpHandler {
 
-    private static final int HTTP_INTERNAL_SERVER_ERROR_STATUS = 500;
+    private static final int INTERNAL_ERROR = 500;
     private static final String DOMAIN_API_CONTEXT = "/domain-api";
     private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
     private static final String POST_REQUEST_METHOD = "POST";
     private static final String GET_REQUEST_METHOD = "GET";
-    private static final String MULTIPART_FORM_DATA_CONTENT_TYPE = "application/octet-stream";
+    private static final String CONTENT_DISPOSITION = "Content-Disposition";
     private static final String UPLOAD_TEMP_DIRECTORY = "uploads";
-    private static final int UPLOAD_BUFFER_SIZE = 1024;
-    private final byte[] POST_BOUNDARY = new byte[] { 0xd, 0xa, 0x2d, 0x2d };
-    private final byte[] POST_HEADER_BOUNDARY = new byte[] { 0xd, 0xa, 0xd, 0xa };
+
+    private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
+    private static Pattern DISPOSITION_FILE =  Pattern.compile("^form-data.*filename=\"?([^\"]*)?\"?.*$");
+
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     /**
@@ -78,18 +77,10 @@ public class DomainHttpServer implements HttpHandler {
 
     private HttpServer server;
     private ModelController modelController;
-    private final File serverTempDir;
 
     DomainHttpServer(HttpServer server, ModelController modelController, File serverTempDir) {
         this.server = server;
         this.modelController = modelController;
-        this.serverTempDir = new File(serverTempDir, UPLOAD_TEMP_DIRECTORY);
-
-        // Create the upload sub-directory under the server temporary directory.
-        if (!this.serverTempDir.exists()) {
-            boolean successful = this.serverTempDir.mkdirs();
-            if(!successful) log.warn("Failed to create directory: "+serverTempDir.getAbsolutePath());
-        }
     }
 
     @Override
@@ -118,27 +109,22 @@ public class DomainHttpServer implements HttpHandler {
         ModelNode response = null;
 
         try {
-             tempUploadFile = extractPostContent(http);
+            SeekResult result = seekToDeployment(http);
 
-             /*
-             * TODO Change to use upload-deployment-stream operation. This would involve wrapping the input stream containing
-             * the request body in a multipart decoder stream that would read only the deployment contained in the
-             * multipart/form data.
-             */
-             final ModelNode dmr = new ModelNode();
-             dmr.get("operation").set("upload-deployment-url");
-             dmr.get("address").setEmptyList();
-             dmr.get("url").set(tempUploadFile.toURI().toURL().toString());
+            final ModelNode dmr = new ModelNode();
+            dmr.get("operation").set("upload-deployment-stream");
+            dmr.get("address").setEmptyList();
+            dmr.get("input-stream-index").set(0);
 
-             response = modelController.execute(OperationBuilder.Factory.create(dmr).build());
+            OperationBuilder operation = OperationBuilder.Factory.create(dmr);
+            operation.addInputStream(result.stream);
+            response = modelController.execute(operation.build());
+            drain(http.getRequestBody());
         } catch (Throwable t) {
+            // TODO Consider draining input stream
             log.error("Unexpected error executing deployment upload request", t);
-            http.sendResponseHeaders(HTTP_INTERNAL_SERVER_ERROR_STATUS, -1);
+            http.sendResponseHeaders(INTERNAL_ERROR, -1);
             return;
-        } finally {
-            if (tempUploadFile != null && tempUploadFile.exists()) {
-                tempUploadFile.delete();
-            }
         }
 
         // TODO Determine what format the response should be in for a deployment upload request.
@@ -174,7 +160,7 @@ public class DomainHttpServer implements HttpHandler {
             response = modelController.execute(OperationBuilder.Factory.create(dmr).build());
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
-            http.sendResponseHeaders(HTTP_INTERNAL_SERVER_ERROR_STATUS, -1);
+            http.sendResponseHeaders(INTERNAL_ERROR, -1);
             return;
         }
 
@@ -231,98 +217,68 @@ public class DomainHttpServer implements HttpHandler {
         }
     }
 
+    private static final class SeekResult {
+        BoundaryDelimitedInputStream stream;
+        String fileName;
+    }
+
     /**
      * Extracts the body content contained in a POST request.
      *
      * @param http The <code>HttpExchange</code> object containing POST request data.
-     * @return The temporary file containing the extracted POST data.
+     * @return a result containing the stream and the file name reported by the client
      * @throws IOException if an error occurs while attempting to extract the POST request data.
      */
-    private File extractPostContent(final HttpExchange http) throws IOException {
-        final BoundaryDelimitedInputStream iStream = new BoundaryDelimitedInputStream(http.getRequestBody(), POST_BOUNDARY);
-        final File tempUploadFile = File.createTempFile("upload", ".tmp", serverTempDir);
-        final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempUploadFile));
+    private SeekResult seekToDeployment(final HttpExchange http) throws IOException {
+        final String type = http.getRequestHeaders().getFirst("Content-Type");
+        if (type == null)
+            throw new IllegalArgumentException("No content type provided");
 
-        final byte[] buffer = new byte[UPLOAD_BUFFER_SIZE];
-        boolean isDeploymentPart = false;
+        Matcher matcher = MULTIPART_FD_BOUNDARY.matcher(type);
+        if (!matcher.matches())
+            throw new IllegalArgumentException("Invalid content type provided: " + type);
 
+        final String boundary = "--" + matcher.group(1);
 
-        try {
-            // Read from the stream until the deployment is found in the POST data.
-            while (!isDeploymentPart && !iStream.isOuterStreamClosed()) {
-                int numRead = 0;
+        final BoundaryDelimitedInputStream stream = new BoundaryDelimitedInputStream(http.getRequestBody(), boundary.getBytes("US-ASCII"));
 
-                // Read the POST section header from the inner stream.
-                final MultipartHeader header = readHeader(iStream);
+        // Eat preamble
+        byte[] ignore = new byte[1024];
+        while (stream.read(ignore) != -1) {}
 
-                if(header != null) {
-                    // Determine if the current section is a deployment file upload.
-                    isDeploymentPart = MULTIPART_FORM_DATA_CONTENT_TYPE.equals(header.getContentType());
+        // From here on out a boundary is prefixed with a CRLF that should be skipped
+        stream.setBoundary(("\r\n" + boundary).getBytes("US-ASCII"));
 
-                    /*
-                     *  Read the body following the header.  If it is the deployment,
-                     *  write it to the temporary file.  Otherwise, discard the data.
-                     */
-                    while (numRead != -1) {
-                        numRead = iStream.read(buffer);
-                        if (numRead > 0 && isDeploymentPart) {
-                            bos.write(buffer, 0, numRead);
-                        }
-                    }
+        while (!stream.isOuterStreamClosed()) {
+            // purposefully send the trailing CRLF to headers so that a headerless body can be detected
+            MimeHeaderParser.ParseResult result = MimeHeaderParser.parseHeaders(stream);
+            if (result.eof()) continue; // Skip content-less part
+
+            Headers partHeaders = result.headers();
+            String disposition = partHeaders.getFirst(CONTENT_DISPOSITION);
+            if (disposition != null) {
+                matcher = DISPOSITION_FILE.matcher(disposition);
+                if (matcher.matches()) {
+                    SeekResult seek = new SeekResult();
+                    seek.fileName = matcher.group(1);
+                    seek.stream = stream;
+
+                    return seek;
                 }
             }
-        } finally {
-            /*
-             * Files produced by this method that are left hanging around by an exception will be cleaned up when the HTTP
-             * server stops. Therefore, we don't need any special handling here to clean-up due to an exception. Simply close
-             * the stream like normal.
-             */
-            bos.flush();
-            safeClose(bos);
+
+            while (stream.read(ignore) != -1) {}
         }
 
-        return tempUploadFile;
+        throw new IllegalArgumentException("Request did not contain a deployment");
     }
 
-    /**
-     * Reads and returns the multipart headers from the source stream.
-     *
-     * @param boundaryStream A <code>BoundaryDelimitedInputStream</code> that wraps a POST request.
-     * @return A <code>MultipartHeader</code> object wrapping the extracted header or <code>null</code> if the stream is closed.
-     * @throws IOException if an error occurs while attempting to read the headers from the current inside stream.
-     */
-    private MultipartHeader readHeader(final BoundaryDelimitedInputStream boundaryStream) throws IOException {
-        MultipartHeader currentHeader = null;
-        if (!boundaryStream.isOuterStreamClosed()) {
-            int separatorCounter = 0;
-            byte[] separatorBuffer = new byte[POST_HEADER_BOUNDARY.length];
-            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-            try {
-                // Read the header until the post header separator sequence is found.
-                while (separatorCounter < POST_HEADER_BOUNDARY.length) {
-                    int current = boundaryStream.read();
-                    if (current == POST_HEADER_BOUNDARY[separatorCounter]) {
-                        separatorBuffer[separatorCounter] = (byte) current;
-                        separatorCounter++;
-                    } else {
-                        if (separatorCounter > 0) {
-                            bos.write(separatorBuffer, 0, separatorCounter);
-                        }
-                        bos.write(current);
-                        separatorCounter = 0;
-                    }
-                }
-            } finally {
-                bos.flush();
-                bos.close();
-            }
-
-            // Create the header from the read data
-            currentHeader = new MultipartHeader(bos.toByteArray());
+    private void drain(InputStream stream) {
+        try {
+            byte[] ignore = new byte[1024];
+            while (stream.read(ignore) != -1) {}
+        } catch (Throwable eat) {
         }
-
-        return currentHeader;
     }
 
     private void safeClose(Closeable close) {
@@ -442,13 +398,6 @@ public class DomainHttpServer implements HttpHandler {
     public void stop() {
         server.stop(0);
         modelController = null;
-        if (serverTempDir.exists()) {
-            // Clean up any files that accidentally got left behind
-            for (File file : serverTempDir.listFiles()) {
-                file.delete();
-            }
-            serverTempDir.delete();
-        }
     }
 
     public static DomainHttpServer create(InetSocketAddress socket, int backlog, ModelController modelController,

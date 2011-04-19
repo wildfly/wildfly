@@ -95,8 +95,8 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
                             .addInjection(service.getPortInjector(), port)
                             .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(new JBossThreadFactory(new ThreadGroup("HttpManagementService-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext())))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                             .install();
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

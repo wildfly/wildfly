@@ -74,7 +74,6 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
                     if (dataSourceController != null) {
                         if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.ACTIVE);
-                            dataSourceController.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                         } else {
                             throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is already started"));
                         }
@@ -93,6 +92,7 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
                     if (binderController != null && !ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.ACTIVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

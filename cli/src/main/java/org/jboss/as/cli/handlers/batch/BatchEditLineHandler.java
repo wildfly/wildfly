@@ -38,17 +38,12 @@ import org.jboss.as.cli.operation.OperationFormatException;
 public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
     public BatchEditLineHandler() {
-        super("edit-batch-line", new CommandLineCompleter() {
+        super("batch-edit-line", new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
                 final BatchManager batchManager = ctx.getBatchManager();
                 if(!batchManager.isBatchActive()) {
-                    return -1;
-                }
-                final Batch batch = batchManager.getActiveBatch();
-                int batchSize = batch.size();
-                if(batchSize == 0) {
                     return -1;
                 }
 
@@ -61,7 +56,8 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
                 }
 
                 if(nextCharIndex == buffer.length()) {
-                    return -1;
+                    candidates.add("--help");
+                    return nextCharIndex;
                 }
 
                 int nextWsIndex = nextCharIndex + 1;
@@ -77,12 +73,20 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
                 }
 
                 String lineNumberStr = buffer.substring(nextCharIndex, nextWsIndex);
+                if("--help".startsWith(lineNumberStr)) {
+                    candidates.add("--help");
+                    return nextCharIndex;
+                }
+
                 final int lineNumber;
                 try {
                     lineNumber = Integer.parseInt(lineNumberStr);
                 } catch(NumberFormatException e) {
                     return -1;
                 }
+
+                final Batch batch = batchManager.getActiveBatch();
+                int batchSize = batch.size();
 
                 if(lineNumber < 1 || lineNumber > batchSize) {
                     return -1;

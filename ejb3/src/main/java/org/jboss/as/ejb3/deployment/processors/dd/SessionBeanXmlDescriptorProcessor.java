@@ -22,13 +22,14 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -84,9 +85,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     @Override
     protected void processBeanMetaData(SessionBeanMetaData sessionBean, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        // get the module description
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final String applicationName = moduleDescription.getAppName();
+        final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
 
         SessionType sessionType = sessionBean.getSessionType();
         if (sessionType == null) {
@@ -97,13 +96,13 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         SessionBeanComponentDescription sessionBeanDescription = null;
         switch (sessionType) {
             case Stateless:
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, moduleDescription);
+                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription);
                 break;
             case Stateful:
-                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, moduleDescription);
+                sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription);
                 break;
             case Singleton:
-                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, moduleDescription);
+                sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
@@ -156,7 +155,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
 
         // Add this component description to the module description
-        moduleDescription.addComponent(sessionBeanDescription);
+        ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
 
     }
 

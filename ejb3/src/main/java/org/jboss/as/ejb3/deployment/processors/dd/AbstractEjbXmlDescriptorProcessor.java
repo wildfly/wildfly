@@ -65,14 +65,13 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
         if (ejbJarMetaData == null) {
             return;
         }
-
+        // process EJBs
         EnterpriseBeansMetaData ejbs = ejbJarMetaData.getEnterpriseBeans();
-        if (ejbs == null || ejbs.isEmpty()) {
-            return;
-        }
-        for (EnterpriseBeanMetaData ejb : ejbs) {
-            if (this.getMetaDataType().isInstance(ejb)) {
-                this.processBeanMetaData((T) ejb, phaseContext);
+        if (ejbs != null && !ejbs.isEmpty()) {
+            for (EnterpriseBeanMetaData ejb : ejbs) {
+                if (this.getMetaDataType().isInstance(ejb)) {
+                    this.processBeanMetaData((T) ejb, phaseContext);
+                }
             }
         }
     }

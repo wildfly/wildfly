@@ -22,9 +22,9 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.AbstractComponentConfiguration;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -42,10 +42,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
      *
      * @param componentName      the component name
      * @param componentClassName the component instance class name
-     * @param moduleDescription the module description
+     * @param ejbModuleDescription the module description
      */
-    public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription) {
-        super(componentName, componentClassName, moduleDescription);
+    public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription) {
+        super(componentName, componentClassName, ejbModuleDescription);
     }
 
     @Override

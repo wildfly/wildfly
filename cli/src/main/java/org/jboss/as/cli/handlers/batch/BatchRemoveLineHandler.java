@@ -35,7 +35,7 @@ import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 public class BatchRemoveLineHandler extends CommandHandlerWithHelp {
 
     public BatchRemoveLineHandler() {
-        super("remove-batch-line");
+        super("batch-line-remove");
     }
 
 

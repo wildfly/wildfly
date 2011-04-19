@@ -1,0 +1,9 @@
+Synopsis:	remove-batch-line line_number
+
+Description:	removes an existing command line specified with line number argument
+				from the currently active batch.
+
+Arguments:
+
+	line_number		- the line number of the existing command line in the batch that
+					should be removed from the batch. Line numbers start with 1.

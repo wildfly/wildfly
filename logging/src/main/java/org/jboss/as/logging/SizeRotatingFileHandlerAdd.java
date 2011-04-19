@@ -116,8 +116,8 @@ class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler {
                         if (operation.has(ROTATE_SIZE))
                             service.setRotateSize(operation.get(ROTATE_SIZE).asLong(DEFAULT_ROTATE_SIZE));
                         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                         serviceBuilder.install();
+                        resultHandler.handleResultComplete();
                     } catch (Throwable t) {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }

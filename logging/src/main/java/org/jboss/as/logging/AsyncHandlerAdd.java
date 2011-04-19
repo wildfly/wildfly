@@ -106,11 +106,11 @@ class AsyncHandlerAdd implements ModelAddOperationHandler, DescriptionProvider {
                         service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                         service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
                         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.addListener(new ResultHandler.ServiceStartListener(resultHandler));
                         serviceBuilder.install();
                     } catch (Throwable t) {
                         throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

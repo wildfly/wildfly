@@ -25,6 +25,7 @@ package org.jboss.as.jpa.injectors;
 import org.jboss.as.ee.component.BindingDescription;
 import org.jboss.as.ee.component.BindingSourceDescription;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
+import org.jboss.as.jpa.container.NonTxEmCloser;
 import org.jboss.as.jpa.container.SFSBCallStack;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
@@ -35,19 +36,16 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.jandex.AnnotationValue;
-
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
-
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -62,6 +60,15 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
     private final PersistenceContextJndiInjectable injectable;
 
     private final ServiceName puServiceName;
+
+    // the following list of classes determines which unwrap classes are special, in that the underlying entity
+    // manager won't be closed, even if no transaction is active on the calling thread.
+    // TODO:  move this list to PersistenceProviderAdaptor
+    private static final HashSet<String> skipEntityManagerCloseFor = new HashSet<String>();
+    static {
+        skipEntityManagerCloseFor.add("org.hibernate.Session"); // Hibernate session will take ownership of the session
+    }
+
 
     /**
      * Constructor for the PersistenceContextInjectorService
@@ -128,14 +135,16 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
             PersistenceUnitService service = (PersistenceUnitService)deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
             EntityManager entityManager;
-
+            boolean isExtended;
             if (type.equals(PersistenceContextType.TRANSACTION)) {
+                isExtended = false;
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
                 if (log.isDebugEnabled())
                     log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
             }
             else {
                 // handle PersistenceContextType.EXTENDED
+                isExtended = true;
                 EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
@@ -163,7 +172,15 @@ public class PersistenceContextBindingSourceDescription extends BindingSourceDes
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
                 }
+                boolean skipAutoCloseAfterUnwrap = skipEntityManagerCloseFor.contains(injectionTypeName);
+                if (!skipAutoCloseAfterUnwrap && !isExtended) {
+                    NonTxEmCloser.pushCall();   // create thread local to hold underlying entity manager that unwrap will create
+                }
                 Object targetValueToInject = entityManager.unwrap(extensionClass);
+                if (!skipAutoCloseAfterUnwrap && !isExtended) {
+                    NonTxEmCloser.popCall();    // close entity manager that unwrap created
+                }
+
                 return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
             }
 

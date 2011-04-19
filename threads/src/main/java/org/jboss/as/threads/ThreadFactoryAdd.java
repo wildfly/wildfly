@@ -96,9 +96,9 @@ public class ThreadFactoryAdd implements ModelAddOperationHandler {
                     //TODO What about the properties?
                     try {
                         target.addService(ThreadsServices.threadFactoryName(name), service)
-                                .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                                 .setInitialMode(ServiceController.Mode.ACTIVE)
                                 .install();
+                        resultHandler.handleResultComplete();
                     } catch (ServiceRegistryException e) {
                         throw new OperationFailedException(new ModelNode().set(e.getMessage()));
                     }

@@ -55,6 +55,7 @@ import org.jboss.msc.value.Values;
 import org.jboss.util.NotImplementedException;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
@@ -172,7 +173,8 @@ public class WebServiceRefAnnotationParsingProcessor extends AbstractComponentCo
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         final Referenceable referenceable;
         try {
-            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(
+                    ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
             final ServiceRefHandler serviceRefHandler = spiProvider.getSPI(ServiceRefHandlerFactory.class).getServiceRefHandler();
             referenceable = serviceRefHandler.createReferenceable(ref);
@@ -231,7 +233,7 @@ public class WebServiceRefAnnotationParsingProcessor extends AbstractComponentCo
 
         public Object getServiceRefValue() {
             // FIXME this is a workaround to class loader issues
-            final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            final ClassLoader tccl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
             final ClassLoader classLoader = new ClassLoader(this.getClass().getClassLoader()) {
                 @Override
                 public Class<?> loadClass(String className) throws ClassNotFoundException {

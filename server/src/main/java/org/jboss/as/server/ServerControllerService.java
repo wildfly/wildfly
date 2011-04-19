@@ -104,7 +104,7 @@ final class ServerControllerService implements Service<ServerController> {
     private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
 
-    private final InjectedValue<ExternalModuleService> injectedExternalModuleServie = new InjectedValue<ExternalModuleService>();
+    private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
 
     // mutable state
     private ServerController serverController;
@@ -119,7 +119,7 @@ final class ServerControllerService implements Service<ServerController> {
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,
-                service.injectedExternalModuleServie);
+                service.injectedExternalModuleService);
         serviceBuilder.install();
     }
 
@@ -139,6 +139,7 @@ final class ServerControllerService implements Service<ServerController> {
         final ExecutorService executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE, threadFactory);
         final ServerControllerImpl serverController = new ServerControllerImpl(container, serviceTarget, serverEnvironment, persister, injectedDeploymentRepository.getValue(), executorService);
         serverController.init();
+        serviceTarget.addListener(serverController.getServerStateMonitorListener());
 
         final List<ModelNode> updates;
         try {
@@ -199,7 +200,7 @@ final class ServerControllerService implements Service<ServerController> {
             @Override
             public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
                 phaseContext.getDeploymentUnit().putAttachment(Attachments.SERVICE_MODULE_LOADER, injectedModuleLoader.getValue());
-                phaseContext.getDeploymentUnit().putAttachment(Attachments.EXTERNAL_MODULE_SERVICE, injectedExternalModuleServie.getValue());
+                phaseContext.getDeploymentUnit().putAttachment(Attachments.EXTERNAL_MODULE_SERVICE, injectedExternalModuleService.getValue());
             }
 
             @Override

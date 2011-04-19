@@ -1,0 +1,4 @@
+Synopsis:	clear-batch
+
+Description:	removes all the existing command lines from the currently active batch.
+				The CLI stays in the batch mode after the command is executed.

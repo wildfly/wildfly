@@ -202,17 +202,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
                     log.error(e);
                 }
             } else {
-                final StringBuilder b = new StringBuilder();
-                b.append(String.format("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive)));
-                final Set<ServiceName> set = missingDepsSet;
-                final Iterator<ServiceName> i = set.iterator();
-                if (i.hasNext()) {
-                    b.append("\n    Services missing dependencies:");
-                    do {
-                        b.append("\n        ").append(i.next());
-                    } while (i.hasNext());
-                }
-                log.error(b);
+                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
             }
         }
     }

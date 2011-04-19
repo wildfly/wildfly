@@ -90,10 +90,9 @@ class DeploymentScannerRemove implements ModelRemoveOperationHandler, Descriptio
                     final ServiceController<?> controller = context.getServiceRegistry()
                             .getService(DeploymentScannerService.getServiceName(name));
                     if (controller != null) {
-                        controller.addListener(new ResultHandler.ServiceRemoveListener(resultHandler));
-                    } else {
-                        resultHandler.handleResultComplete();
+                        controller.setMode(ServiceController.Mode.REMOVE);
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {

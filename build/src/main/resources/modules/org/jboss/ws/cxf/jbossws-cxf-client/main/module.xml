@@ -41,5 +41,6 @@
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="export" />
         <module name="org.apache.cxf" export="true" services="export" />
         <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" export="true" services="export" />
+        <module name="org.jboss.jaxbintros" export="true"/>
     </dependencies>
 </module>
