@@ -34,7 +34,6 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -67,7 +66,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  */
 public class HttpDeploymentUploadUnitTestCase {
 
-    private static final String BOUNDARY = "-----------------------------261773107125236";
+    private static final String BOUNDARY_PARAM = "NeAG1QNIHHOyB5joAS7Rox!!";
+
+    private static final String BOUNDARY = "--" + BOUNDARY_PARAM;
 
     private static final String CRLF = "\r\n";
 
@@ -114,6 +115,8 @@ public class HttpDeploymentUploadUnitTestCase {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod(POST_REQUEST_METHOD);
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY_PARAM);
+
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
 //            final WebArchive archive = ShrinkWrapUtils.createWebArchive(TEST_WAR, SimpleServlet.class.getPackage());
@@ -155,7 +158,7 @@ public class HttpDeploymentUploadUnitTestCase {
     private void writeUploadRequest(final InputStream is, final OutputStream os) throws IOException {
         os.write(buildUploadPostRequestHeader());
         writePostRequestPayload(is, os);
-        os.write(buildPostRequestFooter());
+        os.write((CRLF + BOUNDARY + "--" + CRLF).getBytes("US-ASCII"));
         os.flush();
     }
 
@@ -177,9 +180,13 @@ public class HttpDeploymentUploadUnitTestCase {
 
     private byte[] buildUploadPostRequestHeader() {
         final StringBuilder builder = new StringBuilder();
+        builder.append("blah blah blah preamble blah blah blah");
         builder.append(buildPostRequestHeaderSection("form-data; name=\"test1\"", "", "test1"));
+        builder.append(CRLF);
         builder.append(buildPostRequestHeaderSection("form-data; name=\"test2\"", "", "test2"));
+        builder.append(CRLF);
         builder.append(buildPostRequestHeaderSection("form-data; name=\"file\"; filename=\"test.war\"", "application/octet-stream", ""));
+
         return builder.toString().getBytes();
     }
 
@@ -189,26 +196,20 @@ public class HttpDeploymentUploadUnitTestCase {
         builder.append(CRLF);
         if(contentDisposition != null && contentDisposition.length() > 0) {
             builder.append(String.format("Content-Disposition: %s", contentDisposition));
+            builder.append(CRLF);
         }
-        builder.append(CRLF);
+
         if(contentType != null && contentType.length() > 0) {
             builder.append(String.format("Content-Type: %s", contentType));
+            builder.append(CRLF);
         }
+
         builder.append(CRLF);
+
         if(content != null && content.length() > 0) {
             builder.append(content);
         }
-        builder.append(CRLF);
         return builder.toString();
-    }
-
-    private byte[] buildPostRequestFooter() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(CRLF);
-        builder.append(BOUNDARY);
-        builder.append("--");
-        builder.append(CRLF);
-        return builder.toString().getBytes();
     }
 
     private void writePostRequestPayload(final InputStream is, final OutputStream os) throws IOException {

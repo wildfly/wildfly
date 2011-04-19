@@ -34,7 +34,7 @@ import org.jboss.logging.Logger;
  *
  * @author Jason T. Greene
  */
-public class BoundaryDelimitedInputStream extends FilterInputStream {
+public final class BoundaryDelimitedInputStream extends FilterInputStream {
     private static final int BOUNDARY_NOT_FOUND = SimpleBoyerMoore.PATTERN_NOT_FOUND;
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
@@ -277,6 +277,18 @@ public class BoundaryDelimitedInputStream extends FilterInputStream {
      */
     public boolean isOuterStreamClosed() {
         return realEof && leftOvers == null;
+    }
+
+    /**
+     * Sets a new boundary to delimit the stream by. This can be performed at any time.
+     * Obviously, data that has already been returned can not be guaranteed not to
+     * contain the new boundary.
+     *
+     * @param boundary
+     */
+    public void setBoundary(byte[] boundary) {
+        this.boundary = boundary.clone();
+        boyerMoore = new SimpleBoyerMoore(boundary);
     }
 
     public void printLeftOvers() {
