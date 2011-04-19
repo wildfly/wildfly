@@ -96,7 +96,7 @@ public class CommandLineMain {
     private static final CommandRegistry cmdRegistry = new CommandRegistry();
     static {
         cmdRegistry.registerHandler(new HelpHandler(), "help", "h");
-        cmdRegistry.registerHandler(new QuitHandler(), "quit", "q");
+        cmdRegistry.registerHandler(new QuitHandler(), "quit", "q", "exit");
         cmdRegistry.registerHandler(new ConnectHandler(), "connect");
         cmdRegistry.registerHandler(new PrefixHandler(), "cd", "cn");
         cmdRegistry.registerHandler(new LsHandler(), "ls");
