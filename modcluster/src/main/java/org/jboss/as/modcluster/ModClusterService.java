@@ -21,9 +21,11 @@
  */
 package org.jboss.as.modcluster;
 
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -64,7 +66,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jean-Frederic Clere
  */
-class ModClusterService implements Service<Void> {
+class ModClusterService implements ModCluster, Service<ModCluster> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
@@ -93,10 +95,23 @@ class ModClusterService implements Service<Void> {
         final ModelNode proxyconf = modelconf.get(CommonAttributes.PROXY_CONF);
         final ModelNode httpdconf = proxyconf.get(CommonAttributes.HTTPD_CONF);
         final ModelNode nodeconf = proxyconf.get(CommonAttributes.NODES_CONF);
+
+        // Set some defaults...
+        if (!httpdconf.hasDefined(CommonAttributes.PROXY_LIST)) {
+            config.setAdvertise(true);
+        }
+        config.setAdvertisePort(23364);
+        config.setAdvertiseGroupAddress("224.0.1.105");
+        config.setAutoEnableContexts(true);
+        config.setStopContextTimeout(10);
+        config.setSocketTimeout(20000);
+
+        // Read node to set configuration.
         if (httpdconf.hasDefined(CommonAttributes.ADVERTISE_SOCKET)) {
             // TODO: That should be a socket-binding....
             config.setAdvertisePort(23364);
             config.setAdvertiseGroupAddress("224.0.1.105");
+            config.setAdvertise(true);
         }
         if (httpdconf.hasDefined(CommonAttributes.SSL)) {
             // TODO: Add SSL logic.
@@ -191,8 +206,8 @@ class ModClusterService implements Service<Void> {
     }
 
     @Override
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
+    public synchronized ModCluster getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
     }
 
     MBeanServer getMBeanServer() {
@@ -303,5 +318,10 @@ class ModClusterService implements Service<Void> {
                 return;
             }
         }
+    }
+
+    @Override
+    public Map<InetSocketAddress, String> getProxyInfo() {
+        return service.getProxyInfo();
     }
 }

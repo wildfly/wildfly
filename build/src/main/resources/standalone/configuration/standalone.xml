@@ -362,7 +362,7 @@
        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
             <mod-cluster-config>
                <proxy-conf>
-                 <httpd-conf proxy-list="localhost:6666" advertise-socket="mod_cluster" >
+                 <httpd-conf advertise-socket="mod_cluster" >
                  </httpd-conf>
                </proxy-conf>
             </mod-cluster-config>
