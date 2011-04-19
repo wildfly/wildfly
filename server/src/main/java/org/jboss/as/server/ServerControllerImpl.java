@@ -189,19 +189,21 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     protected OperationResult doExecute(OperationContext context, Operation operation, OperationHandler operationHandler, ResultHandler resultHandler, PathAddress address,
             final OperationControllerContext operationControllerContext) throws OperationFailedException {
         boolean rollback = isRollbackOnRuntimeFailure(context, operation.getOperation());
-        RollbackAwareResultHandler rollbackAwareHandler = null;
-        if (rollback) {
-            rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
-            resultHandler = rollbackAwareHandler;
-        }
-        final OperationResult result = super.doExecute(context, operation, operationHandler, resultHandler, address, operationControllerContext);
+        RollbackAwareResultHandler rollbackAwareHandler = new RollbackAwareResultHandler(resultHandler);
+        final OperationResult result = super.doExecute(context, operation, operationHandler, rollbackAwareHandler, address, operationControllerContext);
         if(context instanceof ServerOperationContextImpl) {
-            if (rollbackAwareHandler != null) {
+            if (rollback) {
                 rollbackAwareHandler.setRollbackOperation(result.getCompensatingOperation());
                 // TODO deal with Cancellable as well
             }
             final ServerOperationContextImpl serverOperationContext = ServerOperationContextImpl.class.cast(context);
             if(serverOperationContext.getRuntimeTask() != null) {
+
+                // Make sure we've settled and generated a report post-boot so boot issues don't show up as op issues
+                if (!serverStateMonitorListener.isFirstReportComplete() && state.getReference() != State.STARTING) {
+                    serverStateMonitorListener.awaitUninterruptibly();
+                }
+
                 try {
                     serverOperationContext.getRuntimeTask().execute(new RuntimeTaskContext() {
                         @Override
@@ -215,16 +217,26 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                         }
                     });
                 } catch (OperationFailedException e) {
-                    resultHandler.handleFailed(e.getFailureDescription());
+                    rollbackAwareHandler.handleFailed(e.getFailureDescription());
                 } catch (Exception e) {
-                    resultHandler.handleFailed(new ModelNode().set(e.toString()));
+                    rollbackAwareHandler.handleFailed(new ModelNode().set(e.toString()));
                 }
+
+                ModelNode serverStateChangeReport = null;
                 if (state.getReference() != State.STARTING) {
-                    // todo - append result
-                    serverStateMonitorListener.awaitUninterruptibly();
+                    serverStateChangeReport = serverStateMonitorListener.awaitUninterruptibly();
+                }
+                if (serverStateChangeReport != null && !rollbackAwareHandler.isTerminalState()) {
+                    rollbackAwareHandler.handleFailed(serverStateChangeReport);
                 }
             }
+
+            if (!rollbackAwareHandler.isTerminalState()) {
+                rollbackAwareHandler.notifySuccess();
+            }
         }
+        // else this is a step in a composite op and the ServerMultiStepOperationController will handle it
+
         return result;
     }
 
@@ -271,108 +283,137 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private final AtomicInteger busyServiceCount = new AtomicInteger();
 
         // protected by "this"
+        /** Failed controllers pending tick reaching zero */
         private final Map<ServiceController<?>, String> failedControllers = new IdentityHashMap<ServiceController<?>, String>();
+        /** Failed controllers as of the last time tick reached zero */
+        private final Map<ServiceController<?>, String> latestSettledFailedControllers = new IdentityHashMap<ServiceController<?>, String>();
+        /** Failed controllers as of the last time getServerStateChangeReport() was called */
+        private final Map<ServiceController<?>, String> lastReportFailedControllers = new IdentityHashMap<ServiceController<?>, String>();
+        /** Services with missing deps */
         private final Set<ServiceController<?>> servicesWithMissingDeps = identitySet();
+        /** Services with missing deps as of the last time tick reached zero */
         private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
+        /** Services with missing deps as of the last time getServerStateChangeReport() was called */
+        private final Set<ServiceName> lastReportMissingDepSet = new TreeSet<ServiceName>();
+        /** Flag indicating we've created our first post-boot report */
+        private volatile boolean firstReportDone;
 
         ServerStateMonitorListener(final ServiceRegistry registry) {
             serviceRegistry = registry;
         }
 
+        @Override
         public void listenerAdded(final ServiceController<?> controller) {
             if (controller.getName().equals(Services.JBOSS_SERVER_CONTROLLER)) {
                 controller.removeListener(this);
             } else {
-                untick(controller);
+                untick();
             }
         }
 
+        @Override
         public void serviceWaiting(final ServiceController<?> controller) {
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void serviceWaitingCleared(final ServiceController<?> controller) {
-            untick(controller);
+            untick();
         }
 
+        @Override
         public void serviceWontStart(final ServiceController<?> controller) {
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void serviceWontStartCleared(final ServiceController<?> controller) {
-            untick(controller);
+            untick();
         }
 
+        @Override
         public void dependencyProblem(final ServiceController<?> controller) {
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void dependencyProblemCleared(final ServiceController<?> controller) {
-            untick(controller);
+            untick();
         }
 
+        @Override
         public void serviceStarting(final ServiceController<?> controller) {
             // no tick
         }
 
+        @Override
         public void serviceStarted(final ServiceController<?> controller) {
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             synchronized (this) {
                 failedControllers.put(controller, reason.toString());
             }
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void serviceRemoved(final ServiceController<?> controller) {
             synchronized (this) {
                 failedControllers.remove(controller);
                 servicesWithMissingDeps.remove(controller);
             }
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void serviceStopRequested(final ServiceController<?> controller) {
-            untick(controller);
+            untick();
         }
 
+        @Override
         public void serviceStopRequestCleared(final ServiceController<?> controller) {
-            tick(controller);
+            tick();
         }
 
+        @Override
         public void serviceStopping(final ServiceController<?> controller) {
             // no tick
         }
 
+        @Override
         public void failedServiceStarting(final ServiceController<?> controller) {
             synchronized (this) {
                 failedControllers.remove(controller);
             }
-            untick(controller);
+            untick();
         }
 
+        @Override
         public void failedServiceStopped(final ServiceController<?> controller) {
             synchronized (this) {
                 failedControllers.remove(controller);
             }
-            untick(controller);
+            untick();
         }
 
+        @Override
         public void immediateDependencyAvailable(final ServiceController<?> controller) {
             synchronized (this) {
                 servicesWithMissingDeps.remove(controller);
             }
         }
 
+        @Override
         public void immediateDependencyUnavailable(final ServiceController<?> controller) {
             synchronized (this) {
                 servicesWithMissingDeps.add(controller);
             }
         }
 
-        void awaitUninterruptibly() {
+        ModelNode awaitUninterruptibly() {
             boolean intr = false;
             // todo - atomically return the last status summary, or something
             try {
@@ -384,6 +425,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                             intr = true;
                         }
                     }
+
+                    return getServerStateChangeReport();
                 }
             } finally {
                 if (intr) {
@@ -395,7 +438,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         /**
          * Tick down the count, triggering a deployment status report when the count is zero.
          */
-        private void tick(final ServiceController<?> tickController) {
+        private void tick() {
             int tick = busyServiceCount.decrementAndGet();
 //            System.out.println("TICK -> " + tick + " (" + Thread.currentThread().getStackTrace()[2].getMethodName() + ") -> " + tickController);
             if (tick == 0) {
@@ -418,6 +461,7 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
                     // newly missing deps
                     final Set<ServiceName> newlyMissing = new TreeSet<ServiceName>();
+                    newlyMissing.clear();
                     for (ServiceName name : missingDeps) {
                         if (! previousMissing.contains(name)) {
                             newlyMissing.add(name);
@@ -425,6 +469,10 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                     }
 
                     previousMissingDepSet = missingDeps;
+
+                    // track failed services for the change report
+                    latestSettledFailedControllers.clear();
+                    latestSettledFailedControllers.putAll(failedControllers);
 
                     final StringBuilder msg = new StringBuilder();
                     msg.append("Service status report\n");
@@ -468,9 +516,53 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             }
         }
 
-        private void untick(final ServiceController<?> controller) {
-            int tick = busyServiceCount.incrementAndGet();
+        private void untick() {
+            busyServiceCount.incrementAndGet();
 //            System.out.println("UNTICK -> " + tick + " (" + Thread.currentThread().getStackTrace()[2].getMethodName() + ") -> ");
+        }
+
+        private synchronized ModelNode getServerStateChangeReport() {
+
+            // Determine the newly failed controllers
+            final Map<ServiceController<?>, String> newFailedControllers = new IdentityHashMap<ServiceController<?>, String>(latestSettledFailedControllers);
+            newFailedControllers.keySet().removeAll(lastReportFailedControllers.keySet());
+            // Back up current state for use in next report
+            lastReportFailedControllers.clear();
+            lastReportFailedControllers.putAll(latestSettledFailedControllers);
+            // Determine the new missing dependencies
+            final Set<ServiceName> newReportMissingDepSet = new TreeSet<ServiceName>(previousMissingDepSet);
+            newReportMissingDepSet.removeAll(lastReportMissingDepSet);
+            // Back up current state for use in next report
+            lastReportMissingDepSet.clear();
+            lastReportMissingDepSet.addAll(previousMissingDepSet);
+
+            ModelNode report = null;
+            if (!newFailedControllers.isEmpty() || !newReportMissingDepSet.isEmpty()) {
+                report = new ModelNode();
+                if (! newReportMissingDepSet.isEmpty()) {
+                    ModelNode missing = report.get("New missing/unsatisfied dependencies");
+                    for (ServiceName name : newReportMissingDepSet) {
+                        ServiceController<?> controller = serviceRegistry.getService(name);
+                        if (controller == null) {
+                            missing.add(name + " (missing)");
+                        } else {
+                            missing.add(name + " (unavailable)\n");
+                        }
+                    }
+                }
+                if (! newFailedControllers.isEmpty()) {
+                    ModelNode failed = report.get("Services which failed to start:");
+                    for (Map.Entry<ServiceController<?>, String> entry : newFailedControllers.entrySet()) {
+                        failed.add(entry.getKey().getName().toString());
+                    }
+                }
+            }
+            firstReportDone = true;
+            return report;
+        }
+
+        private boolean isFirstReportComplete() {
+            return firstReportDone;
         }
     }
 
@@ -580,7 +672,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
     class RollbackAwareResultHandler implements ResultHandler {
 
         private final ResultHandler delegate;
-        private ModelNode rollbackOperation;
+        private volatile ModelNode rollbackOperation;
+        private volatile boolean terminalState;
 
         public RollbackAwareResultHandler(ResultHandler resultHandler) {
             delegate = resultHandler;
@@ -593,11 +686,19 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         @Override
         public void handleResultComplete() {
-            delegate.handleResultComplete();
+            // we ignore these and wait for notifySuccess();
         }
 
         @Override
         public void handleFailed(final ModelNode failureDescription) {
+
+            if (terminalState) {
+                // An async call from a service listener?? Oh well, too late.
+                // We're going to eliminate async handling anyway
+                return;
+            }
+
+            terminalState = true;
 
             if (rollbackOperation == null || !rollbackOperation.isDefined()) {
                 delegate.handleFailed(failureDescription);
@@ -653,11 +754,20 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         @Override
         public void handleCancellation() {
+            terminalState = true;
             delegate.handleCancellation();
         }
 
         private void setRollbackOperation(ModelNode compensatingOperation) {
             rollbackOperation = compensatingOperation;
+        }
+
+        private boolean isTerminalState() {
+            return terminalState;
+        }
+
+        private void notifySuccess() {
+            delegate.handleResultComplete();
         }
     }
 
@@ -699,16 +809,22 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                 // This is a nested compensating op so it needs to correctly record a failure
 
                 resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, resultsNode);
-                final ModelNode failureMsg = new ModelNode();
-                // TODO i18n
-                final String baseMsg = "Composite operation failed. Steps that failed:";
-                for (Property property : resultsNode.asPropertyList()) {
-                    final ModelNode stepResult = property.getValue();
-                    if (stepResult.hasDefined(FAILURE_DESCRIPTION)) {
-                        failureMsg.get(baseMsg, "Operation " + property.getName()).set(stepResult.get(FAILURE_DESCRIPTION));
-                    }
+
+                if (overallFailure != null) {
+                    resultHandler.handleFailed(overallFailure);
                 }
-                resultHandler.handleFailed(failureMsg);
+                else {
+                    final ModelNode failureMsg = new ModelNode();
+                    // TODO i18n
+                    final String baseMsg = "Composite operation failed. Steps that failed:";
+                    for (Property property : resultsNode.asPropertyList()) {
+                        final ModelNode stepResult = property.getValue();
+                        if (stepResult.hasDefined(FAILURE_DESCRIPTION)) {
+                            failureMsg.get(baseMsg, "Operation " + property.getName()).set(stepResult.get(FAILURE_DESCRIPTION));
+                        }
+                    }
+                    resultHandler.handleFailed(failureMsg);
+                }
             } else {
                 //This is the top level compensating op, which is not going to rollback on runtime failure, so we just return success
                 resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, resultsNode);
@@ -718,7 +834,10 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
 
         @Override
         protected void recordModelComplete() {
-            super.recordModelComplete();
+
+            if (isModelUpdated()) {
+                updateModelAndPersist();
+            }
 
             if (runtimeTasks.size() > 0) {
                 RuntimeTaskContext rtc = new RuntimeTaskContext() {
@@ -746,11 +865,28 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                         stepResultHandlers.get(id).handleFailed(new ModelNode().set(t.toString()));
                     }
                 }
-                if (state.getReference() != State.STARTING) {
-                    // todo - append result
-                    serverStateMonitorListener.awaitUninterruptibly();
+            }
+
+            if (state.getReference() != State.STARTING  && !(resultHandler instanceof StepResultHandler)) {
+                overallFailure = serverStateMonitorListener.awaitUninterruptibly();
+            }
+
+            for(int i = 0; i < steps.size(); i++) {
+                Integer id = Integer.valueOf(i);
+                StepResultHandler stepHandler = stepResultHandlers.get(id);
+                // doExecute will not invoke this
+                if (!stepHandler.isTerminalState()) {
+                    stepHandler.handleResultComplete();
                 }
             }
+
+            // If we haven't already recorded failures and we aren't a nested op
+            if (!hasFailures() && overallFailure != null && !(resultHandler instanceof StepResultHandler)) {
+                hasFailures = true;
+            }
+
+            modelComplete.set(true);
+            processComplete();
         }
 
         private void rollbackComplete(final ModelNode rollbackResult) {

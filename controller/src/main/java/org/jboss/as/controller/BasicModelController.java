@@ -59,6 +59,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -546,13 +547,15 @@ public class BasicModelController extends AbstractModelController<OperationContr
         /** Compensating operations keyed by step # */
         protected final Map<Integer, ModelNode> rollbackOps = new HashMap<Integer, ModelNode>();
         /** The ResultHandler for each step */
-        protected final Map<Integer, ResultHandler> stepResultHandlers = new HashMap<Integer, ResultHandler>();
+        protected final Map<Integer, StepResultHandler> stepResultHandlers = new HashMap<Integer, StepResultHandler>();
         /** The "step-X" string expected in the results for a compensating op, keyed by the step # of the step being rolled back */
         protected final Map<Integer, String> rollbackStepNames = new HashMap<Integer, String>();
         /** Flag set when all steps have been executed and only runtime tasks remain */
         protected final AtomicBoolean modelComplete = new AtomicBoolean(false);
         /** Flag set if any step has had it's handler's handleFailed method invoked */
         protected boolean hasFailures = false;
+        /** An overall failure message that cannot be associated with a single step */
+        protected ModelNode overallFailure;
         /** Provides the model the overall operation should read and/or update */
         protected final ModelProvider modelSource;
         /** Our clone of the model provided by modelSource -- steps read or modify this */
@@ -700,7 +703,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
 
             // We're being called due to runtime task execution. Notify the
             // handler of the failure
-            final ModelNode failureMsg = getOverallFailureDescription();
+            final ModelNode failureMsg = overallFailure == null ? getOverallFailureDescription() : overallFailure;
 
             resultHandler.handleFailed(failureMsg);
         }
@@ -919,13 +922,13 @@ public class BasicModelController extends AbstractModelController<OperationContr
             return failureMsg;
         }
 
-        private boolean hasFailures() {
+        protected boolean hasFailures() {
             synchronized (resultsNode) {
                 return hasFailures;
             }
         }
 
-        private void processComplete() {
+        protected void processComplete() {
             if (hasFailures()) {
                 handleFailures();
             } else {
@@ -979,6 +982,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
         private final Integer id;
         private final ModelNode stepResult = new ModelNode();
         private final MultiStepOperationController compositeContext;
+        private volatile boolean terminalState;
 
         public StepResultHandler(final Integer id, final MultiStepOperationController stepContext) {
             this.id = id;
@@ -993,16 +997,23 @@ public class BasicModelController extends AbstractModelController<OperationContr
         @Override
         public void handleResultComplete() {
             compositeContext.recordResult(id, stepResult);
+            terminalState = true;
         }
 
         @Override
         public void handleFailed(final ModelNode failureDescription) {
             compositeContext.recordFailure(id, failureDescription);
+            terminalState = true;
         }
 
         @Override
         public void handleCancellation() {
             compositeContext.recordCancellation(id);
+            terminalState = true;
+        }
+
+        public boolean isTerminalState() {
+            return terminalState;
         }
     }
 
@@ -1099,7 +1110,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
                 multiStep.get(STEPS).add(newOperation);
             }
             final Operation multiContext = operation.clone(multiStep);
-            final MultiStepOperationController multistepController = BasicModelController.this.getMultiStepOperationController(multiContext, handler, operationExecutionContext);
+            final MultiStepOperationController multistepController = getMultiStepOperationController(multiContext, handler, operationExecutionContext);
             multistepController.resolve = false; // tell the multi step controller not to resolve again
             // Execute multi step operation
             return multistepController.execute(handler);
