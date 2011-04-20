@@ -29,8 +29,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.modules"/>
-        <module name="gnu.getopt"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.ejb.api"/>
@@ -42,7 +40,6 @@
         <module name="org.jboss.ws.spi"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.common-core"/>
-        <module name="org.apache.log4j"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.jaxbintros"/>
     </dependencies>

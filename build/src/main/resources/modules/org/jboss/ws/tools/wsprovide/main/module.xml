@@ -24,10 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.jboss.ws.tools.wsprovide">
 
-    <main-class name="org.jboss.wsf.spi.tools.cmd.WSProvide"/>
+    <main-class name="org.jboss.ws.tools.cmd.WSProvide"/>
 
     <dependencies>
-        <module name="org.jboss.ws.common"/>
+        <module name="org.jboss.ws.tools.common"/>
     </dependencies>
 
 </module>

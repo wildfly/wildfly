@@ -1002,6 +1002,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-common-tools</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.ws.projects</groupId>
             <artifactId>jaxws-httpserver-httpspi</artifactId>
         </dependency>
