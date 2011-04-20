@@ -51,6 +51,7 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
+    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode opAddr = operation.require(OP_ADDR);
         final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
@@ -65,13 +66,14 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
             }
         }
         for (final AttributeDefinition attribute : getModelProperties()) {
-            if (model.get(attribute.getName()).isDefined()) {
+            if (model.hasDefined(attribute.getName())) {
                 compensating.get(attribute.getName()).set(model.get(attribute.getName()));
             }
         }
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceRegistry registry = context.getServiceRegistry();
 

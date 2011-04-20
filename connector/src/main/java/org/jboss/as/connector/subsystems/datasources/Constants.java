@@ -169,4 +169,18 @@ class Constants {
 
     static final String NO_RECOVERY = "no-recovery";
 
+    static final String INSTALLED_DRIVERS = "installed-drivers";
+
+    static final String DEPLOYMENT_NAME = "deployment-name";
+
+    static final String MODULE_NAME = "module-name";
+
+    static final String MODULE_SLOT = "module-slot";
+
+    static final String MAJOR_VERSION = "major-version";
+
+    static final String MINOR_VERSION = "minor-version";
+
+    static final String JDBC_COMPLIANT = "jdbc-compliant";
+
 }

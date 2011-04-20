@@ -204,7 +204,7 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
             }
         }
         for (final AttributeDefinition attribute : attributes) {
-            if (existingModel.get(attribute.getName()).isDefined()) {
+            if (existingModel.hasDefined(attribute.getName())) {
                 newModel.get(attribute.getName()).set(existingModel.get(attribute.getName()));
             }
         }
