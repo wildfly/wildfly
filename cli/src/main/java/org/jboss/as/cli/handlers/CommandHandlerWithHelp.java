@@ -85,7 +85,7 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
     @Override
     public void handle(CommandContext ctx) {
 
-        if(ctx.hasSwitch("help")) {
+        if(ctx.hasArgument("help")) {
             printHelp(ctx);
             return;
         }
@@ -136,7 +136,7 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
      * @param list  the list to print
      */
     protected void printList(CommandContext ctx, List<String> list) {
-        if(ctx.hasSwitch("l")) {
+        if(ctx.hasArgument("l")) {
             for(String item : list) {
                 ctx.printLine(item);
             }

@@ -57,7 +57,7 @@ public class MockCommandContext implements CommandContext {
      * @see org.jboss.as.cli.CommandContext#getCommandArguments()
      */
     @Override
-    public String getCommandArguments() {
+    public String getArgumentsString() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -199,17 +199,17 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public boolean hasSwitch(String switchName) {
+    public boolean hasArgument(String switchName) {
         return false;
     }
 
     @Override
-    public String getNamedArgument(String argName) {
+    public String getArgument(String argName) {
         return null;
     }
 
     @Override
-    public List<String> getArguments() {
+    public List<String> getOtherArguments() {
         return null;
     }
 

@@ -102,7 +102,7 @@ public class DeleteJmsCFHandler extends BatchModeCommandHandler {
             return;
         }
 
-        String name = ctx.getNamedArgument("name");
+        String name = ctx.getArgument("name");
         if (!Util.isSuccess(result)) {
             ctx.printLine("Failed to delete connection factory '" + name + "': " + Util.getFailureDescription(result));
             return;
@@ -119,9 +119,9 @@ public class DeleteJmsCFHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("Missing required argument 'name'.");
         }
 
-        String name = ctx.getNamedArgument("name");
+        String name = ctx.getArgument("name");
         if(name == null) {
-            List<String> args = ctx.getArguments();
+            List<String> args = ctx.getOtherArguments();
             if(!args.isEmpty()) {
                 name = args.get(0);
             }

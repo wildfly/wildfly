@@ -151,7 +151,7 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        String argsStr = ctx.getCommandArguments();
+        String argsStr = ctx.getArgumentsString();
         if(argsStr == null) {
             ctx.printLine("Missing line number.");
             return;

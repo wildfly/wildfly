@@ -64,7 +64,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
         try {
-            ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), builder);
+            ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
             ModelNode request = builder.buildRequest();
             ModelNode result = client.execute(request);
             ctx.printLine(result.toString());
@@ -92,7 +92,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(ctx.getPrefix());
-        ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), builder);
+        ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
         return builder.buildRequest();
     }
 }

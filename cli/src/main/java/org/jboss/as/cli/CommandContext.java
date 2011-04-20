@@ -52,7 +52,7 @@ public interface CommandContext {
      * Returns the current command's arguments as a string.
      * @return current command's arguments as a string or null if the command was entered w/o arguments.
      */
-    String getCommandArguments();
+    String getArgumentsString();
 
     /**
      * Checks whether there are arguments on the command line for the current command.
@@ -61,10 +61,10 @@ public interface CommandContext {
     boolean hasArguments();
 
     /**
-     * Checks whether the switch is present among the command arguments.
+     * Checks whether the named argument is present among the command arguments.
      * @return
      */
-    boolean hasSwitch(String switchName);
+    boolean hasArgument(String argName);
 
     /**
      * Returns a value for the named argument on the command line or
@@ -72,7 +72,7 @@ public interface CommandContext {
      * @param argName  the name of the argument
      * @return  the value of the argument or null if the argument isn't present
      */
-    String getNamedArgument(String argName);
+    String getArgument(String argName);
 
     /**
      * Returns a set of argument names present on the command line
@@ -90,7 +90,7 @@ public interface CommandContext {
      * @return a list of arguments that are not switches or an empty list
      * if there are no such arguments.
      */
-    List<String> getArguments();
+    List<String> getOtherArguments();
 
     /**
      * Prints a string to the CLI's output.

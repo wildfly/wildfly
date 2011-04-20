@@ -65,7 +65,7 @@ public class BatchRemoveLineHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        List<String> arguments = ctx.getArguments();
+        List<String> arguments = ctx.getOtherArguments();
         if(arguments.isEmpty()) {
             ctx.printLine("Missing line number.");
             return;

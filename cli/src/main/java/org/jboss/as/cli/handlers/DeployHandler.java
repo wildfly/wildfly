@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.Util;
@@ -41,7 +42,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
     public DeployHandler() {
         super("deploy", true,
-                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-f", "-l"},
+                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-f", "-l", /*"--path=",*/ "--name=", "--runtime-name="},
                         FilenameTabCompleter.INSTANCE));
     }
 
@@ -55,37 +56,38 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        String filePath = null;
-        String name = null;
-        String runtimeName = null;
-
-        for(String arg : ctx.getArguments()) {
-            if (filePath == null) {
-                filePath = arg;
-            } else if (name == null) {
-                name = arg;
-            } else {
-                runtimeName = arg;
-            }
-        }
-
-        if(filePath == null) {
-            printList(ctx, Util.getDeployments(client));
+        List<String> otherArgs = ctx.getOtherArguments();
+        if(otherArgs.size() > 1) {
+            ctx.printLine("Only one unnamed argument is expected for this command but received " + otherArgs.size() + ": " + otherArgs);
             return;
         }
 
-        File f = new File(filePath);
+        String path = null;
+        if(otherArgs.size() > 0) {
+            path = otherArgs.get(0);
+        } else {
+            path = ctx.getArgument("path");
+        }
+
+        if(path == null) {
+            ctx.printLine("The required path argument is missing.");
+            return;
+        }
+        File f = new File(path);
         if(!f.exists()) {
-            ctx.printLine("The path doesn't exist: " + f.getAbsolutePath());
+            ctx.printLine("Path " + f.getAbsolutePath() + " doesn't exist.");
             return;
         }
 
+        String name = ctx.getArgument("name");
         if(name == null) {
             name = f.getName();
         }
 
+        String runtimeName = ctx.getArgument("runtime-name");
+
         if(Util.isDeployed(name, client)) {
-            if(ctx.hasSwitch("f")) {
+            if(ctx.hasArgument("f")) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
                 ModelNode result;
@@ -186,7 +188,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         String name = null;
         String runtimeName = null;
 
-        for(String arg : ctx.getArguments()) {
+        for(String arg : ctx.getOtherArguments()) {
             if (filePath == null) {
                 filePath = arg;
             } else if (name == null) {
@@ -210,7 +212,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         }
 
         if(Util.isDeployed(name, ctx.getModelControllerClient())) {
-            if(ctx.hasSwitch("f")) {
+            if(ctx.hasArgument("f")) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
                 // replace

@@ -36,18 +36,18 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
 
     public CreateJmsCFHandler() {
         super("create-jms-cf", true, new SimpleTabCompleter(new String[]{
-                "--help", "name=", "auto-group=", "entries=", "connector=",
-                "block-on-acknowledge=", "block-on-durable-send=", "block-on-non-durable-send=",
-                "cache-large-message-client=", "call-timeout=",
-                "client-failure-check-period=", "client-id=", "confirmation-window-size=",
-                "connection-ttl=", "connector=", "consumer-max-rate=",
-                "consumer-window-size=", "discovery-group-name=", "dups-ok-batch-size=",
-                "failover-on-initial-connection=", "failover-on-server-shutdown=",
-                "group-id=", "max-retry-interval=", "min-large-message-size=",
-                "pre-acknowledge=", "producer-max-rate=", "producer-window-size=",
-                "reconnect-attempts=", "retry-interval=", "retry-interval-multiplier=",
-                "scheduled-thread-pool-max-size=", "thread-pool-max-size=",
-                "transaction-batch-size=", "use-global-pools="}));
+                "--help", "--name=", "--auto-group=", "--entries=", "--connector=",
+                "--block-on-acknowledge=", "--block-on-durable-send=", "--block-on-non-durable-send=",
+                "--cache-large-message-client=", "--call-timeout=",
+                "--client-failure-check-period=", "--client-id=", "--confirmation-window-size=",
+                "--connection-ttl=", "--connector=", "--consumer-max-rate=",
+                "--consumer-window-size=", "--discovery-group-name=", "--dups-ok-batch-size=",
+                "--failover-on-initial-connection=", "--failover-on-server-shutdown=",
+                "--group-id=", "--max-retry-interval=", "--min-large-message-size=",
+                "--pre-acknowledge=", "--producer-max-rate=", "--producer-window-size=",
+                "--reconnect-attempts=", "--retry-interval=", "--retry-interval-multiplier=",
+                "--scheduled-thread-pool-max-size=", "--thread-pool-max-size=",
+                "--transaction-batch-size=", "--use-global-pools="}));
     }
 
     /* (non-Javadoc)
@@ -77,7 +77,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
-        ctx.printLine("Created connection factory " + ctx.getNamedArgument("name"));
+        ctx.printLine("Created connection factory " + ctx.getArgument("name"));
     }
 
     @Override
@@ -92,11 +92,11 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
         String entriesStr = null;
         for(String argName : ctx.getArgumentNames()) {
             if(argName.equals("name")) {
-                name = ctx.getNamedArgument(argName);
+                name = ctx.getArgument(argName);
             } else if(argName.equals("entries")) {
-                entriesStr = ctx.getNamedArgument(argName);
+                entriesStr = ctx.getArgument(argName);
             } else {
-                builder.addProperty(argName, ctx.getNamedArgument(argName));
+                builder.addProperty(argName, ctx.getArgument(argName));
             }
         }
 

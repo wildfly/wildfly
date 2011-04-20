@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 public class CreateJmsTopicHandler extends BatchModeCommandHandler {
 
     public CreateJmsTopicHandler() {
-        super("create-jms-topic", true, new SimpleTabCompleter(new String[]{"name=", "entries=", "--help"}));
+        super("create-jms-topic", true, new SimpleTabCompleter(new String[]{"--name=", "--entries=", "--help"}));
     }
 
     /* (non-Javadoc)
@@ -66,13 +66,13 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
             return;
         }
 
-        ctx.printLine("Created topic " + ctx.getNamedArgument("name"));
+        ctx.printLine("Created topic " + ctx.getArgument("name"));
     }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
 
-        final String name = ctx.getNamedArgument("name");
+        final String name = ctx.getArgument("name");
         if(name == null) {
             throw new OperationFormatException("Required argument 'name' is missing.");
         }
@@ -83,7 +83,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
         builder.setOperationName("add");
 
         ModelNode entriesNode = builder.getModelNode().get("entries");
-        final String entriesStr = ctx.getNamedArgument("entries");
+        final String entriesStr = ctx.getArgument("entries");
         if(entriesStr == null) {
             entriesNode.add(name);
         } else {

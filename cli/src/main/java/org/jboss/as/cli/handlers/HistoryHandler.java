@@ -48,7 +48,7 @@ public class HistoryHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        String lc = ctx.getCommandArguments().toLowerCase();
+        String lc = ctx.getArgumentsString().toLowerCase();
         if(lc.equals("disable")) {
             ctx.getHistory().setUseHistory(false);
         } else if(lc.equals("enable")) {
@@ -56,7 +56,7 @@ public class HistoryHandler extends CommandHandlerWithHelp {
         } else if(lc.equals("clear")) {
             ctx.getHistory().clear();
         } else {
-            ctx.printLine("Unexpected argument '" + ctx.getCommandArguments() + '"');
+            ctx.printLine("Unexpected argument '" + ctx.getArgumentsString() + '"');
         }
     }
 

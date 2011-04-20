@@ -56,7 +56,7 @@ public class PrefixHandler extends CommandHandlerWithHelp {
 
         OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(ctx.getPrefix());
         try {
-            ctx.getOperationRequestParser().parse(ctx.getCommandArguments(), handler);
+            ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), handler);
         } catch (CommandFormatException e) {
             ctx.printLine(e.getLocalizedMessage());
         }

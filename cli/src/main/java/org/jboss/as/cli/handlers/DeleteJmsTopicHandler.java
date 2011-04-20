@@ -116,9 +116,9 @@ public class DeleteJmsTopicHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("Missing required argument 'name'.");
         }
 
-        String name = ctx.getNamedArgument("name");
+        String name = ctx.getArgument("name");
         if(name == null) {
-            List<String> args = ctx.getArguments();
+            List<String> args = ctx.getOtherArguments();
             if(!args.isEmpty()) {
                 name = args.get(0);
             }

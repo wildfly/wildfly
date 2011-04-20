@@ -57,7 +57,7 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
 
         String name = null;
         if(ctx.hasArguments()) {
-            name = ctx.getArguments().get(0);
+            name = ctx.getOtherArguments().get(0);
         }
 
         if(batchManager.isHeldback(name)) {

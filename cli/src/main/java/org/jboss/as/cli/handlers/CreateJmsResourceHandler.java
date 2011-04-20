@@ -86,7 +86,7 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
         //boolean enabled = false;
         String jndiName = null;
 
-        String[] args = ctx.getCommandArguments().split("\\s+");
+        String[] args = ctx.getArgumentsString().split("\\s+");
         int i = 0;
         while(i < args.length) {
             String arg = args[i++];

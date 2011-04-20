@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 public class CreateJmsQueueHandler extends BatchModeCommandHandler {
 
     public CreateJmsQueueHandler() {
-        super("create-jms-queue", true, new SimpleTabCompleter(new String[]{"name=", "entries=", "selector=", "durable=", "--help"}));
+        super("create-jms-queue", true, new SimpleTabCompleter(new String[]{"--name=", "--entries=", "--selector=", "--durable=", "--help"}));
     }
 
     /* (non-Javadoc)
@@ -66,14 +66,14 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
             return;
         }
 
-        ctx.printLine("Created queue " + ctx.getNamedArgument("name"));
+        ctx.printLine("Created queue " + ctx.getArgument("name"));
     }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx)
             throws OperationFormatException {
 
-        final String name = ctx.getNamedArgument("name");
+        final String name = ctx.getArgument("name");
         if(name == null) {
             throw new OperationFormatException("Required argument 'name' is missing.");
         }
@@ -84,7 +84,7 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
         builder.setOperationName("add");
 
         ModelNode entriesNode = builder.getModelNode().get("entries");
-        final String entriesStr = ctx.getNamedArgument("entries");
+        final String entriesStr = ctx.getArgument("entries");
         if(entriesStr == null) {
             entriesNode.add(name);
         } else {
@@ -97,12 +97,12 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
             }
         }
 
-        final String selector = ctx.getNamedArgument("selector");
+        final String selector = ctx.getArgument("selector");
         if(selector != null) {
             builder.addProperty("selector", selector);
         }
 
-        final String durable = ctx.getNamedArgument("durable");
+        final String durable = ctx.getArgument("durable");
         if(durable != null) {
             builder.addProperty("durable", durable);
         }

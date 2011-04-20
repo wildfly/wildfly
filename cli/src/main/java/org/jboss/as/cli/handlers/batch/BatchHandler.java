@@ -77,7 +77,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
 
-        if(ctx.hasSwitch("l")) {
+        if(ctx.hasArgument("l")) {
             Set<String> heldbackNames = batchManager.getHeldbackNames();
             if(!heldbackNames.isEmpty()) {
                 List<String> names = new ArrayList<String>(heldbackNames.size());
@@ -99,7 +99,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
         String name = null;
         if (ctx.hasArguments()) {
-            name = ctx.getArguments().get(0);
+            name = ctx.getOtherArguments().get(0);
         }
 
         boolean activated;

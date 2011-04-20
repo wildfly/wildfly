@@ -53,7 +53,7 @@ public class LsHandler extends CommandHandlerWithHelp {
         final OperationRequestAddress address;
 
         String nodePath = null;
-        List<String> args = ctx.getArguments();
+        List<String> args = ctx.getOtherArguments();
         if(!args.isEmpty()) {
             nodePath = args.get(0);
         }

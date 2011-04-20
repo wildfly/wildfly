@@ -88,7 +88,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         }
 
         String deployment = null;
-        List<String> args = ctx.getArguments();
+        List<String> args = ctx.getOtherArguments();
         if(args.size() > 0) {
             deployment = args.get(0);
         }
@@ -152,7 +152,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         }
 
         String deployment = null;
-        List<String> args = ctx.getArguments();
+        List<String> args = ctx.getOtherArguments();
         if(args.size() > 0) {
             deployment = args.get(0);
         }
