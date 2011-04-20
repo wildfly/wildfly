@@ -22,3 +22,5 @@ transaction.log
 atlassian-ide-plugin.xml
 # temp files
 *~
+# maven versions plugin
+pom.xml.versionsBackup
