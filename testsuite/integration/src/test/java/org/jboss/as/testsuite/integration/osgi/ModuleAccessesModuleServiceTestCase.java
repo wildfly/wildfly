@@ -22,7 +22,6 @@
 
 package org.jboss.as.testsuite.integration.osgi;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
@@ -36,16 +35,14 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.DeploymentProvider;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.osgi.api.Echo;
-import org.jboss.as.testsuite.integration.osgi.bundle.ClientBundleActivator;
+import org.jboss.as.testsuite.integration.osgi.module.ClientModuleOneActivator;
 import org.jboss.as.testsuite.integration.osgi.module.EchoService;
 import org.jboss.as.testsuite.integration.osgi.module.TargetModuleActivator;
 import org.jboss.logging.Logger;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.Archive;
@@ -54,22 +51,18 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 /**
- * A test that shows how a bundle can access an MSC service.
+ * A test that shows how a module can access another module's service.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 14-Oct-2010
+ * @since 19-Apr-2011
  */
 @RunWith(Arquillian.class)
-public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
+public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCase {
 
     private static final String TARGET_MODULE_NAME = "example-xservice-target-module";
-    private static final String CLIENT_BUNDLE_NAME = "example-xservice-client-bundle";
+    private static final String CLIENT_MODULE_NAME = "example-xservice-client-module";
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -82,7 +75,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
                 builder.addBundleManifestVersion(2);
                 // [TODO] Remove these explicit imports
                 builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
-                builder.addImportPackages(Logger.class, Services.class);
+                builder.addImportPackages(Logger.class);
                 return builder.openStream();
             }
         });
@@ -98,17 +91,14 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     @Inject
     public ArchiveDeployer archiveDeployer;
 
-    @Inject
-    public BundleContext context;
-
     @Override
     ServiceContainer getServiceContainer() {
         return serviceContainer;
     }
 
     @Test
-    public void bundleInvokesModuleService() throws Exception {
-        // Deploy the non-OSGi module which contains the target service
+    public void moduleInvokesModuleService() throws Exception {
+        // Deploy the module which contains the target service
         Archive<?> targetArchive = deploymentProvider.getClientDeployment(TARGET_MODULE_NAME);
         String targetDeploymentName = archiveDeployer.deploy(targetArchive);
         assertNotNull("Deployment name not null", targetDeploymentName);
@@ -117,28 +107,19 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
             ServiceName targetService = ServiceName.parse("jboss.osgi.example.target.service");
             assertServiceState(targetService, State.UP, 5000);
 
-            // Register the target module with the OSGi layer
-            Bundle targetBundle = registerModule(ModuleIdentifier.create("deployment." + targetDeploymentName));
-            assertEquals("Bundle INSTALLED", Bundle.INSTALLED, targetBundle.getState());
-
-            // Install the client bundle
-            InputStream input = deploymentProvider.getClientDeploymentAsStream(CLIENT_BUNDLE_NAME);
-            Bundle clientBundle = context.installBundle(CLIENT_BUNDLE_NAME, input);
-            assertEquals("Bundle INSTALLED", Bundle.INSTALLED, clientBundle.getState());
-            try {
-                // Start the client bundle, which calls the target service.
-                clientBundle.start();
-                assertEquals("Bundle ACTIVE", Bundle.ACTIVE, clientBundle.getState());
-
-                // The client bundle activator registers a StringBuffer service that
-                // contains the result from the module service call
-                BundleContext context = clientBundle.getBundleContext();
-                ServiceReference sref = context.getServiceReference(StringBuffer.class.getName());
-                StringBuffer service = (StringBuffer) context.getService(sref);
-                assertEquals("hello world", service.toString());
-            } finally {
-                // Uninstall the client bundle
-                clientBundle.uninstall();
+            // Install the client module
+            Archive<?> clientArchive = deploymentProvider.getClientDeployment(CLIENT_MODULE_NAME);
+            String clientDeploymentName = archiveDeployer.deploy(clientArchive);
+            assertNotNull("Deployment name not null", clientDeploymentName);
+            try
+            {
+                // Check that the client service is up
+                ServiceName clientService = ServiceName.parse("jboss.osgi.example.invoker.service");
+                assertServiceState(clientService, State.UP, 5000);
+            }
+            finally {
+                // Undeploy the client module
+                archiveDeployer.undeploy(clientDeploymentName);
             }
         } finally {
             // Undeploy the target module
@@ -148,27 +129,19 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
 
     @ArchiveProvider
     public static JavaArchive getTestArchive(String name) throws Exception {
-        if (CLIENT_BUNDLE_NAME.equals(name))
-            return getClientBundleArchive();
+        if (CLIENT_MODULE_NAME.equals(name))
+            return getClientModuleArchive();
         if (TARGET_MODULE_NAME.equals(name))
             return getTargetModuleArchive();
         return null;
     }
 
-    private static JavaArchive getClientBundleArchive() throws Exception {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CLIENT_BUNDLE_NAME);
-        archive.addClasses(ClientBundleActivator.class);
-        archive.setManifest(new Asset() {
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleManifestVersion(2);
-                builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleVersion("1.0.0");
-                builder.addBundleActivator(ClientBundleActivator.class);
-                builder.addImportPackages(BundleActivator.class, Logger.class, Echo.class);
-                return builder.openStream();
-            }
-        });
+    private static JavaArchive getClientModuleArchive() throws Exception {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CLIENT_MODULE_NAME);
+        archive.addClasses(ClientModuleOneActivator.class);
+        String activatorPath = "META-INF/services/" + ServiceActivator.class.getName();
+        archive.addResource(OSGiTestHelper.getResourceFile("osgi/xservice/client-module-one/" + activatorPath), activatorPath);
+        archive.setManifest(OSGiTestHelper.getResourceFile("osgi/xservice/client-module-one/" + JarFile.MANIFEST_NAME));
         return archive;
     }
 

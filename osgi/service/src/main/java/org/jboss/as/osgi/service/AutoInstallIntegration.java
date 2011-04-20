@@ -50,9 +50,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.AutoInstallProcessor;
-import org.jboss.osgi.framework.BundleManagement;
-import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.AutoInstallProvider;
+import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.util.BundleInfo;
@@ -65,21 +65,22 @@ import org.osgi.framework.BundleException;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-final class AutoInstallIntegration extends AbstractService<AutoInstallProcessor> implements AutoInstallProcessor {
+final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implements AutoInstallProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
+    private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
     private SubsystemState subsystemState;
 
     static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
         AutoInstallIntegration service = new AutoInstallIntegration(subsystemState);
-        ServiceBuilder<?> builder = target.addService(ServiceNames.AUTOINSTALL_BUNDLES, service);
+        ServiceBuilder<?> builder = target.addService(Services.AUTOINSTALL_PROVIDER, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
-        builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
-        builder.addDependency(ServiceNames.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
+        builder.addDependency(Services.FRAMEWORK_INIT);
         builder.setInitialMode(Mode.ON_DEMAND);
         builder.install();
     }
@@ -92,7 +93,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProcessor>
     public void start(StartContext context) throws StartException {
         final Map<ServiceName, OSGiModule> pendingServices = new HashMap<ServiceName, OSGiModule>();
         try {
-            final BundleManagement bundleManager = injectedBundleManager.getValue();
+            final BundleManagerService bundleManager = injectedBundleManager.getValue();
             final ServiceContainer serviceContainer = context.getController().getServiceContainer();
             final ServiceTarget serviceTarget = context.getChildTarget();
             final File modulesDir = injectedEnvironment.getValue().getModulesDir();
@@ -118,7 +119,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProcessor>
             }
 
             // Install a service that has a dependency on all pending bundle INSTALLED services
-            ServiceName servicesInstalled = ServiceNames.AUTOINSTALL_BUNDLES.append("INSTALLED");
+            ServiceName servicesInstalled = Services.AUTOINSTALL_PROVIDER.append("INSTALLED");
             ServiceBuilder<Void> builder = serviceTarget.addService(servicesInstalled, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
                     log.debugf("Auto bundles installed");
@@ -128,7 +129,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProcessor>
             builder.install();
 
             // Install a service that starts the bundles
-            builder = serviceTarget.addService(ServiceNames.AUTOINSTALL_BUNDLES_COMPLETE, new AbstractService<Void>() {
+            builder = serviceTarget.addService(Services.AUTOINSTALL_PROVIDER_COMPLETE, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
                     for (ServiceName serviceName : pendingServices.keySet()) {
                         OSGiModule moduleMetaData = pendingServices.get(serviceName);
@@ -155,7 +156,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProcessor>
     }
 
     @Override
-    public AutoInstallProcessor getValue() throws IllegalStateException {
+    public AutoInstallIntegration getValue() throws IllegalStateException {
         return this;
     }
 

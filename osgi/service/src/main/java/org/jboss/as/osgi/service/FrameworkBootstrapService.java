@@ -23,7 +23,6 @@
 package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
-import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 import java.io.File;
@@ -37,7 +36,6 @@ import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
@@ -61,8 +59,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleReferenceClassLoader;
 import org.jboss.osgi.framework.FrameworkModuleProvider;
-import org.jboss.osgi.framework.ModuleLoaderProvider;
-import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.SystemServicesProvider;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.osgi.framework.Bundle;
@@ -81,6 +78,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     public static final ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
     public static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
 
+    // Provide logging
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
@@ -116,11 +114,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             FrameworkBuilder builder = new FrameworkBuilder(props);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(context.getChildTarget());
-            builder.addProvidedService(ServiceNames.AUTOINSTALL_BUNDLES);
-            builder.addProvidedService(ServiceNames.BUNDLE_INSTALL_HANDLER);
-            builder.addProvidedService(ServiceNames.FRAMEWORK_MODULE_PROVIDER);
-            builder.addProvidedService(ServiceNames.MODULE_LOADER_PROVIDER);
-            builder.addProvidedService(ServiceNames.SYSTEM_SERVICES_PROVIDER);
+            builder.addProvidedService(Services.AUTOINSTALL_PROVIDER);
+            builder.addProvidedService(Services.BUNDLE_INSTALL_PROVIDER);
+            builder.addProvidedService(Services.FRAMEWORK_MODULE_PROVIDER);
+            builder.addProvidedService(Services.MODULE_LOADER_PROVIDER);
+            builder.addProvidedService(Services.SYSTEM_SERVICES_PROVIDER);
 
             Activation activation = subsystemState.getActivationPolicy();
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
@@ -164,9 +162,9 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         public static void addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
-            ServiceBuilder<SystemServicesProvider> builder = target.addService(ServiceNames.SYSTEM_SERVICES_PROVIDER, service);
+            ServiceBuilder<SystemServicesProvider> builder = target.addService(Services.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-            builder.addDependency(ServiceNames.FRAMEWORK_CREATE);
+            builder.addDependency(Services.FRAMEWORK_CREATE);
             builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }
@@ -196,27 +194,6 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
-    private static final class ModuleLoaderIntegration extends AbstractService<ModuleLoader> implements ModuleLoaderProvider {
-
-        private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
-
-        private static void addService(final ServiceTarget target) {
-            ModuleLoaderIntegration service = new ModuleLoaderIntegration();
-            ServiceBuilder<?> builder = target.addService(ServiceNames.MODULE_LOADER_PROVIDER, service);
-            builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
-            builder.setInitialMode(Mode.ON_DEMAND);
-            builder.install();
-        }
-
-        private ModuleLoaderIntegration() {
-        }
-
-        @Override
-        public ModuleLoader getValue() throws IllegalStateException {
-            return injectedModuleLoader.getValue();
-        }
-    }
-
     private static final class FrameworkModuleIntegration implements FrameworkModuleProvider {
 
         private final InjectedValue<Module> injectedSystemModule = new InjectedValue<Module>();
@@ -225,8 +202,8 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         private static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(subsystemState);
-            ServiceBuilder<?> builder = target.addService(ServiceNames.FRAMEWORK_MODULE_PROVIDER, service);
-            builder.addDependency(ServiceNames.SYSTEM_MODULE_PROVIDER, Module.class, service.injectedSystemModule);
+            ServiceBuilder<?> builder = target.addService(Services.FRAMEWORK_MODULE_PROVIDER, service);
+            builder.addDependency(Services.SYSTEM_MODULE_PROVIDER, Module.class, service.injectedSystemModule);
             builder.setInitialMode(Mode.ON_DEMAND);
             builder.install();
         }

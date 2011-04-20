@@ -22,12 +22,20 @@
 
 package org.jboss.as.testsuite.integration.osgi.module;
 
+import org.jboss.as.testsuite.integration.osgi.api.Echo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A simple MSC service activator
@@ -35,9 +43,10 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Thomas.Diesler@jboss.org
  * @since 09-Nov-2010
  */
-public class ClientModuleActivator implements ServiceActivator
+public class ClientModuleOneActivator implements ServiceActivator
 {
-   private static final Logger log = Logger.getLogger(ClientModuleActivator.class);
+   public static final ServiceName INVOKER_SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "invoker", "service");
+   private static final Logger log = Logger.getLogger(ClientModuleOneActivator.class);
 
    @Override
    public void activate(ServiceActivatorContext context)
@@ -48,5 +57,30 @@ public class ClientModuleActivator implements ServiceActivator
       ModuleClassLoader classLoader = (ModuleClassLoader)getClass().getClassLoader();
       ModuleIdentifier identifier = classLoader.getModule().getIdentifier();
       log.infof("ModuleIdentifier: %s", identifier);
+   }
+
+   static class EchoInvokerService extends AbstractService<Void>
+   {
+      private static final Logger log = Logger.getLogger(EchoInvokerService.class);
+
+      private InjectedValue<Echo> injectedService = new InjectedValue<Echo>();
+
+      static void addService(ServiceTarget serviceTarget)
+      {
+         EchoInvokerService service = new EchoInvokerService();
+         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(INVOKER_SERVICE_NAME, service);
+         serviceBuilder.addDependency(EchoService.SERVICE_NAME, Echo.class, service.injectedService);
+         serviceBuilder.setInitialMode(Mode.ACTIVE);
+         serviceBuilder.install();
+         log.infof("Service added: %s", INVOKER_SERVICE_NAME);
+         log.infof("Echo Loader: %s", Echo.class.getClassLoader());
+      }
+
+      @Override
+      public void start(StartContext context) throws StartException
+      {
+         Echo service = injectedService.getValue();
+         service.echo("hello world");
+      }
    }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
+
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,7 +64,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.ServiceNames;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.launch.Framework;
 
@@ -291,10 +292,10 @@ public class ArquillianService implements Service<ArquillianService> {
 
         @SuppressWarnings("unchecked")
         private Framework awaitActiveOSGiFramework() {
-            ServiceController<Framework> controller = (ServiceController<Framework>) serviceContainer.getRequiredService(ServiceNames.FRAMEWORK_ACTIVE);
+            ServiceController<Framework> controller = (ServiceController<Framework>) serviceContainer.getRequiredService(FRAMEWORK_ACTIVE);
             if (controller.getState() != State.UP) {
                 controller.setMode(Mode.ACTIVE);
-                assertServiceState(ServiceNames.FRAMEWORK_ACTIVE, State.UP, 10000);
+                assertServiceState(FRAMEWORK_ACTIVE, State.UP, 10000);
             }
             return controller.getValue();
         }

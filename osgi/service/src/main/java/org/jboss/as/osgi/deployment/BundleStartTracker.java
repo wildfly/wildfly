@@ -43,7 +43,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -68,7 +68,7 @@ public class BundleStartTracker extends AbstractService<BundleStartTracker> {
     public static void addService(ServiceTarget serviceTarget) {
         BundleStartTracker service = new BundleStartTracker();
         ServiceBuilder<BundleStartTracker> builder = serviceTarget.addService(SERVICE_NAME, service);
-        builder.addDependency(ServiceNames.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
+        builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.setInitialMode(Mode.PASSIVE);
         builder.install();
     }

@@ -44,31 +44,31 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManagement;
-import org.jboss.osgi.framework.BundleInstallHandler;
-import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.BundleInstallProvider;
+import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
 /**
- * A {@link BundleInstallHandler} that delegates to the {@link ServerDeploymentManager}.
+ * A {@link BundleInstallProvider} that delegates to the {@link ServerDeploymentManager}.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class InstallHandlerIntegration implements BundleInstallHandler {
+public class InstallHandlerIntegration implements BundleInstallProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
-    private final InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
+    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private ServerDeploymentManager deploymentManager;
 
     public static void addService(final ServiceTarget target) {
         InstallHandlerIntegration service = new InstallHandlerIntegration();
-        ServiceBuilder<BundleInstallHandler> builder = target.addService(ServiceNames.BUNDLE_INSTALL_HANDLER, service);
+        ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
-        builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
-        builder.addDependency(ServiceNames.FRAMEWORK_CREATE);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
+        builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
         builder.install();
     }
@@ -86,7 +86,7 @@ public class InstallHandlerIntegration implements BundleInstallHandler {
     }
 
     @Override
-    public BundleInstallHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public BundleInstallProvider getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -121,7 +121,7 @@ public class InstallHandlerIntegration implements BundleInstallHandler {
         log.tracef("Uninstall deployment: %s", dep);
 
         // Always uninstall from the bundle manager
-        BundleManagement bundleManager = injectedBundleManager.getValue();
+        BundleManagerService bundleManager = injectedBundleManager.getValue();
         bundleManager.uninstallBundle(dep);
 
         try {

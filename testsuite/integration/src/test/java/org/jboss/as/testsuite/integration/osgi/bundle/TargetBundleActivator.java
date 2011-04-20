@@ -29,22 +29,25 @@ import org.jboss.modules.ModuleIdentifier;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-public class TargetBundleActivator implements BundleActivator
-{
-   static final Logger log = Logger.getLogger(TargetBundleActivator.class);
+public class TargetBundleActivator implements BundleActivator {
 
-   @Override
-   public void start(final BundleContext context) throws Exception
-   {
-      context.registerService(Echo.class.getName(), new TargetBundleEchoImpl(), null);
+    static final Logger log = Logger.getLogger(TargetBundleActivator.class);
 
-      ModuleClassLoader classLoader = (ModuleClassLoader)getClass().getClassLoader();
-      ModuleIdentifier identifier = classLoader.getModule().getIdentifier();
-      log.infof("ModuleIdentifier: %s", identifier);
-   }
+    @Override
+    public void start(final BundleContext context) throws Exception {
+        context.registerService(Echo.class.getName(), new Echo() {
+            public String echo(String message) {
+                log.infof("Echo: %s", message);
+                return message;
+            }
+        }, null);
 
-   @Override
-   public void stop(BundleContext context) throws Exception
-   {
-   }
+        ModuleClassLoader classLoader = (ModuleClassLoader) getClass().getClassLoader();
+        ModuleIdentifier identifier = classLoader.getModule().getIdentifier();
+        log.infof("ModuleIdentifier: %s", identifier);
+    }
+
+    @Override
+    public void stop(BundleContext context) throws Exception {
+    }
 }

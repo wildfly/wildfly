@@ -21,6 +21,9 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
@@ -33,12 +36,12 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.State;
 
 /**
  * {@link ModuleLoader} that loads module definitions from msc services. Module specs are looked up in msc services that
@@ -60,41 +63,65 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     private class ModuleSpecLoadListener extends AbstractServiceListener<ModuleSpec> {
 
-        private volatile ModuleSpec moduleSpec = null;
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private final ModuleIdentifier identifier;
+        private StartException startException;
+        private ModuleSpec moduleSpec;
 
-        private volatile State state = null;
+        private ModuleSpecLoadListener(ModuleIdentifier identifier) {
+            this.identifier = identifier;
+        }
 
         @Override
         public void listenerAdded(ServiceController<? extends ModuleSpec> controller) {
-            if (controller.getState() == State.UP) {
-                moduleSpec = controller.getValue();
-            } else {
-                // the module spec service should always be up by the time we are looking at loading it.
-                controller.removeListener(this);
+            State state = controller.getState();
+            if (state == State.UP || state == State.START_FAILED) {
+                done(controller, controller.getStartException());
             }
-            this.state = controller.getState();
+        }
+
+        @Override
+        public void serviceStarted(ServiceController<? extends ModuleSpec> controller) {
+            done(controller, null);
+        }
+
+        @Override
+        public void serviceFailed(ServiceController<? extends ModuleSpec> controller, StartException reason) {
+            done(controller, reason);
         }
 
         @Override
         public void serviceStopping(ServiceController<? extends ModuleSpec> controller) {
-            if (moduleSpec != null) {
-                try {
-                    Module module = loadModule(moduleSpec.getModuleIdentifier());
-                    unloadModuleLocal(module);
-                } catch (ModuleLoadException e) {
-                    // ignore, the module should always be already loaded by this point,
-                    // and if not we will only mask the true problem
-                }
+            ModuleSpec moduleSpec = controller.getValue();
+            try {
+                Module module = loadModule(moduleSpec.getModuleIdentifier());
+                unloadModuleLocal(module);
+            } catch (ModuleLoadException e) {
+                // ignore, the module should always be already loaded by this point,
+                // and if not we will only mask the true problem
             }
             controller.removeListener(this);
         }
 
-        public ModuleSpec getModuleSpec() {
-            return moduleSpec;
+        private void done(ServiceController<? extends ModuleSpec> controller, StartException reason) {
+            latch.countDown();
+            startException = reason;
+            if (startException == null)
+                moduleSpec = controller.getValue();
         }
 
-        public State getState() {
-            return state;
+        public ModuleSpec getModuleSpec() throws ModuleLoadException {
+            if (moduleSpec != null)
+                return moduleSpec;
+            if (startException != null)
+                throw new ModuleLoadException(startException.getCause());
+            try {
+                if (latch.await(1000, TimeUnit.MILLISECONDS) == false)
+                    throw new ModuleLoadException("Timeout waiting for module service: " + identifier);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            return moduleSpec;
         }
     }
 
@@ -123,20 +150,13 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
     @SuppressWarnings("unchecked")
     @Override
-    protected ModuleSpec findModule(ModuleIdentifier moduleIdentifier) throws ModuleLoadException {
-        ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer
-                .getService(moduleSpecServiceName(moduleIdentifier));
+    protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
+        ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer.getService(moduleSpecServiceName(identifier));
         if (controller == null) {
-            throw new ModuleLoadException("Could not load module " + moduleIdentifier
-                    + " as corresponding module spec service " + moduleIdentifier + " was not found");
+            throw new ModuleLoadException("Could not load module " + identifier + " as corresponding module spec service " + identifier + " was not found");
         }
-        ModuleSpecLoadListener listener = new ModuleSpecLoadListener();
+        ModuleSpecLoadListener listener = new ModuleSpecLoadListener(identifier);
         controller.addListener(listener);
-        if (listener.getModuleSpec() == null) {
-            throw new ModuleLoadException("Could not load module " + moduleIdentifier
-                    + " as corresponding module spec service " + moduleIdentifier + " was not up. State: "
-                    + listener.getState());
-        }
         return listener.getModuleSpec();
     }
 
@@ -184,8 +204,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier) {
         if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            throw new IllegalArgumentException(identifier
-                    + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
+            throw new IllegalArgumentException(identifier + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
         }
         return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
@@ -198,8 +217,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleServiceName(ModuleIdentifier identifier) {
         if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            throw new IllegalArgumentException(identifier
-                    + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
+            throw new IllegalArgumentException(identifier + " cannot be loaded from a ServiceModuleLoader as its name does not start with " + MODULE_PREFIX);
         }
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }

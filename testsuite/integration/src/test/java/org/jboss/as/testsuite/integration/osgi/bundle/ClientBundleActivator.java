@@ -38,7 +38,8 @@ public class ClientBundleActivator implements BundleActivator
       log.infof("Echo Loader: %s", Echo.class.getClassLoader());
       ServiceReference sref = context.getServiceReference(Echo.class.getName());
       Echo service = (Echo)context.getService(sref);
-      service.echo("hello world");
+      String result = service.echo("hello world");
+      context.registerService(StringBuffer.class.getName(), new StringBuffer(result), null);
    }
 
    @Override

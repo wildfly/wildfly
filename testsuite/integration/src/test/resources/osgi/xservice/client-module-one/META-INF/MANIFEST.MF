@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Dependencies: org.jboss.modules,org.jboss.logging,deployment.example-xservice-target-module
+

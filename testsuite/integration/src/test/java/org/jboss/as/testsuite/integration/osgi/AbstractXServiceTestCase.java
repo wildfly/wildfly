@@ -33,7 +33,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -41,8 +43,8 @@ import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
-import org.jboss.osgi.framework.BundleManagement;
-import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.launch.Framework;
 
@@ -59,15 +61,22 @@ abstract class AbstractXServiceTestCase {
     abstract ServiceContainer getServiceContainer();
 
     @SuppressWarnings("unchecked")
-    Bundle registerModule(ModuleIdentifier moduleId) throws Exception {
-        ServiceController<Framework> frameworkController = (ServiceController<Framework>) getServiceContainer().getRequiredService(ServiceNames.FRAMEWORK_ACTIVE);
+    Bundle registerModule(ModuleIdentifier identifier) throws Exception {
+
+        // Make sure we have an active framework
+        ServiceController<Framework> frameworkController = (ServiceController<Framework>) getServiceContainer().getRequiredService(Services.FRAMEWORK_ACTIVE);
         new FutureServiceValue<Framework>(frameworkController).get();
 
-        ServiceController<BundleManagement> bundleManagerService = (ServiceController<BundleManagement>) getServiceContainer().getRequiredService(ServiceNames.BUNDLE_MANAGER);
-        BundleManagement bundleManager = new FutureServiceValue<BundleManagement>(bundleManagerService).get();
+        // Get the {@link BundleManagerService}
+        ServiceController<BundleManagerService> bundleManagerService = (ServiceController<BundleManagerService>) getServiceContainer().getRequiredService(Services.BUNDLE_MANAGER);
+        BundleManagerService bundleManager = bundleManagerService.getValue();
+
+        ServiceController<ModuleLoader> moduleLoaderService = (ServiceController<ModuleLoader>) getServiceContainer().getRequiredService(ServiceName.parse("jboss.as.service-module-loader"));
+        ModuleLoader moduleLoader = moduleLoaderService.getValue();
+        Module module = moduleLoader.loadModule(identifier);
 
         ServiceTarget serviceTarget = getServiceContainer().subTarget();
-        ServiceName serviceName = bundleManager.installBundle(serviceTarget, moduleId);
+        ServiceName serviceName = bundleManager.installBundle(serviceTarget, module, null);
         return getBundleFromService(serviceName);
     }
 

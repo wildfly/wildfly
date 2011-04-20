@@ -42,7 +42,7 @@ import org.osgi.framework.Version;
 /**
  * Processes deployments that have OSGi metadata attached.
  *
- * If so, it creates an {@link BundleInstallService}.
+ * If so, it creates an {@link BundleInstallProvider}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 20-Sep-2010
@@ -101,7 +101,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
 
-        // Create the {@link BundleInstallService}
+        // Create the {@link BundleInstallProvider}
         if (deployment != null) {
             // Prevent garbage collection of the MountHandle which will close the file
             // MountHandle mount = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();

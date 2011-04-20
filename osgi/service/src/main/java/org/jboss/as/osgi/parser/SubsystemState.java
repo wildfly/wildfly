@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.osgi.service.UnmodifiableDictionary;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.osgi.spi.util.UnmodifiableDictionary;
 
 /**
  * The OSGi subsystem state.

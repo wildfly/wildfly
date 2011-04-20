@@ -22,9 +22,10 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.server.deployment.Services.deploymentUnitName;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.Services;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,8 +38,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManagement;
-import org.jboss.osgi.framework.ServiceNames;
+import org.jboss.osgi.framework.BundleManagerService;
+import org.jboss.osgi.framework.Services;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -53,7 +54,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
 
     private final Deployment deployment;
-    private InjectedValue<BundleManagement> injectedBundleManager = new InjectedValue<BundleManagement>();
+    private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private InjectedValue<BundleStartTracker> injectedStartTracker = new InjectedValue<BundleStartTracker>();
     private ServiceName installedBundleName;
 
@@ -68,10 +69,10 @@ public class BundleInstallService implements Service<BundleInstallService> {
         final ServiceName serviceName = getServiceName(contextName);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         ServiceBuilder<BundleInstallService> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependency(ServiceNames.BUNDLE_MANAGER, BundleManagement.class, service.injectedBundleManager);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(BundleStartTracker.SERVICE_NAME, BundleStartTracker.class, service.injectedStartTracker);
-        builder.addDependency(Services.deploymentUnitName(contextName));
-        builder.addDependency(ServiceNames.FRAMEWORK_INIT);
+        builder.addDependency(deploymentUnitName(contextName));
+        builder.addDependency(Services.FRAMEWORK_INIT);
         builder.install();
     }
 
@@ -84,7 +85,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
     }
 
     public static ServiceName getServiceName(String contextName) {
-        ServiceName deploymentServiceName = Services.deploymentUnitName(contextName);
+        ServiceName deploymentServiceName = deploymentUnitName(contextName);
         return BundleInstallService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 
@@ -95,7 +96,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
         log.infof("Installing deployment: %s", deployment);
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
-            BundleManagement bundleManager = injectedBundleManager.getValue();
+            BundleManagerService bundleManager = injectedBundleManager.getValue();
             installedBundleName = bundleManager.installBundle(serviceTarget, deployment);
             injectedStartTracker.getValue().addInstalledBundle(installedBundleName, deployment);
         } catch (Throwable t) {
@@ -111,7 +112,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
     public synchronized void stop(StopContext context) {
         log.infof("Uninstalling deployment: %s", deployment);
         try {
-            BundleManagement bundleManager = injectedBundleManager.getValue();
+            BundleManagerService bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);
@@ -119,7 +120,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
 
         // [JBAS-8801] Undeployment leaks root deployment service
         // [TODO] remove this workaround
-        ServiceName serviceName = Services.deploymentUnitName(context.getController().getName().getSimpleName());
+        ServiceName serviceName = deploymentUnitName(context.getController().getName().getSimpleName());
         ServiceController<?> deploymentController = context.getController().getServiceContainer().getService(serviceName);
         if (deploymentController != null) {
             deploymentController.setMode(Mode.REMOVE);

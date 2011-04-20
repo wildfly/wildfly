@@ -17,8 +17,11 @@
 package org.jboss.as.testsuite.integration.osgi;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -40,6 +43,8 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 
 /**
  * Bundle gets installed through {@link BundleContext#installBundle(String, InputStream)} and gets uninstalled through
@@ -83,30 +88,40 @@ public class BundleDeploymentCaseTwoTestCase {
         Archive<?> bundleArchive = provider.getClientDeployment(symbolicName);
         String deploymentName = archiveDeployer.deploy(bundleArchive);
         assertNotNull("Deployment name not null", deploymentName);
+
+        // Find the deployed bundle
         Bundle bundle = null;
-        try {
-
-            // Find the deployed bundle
-            for (Bundle aux : context.getBundles()) {
-                if (symbolicName.equals(aux.getSymbolicName())) {
-                    bundle = aux;
-                    break;
-                }
+        for (Bundle aux : context.getBundles()) {
+            if (symbolicName.equals(aux.getSymbolicName())) {
+                bundle = aux;
+                break;
             }
-            // Assert that the bundle is there
-            assertNotNull("Bundle found", bundle);
-
-            // Start the bundle. Note, it may have started already
-            bundle.start();
-            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
-
-            // Stop the bundle
-            bundle.stop();
-            OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-        } finally {
-            archiveDeployer.undeploy(deploymentName);
-            OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
         }
+        // Assert that the bundle is there
+        assertNotNull("Bundle not null", bundle);
+
+        // Start the bundle. Note, it may have started already
+        bundle.start();
+        OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+
+        // Stop the bundle
+        bundle.stop();
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+
+        final CountDownLatch uninstallLatch = new CountDownLatch(1);
+        context.addBundleListener(new BundleListener() {
+            public void bundleChanged(BundleEvent event) {
+                if (event.getType() == BundleEvent.UNINSTALLED)
+                    uninstallLatch.countDown();
+            }
+        });
+
+        archiveDeployer.undeploy(deploymentName);
+
+        if (uninstallLatch.await(1000, TimeUnit.MILLISECONDS) == false)
+            fail("UNINSTALLED event not received");
+
+        OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
     }
 
     @ArchiveProvider
