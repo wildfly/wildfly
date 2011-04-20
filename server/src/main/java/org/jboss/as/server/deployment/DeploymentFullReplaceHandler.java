@@ -149,7 +149,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         }
 
         if (start) {
-            DeploymentHandlerUtil.replace(deployNode, name, context, resultHandler);
+            DeploymentHandlerUtil.replace(context, name, runtimeName, hash, resultHandler);
         } else {
             resultHandler.handleResultComplete();
         }
