@@ -22,27 +22,21 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.osgi.service.BundleManagerService;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.bundle.AbstractBundleContext;
-import org.jboss.osgi.framework.bundle.BundleManager;
+import org.osgi.framework.launch.Framework;
 
 /**
  * A holder service for an OSGi deployment.
  *
- * The {@link Deployment} is the one constructed in {@link AbstractBundleContext}. It is not the one constructed by the OSGi
- * {@link DeploymentUnitProcessor}s
+ * The {@link Deployment} is the one constructed by the {@link Framework}.
+ * It is not the one constructed by the {@link BundleInstallProcessor}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 24-Nov-2010
@@ -52,29 +46,19 @@ public class DeploymentHolderService extends AbstractService<Deployment> {
     private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment", "holder");
     private final Deployment deployment;
 
-    private InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-
     private DeploymentHolderService(Deployment deployment) {
         this.deployment = deployment;
     }
 
     public static void addService(ServiceTarget serviceTarget, String contextName, Deployment dep) {
         DeploymentHolderService service = new DeploymentHolderService(dep);
-        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
-        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
-        serviceBuilder.setInitialMode(Mode.ACTIVE);
-        serviceBuilder.install();
+        ServiceBuilder<Deployment> builder = serviceTarget.addService(getServiceName(contextName), service);
+        builder.install();
     }
 
-    public static void removeService(ServiceContainer container, String contextName) {
-        ServiceController<?> controller = container.getService(getServiceName(contextName));
-        if (controller != null)
-            controller.setMode(Mode.REMOVE);
-    }
-
-    public static Deployment getDeployment(ServiceRegistry registry, String contextName) {
-        ServiceController<?> controller = registry.getService(getServiceName(contextName));
-        return controller != null ? (Deployment) controller.getValue() : null;
+    @SuppressWarnings("unchecked")
+    public static ServiceController<Deployment> getDeployment(ServiceRegistry registry, String contextName) {
+        return (ServiceController<Deployment>) registry.getService(getServiceName(contextName));
     }
 
     /**

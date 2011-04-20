@@ -30,12 +30,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Beta3-SNAPSHOT</version>
+        <version>7.0.0.Beta3</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-build</artifactId>
-    <version>7.0.0.Beta3-SNAPSHOT</version>
+    <version>7.0.0.Beta3</version>
 
     <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
@@ -356,6 +356,26 @@
             <artifactId>org.apache.felix.configadmin</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.eventadmin</artifactId>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.log</artifactId>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.metatype</artifactId>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.webconsole</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.apache.neethi</groupId>
             <artifactId>neethi</artifactId>
@@ -762,6 +782,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.osgi.blueprint</groupId>
+            <artifactId>jbosgi-blueprint</artifactId>
+        </dependency>
+            
+        <dependency>
             <groupId>org.jboss.osgi.common</groupId>
             <artifactId>jboss-osgi-common</artifactId>
         </dependency>
@@ -771,6 +796,11 @@
             <artifactId>jbosgi-framework-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.osgi.http</groupId>
+            <artifactId>jboss-osgi-http</artifactId>
+        </dependency>
+            
         <dependency>
             <groupId>org.jboss.osgi.jmx</groupId>
             <artifactId>jboss-osgi-jmx</artifactId>
@@ -791,6 +821,21 @@
             <artifactId>jbosgi-vfs30</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.osgi.webapp</groupId>
+            <artifactId>jboss-osgi-webapp</artifactId>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.jboss.osgi.webconsole</groupId>
+            <artifactId>jbosgi-webconsole</artifactId>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.jboss.osgi.xerces</groupId>
+            <artifactId>jboss-osgi-xerces</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>

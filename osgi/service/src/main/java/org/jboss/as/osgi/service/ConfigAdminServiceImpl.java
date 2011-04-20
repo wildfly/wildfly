@@ -62,9 +62,9 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     public static void addService(final ServiceTarget target, SubsystemState subsystemState) {
         ConfigAdminServiceImpl service = new ConfigAdminServiceImpl(subsystemState);
-        ServiceBuilder<?> serviceBuilder = target.addService(ConfigAdminServiceImpl.SERVICE_NAME, service);
-        //serviceBuilder.addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigPersister);
-        serviceBuilder.install();
+        ServiceBuilder<?> builder = target.addService(ConfigAdminServiceImpl.SERVICE_NAME, service);
+        //builder.addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigPersister);
+        builder.install();
     }
 
     @Override
@@ -149,8 +149,8 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         public void configurationModified() {
             String updatePart = new Long(updateCount.incrementAndGet()).toString();
             ServiceName serviceName = ServiceName.of(ConfigurationModifiedService.class.getName(), updatePart);
-            ServiceBuilder<?> serviceBuilder = serviceContainer.addService(serviceName, this);
-            serviceBuilder.install();
+            ServiceBuilder<?> builder = serviceContainer.addService(serviceName, this);
+            builder.install();
         }
 
         @Override

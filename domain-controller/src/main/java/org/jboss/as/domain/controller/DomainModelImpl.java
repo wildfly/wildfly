@@ -28,7 +28,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -75,6 +77,7 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.SynchronousOperationSupport;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -82,6 +85,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -221,7 +225,11 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         domainPersister.setDelegate(configurationPersister);
         ModelNodeRegistration registry = getRegistry();
         extensionContext = DomainModelUtil.initializeMasterDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
+
         registerInternalOperations();
+        ModelNodeRegistration hostRegistry = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST,getLocalHostName())));
+        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(this.hostPersister,getHostModel());
+        hostRegistry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, xmlHandler, xmlHandler, false, OperationEntry.EntryType.PRIVATE);
 
         this.serverOperationResolver = new ServerOperationResolver(getLocalHostName());
         initializeExtensions(ourModel, extensionContext);
@@ -239,7 +247,12 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
         domainPersister.setDelegate(configurationPersister);
         ModelNodeRegistration registry = getRegistry();
         extensionContext = DomainModelUtil.initializeSlaveDomainRegistry(registry, configurationPersister, deploymentRepo, fileRepository, this);
+
         registerInternalOperations();
+        ModelNodeRegistration hostRegistry = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST,getLocalHostName())));
+        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(this.hostPersister,getHostModel());
+        hostRegistry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, xmlHandler, xmlHandler, false, OperationEntry.EntryType.PRIVATE);
+
         this.serverOperationResolver = new ServerOperationResolver(getLocalHostName());
         this.hosts = Collections.unmodifiableMap(hosts);
     }

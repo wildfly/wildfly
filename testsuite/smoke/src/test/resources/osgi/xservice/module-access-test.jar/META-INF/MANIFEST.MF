@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: org.jboss.as.controller,org.jboss.as.osgi,org.jboss.as.server,org.jboss.osgi.framework,org.osgi.core,javax.inject.api
-

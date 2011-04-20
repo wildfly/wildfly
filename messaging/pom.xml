@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Beta3-SNAPSHOT</version>
+        <version>7.0.0.Beta3</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-messaging</artifactId>
-    <version>7.0.0.Beta3-SNAPSHOT</version>
+    <version>7.0.0.Beta3</version>
 
     <name>JBoss Application Server: Messaging Subsystem</name>
 

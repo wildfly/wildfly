@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.spi.util.BundleInfo;
@@ -47,10 +48,14 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Check if we already have an OSGi deployment
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final String contextName = deploymentUnit.getName();
+        final ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
+
+        // Check if we already have an OSGi deployment
         BundleInfo info = BundleInfoAttachment.getBundleInfo(deploymentUnit);
-        if (info != null)
+        ServiceController<Deployment> deploymentController = DeploymentHolderService.getDeployment(serviceRegistry, contextName);
+        if (info != null || deploymentController != null)
             return;
 
         // Get the manifest from the deployment's virtual file
@@ -61,11 +66,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
 
         // Construct and attach the {@link BundleInfo}
         try {
-            String contextName = deploymentUnit.getName();
-            ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-            Deployment holderdep = DeploymentHolderService.getDeployment(serviceRegistry, contextName);
-            String location = holderdep != null ? holderdep.getLocation() : contextName;
-            info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
+            info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName);
             BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
         } catch (BundleException ex) {
             throw new DeploymentUnitProcessingException("Cannot create bundle deployment from: " + virtualFile);

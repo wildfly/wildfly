@@ -249,18 +249,6 @@
             <maven-resource group="org.apache.ant" artifact="ant"/>
         </module-def>
 
-        <module-def name="org.apache.aries.jmx">
-            <maven-resource group="org.apache.aries.jmx" artifact="org.apache.aries.jmx"/>
-        </module-def>
-
-        <module-def name="org.apache.aries.util">
-            <maven-resource group="org.apache.aries" artifact="org.apache.aries.util"/>
-        </module-def>
-
-        <module-def name="org.apache.commons.beanutils">
-            <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
-        </module-def>
-
         <module-def name="org.apache.commons.codec">
             <maven-resource group="commons-codec" artifact="commons-codec"/>
         </module-def>
@@ -312,10 +300,6 @@
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-bug671"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-dv"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-ts"/>
-        </module-def>
-
-        <module-def name="org.apache.felix.configadmin">
-            <maven-resource group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
         </module-def>
 
         <module-def name="org.apache.httpcomponents">
@@ -438,6 +422,8 @@
 
         <module-def name="org.jboss.as.aggregate" />
 
+        <module-def name="org.jboss.as.arquillian.aggregate"/>
+
         <module-def name="org.jboss.as.arquillian.common">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-common"/>
         </module-def>
@@ -524,10 +510,6 @@
 
         <module-def name="org.jboss.as.naming">
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.osgi.configadmin">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
         </module-def>
 
         <module-def name="org.jboss.as.osgi">
@@ -726,20 +708,12 @@
             <maven-resource group="org.jboss.netty" artifact="netty"/>
         </module-def>
 
-        <module-def name="org.jboss.osgi.common">
-            <maven-resource group="org.jboss.osgi.common" artifact="jboss-osgi-common"/>
-        </module-def>
-
         <module-def name="org.jboss.osgi.deployment">
             <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.framework">
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
-        </module-def>
-
-        <module-def name="org.jboss.osgi.jmx">
-            <maven-resource group="org.jboss.osgi.jmx" artifact="jboss-osgi-jmx"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.resolver">
@@ -882,10 +856,6 @@
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
 
-        <module-def name="org.osgi.compendium">
-            <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
-        </module-def>
-
         <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="picketbox"/>
         </module-def>
@@ -919,6 +889,78 @@
         </module-def>
     </target>
 
+    <target name="bundles">
+        <bundle-def name="org.apache.aries.jmx">
+            <maven-bundle group="org.apache.aries.jmx" artifact="org.apache.aries.jmx"/>
+        </bundle-def>
+
+        <bundle-def name="org.apache.aries.util">
+            <maven-bundle group="org.apache.aries" artifact="org.apache.aries.util"/>
+        </bundle-def>
+
+        <bundle-def name="org.apache.felix.configadmin">
+            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.configadmin"/>
+        </bundle-def>
+
+        <bundle-def name="org.apache.felix.eventadmin">
+            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.eventadmin"/>
+        </bundle-def>
+
+        <bundle-def name="org.apache.felix.log">
+            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.log"/>
+        </bundle-def>
+
+        <bundle-def name="org.apache.felix.metatype">
+            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.metatype"/>
+        </bundle-def>
+
+        <bundle-def name="org.apache.felix.webconsole">
+            <maven-bundle group="org.apache.felix" artifact="org.apache.felix.webconsole"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.as.osgi.configadmin">
+            <maven-bundle group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
+        </bundle-def>
+        
+        <bundle-def name="org.jboss.osgi.blueprint">
+            <maven-bundle group="org.jboss.osgi.blueprint" artifact="jbosgi-blueprint"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.common">
+            <maven-bundle group="org.jboss.osgi.common" artifact="jboss-osgi-common"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.http">
+            <maven-bundle group="org.jboss.osgi.http" artifact="jboss-osgi-http"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.jmx">
+            <maven-bundle group="org.jboss.osgi.jmx" artifact="jboss-osgi-jmx"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.webapp">
+            <maven-bundle group="org.jboss.osgi.webapp" artifact="jboss-osgi-webapp"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.webconsole">
+            <maven-bundle group="org.jboss.osgi.webconsole" artifact="jbosgi-webconsole"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.xerces">
+            <maven-bundle group="org.jboss.osgi.xerces" artifact="jboss-osgi-xerces"/>
+        </bundle-def>
+
+        <bundle-def name="org.osgi.compendium">
+            <maven-bundle group="org.osgi" artifact="org.osgi.compendium"/>
+        </bundle-def>
+        <!--
+        <include name="org.apache.felix.eventadmin.jar" />
+        <include name="org.apache.felix.log.jar" />
+        <include name="org.apache.felix.metatype.jar" />
+        <include name="org.apache.felix.webconsole.jar" />
+        -->
+    </target>
+
     <target name="clean-target">
         <delete dir="${output.dir}"/>
     </target>
@@ -926,6 +968,6 @@
     <target name="clean" depends="clean-target">
         <delete file="maven-ant-tasks.jar"/>
     </target>
-
-    <target name="all" depends="clean-target, modules, copy-files, make-dirs"/>
+	
+    <target name="all" depends="clean-target, modules, bundles, copy-files, make-dirs"/>
 </project>
