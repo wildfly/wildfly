@@ -6,10 +6,9 @@
 
 	<!-- Parent -->
 	<parent>
-	  <groupId>org.jboss.as.arquillian2</groupId>
-      <artifactId>jboss-as-arquillian2</artifactId>
-      <version>7.0.0.Beta4-SNAPSHOT</version>
-      <relativePath>../pom.xml</relativePath>
+	  <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian2</artifactId>
+          <version>7.0.0.Beta4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>jboss-as-arquillian2-common</artifactId>
