@@ -185,6 +185,14 @@
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
         </dependency>
+        
+        <!-- Porting everything to the new spec-only location -->
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-demos2-spec</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        
   </dependencies>
 
   <properties>

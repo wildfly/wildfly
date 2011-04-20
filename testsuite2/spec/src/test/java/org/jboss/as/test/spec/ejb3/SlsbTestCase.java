@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.spec.ejb3.slsb;
+package org.jboss.as.test.spec.ejb3;
 
 import java.util.logging.Logger;
 
@@ -30,6 +30,8 @@ import junit.framework.Assert;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.spec.ejb3.GreeterCommonBusiness;
+import org.jboss.as.test.spec.ejb3.GreeterSlsb;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -64,7 +66,7 @@ public class SlsbTestCase {
     /**
      * EJB under test
      */
-    @EJB(mappedName = "java:global/test/GreeterSlsb!org.jboss.as.test.spec.ejb3.slsb.GreeterCommonBusiness")
+    @EJB(mappedName = "java:global/test/GreeterSlsb!org.jboss.as.test.spec.ejb3.GreeterCommonBusiness")
     private GreeterCommonBusiness slsb;
 
     /**

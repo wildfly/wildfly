@@ -20,11 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3;
+package org.jboss.as.test.spec.ejb3;
+
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
 
 import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.SimpleInterceptor;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;
@@ -35,27 +37,28 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 /**
  * Testcase for testing the basic functionality of a EJB3 stateless session bean.
  *
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.IN_CONTAINER)
 public class StatelessBeanTestCase {
 
+    private static final Logger log = Logger.getLogger(StatelessBeanTestCase.class.getName());
+    
     @Deployment
     public static JavaArchive createDeployment() {
         // create the ejb jar
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-slsb-example.jar");
-        jar.addManifestResource("archives/ejb3-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-slsb-example.jar");
         jar.addPackage(SimpleStatelessSessionBean.class.getPackage());
         jar.addClass(SimpleInterceptor.class);
+        log.info(jar.toString(true));
         return jar;
     }
+    
+    @EJB(mappedName="java:global/test/SimpleStatelessSessionBean!org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal")
+    private SimpleStatelessSessionLocal localBean;
 
     /**
      * Test a basic invocation on a SLSB.
@@ -64,13 +67,9 @@ public class StatelessBeanTestCase {
      */
     @Test
     public void testSLSB() throws Exception {
-        Context ctx = new InitialContext();
-        SimpleStatelessSessionLocal localBean = (SimpleStatelessSessionLocal) ctx.lookup("java:global/ejb3-slsb-example/" + SimpleStatelessSessionBean.class.getSimpleName() + "!" + SimpleStatelessSessionLocal.class.getName());
         String message = "Zzzzzzzz.....!";
         String echo = localBean.echo(message);
         String expectedEcho = SimpleInterceptor.class.getSimpleName() + "#" + SimpleStatelessSessionBean.class.getSimpleName() + "#" + "Echo " + message + " -- (1:Other, 2:Other, 3:Other)" ;
-
         Assert.assertEquals("Unexpected echo message received from stateless bean", expectedEcho, echo);
-
     }
 }

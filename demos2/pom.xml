@@ -33,10 +33,10 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite2</artifactId>
+    <artifactId>jboss-as-demos2</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Aggregator</name>
+    <name>JBoss Application Server: Demos: Aggregator</name>
 
     <modules>
         <module>api</module>

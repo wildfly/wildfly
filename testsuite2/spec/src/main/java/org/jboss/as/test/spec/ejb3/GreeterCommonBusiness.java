@@ -20,39 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.LocalBean;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import java.util.concurrent.TimeUnit;
+package org.jboss.as.test.spec.ejb3;
 
 /**
- * @author Jaikiran Pai
+ * Business interface of an EJB capable of greeting a user
+ *
+ * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
-@Singleton
-@LocalBean
-@TransactionManagement(value = TransactionManagementType.BEAN)
-public class LongWritesSingletonBean {
+public interface GreeterCommonBusiness {
 
-    private int count;
+    /**
+     * Prefix that will be used in {@link GreeterCommonBusiness#greet(String)}
+     */
+    String PREFIX = "Hello, ";
 
-    @AccessTimeout(value = 1, unit = TimeUnit.SECONDS)
-    public void threeSecondWriteOperation() {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        count ++;
-    }
+    /**
+     * Greets the user by prepending the specified name with the {@link GreeterCommonBusiness#PREFIX}
+     *
+     * @param name
+     * @return
+     */
+    String greet(String name);
 
-    @Lock(value = LockType.READ)
-    public int getCount() {
-        return this.count;
-    }
 }

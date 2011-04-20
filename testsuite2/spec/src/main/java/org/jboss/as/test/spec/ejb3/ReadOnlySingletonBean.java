@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.embedded.demos.ejb3;
+package org.jboss.as.test.spec.ejb3;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.LocalBean;

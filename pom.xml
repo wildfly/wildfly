@@ -214,6 +214,7 @@
         <module>controller</module>
         <module>controller-client</module>
         <module>demos</module>
+        <module>demos2</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
         <module>domain-controller</module>

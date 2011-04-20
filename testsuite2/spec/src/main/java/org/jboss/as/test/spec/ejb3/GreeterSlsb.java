@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.spec.ejb3.slsb;
+package org.jboss.as.test.spec.ejb3;
 
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
@@ -37,7 +37,7 @@ public class GreeterSlsb implements GreeterCommonBusiness {
     /**
      * {@inheritDoc}
      *
-     * @see org.jboss.as.test.spec.ejb3.slsb.GreeterCommonBusiness#greet(java.lang.String)
+     * @see org.jboss.as.test.spec.ejb3.GreeterCommonBusiness#greet(java.lang.String)
      */
     @Override
     public String greet(final String name) {
