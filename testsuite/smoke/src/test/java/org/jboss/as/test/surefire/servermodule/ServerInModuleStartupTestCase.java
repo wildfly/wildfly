@@ -84,6 +84,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  */
 public class ServerInModuleStartupTestCase {
 
+    private static String serverDetails = "";
     static ServiceContainer container;
     @BeforeClass
     public static void startServer() throws Exception {
@@ -91,6 +92,15 @@ public class ServerInModuleStartupTestCase {
         EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
 
         ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
+
+        serverDetails += "AS server details: ";
+        serverDetails += "server homedir = " + serverEnvironment.getHomeDir();
+        serverDetails += ", javaextdirs = " +serverEnvironment.getJavaExtDirs();
+        serverDetails += ", modules_dir = " +serverEnvironment.getModulesDir();
+        serverDetails += ", server_base = " +serverEnvironment.getServerBaseDir();
+        serverDetails += ", server_config_dir = " +serverEnvironment.getServerConfigurationDir();
+        serverDetails += ", server_config_file = " +serverEnvironment.getServerConfigurationFile();
+
         Assert.assertNotNull(serverEnvironment);
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
@@ -99,14 +109,14 @@ public class ServerInModuleStartupTestCase {
         configuration.setPortOffset(0);
 
         container = bootstrap.startup(configuration, Collections.<ServiceActivator>emptyList()).get();
-        Assert.assertNotNull(container);
+        Assert.assertNotNull(serverDetails,container);
     }
 
     @AfterClass
     public static void testServerStartupAndShutDown() throws Exception {
         container.shutdown();
         container.awaitTermination();
-        Assert.assertTrue(container.isShutdownComplete());
+        Assert.assertTrue(serverDetails, container.isShutdownComplete());
     }
 
     @Test
@@ -118,7 +128,7 @@ public class ServerInModuleStartupTestCase {
             request.get("address").setEmptyList();
             ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
 
-            Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
+            Assert.assertEquals(serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {
             StreamUtils.safeClose(client);
         }
@@ -134,7 +144,7 @@ public class ServerInModuleStartupTestCase {
             request.get("recursive").set(true);
             ModelNode r = client.execute(OperationBuilder.Factory.create(request).build());
 
-            Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
+            Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
 
             request = new ModelNode();
             request.get("operation").set("read-resource-description");
@@ -143,7 +153,7 @@ public class ServerInModuleStartupTestCase {
             request.get("operations").set(true);
             r = client.execute(OperationBuilder.Factory.create(request).build());
 
-            Assert.assertEquals(SUCCESS, r.require(OUTCOME).asString());
+            Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {
             StreamUtils.safeClose(client);
         }

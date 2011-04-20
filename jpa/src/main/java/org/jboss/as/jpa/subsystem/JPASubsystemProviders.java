@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 
 /**
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Scott Marlow
  * @version $Revision: 1.1 $
  */
 class JPASubsystemProviders {
@@ -54,21 +54,6 @@ class JPASubsystemProviders {
             subsystem.get(NAMESPACE).set(Namespace.JPA_1_0.getUriString());
 
             return subsystem;
-        }
-    };
-
-    static DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(ADD);
-            operation.get(DESCRIPTION).set(bundle.getString("jpa.add"));
-            operation.get(REQUEST_PROPERTIES).setEmptyObject();
-            operation.get(REPLY_PROPERTIES).setEmptyObject();
-            return operation;
-
         }
     };
 

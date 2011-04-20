@@ -30,6 +30,7 @@ import org.jboss.as.jpa.classloader.TempClassLoader;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
+import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.transaction.TransactionUtil;
@@ -221,11 +222,21 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES,serviceName);
 
                         ServiceBuilder builder = serviceTarget.addService(serviceName, service);
+                        boolean useDefaultDataSource = true;
                         if (pu.getJtaDataSourceName() != null) {
                             builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getJtaDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
+                            useDefaultDataSource = false;
                         }
                         if (pu.getNonJtaDataSourceName() != null) {
                             builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getNonJtaDataSourceName()),new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(),DataSource.class));
+                            useDefaultDataSource = false;
+                        }
+                        // JPA 2.0 8.2.1.5, container provides default JTA datasource
+                        if (useDefaultDataSource &&
+                            JPAService.getDefaultDataSourceName() != null &&
+                            JPAService.getDefaultDataSourceName().length() > 0) {
+                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(JPAService.getDefaultDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
+                            log.trace(serviceName + " is using the default data source '" + JPAService.getDefaultDataSourceName() + "'");
                         }
                         builder.addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
                             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))

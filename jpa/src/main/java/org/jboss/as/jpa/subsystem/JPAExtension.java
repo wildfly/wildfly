@@ -38,20 +38,31 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 /**
  * Domain extension used to initialize the JPA subsystem element handlers.
@@ -62,6 +73,8 @@ public class JPAExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jpa";
 
+    static final String RESOURCE_NAME = JPAExtension.class.getPackage().getName() + ".LocalDescriptions";
+
     private static final JPASubsystemElementParser parser = new JPASubsystemElementParser();
 
     private static final DescriptionProvider DESCRIPTION = new DescriptionProvider() {
@@ -69,6 +82,47 @@ public class JPAExtension implements Extension {
         public ModelNode getModelDescription(Locale locale) {
             return JPASubsystemProviders.SUBSYSTEM.getModelDescription(locale);
         }
+    };
+
+    private static final DescriptionProvider JPA_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(JPADataSourceAdd.OPERATION_NAME);
+            op.get(org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("jpa.add"));
+
+            op.get(REQUEST_PROPERTIES,
+                CommonAttributes.DEFAULT_DATASOURCE,
+                org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("default.datasource"));
+            op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, REQUIRED).set(true);
+            op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, MIN_OCCURS).set(1);
+            op.get(REQUEST_PROPERTIES, CommonAttributes.DEFAULT_DATASOURCE, MAX_OCCURS).set(1);
+
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return op;
+        }
+    };
+
+    private static final DescriptionProvider JPA_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(JPADataSourceRemove.OPERATION_NAME);
+            op.get(org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("jpa.remove"));
+
+            op.get(REQUEST_PROPERTIES).setEmptyObject();
+
+            op.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return op;
+        }
+
     };
 
 
@@ -79,13 +133,23 @@ public class JPAExtension implements Extension {
         return update;
     }
 
+    private static ModelNode createAddDefaultDataSourceName(String dataSourceName) {
+        final ModelNode jpaModelNode = new ModelNode();
+        jpaModelNode.get(OP).set(JPADataSourceAdd.OPERATION_NAME);
+        jpaModelNode.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+        jpaModelNode.get(CommonAttributes.DEFAULT_DATASOURCE).set(dataSourceName);
+        return jpaModelNode;
+    }
+
+
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        // registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
-        nodeRegistration.registerOperationHandler(ADD, JPASubsystemAdd.INSTANCE, JPASubsystemAdd.INSTANCE, false);
+        nodeRegistration.registerOperationHandler(ADD, JPASubSystemAdd.INSTANCE, DESCRIPTION, false);
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        nodeRegistration.registerOperationHandler(JPADataSourceAdd.OPERATION_NAME, JPADataSourceAdd.INSTANCE, JPA_ADD, false);
+        nodeRegistration.registerOperationHandler(JPADataSourceRemove.OPERATION_NAME, JPADataSourceRemove.INSTANCE, JPA_REMOVE, false);
         registration.registerXMLElementWriter(parser);
 
     }
@@ -114,7 +178,7 @@ public class JPAExtension implements Extension {
         }
     }
 
-    static class JPASubsystemElementParser implements XMLElementReader<List<ModelNode>>,
+    static class JPASubsystemElementParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
 
         /**
@@ -122,12 +186,46 @@ public class JPAExtension implements Extension {
          */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
-            final ModelNode update = new ModelNode();
-            update.get(OP).set(ADD);
-            update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
             list.add(createAddOperation());
+
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case JPA: {
+                        parseJPA(reader, list);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+
+        }
+
+        private void parseJPA(XMLExtendedStreamReader reader, List<ModelNode> list) throws
+            XMLStreamException {
+            String dataSourceName = null;
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case DEFAULT_DATASOURCE_NAME: {
+                        dataSourceName = value;
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            // Require no content
+            ParseUtils.requireNoContent(reader);
+            if (dataSourceName == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.DEFAULT_DATASOURCE_NAME));
+            }
+            list.add(createAddDefaultDataSourceName(dataSourceName));
         }
 
         /**
@@ -136,12 +234,29 @@ public class JPAExtension implements Extension {
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws
             XMLStreamException {
-            //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
-            context.startSubsystemElement(Namespace.JPA_1_0.getUriString(), false);
-            writer.writeEndElement();
+
+            ModelNode node = context.getModelNode();
+            if (node.has(CommonAttributes.DEFAULT_DATASOURCE)) {
+                context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+                writer.writeStartElement(Element.JPA.getLocalName());
+                writer.writeAttribute(Attribute.DEFAULT_DATASOURCE_NAME.getLocalName(), node.get(CommonAttributes.DEFAULT_DATASOURCE).asString());
+                writer.writeEndElement();
+                writer.writeEndElement();
+            } else {
+                //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
+                //context.startSubsystemElement(NewNamingExtension.NAMESPACE, true);
+                context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+                writer.writeEndElement();
+            }
 
         }
     }
 
+    private static ResourceBundle getResourceBundle(Locale locale) {
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    }
 
 }

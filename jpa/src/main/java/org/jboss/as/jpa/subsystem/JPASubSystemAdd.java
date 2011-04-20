@@ -53,11 +53,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
  *
  * @author Scott Marlow
  */
-class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
 
-    static final JPASubsystemAdd INSTANCE = new JPASubsystemAdd();
+class JPASubSystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    private JPASubsystemAdd() {
+    static final JPASubSystemAdd INSTANCE = new JPASubSystemAdd();
+
+    private JPASubSystemAdd() {
         //
     }
 
@@ -92,11 +93,6 @@ class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler,
         context.getSubModel().setEmptyObject();
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JPASubsystemProviders.SUBSYSTEM_ADD.getModelDescription(locale);
     }
 
 }

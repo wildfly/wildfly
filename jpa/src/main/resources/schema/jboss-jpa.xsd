@@ -31,6 +31,17 @@
     <xs:element name="subsystem" type="subsystem"/>
 
     <xs:complexType name="subsystem">
+      <xs:sequence>
+          <xs:element name="jpa" type="jpa-config" />
+      </xs:sequence>
     </xs:complexType>
 
+
+    <xs:complexType name="jpa-config">
+       <xs:attribute name="default-datasource" use="required" />
+    </xs:complexType>
+
+
 </xs:schema>
+
+

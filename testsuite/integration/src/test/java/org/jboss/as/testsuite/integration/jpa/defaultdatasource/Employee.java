@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,50 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jpa.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
+package org.jboss.as.testsuite.integration.jpa.defaultdatasource;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
+ * Employee entity class
+ *
  * @author Scott Marlow
  */
-public enum Element {
-    // must be first
-    UNKNOWN(null),
-    JPA(CommonAttributes.JPA),
-    DEFAULT_DATASOURCE(CommonAttributes.DEFAULT_DATASOURCE)
-    ,;
+@Entity
+public class Employee {
+    @Id
+    private int id;
 
-    private final String name;
+    private String name;
 
-    Element(final String name) {
-        this.name = name;
-    }
+    private String address;
 
-    /**
-     * Get the local name of this element.
-     *
-     * @return the local name
-     */
-    public String getLocalName() {
+    public String getName() {
         return name;
     }
 
-    private static final Map<String, Element> MAP;
-
-    static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
-            final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
-        }
-        MAP = map;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
