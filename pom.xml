@@ -44,7 +44,7 @@
 
     <properties>
          <!-- Release Info -->
-        <jboss.as.release.version>7.0.0.Beta4</jboss.as.release.version>
+        <jboss.as.release.version>${project.version}</jboss.as.release.version>
         <jboss.as.release.codename>(TBD)</jboss.as.release.codename>
 
         <!-- Build configuration -->
