@@ -40,6 +40,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
+import org.jboss.as.connector.registry.DriverRegistryService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
 import org.jboss.as.connector.workmanager.WorkManagerService;
 import org.jboss.as.controller.BasicOperationResult;
@@ -112,6 +113,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         if (context instanceof BootOperationContext) {
             final BootOperationContext bootContext = BootOperationContext.class.cast(context);
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -172,8 +174,15 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                                     connectorConfigService.getDefaultBootstrapContextInjector()).setInitialMode(Mode.ACTIVE)
                             .install();
 
+                    // TODO does the install of this and the DriverProcessor belong in DataSourcesSubsystemAdd?
+                    final DriverRegistryService driverRegistryService = new DriverRegistryService();
+                    serviceTarget
+                        .addService(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, driverRegistryService)
+                        .install();
+
                     new RaDeploymentActivator().activate(bootContext, serviceTarget);
-                    resultHandler.handleResultComplete(); // TODO: Listener
+
+                    resultHandler.handleResultComplete();
                 }
             });
 

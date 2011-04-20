@@ -25,6 +25,11 @@ package org.jboss.as.connector.subsystems.datasources;
 import java.sql.Driver;
 import java.util.ServiceLoader;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
+
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.registry.DriverService;
+import org.jboss.as.connector.registry.InstalledDriver;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -58,6 +63,7 @@ public class JdbcDriverAdd implements ModelAddOperationHandler {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
+    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final PathAddress pathAddress = PathAddress.pathAddress(address);
@@ -74,12 +80,15 @@ public class JdbcDriverAdd implements ModelAddOperationHandler {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
 
+                    final ModuleIdentifier moduleId;
                     final Module module;
                     try {
-                        module = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(moduleName));
+                        moduleId = ModuleIdentifier.create(moduleName);
+                        module = Module.getCallerModuleLoader().loadModule(moduleId);
                     } catch (ModuleLoadException e) {
                         throw new OperationFailedException(e, new ModelNode().set("Failed to load module for driver [" + moduleName + "]"));
                     }
@@ -96,8 +105,12 @@ public class JdbcDriverAdd implements ModelAddOperationHandler {
                             log.infof("Deploying non-JDBC-compliant driver %s (version %d.%d)", driver.getClass(),
                                     Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
                         }
+                        InstalledDriver driverMetadata = new InstalledDriver(moduleId, driver.getClass().getName(), majorVersion, minorVersion, compliant);
+                        DriverService driverService = new DriverService(driverMetadata, driver);
                         target.addService(ServiceName.JBOSS.append("jdbc-driver", driver.getClass().getName(), Integer.toString(majorVersion), Integer.toString(minorVersion)),
-                                new ValueService<Driver>(new ImmediateValue<Driver>(driver))).setInitialMode(ServiceController.Mode.ACTIVE)
+                                driverService)
+                                .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class, driverService.getDriverRegistryServiceInjector())
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
                                 .install();
 
                     }

@@ -173,6 +173,7 @@ public class DataSourcesExtension implements Extension {
         subsystem.registerOperationHandler(ADD, DataSourcesSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
                 DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerReadOnlyAttribute("installed-drivers", InstalledDriversReadAttributeHandler.INSTANCE, Storage.RUNTIME);
 
         final ModelNodeRegistration jdbcDrivers = subsystem.registerSubModel(PathElement.pathElement(JDBC_DRIVER),
                 JDBC_DRIVER_DESC);
