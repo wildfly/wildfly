@@ -35,7 +35,6 @@ import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,7 +42,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.security.AccessController;
 import java.security.DigestOutputStream;
@@ -140,39 +138,19 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
         return new File(hashDir, EXTERNAL);
     }
 
-    public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
-        return mountDeploymentContent(name, runtimeName, deploymentHash, mountPoint, false);
+    public Closeable mountDeploymentContent(String name, String runtimeName, final VirtualFile contents, VirtualFile mountPoint) throws IOException {
+        return mountDeploymentContent(name, runtimeName, contents, mountPoint, false);
     }
 
     @Override
-    public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
-        // Internal deployments have no hash, and are unique by name
-        if (deploymentHash == null) {
-            File file = new File(systemDeployDir, name);
-            return VFS.mountZip(file, mountPoint, tempFileProvider);
-        }
-
-        final File external = getExternalFileReference(deploymentHash, false);
-        if(external.exists()) {
-            final InputStream is = new FileInputStream(external);
-            try {
-                final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                final String fileName = reader.readLine();
-                final File realRoot = new File(fileName);
-                if(! realRoot.exists()) {
-                    throw new FileNotFoundException(fileName);
-                }
-                return VFS.mountReal(realRoot, mountPoint);
-            } finally {
-                safeClose(is);
-            }
-        }
-
-        final File content = contentRepository.getDeploymentContentFile(deploymentHash);
+    public Closeable mountDeploymentContent(String name, String runtimeName, final VirtualFile contents, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
+        // according to the javadoc contents can not be null
+        if (contents == null)
+            throw new IllegalArgumentException("contents is null");
         if(mountExpanded) {
-            return VFS.mountZipExpanded(content, mountPoint, tempFileProvider);
+            return VFS.mountZipExpanded(contents, mountPoint, tempFileProvider);
         } else {
-            return VFS.mountZip(content, mountPoint, tempFileProvider);
+            return VFS.mountZip(contents, mountPoint, tempFileProvider);
         }
     }
 

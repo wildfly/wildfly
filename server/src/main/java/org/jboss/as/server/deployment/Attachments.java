@@ -37,8 +37,8 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.vfs.VirtualFile;
 
 import java.util.jar.Manifest;
 
@@ -65,9 +65,14 @@ public final class Attachments {
     public static final AttachmentKey<String> RUNTIME_NAME = AttachmentKey.create(String.class);
 
     /**
+     * The deployment contents
+     */
+    public static final AttachmentKey<VirtualFile> DEPLOYMENT_CONTENTS = AttachmentKey.create(VirtualFile.class);
+
+    /**
      * The deployment hash
      */
-    public static final AttachmentKey<byte[]> DEPLOYMENT_HASH = AttachmentKey.create(byte[].class);
+    //public static final AttachmentKey<byte[]> DEPLOYMENT_HASH = AttachmentKey.create(byte[].class);
 
     /**
      * The special status listener attachment.

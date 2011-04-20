@@ -136,7 +136,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         if (contentItem.hasDefined(HASH)) {
             hash = contentItem.require(HASH).asBytes();
         } else if (hasValidContentParameterDefined(contentItem)) {
-            InputStream in = getContents(context, contentItem);
+            InputStream in = getInputStream(context, contentItem);
             try {
                 try {
                     hash = contentRepository.addContent(in);
@@ -160,7 +160,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             subModel.get(HASH).set(hash);
             subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
             if (context.getRuntimeContext() != null && subModel.get(ENABLED).asBoolean()) {
-                DeploymentHandlerUtil.deploy(subModel, context, resultHandler);
+                DeploymentHandlerUtil.deploy(context, name, runtimeName, hash, resultHandler);
                 isResultComplete = true;
             }
         } else {
@@ -172,7 +172,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
     }
 
-    private InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
+    private static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
@@ -210,7 +210,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
      *
      * @return {@code true} of the parameter is valid, otherwise {@code false}.
      */
-    private boolean hasValidContentParameterDefined(ModelNode operation) {
+    private static boolean hasValidContentParameterDefined(ModelNode operation) {
         for (String s : VALID_DEPLOYMENT_PARAMETERS) {
             if (operation.hasDefined(s)) {
                 return true;

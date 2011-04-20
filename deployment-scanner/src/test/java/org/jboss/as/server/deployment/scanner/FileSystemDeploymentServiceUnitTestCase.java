@@ -1051,13 +1051,13 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         /** {@inheritDoc} */
         @Override
-        public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
-            return mountDeploymentContent(name, runtimeName, deploymentHash, mountPoint, false);
+        public Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile contents, VirtualFile mountPoint) throws IOException {
+            return mountDeploymentContent(name, runtimeName, contents, mountPoint, false);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExploded) throws IOException {
+        public Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile contents, VirtualFile mountPoint, boolean mountExploded) throws IOException {
             return new Closeable() {
                 @Override
                 public void close() throws IOException {

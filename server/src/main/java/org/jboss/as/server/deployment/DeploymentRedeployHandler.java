@@ -18,24 +18,25 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-
-
-import java.util.Locale;
-
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
-import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 
 /**
  * Handles redeployment in the runtime.
@@ -64,7 +65,10 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
 
         ModelNode model = context.getSubModel();
         ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
-        redeploy(model, context, resultHandler);
+        final String name = model.require(NAME).asString();
+        final String runtimeName = model.require(RUNTIME_NAME).asString();
+        final byte[] hash = model.require(HASH).asBytes();
+        redeploy(context, name, runtimeName, hash, resultHandler);
 
         return new BasicOperationResult(compensatingOp);
     }

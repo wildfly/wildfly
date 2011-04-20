@@ -18,14 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -38,6 +30,16 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -105,7 +107,9 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
         compensatingOp.get(NAME).set(toReplace);
         compensatingOp.get(TO_REPLACE).set(name);
 
-        DeploymentHandlerUtil.replace(deployNode, toReplace, context, resultHandler);
+        final String runtimeName = deployNode.require(RUNTIME_NAME).asString();
+        final byte[] hash = deployNode.require(HASH).asBytes();
+        DeploymentHandlerUtil.replace(context, toReplace, runtimeName, hash, resultHandler);
 
         return new BasicOperationResult();
     }

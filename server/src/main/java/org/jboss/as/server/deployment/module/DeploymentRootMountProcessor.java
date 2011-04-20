@@ -22,9 +22,6 @@
 
 package org.jboss.as.server.deployment.module;
 
-import java.io.Closeable;
-import java.io.IOException;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -34,6 +31,9 @@ import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Deployment processor responsible for mounting and attaching the resource root for this deployment.
@@ -54,7 +54,11 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
 
         final String deploymentName = deploymentUnit.getName();
         final String deploymentRuntimeName = deploymentUnit.getAttachment(Attachments.RUNTIME_NAME);
-        final byte[] deploymentHash = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_HASH);
+        final VirtualFile deploymentContents = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS);
+
+        // internal deployments do not have any contents, so there is nothing to mount
+        if (deploymentContents == null)
+            return;
 
         // The mount point we will use for the repository file
         final VirtualFile deploymentRoot = VFS.getChild("content/" + deploymentRuntimeName);
@@ -64,7 +68,7 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         final MountHandle mountHandle;
         try {
             final boolean mountExploded = deploymentName.endsWith("war");
-            handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentHash, deploymentRoot, mountExploded);
+            handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentContents, deploymentRoot, mountExploded);
             mountHandle = new MountHandle(handle);
         } catch (IOException e) {
             failed = true;

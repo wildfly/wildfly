@@ -26,17 +26,18 @@ import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * The top-level service corresponding to a deployment unit.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
+final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final InjectedValue<ServerDeploymentRepository> serverDeploymentRepositoryInjector = new InjectedValue<ServerDeploymentRepository>();
     private final String name;
     private final String runtimeName;
-    private final byte[] deploymentHash;
+    final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<VirtualFile>();
     private final DeploymentUnit parent;
 
     /**
@@ -44,20 +45,19 @@ public final class RootDeploymentUnitService extends AbstractDeploymentUnitServi
      *
      * @param name the deployment unit simple name
      * @param runtimeName the deployment runtime name
-     * @param deploymentHash the deployment hash
      * @param parent the parent deployment unit
      */
-    public RootDeploymentUnitService(final String name, final String runtimeName, final byte[] deploymentHash, final DeploymentUnit parent) {
+    public RootDeploymentUnitService(final String name, final String runtimeName, final DeploymentUnit parent) {
+        assert name != null : "name is null";
         this.name = name;
         this.parent = parent;
         this.runtimeName = runtimeName;
-        this.deploymentHash = deploymentHash;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry) {
         final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry);
         deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, runtimeName);
-        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_HASH, deploymentHash);
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_CONTENTS, contentsInjector.getValue());
 
         // Attach the deployment repo
         deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());
