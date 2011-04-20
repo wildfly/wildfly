@@ -19,6 +19,7 @@
   <modules>
     <module>common</module>
     <module>container-managed</module>
+    <module>container-managed-domain</module>
   </modules>
 
   <packaging>pom</packaging>
