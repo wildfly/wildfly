@@ -33,7 +33,7 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-container-managed-domain</artifactId>
+    <artifactId>jboss-as-arquillian2-container-managed-domain</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
     <name>JBoss Application Server: Arquillian Managed Domain Container</name>
@@ -45,28 +45,79 @@
         <skipExecUnitTests>true</skipExecUnitTests>
     </properties>
     
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-common</artifactId>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-arquillian2-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.jboss.arquillian</groupId>
-            <artifactId>arquillian-junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-controller-client</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <scope>test</scope>
-        </dependency>
-        
-    </dependencies>
+    <dependency>
+      <groupId>org.jboss.arquillian</groupId>
+      <artifactId>arquillian-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-build</artifactId>
+      <version>${project.version}</version>
+      <type>pom</type>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-service</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-osgi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-jmx</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-msc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.logging</groupId>
+          <artifactId>jboss-logging-spi</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
