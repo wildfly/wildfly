@@ -126,6 +126,8 @@ public class HttpDeploymentUploadUnitTestCase {
 
             // Write the POST request and read the response from the HTTP server.
             writeUploadRequest(is, os);
+            // JBAS-9291
+            assertEquals("text/html", connection.getHeaderField("Content-Type"));
             ModelNode node = readResult(connection.getInputStream());
             assertNotNull(node);
             System.out.println(node);
