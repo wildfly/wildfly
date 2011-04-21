@@ -128,7 +128,7 @@ public class DomainHttpServer implements HttpHandler {
         }
 
         // TODO Determine what format the response should be in for a deployment upload request.
-        writeResponse(http, false, false, response, 200, false);
+        writeResponse(http, false, false, response, 200, false, "text/html");
     }
 
     /**
@@ -169,7 +169,7 @@ public class DomainHttpServer implements HttpHandler {
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-        writeResponse(http, isGet, pretty, response, status, encode, "text/html");
+        writeResponse(http, isGet, pretty, response, status, encode);
     }
 
      private void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,
@@ -177,6 +177,7 @@ public class DomainHttpServer implements HttpHandler {
          String contentType = encode ? "application/dmr-encoded" : "application/json";
          writeResponse(http, isGet, pretty, response, status, encode, contentType);
      }
+
     /**
      * Writes the HTTP response to the output stream.
      *
