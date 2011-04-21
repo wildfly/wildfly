@@ -16,9 +16,12 @@
  */
 package org.jboss.as.test.embedded.osgi;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -40,10 +43,13 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
- * Test the arquillian callback to a client provided archive
- * and its deployment through the deployer API.
+ * Test the arquillian callback to a client provided archive and its deployment through the deployer API.
  *
  * @author thomas.diesler@jboss.com
  * @since 09-Sep-2010
@@ -70,6 +76,7 @@ public class SimpleArchiveDeployerTestCase {
                 builder.addBundleManifestVersion(2);
                 // [TODO] remove these explicit imports
                 builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
+                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -82,29 +89,42 @@ public class SimpleArchiveDeployerTestCase {
         String symbolicName = "archive-deployer-test-bundle";
         Archive<?> archive = provider.getClientDeployment(symbolicName);
         String depname = archiveDeployer.deploy(archive);
-        Bundle bundle = null;
-        try {
-            for (Bundle aux : context.getBundles()) {
-                if (symbolicName.equals(aux.getSymbolicName())) {
-                    bundle = aux;
-                    break;
-                }
+
+        final Bundle bundle = getDeployedBundle(symbolicName);
+        assertNotNull("Bundle found", bundle);
+
+        // Start the bundle
+        bundle.start();
+        OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+
+        // Stop the bundle
+        bundle.stop();
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+
+        final CountDownLatch uninstallLatch = new CountDownLatch(1);
+        context.addBundleListener(new BundleListener() {
+            public void bundleChanged(BundleEvent event) {
+                Bundle eventSource = event.getBundle();
+                if (eventSource.equals(bundle) && event.getType() == BundleEvent.UNINSTALLED)
+                    uninstallLatch.countDown();
             }
-            // Assert that the bundle is there
-            assertNotNull("Bundle found", bundle);
+        });
 
-            // Start the bundle
-            bundle.start();
-            OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
+        archiveDeployer.undeploy(depname);
 
-            // Stop the bundle
-            bundle.stop();
-            OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-        } finally {
-            archiveDeployer.undeploy(depname);
-            // FIXME JBAS-9359
-            // OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
-        }
+        if (uninstallLatch.await(1000, TimeUnit.MILLISECONDS) == false)
+            fail("UNINSTALLED event not received");
+
+        OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    private Bundle getDeployedBundle(String symbolicName) {
+        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
+        Bundle[] bundles = packageAdmin.getBundles(symbolicName, null);
+        assertNotNull("Bundles found", bundles);
+        assertEquals("One bundle found", 1, bundles.length);
+        return bundles[0];
     }
 
     @ArchiveProvider

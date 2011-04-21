@@ -16,6 +16,7 @@
  */
 package org.jboss.as.testsuite.integration.osgi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -45,6 +46,8 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Bundle gets installed through {@link BundleContext#installBundle(String, InputStream)} and gets uninstalled through
@@ -75,6 +78,7 @@ public class BundleDeploymentCaseTwoTestCase {
                 builder.addBundleManifestVersion(2);
                 // [TODO] Remove these explicit imports
                 builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
+                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -90,15 +94,7 @@ public class BundleDeploymentCaseTwoTestCase {
         assertNotNull("Deployment name not null", deploymentName);
 
         // Find the deployed bundle
-        Bundle bundle = null;
-        for (Bundle aux : context.getBundles()) {
-            if (symbolicName.equals(aux.getSymbolicName())) {
-                bundle = aux;
-                break;
-            }
-        }
-        // Assert that the bundle is there
-        assertNotNull("Bundle not null", bundle);
+        Bundle bundle = getDeployedBundle(symbolicName);
 
         // Start the bundle. Note, it may have started already
         bundle.start();
@@ -122,6 +118,15 @@ public class BundleDeploymentCaseTwoTestCase {
             fail("UNINSTALLED event not received");
 
         OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    private Bundle getDeployedBundle(String symbolicName) {
+        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
+        Bundle[] bundles = packageAdmin.getBundles(symbolicName, null);
+        assertNotNull("Bundles found", bundles);
+        assertEquals("One bundle found", 1, bundles.length);
+        return bundles[0];
     }
 
     @ArchiveProvider
