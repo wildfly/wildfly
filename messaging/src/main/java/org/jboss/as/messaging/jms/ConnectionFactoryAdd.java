@@ -80,6 +80,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.messaging.jms.JMSServices.NodeAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -106,9 +107,10 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 
         final ModelNode subModel = context.getSubModel();
-        for(final String attribute : JMSServices.CF_ATTRIBUTES) {
-            if(operation.hasDefined(attribute)) {
-                subModel.get(attribute).set(operation.get(attribute));
+        for(final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
+            final String attrName = attribute.getName();
+            if(operation.hasDefined(attrName)) {
+                subModel.get(attrName).set(operation.get(attrName));
             }
         }
 
@@ -207,9 +209,10 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
 
-        for(final String attribute : JMSServices.CF_ATTRIBUTES) {
-            if(subModel.hasDefined(attribute)) {
-                operation.get(attribute).set(subModel.get(attribute));
+        for(final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
+            final String attrName = attribute.getName();
+            if(operation.hasDefined(attrName)) {
+                operation.get(attrName).set(subModel.get(attrName));
             }
         }
 

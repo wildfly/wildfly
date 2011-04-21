@@ -27,7 +27,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.controller.descriptions.ServerDeploymentDescription;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -55,7 +55,7 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return ServerDeploymentDescription.getRemoveDeploymentOperation(locale);
+        return ServerDescriptions.getRemoveDeploymentOperation(locale);
     }
 
     /**

@@ -35,7 +35,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-parent</artifactId>
-    <version>7.0.0.Beta3</version>
+    <version>7.0.0.Beta4-SNAPSHOT</version>
 
     <name>JBoss Application Server: Parent Aggregator</name>
     <description>JBoss Application Server: Parent Aggregator</description>
@@ -44,8 +44,8 @@
 
     <properties>
          <!-- Release Info -->
-        <jboss.as.release.version>7.0.0.Beta3</jboss.as.release.version>
-        <jboss.as.release.codename>Salyut</jboss.as.release.codename>
+        <jboss.as.release.version>${project.version}</jboss.as.release.version>
+        <jboss.as.release.codename>(TBD)</jboss.as.release.codename>
 
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
@@ -204,6 +204,7 @@
     </properties>
 
     <modules>
+        <module>arquillian2</module>
         <module>build</module>
         <module>build-config</module>
         <module>arquillian</module>
@@ -213,6 +214,7 @@
         <module>controller</module>
         <module>controller-client</module>
         <module>demos</module>
+        <module>demos2</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
         <module>domain-controller</module>
@@ -236,6 +238,7 @@
         <module>security</module>
         <module>server</module>
         <module>testsuite</module>
+        <module>testsuite2</module>
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>

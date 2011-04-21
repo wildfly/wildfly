@@ -68,22 +68,22 @@ class DeploymentScannerAdd implements ModelAddOperationHandler, DescriptionProvi
         final String path = operation.require(CommonAttributes.PATH).asString();
         final Boolean enabled = operation.hasDefined(CommonAttributes.SCAN_ENABLED)
             ? operation.get(CommonAttributes.SCAN_ENABLED).asBoolean()
-            : null;
+            : true;
         final Integer interval = operation.hasDefined(CommonAttributes.SCAN_INTERVAL)
             ? operation.get(CommonAttributes.SCAN_INTERVAL).asInt()
-            : null;
+            : 5000;
         final String relativeTo = operation.hasDefined(CommonAttributes.RELATIVE_TO)
             ? operation.get(CommonAttributes.RELATIVE_TO).asString()
             : null;
         final Boolean autoDeployZip =  operation.hasDefined(CommonAttributes.AUTO_DEPLOY_ZIPPED)
                     ? operation.get(CommonAttributes.AUTO_DEPLOY_ZIPPED).asBoolean()
-                    : null;
+                    : true;
         final Boolean autoDeployExp =  operation.hasDefined(CommonAttributes.AUTO_DEPLOY_EXPLODED)
                     ? operation.get(CommonAttributes.AUTO_DEPLOY_EXPLODED).asBoolean()
-                    : null;
+                    : false;
         final Long deploymentTimeout =  operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT)
                     ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong()
-                    : null;
+                    : 60L;
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
 

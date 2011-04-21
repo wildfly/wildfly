@@ -23,7 +23,6 @@
 package org.jboss.as.messaging.jms;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
@@ -33,145 +32,89 @@ import org.jboss.dmr.ModelNode;
  */
 public class JMSSubsystemProviders {
 
-    static final String RESOURCE_NAME = JMSSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
-
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getSubsystem(locale);
         }
     };
 
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getSubsystemAdd(locale);
         }
     };
 
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getSubsystemDescribe(locale);
         }
     };
 
     static final DescriptionProvider JMS_QUEUE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getQueue(locale);
         }
+
     };
 
     static final DescriptionProvider JMS_QUEUE_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getQueueAdd(locale);
         }
     };
 
     static final DescriptionProvider JMS_QUEUE_REMOVE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getQueueRemove(locale);
         }
     };
 
     static final DescriptionProvider CF = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getConnectionFactory(locale);
         }
+
     };
 
     static final DescriptionProvider CF_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getConnectionFactoryAdd(locale);
         }
     };
 
     static final DescriptionProvider CF_REMOVE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getConnectionFactoryRemove(locale);
         }
     };
 
     static final DescriptionProvider JMS_TOPIC = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getTopic(locale);
         }
     };
 
     static final DescriptionProvider JMS_TOPIC_ADD = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getTopicAdd(locale);
         }
     };
 
     static final DescriptionProvider JMS_TOPIC_REMOVE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            return JMSDescriptions.getTopicRemove(locale);
         }
     };
-
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
 }

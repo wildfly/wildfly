@@ -21,23 +21,26 @@
  */
 package org.jboss.as.threads;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 
+import java.util.Locale;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseOperationParameters;
 import org.jboss.dmr.ModelNode;
@@ -52,17 +55,19 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ScheduledThreadPoolAdd implements ModelAddOperationHandler {
+public class ScheduledThreadPoolAdd implements ModelAddOperationHandler, DescriptionProvider {
 
-    static final OperationHandler INSTANCE = new ScheduledThreadPoolAdd();
+    static final ScheduledThreadPoolAdd INSTANCE = new ScheduledThreadPoolAdd();
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         final BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseScheduledThreadPoolOperationParameters(operation);
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
 
         //Apply to the model
         final ModelNode model = context.getSubModel();
-        model.get(NAME).set(params.getName());
+        model.get(NAME).set(name);
         if (params.getThreadFactory() != null) {
             model.get(THREAD_FACTORY).set(params.getThreadFactory());
         }
@@ -95,5 +100,10 @@ public class ScheduledThreadPoolAdd implements ModelAddOperationHandler {
         // Compensating is remove
         final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
         return new BasicOperationResult(compensating);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ThreadsSubsystemProviders.ADD_SCHEDULED_THREAD_POOL_DESC.getModelDescription(locale);
     }
 }

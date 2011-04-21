@@ -39,6 +39,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -103,8 +104,7 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Des
     /** {@inheritDoc} */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        // TODO Create and return ModelDescription
-        return new ModelNode();
+        return ManagementDescription.getAddNativeManagementDescription(locale);
     }
 
 }

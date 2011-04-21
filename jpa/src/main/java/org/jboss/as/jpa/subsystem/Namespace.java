@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author Scott Marlow
  */
-public enum Namespace {
+enum Namespace {
     // must be first
     UNKNOWN(null),
     JPA_1_0("urn:jboss:domain:jpa:1.0"),;

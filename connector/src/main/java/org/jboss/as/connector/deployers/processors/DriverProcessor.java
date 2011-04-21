@@ -25,6 +25,11 @@ package org.jboss.as.connector.deployers.processors;
 import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.List;
+
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.registry.DriverService;
+import org.jboss.as.connector.registry.InstalledDriver;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,8 +41,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Deploy any JDBC drivers in a deployment unit.
@@ -48,6 +51,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployers.jdbc");
 
     /** {@inheritDoc} */
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
@@ -70,12 +74,17 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                         log.infof("Deploying non-JDBC-compliant driver %s (version %d.%d)", driverClass,
                                 Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
                     }
+
+                    InstalledDriver driverMetadata = new InstalledDriver(deploymentUnit.getName(), driverName, majorVersion, minorVersion, compliant);
+                    DriverService driverService = new DriverService(driverMetadata, driver);
                     phaseContext
                             .getServiceTarget()
                             .addService(
                                     ServiceName.JBOSS.append("jdbc-driver", driverName, Integer.toString(majorVersion),
                                             Integer.toString(minorVersion)),
-                                    new ValueService<Driver>(new ImmediateValue<Driver>(driver))).setInitialMode(Mode.ACTIVE)
+                                            driverService)
+                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class, driverService.getDriverRegistryServiceInjector())
+                             .setInitialMode(Mode.ACTIVE)
                             .install();
 
                 } catch (Exception e) {
@@ -86,6 +95,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }

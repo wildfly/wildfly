@@ -22,6 +22,18 @@
 
 package org.jboss.as.arquillian.parser;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -40,9 +52,18 @@ class ArquillianProviders {
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode node = new ModelNode();
-            // TODO
-            return node;
+            final ModelNode subsystem = new ModelNode();
+
+            subsystem.get(DESCRIPTION).set(bundle.getString("arquillian"));
+            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
+            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+            subsystem.get(NAMESPACE).set(ArquillianExtension.NAMESPACE);
+
+            subsystem.get(ATTRIBUTES).setEmptyObject();
+            subsystem.get(CHILDREN).setEmptyObject();
+            subsystem.get(OPERATIONS);
+
+            return subsystem;
         }
     };
 
@@ -52,7 +73,10 @@ class ArquillianProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            // TODO
+            node.get(OPERATION_NAME).set(ADD);
+            node.get(DESCRIPTION).set(bundle.getString("arquillian.add"));
+            node.get(REPLY_PROPERTIES).setEmptyObject();
+            node.get(REQUEST_PROPERTIES).setEmptyObject();
             return node;
         }
     };

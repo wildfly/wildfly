@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.naming.service.NamingExtension;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +50,7 @@ class EJB3SubsystemProviders {
             subsystem.get(DESCRIPTION).set(bundle.getString("ejb3"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(NamingExtension.NAMESPACE);
+            subsystem.get(NAMESPACE).set(EJB3Extension.NAMESPACE);
 
             return subsystem;
         }

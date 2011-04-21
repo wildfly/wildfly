@@ -22,10 +22,10 @@
 
 package org.jboss.as.server.operations;
 
-import java.security.AccessController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.security.AccessController;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 
@@ -40,8 +40,8 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
@@ -108,7 +108,6 @@ public class HttpManagementAddHandler implements ModelAddOperationHandler, Descr
     /** {@inheritDoc} */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        // TODO Auto-generated method stub
-        return new ModelNode();
+        return ManagementDescription.getAddHttpManagementDescription(locale);
     }
 }

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -85,7 +86,7 @@ class RemotingSubsystemProviders {
             subsystem.get(ATTRIBUTES, THREAD_POOL, DESCRIPTION).set(bundle.getString("remoting.thread-pool"));
             subsystem.get(ATTRIBUTES, THREAD_POOL, REQUIRED).set(true);
 
-            subsystem.get(CHILDREN, CONNECTOR).set(getConnectorDescription(bundle));
+            subsystem.get(CHILDREN, CONNECTOR, DESCRIPTION).set(bundle.getString("remoting.connectors"));
 
             return subsystem;
         }
@@ -99,6 +100,7 @@ class RemotingSubsystemProviders {
 
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set("add");
+            operation.get(DESCRIPTION).set(bundle.getString("remoting.add"));
             operation.get(REQUEST_PROPERTIES, THREAD_POOL, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, THREAD_POOL, DESCRIPTION).set(bundle.getString("remoting.thread-pool"));
             operation.get(REQUEST_PROPERTIES, THREAD_POOL, REQUIRED).set(true);
@@ -115,10 +117,11 @@ class RemotingSubsystemProviders {
 
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set("add");
+            operation.get(DESCRIPTION).set(bundle.getString("remoting.connector.add"));
 
-            operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));
-            operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+//            operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+//            operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));
+//            operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
 
             operation.get(REQUEST_PROPERTIES, SOCKET_BINDING, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, SOCKET_BINDING, DESCRIPTION).set(bundle.getString("remoting.connector.socket-binding"));
@@ -128,7 +131,7 @@ class RemotingSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, AUTHENTICATION_PROVIDER, DESCRIPTION).set(bundle.getString("remoting.connector.authentication-provider"));
             operation.get(REQUEST_PROPERTIES, AUTHENTICATION_PROVIDER, REQUIRED).set(false);
 
-            operation.get(REQUEST_PROPERTIES, SASL).set(getSaslElement(bundle));
+            operation.get(REQUEST_PROPERTIES, SASL).set(getSaslElement(bundle, VALUE_TYPE));
 
             return operation;
         }
@@ -179,43 +182,55 @@ class RemotingSubsystemProviders {
         connector.get(ATTRIBUTES, AUTHENTICATION_PROVIDER, DESCRIPTION).set(bundle.getString("remoting.connector.authentication-provider"));
         connector.get(ATTRIBUTES, AUTHENTICATION_PROVIDER, REQUIRED).set(false);
 
-        connector.get(CHILDREN, SASL).set(getSaslElement(bundle));
+        connector.get(CHILDREN, SASL, DESCRIPTION).set(bundle.getString("remoting.connector.sasl"));
 
         return connector;
     }
 
+    static final DescriptionProvider SASL_SPEC = new DescriptionProvider() {
 
-    static ModelNode getSaslElement(final ResourceBundle bundle) {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            return getSaslElement(bundle);
+        }
+    };
+
+    private static ModelNode getSaslElement(final ResourceBundle bundle) {
+        return getSaslElement(bundle, ATTRIBUTES);
+    }
+
+    private static ModelNode getSaslElement(final ResourceBundle bundle, String propType) {
         final ModelNode sasl = new ModelNode();
 
         sasl.get(TYPE).set(ModelType.OBJECT);
         sasl.get(DESCRIPTION).set(bundle.getString("remoting.sasl"));
         sasl.get(REQUIRED).set(false);
 
-        sasl.get(ATTRIBUTES, REUSE_SESSION, TYPE).set(ModelType.BOOLEAN);
-        sasl.get(ATTRIBUTES, REUSE_SESSION, DESCRIPTION).set(bundle.getString("remoting.sasl.reuse-session"));
-        sasl.get(ATTRIBUTES, REUSE_SESSION, REQUIRED).set(false);
-        sasl.get(ATTRIBUTES, REUSE_SESSION, DEFAULT).set(false);
+        sasl.get(propType, REUSE_SESSION, TYPE).set(ModelType.BOOLEAN);
+        sasl.get(propType, REUSE_SESSION, DESCRIPTION).set(bundle.getString("remoting.sasl.reuse-session"));
+        sasl.get(propType, REUSE_SESSION, REQUIRED).set(false);
+        sasl.get(propType, REUSE_SESSION, DEFAULT).set(false);
 
-        sasl.get(ATTRIBUTES, SERVER_AUTH, TYPE).set(ModelType.BOOLEAN);
-        sasl.get(ATTRIBUTES, SERVER_AUTH, DESCRIPTION).set(bundle.getString("remoting.sasl.server-auth"));
-        sasl.get(ATTRIBUTES, SERVER_AUTH, REQUIRED).set(false);
-        sasl.get(ATTRIBUTES, SERVER_AUTH, DEFAULT).set(false);
+        sasl.get(propType, SERVER_AUTH, TYPE).set(ModelType.BOOLEAN);
+        sasl.get(propType, SERVER_AUTH, DESCRIPTION).set(bundle.getString("remoting.sasl.server-auth"));
+        sasl.get(propType, SERVER_AUTH, REQUIRED).set(false);
+        sasl.get(propType, SERVER_AUTH, DEFAULT).set(false);
 
-        sasl.get(CHILDREN, INCLUDE_MECHANISMS, TYPE).set(ModelType.LIST);
-        sasl.get(CHILDREN, INCLUDE_MECHANISMS, VALUE_TYPE).set(ModelType.STRING);
-        sasl.get(CHILDREN, INCLUDE_MECHANISMS, DESCRIPTION).set(bundle.getString("remoting.sasl.include-mechanisms"));
-        sasl.get(CHILDREN, INCLUDE_MECHANISMS, REQUIRED).set(false);
+        sasl.get(propType, INCLUDE_MECHANISMS, TYPE).set(ModelType.LIST);
+        sasl.get(propType, INCLUDE_MECHANISMS, VALUE_TYPE).set(ModelType.STRING);
+        sasl.get(propType, INCLUDE_MECHANISMS, DESCRIPTION).set(bundle.getString("remoting.sasl.include-mechanisms"));
+        sasl.get(propType, INCLUDE_MECHANISMS, REQUIRED).set(false);
 
-        sasl.get(CHILDREN, QOP, TYPE).set(ModelType.LIST);
-        sasl.get(CHILDREN, QOP, VALUE_TYPE).set(ModelType.STRING);
-        sasl.get(CHILDREN, QOP, DESCRIPTION).set(bundle.getString("remoting.sasl.qop"));
-        sasl.get(CHILDREN, QOP, REQUIRED).set(false);
+        sasl.get(propType, QOP, TYPE).set(ModelType.LIST);
+        sasl.get(propType, QOP, VALUE_TYPE).set(ModelType.STRING);
+        sasl.get(propType, QOP, DESCRIPTION).set(bundle.getString("remoting.sasl.qop"));
+        sasl.get(propType, QOP, REQUIRED).set(false);
 
-        sasl.get(CHILDREN, POLICY).set(getPolicyElement(bundle));
+        sasl.get(propType, POLICY).set(getPolicyElement(bundle));
 
-        sasl.get(CHILDREN, PROPERTIES, TYPE).set(ModelType.LIST);
-        sasl.get(CHILDREN, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
+        sasl.get(propType, PROPERTIES, TYPE).set(ModelType.LIST);
+        sasl.get(propType, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
 
         return sasl;
     }
@@ -223,22 +238,27 @@ class RemotingSubsystemProviders {
     static ModelNode getPolicyElement(final ResourceBundle bundle) {
         final ModelNode policy = new ModelNode();
 
-        policy.get(TYPE).set(ModelType.PROPERTY);
-        policy.get(VALUE_TYPE).set(ModelType.BOOLEAN);
+        policy.get(TYPE).set(ModelType.OBJECT);
         policy.get(DESCRIPTION).set(bundle.getString("remoting.sasl.policy"));
 
-        policy.get(ATTRIBUTES, FORWARD_SECRECY, TYPE).set(ModelType.BOOLEAN);
-        policy.get(ATTRIBUTES, FORWARD_SECRECY, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.forward-secrecy"));
-        policy.get(ATTRIBUTES, NO_ACTIVE, TYPE).set(ModelType.BOOLEAN);
-        policy.get(ATTRIBUTES, NO_ACTIVE, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-active"));
-        policy.get(ATTRIBUTES, NO_ANONYMOUS, TYPE).set(ModelType.BOOLEAN);
-        policy.get(ATTRIBUTES, NO_ANONYMOUS, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-anonymous"));
-        policy.get(ATTRIBUTES, NO_DICTIONARY, TYPE).set(ModelType.BOOLEAN);
-        policy.get(ATTRIBUTES, NO_DICTIONARY, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-dictionary"));
-        policy.get(ATTRIBUTES, NO_PLAINTEXT, TYPE).set(ModelType.BOOLEAN);
-        policy.get(ATTRIBUTES, NO_PLAINTEXT, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-plain-text"));
-        policy.get(ATTRIBUTES, PASS_CREDENTIALS, TYPE).set(ModelType.BOOLEAN);
-        policy.get(ATTRIBUTES, PASS_CREDENTIALS, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.pass-credentials"));
+        policy.get(VALUE_TYPE, FORWARD_SECRECY, TYPE).set(ModelType.BOOLEAN);
+        policy.get(VALUE_TYPE, FORWARD_SECRECY, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.forward-secrecy"));
+        policy.get(VALUE_TYPE, FORWARD_SECRECY, REQUIRED).set(false);
+        policy.get(VALUE_TYPE, NO_ACTIVE, TYPE).set(ModelType.BOOLEAN);
+        policy.get(VALUE_TYPE, NO_ACTIVE, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-active"));
+        policy.get(VALUE_TYPE, NO_ACTIVE, REQUIRED).set(false);
+        policy.get(VALUE_TYPE, NO_ANONYMOUS, TYPE).set(ModelType.BOOLEAN);
+        policy.get(VALUE_TYPE, NO_ANONYMOUS, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-anonymous"));
+        policy.get(VALUE_TYPE, NO_ANONYMOUS, REQUIRED).set(false);
+        policy.get(VALUE_TYPE, NO_DICTIONARY, TYPE).set(ModelType.BOOLEAN);
+        policy.get(VALUE_TYPE, NO_DICTIONARY, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-dictionary"));
+        policy.get(VALUE_TYPE, NO_DICTIONARY, REQUIRED).set(false);
+        policy.get(VALUE_TYPE, NO_PLAINTEXT, TYPE).set(ModelType.BOOLEAN);
+        policy.get(VALUE_TYPE, NO_PLAINTEXT, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.no-plain-text"));
+        policy.get(VALUE_TYPE, NO_PLAINTEXT, REQUIRED).set(false);
+        policy.get(VALUE_TYPE, PASS_CREDENTIALS, TYPE).set(ModelType.BOOLEAN);
+        policy.get(VALUE_TYPE, PASS_CREDENTIALS, DESCRIPTION).set(bundle.getString("remoting.sasl.policy.pass-credentials"));
+        policy.get(VALUE_TYPE, PASS_CREDENTIALS, REQUIRED).set(false);
 
         return policy;
     }

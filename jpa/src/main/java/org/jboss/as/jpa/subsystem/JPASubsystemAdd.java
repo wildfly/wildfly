@@ -21,11 +21,14 @@
  */
 package org.jboss.as.jpa.subsystem;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.jpa.hibernate.HibernatePersistenceProviderAdaptor;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderAdapterRegistry;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
@@ -50,7 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
  *
  * @author Scott Marlow
  */
-class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
 
     static final JPASubsystemAdd INSTANCE = new JPASubsystemAdd();
 
@@ -89,6 +92,11 @@ class JPASubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
         context.getSubModel().setEmptyObject();
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return JPASubsystemProviders.SUBSYSTEM_ADD.getModelDescription(locale);
     }
 
 }

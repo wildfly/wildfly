@@ -46,6 +46,7 @@ import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -53,6 +54,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -73,9 +75,9 @@ import org.jboss.xnio.Sequence;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class ConnectorAdd implements ModelAddOperationHandler {
+public class ConnectorAdd implements ModelAddOperationHandler, DescriptionProvider {
 
-    static final OperationHandler INSTANCE = new ConnectorAdd();
+    static final ConnectorAdd INSTANCE = new ConnectorAdd();
 
     /** {@inheritDoc} */
     @Override
@@ -172,6 +174,11 @@ public class ConnectorAdd implements ModelAddOperationHandler {
             set.add(SaslQop.valueOf(element.asString()));
         }
         return set;
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return RemotingSubsystemProviders.CONNECTOR_ADD.getModelDescription(locale);
     }
 
 }

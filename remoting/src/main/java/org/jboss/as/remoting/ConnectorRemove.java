@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -39,6 +41,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -49,9 +52,9 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-public class ConnectorRemove implements ModelRemoveOperationHandler {
+public class ConnectorRemove implements ModelRemoveOperationHandler, DescriptionProvider {
 
-    static final OperationHandler INSTANCE = new ConnectorRemove();
+    static final ConnectorRemove INSTANCE = new ConnectorRemove();
 
     /** {@inheritDoc} */
     @Override
@@ -86,6 +89,11 @@ public class ConnectorRemove implements ModelRemoveOperationHandler {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(compensating);
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return RemotingSubsystemProviders.CONNECTOR_REMOVE.getModelDescription(locale);
     }
 
 }

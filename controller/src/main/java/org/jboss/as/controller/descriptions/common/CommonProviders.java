@@ -60,10 +60,20 @@ public final class CommonProviders {
     /**
      * Provider for a sub-model that names an interface and specifies the criteria.
      */
-    public static final DescriptionProvider MANAGEMENT_PROVIDER = new DescriptionProvider() {
+    public static final DescriptionProvider NATIVE_MANAGEMENT_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
-            return ManagementDescription.getManagementDescription(locale);
+            return ManagementDescription.getNativeManagementDescription(locale);
+        }
+    };
+
+    /**
+     * Provider for a sub-model that names an interface and specifies the criteria.
+     */
+    public static final DescriptionProvider HTTP_MANAGEMENT_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ManagementDescription.getHttpManagementDescription(locale);
         }
     };
 

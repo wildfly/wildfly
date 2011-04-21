@@ -1,0 +1,5 @@
+This suite is intended to test features available via the AS7 API.
+
+Defining that API is a prerequisite to populating this suite:
+
+https://issues.jboss.org/browse/JBAS-9283

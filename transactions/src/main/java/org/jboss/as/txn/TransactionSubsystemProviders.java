@@ -39,7 +39,10 @@ import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
 import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
+import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
+import static org.jboss.as.txn.CommonAttributes.PATH;
 import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 
 import java.util.Locale;
@@ -127,6 +130,7 @@ class TransactionSubsystemProviders {
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DEFAULT).set(true);
+
             /* Not currently used
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, TYPE).set(ModelType.BOOLEAN);
@@ -134,7 +138,15 @@ class TransactionSubsystemProviders {
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DEFAULT).set(300);
             */
 
-            //object-store does not seem to be used
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, TYPE).set(ModelType.OBJECT);
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("object-store.relative-to"));
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("object-store.path"));
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, PATH, REQUIRED).set(false);
 
             return subsystem;
         }
@@ -187,6 +199,7 @@ class TransactionSubsystemProviders {
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, TYPE).set(ModelType.BOOLEAN);
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DEFAULT).set(true);
+
             /* Not currently used
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, TYPE).set(ModelType.INT);
@@ -194,7 +207,15 @@ class TransactionSubsystemProviders {
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DEFAULT).set(300);
              */
 
-            //object-store does not seem to be used
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("object-store.relative-to"));
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("object-store.path"));
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, PATH, REQUIRED).set(false);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 

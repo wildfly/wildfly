@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCALE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -484,6 +485,8 @@ public class GlobalOperationHandlers {
 
             final boolean operations = operation.get(OPERATIONS).isDefined() ? operation.get(OPERATIONS).asBoolean() : false;
             final boolean recursive = operation.get(RECURSIVE).isDefined() ? operation.get(RECURSIVE).asBoolean() : false;
+            final boolean inheritedOps = operation.get(INHERITED).isDefined() ? operation.get(INHERITED).asBoolean() : true;
+
 
             final ModelNodeRegistration registry = context.getRegistry();
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
@@ -491,7 +494,7 @@ public class GlobalOperationHandlers {
             final Locale locale = getLocale(operation);
             final ModelNode result = descriptionProvider.getModelDescription(locale);
 
-            addDescription(context, result, recursive, operations, registry, address, locale);
+            addDescription(context, result, recursive, operations, inheritedOps, registry, address, locale);
 
             resultHandler.handleResultFragment(Util.NO_LOCATION, result);
             resultHandler.handleResultComplete();
@@ -499,10 +502,10 @@ public class GlobalOperationHandlers {
             return new BasicOperationResult();
         }
 
-        private void addDescription(final OperationContext context, final ModelNode result, final boolean recursive, final boolean operations, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
+        private void addDescription(final OperationContext context, final ModelNode result, final boolean recursive, final boolean operations, final boolean inheritedOps, final ModelNodeRegistration registry, final PathAddress address, final Locale locale) throws OperationFailedException {
 
             if (operations) {
-                final Map<String, OperationEntry> ops = registry.getOperationDescriptions(address, true);
+                final Map<String, OperationEntry> ops = registry.getOperationDescriptions(address, inheritedOps);
                 if (ops.size() > 0) {
 
                     for (final Map.Entry<String, OperationEntry> entry : ops.entrySet()) {
@@ -557,7 +560,7 @@ public class GlobalOperationHandlers {
 
                     } else {
                         child = provider.getModelDescription(locale);
-                        addDescription(context, child, recursive, operations, registry, childAddress, locale);
+                        addDescription(context, child, recursive, operations, inheritedOps, registry, childAddress, locale);
                     }
                     result.get(CHILDREN, element.getKey(),MODEL_DESCRIPTION, element.getValue()).set(child);
                 }

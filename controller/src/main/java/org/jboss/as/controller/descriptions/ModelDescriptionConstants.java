@@ -84,6 +84,7 @@ public class ModelDescriptionConstants {
     public static final String INCLUDES = "includes";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INET_ADDRESS = "inet-address";
+    public static final String INHERITED = "inherited";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
     public static final String IN_SERIES = "in-series";

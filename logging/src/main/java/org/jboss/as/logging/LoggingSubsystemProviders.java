@@ -102,10 +102,10 @@ class LoggingSubsystemProviders {
             node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
             node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
 
-            node.get(REQUEST_PROPERTIES, HANDLER, TYPE).set(ModelType.LIST);
-            node.get(REQUEST_PROPERTIES, HANDLER, VALUE_TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, HANDLER, DESCRIPTION).set(bundle.getString("logger.handlers"));
-            node.get(REQUEST_PROPERTIES, HANDLER, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, TYPE).set(ModelType.LIST);
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, REQUIRED).set(true);
 
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
@@ -152,10 +152,10 @@ class LoggingSubsystemProviders {
             node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
             node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
 
-            node.get(REQUEST_PROPERTIES, HANDLER, TYPE).set(ModelType.LIST);
-            node.get(REQUEST_PROPERTIES, HANDLER, VALUE_TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, HANDLER, DESCRIPTION).set(bundle.getString("logger.handlers"));
-            node.get(REQUEST_PROPERTIES, HANDLER, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, TYPE).set(ModelType.LIST);
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
+            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, REQUIRED).set(false);
 
             node.get(REQUEST_PROPERTIES, ENCODING, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, ENCODING, DESCRIPTION).set(bundle.getString("logger.level"));

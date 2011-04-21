@@ -41,6 +41,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.ManagementCommunicationService;
 import org.jboss.as.server.mgmt.ServerControllerOperationHandlerService;
@@ -113,8 +114,7 @@ public class NativeManagementAddHandler implements ModelAddOperationHandler, Des
     /** {@inheritDoc} */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        // TODO Auto-generated method stub
-        return new ModelNode();
+        return ManagementDescription.getAddNativeManagementDescription(locale);
     }
 
 }
