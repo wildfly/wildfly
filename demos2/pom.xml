@@ -174,7 +174,7 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>org.jboss.as.arquillian2</groupId>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian2-container-managed</artifactId>
                     <version>${project.version}</version>
                     <scope>test</scope>
@@ -193,7 +193,7 @@
               Though this mode isn't yet available              
                -->
                 <dependency>
-                    <groupId>org.jboss.as.arquillian2</groupId>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian2-container-remote</artifactId>
                     <scope>test</scope>
                 </dependency>
