@@ -40,6 +40,7 @@
         <module name="org.dom4j"/>
         <module name="org.infinispan"/>
         <module name="org.javassist"/>
+        <module name="org.jboss.logging"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

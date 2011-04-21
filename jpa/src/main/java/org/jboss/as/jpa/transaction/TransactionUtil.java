@@ -164,7 +164,7 @@ public class TransactionUtil {
         }
     }
 
-    private static TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+    public static TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
         return transactionSynchronizationRegistry;
     }
 

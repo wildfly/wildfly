@@ -23,6 +23,9 @@
 package org.jboss.as.jpa.hibernate;
 
 import org.jboss.as.ee.naming.ContextNames;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.ejb.AvailableSettings;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.naming.deployment.JndiName;
@@ -39,10 +42,18 @@ import java.util.Map;
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
     @Override
+<<<<<<< HEAD
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
         properties.put("hibernate.transaction.manager_lookup_class", "org.jboss.as.jpa.hibernate.HibernateTransactionManagerLookup");
         properties.put("hibernate.id.new_generator_mappings", "true");
         properties.put("hibernate.ejb.resource_scanner","org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
+=======
+    public void addProviderProperties(Map properties) {
+
+        properties.put(Environment.TRANSACTION_MANAGER_STRATEGY, "org.jboss.as.jpa.hibernate.HibernateTransactionManagerLookup");
+        properties.put(Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
+        properties.put(AvailableSettings.SCANNER,"org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
+>>>>>>> 53cd831... fix compiler errors, use JtaPlatform, use constants for properties
     }
 
     @Override

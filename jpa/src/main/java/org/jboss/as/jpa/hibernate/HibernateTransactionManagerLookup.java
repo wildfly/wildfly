@@ -22,31 +22,51 @@
 
 package org.jboss.as.jpa.hibernate;
 
-import org.hibernate.HibernateException;
-import org.hibernate.transaction.JNDITransactionManagerLookup;
+import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.util.Properties;
+import javax.transaction.UserTransaction;
 
 /**
  * Provide the transaction manager to Hibernate
  *
  * @author Scott Marlow
  */
-public class HibernateTransactionManagerLookup extends JNDITransactionManagerLookup {
+public class HibernateTransactionManagerLookup implements JtaPlatform {
 
 
-    protected String getName() {
-        return "java:/TransactionManager";
-    }
-
-    public String getUserTransactionName() {
-        return "UserTransaction";
-    }
-
-    public TransactionManager getTransactionManager(Properties props) throws HibernateException {
+    @Override
+    public TransactionManager retrieveTransactionManager() {
         return TransactionUtil.getTransactionManager();
     }
 
+    @Override
+    public UserTransaction retrieveUserTransaction() {
+        return null;
+    }
+
+    @Override
+    public Object getTransactionIdentifier(Transaction transaction) {
+        return transaction;
+    }
+
+    @Override
+    public boolean canRegisterSynchronization() {
+        return true;
+    }
+
+    @Override
+    public void registerSynchronization(Synchronization synchronization) {
+        TransactionUtil.getTransactionSynchronizationRegistry().registerInterposedSynchronization(synchronization);
+
+    }
+
+    @Override
+    public int getCurrentStatus() throws SystemException {
+        return retrieveTransactionManager().getStatus();
+    }
 }
