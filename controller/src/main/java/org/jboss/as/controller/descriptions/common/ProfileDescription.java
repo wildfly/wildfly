@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
@@ -80,10 +80,10 @@ public class ProfileDescription {
     public static ModelNode getProfileWithIncludesDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = getBasicProfileDescription(bundle);
-        root.get(ATTRIBUTES, INCLUDE, DESCRIPTION).set(bundle.getString("profile.includes"));
-        root.get(ATTRIBUTES, INCLUDE, TYPE).set(ModelType.LIST);
-        root.get(ATTRIBUTES, INCLUDE, VALUE_TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, INCLUDE, REQUIRED).set(false);
+        root.get(ATTRIBUTES, INCLUDES, DESCRIPTION).set(bundle.getString("profile.includes"));
+        root.get(ATTRIBUTES, INCLUDES, TYPE).set(ModelType.LIST);
+        root.get(ATTRIBUTES, INCLUDES, VALUE_TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, INCLUDES, REQUIRED).set(false);
         appendSubsystemChild(root, bundle);
         return root;
     }
@@ -116,11 +116,11 @@ public class ProfileDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(ADD);
         root.get(DESCRIPTION).set(bundle.getString("profile.add"));
-        root.get(REQUEST_PROPERTIES, INCLUDE, TYPE).set(ModelType.LIST);
-        root.get(REQUEST_PROPERTIES, INCLUDE, DESCRIPTION).set(bundle.getString("profile.add.includes"));
-        root.get(REQUEST_PROPERTIES, INCLUDE, VALUE_TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, INCLUDE, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, INCLUDE, NILLABLE).set(true);
+        root.get(REQUEST_PROPERTIES, INCLUDES, TYPE).set(ModelType.LIST);
+        root.get(REQUEST_PROPERTIES, INCLUDES, DESCRIPTION).set(bundle.getString("profile.add.includes"));
+        root.get(REQUEST_PROPERTIES, INCLUDES, VALUE_TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, INCLUDES, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, INCLUDES, NILLABLE).set(true);
 
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
