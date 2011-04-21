@@ -81,7 +81,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         return op;
     }
 
-    private static final List<String> VALID_DEPLOYMENT_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, HASH, URL);
+    private static final List<String> CONTENT_ADDITION_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, URL);
 
     private final ContentRepository contentRepository;
 
@@ -111,6 +111,10 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
                 }));
     }
 
+    private static String asString(final ModelNode node, final String name) {
+        return node.has(name) ? node.require(name).asString() : null;
+    }
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return DeploymentDescription.getAddDeploymentOperation(locale, true);
@@ -130,13 +134,18 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
 
         final byte[] hash;
-        final ModelNode content = operation.require(CONTENT);
+        // clone it, so we can modify it to our own content
+        final ModelNode content = operation.require(CONTENT).clone();
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        final ModelNode contentItem = content.require(0);
-        if (contentItem.hasDefined(HASH)) {
-            hash = contentItem.require(HASH).asBytes();
-        } else if (hasValidContentParameterDefined(contentItem)) {
-            InputStream in = getInputStream(context, contentItem);
+        final DeploymentHandlerUtil.ContentItem contentItem;
+        final ModelNode contentItemNode = content.require(0);
+        if (contentItemNode.hasDefined(HASH)) {
+            hash = contentItemNode.require(HASH).asBytes();
+            if (!contentRepository.hasContent(hash))
+                throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
+            contentItem = new DeploymentHandlerUtil.ContentItem(hash);
+        } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
+            InputStream in = getInputStream(context, contentItemNode);
             try {
                 try {
                     hash = contentRepository.addContent(in);
@@ -147,26 +156,25 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.get(HASH).set(hash);
+            // TODO: remove the content addition stuff?
+            contentItem = new DeploymentHandlerUtil.ContentItem(hash);
         } else {
-            // TODO: implement unmanaged content
-            throw createFailureException("None of the following parameters were defined %s.", VALID_DEPLOYMENT_PARAMETERS);
+            final String path = contentItemNode.require(PATH).asString();
+            final String relativeTo = asString(contentItemNode, RELATIVE_TO);
+            final boolean archive = contentItemNode.require(ARCHIVE).asBoolean();
+            contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
         }
 
-        boolean isResultComplete = false;
-        if (contentRepository.hasContent(hash)) {
-            ModelNode subModel = context.getSubModel();
-            subModel.get(NAME).set(name);
-            subModel.get(RUNTIME_NAME).set(runtimeName);
-            subModel.get(HASH).set(hash);
-            subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
-            if (context.getRuntimeContext() != null && subModel.get(ENABLED).asBoolean()) {
-                DeploymentHandlerUtil.deploy(context, name, runtimeName, hash, resultHandler);
-                isResultComplete = true;
-            }
+        ModelNode subModel = context.getSubModel();
+        subModel.get(NAME).set(name);
+        subModel.get(RUNTIME_NAME).set(runtimeName);
+        // content is a clone
+        subModel.get(CONTENT).set(content);
+        subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
+        if (context.getRuntimeContext() != null && subModel.get(ENABLED).asBoolean()) {
+            DeploymentHandlerUtil.deploy(context, name, runtimeName, resultHandler, contentItem);
         } else {
-            throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
-        }
-        if (!isResultComplete) {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
@@ -210,8 +218,8 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
      *
      * @return {@code true} of the parameter is valid, otherwise {@code false}.
      */
-    private static boolean hasValidContentParameterDefined(ModelNode operation) {
-        for (String s : VALID_DEPLOYMENT_PARAMETERS) {
+    private static boolean hasValidContentAdditionParameterDefined(ModelNode operation) {
+        for (String s : CONTENT_ADDITION_PARAMETERS) {
             if (operation.hasDefined(s)) {
                 return true;
             }

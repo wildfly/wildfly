@@ -31,12 +31,13 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 /**
  * Handles deployment into the runtime.
@@ -72,8 +73,8 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
         ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
         final String name = model.require(NAME).asString();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
-        final byte[] hash = model.require(HASH).asBytes();
-        DeploymentHandlerUtil.deploy(context, name, runtimeName, hash, resultHandler);
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+        DeploymentHandlerUtil.deploy(context, name, runtimeName, resultHandler, contents);
         return new BasicOperationResult(compensatingOp);
     }
 }

@@ -99,6 +99,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
         String name = operation.require(NAME).asString();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+        // TODO: JBAS-9020: FIXME
         byte[] hash;
         if (tooManyDeploymentParametersDefined(operation)) {
             throw createFailureException("Only allowed one of the following parameters is allowed %s.", VALID_DEPLOYMENT_PARAMETERS);
@@ -149,7 +150,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         }
 
         if (start) {
-            DeploymentHandlerUtil.replace(context, name, runtimeName, hash, resultHandler);
+            DeploymentHandlerUtil.replace(context, name, runtimeName, resultHandler, new DeploymentHandlerUtil.ContentItem(hash));
         } else {
             resultHandler.handleResultComplete();
         }

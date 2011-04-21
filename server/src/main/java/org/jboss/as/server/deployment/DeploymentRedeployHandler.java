@@ -31,11 +31,12 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 
 /**
@@ -67,8 +68,8 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
         ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
         final String name = model.require(NAME).asString();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
-        final byte[] hash = model.require(HASH).asBytes();
-        redeploy(context, name, runtimeName, hash, resultHandler);
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+        redeploy(context, name, runtimeName, resultHandler, contents);
 
         return new BasicOperationResult(compensatingOp);
     }
