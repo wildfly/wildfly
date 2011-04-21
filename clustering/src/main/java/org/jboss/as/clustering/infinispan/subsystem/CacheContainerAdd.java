@@ -65,6 +65,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -148,6 +149,7 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     }
 
                     ServiceBuilder<CacheContainer> builder = context.getServiceTarget().addService(EmbeddedCacheManagerService.getServiceName(name), new EmbeddedCacheManagerService(config))
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
                         .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, config.getTransactionManagerInjector())
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())

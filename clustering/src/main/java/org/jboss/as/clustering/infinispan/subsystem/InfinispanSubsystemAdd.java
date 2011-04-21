@@ -39,6 +39,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -85,13 +86,16 @@ public class InfinispanSubsystemAdd implements ModelAddOperationHandler, Descrip
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceTarget target = context.getServiceTarget();
-                    target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService()).install();
+                    target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService())
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                        .install();
 
                     String defaultContainer = operation.require(ModelKeys.DEFAULT_CACHE_CONTAINER).asString();
                     InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
                     ValueService<EmbeddedCacheManager> service = new ValueService<EmbeddedCacheManager>(container);
                     target.addService(EmbeddedCacheManagerService.getServiceName(), service)
                         .addDependency(EmbeddedCacheManagerService.getServiceName(defaultContainer), EmbeddedCacheManager.class, container)
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
                         .install();
                 }
             };

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.infinispan.AbstractDelegatingAdvancedCache;
-import org.infinispan.AbstractDelegatingCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
@@ -74,35 +73,7 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
     public <K, V> Cache<K, V> getCache(String cacheName) {
         SwitchContext context = switcher.getSwitchContext(this.getClass().getClassLoader());
         try {
-            final Cache<K, V>  cache = this.container.getCache(this.getCacheName(cacheName));
-
-            return new AbstractDelegatingCache<K, V>(cache) {
-                @Override
-                public CacheContainer getCacheManager() {
-                    return DefaultEmbeddedCacheManager.this;
-                }
-
-                @Override
-                public AdvancedCache<K, V> getAdvancedCache() {
-                    final AdvancedCache<K, V> advancedCache = cache.getAdvancedCache();
-                    return new AbstractDelegatingAdvancedCache<K, V>(advancedCache) {
-                        @Override
-                        public CacheContainer getCacheManager() {
-                            return DefaultEmbeddedCacheManager.this;
-                        }
-
-                        @Override
-                        public AdvancedCache<K, V> getAdvancedCache() {
-                            return this;
-                        }
-
-                        @Override
-                        public Stats getStats() {
-                            return advancedCache.getStats();
-                        }
-                    };
-                }
-            };
+            return new DelegatingCache<K, V>(this.container.<K, V>getCache(this.getCacheName(cacheName)));
         } finally {
             context.reset();
         }
@@ -274,5 +245,43 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
 
     private String getCacheName(String name) {
         return ((name == null) || name.equals(CacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
+    }
+
+    class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+        private final AdvancedCache<K, V> cache;
+
+        DelegatingCache(AdvancedCache<K, V> cache) {
+            super(cache);
+            this.cache = cache;
+        }
+
+        DelegatingCache(Cache<K, V> cache) {
+            this(cache.getAdvancedCache());
+        }
+
+        @Override
+        public CacheContainer getCacheManager() {
+            return DefaultEmbeddedCacheManager.this;
+        }
+
+        @Override
+        public AdvancedCache<K, V> getAdvancedCache() {
+            return this;
+        }
+
+        @Override
+        public Stats getStats() {
+            return this.cache.getStats();
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            return (object == this) || (object == this.cache);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.cache.hashCode();
+        }
     }
 }

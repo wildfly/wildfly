@@ -38,6 +38,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -85,13 +86,16 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     ServiceTarget target = context.getServiceTarget();
-                    target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService()).install();
+                    target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                        .install();
 
                     String stack = operation.require(ModelKeys.DEFAULT_STACK).asString();
                     InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
                     ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
                     target.addService(ChannelFactoryService.getServiceName(), service)
                         .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
                         .install();
                 }
             };

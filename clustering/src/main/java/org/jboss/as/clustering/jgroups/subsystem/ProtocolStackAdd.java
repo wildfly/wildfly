@@ -59,6 +59,7 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
@@ -129,7 +130,7 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
                         this.build(builder, protocol, protocolConfig);
                         stackConfig.getProtocols().add(protocolConfig);
                     }
-                    builder.install();
+                    builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                     resultHandler.handleResultComplete();
                 }
 

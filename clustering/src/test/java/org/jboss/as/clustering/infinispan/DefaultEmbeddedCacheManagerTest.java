@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
@@ -49,44 +50,52 @@ public class DefaultEmbeddedCacheManagerTest {
     @Test
     public void getDefaultCache() {
         @SuppressWarnings("unchecked")
-        Cache<Object, Object> expected = mock(Cache.class);
+        AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         
-        when(this.manager.<Object, Object>getCache("default")).thenReturn(expected);
+        when(this.manager.<Object, Object>getCache("default")).thenReturn(cache);
+        when(cache.getAdvancedCache()).thenReturn(cache);
         
         Cache<Object, Object> result = this.subject.getCache();
         
-        assertNotSame(expected, result);
+        assertNotSame(cache, result);
+        assertEquals(result, cache);
         assertSame(this.subject, result.getCacheManager());
     }
     
     @Test
     public void getCache() {
         @SuppressWarnings("unchecked")
-        Cache<Object, Object> defaultCache = mock(Cache.class);
+        AdvancedCache<Object, Object> defaultCache = mock(AdvancedCache.class);
         @SuppressWarnings("unchecked")
-        Cache<Object, Object> otherCache = mock(Cache.class);
+        AdvancedCache<Object, Object> otherCache = mock(AdvancedCache.class);
         
         when(this.manager.<Object, Object>getCache("default")).thenReturn(defaultCache);
         when(this.manager.<Object, Object>getCache("other")).thenReturn(otherCache);
+        when(defaultCache.getAdvancedCache()).thenReturn(defaultCache);
+        when(otherCache.getAdvancedCache()).thenReturn(otherCache);
         
         Cache<Object, Object> result = this.subject.getCache("default");
         
         assertNotSame(defaultCache, result);
+        assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
         
         result = this.subject.getCache("other");
         
         assertNotSame(otherCache, result);
+        assertEquals(result, otherCache);
         assertSame(this.subject, result.getCacheManager());
         
         result = this.subject.getCache(CacheContainer.DEFAULT_CACHE_NAME);
         
         assertNotSame(defaultCache, result);
+        assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
         
         result = this.subject.getCache(null);
         
         assertNotSame(defaultCache, result);
+        assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
     }
     
