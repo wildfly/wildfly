@@ -123,6 +123,8 @@ public class ContentRepositoryImpl implements ContentRepository, Service<Content
 
     @Override
     public VirtualFile getContent(byte[] hash) {
+        if (hash == null)
+            throw new IllegalArgumentException("hash is null");
         return VFS.getChild(getDeploymentContentFile(hash, true).toURI());
     }
 

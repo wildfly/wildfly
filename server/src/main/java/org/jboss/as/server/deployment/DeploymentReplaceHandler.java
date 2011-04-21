@@ -33,13 +33,14 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -108,8 +109,8 @@ public class DeploymentReplaceHandler implements ModelUpdateOperationHandler, De
         compensatingOp.get(TO_REPLACE).set(name);
 
         final String runtimeName = deployNode.require(RUNTIME_NAME).asString();
-        final byte[] hash = deployNode.require(HASH).asBytes();
-        DeploymentHandlerUtil.replace(context, toReplace, runtimeName, hash, resultHandler);
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
+        DeploymentHandlerUtil.replace(context, toReplace, runtimeName, resultHandler, contents);
 
         return new BasicOperationResult();
     }

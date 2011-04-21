@@ -24,6 +24,9 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.services.path.AbsolutePathService;
+import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -42,18 +45,36 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentHandlerUtil {
+    static class ContentItem {
+        // either hash or <path, relativeTo, isArchive>
+        private byte[] hash;
+        private String path;
+        private String relativeTo;
+        private boolean isArchive;
 
+        ContentItem(final byte[] hash) {
+            assert hash != null : "hash is null";
+            this.hash = hash;
+        }
+
+        ContentItem(final String path, final String relativeTo, final boolean isArchive) {
+            assert path != null : "path is null";
+            this.path = path;
+            this.relativeTo = relativeTo;
+            this.isArchive = isArchive;
+        }
+    }
 
     private DeploymentHandlerUtil() {
     }
 
-    public static void deploy(final OperationContext context, final String deploymentUnitName, final String runtimeName, final byte[] contents, final ResultHandler resultHandler) throws OperationFailedException {
+    public static void deploy(final OperationContext context, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext runtimeContext) throws OperationFailedException {
-                    deploy(runtimeContext, deploymentUnitName, runtimeName, contents, resultHandler);
+                    deploy(runtimeContext, deploymentUnitName, runtimeName, resultHandler, contents);
                 }
             });
         } else {
@@ -61,7 +82,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    private static void deploy(final RuntimeTaskContext context, final String deploymentUnitName, final String runtimeName, final byte[] contentHash, final ResultHandler resultHandler) {
+    private static void deploy(final RuntimeTaskContext context, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry();
         final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
@@ -71,7 +92,19 @@ public class DeploymentHandlerUtil {
             final ServiceTarget serviceTarget = context.getServiceTarget();
             // TODO: overlay service
             final ServiceName contentsServiceName = deploymentUnitServiceName.append("contents");
-            ContentServitor.addService(serviceTarget, contentsServiceName, contentHash);
+            if (contents[0].hash != null)
+                ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash);
+            else {
+                final String path = contents[0].path;
+                final ServiceName pathServiceName = AbstractPathService.pathNameOf(path);
+                final String relativeTo = contents[0].relativeTo;
+                if (relativeTo != null) {
+                    RelativePathService.addService(pathServiceName, path, relativeTo, serviceTarget);
+                } else {
+                    AbsolutePathService.addService(pathServiceName, path, serviceTarget);
+                }
+                PathContentServitor.addService(serviceTarget, contentsServiceName, pathServiceName);
+            }
             final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, null);
             serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
@@ -79,8 +112,8 @@ public class DeploymentHandlerUtil {
                     .addDependency(contentsServiceName, VirtualFile.class, service.contentsInjector)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
-            resultHandler.handleResultComplete();
         }
+        resultHandler.handleResultComplete();
     }
 
     private static void executeWhenRemoved(final Runnable action, final ServiceRegistry serviceRegistry, final ServiceName... serviceNames) {
@@ -112,7 +145,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final byte[] contents, final ResultHandler resultHandler) throws OperationFailedException {
+    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
         if (operationContext.getRuntimeContext() != null) {
             operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -134,7 +167,7 @@ public class DeploymentHandlerUtil {
                             }
                         });
                     } else {
-                        deploy(context, deploymentUnitName, runtimeName, contents, resultHandler);
+                        deploy(context, deploymentUnitName, runtimeName, resultHandler, contents);
                     }
                 }
             });
@@ -148,7 +181,7 @@ public class DeploymentHandlerUtil {
         controller.setMode(ServiceController.Mode.REMOVE);
     }
 
-    public static void replace(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final byte[] contents, final ResultHandler resultHandler) throws OperationFailedException {
+    public static void replace(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
         if (operationContext.getRuntimeContext() != null) {
             operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -159,11 +192,9 @@ public class DeploymentHandlerUtil {
                     executeWhenRemoved(new Runnable() {
                         @Override
                         public void run() {
-                            deploy(runtimeContext, deploymentUnitName, runtimeName, contents, resultHandler);
+                            deploy(runtimeContext, deploymentUnitName, runtimeName, resultHandler, contents);
                         }
                     }, runtimeContext.getServiceRegistry(), deploymentUnitServiceName, contentsServiceName);
-                    // TODO: not?
-                    //resultHandler.handleResultComplete();
                 }
             });
         } else {

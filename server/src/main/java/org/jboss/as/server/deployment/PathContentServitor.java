@@ -21,34 +21,28 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class ContentServitor extends AbstractService<VirtualFile> {
-    private final InjectedValue<ContentRepository> contentRepositoryInjectedValue = new InjectedValue<ContentRepository>();
-    private final byte[] hash;
+class PathContentServitor extends AbstractService<VirtualFile> {
+    private final InjectedValue<String> pathValue = new InjectedValue<String>();
 
-    ContentServitor(final byte[] hash) {
-        assert hash != null : "hash is null";
-        this.hash = hash;
-    }
-
-    static void addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final byte[] hash) {
-        final ContentServitor service = new ContentServitor(hash);
+    static void addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final ServiceName pathServiceName) {
+        final PathContentServitor service = new PathContentServitor();
         serviceTarget.addService(serviceName, service)
-            .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryInjectedValue)
+            .addDependency(pathServiceName, String.class, service.pathValue)
             .install();
     }
 
     @Override
     public VirtualFile getValue() throws IllegalStateException, IllegalArgumentException {
-        return contentRepositoryInjectedValue.getValue().getContent(hash);
+        return VFS.getChild(pathValue.getValue());
     }
 }
