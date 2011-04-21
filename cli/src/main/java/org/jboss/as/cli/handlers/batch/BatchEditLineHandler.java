@@ -38,7 +38,9 @@ import org.jboss.as.cli.operation.OperationFormatException;
 public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
     public BatchEditLineHandler() {
-        super("batch-edit-line", new CommandLineCompleter() {
+        super("batch-edit-line");
+
+        setArgumentCompleter(new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 

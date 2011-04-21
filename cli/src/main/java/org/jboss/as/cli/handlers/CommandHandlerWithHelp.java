@@ -29,6 +29,8 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 
@@ -43,26 +45,31 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
 
     private final String filename;
     private final boolean connectionRequired;
-    private final CommandLineCompleter argsCompleter;
+    private CommandLineCompleter argsCompleter;
+    protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue("--help", "-h") {
+        @Override
+        public boolean canAppearNext(ParsedArguments args) {
+            return !args.hasArguments();
+        }
+    };
 
     public CommandHandlerWithHelp(String command) {
         this(command, false);
     }
 
-    public CommandHandlerWithHelp(String command, CommandLineCompleter argsCompleter) {
-        this(command, false, argsCompleter);
-    }
-
     public CommandHandlerWithHelp(String command, boolean connectionRequired) {
-        this(command, connectionRequired, new SimpleTabCompleter(new String[]{"--help"}));
-    }
-
-    public CommandHandlerWithHelp(String command, boolean connectionRequired, CommandLineCompleter argsCompleter) {
         if(command == null) {
             throw new IllegalArgumentException("command can't be null");
         }
         this.filename = "help/" + command + ".txt";
         this.connectionRequired = connectionRequired;
+
+        SimpleArgumentTabCompleter argsCompleter = new SimpleArgumentTabCompleter();
+        argsCompleter.addArgument(helpArg);
+        this.argsCompleter = argsCompleter;
+    }
+
+    public void setArgumentCompleter(CommandLineCompleter argsCompleter) {
         this.argsCompleter = argsCompleter;
     }
 
@@ -85,7 +92,7 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
     @Override
     public void handle(CommandContext ctx) {
 
-        if(ctx.hasArgument("help")) {
+        if(helpArg.isPresent(ctx.getParsedArguments())) {
             printHelp(ctx);
             return;
         }
@@ -135,8 +142,8 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
      * @param ctx  the context
      * @param list  the list to print
      */
-    protected void printList(CommandContext ctx, List<String> list) {
-        if(ctx.hasArgument("l")) {
+    protected void printList(CommandContext ctx, List<String> list, boolean l) {
+        if(l) {
             for(String item : list) {
                 ctx.printLine(item);
             }

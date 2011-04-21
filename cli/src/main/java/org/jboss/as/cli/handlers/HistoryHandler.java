@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
+import org.jboss.as.cli.ParsedArguments;
 
 /**
  *
@@ -43,7 +44,8 @@ public class HistoryHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        if(!ctx.hasArguments()) {
+        ParsedArguments args = ctx.getParsedArguments();
+        if(!args.hasArguments()) {
             printHistory(ctx);
             return;
         }

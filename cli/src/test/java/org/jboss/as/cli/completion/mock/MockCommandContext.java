@@ -22,12 +22,11 @@
 package org.jboss.as.cli.completion.mock;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -199,31 +198,6 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public boolean hasArgument(String switchName) {
-        return false;
-    }
-
-    @Override
-    public String getArgument(String argName) {
-        return null;
-    }
-
-    @Override
-    public List<String> getOtherArguments() {
-        return null;
-    }
-
-    @Override
-    public boolean hasArguments() {
-        return false;
-    }
-
-    @Override
-    public Set<String> getArgumentNames() {
-        return null;
-    }
-
-    @Override
     public boolean isBatchMode() {
         // TODO Auto-generated method stub
         return false;
@@ -250,6 +224,12 @@ public class MockCommandContext implements CommandContext {
 
     @Override
     public CommandLineCompleter getDefaultCommandCompleter() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ParsedArguments getParsedArguments() {
         // TODO Auto-generated method stub
         return null;
     }

@@ -22,7 +22,9 @@
 package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -34,8 +36,27 @@ import org.jboss.dmr.ModelNode;
  */
 public class CreateJmsQueueHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithValue name;
+    private final ArgumentWithValue entries;
+    private final ArgumentWithValue selector;
+    private final ArgumentWithValue durable;
+
     public CreateJmsQueueHandler() {
-        super("create-jms-queue", true, new SimpleTabCompleter(new String[]{"--name=", "--entries=", "--selector=", "--durable=", "--help"}));
+        super("create-jms-queue", true);
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        name = new ArgumentWithValue(true, /*0,*/ "--name");
+        argsCompleter.addArgument(name);
+
+        entries = new ArgumentWithValue("--entries");
+        argsCompleter.addArgument(entries);
+
+        selector = new ArgumentWithValue("--selector");
+        argsCompleter.addArgument(selector);
+
+        durable = new ArgumentWithValue(new SimpleTabCompleter(new String[]{"false", "true"}), "--durable");
+        argsCompleter.addArgument(durable);
     }
 
     /* (non-Javadoc)
@@ -66,16 +87,20 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
             return;
         }
 
-        ctx.printLine("Created queue " + ctx.getArgument("name"));
+        ctx.printLine("Sucessfully created queue.");
     }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx)
             throws OperationFormatException {
 
-        final String name = ctx.getArgument("name");
-        if(name == null) {
-            throw new OperationFormatException("Required argument 'name' is missing.");
+        ParsedArguments args = ctx.getParsedArguments();
+
+        final String name;
+        try {
+            name = this.name.getValue(args);
+        } catch(IllegalArgumentException e) {
+            throw new OperationFormatException(e.getLocalizedMessage());
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
@@ -84,7 +109,7 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
         builder.setOperationName("add");
 
         ModelNode entriesNode = builder.getModelNode().get("entries");
-        final String entriesStr = ctx.getArgument("entries");
+        final String entriesStr = this.entries.getValue(args);
         if(entriesStr == null) {
             entriesNode.add(name);
         } else {
@@ -97,12 +122,12 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
             }
         }
 
-        final String selector = ctx.getArgument("selector");
+        final String selector = this.selector.getValue(args);
         if(selector != null) {
             builder.addProperty("selector", selector);
         }
 
-        final String durable = ctx.getArgument("durable");
+        final String durable = this.durable.getValue(args);
         if(durable != null) {
             builder.addProperty("durable", durable);
         }

@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestParser;
@@ -37,27 +39,31 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
  */
 public class LsHandler extends CommandHandlerWithHelp {
 
+    private final ArgumentWithValue nodePath;
+    private final ArgumentWithoutValue l;
+
     public LsHandler() {
         this("ls");
     }
 
     public LsHandler(String command) {
-        super(command, true,
-                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},
-                        OperationRequestCompleter.INSTANCE));
+        super(command, true);
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        l = new ArgumentWithoutValue("-l");
+        argsCompleter.addArgument(l);
+
+        nodePath = new ArgumentWithValue(false, OperationRequestCompleter.INSTANCE, 0, "--node-path");
+        argsCompleter.addArgument(nodePath);
     }
 
     @Override
     protected void doHandle(CommandContext ctx) {
 
+        final String nodePath = this.nodePath.getValue(ctx.getParsedArguments());
+
         final OperationRequestAddress address;
-
-        String nodePath = null;
-        List<String> args = ctx.getOtherArguments();
-        if(!args.isEmpty()) {
-            nodePath = args.get(0);
-        }
-
         if (nodePath != null) {
             address = new DefaultOperationRequestAddress(ctx.getPrefix());
             OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(address);
@@ -77,6 +83,6 @@ public class LsHandler extends CommandHandlerWithHelp {
             names = ctx.getOperationCandidatesProvider().getNodeTypes(address);
         }
 
-        printList(ctx, names);
+        printList(ctx, names, l.isPresent(ctx.getParsedArguments()));
     }
 }

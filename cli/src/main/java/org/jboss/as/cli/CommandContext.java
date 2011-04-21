@@ -22,8 +22,6 @@
 package org.jboss.as.cli;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
@@ -55,42 +53,10 @@ public interface CommandContext {
     String getArgumentsString();
 
     /**
-     * Checks whether there are arguments on the command line for the current command.
-     * @return true if there are arguments, false if there aren't.
+     * Parsed command line arguments.
+     * @return  parsed command line arguments.
      */
-    boolean hasArguments();
-
-    /**
-     * Checks whether the named argument is present among the command arguments.
-     * @return
-     */
-    boolean hasArgument(String argName);
-
-    /**
-     * Returns a value for the named argument on the command line or
-     * null if the argument with the name isn't present.
-     * @param argName  the name of the argument
-     * @return  the value of the argument or null if the argument isn't present
-     */
-    String getArgument(String argName);
-
-    /**
-     * Returns a set of argument names present on the command line
-     * of an empty set if there no named arguments on the command line.
-     *
-     * @return  a set of argument names present on the command line
-     * of an empty set if there no named arguments on the command line
-     */
-    Set<String> getArgumentNames();
-
-    /**
-     * Returns arguments that are not switches as a list of strings
-     * in the order they appear on the command line. If there no such arguments
-     * an empty list is returned.
-     * @return a list of arguments that are not switches or an empty list
-     * if there are no such arguments.
-     */
-    List<String> getOtherArguments();
+    ParsedArguments getParsedArguments();
 
     /**
      * Prints a string to the CLI's output.

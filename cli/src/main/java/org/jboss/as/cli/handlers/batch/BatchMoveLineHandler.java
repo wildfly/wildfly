@@ -65,7 +65,7 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        List<String> arguments = ctx.getOtherArguments();
+        List<String> arguments = ctx.getParsedArguments().getOtherArguments();
         if(arguments.isEmpty()) {
             ctx.printLine("Missing line number.");
             return;

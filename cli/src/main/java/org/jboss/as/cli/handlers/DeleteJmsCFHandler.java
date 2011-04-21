@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -38,44 +39,49 @@ import org.jboss.dmr.ModelNode;
  */
 public class DeleteJmsCFHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithValue name;
+
     public DeleteJmsCFHandler() {
-        super("delete-jms-cf", true,
-                new SimpleTabCompleterWithDelegate(new String[]{"--help"/*, "name="*/},
-                        new CommandLineCompleter() {
-                    @Override
-                    public int complete(CommandContext ctx, String buffer,
-                            int cursor, List<String> candidates) {
+        super("delete-jms-cf", true);
 
-                        int nextCharIndex = 0;
-                        while (nextCharIndex < buffer.length()) {
-                            if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                                break;
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        name = new ArgumentWithValue(true, new CommandLineCompleter() {
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+
+                int nextCharIndex = 0;
+                while (nextCharIndex < buffer.length()) {
+                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+
+                if(ctx.getModelControllerClient() != null) {
+                    List<String> deployments = Util.getJmsResources(ctx.getModelControllerClient(), "connection-factory");
+                    if(deployments.isEmpty()) {
+                        return -1;
+                    }
+
+                    String opBuffer = buffer.substring(nextCharIndex).trim();
+                    if (opBuffer.isEmpty()) {
+                        candidates.addAll(deployments);
+                    } else {
+                        for(String name : deployments) {
+                            if(name.startsWith(opBuffer)) {
+                                candidates.add(name);
                             }
-                            ++nextCharIndex;
                         }
+                        Collections.sort(candidates);
+                    }
+                    return nextCharIndex;
+                } else {
+                    return -1;
+                }
 
-                        if(ctx.getModelControllerClient() != null) {
-                            List<String> deployments = Util.getJmsResources(ctx.getModelControllerClient(), "connection-factory");
-                            if(deployments.isEmpty()) {
-                                return -1;
-                            }
-
-                            String opBuffer = buffer.substring(nextCharIndex).trim();
-                            if (opBuffer.isEmpty()) {
-                                candidates.addAll(deployments);
-                            } else {
-                                for(String name : deployments) {
-                                    if(name.startsWith(opBuffer)) {
-                                        candidates.add(name);
-                                    }
-                                }
-                                Collections.sort(candidates);
-                            }
-                            return nextCharIndex;
-                        } else {
-                            return -1;
-                        }
-                    }}));
+            }}, 0, "--name");
+        argsCompleter.addArgument(name);
     }
 
     /* (non-Javadoc)
@@ -102,33 +108,23 @@ public class DeleteJmsCFHandler extends BatchModeCommandHandler {
             return;
         }
 
-        String name = ctx.getArgument("name");
         if (!Util.isSuccess(result)) {
-            ctx.printLine("Failed to delete connection factory '" + name + "': " + Util.getFailureDescription(result));
+            ctx.printLine("Failed to delete connection factory: " + Util.getFailureDescription(result));
             return;
         }
 
-        ctx.printLine("Removed connection factory " + name);
+        ctx.printLine("Successfully removed connection factory.");
     }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx)
             throws OperationFormatException {
 
-        if(!ctx.hasArguments()) {
-            throw new OperationFormatException("Missing required argument 'name'.");
-        }
-
-        String name = ctx.getArgument("name");
-        if(name == null) {
-            List<String> args = ctx.getOtherArguments();
-            if(!args.isEmpty()) {
-                name = args.get(0);
-            }
-        }
-
-        if(name == null) {
-            throw new OperationFormatException("Missing required argument 'name'.");
+        final String name;
+        try {
+            name = this.name.getValue(ctx.getParsedArguments());
+        } catch(IllegalArgumentException e) {
+            throw new OperationFormatException("Missing required name argument.");
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();

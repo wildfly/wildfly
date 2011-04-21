@@ -31,7 +31,9 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.cli.handlers.SimpleTabCompleterWithDelegate;
+import org.jboss.as.cli.handlers.SimpleArgumentTabCompleter;
+import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 
 /**
  *
@@ -39,8 +41,19 @@ import org.jboss.as.cli.handlers.SimpleTabCompleterWithDelegate;
  */
 public class BatchHandler extends CommandHandlerWithHelp {
 
+    private final ArgumentWithoutValue l;
+    private final ArgumentWithValue name;
+
     public BatchHandler() {
-        super("batch", new SimpleTabCompleterWithDelegate(new String[]{"-l", "--help"}, new CommandLineCompleter(){
+        super("batch");
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        l = new ArgumentWithoutValue("-l");
+        l.setExclusive(true);
+        argsCompleter.addArgument(l);
+
+        name = new ArgumentWithValue(false, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -66,7 +79,10 @@ public class BatchHandler extends CommandHandlerWithHelp {
                 }
                 Collections.sort(candidates);
                 return nextCharIndex;
-            }}));
+
+            }}, 0, "--name");
+        name.addCantAppearAfter(l);
+        argsCompleter.addArgument(name);
     }
 
     /* (non-Javadoc)
@@ -77,7 +93,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
         BatchManager batchManager = ctx.getBatchManager();
 
-        if(ctx.hasArgument("l")) {
+        if(l.isPresent(ctx.getParsedArguments())) {
             Set<String> heldbackNames = batchManager.getHeldbackNames();
             if(!heldbackNames.isEmpty()) {
                 List<String> names = new ArrayList<String>(heldbackNames.size());
@@ -97,10 +113,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        String name = null;
-        if (ctx.hasArguments()) {
-            name = ctx.getOtherArguments().get(0);
-        }
+        final String name = this.name.getValue(ctx.getParsedArguments());
 
         boolean activated;
         if(batchManager.isHeldback(name)) {

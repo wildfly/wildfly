@@ -22,6 +22,7 @@
 package org.jboss.as.cli.handlers.batch;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
@@ -56,8 +57,9 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
         }
 
         String name = null;
-        if(ctx.hasArguments()) {
-            name = ctx.getOtherArguments().get(0);
+        ParsedArguments args = ctx.getParsedArguments();
+        if(args.hasArguments()) {
+            name = args.getOtherArguments().get(0);
         }
 
         if(batchManager.isHeldback(name)) {

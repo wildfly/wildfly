@@ -27,7 +27,10 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -39,62 +42,72 @@ import org.jboss.dmr.ModelNode;
  */
 public class UndeployHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithoutValue l;
+    private final ArgumentWithValue name;
+
     public UndeployHandler() {
-        super("undeploy", true, new SimpleTabCompleterWithDelegate(new String[]{"--help", "-l"},
-                new CommandLineCompleter() {
-                    @Override
-                    public int complete(CommandContext ctx, String buffer,
-                            int cursor, List<String> candidates) {
+        super("undeploy", true);
 
-                        int nextCharIndex = 0;
-                        while (nextCharIndex < buffer.length()) {
-                            if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                                break;
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        l = new ArgumentWithoutValue("-l");
+        l.setExclusive(true);
+        argsCompleter.addArgument(l);
+
+        name = new ArgumentWithValue(false, new CommandLineCompleter() {
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+
+                int nextCharIndex = 0;
+                while (nextCharIndex < buffer.length()) {
+                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+
+                if(ctx.getModelControllerClient() != null) {
+                    List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+                    if(deployments.isEmpty()) {
+                        return -1;
+                    }
+
+                    String opBuffer = buffer.substring(nextCharIndex).trim();
+                    if (opBuffer.isEmpty()) {
+                        candidates.addAll(deployments);
+                    } else {
+                        for(String name : deployments) {
+                            if(name.startsWith(opBuffer)) {
+                                candidates.add(name);
                             }
-                            ++nextCharIndex;
                         }
+                        Collections.sort(candidates);
+                    }
+                    return nextCharIndex;
+                } else {
+                    return -1;
+                }
 
-                        if(ctx.getModelControllerClient() != null) {
-                            List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
-                            if(deployments.isEmpty()) {
-                                return -1;
-                            }
-
-                            String opBuffer = buffer.substring(nextCharIndex).trim();
-                            if (opBuffer.isEmpty()) {
-                                candidates.addAll(deployments);
-                            } else {
-                                for(String name : deployments) {
-                                    if(name.startsWith(opBuffer)) {
-                                        candidates.add(name);
-                                    }
-                                }
-                                Collections.sort(candidates);
-                            }
-                            return nextCharIndex;
-                        } else {
-                            return -1;
-                        }
-                    }}));
+            }}, 0, "--name");
+        name.addCantAppearAfter(l);
+        argsCompleter.addArgument(name);
     }
 
     @Override
     protected void doHandle(CommandContext ctx) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
-        if(!ctx.hasArguments()) {
-            printList(ctx, Util.getDeployments(client));
+        ParsedArguments args = ctx.getParsedArguments();
+        boolean l = this.l.isPresent(args);
+        if(!args.hasArguments() || l) {
+            printList(ctx, Util.getDeployments(client), l);
             return;
         }
 
-        String deployment = null;
-        List<String> args = ctx.getOtherArguments();
-        if(args.size() > 0) {
-            deployment = args.get(0);
-        }
+        final String name = this.name.getValue(ctx.getParsedArguments());
 
-        if (deployment == null) {
-            printList(ctx, Util.getDeployments(client));
+        if (name == null) {
+            printList(ctx, Util.getDeployments(client), l);
             return;
         }
 
@@ -103,7 +116,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         // undeploy
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("undeploy");
-        builder.addNode("deployment", deployment);
+        builder.addNode("deployment", name);
 
         ModelNode result;
         try {
@@ -123,7 +136,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         // remove
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("remove");
-        builder.addNode("deployment", deployment);
+        builder.addNode("deployment", name);
         try {
             ModelNode request = builder.buildRequest();
             result = client.execute(request);
@@ -136,7 +149,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        ctx.printLine("'" + deployment + "' undeployed successfully.");
+        ctx.printLine("Successfully undeployed " + name + ".");
     }
 
     @Override
@@ -147,14 +160,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
         composite.get("address").setEmptyList();
         ModelNode steps = composite.get("steps");
 
-        if(!ctx.hasArguments()) {
-            throw new OperationFormatException("Required arguments are missing.");
-        }
-
-        String deployment = null;
-        List<String> args = ctx.getOtherArguments();
-        if(args.size() > 0) {
-            deployment = args.get(0);
+        final String name = this.name.getValue(ctx.getParsedArguments());
+        if(name == null) {
+            throw new OperationFormatException("Required argument name are missing.");
         }
 
         DefaultOperationRequestBuilder builder;
@@ -162,12 +170,12 @@ public class UndeployHandler extends BatchModeCommandHandler {
         // undeploy
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("undeploy");
-        builder.addNode("deployment", deployment);
+        builder.addNode("deployment", name);
         steps.add(builder.buildRequest());
 
         builder = new DefaultOperationRequestBuilder();
         builder.setOperationName("remove");
-        builder.addNode("deployment", deployment);
+        builder.addNode("deployment", name);
         steps.add(builder.buildRequest());
         return composite;
     }

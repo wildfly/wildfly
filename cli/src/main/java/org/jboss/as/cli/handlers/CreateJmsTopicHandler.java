@@ -22,7 +22,9 @@
 package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -34,8 +36,19 @@ import org.jboss.dmr.ModelNode;
  */
 public class CreateJmsTopicHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithValue name;
+    private final ArgumentWithValue entries;
+
     public CreateJmsTopicHandler() {
-        super("create-jms-topic", true, new SimpleTabCompleter(new String[]{"--name=", "--entries=", "--help"}));
+        super("create-jms-topic", true);
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        name = new ArgumentWithValue(true, /*0,*/ "--name");
+        argsCompleter.addArgument(name);
+
+        entries = new ArgumentWithValue(new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
+        argsCompleter.addArgument(entries);
     }
 
     /* (non-Javadoc)
@@ -66,15 +79,19 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
             return;
         }
 
-        ctx.printLine("Created topic " + ctx.getArgument("name"));
+        ctx.printLine("Successfully created topic.");
     }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
 
-        final String name = ctx.getArgument("name");
-        if(name == null) {
-            throw new OperationFormatException("Required argument 'name' is missing.");
+        ParsedArguments args = ctx.getParsedArguments();
+
+        final String name;
+        try {
+            name = this.name.getValue(args);
+        } catch(IllegalArgumentException e) {
+            throw new OperationFormatException(e.getLocalizedMessage());
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
@@ -83,7 +100,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
         builder.setOperationName("add");
 
         ModelNode entriesNode = builder.getModelNode().get("entries");
-        final String entriesStr = ctx.getArgument("entries");
+        final String entriesStr = this.entries.getValue(args);
         if(entriesStr == null) {
             entriesNode.add(name);
         } else {

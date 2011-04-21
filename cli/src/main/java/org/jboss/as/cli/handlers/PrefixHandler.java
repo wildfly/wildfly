@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -34,27 +35,32 @@ import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
  */
 public class PrefixHandler extends CommandHandlerWithHelp {
 
+    private final ArgumentWithValue nodePath;
+
     public PrefixHandler() {
         this("cn");
     }
 
     public PrefixHandler(String command) {
-        super(command, true,
-                new SimpleTabCompleterWithDelegate(new String[]{"--help"},
-                        OperationRequestCompleter.INSTANCE));
+        super(command, true);
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+        nodePath = new ArgumentWithValue(false, OperationRequestCompleter.INSTANCE, 0, "--node-path");
+        argsCompleter.addArgument(nodePath);
     }
 
     @Override
     protected void doHandle(CommandContext ctx) {
 
+        final String nodePath = this.nodePath.getValue(ctx.getParsedArguments());
+
         OperationRequestAddress prefix = ctx.getPrefix();
 
-        if(!ctx.hasArguments()) {
+        if(nodePath == null) {
             ctx.printLine(ctx.getPrefixFormatter().format(prefix));
             return;
         }
 
-        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(ctx.getPrefix());
+        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
         try {
             ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), handler);
         } catch (CommandFormatException e) {

@@ -22,7 +22,9 @@
 package org.jboss.as.cli.handlers;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -34,21 +36,58 @@ import org.jboss.dmr.ModelNode;
  */
 public class CreateJmsCFHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithValue name;
+    private final ArgumentWithValue autoGroup;
+    private final ArgumentWithValue entries;
+/*    private final ArgumentWithValue connector;
+    private final ArgumentWithValue blockOnAcknowledge;
+    private final ArgumentWithValue blockOnDurableSend;
+    private final ArgumentWithValue blockOnNonDurableSend;
+    private final ArgumentWithValue cacheLargeMessageClient;
+    private final ArgumentWithValue callTimeout;
+    private final ArgumentWithValue clientFailureCheckPeriod;
+*/
+//    private final ArgumentWithValue clientId;
+/*    private final ArgumentWithValue confirmationWindowSize;
+    private final ArgumentWithValue connectionTtl;
+    private final ArgumentWithValue consumer;
+    private final ArgumentWithValue consumerMaxRate;
+    private final ArgumentWithValue consumerWindowSize;
+    private final ArgumentWithValue discoveryGroupName;
+    private final ArgumentWithValue dupsOkBatchSize;
+    private final ArgumentWithValue failoverOnInitialConnection;
+    private final ArgumentWithValue failoverOnServerShutdown;
+    private final ArgumentWithValue groupId;
+    private final ArgumentWithValue maxRetryInterval;
+    private final ArgumentWithValue minLargeMessageSize;
+    private final ArgumentWithValue oreAcknowledge;
+    private final ArgumentWithValue producerMaxRate;
+    private final ArgumentWithValue producerWindowSize;
+    private final ArgumentWithValue reconnectAttempts;
+    private final ArgumentWithValue retryInterval;
+    private final ArgumentWithValue retryIntervalMultiplier;
+    private final ArgumentWithValue scheduledThreadPoolMaxSize;
+    private final ArgumentWithValue threadPoolMaxSize;
+    private final ArgumentWithValue transactionBatchSize;
+    private final ArgumentWithValue useGlobalPools;
+*/
     public CreateJmsCFHandler() {
-        super("create-jms-cf", true, new SimpleTabCompleter(new String[]{
-                "--help", "--name=", "--auto-group=", "--entries=", "--connector=",
-                "--block-on-acknowledge=", "--block-on-durable-send=", "--block-on-non-durable-send=",
-                "--cache-large-message-client=", "--call-timeout=",
-                "--client-failure-check-period=", "--client-id=", "--confirmation-window-size=",
-                "--connection-ttl=", "--connector=", "--consumer-max-rate=",
-                "--consumer-window-size=", "--discovery-group-name=", "--dups-ok-batch-size=",
-                "--failover-on-initial-connection=", "--failover-on-server-shutdown=",
-                "--group-id=", "--max-retry-interval=", "--min-large-message-size=",
-                "--pre-acknowledge=", "--producer-max-rate=", "--producer-window-size=",
-                "--reconnect-attempts=", "--retry-interval=", "--retry-interval-multiplier=",
-                "--scheduled-thread-pool-max-size=", "--thread-pool-max-size=",
-                "--transaction-batch-size=", "--use-global-pools="}));
-    }
+        super("create-jms-cf", true);
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        name = new ArgumentWithValue(true, /*0,*/ "--name");
+        argsCompleter.addArgument(name);
+
+        autoGroup = new ArgumentWithValue("--auto-group");
+        argsCompleter.addArgument(autoGroup);
+
+        entries = new ArgumentWithValue("--entries");
+        argsCompleter.addArgument(entries);
+
+/*        clientId = new ArgumentWithValue("--client-id");
+        addArgument(clientId);
+*/    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
@@ -77,7 +116,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
-        ctx.printLine("Created connection factory " + ctx.getArgument("name"));
+        ctx.printLine("Successfully created connection factory.");
     }
 
     @Override
@@ -88,21 +127,15 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
         builder.addNode("subsystem", "jms");
         builder.setOperationName("add");
 
-        String name = null;
-        String entriesStr = null;
-        for(String argName : ctx.getArgumentNames()) {
-            if(argName.equals("name")) {
-                name = ctx.getArgument(argName);
-            } else if(argName.equals("entries")) {
-                entriesStr = ctx.getArgument(argName);
-            } else {
-                builder.addProperty(argName, ctx.getArgument(argName));
-            }
+        ParsedArguments args = ctx.getParsedArguments();
+        final String name;
+        try {
+            name = this.name.getValue(args);
+        } catch(IllegalArgumentException e) {
+            throw new OperationFormatException(e.getLocalizedMessage());
         }
 
-        if(name == null) {
-            throw new OperationFormatException("Required argument 'name' is missing.");
-        }
+        final String entriesStr = this.entries.getValue(args);
 
         builder.addNode("connection-factory", name);
         ModelNode entriesNode = builder.getModelNode().get("entries");

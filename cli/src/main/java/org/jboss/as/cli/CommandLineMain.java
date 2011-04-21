@@ -32,13 +32,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
@@ -72,6 +69,7 @@ import org.jboss.as.cli.handlers.batch.BatchListHandler;
 import org.jboss.as.cli.handlers.batch.BatchMoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRemoveLineHandler;
 import org.jboss.as.cli.handlers.batch.BatchRunHandler;
+import org.jboss.as.cli.impl.DefaultParsedArguments;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -349,12 +347,8 @@ public class CommandLineMain {
 
         /** current command */
         private String cmd;
-        /** current command's arguments */
-        private String argsStr;
-        /** named command arguments */
-        private Map<String, String> namedArgs;
-        /** other command arguments */
-        private List<String> otherArgs;
+        /** parsed command arguments */
+        private DefaultParsedArguments parsedArgs = new DefaultParsedArguments();
 
         /** the controller client */
         private ModelControllerClient client;
@@ -405,7 +399,8 @@ public class CommandLineMain {
 
         @Override
         public String getArgumentsString() {
-            return argsStr;
+            //return argsStr;
+            return parsedArgs.getArgumentsString();
         }
 
         @Override
@@ -581,118 +576,9 @@ public class CommandLineMain {
             return defaultControllerPort;
         }
 
-        @Override
-        public boolean hasArgument(String switchName) {
-            if(namedArgs == null) {
-                parseArgs();
-            }
-            return namedArgs.containsKey(switchName);
-        }
-
-        @Override
-        public String getArgument(String argName) {
-            if(namedArgs == null) {
-                parseArgs();
-            }
-            return namedArgs.get(argName);
-        }
-
-        @Override
-        public List<String> getOtherArguments() {
-            if(otherArgs == null) {
-                parseArgs();
-            }
-            return otherArgs;
-        }
-
-        @Override
-        public boolean hasArguments() {
-            return argsStr != null;
-        }
-
-        private void parseArgs() {
-            namedArgs = null;
-            otherArgs = null;
-            if (argsStr != null) {
-                String[] arr = argsStr.split("\\s+");
-                if (arr.length > 0) {
-                    for (int i = 0; i < arr.length; ++i) {
-                        String arg = arr[i];
-                        if (arg.charAt(0) == '-') {
-                            final String dashedArg;
-                            if (arg.length() > 1 && arg.charAt(1) == '-') {
-                                dashedArg = arg.substring(2);
-                            } else {
-                                dashedArg = arg.substring(1);
-                            }
-
-                            if (dashedArg.length() > 0) {
-                                if(namedArgs == null) {
-                                    namedArgs = new HashMap<String, String>();
-                                }
-
-                                int equalsIndex = dashedArg.indexOf('=');
-                                if(equalsIndex > 0 && equalsIndex < dashedArg.length() - 1 && dashedArg.indexOf(equalsIndex + 1, '=') < 0) {
-                                    final String name = dashedArg.substring(0, equalsIndex).trim();
-                                    final String value = dashedArg.substring(equalsIndex + 1).trim();
-                                    if (namedArgs == null) {
-                                        namedArgs = new HashMap<String, String>();
-                                    }
-                                    namedArgs.put(name, value);
-                                } else {
-                                    namedArgs.put(dashedArg, null);
-                                }
-                            } else {
-                                if(otherArgs == null) {
-                                    otherArgs = new ArrayList<String>();
-                                }
-                                otherArgs.add(arg);
-                            }
-                        } else {
-                            if(otherArgs == null) {
-                                otherArgs = new ArrayList<String>();
-                            }
-                            otherArgs.add(arg);
-// TODO this check for name=value should go away
-                            int equalsIndex = arg.indexOf('=');
-                            if(equalsIndex > 0 && equalsIndex < arg.length() - 1 && arg.indexOf(equalsIndex + 1, '=') < 0) {
-                                final String name = arg.substring(0, equalsIndex).trim();
-                                final String value = arg.substring(equalsIndex + 1).trim();
-                                if (namedArgs == null) {
-                                    namedArgs = new HashMap<String, String>();
-                                }
-                                namedArgs.put(name, value);
-                            }
-                        }
-                    }
-
-                    if(otherArgs != null) {
-                        otherArgs = Collections.unmodifiableList(otherArgs);
-                    }
-                }
-            }
-
-            if(namedArgs == null) {
-                namedArgs = Collections.emptyMap();
-            }
-            if(otherArgs == null) {
-                otherArgs = Collections.emptyList();
-            }
-        }
-
         private void setArgs(String cmd, String args) {
             this.cmd = cmd;
-            argsStr = args;
-            namedArgs = null;
-            otherArgs = null;
-        }
-
-        @Override
-        public Set<String> getArgumentNames() {
-            if(namedArgs == null) {
-                parseArgs();
-            }
-            return namedArgs.keySet();
+            parsedArgs.reset(args);
         }
 
         @Override
@@ -718,7 +604,7 @@ public class CommandLineMain {
             }
 
             final String originalCommand = this.cmd;
-            final String originalArguments = this.argsStr;
+            final String originalArguments = this.parsedArgs.getArgumentsString();
             if(isOperation(line)) {
                 try {
                     setArgs(null, line);
@@ -733,9 +619,6 @@ public class CommandLineMain {
                     setArgs(originalCommand, originalArguments);
                 }
             }
-
-
-
 
             String cmd = line;
             String cmdArgs = null;
@@ -767,6 +650,11 @@ public class CommandLineMain {
         @Override
         public CommandLineCompleter getDefaultCommandCompleter() {
             return cmdCompleter;
+        }
+
+        @Override
+        public ParsedArguments getParsedArguments() {
+            return parsedArgs;
         }
     }
 }

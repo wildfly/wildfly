@@ -23,10 +23,12 @@ package org.jboss.as.cli.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -40,10 +42,36 @@ import org.jboss.dmr.ModelNode;
  */
 public class DeployHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithoutValue force;
+    private final ArgumentWithoutValue l;
+    private final ArgumentWithoutValue path;
+    private final ArgumentWithoutValue name;
+    private final ArgumentWithoutValue rtName;
+
     public DeployHandler() {
-        super("deploy", true,
-                new SimpleTabCompleterWithDelegate(new String[]{"--help", "-f", "-l", /*"--path=",*/ "--name=", "--runtime-name="},
-                        FilenameTabCompleter.INSTANCE));
+        super("deploy", true);
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        l = new ArgumentWithoutValue("-l");
+        l.setExclusive(true);
+        argsCompleter.addArgument(l);
+
+        path = new ArgumentWithValue(true, FilenameTabCompleter.INSTANCE, 0, "--path");
+        path.addCantAppearAfter(l);
+        argsCompleter.addArgument(path);
+
+        force = new ArgumentWithoutValue("--force", "-f");
+        force.addRequiredPreceding(path);
+        argsCompleter.addArgument(force);
+
+        name = new ArgumentWithValue("--name");
+        name.addRequiredPreceding(path);
+        argsCompleter.addArgument(name);
+
+        rtName = new ArgumentWithValue("--runtime-name");
+        rtName.addRequiredPreceding(path);
+        argsCompleter.addArgument(rtName);
     }
 
     @Override
@@ -51,26 +79,18 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         ModelControllerClient client = ctx.getModelControllerClient();
 
-        if (!ctx.hasArguments()) {
-            printList(ctx, Util.getDeployments(client));
+        ParsedArguments args = ctx.getParsedArguments();
+        boolean l = this.l.isPresent(args);
+        if (!args.hasArguments() || l) {
+            printList(ctx, Util.getDeployments(client), l);
             return;
         }
 
-        List<String> otherArgs = ctx.getOtherArguments();
-        if(otherArgs.size() > 1) {
-            ctx.printLine("Only one unnamed argument is expected for this command but received " + otherArgs.size() + ": " + otherArgs);
-            return;
-        }
-
-        String path = null;
-        if(otherArgs.size() > 0) {
-            path = otherArgs.get(0);
-        } else {
-            path = ctx.getArgument("path");
-        }
-
-        if(path == null) {
-            ctx.printLine("The required path argument is missing.");
+        final String path;
+        try {
+            path = this.path.getValue(args);
+        } catch(IllegalArgumentException e) {
+            ctx.printLine("The path argument is missing");
             return;
         }
         File f = new File(path);
@@ -79,15 +99,15 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        String name = ctx.getArgument("name");
+        String name = this.name.getValue(args);
         if(name == null) {
             name = f.getName();
         }
 
-        String runtimeName = ctx.getArgument("runtime-name");
+        String runtimeName = rtName.getValue(args);
 
         if(Util.isDeployed(name, client)) {
-            if(ctx.hasArgument("f")) {
+            if(force.isPresent(args)) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
                 ModelNode result;
@@ -121,7 +141,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
                 ctx.printLine("'" + name + "' re-deployed successfully.");
             } else {
-                ctx.printLine("'" + name + "' is already deployed (use -f to force re-deploy).");
+                ctx.printLine("'" + name + "' is already deployed (use " + force.getDefaultName() + " to force re-deploy).");
             }
 
             return;
@@ -180,27 +200,20 @@ public class DeployHandler extends BatchModeCommandHandler {
 
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
 
-        if (!ctx.hasArguments()) {
+        ParsedArguments args = ctx.getParsedArguments();
+        if (!args.hasArguments()) {
             throw new OperationFormatException("Required arguments are missing.");
         }
 
-        String filePath = null;
-        String name = null;
-        String runtimeName = null;
-
-        for(String arg : ctx.getOtherArguments()) {
-            if (filePath == null) {
-                filePath = arg;
-            } else if (name == null) {
-                name = arg;
-            } else {
-                runtimeName = arg;
-            }
+        final String filePath;
+        try {
+            filePath = path.getValue(args);
+        } catch(IllegalArgumentException e) {
+            throw new OperationFormatException("Missing required path argument.");
         }
+        String name = this.name.getValue(args);
+        String runtimeName = rtName.getValue(args);
 
-        if(filePath == null) {
-            throw new OperationFormatException("File path is missing.");
-        }
 
         File f = new File(filePath);
         if(!f.exists()) {
@@ -212,7 +225,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         }
 
         if(Util.isDeployed(name, ctx.getModelControllerClient())) {
-            if(ctx.hasArgument("f")) {
+            if(args.hasArgument("f")) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
                 // replace
