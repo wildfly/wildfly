@@ -210,6 +210,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
+    protected static void writeElement(final XMLExtendedStreamWriter writer, final Element element) throws XMLStreamException {
+        writer.writeStartElement(element.getLocalName());
+    }
+
     protected void writeExtensions(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         Set<String> keys = modelNode.keys();
         if (keys.size() > 0) {
