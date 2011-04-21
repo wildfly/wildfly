@@ -55,7 +55,7 @@ public final class DomainDescriptionProviders {
     public static final DescriptionProvider PROFILE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return ProfileDescription.getProfileDescription(locale);
+            return ProfileDescription.getProfileWithIncludesDescription(locale);
         }
     };
 

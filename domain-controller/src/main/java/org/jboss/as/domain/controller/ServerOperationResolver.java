@@ -9,7 +9,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -342,8 +342,8 @@ public class ServerOperationResolver {
 
         // Ignore any peers the target element includes
         ModelNode targetContainer = domainModel.get(containerType, parent);
-        if (targetContainer.hasDefined(INCLUDES)) {
-            for (ModelNode include : targetContainer.get(INCLUDES).asList()) {
+        if (targetContainer.hasDefined(INCLUDE)) {
+            for (ModelNode include : targetContainer.get(INCLUDE).asList()) {
                 checked.add(include.asString());
             }
         }
@@ -354,12 +354,12 @@ public class ServerOperationResolver {
                 String name = prop.getName();
                 if (!checked.contains(name)) {
                     ModelNode container = prop.getValue();
-                    if (!container.hasDefined(INCLUDES)) {
+                    if (!container.hasDefined(INCLUDE)) {
                         checked.add(name);
                     }
                     else {
                         boolean allKnown = true;
-                        for (ModelNode include : container.get(INCLUDES).asList()) {
+                        for (ModelNode include : container.get(INCLUDE).asList()) {
                             String includeName = include.asString();
                             if (result.contains(includeName)) {
                                 result.add(includeName);

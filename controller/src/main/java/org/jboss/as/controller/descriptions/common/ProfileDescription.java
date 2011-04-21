@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -72,10 +71,6 @@ public class ProfileDescription {
         root.get(DESCRIPTION).set(bundle.getString("profile"));
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("profile.name"));
-        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
         root.get(ATTRIBUTES, NAME, HEAD_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
         root.get(OPERATIONS).setEmptyObject();
@@ -85,10 +80,10 @@ public class ProfileDescription {
     public static ModelNode getProfileWithIncludesDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = getBasicProfileDescription(bundle);
-        root.get(CHILDREN, INCLUDE, DESCRIPTION).set(bundle.getString("profile.includes"));
-        root.get(CHILDREN, INCLUDE, MIN_OCCURS).set(0);
-        root.get(CHILDREN, INCLUDE, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, INCLUDE, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(ATTRIBUTES, INCLUDE, DESCRIPTION).set(bundle.getString("profile.includes"));
+        root.get(ATTRIBUTES, INCLUDE, TYPE).set(ModelType.LIST);
+        root.get(ATTRIBUTES, INCLUDE, VALUE_TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, INCLUDE, REQUIRED).set(false);
         appendSubsystemChild(root, bundle);
         return root;
     }
@@ -121,11 +116,12 @@ public class ProfileDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(ADD);
         root.get(DESCRIPTION).set(bundle.getString("profile.add"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.add.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(REQUEST_PROPERTIES, INCLUDE, TYPE).set(ModelType.LIST);
+        root.get(REQUEST_PROPERTIES, INCLUDE, DESCRIPTION).set(bundle.getString("profile.add.includes"));
+        root.get(REQUEST_PROPERTIES, INCLUDE, VALUE_TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, INCLUDE, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, INCLUDE, NILLABLE).set(true);
+
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -146,34 +142,6 @@ public class ProfileDescription {
         root.get(OPERATION_NAME).set(REMOVE);
         root.get(DESCRIPTION).set(bundle.getString("profile.remove"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getProfileIncludeAddOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD);
-        root.get(DESCRIPTION).set(bundle.getString("profile.includes.add"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.includes.add.include"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getProfileIncludeRemoveOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(REMOVE);
-        root.get(DESCRIPTION).set(bundle.getString("profile.includes.remove"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("profile.includes.remove.include"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }

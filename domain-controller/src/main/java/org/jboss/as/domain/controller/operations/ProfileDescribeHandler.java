@@ -20,7 +20,7 @@ package org.jboss.as.domain.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -66,9 +66,9 @@ public class ProfileDescribeHandler implements ModelQueryOperationHandler, Descr
         final ModelNode profile = context.getSubModel();
         result.setEmptyList();
 
-        if (profile.hasDefined(INCLUDES)) {
+        if (profile.hasDefined(INCLUDE)) {
 
-            for (ModelNode include : profile.get(INCLUDES).asList()) {
+            for (ModelNode include : profile.get(INCLUDE).asList()) {
                 final ModelNode includeAddress = address.subAddress(0, address.size() - 1).append(PathElement.pathElement(PROFILE, include.asString())).toModelNode();
                 final ModelNode newOp = operation.clone();
                 newOp.get(OP_ADDR).set(includeAddress);
