@@ -23,8 +23,11 @@ package org.jboss.as.clustering.jgroups;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -37,9 +40,9 @@ import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.ChannelException;
 import org.jgroups.ChannelListener;
 import org.jgroups.Global;
-import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.TP;
@@ -50,29 +53,23 @@ import org.jgroups.util.SocketFactory;
  * @author Paul Ferraro
  *
  */
-public class DefaultChannelFactory implements ChannelFactory, ChannelListener, ProtocolStackConfigurator {
-    private static final Logger log = Logger.getLogger(DefaultChannelFactory.class);
+public class JChannelFactory implements ChannelFactory, ChannelListener, ProtocolStackConfigurator {
+    private static final Logger log = Logger.getLogger(JChannelFactory.class);
 
-    private final String name;
     private final ProtocolStackConfiguration configuration;
-    private final String logicalName;
-    private volatile MBeanServer server = null;
+    private final Map<Channel, String> channels = Collections.synchronizedMap(new WeakHashMap<Channel, String>());
 
-    public DefaultChannelFactory(String name, ProtocolStackConfiguration configuration, String logicalName) {
-        this.name = name;
+    public JChannelFactory(ProtocolStackConfiguration configuration) {
         this.configuration = configuration;
-        this.logicalName = logicalName;
-    }
-
-    public void setMBeanServer(MBeanServer server) {
-        this.server = server;
     }
 
     @Override
-    public Channel createChannel() throws Exception {
+    public Channel createChannel(String id) throws Exception {
 
         JChannel channel = new JChannel(this);
 
+        // We need to synchronize on shared transport,
+        // so we don't attempt to init a shared transport multiple times
         TP transport = channel.getProtocolStack().getTransport();
         if (transport.isSingleton()) {
             synchronized (transport) {
@@ -82,10 +79,17 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener, P
             this.init(transport);
         }
 
-        channel.setName(this.logicalName);
+        channel.setName(id);
 
-        if (this.server != null) {
-            // TODO register channel/protocol mbeans
+        MBeanServer server = this.configuration.getMBeanServer();
+        if (server != null) {
+            try {
+                this.channels.put(channel, id);
+                JmxConfigurator.registerChannel(channel, server, id);
+            } catch (Exception e) {
+                log.warn(e.getMessage(), e);
+            }
+            channel.addChannelListener(this);
         }
 
         return channel;
@@ -147,7 +151,7 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener, P
         Map<String, String> properties = config.getProperties();
 
         if (transport.isShared() && !transport.getProperties().containsKey(Global.SINGLETON_NAME)) {
-            properties.put(Global.SINGLETON_NAME, this.name);
+            properties.put(Global.SINGLETON_NAME, this.configuration.getName());
         }
         SocketBinding socketBinding = transport.getSocketBinding();
         if (socketBinding != null) {
@@ -194,10 +198,13 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener, P
     }
 
     private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
-        return new org.jgroups.conf.ProtocolConfiguration(protocolConfig.getName(), protocolConfig.getProperties()) {
+        String protocol = protocolConfig.getName();
+        final Map<String, String> properties = new HashMap<String, String>(this.configuration.getDefaults().getProperties(protocol));
+        properties.putAll(protocolConfig.getProperties());
+        return new org.jgroups.conf.ProtocolConfiguration(protocol, properties) {
             @Override
             public Map<String, String> getOriginalProperties() {
-                return protocolConfig.getProperties();
+                return properties;
             }
         };
     }
@@ -223,9 +230,10 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener, P
 
     @Override
     public void channelClosed(Channel channel) {
-        if (this.server != null) {
+        MBeanServer server = this.configuration.getMBeanServer();
+        if (server != null) {
             try {
-                JmxConfigurator.unregisterChannel((JChannel) channel, this.server, this.getDomain(), this.logicalName);
+                JmxConfigurator.unregisterChannel((JChannel) channel, server, this.channels.remove(channel));
             } catch (Exception e) {
                 log.warn(e.getMessage(), e);
             }
@@ -244,7 +252,35 @@ public class DefaultChannelFactory implements ChannelFactory, ChannelListener, P
         // no-op
     }
 
-    private String getDomain() {
-        return this.server.getDefaultDomain() + ".jgroups";
+    // Workaround for JGRP-1314
+    // Synchronize on shared transport during channel connect
+    public static class JChannel extends org.jgroups.JChannel {
+        JChannel(ProtocolStackConfigurator configurator) throws ChannelException {
+            super(configurator);
+        }
+
+        @Override
+        public void connect(final String clusterName, final boolean useFlushIfPresent) throws ChannelException {
+            TP transport = this.getProtocolStack().getTransport();
+            if (transport.isSingleton()) {
+                synchronized (transport) {
+                    super.connect(clusterName, useFlushIfPresent);
+                }
+            } else {
+                super.connect(clusterName, useFlushIfPresent);
+            }
+        }
+
+        @Override
+        public void connect(String clusterName, Address target, String stateId, long timeout, boolean useFlushIfPresent) throws ChannelException {
+            TP transport = this.getProtocolStack().getTransport();
+            if (transport.isSingleton()) {
+                synchronized (transport) {
+                    super.connect(clusterName, target, stateId, timeout, useFlushIfPresent);
+                }
+            } else {
+                super.connect(clusterName, target, stateId, timeout, useFlushIfPresent);
+            }
+        }
     }
 }

@@ -21,25 +21,11 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import java.util.List;
-
-import javax.management.MBeanServer;
+import java.util.Map;
 
 /**
- * Defines the configuration of a JGroups protocol stack.
  * @author Paul Ferraro
  */
-public interface ProtocolStackConfiguration {
-
-    String getName();
-
-//    ServerEnvironment getEnvironment();
-
-    ProtocolDefaults getDefaults();
-
-    MBeanServer getMBeanServer();
-
-    TransportConfiguration getTransport();
-
-    List<ProtocolConfiguration> getProtocols();
+public interface ProtocolDefaults {
+    Map<String, String> getProperties(String protocol);
 }

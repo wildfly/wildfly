@@ -19,27 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups;
 
-import java.util.List;
+package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.management.MBeanServer;
+import org.infinispan.config.Configuration;
+import org.infinispan.config.GlobalConfiguration;
 
 /**
- * Defines the configuration of a JGroups protocol stack.
  * @author Paul Ferraro
  */
-public interface ProtocolStackConfiguration {
-
-    String getName();
-
-//    ServerEnvironment getEnvironment();
-
-    ProtocolDefaults getDefaults();
-
-    MBeanServer getMBeanServer();
-
-    TransportConfiguration getTransport();
-
-    List<ProtocolConfiguration> getProtocols();
+public interface EmbeddedCacheManagerDefaults {
+    GlobalConfiguration getGlobalConfiguration();
+    Configuration getDefaultConfiguration(Configuration.CacheMode mode);
 }

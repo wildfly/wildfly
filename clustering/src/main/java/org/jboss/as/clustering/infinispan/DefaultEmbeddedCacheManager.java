@@ -27,6 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.infinispan.AbstractDelegatingAdvancedCache;
+import org.infinispan.AbstractDelegatingCache;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
@@ -34,21 +37,22 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.stats.Stats;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
 /**
  * @author Paul Ferraro
  */
-public class DefaultCacheContainer implements EmbeddedCacheManager {
+public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
 
     @SuppressWarnings("unchecked")
-    private final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
+    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private final String defaultCache;
     private final EmbeddedCacheManager container;
 
-    public DefaultCacheContainer(EmbeddedCacheManager container, String defaultCache) {
+    public DefaultEmbeddedCacheManager(EmbeddedCacheManager container, String defaultCache) {
         this.container = container;
         this.defaultCache = defaultCache;
     }
@@ -59,12 +63,7 @@ public class DefaultCacheContainer implements EmbeddedCacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache() {
-        SwitchContext context = this.switcher.getSwitchContext(this.getClass().getClassLoader());
-        try {
-            return this.container.getCache(this.defaultCache);
-        } finally {
-            context.reset();
-        }
+        return this.getCache(this.defaultCache);
     }
 
     /**
@@ -73,9 +72,37 @@ public class DefaultCacheContainer implements EmbeddedCacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        SwitchContext context = this.switcher.getSwitchContext(this.getClass().getClassLoader());
+        SwitchContext context = switcher.getSwitchContext(this.getClass().getClassLoader());
         try {
-            return this.container.getCache(this.getCacheName(cacheName));
+            final Cache<K, V>  cache = this.container.getCache(this.getCacheName(cacheName));
+
+            return new AbstractDelegatingCache<K, V>(cache) {
+                @Override
+                public CacheContainer getCacheManager() {
+                    return DefaultEmbeddedCacheManager.this;
+                }
+
+                @Override
+                public AdvancedCache<K, V> getAdvancedCache() {
+                    final AdvancedCache<K, V> advancedCache = cache.getAdvancedCache();
+                    return new AbstractDelegatingAdvancedCache<K, V>(advancedCache) {
+                        @Override
+                        public CacheContainer getCacheManager() {
+                            return DefaultEmbeddedCacheManager.this;
+                        }
+
+                        @Override
+                        public AdvancedCache<K, V> getAdvancedCache() {
+                            return this;
+                        }
+
+                        @Override
+                        public Stats getStats() {
+                            return advancedCache.getStats();
+                        }
+                    };
+                }
+            };
         } finally {
             context.reset();
         }

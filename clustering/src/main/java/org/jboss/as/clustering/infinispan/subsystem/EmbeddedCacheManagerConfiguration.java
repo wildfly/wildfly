@@ -19,27 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.jgroups;
+package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
+import javax.transaction.TransactionManager;
+
+import org.infinispan.config.Configuration;
 
 /**
- * Defines the configuration of a JGroups protocol stack.
  * @author Paul Ferraro
  */
-public interface ProtocolStackConfiguration {
+public interface EmbeddedCacheManagerConfiguration {
 
     String getName();
+    String getDefaultCache();
+    Map<String, Configuration> getConfigurations();
 
-//    ServerEnvironment getEnvironment();
-
-    ProtocolDefaults getDefaults();
-
+    TransportConfiguration getTransportConfiguration();
+    EmbeddedCacheManagerDefaults getDefaults();
+    TransactionManager getTransactionManager();
     MBeanServer getMBeanServer();
-
-    TransportConfiguration getTransport();
-
-    List<ProtocolConfiguration> getProtocols();
+    Executor getListenerExecutor();
+    ScheduledExecutorService getEvictionExecutor();
+    ScheduledExecutorService getReplicationQueueExecutor();
 }

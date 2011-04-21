@@ -56,7 +56,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class InfinispanExtension implements Extension, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext>, DescriptionProvider {
 
-    private static final String SUBSYSTEM_NAME = "infinispan";
+    static final String SUBSYSTEM_NAME = "infinispan";
 
     private static final PathElement containerPath = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
     private static final InfinispanSubsystemAdd add = new InfinispanSubsystemAdd();

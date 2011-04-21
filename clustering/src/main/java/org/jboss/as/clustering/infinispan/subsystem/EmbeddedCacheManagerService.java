@@ -35,25 +35,15 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
-import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
+import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
@@ -61,7 +51,7 @@ import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerService implements Service<CacheContainer> {
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("infinispan");
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
 
     public static ServiceName getServiceName() {
         return SERVICE_NAME;
@@ -72,59 +62,14 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     }
 
     @SuppressWarnings("unchecked")
-    private final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
+    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<Executor> listenerExecutor = new InjectedValue<Executor>();
-    private final InjectedValue<ScheduledExecutorService> evictionExecutor = new InjectedValue<ScheduledExecutorService>();
-    private final InjectedValue<ScheduledExecutorService> replicationQueueExecutor = new InjectedValue<ScheduledExecutorService>();
-    private final InjectedValue<Executor> transportExecutor = new InjectedValue<Executor>();
-
-    private final GlobalConfiguration globalConfiguration;
-    private final Configuration defaultConfiguration;
-    private final Map<String, Configuration> configurations;
-    private final String name;
-    private final String defaultCache;
+    private final EmbeddedCacheManagerConfiguration configuration;
 
     private volatile CacheContainer container;
 
-    public EmbeddedCacheManagerService(String name, String defaultCache, GlobalConfiguration globalConfiguration, Configuration defaultConfiguration, Map<String, Configuration> configurations) {
-        this.name = name;
-        this.defaultCache = defaultCache;
-        this.globalConfiguration = globalConfiguration;
-        this.defaultConfiguration = defaultConfiguration;
-        this.configurations = configurations;
-    }
-
-    ServiceBuilder<CacheContainer> build(ServiceTarget target) {
-        return target.addService(getServiceName(this.name), this)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
-            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, this.transactionManager)
-            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, this.mbeanServer);
-    }
-
-    void addTransportDependency(ServiceBuilder<CacheContainer> builder, String stack) {
-        builder.addDependency((stack != null) ? ChannelFactoryService.getServiceName(stack) : ChannelFactoryService.getServiceName(), ChannelFactory.class, this.channelFactory);
-    }
-
-    void addListenerExecutorDependency(ServiceBuilder<CacheContainer> builder, String executor) {
-        builder.addDependency(ThreadsServices.executorName(executor), Executor.class, this.listenerExecutor);
-    }
-
-    void addEvictionExecutorDependency(ServiceBuilder<CacheContainer> builder, String executor) {
-        builder.addDependency(ThreadsServices.executorName(executor), ScheduledExecutorService.class, this.evictionExecutor);
-    }
-
-    void addReplicationQueueExecutorDependency(ServiceBuilder<CacheContainer> builder, String executor) {
-        builder.addDependency(ThreadsServices.executorName(executor), ScheduledExecutorService.class, this.replicationQueueExecutor);
-    }
-
-    void addTransportExecutorDependency(ServiceBuilder<CacheContainer> builder, String executor) {
-        builder.addDependency(ThreadsServices.executorName(executor), Executor.class, this.transportExecutor);
+    public EmbeddedCacheManagerService(EmbeddedCacheManagerConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     /**
@@ -143,57 +88,84 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     @Override
     public void start(StartContext context) throws StartException {
 
-        this.globalConfiguration.setCacheManagerName(this.name);
-        String nodeName = this.environment.getValue().getNodeName();
-        this.globalConfiguration.setTransportNodeName(nodeName);
-        this.globalConfiguration.setClusterName(String.format("%s:%s", nodeName, this.name));
+        EmbeddedCacheManagerDefaults defaults = this.configuration.getDefaults();
+        GlobalConfiguration global = defaults.getGlobalConfiguration().clone();
+        TransportConfiguration transport = this.configuration.getTransportConfiguration();
+        if (transport != null) {
+            Long timeout = transport.getLockTimeout();
+            if (timeout != null) {
+                global.setDistributedSyncTimeout(timeout.longValue());
+            }
+            String site = transport.getSite();
+            if (site != null) {
+                global.setSiteId(site);
+            }
+            String rack = transport.getRack();
+            if (rack != null) {
+                global.setRackId(rack);
+            }
+            String machine = transport.getMachine();
+            if (machine != null) {
+                global.setMachineId(machine);
+            }
+            String nodeName = transport.getEnvironment().getNodeName();
+            global.setTransportNodeName(nodeName);
+            global.setClusterName(String.format("%s-%s", nodeName, this.configuration.getName()));
 
-        ChannelProvider.init(this.globalConfiguration, this.channelFactory.getValue());
+            ChannelProvider.init(global, transport.getChannelFactory());
 
-        MBeanServer server = this.mbeanServer.getOptionalValue();
+            Executor executor = transport.getExecutor();
+            if (executor != null) {
+                ExecutorProvider.initTransportExecutor(global, executor);
+            }
+        }
+
+        global.setCacheManagerName(this.configuration.getName());
+
+        Configuration defaultConfig = new Configuration();
+        MBeanServer server = this.configuration.getMBeanServer();
         if (server != null) {
-            this.globalConfiguration.setExposeGlobalJmxStatistics(true);
-            this.globalConfiguration.setMBeanServerLookupInstance(new MBeanServerProvider(server));
-            this.globalConfiguration.setJmxDomain(server.getDefaultDomain());
-            this.defaultConfiguration.setExposeJmxStatistics(true);
+            global.setExposeGlobalJmxStatistics(true);
+            global.setMBeanServerLookupInstance(new MBeanServerProvider(server));
+            global.setJmxDomain(server.getDefaultDomain());
+            defaultConfig.setExposeJmxStatistics(true);
         } else {
-            this.globalConfiguration.setExposeGlobalJmxStatistics(false);
-            this.defaultConfiguration.setExposeJmxStatistics(false);
+            global.setExposeGlobalJmxStatistics(false);
+            defaultConfig.setExposeJmxStatistics(false);
         }
 
-        Executor listenerExecutor = this.listenerExecutor.getOptionalValue();
+        Executor listenerExecutor = this.configuration.getListenerExecutor();
         if (listenerExecutor != null) {
-            ExecutorProvider.initListenerExecutor(this.globalConfiguration, listenerExecutor);
+            ExecutorProvider.initListenerExecutor(global, listenerExecutor);
         }
-        Executor transportExecutor = this.transportExecutor.getOptionalValue();
-        if (transportExecutor != null) {
-            ExecutorProvider.initTransportExecutor(this.globalConfiguration, transportExecutor);
-        }
-        ScheduledExecutorService evictionExecutor = this.evictionExecutor.getOptionalValue();
+        ScheduledExecutorService evictionExecutor = this.configuration.getEvictionExecutor();
         if (evictionExecutor != null) {
-            ExecutorProvider.initEvictionExecutor(this.globalConfiguration, evictionExecutor);
+            ExecutorProvider.initEvictionExecutor(global, evictionExecutor);
         }
-        ScheduledExecutorService replicationQueueExecutor = this.replicationQueueExecutor.getOptionalValue();
-        if (listenerExecutor != null) {
-            ExecutorProvider.initReplicationQueueExecutor(this.globalConfiguration, replicationQueueExecutor);
+        ScheduledExecutorService replicationQueueExecutor = this.configuration.getReplicationQueueExecutor();
+        if (replicationQueueExecutor != null) {
+            ExecutorProvider.initReplicationQueueExecutor(global, replicationQueueExecutor);
         }
 
-        TransactionManager transactionManager = this.transactionManager.getOptionalValue();
+        TransactionManager transactionManager = this.configuration.getTransactionManager();
         if (transactionManager != null) {
-            this.defaultConfiguration.setTransactionManagerLookup(new TransactionManagerProvider(transactionManager));
+            defaultConfig.setTransactionManagerLookup(new TransactionManagerProvider(transactionManager));
         }
 
-        SwitchContext switchContext = this.switcher.getSwitchContext(this.getClass().getClassLoader());
+        SwitchContext switchContext = switcher.getSwitchContext(this.getClass().getClassLoader());
 
         try {
-            EmbeddedCacheManager manager = new DefaultCacheManager(this.globalConfiguration, this.defaultConfiguration, false);
+            EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
 
             // Add named configurations
-            for (Map.Entry<String, Configuration> entry: this.configurations.entrySet()) {
-               manager.defineConfiguration(entry.getKey(), entry.getValue());
+            for (Map.Entry<String, Configuration> entry: this.configuration.getConfigurations().entrySet()) {
+                Configuration overrides = entry.getValue();
+                Configuration configuration = defaults.getDefaultConfiguration(overrides.getCacheMode()).clone();
+                configuration.applyOverrides(overrides);
+                manager.defineConfiguration(entry.getKey(), configuration);
             }
 
-            this.container = new DefaultCacheContainer(manager, this.defaultCache);
+            this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
             this.container.start();
         } finally {
             switchContext.reset();

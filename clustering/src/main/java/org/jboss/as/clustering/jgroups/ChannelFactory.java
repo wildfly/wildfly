@@ -33,5 +33,5 @@ public interface ChannelFactory {
      * @return a JGroups channel
      * @throws Exception if there was a failure setting up the protocol stack
      */
-    Channel createChannel() throws Exception;
+    Channel createChannel(String id) throws Exception;
 }

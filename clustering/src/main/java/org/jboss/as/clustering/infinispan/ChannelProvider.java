@@ -36,11 +36,13 @@ import org.jgroups.Channel;
 public class ChannelProvider implements JGroupsChannelLookup {
 
     private static final String CHANNEL_FACTORY = "channel-factory";
+    private static final String ID = "id";
 
     public static void init(GlobalConfiguration global, ChannelFactory factory) {
         Properties properties = global.getTransportProperties();
         properties.setProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelProvider.class.getName());
         properties.put(CHANNEL_FACTORY, factory);
+        properties.put(ID, global.getClusterName());
     }
 
     /**
@@ -55,8 +57,14 @@ public class ChannelProvider implements JGroupsChannelLookup {
             throw new IllegalStateException(String.format("No %s property was specified within the transport properties: %s", CHANNEL_FACTORY, properties));
         }
 
+        String id = properties.getProperty(ID);
+
+        if (id == null) {
+            throw new IllegalStateException(String.format("No %s property was specified within the transport properties: %s", ID, properties));
+        }
+
         try {
-            return factory.createChannel();
+            return factory.createChannel(id);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

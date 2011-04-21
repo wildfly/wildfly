@@ -56,7 +56,8 @@ import org.jgroups.stack.Protocol;
  */
 public class JGroupsExtension implements Extension, DescriptionProvider, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    public static final String SUBSYSTEM_NAME = "jgroups";
+    static final String SUBSYSTEM_NAME = "jgroups";
+
     private static final PathElement stacksPath = PathElement.pathElement(ModelKeys.STACK);
     private static final JGroupsSubsystemAdd add = new JGroupsSubsystemAdd();
     private static final JGroupsSubsystemDescribe describe = new JGroupsSubsystemDescribe();
