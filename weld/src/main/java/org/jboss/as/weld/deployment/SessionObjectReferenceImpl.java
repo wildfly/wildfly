@@ -22,61 +22,42 @@
 package org.jboss.as.weld.deployment;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 
-import java.io.Serializable;
-
 /**
  * TODO: This is a massive hack
  *
  * @author Stuart Douglas
+ * @author Ales Justin
  */
 public class SessionObjectReferenceImpl implements SessionObjectReference {
 
-    private final EjbDescriptorImpl<?> descriptor;
-    private final ServiceRegistry serviceRegistry;
-    private final Serializable sessionId;
     private volatile boolean removed = false;
     private volatile Component component;
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
-        this.descriptor = descriptor;
-        this.serviceRegistry = serviceRegistry;
         final ServiceName createServiceName = descriptor.getCreateServiceName();
         final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
         component = (Component) controller.getValue();
-
-        if (descriptor.isStateful()) {
-            StatefulSessionComponent sfsb = (StatefulSessionComponent) component;
-            sessionId = sfsb.createSession();
-        } else {
-            sessionId = null;
-        }
     }
 
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        final ServiceName viewServiceName = component.getViewServices().get(businessInterfaceType);
-        if (viewServiceName == null) {
-            throw new RuntimeException("Could not find view for " + businessInterfaceType);
-        }
-        final ServiceController<?> viewController = serviceRegistry.getRequiredService(viewServiceName);
-        ComponentView view = (ComponentView) viewController.getValue();
-        if (descriptor.isStateful()) {
-            return (S) view.getViewForInstance(sessionId);
-        }
-        return (S) view.getReference().getInstance();
+        ComponentInstance instance = component.createInstance();
+        return (S) instance.getInstance();
     }
 
     @Override
     public void remove() {
-        if (descriptor.isStateful()) {
-            //TODO: destroy the EJB's
+        if (component instanceof StatefulSessionComponent) {
+            StatefulSessionComponent ssc = (StatefulSessionComponent) component;
         }
         removed = true;
     }

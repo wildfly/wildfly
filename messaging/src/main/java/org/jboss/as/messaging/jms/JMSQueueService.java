@@ -26,7 +26,7 @@ import java.util.Map;
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.naming.MockContext;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ValueManagedObject;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
@@ -74,7 +74,7 @@ class JMSQueueService implements Service<Void> {
                     final BinderService binderService = new BinderService(binding.getKey());
                     target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getKey()), binderService)
                         .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
-                        .addInjection(binderService.getManagedObjectInjector(), new ValueManagedObject(Values.immediateValue(binding.getValue())))
+                        .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(binding.getValue())))
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
                 }

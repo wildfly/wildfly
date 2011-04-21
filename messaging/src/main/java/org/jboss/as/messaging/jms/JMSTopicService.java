@@ -22,14 +22,10 @@
 
 package org.jboss.as.messaging.jms;
 
-import java.util.Map;
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.MockContext;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ValueManagedObject;
-import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
@@ -41,6 +37,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Values;
+
+import java.util.Map;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Topic}.
@@ -73,9 +71,9 @@ public class JMSTopicService implements Service<Void> {
                     final BinderService binderService = new BinderService(binding.getKey());
                     target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getKey()), binderService)
                         .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binderService.getNamingStoreInjector())
-                        .addInjection(binderService.getManagedObjectInjector(), new ValueManagedObject(Values.immediateValue(binding.getValue())))
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
+                        .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(binding.getValue())))
+                                .setInitialMode(ServiceController.Mode.ACTIVE)
+                                .install();
                 }
             }
         } catch (Exception e) {

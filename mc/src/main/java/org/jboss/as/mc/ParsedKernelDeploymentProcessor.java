@@ -94,7 +94,7 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
     @SuppressWarnings({"unchecked"})
     private <T> void addBean(final ServiceTarget serviceTarget, BeanMetaDataConfig beanConfig, Class<T> clazz, DeploymentReflectionIndex deploymentIndex) throws ClassNotFoundException {
         final ClassReflectionIndex<T> index = deploymentIndex.getClassIndex(clazz);
-        final Constructor<T> constructor = index.getConstructor();
+        final Constructor<T> constructor = index.getConstructor(new Class[]{});
         final List<? extends Value<?>> args = Collections.emptyList();
         final ServiceName beanServiceName = JBOSS_MC_POJO.append(beanConfig.getName());
         // TODO - decide if we really need NOT_INSTALLED and DESCRIBED stages

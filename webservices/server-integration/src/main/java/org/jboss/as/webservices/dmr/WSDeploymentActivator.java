@@ -29,7 +29,6 @@ import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
 import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
-import org.jboss.as.webservices.deployers.WebServiceContextDeploymentUnitProcessor;
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
 import org.jboss.logging.Logger;
 import org.jboss.ws.common.sort.DeploymentAspectSorter;
@@ -59,7 +58,7 @@ final class WSDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
         //updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
         //updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSEJBAdapterDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER, new WebServiceContextDeploymentUnitProcessor());
+        // TODO -- ?? updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER, new WebServiceContextDeploymentUnitProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSTypeDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSModelDeploymentProcessor());
 

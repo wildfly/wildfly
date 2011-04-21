@@ -38,7 +38,6 @@ import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.EjbDescriptorImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
-import org.jboss.as.weld.injection.WeldInjectionFactory;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.jandex.ClassInfo;
@@ -82,10 +81,6 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
         //create a CDI injection factory
         EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final Module topLevelModule = topLevelDeployment.getAttachment(Attachments.MODULE);
-        if(eeModuleDescription != null) {
-            eeModuleDescription.addInjectionFactory(new WeldInjectionFactory(phaseContext.getServiceTarget(),deploymentUnit,topLevelModule.getClassLoader()));
-        }
         final String beanArchiveIdPrefix;
         if (deploymentUnit.getParent() == null) {
             beanArchiveIdPrefix = deploymentUnit.getName();
