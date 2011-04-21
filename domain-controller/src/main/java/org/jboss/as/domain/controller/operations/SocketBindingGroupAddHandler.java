@@ -20,7 +20,7 @@ package org.jboss.as.domain.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 
 import java.util.Locale;
 
@@ -42,13 +42,13 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
 
     private static final ParametersValidator VALIDATOR = new ParametersValidator();
     static {
-        VALIDATOR.registerValidator(INCLUDE, new ListValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true), true, 0, Integer.MAX_VALUE));
+        VALIDATOR.registerValidator(INCLUDES, new ListValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true), true, 0, Integer.MAX_VALUE));
     }
 
     public static final ModelNode getOperation(ModelNode address, ModelNode model) {
         ModelNode op = Util.getEmptyOperation(ADD, address);
         op.get(DEFAULT_INTERFACE).set(model.get(DEFAULT_INTERFACE));
-        op.get(INCLUDE).set(model.get(INCLUDE));
+        op.get(INCLUDES).set(model.get(INCLUDES));
         return op;
     }
 
@@ -71,7 +71,7 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
      */
     @Override
     protected void populateModel(ModelNode model, ModelNode operation) {
-        model.get(INCLUDE).set(operation.get(INCLUDE));
+        model.get(INCLUDES).set(operation.get(INCLUDES));
     }
 
 }

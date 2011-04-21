@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -270,7 +269,7 @@ public class DomainXml extends CommonXml {
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
         bindingGroupUpdate.get(OP).set(ADD);
         bindingGroupUpdate.get(DEFAULT_INTERFACE).set(defaultInterface);
-        final ModelNode includes = bindingGroupUpdate.get(INCLUDE);
+        final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
         updates.add(bindingGroupUpdate);
 

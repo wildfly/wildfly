@@ -27,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -389,8 +389,8 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     private void mergeBindingGroups(List<ModelNode> updates, Map<String, ModelNode> groups, final String groupName, ModelNode group, Set<String> processed, ModelNode parentInterface) {
         addSocketBindings(updates, group, groupName, group.get(DEFAULT_INTERFACE));
-        if(group.has(INCLUDE) && group.get(INCLUDE).isDefined()) {
-            for(final ModelNode include : group.get(INCLUDE).asList()) {
+        if(group.has(INCLUDES) && group.get(INCLUDES).isDefined()) {
+            for(final ModelNode include : group.get(INCLUDES).asList()) {
                 final String ref = include.asString();
                 if(processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);

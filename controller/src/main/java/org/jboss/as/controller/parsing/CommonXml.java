@@ -31,7 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
@@ -1382,8 +1382,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             attr = bindingGroup.get(PORT_OFFSET);
             writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
         }
-        if (!fromServer && bindingGroup.hasDefined(INCLUDE)) {
-            for (ModelNode include : bindingGroup.get(INCLUDE).asList()) {
+        if (!fromServer && bindingGroup.hasDefined(INCLUDES)) {
+            for (ModelNode include : bindingGroup.get(INCLUDES).asList()) {
                 writer.writeStartElement(Element.INCLUDE.getLocalName());
                 writeAttribute(writer, Attribute.SOCKET_BINDING_GROUP, include.asString());
                 writer.writeEndElement();
