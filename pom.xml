@@ -84,7 +84,7 @@
         <version.net.sourceforge.nekohtml.nekohtml>1.9.14</version.net.sourceforge.nekohtml.nekohtml>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
         <version.org.apache.ant>1.7.1</version.org.apache.ant>
-        <version.org.apache.cxf>2.3.3-patch-01</version.org.apache.cxf>
+        <version.org.apache.cxf>2.4.0</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.3.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
@@ -93,13 +93,13 @@
         <version.org.apache.felix.webconsole>3.1.6.SP1</version.org.apache.felix.webconsole>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.httpcomponents>4.0.1</version.org.apache.httpcomponents>
-        <version.org.apache.neethi>2.0.4</version.org.apache.neethi>
+        <version.org.apache.neethi>3.0.0</version.org.apache.neethi>
         <version.org.apache.velocity>1.6.2</version.org.apache.velocity>
         <version.org.apache.xalan>2.7.1-1.jbossorg</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1</version.org.apache.xerces>
-        <version.org.apache.santuario.xmlsec>1.4.3</version.org.apache.santuario.xmlsec>
-        <version.org.apache.ws.commons.xmlschema>1.4.5</version.org.apache.ws.commons.xmlschema>
-        <version.org.apache.ws.security>1.5.11</version.org.apache.ws.security>
+        <version.org.apache.santuario.xmlsec>1.4.4</version.org.apache.santuario.xmlsec>
+        <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
+        <version.org.apache.ws.security>1.6.0</version.org.apache.ws.security>
         <version.org.hibernate>3.6.1.Final</version.org.hibernate>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
@@ -183,7 +183,7 @@
         <version.org.jboss.ws.api>1.0.0.Alpha2</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>2.0.0.Alpha8</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.0.Alpha1</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha4</version.org.jboss.ws.jbossws-cxf>
+        <version.org.jboss.ws.jbossws-cxf>4.0.0.Alpha5</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.spi>2.0.0.Alpha3</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-httpserver-httpspi>1.0.0.GA</version.org.jboss.ws.jaxws-httpserver-httpspi>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
@@ -959,24 +959,14 @@
                         <artifactId>cxf-common-utilities</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.apache.ws.commons.schema</groupId>
-                        <artifactId>XmlSchema</artifactId>
+                        <groupId>org.apache.ws.xmlschema</groupId>
+                        <artifactId>xmlschema-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.neethi</groupId>
                         <artifactId>neethi</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-common-schemas</artifactId>
-                    </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-common-schemas</artifactId>
-                <version>${version.org.apache.cxf}</version>
             </dependency>
 
             <dependency>
@@ -985,8 +975,8 @@
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.ws.commons.schema</groupId>
-                        <artifactId>XmlSchema</artifactId>
+                        <groupId>org.apache.ws.xmlschema</groupId>
+                        <artifactId>xmlschema-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>
@@ -1145,8 +1135,8 @@
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.ws.commons.schema</groupId>
-                        <artifactId>XmlSchema</artifactId>
+                        <groupId>org.apache.ws.xmlschema</groupId>
+                        <artifactId>xmlschema-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -1771,8 +1761,8 @@
                         <artifactId>velocity</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.apache.ws.commons.schema</groupId>
-                        <artifactId>XmlSchema</artifactId>
+                        <groupId>org.apache.ws.xmlschema</groupId>
+                        <artifactId>xmlschema-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>wsdl4j</groupId>
@@ -2235,6 +2225,10 @@
                         <artifactId>wstx-asl</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>wstx-core-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>wsdl4j</groupId>
                         <artifactId>wsdl4j</artifactId>
                     </exclusion>
@@ -2284,9 +2278,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.ws.commons.schema</groupId>
-                <artifactId>XmlSchema</artifactId>
-                <version>${version.org.apache.ws.commons.xmlschema}</version>
+                <groupId>org.apache.ws.xmlschema</groupId>
+                <artifactId>xmlschema-core</artifactId>
+                <version>${version.org.apache.ws.xmlschema}</version>
             </dependency>
 
             <dependency>
