@@ -19,54 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.jpa.hibernate;
 
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
+
+import javax.transaction.TransactionManager;
+
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
+import org.hibernate.service.jta.platform.internal.JBossAppServerPlatform;
 
 /**
- * Provide the transaction manager to Hibernate
- *
- * @author Scott Marlow
+ * @author Steve Ebersole
  */
-public class HibernateTransactionManagerLookup implements JtaPlatform {
-
-
+public class JBossAppServerJtaPlatform extends JBossAppServerPlatform {
     @Override
-    public TransactionManager retrieveTransactionManager() {
-        return TransactionUtil.getTransactionManager();
-    }
-
-    @Override
-    public UserTransaction retrieveUserTransaction() {
-        return null;
-    }
-
-    @Override
-    public Object getTransactionIdentifier(Transaction transaction) {
-        return transaction;
-    }
-
-    @Override
-    public boolean canRegisterSynchronization() {
+    protected boolean canCacheTransactionManager() {
         return true;
     }
 
     @Override
-    public void registerSynchronization(Synchronization synchronization) {
-        TransactionUtil.getTransactionSynchronizationRegistry().registerInterposedSynchronization(synchronization);
-
+    protected TransactionManager locateTransactionManager() {
+        return TransactionUtil.getTransactionManager();
     }
 
-    @Override
-    public int getCurrentStatus() throws SystemException {
-        return retrieveTransactionManager().getStatus();
-    }
+    // todo : verify that JNDI access to the TransactionSynchronizationRegistry is allowed
 }
