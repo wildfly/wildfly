@@ -58,7 +58,6 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 /**
  * Used to deploy/undeploy deployments to a running <b>standalone</b> application server
  *
- * TODO Use the real deployment API once that is complete
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
