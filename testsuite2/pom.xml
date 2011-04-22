@@ -181,6 +181,8 @@
                 </dependency>
             </dependencies>
         </profile>
+        <!--
+        Though this mode isn't yet available
         <profile>
             <id>remote</id>
             <activation>
@@ -189,9 +191,6 @@
                 </property>
             </activation>
             <dependencies>
-              <!-- 
-              Though this mode isn't yet available              
-               -->
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian2-container-remote</artifactId>
@@ -199,6 +198,7 @@
                 </dependency>
             </dependencies>
         </profile>
+        -->
     </profiles>
 
     <dependencies>
