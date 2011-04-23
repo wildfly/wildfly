@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.container;
 
+import org.jboss.logging.Logger;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -44,7 +46,7 @@ import java.util.Map;
  */
 public abstract class AbstractEntityManager implements EntityManager {
 
-
+    private static final Logger log = Logger.getLogger("org.jboss.as.jpa");
     private final Map<Class, Object> extensions = new HashMap<Class, Object>();
 
     protected AbstractEntityManager(final String puScopedName, final boolean isExtendedPersistenceContext) {
@@ -101,180 +103,565 @@ public abstract class AbstractEntityManager implements EntityManager {
     }
 
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
-        return getEntityManager().createNamedQuery(name, resultClass);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createNamedQuery(name, resultClass);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createNamedQuery name '%s', resultClass '%s' took %dms", name, resultClass.getName(), elapsed);
+            }
+        }
     }
 
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
-        return getEntityManager().createQuery(criteriaQuery);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createQuery(criteriaQuery);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createQuery took %dms", elapsed);
+            }
+        }
     }
 
     public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-        return getEntityManager().createQuery(qlString, resultClass);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createQuery(qlString, resultClass);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createQuery resultClass '%s' took %dms", resultClass.getName(), elapsed);
+            }
+        }
     }
 
     public void detach(Object entity) {
-        getEntityManager().detach(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().detach(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("detach entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        T result = underlyingEntityManager.find(entityClass, primaryKey, properties);
-        detachNonTxInvocation(underlyingEntityManager);
-        return result;
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            final EntityManager underlyingEntityManager = getEntityManager();
+            T result = underlyingEntityManager.find(entityClass, primaryKey, properties);
+            detachNonTxInvocation(underlyingEntityManager);
+            return result;
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("find entityClass '%s' took %dms", entityClass.getName(), elapsed);
+            }
+        }
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode);
-        detachNonTxInvocation(underlyingEntityManager);
-        return result;
-
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            final EntityManager underlyingEntityManager = getEntityManager();
+            T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode);
+            detachNonTxInvocation(underlyingEntityManager);
+            return result;
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("find entityClass '%s', lockMode '%s' took %dms", entityClass.getName(), getLockModeAsString(lockMode), elapsed);
+            }
+        }
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode, Map<String, Object> properties) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode, properties);
-        detachNonTxInvocation(underlyingEntityManager);
-        return result;
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            final EntityManager underlyingEntityManager = getEntityManager();
+            T result = underlyingEntityManager.find(entityClass, primaryKey, lockMode, properties);
+            detachNonTxInvocation(underlyingEntityManager);
+            return result;
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("find entityClass '%s', lockMode '%s' took %dms", entityClass.getName(), getLockModeAsString(lockMode), elapsed);
+            }
+        }
     }
 
     public CriteriaBuilder getCriteriaBuilder() {
-        return getEntityManager().getCriteriaBuilder();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getCriteriaBuilder();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getCriteriaBuilder took %dms", elapsed);
+            }
+        }
     }
 
     public EntityManagerFactory getEntityManagerFactory() {
-        return getEntityManager().getEntityManagerFactory();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getEntityManagerFactory();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getEntityManagerFactory took %dms", elapsed);
+            }
+        }
     }
 
     public LockModeType getLockMode(Object entity) {
-        return getEntityManager().getLockMode(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        LockModeType result=null;
+        try {
+            result = getEntityManager().getLockMode(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getLockMode entityClass '%s', lockMode '%s'  took %dms", entity.getClass().getName(), getLockModeAsString(result), elapsed);
+            }
+        }
+        return result;
     }
 
     public Metamodel getMetamodel() {
-        return getEntityManager().getMetamodel();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getMetamodel();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getMetamodel took %dms", elapsed);
+            }
+        }
     }
 
     public Map<String, Object> getProperties() {
-        return getEntityManager().getProperties();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getProperties();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getProperties took %dms", elapsed);
+            }
+        }
     }
 
     public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        getEntityManager().lock(entity, lockMode, properties);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().lock(entity, lockMode, properties);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("lock entityClass '%s', lockMode '%s'  took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+            }
+        }
     }
 
+
     public void setProperty(String propertyName, Object value) {
-        getEntityManager().setProperty(propertyName, value);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().setProperty(propertyName, value);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("setProperty took %dms", elapsed);
+            }
+        }
     }
 
     public void clear() {
-        getEntityManager().clear();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().clear();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("clear took %dms", elapsed);
+            }
+        }
     }
 
     public void close() {
-        getEntityManager().close();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().close();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("close took %dms", elapsed);
+            }
+        }
     }
 
     public boolean contains(Object entity) {
-        return getEntityManager().contains(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().contains(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("contains '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public Query createNamedQuery(String name) {
-        return getEntityManager().createNamedQuery(name);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createNamedQuery(name);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createNamedQuery name '%s' took %dms",name, elapsed);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     public Query createNativeQuery(String sqlString, Class resultClass) {
-        return getEntityManager().createNativeQuery(sqlString, resultClass);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createNativeQuery(sqlString, resultClass);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createNativeQuery resultClass '%s' took %dms", resultClass.getName(), elapsed);
+            }
+        }
     }
 
     public Query createNativeQuery(String sqlString, String resultSetMapping) {
-        return getEntityManager().createNativeQuery(sqlString, resultSetMapping);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createNativeQuery(sqlString, resultSetMapping);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createNativeQuery took %dms", elapsed);
+            }
+        }
     }
 
     public Query createNativeQuery(String sqlString) {
-        return getEntityManager().createNativeQuery(sqlString);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createNativeQuery(sqlString);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createNativeQuery took %dms", elapsed);
+            }
+        }
     }
 
     public Query createQuery(String ejbqlString) {
-        return getEntityManager().createQuery(ejbqlString);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().createQuery(ejbqlString);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("createQuery took %dms", elapsed);
+            }
+        }
     }
 
     public <T> T find(Class<T> entityClass, Object primaryKey) {
-        return getEntityManager().find(entityClass, primaryKey);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().find(entityClass, primaryKey);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("find entityClass '%s' took %dms", entityClass.getName(), elapsed);
+            }
+        }
     }
 
     public void flush() {
-        getEntityManager().flush();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().flush();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("flush took %dms", elapsed);
+            }
+        }
     }
 
     public Object getDelegate() {
-        return getEntityManager().getDelegate();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getDelegate();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getDelegate took %dms", elapsed);
+            }
+        }
     }
 
     public FlushModeType getFlushMode() {
-        return getEntityManager().getFlushMode();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getFlushMode();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getFlushMode took %dms", elapsed);
+            }
+        }
     }
 
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
-        final EntityManager underlyingEntityManager = getEntityManager();
-        T result = getEntityManager().getReference(entityClass, primaryKey);
-        detachNonTxInvocation(underlyingEntityManager);
-        return result;
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            final EntityManager underlyingEntityManager = getEntityManager();
+            T result = getEntityManager().getReference(entityClass, primaryKey);
+            detachNonTxInvocation(underlyingEntityManager);
+            return result;
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getReference entityClass '%s' took %dms", entityClass.getName(), elapsed);
+            }
+        }
     }
 
     public EntityTransaction getTransaction() {
-        return getEntityManager().getTransaction();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            return getEntityManager().getTransaction();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("getTransaction took %dms", elapsed);
+            }
+        }
     }
 
     public boolean isOpen() {
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
         return getEntityManager().isOpen();
     }
 
     public void joinTransaction() {
-        getEntityManager().joinTransaction();
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().joinTransaction();
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("joinTransaction took %dms", elapsed);
+            }
+        }
     }
 
     public void lock(Object entity, LockModeType lockMode) {
-        getEntityManager().lock(entity, lockMode);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().lock(entity, lockMode);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("lock entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+            }
+        }
     }
 
     public <T> T merge(T entity) {
-        transactionIsRequired();
-        return getEntityManager().merge(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            return getEntityManager().merge(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("merge entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public void persist(Object entity) {
-        transactionIsRequired();
-        getEntityManager().persist(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            getEntityManager().persist(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("persist entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public void refresh(Object entity) {
-        transactionIsRequired();
-        getEntityManager().refresh(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            getEntityManager().refresh(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("refresh entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public void refresh(Object entity, Map<String, Object> properties) {
-        transactionIsRequired();
-        getEntityManager().refresh(entity, properties);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            getEntityManager().refresh(entity, properties);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("refresh entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public void refresh(Object entity, LockModeType lockMode) {
-        transactionIsRequired();
-        getEntityManager().refresh(entity, lockMode);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            getEntityManager().refresh(entity, lockMode);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("refresh entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+            }
+        }
     }
 
     public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        transactionIsRequired();
-        getEntityManager().refresh(entity, lockMode, properties);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            getEntityManager().refresh(entity, lockMode, properties);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("refresh entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+            }
+        }
     }
 
     public void remove(Object entity) {
-        transactionIsRequired();
-        getEntityManager().remove(entity);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            transactionIsRequired();
+            getEntityManager().remove(entity);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("remove entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+            }
+        }
     }
 
     public void setFlushMode(FlushModeType flushMode) {
-        getEntityManager().setFlushMode(flushMode);
+        long start = 0;
+        if (log.isTraceEnabled())
+            start = System.currentTimeMillis();
+        try {
+            getEntityManager().setFlushMode(flushMode);
+        } finally {
+            if (log.isTraceEnabled()) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("setFlushMode took %dms", elapsed);
+            }
+        }
     }
 
     // perform any cleanup needed after an invocation.
@@ -294,5 +681,28 @@ public abstract class AbstractEntityManager implements EntityManager {
                 "Transaction is required to perform this operation (either use a transaction or extended persistence context)");
         }
     }
+
+    private static String getLockModeAsString(LockModeType lockMode) {
+        if (lockMode == null)
+            return "(null)";
+        switch(lockMode) {
+            case OPTIMISTIC:
+                return "optimistic";
+            case OPTIMISTIC_FORCE_INCREMENT:
+                return "optimistic_force_increment";
+            case READ:
+                return "read";
+            case WRITE:
+                return "write";
+            case PESSIMISTIC_READ:
+                return "pessimistic_read";
+            case PESSIMISTIC_FORCE_INCREMENT:
+                return "pessimistic_force_increment";
+            default:
+            case NONE:
+                return "none";
+        }
+    }
+
 
 }

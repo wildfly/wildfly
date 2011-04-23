@@ -26,12 +26,11 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
-import org.hibernate.service.jta.platform.internal.JBossAppServerPlatform;
 
 /**
  * @author Steve Ebersole
  */
-public class JBossAppServerJtaPlatform extends JBossAppServerPlatform {
+public class JBossAppServerJtaPlatform extends org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform {
     @Override
     protected boolean canCacheTransactionManager() {
         return true;
@@ -42,5 +41,4 @@ public class JBossAppServerJtaPlatform extends JBossAppServerPlatform {
         return TransactionUtil.getTransactionManager();
     }
 
-    // todo : verify that JNDI access to the TransactionSynchronizationRegistry is allowed
 }

@@ -22,10 +22,10 @@
 
 package org.jboss.as.jpa.hibernate;
 
+import org.hibernate.cfg.AvailableSettings;
 import org.jboss.as.ee.naming.ContextNames;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.ejb.AvailableSettings;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.naming.deployment.JndiName;
@@ -42,13 +42,11 @@ import java.util.Map;
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
     @Override
-<<<<<<< HEAD
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
-        properties.put(Environment.TRANSACTION_MANAGER_STRATEGY, "org.jboss.as.jpa.hibernate.HibernateTransactionManagerLookup");
         properties.put(Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
-        properties.put(AvailableSettings.SCANNER,"org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
-	properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
-        properties.put(AvailableSettings.JTA_PLATFORM, new JBossAppServerJtaPlatform());    
+        properties.put(org.hibernate.ejb.AvailableSettings.SCANNER,"org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
+        properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
+        properties.put(AvailableSettings.JTA_PLATFORM, new JBossAppServerJtaPlatform());
     }
 
     @Override
