@@ -30,6 +30,7 @@ package org.jboss.as.security;
 public interface Constants {
 
     String ACL = "acl";
+    String ADDITIONAL_PROPERTIES = "additional-properties";
     String AUDIT = "audit";
     String AUDIT_MANAGER_CLASS_NAME = "audit-manager-class-name";
     String AUTH_MODULE = "auth-module";
@@ -38,6 +39,7 @@ public interface Constants {
     String AUTHENTICATION_MANAGER_CLASS_NAME = "authentication-manager-class-name";
     String AUTHORIZATION = "authorization";
     String AUTHORIZATION_MANAGER_CLASS_NAME = "authorization-manager-class-name";
+    String CIPHER_SUITES = "cipher-suites";
     String CLIENT_ALIAS = "client-alias";
     String CLIENT_AUTH = "client-auth";
     String CODE = "code";
@@ -59,8 +61,9 @@ public interface Constants {
     String LOGIN_MODULE_STACK_REF = "login-module-stack-ref";
     String MAPPING = "mapping";
     String MAPPING_MANAGER_CLASS_NAME = "mapping-manager-class-name";
-    String NAME = "name";
     String MODULE_OPTIONS = "module-options";
+    String NAME = "name";
+    String PROTOCOLS = "protocols";
     String SECURITY_MANAGEMENT = "security-management";
     String SECURITY_DOMAIN = "security-domain";
     String SERVER_ALIAS = "server-alias";

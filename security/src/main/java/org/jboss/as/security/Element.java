@@ -36,6 +36,7 @@ enum Element {
 
     ACL("acl"),
     ACL_MODULE("acl-module"),
+    ADDITIONAL_PROPERTIES("additional-properties"),
     AUDIT("audit"),
     AUTH_MODULE("auth-module"),
     AUTHENTICATION("authentication"),

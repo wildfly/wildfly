@@ -34,6 +34,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.security.Constants.ACL;
+import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
 import static org.jboss.as.security.Constants.AUDIT;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
@@ -42,6 +43,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
 import static org.jboss.as.security.Constants.CODE;
@@ -65,6 +67,7 @@ import static org.jboss.as.security.Constants.MAPPING;
 import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.NAME;
+import static org.jboss.as.security.Constants.PROTOCOLS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.SERVER_ALIAS;
 import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
@@ -383,9 +386,9 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         String code = module.require(CODE).asString();
         writer.writeAttribute(Attribute.CODE.getLocalName(), code);
         if (module.hasDefined(FLAG))
-            writeAttribute(writer, Attribute.FLAG, module.get(Attribute.FLAG.getLocalName()));
+            writeAttribute(writer, Attribute.FLAG, module.get(FLAG));
         if (module.hasDefined(TYPE))
-            writeAttribute(writer, Attribute.TYPE, module.get(Attribute.TYPE.getLocalName()));
+            writeAttribute(writer, Attribute.TYPE, module.get(TYPE));
         if (module.hasDefined(LOGIN_MODULE_STACK_REF))
             writeAttribute(writer, Attribute.LOGIN_MODULE_STACK_REF, module.get(LOGIN_MODULE_STACK_REF));
         if (module.hasDefined(MODULE_OPTIONS) && module.get(MODULE_OPTIONS).asInt() > 0) {
@@ -406,49 +409,50 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.JSSE.getLocalName());
             if (modelNode.hasDefined(KEYSTORE_PASSWORD))
-                writeAttribute(writer, Attribute.KEYSTORE_PASSWORD, modelNode.get(Attribute.KEYSTORE_PASSWORD.getLocalName()));
+                writeAttribute(writer, Attribute.KEYSTORE_PASSWORD, modelNode.get(KEYSTORE_PASSWORD));
             if (modelNode.hasDefined(KEYSTORE_URL))
-                writeAttribute(writer, Attribute.KEYSTORE_URL, modelNode.get(Attribute.KEYSTORE_URL.getLocalName()));
+                writeAttribute(writer, Attribute.KEYSTORE_URL, modelNode.get(KEYSTORE_URL));
             if (modelNode.hasDefined(KEYSTORE_TYPE))
-                writeAttribute(writer, Attribute.KEYSTORE_TYPE, modelNode.get(Attribute.KEYSTORE_TYPE.getLocalName()));
+                writeAttribute(writer, Attribute.KEYSTORE_TYPE, modelNode.get(KEYSTORE_TYPE));
             if (modelNode.hasDefined(KEYSTORE_PROVIDER))
-                writeAttribute(writer, Attribute.KEYSTORE_PROVIDER, modelNode.get(Attribute.KEYSTORE_PROVIDER.getLocalName()));
+                writeAttribute(writer, Attribute.KEYSTORE_PROVIDER, modelNode.get(KEYSTORE_PROVIDER));
             if (modelNode.hasDefined(KEYSTORE_PROVIDER_ARGUMENT))
-                writeAttribute(writer, Attribute.KEYSTORE_PROVIDER_ARGUMENT,
-                        modelNode.get(Attribute.KEYSTORE_PROVIDER_ARGUMENT.getLocalName()));
+                writeAttribute(writer, Attribute.KEYSTORE_PROVIDER_ARGUMENT, modelNode.get(KEYSTORE_PROVIDER_ARGUMENT));
             if (modelNode.hasDefined(KEY_MANAGER_FACTORY_PROVIDER))
-                writeAttribute(writer, Attribute.KEY_MANAGER_FACTORY_PROVIDER,
-                        modelNode.get(Attribute.KEY_MANAGER_FACTORY_PROVIDER.getLocalName()));
+                writeAttribute(writer, Attribute.KEY_MANAGER_FACTORY_PROVIDER, modelNode.get(KEY_MANAGER_FACTORY_PROVIDER));
             if (modelNode.hasDefined(KEY_MANAGER_FACTORY_ALGORITHM))
-                writeAttribute(writer, Attribute.KEY_MANAGER_FACTORY_ALGORITHM,
-                        modelNode.get(Attribute.KEY_MANAGER_FACTORY_ALGORITHM.getLocalName()));
+                writeAttribute(writer, Attribute.KEY_MANAGER_FACTORY_ALGORITHM, modelNode.get(KEY_MANAGER_FACTORY_ALGORITHM));
             if (modelNode.hasDefined(TRUSTSTORE_PASSWORD))
-                writeAttribute(writer, Attribute.TRUSTSTORE_PASSWORD,
-                        modelNode.get(Attribute.TRUSTSTORE_PASSWORD.getLocalName()));
+                writeAttribute(writer, Attribute.TRUSTSTORE_PASSWORD, modelNode.get(TRUSTSTORE_PASSWORD));
             if (modelNode.hasDefined(TRUSTSTORE_URL))
-                writeAttribute(writer, Attribute.TRUSTSTORE_URL, modelNode.get(Attribute.TRUSTSTORE_URL.getLocalName()));
+                writeAttribute(writer, Attribute.TRUSTSTORE_URL, modelNode.get(TRUSTSTORE_URL));
             if (modelNode.hasDefined(TRUSTSTORE_TYPE))
-                writeAttribute(writer, Attribute.TRUSTSTORE_TYPE, modelNode.get(Attribute.TRUSTSTORE_TYPE.getLocalName()));
+                writeAttribute(writer, Attribute.TRUSTSTORE_TYPE, modelNode.get(TRUSTSTORE_TYPE));
             if (modelNode.hasDefined(TRUSTSTORE_PROVIDER))
-                writeAttribute(writer, Attribute.TRUSTSTORE_PROVIDER,
-                        modelNode.get(Attribute.TRUSTSTORE_PROVIDER.getLocalName()));
+                writeAttribute(writer, Attribute.TRUSTSTORE_PROVIDER, modelNode.get(TRUSTSTORE_PROVIDER));
             if (modelNode.hasDefined(TRUSTSTORE_PROVIDER_ARGUMENT))
-                writeAttribute(writer, Attribute.TRUSTSTORE_PROVIDER_ARGUMENT,
-                        modelNode.get(Attribute.TRUSTSTORE_PROVIDER_ARGUMENT.getLocalName()));
+                writeAttribute(writer, Attribute.TRUSTSTORE_PROVIDER_ARGUMENT, modelNode.get(TRUSTSTORE_PROVIDER_ARGUMENT));
             if (modelNode.hasDefined(TRUST_MANAGER_FACTORY_PROVIDER))
-                writeAttribute(writer, Attribute.TRUST_MANAGER_FACTORY_PROVIDER,
-                        modelNode.get(Attribute.TRUST_MANAGER_FACTORY_PROVIDER.getLocalName()));
+                writeAttribute(writer, Attribute.TRUST_MANAGER_FACTORY_PROVIDER, modelNode.get(TRUST_MANAGER_FACTORY_PROVIDER));
             if (modelNode.hasDefined(TRUST_MANAGER_FACTORY_ALGORITHM))
                 writeAttribute(writer, Attribute.TRUST_MANAGER_FACTORY_ALGORITHM,
-                        modelNode.get(Attribute.TRUST_MANAGER_FACTORY_ALGORITHM.getLocalName()));
+                        modelNode.get(TRUST_MANAGER_FACTORY_ALGORITHM));
             if (modelNode.hasDefined(CLIENT_ALIAS))
-                writeAttribute(writer, Attribute.CLIENT_ALIAS, modelNode.get(Attribute.CLIENT_ALIAS.getLocalName()));
+                writeAttribute(writer, Attribute.CLIENT_ALIAS, modelNode.get(CLIENT_ALIAS));
             if (modelNode.hasDefined(SERVER_ALIAS))
-                writeAttribute(writer, Attribute.SERVER_ALIAS, modelNode.get(Attribute.SERVER_ALIAS.getLocalName()));
+                writeAttribute(writer, Attribute.SERVER_ALIAS, modelNode.get(SERVER_ALIAS));
             if (modelNode.hasDefined(CLIENT_AUTH))
-                writeAttribute(writer, Attribute.CLIENT_AUTH, modelNode.get(Attribute.CLIENT_AUTH.getLocalName()));
+                writeAttribute(writer, Attribute.CLIENT_AUTH, modelNode.get(CLIENT_AUTH));
             if (modelNode.hasDefined(SERVICE_AUTH_TOKEN))
-                writeAttribute(writer, Attribute.SERVICE_AUTH_TOKEN, modelNode.get(Attribute.SERVICE_AUTH_TOKEN.getLocalName()));
+                writeAttribute(writer, Attribute.SERVICE_AUTH_TOKEN, modelNode.get(SERVICE_AUTH_TOKEN));
+            if (modelNode.hasDefined(CIPHER_SUITES))
+                writeAttribute(writer, Attribute.CIPHER_SUITES, modelNode.get(CIPHER_SUITES));
+            if (modelNode.hasDefined(PROTOCOLS))
+                writeAttribute(writer, Attribute.PROTOCOLS, modelNode.get(PROTOCOLS));
+            if (modelNode.hasDefined(ADDITIONAL_PROPERTIES)) {
+                writer.writeStartElement(Element.ADDITIONAL_PROPERTIES.getLocalName());
+                writer.writeCharacters(modelNode.get(ADDITIONAL_PROPERTIES).asString());
+            }
             writer.writeEndElement();
         }
     }
@@ -1121,6 +1125,14 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     op.get(SERVICE_AUTH_TOKEN).set(value);
                     break;
                 }
+                case CIPHER_SUITES: {
+                    op.get(CIPHER_SUITES).set(value);
+                    break;
+                }
+                case PROTOCOLS: {
+                    op.get(PROTOCOLS).set(value);
+                    break;
+                }
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -1131,7 +1143,27 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     + " or " + Attribute.TRUSTSTORE_PASSWORD.getLocalName() + " must be present", reader.getLocation());
         }
 
-        requireNoContent(reader);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case SECURITY_1_0: {
+                    requireNoAttributes(reader);
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case ADDITIONAL_PROPERTIES: {
+                            op.get(ADDITIONAL_PROPERTIES).set(reader.getElementText().trim());
+                            break;
+                        }
+                        default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
 }

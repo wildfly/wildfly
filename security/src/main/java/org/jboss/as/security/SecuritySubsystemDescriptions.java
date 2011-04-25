@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.security.Constants.ACL;
+import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
 import static org.jboss.as.security.Constants.AUDIT;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
@@ -48,6 +49,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
 import static org.jboss.as.security.Constants.CODE;
@@ -71,6 +73,7 @@ import static org.jboss.as.security.Constants.MAPPING;
 import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.NAME;
+import static org.jboss.as.security.Constants.PROTOCOLS;
 import static org.jboss.as.security.Constants.SERVER_ALIAS;
 import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
@@ -741,6 +744,15 @@ class SecuritySubsystemDescriptions {
             node.get(ATTRIBUTES, SERVICE_AUTH_TOKEN, DESCRIPTION).set(bundle.getString("service-auth-token"));
             node.get(ATTRIBUTES, SERVICE_AUTH_TOKEN, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, SERVICE_AUTH_TOKEN, REQUIRED).set(false);
+            node.get(ATTRIBUTES, CIPHER_SUITES, DESCRIPTION).set(bundle.getString("cipher-suites"));
+            node.get(ATTRIBUTES, CIPHER_SUITES, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, CIPHER_SUITES, REQUIRED).set(false);
+            node.get(ATTRIBUTES, PROTOCOLS, DESCRIPTION).set(bundle.getString("protocols"));
+            node.get(ATTRIBUTES, PROTOCOLS, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, PROTOCOLS, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ADDITIONAL_PROPERTIES, DESCRIPTION).set(bundle.getString("additional-properties"));
+            node.get(ATTRIBUTES, ADDITIONAL_PROPERTIES, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ADDITIONAL_PROPERTIES, REQUIRED).set(false);
 
             return node;
         }
@@ -812,6 +824,15 @@ class SecuritySubsystemDescriptions {
             node.get(REQUEST_PROPERTIES, SERVICE_AUTH_TOKEN, DESCRIPTION).set(bundle.getString("service-auth-token"));
             node.get(REQUEST_PROPERTIES, SERVICE_AUTH_TOKEN, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, SERVICE_AUTH_TOKEN, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, CIPHER_SUITES, DESCRIPTION).set(bundle.getString("cipher-suites"));
+            node.get(REQUEST_PROPERTIES, CIPHER_SUITES, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, CIPHER_SUITES, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, PROTOCOLS, DESCRIPTION).set(bundle.getString("protocols"));
+            node.get(REQUEST_PROPERTIES, PROTOCOLS, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, PROTOCOLS, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, ADDITIONAL_PROPERTIES, DESCRIPTION).set(bundle.getString("additional-properties"));
+            node.get(REQUEST_PROPERTIES, ADDITIONAL_PROPERTIES, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, ADDITIONAL_PROPERTIES, REQUIRED).set(false);
 
             return node;
         }

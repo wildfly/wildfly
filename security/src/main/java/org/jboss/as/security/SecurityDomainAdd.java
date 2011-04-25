@@ -25,11 +25,13 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.security.Constants.ACL;
+import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
 import static org.jboss.as.security.Constants.AUDIT;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.AUTHENTICATION_JASPI;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
 import static org.jboss.as.security.Constants.CODE;
@@ -48,6 +50,7 @@ import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
 import static org.jboss.as.security.Constants.MAPPING;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.NAME;
+import static org.jboss.as.security.Constants.PROTOCOLS;
 import static org.jboss.as.security.Constants.SERVER_ALIAS;
 import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
 import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
@@ -64,6 +67,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
@@ -472,6 +476,29 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
                 } catch (Exception e) {
                     throw new IllegalArgumentException(e);
                 }
+            }
+            if (node.hasDefined(CIPHER_SUITES)) {
+                value = node.get(CIPHER_SUITES).asString();
+                jsseSecurityDomain.setCipherSuites(value);
+            }
+            if (node.hasDefined(PROTOCOLS)) {
+                value = node.get(PROTOCOLS).asString();
+                jsseSecurityDomain.setProtocols(value);
+            }
+            if (node.hasDefined(ADDITIONAL_PROPERTIES)) {
+                value = node.get(ADDITIONAL_PROPERTIES).asString();
+                // remove line breaks and tab
+                value = value.replaceAll("\\r", "").replaceAll("\\n", "").replaceAll("\\t", "");
+                String[] entries = value.split(";");
+                Properties properties = new Properties();
+                for (int i = 0; i < entries.length; i++) {
+                    String tmp = entries[i];
+                    // trim leading white spaces
+                    tmp = tmp.replaceAll("^\\s+", "");
+                    String[] entry = tmp.split("=");
+                    properties.put(entry[0], entry[1]);
+                }
+                jsseSecurityDomain.setAdditionalProperties(properties);
             }
         }
 
