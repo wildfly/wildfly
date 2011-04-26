@@ -16,8 +16,9 @@
  */
 package org.jboss.as.test.embedded.osgi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
@@ -38,6 +39,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -55,6 +57,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
+@Ignore("Disable until intermittent failures described at AS7-673 are resolved")
 public class SimpleArchiveDeployerTestCase {
 
     @Inject
@@ -70,6 +73,7 @@ public class SimpleArchiveDeployerTestCase {
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -103,6 +107,7 @@ public class SimpleArchiveDeployerTestCase {
 
         final CountDownLatch uninstallLatch = new CountDownLatch(1);
         context.addBundleListener(new BundleListener() {
+            @Override
             public void bundleChanged(BundleEvent event) {
                 Bundle eventSource = event.getBundle();
                 if (eventSource.equals(bundle) && event.getType() == BundleEvent.UNINSTALLED)
@@ -132,6 +137,7 @@ public class SimpleArchiveDeployerTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());

@@ -31,6 +31,7 @@ import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -44,6 +45,7 @@ import org.osgi.framework.BundleContext;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
+@Ignore("Disable until intermittent failures described at AS7-673 are resolved")
 public class SimpleDeploymentProviderTestCase {
 
     @Inject
@@ -56,6 +58,7 @@ public class SimpleDeploymentProviderTestCase {
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -93,6 +96,7 @@ public class SimpleDeploymentProviderTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());

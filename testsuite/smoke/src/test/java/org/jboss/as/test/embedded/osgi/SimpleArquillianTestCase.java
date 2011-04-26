@@ -32,6 +32,7 @@ import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -45,6 +46,7 @@ import org.osgi.framework.ServiceReference;
  * @author thomas.diesler@jboss.com
  */
 @RunWith(Arquillian.class)
+@Ignore("Disable until intermittent failures described at AS7-673 are resolved")
 public class SimpleArquillianTestCase {
 
     @Inject
@@ -55,6 +57,7 @@ public class SimpleArquillianTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-arquillian");
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
