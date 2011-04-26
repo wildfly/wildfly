@@ -202,7 +202,7 @@ class SharedWebMetaDataBuilder {
             initParams.add(createParameter("checkInterval", "0"));
         }
         if (config.has(MODIFIFICATION_TEST_INTERVAL)) {
-            initParams.add(createParameter("modificationTestIntervale", config.get(MODIFIFICATION_TEST_INTERVAL).asString()));
+            initParams.add(createParameter("modificationTestInterval", config.get(MODIFIFICATION_TEST_INTERVAL).asString()));
         } else {
             initParams.add(createParameter("modificationTestInterval", "4"));
         }
