@@ -22,8 +22,10 @@
 
 package org.jboss.as.jpa.container;
 
+import org.jboss.logging.Logger;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +35,8 @@ import java.util.Map;
  * @author Scott Marlow
  */
 public class NonTxEmCloser {
+
+    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     /**
      * Each thread will have its own list of SB invocations in progress.
@@ -45,7 +49,8 @@ public class NonTxEmCloser {
      * without a JTA transaction.
      */
     public static void pushCall() {
-        nonTxStack.push(new HashMap <String,EntityManager>());
+        nonTxStack.push(null);          // to conserve memory/cpu cycles, push a null placeholder that will only get replaced
+                                        // with a Map if we actually need it (in add() below).
     }
 
     /**
@@ -53,8 +58,19 @@ public class NonTxEmCloser {
      * transaction.
      */
     public static void popCall() {
-        for (EntityManager entityManager: nonTxStack.pop().values()) {
-            entityManager.close();
+        Map<String, EntityManager> emStack = nonTxStack.pop();
+        if (emStack != null) {
+            for (EntityManager entityManager : emStack.values()) {
+                try {
+                    entityManager.close();
+                } catch (RuntimeException safeToIgnore) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Could not close (non-transactional) container managed entity manager."+
+                            "  This shouldn't impact application functionality (only read " +
+                            "operations occur in non-transactional mode)", safeToIgnore);
+                    }
+                }
+            }
         }
     }
 
@@ -73,8 +89,13 @@ public class NonTxEmCloser {
 
     public static void add(String puScopedName, EntityManager entityManager) {
         Map<String,EntityManager> map = nonTxStack.get();
+        if (map == null && nonTxStack.getList() != null) {
+            // replace null with a collection to hold the entity managers.
+            map = new HashMap <String,EntityManager>();
+            nonTxStack.replace(map);    // replace top of stack (currently null) with new collection
+        }
         if (map != null) {
-            nonTxStack.get().put(puScopedName, entityManager);
+            map.put(puScopedName, entityManager);
         }
     }
 }

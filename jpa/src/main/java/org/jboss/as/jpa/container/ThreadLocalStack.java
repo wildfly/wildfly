@@ -28,6 +28,7 @@ import java.util.List;
  * Comment
  *
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
+ * @author Scott Marlow
  * @version $Revision$
  */
 public class ThreadLocalStack<T> {
@@ -53,6 +54,19 @@ public class ThreadLocalStack<T> {
             list.clear();
         }
         return rtn;
+    }
+
+    /**
+     * Replace top of stack with the specified object.  This can be more optimal than calling "pop(); push(obj);"
+     *
+     * @return none
+     */
+    public void replace(T obj) {
+        ArrayList<T> list = stack.get();
+        if (list == null) {
+            throw new RuntimeException("Internal error:  Cannot replace top of stack as stack is null (same as being empty).");
+        }
+        list.set(list.size() - 1,obj);  // replace top of stack item, with the specified time.
     }
 
     public T get() {
