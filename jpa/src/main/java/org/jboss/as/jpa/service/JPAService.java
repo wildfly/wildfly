@@ -68,4 +68,8 @@ public class JPAService implements Service<Void> {
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
+
+    public void setDefaultDataSourceName(String dataSourceName) {
+        defaultDataSourceName = dataSourceName;
+    }
 }
