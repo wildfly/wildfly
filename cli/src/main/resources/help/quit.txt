@@ -1,4 +1,5 @@
-Synopsis: quit
+Synopsis:	quit
+			exit
 
 Description: terminates the command line session.
 

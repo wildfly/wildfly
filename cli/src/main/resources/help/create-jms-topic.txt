@@ -1,4 +1,4 @@
-Synopsis:	create-jms-topic name=topic_name [entries=entry(,entry)*]
+Synopsis:	create-jms-topic --name=topic_name [--entries=entry(,entry)*]
 
 Description:	creates a JMS topic
 

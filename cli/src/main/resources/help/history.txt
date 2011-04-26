@@ -1,4 +1,4 @@
-Synopsis:		history [disable|enable|clear]
+Synopsis:		history [--disable|--enable|--clear]
 
 Description:	manipulates the command (and operation request) history expansion.
 				Without arguments prints the in-memory history of commands and operations

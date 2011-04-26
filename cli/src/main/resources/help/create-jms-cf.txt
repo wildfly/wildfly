@@ -1,4 +1,4 @@
-Synopsis:	create-jms-cf name=cf_name [arguments below]
+Synopsis:	create-jms-cf --name=cf_name [arguments below]
 
 Description:	creates a JMS connection factory
 

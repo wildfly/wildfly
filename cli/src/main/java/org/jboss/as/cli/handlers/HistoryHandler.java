@@ -26,6 +26,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 
 /**
  *
@@ -33,12 +34,30 @@ import org.jboss.as.cli.ParsedArguments;
  */
 public class HistoryHandler extends CommandHandlerWithHelp {
 
+    private final ArgumentWithoutValue clear;
+    private final ArgumentWithoutValue disable;
+    private final ArgumentWithoutValue enable;
+
     public HistoryHandler() {
         this("history");
     }
 
     public HistoryHandler(String command) {
         super(command);
+
+        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
+
+        clear = new ArgumentWithoutValue("--clear");
+        clear.setExclusive(true);
+        argsCompleter.addArgument(clear);
+
+        disable = new ArgumentWithoutValue("--disable");
+        disable.setExclusive(true);
+        argsCompleter.addArgument(disable);
+
+        enable = new ArgumentWithoutValue("--enable");
+        enable.setExclusive(true);
+        argsCompleter.addArgument(enable);
     }
 
     @Override
@@ -50,15 +69,14 @@ public class HistoryHandler extends CommandHandlerWithHelp {
             return;
         }
 
-        String lc = ctx.getArgumentsString().toLowerCase();
-        if(lc.equals("disable")) {
-            ctx.getHistory().setUseHistory(false);
-        } else if(lc.equals("enable")) {
-            ctx.getHistory().setUseHistory(true);
-        } else if(lc.equals("clear")) {
+        if(clear.isPresent(args)) {
             ctx.getHistory().clear();
+        } else if(disable.isPresent(args)) {
+            ctx.getHistory().setUseHistory(false);
+        } else if(enable.isPresent(args)) {
+            ctx.getHistory().setUseHistory(true);
         } else {
-            ctx.printLine("Unexpected argument '" + ctx.getArgumentsString() + '"');
+            ctx.printLine("Unexpected argument '" + ctx.getArgumentsString() + '\'');
         }
     }
 

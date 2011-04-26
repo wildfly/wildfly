@@ -1,4 +1,4 @@
-Synopsis:	create-jms-queue name=queue_name [entries=entry(,entry)*] [selector=selector_name] [durable=(true|false)]
+Synopsis:	create-jms-queue --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
 
 Description:	creates a JMS queue
 

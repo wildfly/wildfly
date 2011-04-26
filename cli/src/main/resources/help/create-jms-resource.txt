@@ -4,10 +4,10 @@ Description:	creates a JMS resource
 
 Arguments:
 
-	--restype	- the JMS resource type, which can be javax.jms.Topic, javax.jms.Queue,
+	restype	- the JMS resource type, which can be javax.jms.Topic, javax.jms.Queue,
 				javax.jms.ConnectionFactory, javax.jms.TopicConnectionFactory, or javax.jms.QueueConnectionFactory.
 
-	--property	- optional attribute name/value pairs for configuring the JMS resource.
+	property	- optional attribute name/value pairs for configuring the JMS resource.
 
 
 The following connection factory properties are supported:
