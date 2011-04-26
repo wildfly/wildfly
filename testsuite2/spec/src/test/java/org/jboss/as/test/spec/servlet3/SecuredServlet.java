@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.websecurity;
+package org.jboss.as.test.spec.servlet3;
 
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.annotation.security.DeclareRoles;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -39,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
 @ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
+@DeclareRoles("gooduser")
 public class SecuredServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
