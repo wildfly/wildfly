@@ -22,6 +22,8 @@
 
 package org.jboss.as.service;
 
+import static org.jboss.msc.value.Values.cached;
+
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Constructor;
@@ -39,25 +41,24 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
+import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.Inject;
+import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.ValueFactory;
+import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.ValueFactoryParameter;
 import org.jboss.as.service.descriptor.JBossServiceConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
+import org.jboss.as.service.descriptor.JBossServiceConstructorConfig.Argument;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MethodInjector;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.CachedValue;
-import org.jboss.msc.value.ConstructedValue;
-import org.jboss.msc.value.LookupClassValue;
-import org.jboss.msc.value.LookupConstructorValue;
-import org.jboss.msc.value.LookupGetMethodValue;
-import org.jboss.msc.value.LookupMethodValue;
-import org.jboss.msc.value.LookupSetMethodValue;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.MethodValue;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
@@ -67,13 +68,11 @@ import org.jboss.msc.value.Values;
  * corresponding services.
  *
  * @author John E. Bailey
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
-    private static final ServiceName MBEAN_SERVICE_NAME_BASE = ServiceName.JBOSS.append("mbean","service");
-    private static final String CREATE_SUFFIX = "create";
-    private static final String START_SUFFIX = "start";
 
     /**
      * Process a deployment for JbossService configuration.  Will install a {@Code JBossService} for each configured service.
@@ -81,192 +80,161 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final JBossServiceXmlDescriptor serviceXmlDescriptor = deploymentUnit.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
-        if(serviceXmlDescriptor == null) {
-            return; // Skip deployments with out a service xml descriptor
+        if (serviceXmlDescriptor == null) {
+            // Skip deployments without a service xml descriptor
+            return;
         }
 
+        // assert module
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
+        if (module == null)
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + deploymentUnit);
 
+        // assert reflection index
+        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
+        if (reflectionIndex == null)
+            throw new DeploymentUnitProcessingException("Failed to get reflection index attachment for " + deploymentUnit);
+
+        // install services
         final ClassLoader classLoader = module.getClassLoader();
-        final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
-
-        final JBossServiceXmlDescriptor.ControllerMode controllerMode = serviceXmlDescriptor.getControllerMode();
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
         final ServiceTarget target = phaseContext.getServiceTarget();
-        for(final JBossServiceConfig serviceConfig : serviceConfigs) {
-            addService(target, serviceConfig, classLoaderValue);
+        for (final JBossServiceConfig serviceConfig : serviceConfigs) {
+            addServices(target, serviceConfig, classLoader, reflectionIndex);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void addService(final ServiceTarget target, final JBossServiceConfig serviceConfig, final Value<ClassLoader> classLoaderValue) {
-        final String codeName = serviceConfig.getCode();
-        final Value<Class<?>> classValue = cached(new LookupClassValue(codeName, classLoaderValue));
+    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index) throws DeploymentUnitProcessingException {
+        final String mBeanClassName = mBeanConfig.getCode();
+        final Class<?> mBeanClass = ReflectionUtils.getClass(mBeanClassName, classLoader);
+        final ClassReflectionIndex<?> mBeanClassIndex = index.getClassIndex(mBeanClass);
+        final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassIndex, classLoader);
+        final String mBeanName = mBeanConfig.getName();
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, target);
 
-        final List<Value<?>> constructorArguments = new ArrayList<Value<?>>();
-        final List<Value<Class<?>>> constructorSignature = new ArrayList<Value<Class<?>>>();
-
-        final JBossServiceConstructorConfig constructorConfig = serviceConfig.getConstructorConfig();
-        if(constructorConfig != null) {
-            final JBossServiceConstructorConfig.Argument[] arguments = constructorConfig.getArguments();
-            for(JBossServiceConstructorConfig.Argument argument : arguments) {
-                final Value<Class<?>> attributeTypeValue = cached(new LookupClassValue(argument.getType(), classLoaderValue));
-                constructorArguments.add(cached(new ArgumentValue(attributeTypeValue, argument.getValue())));
-                constructorSignature.add(attributeTypeValue);
+        final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
+        if (dependencyConfigs != null) {
+            final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
+            for (final JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
+                final Injector<Object> injector = getInjector(dependencyConfig, mBeanClassIndex, createDestroyService);
+                mBeanServices.addDependency(dependencyConfig.getDependencyName(), injector);
             }
         }
 
-        final Value<Constructor<?>> constructorValue = cached(new LookupConstructorValue(classValue, constructorSignature));
-        final Value<Object> constructedValue = cached(new ConstructedValue(constructorValue, constructorArguments));
+        final JBossServiceAttributeConfig[] attributeConfigs = mBeanConfig.getAttributeConfigs();
+        if (attributeConfigs != null) {
+            final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
+            for (final JBossServiceAttributeConfig attributeConfig : attributeConfigs) {
+                final String propertyName = attributeConfig.getName();
+                final Inject injectConfig = attributeConfig.getInject();
+                final ValueFactory valueFactoryConfig = attributeConfig.getValueFactory();
 
-        final CreateDestroyService<Object> createDestroyService = new CreateDestroyService<Object>(constructedValue);
-        final StartStopService<Object> startStopService = new StartStopService<Object>(constructedValue);
-
-        final String serviceName = serviceConfig.getName();
-        final ServiceName createDestroyServiceName = convert(serviceName).append(CREATE_SUFFIX);
-        final ServiceBuilder<?> createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
-        final ServiceName startStopServiceName = convert(serviceName).append(START_SUFFIX);
-        final ServiceBuilder<?> startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
-        startStopServiceBuilder.addDependency(createDestroyServiceName);
-
-        final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
-        if(dependencyConfigs != null) {
-            for(JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
-                final ServiceName dependencyCreateDestroyServiceName = convert(dependencyConfig.getDependencyName()).append(CREATE_SUFFIX);
-                final ServiceName dependencyStartStopServiceName = convert(dependencyConfig.getDependencyName()).append(START_SUFFIX);
-                final String optionalAttributeName = dependencyConfig.getOptionalAttributeName();
-                if(optionalAttributeName != null) {
-                    createDestroyServiceBuilder.addDependency(dependencyCreateDestroyServiceName, getPropertyInjector(classValue, optionalAttributeName, createDestroyService, Values.injectedValue()));
+                if (injectConfig != null) {
+                    final Value<?> value = getValue(injectConfig, mBeanClassIndex);
+                    final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassIndex, createDestroyService, value);
+                    mBeanServices.addDependency(injectConfig.getBeanName(), injector);
+                } else if (valueFactoryConfig != null) {
+                    final Value<?> value = getValue(valueFactoryConfig, mBeanClassIndex, classLoader);
+                    final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassIndex, createDestroyService, value);
+                    mBeanServices.addDependency(valueFactoryConfig.getBeanName(), injector);
                 } else {
-                    createDestroyServiceBuilder.addDependency(dependencyCreateDestroyServiceName);
-                }
-                startStopServiceBuilder.addDependency(dependencyStartStopServiceName);
-            }
-        }
-
-        final JBossServiceAttributeConfig[] attributeConfigs = serviceConfig.getAttributeConfigs();
-        if(attributeConfigs != null) {
-            for(JBossServiceAttributeConfig attributeConfig : attributeConfigs) {
-                final String attributeName = attributeConfig.getName();
-                final JBossServiceAttributeConfig.Inject inject = attributeConfig.getInject();
-                final JBossServiceAttributeConfig.ValueFactory valueFactory = attributeConfig.getValueFactory();
-                if(inject != null) {
-                    final String propertyName = inject.getPropertyName();
-                    Value<?> valueToInject = Values.injectedValue();
-                    if(propertyName != null) {
-                        valueToInject = cached(new MethodValue<Object>(new LookupGetMethodValue(classValue, propertyName), valueToInject, Values.<Object>emptyList()));
-                    }
-                    createDestroyServiceBuilder.addDependency(convert(inject.getBeanName()).append(CREATE_SUFFIX), getPropertyInjector(classValue, attributeName, createDestroyService, valueToInject));
-                    startStopServiceBuilder.addDependencies(convert(inject.getBeanName()).append(START_SUFFIX));
-                } else if(valueFactory != null) {
-                    final String methodName = valueFactory.getMethodName();
-                    final JBossServiceAttributeConfig.ValueFactoryParameter[] parameters = valueFactory.getParameters();
-                    final List<Value<Class<?>>> paramTypes = new ArrayList<Value<Class<?>>>(parameters.length);
-                    final List<Value<?>> paramValues = new ArrayList<Value<?>>(parameters.length);
-                    for(JBossServiceAttributeConfig.ValueFactoryParameter parameter : parameters) {
-                        final Value<Class<?>> attributeTypeValue = cached(new LookupClassValue(parameter.getType(), classLoaderValue));
-                        paramTypes.add(attributeTypeValue);
-                        paramValues.add(cached(new ArgumentValue(attributeTypeValue, parameter.getValue())));
-                    }
-                    final Value<?> valueToInject = cached(new MethodValue(new LookupMethodValue(classValue, methodName, paramTypes), Values.injectedValue(), paramValues));
-                    createDestroyServiceBuilder.addDependency(convert(valueFactory.getBeanName()).append(CREATE_SUFFIX), getPropertyInjector(classValue, attributeName, createDestroyService, valueToInject));
-                    startStopServiceBuilder.addDependencies(convert(valueFactory.getBeanName()).append(START_SUFFIX));
-                } else {
-                    createDestroyServiceBuilder.addInjectionValue(getPropertyInjector(classValue, attributeName, createDestroyService, Values.injectedValue()), cached(new AttributeValue(classValue, attributeName, attributeConfig.getValue())));
+                    final Value<?> value = getValue(attributeConfig, mBeanClassIndex);
+                    final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassIndex, createDestroyService, Values.injectedValue());
+                    mBeanServices.addInjectionValue(injector, value);
                 }
             }
         }
-        createDestroyServiceBuilder.install();
-        startStopServiceBuilder.install();
 
-        // Add service to register the bean in the mbean server
-        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService(serviceName);
-        target.addService(MBeanRegistrationService.SERVICE_NAME.append(serviceName), mbeanRegistrationService)
+        // Add service to register the mbean in the mbean server
+        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName);
+        target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
             .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
-            .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())
+            .addDependency(mBeanServices.getStartStopServiceName(), Object.class, mbeanRegistrationService.getValueInjector())
             .install();
+
+        // register all mBean related services
+        mBeanServices.install();
     }
 
-    private Injector<Object> getPropertyInjector(final Value<Class<?>> classValue, final String propertyName, final CreateDestroyService<?> startStopService, final Value<?> value) {
-        return new MethodInjector<Object>(cached(new LookupSetMethodValue(classValue, propertyName)), startStopService, Values.nullValue(), Collections.singletonList(value));
+    private static Injector<Object> getInjector(final JBossServiceDependencyConfig dependencyConfig, final ClassReflectionIndex<?> mBeanClassIndex, final Service<Object> service) {
+        final String attrName = dependencyConfig.getOptionalAttributeName();
+        return attrName != null ? getPropertyInjector(attrName, mBeanClassIndex, service, Values.injectedValue()) : NullInjector.getInstance();
     }
 
-    private ServiceName convert(final String name) {
-        if(name == null)
-            throw new IllegalArgumentException("Name must not be null");
-        return MBEAN_SERVICE_NAME_BASE.append(name);
+    private static Value<?> getValue(final Inject injectConfig, final ClassReflectionIndex<?> mBeanClassIndex) {
+        final String propertyName = injectConfig.getPropertyName();
+        Value<?> valueToInject = Values.injectedValue();
+        if (propertyName != null) {
+            final Method getter = ReflectionUtils.getGetter(mBeanClassIndex, propertyName);
+            final Value<Method> getterValue = new ImmediateValue<Method>(getter);
+            valueToInject = cached(new MethodValue<Object>(getterValue, valueToInject, Values.<Object>emptyList()));
+        }
+        return valueToInject;
     }
 
-    private <T> Value<T> cached(final Value<T> value) {
-        return new CachedValue<T>(value);
+    private static Value<?> getValue(final ValueFactory valueFactory, final ClassReflectionIndex<?> mBeanClassIndex, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+        final String methodName = valueFactory.getMethodName();
+        final ValueFactoryParameter[] parameters = valueFactory.getParameters();
+        final List<Class<?>> paramTypes = new ArrayList<Class<?>>(parameters.length);
+        final List<Value<?>> paramValues = new ArrayList<Value<?>>(parameters.length);
+        for (ValueFactoryParameter parameter : parameters) {
+            final Class<?> attributeTypeValue = ReflectionUtils.getClass(parameter.getType(), classLoader);
+            paramTypes.add(attributeTypeValue);
+            paramValues.add(new ImmediateValue<Object>(newValue(attributeTypeValue, parameter.getValue())));
+        }
+        final Value<Method> methodValue = new ImmediateValue<Method>(ReflectionUtils.getMethod(mBeanClassIndex, methodName, paramTypes.toArray(new Class<?>[0])));
+        return cached(new MethodValue<Object>(methodValue, Values.injectedValue(), paramValues));
     }
 
-    private static class AttributeValue<T> implements Value<T> {
-        private final Value<Class<?>> targetClassValue;
-        private final String name;
-        private final String value;
+    private static Value<?> getValue(final JBossServiceAttributeConfig attributeConfig, final ClassReflectionIndex<?> mBeanClassIndex) {
+        final String attributeName = attributeConfig.getName();
+        final Method setterMethod = ReflectionUtils.getSetter(mBeanClassIndex, attributeName);
+        final Class<?> setterType = setterMethod.getParameterTypes()[0];
 
-        private AttributeValue(Value<Class<?>> targetClassValue, String name, String value) {
-            this.targetClassValue = targetClassValue;
-            this.name = name;
-            this.value = value;
+        return new ImmediateValue<Object>(newValue(setterType, attributeConfig.getValue()));
+    }
+
+    private static Object newInstance(final JBossServiceConfig serviceConfig, final ClassReflectionIndex<?> classIndex, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+        final JBossServiceConstructorConfig constructorConfig = serviceConfig.getConstructorConfig();
+        final int paramCount = constructorConfig != null ? constructorConfig.getArguments().length : 0;
+        final Class<?>[] types = new Class<?>[paramCount];
+        final Object[] params = new Object[paramCount];
+
+        if (constructorConfig != null) {
+            final Argument[] arguments = constructorConfig.getArguments();
+            for (int i = 0; i < paramCount; i++) {
+                final Argument argument = arguments[i];
+                types[i] = ReflectionUtils.getClass(argument.getType(), classLoader);
+                params[i] = newValue(ReflectionUtils.getClass(argument.getType(), classLoader), argument.getValue());
+            }
         }
 
-        @Override
-        public T getValue() throws IllegalStateException {
-            Class<?> type = null;
-            final String expectedMethodName = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
-            final Class<?> targetType = targetClassValue.getValue();
-            final Method[] methods = targetType.getMethods();
-            for(Method method : methods) {
-                if(expectedMethodName.equals(method.getName())) {
-                    final Class<?>[] types = method.getParameterTypes();
-                    if(types.length == 1) {
-                        type = types[0];
-                        break;
-                    }
-                }
-            }
-            if(type == null) {
-                log.warn("Unable to find type for property " + name + " on class " + targetType);
-                return null;
-            }
-            final PropertyEditor editor = PropertyEditorManager.findEditor(type);
-            if(editor == null) {
-                log.warn("Unable to find PropertyEditor for type " + type);
-                return null;
-            }
-            editor.setAsText(value);
-            return (T)editor.getValue();
-        }
+        final Constructor<?> constructor = classIndex.getConstructor(types);
+        final Object mBeanInstance = ReflectionUtils.newInstance(constructor, params);
+
+        return mBeanInstance;
     }
 
-    private static class ArgumentValue<T> implements Value<T> {
-        private final Value<Class<?>> typeValue;
-        private final String value;
-
-        private ArgumentValue(final Value<Class<?>> typeValue, final String value) {
-            this.typeValue = typeValue;
-            this.value = value;
-        }
-
-        @Override
-        public T getValue() throws IllegalStateException {
-            final Class<?> type = typeValue.getValue();
-            final PropertyEditor editor = PropertyEditorManager.findEditor(type);
-            if(editor == null) {
-                log.warn("Unable to find PropertyEditor for type " + type);
-                return null;
-            }
-            editor.setAsText(value);
-            return (T)editor.getValue();
-        }
+    private static Injector<Object> getPropertyInjector(final String propertyName, final ClassReflectionIndex<?> mBeanClassIndex, final Service<?> service, final Value<?> value) {
+        final Method setterMethod = ReflectionUtils.getSetter(mBeanClassIndex, propertyName);
+        return new MethodInjector<Object>(setterMethod, service, Values.nullValue(), Collections.singletonList(value));
     }
+
+    private static Object newValue(final Class<?> type, final String value) {
+        final PropertyEditor editor = PropertyEditorManager.findEditor(type);
+        if (editor == null) {
+            log.warn("Unable to find PropertyEditor for type " + type);
+            return null;
+        }
+        editor.setAsText(value);
+
+        return editor.getValue();
+    }
+
 }

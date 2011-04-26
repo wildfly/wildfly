@@ -36,7 +36,7 @@ import org.jboss.msc.value.Value;
  *
  * @author John E. Bailey
  */
-public class StartStopService<T> implements Service<T> {
+final class StartStopService<T> implements Service<T> {
     private static final Logger log = Logger.getLogger("org.jboss.as.service");
     private final Value<T> serviceValue;
 
@@ -45,7 +45,7 @@ public class StartStopService<T> implements Service<T> {
      *
      * @param serviceValue The service value
      */
-    public StartStopService(Value<T> serviceValue) {
+    public StartStopService(final Value<T> serviceValue) {
         this.serviceValue = serviceValue;
     }
 
@@ -56,7 +56,7 @@ public class StartStopService<T> implements Service<T> {
         log.debugf("Starting Service: %s", context.getController().getName());
         try {
             final Method startMethod = service.getClass().getMethod("start");
-            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            final ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
             try {
                 startMethod.invoke(service);
             } finally {
@@ -69,20 +69,20 @@ public class StartStopService<T> implements Service<T> {
     }
 
     /** {@inheritDoc} */
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
         final T service = getValue();
         // Handle Stop
         log.debugf("Stopping Service: %s", context.getController().getName());
         try {
-            Method stopMethod = service.getClass().getMethod("stop");
-            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            final Method stopMethod = service.getClass().getMethod("stop");
+            final ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
             try {
                 stopMethod.invoke(service);
             } finally {
                 SecurityActions.resetThreadContextClassLoader(old);
             }
         } catch(NoSuchMethodException e) {
-        }  catch(Exception e) {
+        } catch(Exception e) {
             log.error("Failed to execute legacy service stop", e);
         }
     }

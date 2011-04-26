@@ -5,15 +5,16 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -25,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1177,14 +1179,14 @@ public class FileSystemDeploymentServiceUnitTestCase {
                     else if (REMOVE.equals(opName)) {
                         added.remove(address.getLastElement().getValue());
                     }
-                    else if ("deploy".equals(opName)) {
+                    else if (DEPLOY.equals(opName)) {
                         String name = address.getLastElement().getValue();
                         deployed.put(name, added.get(name));
                     }
-                    else if ("undeploy".equals(opName)) {
+                    else if (UNDEPLOY.equals(opName)) {
                         deployed.remove(address.getLastElement().getValue());
                     }
-                    else if ("full-replace-deployment".equals(opName)) {
+                    else if (FULL_REPLACE_DEPLOYMENT.equals(opName)) {
                         String name = child.require(NAME).asString();
                         byte[] hash = child.require(HASH).asBytes();
                         added.put(name, hash);

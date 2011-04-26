@@ -14,7 +14,7 @@ import org.jboss.msc.value.Value;
  *
  * @author John E. Bailey
  */
-public class CreateDestroyService<T> implements Service<T> {
+final class CreateDestroyService<T> implements Service<T> {
     private static final Logger log = Logger.getLogger("org.jboss.as.service");
     private final Value<T> serviceValue;
 
@@ -23,7 +23,7 @@ public class CreateDestroyService<T> implements Service<T> {
      *
      * @param serviceValue The service value
      */
-    public CreateDestroyService(Value<T> serviceValue) {
+    public CreateDestroyService(final Value<T> serviceValue) {
         this.serviceValue = serviceValue;
     }
 
@@ -33,8 +33,8 @@ public class CreateDestroyService<T> implements Service<T> {
         // Handle create
         log.debugf("Creating Service: %s", context.getController().getName());
         try {
-            Method createMethod = service.getClass().getMethod("create");
-            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            final Method createMethod = service.getClass().getMethod("create");
+            final ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
             try {
                 createMethod.invoke(service);
             } finally {
@@ -47,19 +47,18 @@ public class CreateDestroyService<T> implements Service<T> {
     }
 
     /** {@inheritDoc} */
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
         final T service = getValue();
         // Handle destroy
         log.debugf("Destroying Service: %s", context.getController().getName());
         try {
-            Method destroyMethod = service.getClass().getMethod("destroy");
-            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            final Method destroyMethod = service.getClass().getMethod("destroy");
+            final ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
             try {
                 destroyMethod.invoke(service);
             } finally {
                 SecurityActions.resetThreadContextClassLoader(old);
             }
-            destroyMethod.invoke(service);
         } catch(NoSuchMethodException e) {
         } catch(Exception e) {
             log.error("Failed to execute legacy service destroy", e);
