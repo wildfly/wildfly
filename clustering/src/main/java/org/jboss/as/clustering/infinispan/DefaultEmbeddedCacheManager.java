@@ -247,6 +247,16 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         return ((name == null) || name.equals(CacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
     }
 
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.container.getGlobalConfiguration().getCacheManagerName();
+    }
+
     class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
         private final AdvancedCache<K, V> cache;
 

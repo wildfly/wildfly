@@ -38,27 +38,27 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
 
     private final ScheduledExecutorService executor;
     private final ScheduledExecutorService subject;
-    
+
     public ManagedScheduledExecutorTest() {
         this(mock(ScheduledExecutorService.class));
     }
-    
+
     private ManagedScheduledExecutorTest(ScheduledExecutorService executor) {
         this(executor, new ManagedScheduledExecutorService(executor));
     }
-    
+
     private ManagedScheduledExecutorTest(ScheduledExecutorService executor, ScheduledExecutorService subject) {
         super(executor, subject);
         this.executor = executor;
         this.subject = subject;
     }
-    
+
     @Override
     public void isShutdown() {
         boolean result = this.subject.isShutdown();
 
         verifyZeroInteractions(this.executor);
-        
+
         assertFalse(result);
     }
 
@@ -67,7 +67,7 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
         boolean result = this.subject.isTerminated();
 
         verifyZeroInteractions(this.executor);
-        
+
         assertFalse(result);
     }
 
@@ -76,7 +76,7 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
         boolean result = this.subject.awaitTermination(1L, TimeUnit.SECONDS);
 
         verifyZeroInteractions(this.executor);
-        
+
         assertFalse(result);
     }
 
@@ -89,12 +89,12 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
         TimeUnit unit = TimeUnit.SECONDS;
 
         when(this.executor.schedule(task, delay, unit)).thenReturn(expected);
-        
+
         ScheduledFuture<Object> result = this.subject.schedule(task, delay, unit);
-        
+
         assertSame(expected, result);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void scheduleAtFixedRate() {
@@ -106,12 +106,12 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
         TimeUnit unit = TimeUnit.SECONDS;
 
         when(this.executor.scheduleAtFixedRate(task, delay, period, unit)).thenReturn(expected);
-        
+
         ScheduledFuture<?> result = this.subject.scheduleAtFixedRate(task, delay, period, unit);
-        
+
         assertSame(expected, result);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void scheduleWithFixedDelay() {
@@ -123,9 +123,9 @@ public class ManagedScheduledExecutorTest extends ManagedExecutorServiceTest {
         TimeUnit unit = TimeUnit.SECONDS;
 
         when(this.executor.scheduleWithFixedDelay(task, delay, period, unit)).thenReturn(expected);
-        
+
         ScheduledFuture<?> result = this.subject.scheduleWithFixedDelay(task, delay, period, unit);
-        
+
         assertSame(expected, result);
     }
 }

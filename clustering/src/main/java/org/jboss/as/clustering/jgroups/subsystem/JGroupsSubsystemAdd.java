@@ -88,15 +88,16 @@ public class JGroupsSubsystemAdd implements ModelAddOperationHandler, Descriptio
                     ServiceTarget target = context.getServiceTarget();
                     target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
                         .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .install();
-
+                        .install()
+                        ;
                     String stack = operation.require(ModelKeys.DEFAULT_STACK).asString();
                     InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
                     ValueService<ChannelFactory> service = new ValueService<ChannelFactory>(factory);
                     target.addService(ChannelFactoryService.getServiceName(), service)
                         .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
                         .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .install();
+                        .install()
+                        ;
                 }
             };
 

@@ -31,7 +31,7 @@
         <module name="javax.xml.bind.api"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river"/>
+        <module name="org.jboss.marshalling.river" services="import"/>
         <module name="org.jgroups"/>
         
     </dependencies>

@@ -402,7 +402,7 @@
                     <file-store/>
                 </replicated-cache>
             </cache-container>
-            <cache-container name="hibernate" default-cache="local-query">
+            <cache-container name="hibernate" default-cache="local-query" jndi-name="java:CacheManager/entity">
                 <invalidation-cache name="entity" mode="SYNC">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>

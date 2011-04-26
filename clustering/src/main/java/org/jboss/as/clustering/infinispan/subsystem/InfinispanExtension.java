@@ -180,6 +180,10 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                     container.get(ModelKeys.DEFAULT_CACHE).set(value);
                     break;
                 }
+                case JNDI_NAME: {
+                    container.get(ModelKeys.JNDI_NAME).set(value);
+                    break;
+                }
                 case LISTENER_EXECUTOR: {
                     container.get(ModelKeys.LISTENER_EXECUTOR).set(value);
                     break;
@@ -198,8 +202,8 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
             }
         }
 
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
+        if ((name == null) || !container.hasDefined(ModelKeys.DEFAULT_CACHE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME, Attribute.DEFAULT_CACHE));
         }
 
         container.get(ModelDescriptionConstants.OP_ADDR).add(ModelKeys.CACHE_CONTAINER, name);
@@ -749,7 +753,8 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                 writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), entry.getName());
                 ModelNode container = entry.getValue();
-                this.writeOptional(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
+                this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
+                this.writeOptional(writer, Attribute.JNDI_NAME, container, ModelKeys.JNDI_NAME);
                 this.writeOptional(writer, Attribute.LISTENER_EXECUTOR, container, ModelKeys.LISTENER_EXECUTOR);
                 this.writeOptional(writer, Attribute.EVICTION_EXECUTOR, container, ModelKeys.EVICTION_EXECUTOR);
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -46,6 +47,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "stack", "defaults");
 
     private static final String DEFAULTS = "jgroups-defaults.xml";
+    private static final Logger log = Logger.getLogger(ProtocolDefaultsService.class.getPackage().getName());
 
     private final String resource;
     private volatile ProtocolDefaults defaults;
@@ -82,7 +84,8 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
     }
 
     private static ProtocolStackConfigurator load(String resource) throws StartException {
-        URL url = find(resource, Thread.currentThread().getContextClassLoader(), JGroupsExtension.class.getClassLoader());
+        URL url = find(resource, JGroupsExtension.class.getClassLoader());
+        log.debugf("Loading JGroups protocol defaults from %s", url.toString());
         try {
             return XmlConfigurator.getInstance(url);
         } catch (IOException e) {
@@ -92,9 +95,11 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
 
     private static URL find(String resource, ClassLoader... loaders) throws StartException {
         for (ClassLoader loader: loaders) {
-            URL url = loader.getResource(resource);
-            if (url != null) {
-                return url;
+            if (loader != null) {
+                URL url = loader.getResource(resource);
+                if (url != null) {
+                    return url;
+                }
             }
         }
         throw new StartException(String.format("Failed to locate %s", resource));

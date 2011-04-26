@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.xml.XMLConstants;
 
 /**
+ * Enumerates the attributes used in the Infinispan subsystem schema.
  * @author Paul Ferraro
  */
 public enum Attribute {
@@ -48,6 +49,7 @@ public enum Attribute {
     INDEXING(ModelKeys.INDEXING),
     INTERVAL(ModelKeys.INTERVAL),
     ISOLATION(ModelKeys.ISOLATION),
+    JNDI_NAME(ModelKeys.JNDI_NAME),
     L1_LIFESPAN(ModelKeys.L1_LIFESPAN),
     LIFESPAN(ModelKeys.LIFESPAN),
     LISTENER_EXECUTOR(ModelKeys.LISTENER_EXECUTOR),

@@ -42,7 +42,7 @@ public class ChannelProvider implements JGroupsChannelLookup {
         Properties properties = global.getTransportProperties();
         properties.setProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelProvider.class.getName());
         properties.put(CHANNEL_FACTORY, factory);
-        properties.put(ID, global.getClusterName());
+        properties.put(ID, global.getTransportNodeName() + "-" + global.getClusterName());
     }
 
     /**

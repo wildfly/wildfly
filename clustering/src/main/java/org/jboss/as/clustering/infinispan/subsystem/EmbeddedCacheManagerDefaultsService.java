@@ -107,7 +107,8 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
     }
 
     private static InfinispanConfiguration load(String resource) throws StartException {
-        URL url = find(resource, Thread.currentThread().getContextClassLoader(), InfinispanExtension.class.getClassLoader());
+        URL url = find(resource, InfinispanExtension.class.getClassLoader());
+        log.debugf("Loading Infinispan defaults from %s", url.toString());
         try {
             InputStream input = url.openStream();
             SwitchContext context = switcher.getSwitchContext(InfinispanConfiguration.class.getClassLoader());
@@ -128,9 +129,11 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
 
     private static URL find(String resource, ClassLoader... loaders) throws StartException {
         for (ClassLoader loader: loaders) {
-            URL url = loader.getResource(resource);
-            if (url != null) {
-                return url;
+            if (loader != null) {
+                URL url = loader.getResource(resource);
+                if (url != null) {
+                    return url;
+                }
             }
         }
         throw new StartException(String.format("Failed to locate %s", resource));

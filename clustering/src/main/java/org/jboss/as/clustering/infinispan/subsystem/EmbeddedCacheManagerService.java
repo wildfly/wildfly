@@ -22,23 +22,36 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.security.AccessController;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.management.JMException;
 import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.GlobalConfiguration;
+import org.infinispan.jmx.CacheJmxRegistration;
+import org.infinispan.jmx.ComponentsJmxRegistration;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
+import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
+import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
+import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
+import org.jboss.as.clustering.infinispan.StreamingMarshaller;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -50,7 +63,9 @@ import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 /**
  * @author Paul Ferraro
  */
+@Listener
 public class EmbeddedCacheManagerService implements Service<CacheContainer> {
+    private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
 
     public static ServiceName getServiceName() {
@@ -59,6 +74,10 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
     public static ServiceName getServiceName(String name) {
         return SERVICE_NAME.append(name);
+    }
+
+    public static ServiceName getContextName(String name) {
+        return ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:" + InfinispanExtension.SUBSYSTEM_NAME + "/" + name);
     }
 
     @SuppressWarnings("unchecked")
@@ -108,9 +127,8 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             if (machine != null) {
                 global.setMachineId(machine);
             }
-            String nodeName = transport.getEnvironment().getNodeName();
-            global.setTransportNodeName(nodeName);
-            global.setClusterName(String.format("%s-%s", nodeName, this.configuration.getName()));
+            global.setTransportNodeName(transport.getEnvironment().getNodeName());
+            global.setClusterName(this.configuration.getName());
 
             ChannelProvider.init(global, transport.getChannelFactory());
 
@@ -118,9 +136,12 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             if (executor != null) {
                 ExecutorProvider.initTransportExecutor(global, executor);
             }
+        } else {
+            global.setTransportClass(null);
         }
 
         global.setCacheManagerName(this.configuration.getName());
+        global.setMarshallerClass(StreamingMarshaller.class.getName());
 
         Configuration defaultConfig = new Configuration();
         MBeanServer server = this.configuration.getMBeanServer();
@@ -156,7 +177,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
         try {
             EmbeddedCacheManager manager = new DefaultCacheManager(global, defaultConfig, false);
-
+            manager.addListener(this);
             // Add named configurations
             for (Map.Entry<String, Configuration> entry: this.configuration.getConfigurations().entrySet()) {
                 Configuration overrides = entry.getValue();
@@ -164,7 +185,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
                 configuration.applyOverrides(overrides);
                 manager.defineConfiguration(entry.getKey(), configuration);
             }
-
             this.container = new DefaultEmbeddedCacheManager(manager, this.configuration.getDefaultCache());
             this.container.start();
         } finally {
@@ -180,5 +200,40 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
     public void stop(StopContext context) {
         this.container.stop();
         this.container = null;
+    }
+
+    @CacheStarted
+    public void cacheStarted(CacheStartedEvent event) {
+       log.infof("Started %s cache from %s container", event.getCacheName(), event.getCacheManager().getGlobalConfiguration().getCacheManagerName());
+    }
+
+    @CacheStopped
+    public void cacheStopped(CacheStoppedEvent event) {
+       String cacheName = event.getCacheName();
+       EmbeddedCacheManager container = event.getCacheManager();
+       GlobalConfiguration global = container.getGlobalConfiguration();
+       String containerName = global.getCacheManagerName();
+
+       log.infof("Stopped %s cache from %s container", cacheName, containerName);
+
+       // Infinispan does not unregister cache mbean when cache stops (only when cache manager is stopped), so do it now to avoid classloader leaks
+       MBeanServer server = this.configuration.getMBeanServer();
+       if (server != null) {
+           Configuration configuration = cacheName.equals(CacheContainer.DEFAULT_CACHE_NAME) ? container.getDefaultConfiguration() : container.defineConfiguration(cacheName, new Configuration());
+           if (configuration.isExposeJmxStatistics()) {
+               String domain = global.getJmxDomain();
+               String jmxCacheName = String.format("%s(%s)", cacheName, configuration.getCacheModeString().toLowerCase(Locale.ENGLISH));
+               try {
+                  // Fragile code alert!
+                  ObjectName name = ObjectName.getInstance(String.format("%s:%s,%s=%s,manager=%s,%s=%s", domain, CacheJmxRegistration.CACHE_JMX_GROUP, ComponentsJmxRegistration.NAME_KEY, ObjectName.quote(jmxCacheName), ObjectName.quote(containerName), ComponentsJmxRegistration.COMPONENT_KEY, "Cache"));
+                  if (server.isRegistered(name)) {
+                     server.unregisterMBean(name);
+                     log.tracef("Unregistered cache mbean: %s", name);
+                  }
+               } catch (JMException e) {
+                   log.debugf(e, "Failed to unregister mbean for %s cache", cacheName);
+               }
+           }
+       }
     }
 }

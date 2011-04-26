@@ -49,6 +49,7 @@ public class ModelKeys {
     static final String INTERVAL = "interval";
     static final String INVALIDATION_CACHE = "invalidation-cache";
     static final String ISOLATION = "isolation";
+    static final String JNDI_NAME = "jndi-name";
     static final String L1_LIFESPAN = "l1-lifespan";
     static final String LIFESPAN = "lifespan";
     static final String LISTENER_EXECUTOR = "listener-executor";
