@@ -130,6 +130,29 @@ public class Util {
         return Collections.emptyList();
     }
 
+    public static List<String> getServerGroups(ModelControllerClient client) {
+
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final ModelNode request;
+        try {
+            builder.operationName("read-children-names");
+            builder.addProperty("child-type", "server-group");
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                return getList(outcome);
+            }
+        } catch (Exception e) {
+        }
+
+        return Collections.emptyList();
+    }
+
     public static List<String> getNodeTypes(ModelControllerClient client, OperationRequestAddress address) {
         if(client == null) {
             return Collections.emptyList();

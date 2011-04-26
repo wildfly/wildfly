@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandArgument;
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.ParsedArguments;
 
@@ -129,6 +130,7 @@ public class ArgumentWithoutValue implements CommandArgument {
 
     @Override
     public boolean canAppearNext(ParsedArguments args) {
+
         if(exclusive) {
             return !args.hasArguments();
         }
@@ -153,5 +155,10 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public boolean isValueRequired() {
         return false;
+    }
+
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        return true;
     }
 }

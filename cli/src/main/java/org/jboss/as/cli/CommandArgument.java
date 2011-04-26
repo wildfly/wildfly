@@ -59,6 +59,13 @@ public interface CommandArgument {
     boolean canAppearNext(ParsedArguments args);
 
     /**
+     * Checks whether the argument is available in the given context.
+     * @param ctx  the CLI context
+     * @return  true if the argument is available in the given CLI context, false otherwise.
+     */
+    boolean isAvailable(CommandContext ctx);
+
+    /**
      * Returns the value of the argument specified on the command line.
      * If the argument isn't specified the returned value is null.
      * Although, it might throw IllegalArgumentException in case the argument is a required one.

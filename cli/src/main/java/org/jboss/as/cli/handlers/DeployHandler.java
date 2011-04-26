@@ -24,8 +24,11 @@ package org.jboss.as.cli.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
@@ -75,7 +78,52 @@ public class DeployHandler extends BatchModeCommandHandler {
         rtName.addRequiredPreceding(path);
         argsCompleter.addArgument(rtName);
 
-        serverGroups = new ArgumentWithValue(true, /* TODO value completer, */"--server-groups");
+        serverGroups = new ArgumentWithValue(true, new CommandLineCompleter() {
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+                if(buffer.isEmpty()) {
+                    candidates.addAll(allGroups);
+                    Collections.sort(candidates);
+                    return 0;
+                }
+
+                final String[] groups = buffer.split(",+");
+
+                final String chunk;
+                final int lastGroupIndex;
+                if(buffer.charAt(buffer.length() - 1) == ',') {
+                    lastGroupIndex = groups.length;
+                    chunk = null;
+                } else {
+                    lastGroupIndex = groups.length - 1;
+                    chunk = groups[groups.length - 1];
+                }
+
+                for(int i = 0; i < lastGroupIndex; ++i) {
+                    allGroups.remove(groups[i]);
+                }
+
+                final int result;
+                if(chunk == null) {
+                    candidates.addAll(allGroups);
+                    result = buffer.length();
+                } else {
+                    for(String group : allGroups) {
+                        if(group.startsWith(chunk)) {
+                            candidates.add(group);
+                        }
+                    }
+                    result = buffer.lastIndexOf(',') + 1;
+                }
+                Collections.sort(candidates);
+                return result;
+            }}, "--server-groups") {
+            @Override
+            public boolean isAvailable(CommandContext ctx) {
+                return ctx.isDomainMode();
+            }
+        };
         serverGroups.addRequiredPreceding(path);
         argsCompleter.addArgument(serverGroups);
     }

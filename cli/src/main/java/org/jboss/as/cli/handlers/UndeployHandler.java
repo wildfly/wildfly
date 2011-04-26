@@ -96,7 +96,52 @@ public class UndeployHandler extends BatchModeCommandHandler {
         name.addCantAppearAfter(l);
         argsCompleter.addArgument(name);
 
-        serverGroups = new ArgumentWithValue(true, /* TODO value completer, */"--server-groups");
+        serverGroups = new ArgumentWithValue(true, new CommandLineCompleter() {
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+                if(buffer.isEmpty()) {
+                    candidates.addAll(allGroups);
+                    Collections.sort(candidates);
+                    return 0;
+                }
+
+                final String[] groups = buffer.split(",+");
+
+                final String chunk;
+                final int lastGroupIndex;
+                if(buffer.charAt(buffer.length() - 1) == ',') {
+                    lastGroupIndex = groups.length;
+                    chunk = null;
+                } else {
+                    lastGroupIndex = groups.length - 1;
+                    chunk = groups[groups.length - 1];
+                }
+
+                for(int i = 0; i < lastGroupIndex; ++i) {
+                    allGroups.remove(groups[i]);
+                }
+
+                final int result;
+                if(chunk == null) {
+                    candidates.addAll(allGroups);
+                    result = buffer.length();
+                } else {
+                    for(String group : allGroups) {
+                        if(group.startsWith(chunk)) {
+                            candidates.add(group);
+                        }
+                    }
+                    result = buffer.lastIndexOf(',') + 1;
+                }
+                Collections.sort(candidates);
+                return result;
+            }}, "--server-groups") {
+            @Override
+            public boolean isAvailable(CommandContext ctx) {
+                return ctx.isDomainMode();
+            }
+        };
         serverGroups.addRequiredPreceding(name);
         argsCompleter.addArgument(serverGroups);
     }
@@ -117,72 +162,6 @@ public class UndeployHandler extends BatchModeCommandHandler {
             printList(ctx, Util.getDeployments(client), l);
             return;
         }
-
-/*        if(ctx.isDomainMode()) {
-            ModelNode composite = new ModelNode();
-            composite.get("operation").set("composite");
-            composite.get("address").setEmptyList();
-            ModelNode steps = composite.get("steps");
-
-            final String[] serverGroups;
-            if (ctx.isDomainMode()) {
-                try {
-                    String serverGroupsStr = this.serverGroups.getValue(args);
-                    serverGroups = serverGroupsStr.split(",");
-                } catch (IllegalArgumentException e) {
-                    ctx.printLine("--server-groups is missing");
-                    return;
-                }
-            } else {
-                serverGroups = null;
-            }
-
-            for (String group : serverGroups) {
-                ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_UNDEPLOY_OPERATION, name, group);
-                composite.add(groupStep);
-            }
-
-        } else {
-            DefaultOperationRequestBuilder builder;
-
-            // undeploy
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("undeploy");
-            builder.addNode("deployment", name);
-
-            ModelNode result;
-            try {
-                ModelNode request = builder.buildRequest();
-                result = client.execute(request);
-            } catch (Exception e) {
-                ctx.printLine("Failed to undeploy: " + e.getLocalizedMessage());
-                return;
-            }
-
-            // TODO undeploy may fail if the content failed to deploy but remove
-            // should still be executed
-            if (!Util.isSuccess(result)) {
-                ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
-                return;
-            }
-
-            // remove
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("remove");
-            builder.addNode("deployment", name);
-            try {
-                ModelNode request = builder.buildRequest();
-                result = client.execute(request);
-            } catch (Exception e) {
-                ctx.printLine("Failed to remove the deployment content from the repository: " + e.getLocalizedMessage());
-                return;
-            }
-            if (!Util.isSuccess(result)) {
-                ctx.printLine("Remove failed: " + Util.getFailureDescription(result));
-                return;
-            }
-        }
-*/
 
         ModelNode request;
         try {

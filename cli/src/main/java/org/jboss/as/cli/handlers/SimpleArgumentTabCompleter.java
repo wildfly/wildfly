@@ -104,7 +104,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                         parsedArgs.parse(buffer.substring(firstCharIndex, result));
 
                         for(CommandArgument arg : allArgs) {
-                            if(arg.getIndex() >= 0 && arg.canAppearNext(parsedArgs)) {
+                            if(arg.isAvailable(ctx) && arg.getIndex() >= 0 && arg.canAppearNext(parsedArgs)) {
                                 valueCompleter = arg.getValueCompleter();
                                 break;
                             }
@@ -123,7 +123,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                         parsedArgs.parse(buffer.substring(firstCharIndex, result));
 
                         for (CommandArgument arg : allArgs) {
-                            if (arg.getIndex() >= 0 && arg.canAppearNext(parsedArgs)) {
+                            if (arg.isAvailable(ctx) && arg.getIndex() >= 0 && arg.canAppearNext(parsedArgs)) {
                                 valueCompleter = arg.getValueCompleter();
                                 break;
                             }
@@ -163,7 +163,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
         }
 
         for(CommandArgument arg : allArgs) {
-            if(arg.canAppearNext(parsedArgs)) {
+            if(arg.isAvailable(ctx) && arg.canAppearNext(parsedArgs)) {
                 if(arg.getIndex() >= 0) {
                     CommandLineCompleter valCompl = arg.getValueCompleter();
                     if(valCompl != null) {
