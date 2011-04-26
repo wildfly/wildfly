@@ -60,22 +60,30 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         if (deploymentContents == null)
             return;
 
-        // The mount point we will use for the repository file
-        final VirtualFile deploymentRoot = VFS.getChild("content/" + deploymentRuntimeName);
-
-        boolean failed = false;
-        Closeable handle = null;
+        final VirtualFile deploymentRoot;
         final MountHandle mountHandle;
-        try {
-            final boolean mountExploded = deploymentName.endsWith("war");
-            handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentContents, deploymentRoot, mountExploded);
-            mountHandle = new MountHandle(handle);
-        } catch (IOException e) {
-            failed = true;
-            throw new DeploymentUnitProcessingException("Failed to mount deployment content", e);
-        } finally {
-            if(failed) {
-                VFSUtils.safeClose(handle);
+        if (deploymentContents.isDirectory()) {
+            // use the contents directly
+            deploymentRoot = deploymentContents;
+            // nothing was mounted
+            mountHandle = null;
+        } else {
+            // The mount point we will use for the repository file
+            deploymentRoot = VFS.getChild("content/" + deploymentRuntimeName);
+
+            boolean failed = false;
+            Closeable handle = null;
+            try {
+                final boolean mountExploded = deploymentName.endsWith("war");
+                handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentContents, deploymentRoot, mountExploded);
+                mountHandle = new MountHandle(handle);
+            } catch (IOException e) {
+                failed = true;
+                throw new DeploymentUnitProcessingException("Failed to mount deployment content", e);
+            } finally {
+                if(failed) {
+                    VFSUtils.safeClose(handle);
+                }
             }
         }
         final ResourceRoot resourceRoot = new ResourceRoot(deploymentRoot, mountHandle);
