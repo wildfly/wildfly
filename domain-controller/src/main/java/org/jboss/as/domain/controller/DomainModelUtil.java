@@ -70,6 +70,8 @@ import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
 import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeRemoveHandler;
 import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
@@ -217,6 +219,8 @@ class DomainModelUtil {
         socketBindingGroup.registerOperationHandler(REMOVE, SocketBindingGroupRemoveHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false);
         socketBindingGroup.registerReadWriteAttribute(PORT_OFFSET, null, new IntRangeValidatingHandler(0, 65535, true, true), AttributeAccess.Storage.CONFIGURATION);
         socketBindingGroup.registerReadWriteAttribute(DEFAULT_INTERFACE, null, new StringLengthValidatingHandler(1, false, true), AttributeAccess.Storage.CONFIGURATION);
+        socketBindingGroup.registerOperationHandler(SocketBindingGroupIncludeAddHandler.OPERATION_NAME, SocketBindingGroupIncludeAddHandler.INSTANCE, SocketBindingGroupIncludeAddHandler.INSTANCE);
+        socketBindingGroup.registerOperationHandler(SocketBindingGroupIncludeRemoveHandler.OPERATION_NAME, SocketBindingGroupIncludeRemoveHandler.INSTANCE, SocketBindingGroupIncludeRemoveHandler.INSTANCE);
         final ModelNodeRegistration socketBindings = socketBindingGroup.registerSubModel(PathElement.pathElement(SOCKET_BINDING), DomainDescriptionProviders.SOCKET_BINDING);
         socketBindings.registerOperationHandler(ADD, SocketBindingAddHandler.INSTANCE, SocketBindingAddHandler.INSTANCE, false);
         socketBindings.registerOperationHandler(REMOVE, SocketBindingRemoveHandler.INSTANCE, SocketBindingRemoveHandler.INSTANCE, false);

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
@@ -55,6 +56,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -150,6 +153,34 @@ public class SocketBindingGroupDescription {
         root.get(OPERATION_NAME).set(REMOVE);
         root.get(DESCRIPTION).set(bundle.getString("socket_binding_group.remove"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+        return root;
+    }
+
+
+    public static ModelNode getAddSocketBindingGroupIncludeOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(SocketBindingGroupIncludeAddHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("domain_socket_binding_group.include.add"));
+        root.get(REQUEST_PROPERTIES, INCLUDE, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, INCLUDE, DESCRIPTION).set(bundle.getString("domain_socket_binding_group.include.add.include"));
+        root.get(REQUEST_PROPERTIES, INCLUDE, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, INCLUDE, MIN_LENGTH).set(1);
+        root.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return root;
+    }
+
+    public static ModelNode getRemoveSocketBindingGroupIncludeOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(SocketBindingGroupIncludeRemoveHandler.OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("domain_socket_binding_group.include.remove"));
+        root.get(REQUEST_PROPERTIES, INCLUDE, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, INCLUDE, DESCRIPTION).set(bundle.getString("domain_socket_binding_group.include.remove.include"));
+        root.get(REQUEST_PROPERTIES, INCLUDE, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, INCLUDE, MIN_LENGTH).set(1);
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }

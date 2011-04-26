@@ -80,6 +80,7 @@ public class ModelDescriptionConstants {
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
     public static final String IGNORED = "ignored";
+    public static final String INCLUDE = "include";
     public static final String INCLUDES = "includes";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INET_ADDRESS = "inet-address";
