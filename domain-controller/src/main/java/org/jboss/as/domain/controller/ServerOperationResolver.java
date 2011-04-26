@@ -5,6 +5,7 @@ package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -397,7 +398,7 @@ public class ServerOperationResolver {
                     // The op is missing the runtime-name and hash values that the server will need
                     ModelNode domainDeployment = domain.get(DEPLOYMENT, address.getElement(1).getValue());
                     serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
-                    serverOp.get(HASH).set(domainDeployment.get(HASH));
+                    serverOp.get(CONTENT).get(0).get(HASH).set(domainDeployment.require(CONTENT).require(0).require(HASH).asBytes());
                 }
                 PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());

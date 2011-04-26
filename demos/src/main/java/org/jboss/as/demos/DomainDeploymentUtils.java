@@ -21,8 +21,22 @@
  */
 package org.jboss.as.demos;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,22 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>domain controller</b>
@@ -180,10 +179,12 @@ public class DomainDeploymentUtils implements Closeable {
             return result.get("result");
         }
         else if (result.hasDefined("failure-description")) {
+            System.out.println(op.getOperation());
             System.out.println(result);
             throw new RuntimeException(result.get("failure-description").toString());
         }
         else if (result.hasDefined("domain-failure-description")) {
+            System.out.println(op);
             System.out.println(result);
             throw new RuntimeException(result.get("domain-failure-description").toString());
         }
@@ -260,7 +261,7 @@ public class DomainDeploymentUtils implements Closeable {
                 ModelNode add = steps.add();
                 add.get("operation").set("add");
                 add.get("address").add("deployment", archiveName);
-                add.get("input-stream-index").set(index);
+                add.get("content").get(0).get("input-stream-index").set(index);
                 ModelNode mainAdd = steps.add();
                 mainAdd.get("operation").set("add");
                 mainAdd.get("address").add("server-group", "main-server-group");
