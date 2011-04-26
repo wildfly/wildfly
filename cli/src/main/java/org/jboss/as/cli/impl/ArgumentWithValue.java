@@ -43,6 +43,10 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
         this(false, valueCompleter, -1, names);
     }
 
+    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, String... names) {
+        this(required, valueCompleter, -1, names);
+    }
+
     public ArgumentWithValue(boolean required, String... names) {
         this(required, -1, names);
     }

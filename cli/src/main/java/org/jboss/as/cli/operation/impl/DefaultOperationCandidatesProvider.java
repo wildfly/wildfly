@@ -96,38 +96,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
      */
     @Override
     public List<String> getNodeTypes(OperationRequestAddress prefix) {
-
-        ModelControllerClient client = ctx.getModelControllerClient();
-        if(client == null) {
-            return Collections.emptyList();
-        }
-
-        if(prefix.endsOnType()) {
-            throw new IllegalArgumentException("The prefix isn't expected to end on a type.");
-        }
-
-        ModelNode request;
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(prefix);
-        try {
-            builder.operationName("read-children-types");
-            request = builder.buildRequest();
-        } catch (OperationFormatException e1) {
-            throw new IllegalStateException("Failed to build operation", e1);
-        }
-
-        List<String> result;
-        try {
-            ModelNode outcome = client.execute(request);
-            if (!Util.isSuccess(outcome)) {
-                // TODO logging... exception?
-                result = Collections.emptyList();
-            } else {
-                result = Util.getList(outcome);
-            }
-        } catch (Exception e) {
-            result = Collections.emptyList();
-        }
-        return result;
+        return Util.getNodeTypes(ctx.getModelControllerClient(), prefix);
     }
 
     @Override

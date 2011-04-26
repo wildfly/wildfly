@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.handlers;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -47,6 +48,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue path;
     private final ArgumentWithoutValue name;
     private final ArgumentWithoutValue rtName;
+    private final ArgumentWithValue serverGroups;
 
     public DeployHandler() {
         super("deploy", true);
@@ -72,6 +74,10 @@ public class DeployHandler extends BatchModeCommandHandler {
         rtName = new ArgumentWithValue("--runtime-name");
         rtName.addRequiredPreceding(path);
         argsCompleter.addArgument(rtName);
+
+        serverGroups = new ArgumentWithValue(true, /* TODO value completer, */"--server-groups");
+        serverGroups.addRequiredPreceding(path);
+        argsCompleter.addArgument(serverGroups);
     }
 
     @Override
@@ -90,7 +96,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         try {
             path = this.path.getValue(args);
         } catch(IllegalArgumentException e) {
-            ctx.printLine("The path argument is missing");
+            ctx.printLine("The path argument is missing.");
             return;
         }
         File f = new File(path);
@@ -147,6 +153,19 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         } else {
 
+            final String[] serverGroups;
+            if (ctx.isDomainMode()) {
+                try {
+                    String serverGroupsStr = this.serverGroups.getValue(args);
+                    serverGroups = serverGroupsStr.split(",");
+                } catch (IllegalArgumentException e) {
+                    ctx.printLine("--server-groups is missing");
+                    return;
+                }
+            } else {
+                serverGroups = null;
+            }
+
             DefaultOperationRequestBuilder builder;
 
             ModelNode result;
@@ -179,17 +198,41 @@ public class DeployHandler extends BatchModeCommandHandler {
                 return;
             }
 
+            final ModelNode request;
             // deploy
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("deploy");
-            builder.addNode("deployment", name);
+            if (ctx.isDomainMode()) {
+                request = new ModelNode();
+                request.get("operation").set("composite");
+                request.get("address").setEmptyList();
+                ModelNode steps = request.get("steps");
+
+                for(String serverGroup : serverGroups) {
+                    steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+                }
+
+                for(String serverGroup : serverGroups) {
+                    steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
+                }
+
+            } else {
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName("deploy");
+                builder.addNode("deployment", name);
+                try {
+                    request = builder.buildRequest();
+                } catch (Exception e) {
+                    ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+                    return;
+                }
+            }
+
             try {
-                ModelNode request = builder.buildRequest();
                 result = client.execute(request);
             } catch (Exception e) {
                 ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
                 return;
             }
+
             if (!Util.isSuccess(result)) {
                 ctx.printLine(Util.getFailureDescription(result));
                 return;
@@ -225,7 +268,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         }
 
         if(Util.isDeployed(name, ctx.getModelControllerClient())) {
-            if(args.hasArgument("f")) {
+            if(force.isPresent(args)) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
                 // replace
@@ -242,6 +285,18 @@ public class DeployHandler extends BatchModeCommandHandler {
             } else {
                 throw new OperationFormatException("'" + name + "' is already deployed (use -f to force re-deploy).");
             }
+        }
+
+        final String[] serverGroups;
+        if (ctx.isDomainMode()) {
+            try {
+                String serverGroupsStr = this.serverGroups.getValue(args);
+                serverGroups = serverGroupsStr.split(",");
+            } catch (IllegalArgumentException e) {
+                throw new OperationFormatException("--server-groups is missing");
+            }
+        } else {
+            serverGroups = null;
         }
 
         ModelNode composite = new ModelNode();
@@ -264,10 +319,19 @@ public class DeployHandler extends BatchModeCommandHandler {
         steps.add(builder.buildRequest());
 
         // deploy
-        builder = new DefaultOperationRequestBuilder();
-        builder.setOperationName("deploy");
-        builder.addNode("deployment", name);
-        steps.add(builder.buildRequest());
+        if (ctx.isDomainMode()) {
+            for (String serverGroup : serverGroups) {
+                steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+            }
+            for (String serverGroup : serverGroups) {
+                steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
+            }
+        } else {
+            builder = new DefaultOperationRequestBuilder();
+            builder.setOperationName("deploy");
+            builder.addNode("deployment", name);
+            steps.add(builder.buildRequest());
+        }
 
         return composite;
     }

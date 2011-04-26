@@ -204,4 +204,11 @@ public interface CommandContext {
      * @return  the default command line completer.
      */
     CommandLineCompleter getDefaultCommandCompleter();
+
+    /**
+     * Indicates whether the CLI is in the domain mode or standalone one (assuming established
+     * connection to the controller).
+     * @return  true if the CLI is connected to the domain controller, otherwise false.
+     */
+    boolean isDomainMode();
 }

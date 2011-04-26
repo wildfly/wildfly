@@ -21,11 +21,16 @@
  */
 package org.jboss.as.cli;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -125,6 +130,39 @@ public class Util {
         return Collections.emptyList();
     }
 
+    public static List<String> getNodeTypes(ModelControllerClient client, OperationRequestAddress address) {
+        if(client == null) {
+            return Collections.emptyList();
+        }
+
+        if(address.endsOnType()) {
+            throw new IllegalArgumentException("The prefix isn't expected to end on a type.");
+        }
+
+        ModelNode request;
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(address);
+        try {
+            builder.operationName("read-children-types");
+            request = builder.buildRequest();
+        } catch (OperationFormatException e1) {
+            throw new IllegalStateException("Failed to build operation", e1);
+        }
+
+        List<String> result;
+        try {
+            ModelNode outcome = client.execute(request);
+            if (!Util.isSuccess(outcome)) {
+                // TODO logging... exception?
+                result = Collections.emptyList();
+            } else {
+                result = Util.getList(outcome);
+            }
+        } catch (Exception e) {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
     public static List<String> getJmsResources(ModelControllerClient client, String type) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
@@ -162,5 +200,15 @@ public class Util {
     public static boolean isConnectionFactory(ModelControllerClient client, String name) {
         List<String> cf = getJmsResources(client, "connection-factory");
         return cf.contains(name);
+    }
+
+    public static ModelNode configureDeploymentOperation(String operationName, String uniqueName, String serverGroup) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(operationName);
+        if (serverGroup != null) {
+            op.get(OP_ADDR).add("server-group", serverGroup);
+        }
+        op.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
+        return op;
     }
 }

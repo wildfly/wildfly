@@ -233,4 +233,10 @@ public class MockCommandContext implements CommandContext {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public boolean isDomainMode() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

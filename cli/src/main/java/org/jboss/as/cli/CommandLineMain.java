@@ -350,6 +350,8 @@ public class CommandLineMain {
         /** parsed command arguments */
         private DefaultParsedArguments parsedArgs = new DefaultParsedArguments();
 
+        /** domain or standalone mode*/
+        private boolean domainMode;
         /** the controller client */
         private ModelControllerClient client;
         /** the default controller host */
@@ -478,10 +480,19 @@ public class CommandLineMain {
                 if(this.client != null) {
                     disconnectController();
                 }
-                printLine("Connected to " + host + ":" + port);
-                client = newClient;
-                this.controllerHost = host;
-                this.controllerPort = port;
+
+                List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
+                if (!nodeTypes.isEmpty()) {
+                    domainMode = nodeTypes.contains("server-group");
+                    printLine("Connected to "
+                            + (domainMode ? "domain controller at " : "standalone controller at ")
+                            + host + ":" + port);
+                    client = newClient;
+                    this.controllerHost = host;
+                    this.controllerPort = port;
+                } else {
+                    printLine("The controller is not available at " + host + ":" + port);
+                }
             } catch (UnknownHostException e) {
                 printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }
@@ -495,6 +506,7 @@ public class CommandLineMain {
                 client = null;
                 this.controllerHost = null;
                 this.controllerPort = -1;
+                domainMode = false;
             }
         }
 
@@ -540,30 +552,6 @@ public class CommandLineMain {
         @Override
         public CommandHistory getHistory() {
             return history;
-        }
-
-        private class HistoryImpl implements CommandHistory {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public List<String> asList() {
-                return console.getHistory().getHistoryList();
-            }
-
-            @Override
-            public boolean isUseHistory() {
-                return console.getUseHistory();
-            }
-
-            @Override
-            public void setUseHistory(boolean useHistory) {
-                console.setUseHistory(useHistory);
-            }
-
-            @Override
-            public void clear() {
-                console.getHistory().clear();
-            }
         }
 
         @Override
@@ -655,6 +643,35 @@ public class CommandLineMain {
         @Override
         public ParsedArguments getParsedArguments() {
             return parsedArgs;
+        }
+
+        @Override
+        public boolean isDomainMode() {
+            return domainMode;
+        }
+
+        private class HistoryImpl implements CommandHistory {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public List<String> asList() {
+                return console.getHistory().getHistoryList();
+            }
+
+            @Override
+            public boolean isUseHistory() {
+                return console.getUseHistory();
+            }
+
+            @Override
+            public void setUseHistory(boolean useHistory) {
+                console.setUseHistory(useHistory);
+            }
+
+            @Override
+            public void clear() {
+                console.getHistory().clear();
+            }
         }
     }
 }
