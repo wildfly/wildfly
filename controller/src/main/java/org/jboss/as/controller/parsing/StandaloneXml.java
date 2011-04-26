@@ -176,7 +176,7 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseServerDeployments(reader, address, list);
+            parseDeployments(reader, address, list, true);
             element = nextElement(reader);
         }
         if (element != null) {
@@ -289,82 +289,6 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    private void parseServerDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        requireNoAttributes(reader);
-
-        final Set<String> names = new HashSet<String>();
-
-        while (reader.nextTag() != END_ELEMENT) {
-            // Handle attributes
-            String uniqueName = null;
-            String runtimeName = null;
-            String startInput = null;
-            final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
-                final String value = reader.getAttributeValue(i);
-                if (!isNoNamespaceAttribute(reader, i)) {
-                    throw unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case NAME: {
-                            if (!names.add(value)) {
-                                throw duplicateNamedElement(reader, value);
-                            }
-                            uniqueName = value;
-                            break;
-                        }
-                        case RUNTIME_NAME: {
-                            runtimeName = value;
-                            break;
-                        }
-                        case ENABLED: {
-                            startInput = value;
-                            break;
-                        }
-                        default:
-                            throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            if (uniqueName == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-            if (runtimeName == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
-            }
-            final boolean enabled = startInput == null ? true : Boolean.parseBoolean(startInput);
-
-            final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
-            final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
-
-            // Handle elements
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-                    throw unexpectedElement(reader);
-                }
-                final Element element = Element.forName(reader.getLocalName());
-                switch (element) {
-                    case CONTENT:
-                        parseContentType(reader, deploymentAdd);
-                        break;
-                    case FS_ARCHIVE:
-                        parseFSBaseType(reader, deploymentAdd, true);
-                        break;
-                    case FS_EXPLODED:
-                        parseFSBaseType(reader, deploymentAdd, false);
-                        break;
-                    default:
-                        throw unexpectedElement(reader);
-                }
-            }
-
-            deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
-            deploymentAdd.get(ENABLED).set(enabled);
-            list.add(deploymentAdd);
-        }
-    }
-
     private void parseServerProfile(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         // Attributes
         // FIXME The other parser actually allows a name - we just ignore it for now
@@ -460,24 +384,6 @@ public class StandaloneXml extends CommonXml {
 
         writer.writeEndElement();
         writer.writeEndDocument();
-    }
-
-    private static void writeContentItem(final XMLExtendedStreamWriter writer, final ModelNode contentItem) throws XMLStreamException {
-        if (contentItem.has(HASH)) {
-            writeElement(writer, Element.CONTENT);
-            writeAttribute(writer, Attribute.SHA1, HashUtil.bytesToHexString(contentItem.require(HASH).asBytes()));
-            writer.writeEndElement();
-        } else {
-            if (contentItem.require(ARCHIVE).asBoolean()) {
-                writeElement(writer, Element.FS_ARCHIVE);
-            } else {
-                writeElement(writer, Element.FS_EXPLODED);
-            }
-            writeAttribute(writer, Attribute.PATH, contentItem.require(PATH).asString());
-            if (contentItem.has(RELATIVE_TO))
-                writeAttribute(writer, Attribute.RELATIVE_TO, contentItem.require(RELATIVE_TO).asString());
-            writer.writeEndElement();
-        }
     }
 
     private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode)

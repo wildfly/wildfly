@@ -24,6 +24,7 @@ package org.jboss.as.controller.client.helpers.domain.impl;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_DEPLOY_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_FULL_REPLACE_OPERATION;
@@ -156,7 +157,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
                     // We need to add to the domain
                     ModelNode step = configureDeploymentOperation(ADD, uniqueName, null);
                     step.get(RUNTIME_NAME).set(action.getNewContentFileName());
-                    step.get("hash").set(action.getNewContentHash());
+                    step.get(CONTENT).get(0).get("hash").set(action.getNewContentHash());
                     actionSteps.add(step);
                 }
                 for (String group : serverGroups) {
@@ -178,7 +179,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
                 step.get(OP_ADDR).setEmptyList();
                 step.get(NAME).set(uniqueName);
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
-                step.get("hash").set(action.getNewContentHash());
+                step.get(CONTENT).get(0).get("hash").set(action.getNewContentHash());
                 actionSteps.add(step);
                 break;
             }

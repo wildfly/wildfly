@@ -20,6 +20,7 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -71,6 +73,7 @@ import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.deployment.DeploymentHandlerUtil;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -428,13 +431,21 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 ModelNode details = deployment.getValue();
 
                 // Make sure we have a copy of the deployment in the local repo
-                byte[] hash = details.require(HASH).asBytes();
-                domainController.getFileRepository().getDeploymentFiles(hash);
+
+                final byte[] hash;
+                // clone it, so we can modify it to our own content
+                final ModelNode content = details.require(CONTENT).clone();
+                // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
+                final ModelNode contentItemNode = content.require(0);
+                if (contentItemNode.hasDefined(HASH)) {
+                    hash = contentItemNode.require(HASH).asBytes();
+                    domainController.getFileRepository().getDeploymentFiles(hash);
+                }
 
                 PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name));
                 ModelNode addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
                 addOp.get(RUNTIME_NAME).set(details.get(RUNTIME_NAME));
-                addOp.get(HASH).set(hash);
+                addOp.get(CONTENT).set(content);
                 addOp.get(ENABLED).set(!details.hasDefined(ENABLED) || details.get(ENABLED).asBoolean());
 
                 updates.add(addOp);

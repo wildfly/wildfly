@@ -244,6 +244,6 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     private static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
         // TODO: implement overlays
         if (content.asList().size() != 1)
-            throw createFailureException("Only 1 piece of content is current supported (JBAS-9020)");
+            throw createFailureException("Only 1 piece of content is current supported (AS7-431");
     }
 }

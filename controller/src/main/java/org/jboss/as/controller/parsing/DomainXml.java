@@ -199,7 +199,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, list);
+            parseDeployments(reader, address, list, false);
             element = nextElement(reader);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -384,7 +384,7 @@ public class DomainXml extends CommonXml {
                                     throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
                                 }
                                 sawDeployments = true;
-                                parseDeployments(reader, groupAddress, list);
+                                parseDeployments(reader, groupAddress, list, true);
                                 break;
                             }
                             case SYSTEM_PROPERTIES: {
@@ -400,81 +400,6 @@ public class DomainXml extends CommonXml {
                         throw ParseUtils.unexpectedElement(reader);
                 }
             }
-        }
-    }
-
-    void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        requireNoAttributes(reader);
-
-        final Set<String> names = new HashSet<String>();
-
-        while (reader.nextTag() != END_ELEMENT) {
-            // Handle attributes
-            String uniqueName = null;
-            String runtimeName = null;
-            byte[] hash = null;
-            String enabled = null;
-            final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
-                final String value = reader.getAttributeValue(i);
-                if (!isNoNamespaceAttribute(reader, i)) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                } else {
-                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                    switch (attribute) {
-                        case NAME: {
-                            if (!names.add(value)) {
-                                throw ParseUtils.duplicateNamedElement(reader, value);
-                            }
-                            uniqueName = value;
-                            break;
-                        }
-                        case RUNTIME_NAME: {
-                            runtimeName = value;
-                            break;
-                        }
-                        case SHA1: {
-                            try {
-                                hash = HashUtil.hexStringToByteArray(value);
-                            }
-                            catch (final Exception e) {
-                               throw new XMLStreamException("Value " + value +
-                                       " for attribute " + attribute.getLocalName() +
-                                       " does not represent a properly hex-encoded SHA1 hash",
-                                       reader.getLocation(), e);
-                            }
-                            break;
-                        }
-                        case ENABLED: {
-                            enabled = value;
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            if (uniqueName == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-            if (runtimeName == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
-            }
-            if (hash == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
-            }
-            final boolean toStart = enabled == null ? true : Boolean.parseBoolean(enabled);
-
-            // Handle elements
-            ParseUtils.requireNoContent(reader);
-
-            final ModelNode deploymentAdd = new ModelNode();
-            deploymentAdd.get(OP).set(ADD);
-            deploymentAdd.get(OP_ADDR).set(address).add(DEPLOYMENT, uniqueName);
-            deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
-            deploymentAdd.get(HASH).set(hash);
-            deploymentAdd.get(ENABLED).set(toStart);
-            list.add(deploymentAdd);
         }
     }
 
@@ -581,12 +506,6 @@ public class DomainXml extends CommonXml {
         writer.writeEndElement();
     }
 
-    private static void writeContentItem(final XMLExtendedStreamWriter writer, final ModelNode contentItem) throws XMLStreamException {
-        writeElement(writer, Element.CONTENT);
-        writeAttribute(writer, Attribute.SHA1, HashUtil.bytesToHexString(contentItem.require(HASH).asBytes()));
-        writer.writeEndElement();
-    }
-
     private void writeDomainDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
 
         final Set<String> deploymentNames = modelNode.keys();
@@ -598,11 +517,6 @@ public class DomainXml extends CommonXml {
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
                 writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                // TODO: this is just for deployments of server-group
-                if (deployment.has(ENABLED)) {
-                    final boolean enabled = deployment.get(ENABLED).asBoolean();
-                    writeAttribute(writer, Attribute.ENABLED, Boolean.toString(enabled));
-                }
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);

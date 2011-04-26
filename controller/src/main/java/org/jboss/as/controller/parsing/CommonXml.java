@@ -61,6 +61,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
@@ -83,12 +85,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -303,6 +307,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 default: throw unexpectedAttribute(reader, i);
             }
         }
+        // Handle elements
+        requireNoContent(reader);
     }
 
     protected void parsePaths(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean requirePath) throws XMLStreamException {
@@ -1098,6 +1104,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 default: throw unexpectedAttribute(reader, i);
             }
         }
+        // Handle elements
+        requireNoContent(reader);
     }
 
     /**
@@ -1350,6 +1358,89 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         updates.add(binding);
         return name;
+    }
+
+    protected void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final boolean allowEnabled) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        final Set<String> names = new HashSet<String>();
+
+        while (reader.nextTag() != END_ELEMENT) {
+            // Handle attributes
+            String uniqueName = null;
+            String runtimeName = null;
+            String startInput = null;
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i ++) {
+                final String value = reader.getAttributeValue(i);
+                if (!isNoNamespaceAttribute(reader, i)) {
+                    throw unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            if (!names.add(value)) {
+                                throw duplicateNamedElement(reader, value);
+                            }
+                            uniqueName = value;
+                            break;
+                        }
+                        case RUNTIME_NAME: {
+                            runtimeName = value;
+                            break;
+                        }
+                        case ENABLED: {
+                            if (allowEnabled) {
+                                startInput = value;
+                                break;
+                            }
+                            else {
+                                throw unexpectedAttribute(reader, i);
+                            }
+                        }
+                        default:
+                            throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if (uniqueName == null) {
+                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+            if (runtimeName == null) {
+                throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+            }
+            final boolean enabled = startInput == null ? true : Boolean.parseBoolean(startInput);
+
+            final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
+            final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
+
+            // Handle elements
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+                    throw unexpectedElement(reader);
+                }
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case CONTENT:
+                        parseContentType(reader, deploymentAdd);
+                        break;
+                    case FS_ARCHIVE:
+                        parseFSBaseType(reader, deploymentAdd, true);
+                        break;
+                    case FS_EXPLODED:
+                        parseFSBaseType(reader, deploymentAdd, false);
+                        break;
+                    default:
+                        throw unexpectedElement(reader);
+                }
+            }
+
+            deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
+            if (allowEnabled) {
+                deploymentAdd.get(ENABLED).set(enabled);
+            }
+            list.add(deploymentAdd);
+        }
     }
 
     protected void writeInterfaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
@@ -1610,6 +1701,24 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             writeAttribute(writer, Attribute.MAX_THREADS, protocol.get(MAX_THREADS).asString());
         }
         writer.writeEndElement();
+    }
+
+    protected static void writeContentItem(final XMLExtendedStreamWriter writer, final ModelNode contentItem) throws XMLStreamException {
+        if (contentItem.has(HASH)) {
+            writeElement(writer, Element.CONTENT);
+            writeAttribute(writer, Attribute.SHA1, HashUtil.bytesToHexString(contentItem.require(HASH).asBytes()));
+            writer.writeEndElement();
+        } else {
+            if (contentItem.require(ARCHIVE).asBoolean()) {
+                writeElement(writer, Element.FS_ARCHIVE);
+            } else {
+                writeElement(writer, Element.FS_EXPLODED);
+            }
+            writeAttribute(writer, Attribute.PATH, contentItem.require(PATH).asString());
+            if (contentItem.has(RELATIVE_TO))
+                writeAttribute(writer, Attribute.RELATIVE_TO, contentItem.require(RELATIVE_TO).asString());
+            writer.writeEndElement();
+        }
     }
 
 
