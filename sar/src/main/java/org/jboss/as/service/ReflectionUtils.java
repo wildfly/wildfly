@@ -75,12 +75,16 @@ final class ReflectionUtils {
         throw new IllegalStateException("No such set method for property '" + propertyName + "' found on " + classIndex.getIndexedClass());
     }
 
-    static Method getMethod(final ClassReflectionIndex<?> classIndex, final String methodName, final Class<?>[] types) {
+    static Method getMethod(final ClassReflectionIndex<?> classIndex, final String methodName, final Class<?>[] types, final boolean fail) {
         final Collection<Method> methods = classIndex.getMethods(methodName, types);
         if (methods.size() == 1) {
             return methods.iterator().next();
         }
-        throw new IllegalStateException(noSuchMethod(classIndex, methodName, types));
+        if (fail) {
+            throw new IllegalStateException(noSuchMethod(classIndex, methodName, types));
+        } else {
+            return null;
+        }
     }
 
     static Object newInstance(final Constructor<?> constructor, final Object[] args) throws DeploymentUnitProcessingException {
@@ -99,15 +103,16 @@ final class ReflectionUtils {
         }
     }
 
-    private static String noSuchMethod(final ClassReflectionIndex<?> classIndex, String methodName, final Class<?>[] parameterTypes) {
+    private static String noSuchMethod(final ClassReflectionIndex<?> classIndex, final String methodName, final Class<?>[] parameterTypes) {
         StringBuffer message = new StringBuffer();
         message.append("No such method '");
+        message.append(methodName);
         appendParameterList(message, parameterTypes);
         message.append("' found on ").append(classIndex.getIndexedClass());
         return message.toString();
     }
 
-    private static void appendParameterList(StringBuffer stringBuffer, final Class<?>[] parameterTypes) {
+    private static void appendParameterList(final StringBuffer stringBuffer, final Class<?>[] parameterTypes) {
         stringBuffer.append('(');
         if (parameterTypes != null && parameterTypes.length > 0) {
             stringBuffer.append(parameterTypes[0]);

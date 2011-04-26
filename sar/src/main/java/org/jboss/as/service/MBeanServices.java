@@ -22,6 +22,11 @@
 
 package org.jboss.as.service;
 
+import javax.management.MBeanServer;
+
+import org.jboss.as.jmx.MBeanRegistrationService;
+import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,38 +42,32 @@ import org.jboss.msc.value.Value;
  */
 final class MBeanServices {
 
+    private final String mBeanName;
     private final ServiceName createDestroyServiceName;
     private final ServiceName startStopServiceName;
     private final Service<Object> createDestroyService;
     private final Service<Object> startStopService;
     private final ServiceBuilder<?> createDestroyServiceBuilder;
     private final ServiceBuilder<?> startStopServiceBuilder;
+    private final ServiceTarget target;
     private boolean installed;
 
-    MBeanServices(final String mBeanName, final Object mBeanInstance, final ServiceTarget target) {
+    MBeanServices(final String mBeanName, final Object mBeanInstance, final ClassReflectionIndex<?> mBeanClassIndex, final ServiceTarget target) {
         if ((mBeanName == null) || (mBeanInstance == null) || (target == null)) {
             throw new IllegalArgumentException("Parameters must not be null");
         }
-        final Value<Object> constructedValue = new ImmediateValue<Object>(mBeanInstance);
 
-        createDestroyService = new CreateDestroyService<Object>(constructedValue);
+        createDestroyService = new CreateDestroyService(mBeanInstance, mBeanClassIndex);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
 
-        startStopService = new StartStopService<Object>(constructedValue);
+        startStopService = new StartStopService(mBeanInstance, mBeanClassIndex);
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
-    }
 
-    ServiceName getCreateDestroyServiceName() {
-        assertState();
-        return createDestroyServiceName;
-    }
-
-    ServiceName getStartStopServiceName() {
-        assertState();
-        return startStopServiceName;
+        this.mBeanName = mBeanName;
+        this.target = target;
     }
 
     Service<Object> getCreateDestroyService() {
@@ -98,6 +97,14 @@ final class MBeanServices {
         assertState();
         createDestroyServiceBuilder.install();
         startStopServiceBuilder.install();
+
+        // Add service to register the mbean in the mbean server
+        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName);
+        target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
+            .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
+            .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())
+            .install();
+
         installed = true;
     }
 

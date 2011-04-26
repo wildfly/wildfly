@@ -32,10 +32,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.management.MBeanServer;
-
-import org.jboss.as.jmx.MBeanRegistrationService;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -116,7 +112,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final ClassReflectionIndex<?> mBeanClassIndex = index.getClassIndex(mBeanClass);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassIndex, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, target);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassIndex, target);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         if (dependencyConfigs != null) {
@@ -151,13 +147,6 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
 
-        // Add service to register the mbean in the mbean server
-        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName);
-        target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
-            .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
-            .addDependency(mBeanServices.getStartStopServiceName(), Object.class, mbeanRegistrationService.getValueInjector())
-            .install();
-
         // register all mBean related services
         mBeanServices.install();
     }
@@ -188,7 +177,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
             paramTypes.add(attributeTypeValue);
             paramValues.add(new ImmediateValue<Object>(newValue(attributeTypeValue, parameter.getValue())));
         }
-        final Value<Method> methodValue = new ImmediateValue<Method>(ReflectionUtils.getMethod(mBeanClassIndex, methodName, paramTypes.toArray(new Class<?>[0])));
+        final Value<Method> methodValue = new ImmediateValue<Method>(ReflectionUtils.getMethod(mBeanClassIndex, methodName, paramTypes.toArray(new Class<?>[0]), true));
         return cached(new MethodValue<Object>(methodValue, Values.injectedValue(), paramValues));
     }
 
