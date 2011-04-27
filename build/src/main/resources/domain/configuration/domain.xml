@@ -335,6 +335,11 @@
          </socket-binding-group>
     </socket-binding-groups>
 
+    <system-properties>
+        <!-- IPv4 is not required, but setting this helps avoid unintended use of IPv6 -->
+        <property name="java.net.preferIPv4Stack" value="true"/>
+    </system-properties>
+    
     <server-groups>
         <server-group name="main-server-group" profile="default">
             <socket-binding-group ref="standard-sockets"/>
