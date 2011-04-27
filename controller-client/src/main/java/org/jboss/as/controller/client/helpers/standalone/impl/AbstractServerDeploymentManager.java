@@ -116,7 +116,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
                 step.get(NAME).set(uniqueName);
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
                 builder.addInputStream(action.getContentStream());
-                step.get(INPUT_STREAM_INDEX).set(stream++);
+                step.get(CONTENT).get(0).get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }
             case REDEPLOY: {
