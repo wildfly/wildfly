@@ -59,9 +59,13 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
             jvmType.set(operation.get(JVM_TYPE));
         }
 
-        // Create all attributes
-        for (String attr : JVMHandlers.ATTRIBUTES) {
-            subModel.get(attr);
+        // Handle attributes
+        for (final String attr : JVMHandlers.ATTRIBUTES) {
+            if(operation.has(attr)) {
+                subModel.get(attr).set(operation.get(attr));
+            } else {
+                subModel.get(attr);
+            }
         }
 
         resultHandler.handleResultComplete();

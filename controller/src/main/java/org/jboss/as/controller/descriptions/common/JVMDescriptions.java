@@ -86,7 +86,7 @@ public final class JVMDescriptions {
         node.get(CHILDREN, JVM_HEAP, ATTRIBUTES, SIZE).set(ModelType.STRING);
         node.get(CHILDREN, JVM_HEAP, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
         node.get(CHILDREN, JVM_PERMGEN, TYPE).set(ModelType.OBJECT);
-        node.get(CHILDREN, JVM_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.heap"));
+        node.get(CHILDREN, JVM_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen"));
         node.get(CHILDREN, JVM_PERMGEN, ATTRIBUTES, SIZE).set(ModelType.STRING);
         node.get(CHILDREN, JVM_PERMGEN, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
 
@@ -101,6 +101,54 @@ public final class JVMDescriptions {
         node.get(REQUEST_PROPERTIES, TYPE, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, TYPE, DESCRIPTION).set(bundle.getString("jvm.type"));
         node.get(REQUEST_PROPERTIES, TYPE, REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, JVM_AGENT_LIB, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_AGENT_LIB, DESCRIPTION).set(bundle.getString("jvm.agent.lib"));
+        node.get(REQUEST_PROPERTIES, JVM_AGENT_LIB, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_AGENT_PATH, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_AGENT_PATH, DESCRIPTION).set(bundle.getString("jvm.agent.path"));
+        node.get(REQUEST_PROPERTIES, JVM_AGENT_PATH, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, DESCRIPTION).set(bundle.getString("jvm.debug.enabled"));
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.debug.options"));
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_ENV_CLASSPATH_IGNORED, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, JVM_ENV_CLASSPATH_IGNORED, DESCRIPTION).set(bundle.getString("jvm.env.classpath.ignored"));
+        node.get(REQUEST_PROPERTIES, JVM_ENV_CLASSPATH_IGNORED, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_ENV_VARIABLES, TYPE).set(ModelType.LIST);
+        node.get(REQUEST_PROPERTIES, JVM_ENV_VARIABLES, VALUE_TYPE).set(ModelType.PROPERTY);
+        node.get(REQUEST_PROPERTIES, JVM_ENV_VARIABLES, DESCRIPTION).set(bundle.getString("jvm.env.variables"));
+        node.get(REQUEST_PROPERTIES, JVM_ENV_VARIABLES, REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, JVM_JAVA_AGENT, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_JAVA_AGENT, DESCRIPTION).set(bundle.getString("jvm.javaagent"));
+        node.get(REQUEST_PROPERTIES, JVM_JAVA_AGENT, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_JAVA_HOME, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_JAVA_HOME, DESCRIPTION).set(bundle.getString("jvm.java.home"));
+        node.get(REQUEST_PROPERTIES, JVM_JAVA_HOME, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_OPTIONS, TYPE).set(ModelType.LIST);
+        node.get(REQUEST_PROPERTIES, JVM_OPTIONS, VALUE_TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.options"));
+        node.get(REQUEST_PROPERTIES, JVM_OPTIONS, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_STACK, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_STACK, DESCRIPTION).set(bundle.getString("jvm.stack"));
+        node.get(REQUEST_PROPERTIES, JVM_STACK, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_TYPE, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_TYPE, DESCRIPTION).set(bundle.getString("jvm.type"));
+        node.get(REQUEST_PROPERTIES, JVM_TYPE, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_HEAP, TYPE).set(ModelType.OBJECT);
+        node.get(REQUEST_PROPERTIES, JVM_HEAP, DESCRIPTION).set(bundle.getString("jvm.heap"));
+        node.get(REQUEST_PROPERTIES, JVM_HEAP, ATTRIBUTES, SIZE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_HEAP, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_HEAP, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, TYPE).set(ModelType.OBJECT);
+        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, DESCRIPTION).set(bundle.getString("jvm.permgen"));
+        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, ATTRIBUTES, SIZE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, ATTRIBUTES, MAX_SIZE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_PERMGEN, REQUIRED).set(false);
+
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
