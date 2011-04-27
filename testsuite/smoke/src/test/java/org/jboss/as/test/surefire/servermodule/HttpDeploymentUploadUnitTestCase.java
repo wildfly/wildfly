@@ -21,22 +21,11 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
-import org.jboss.as.demos.war.archive.SimpleServlet;
-import org.jboss.as.server.Bootstrap;
-import org.jboss.as.server.EmbeddedStandAloneServerFactory;
-import org.jboss.as.server.Main;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
-import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -46,17 +35,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Collections;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -64,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  *
  * @author Jonathan Pearlin
  */
-public class HttpDeploymentUploadUnitTestCase {
+public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTestCase {
 
     private static final String BOUNDARY_PARAM = "NeAG1QNIHHOyB5joAS7Rox!!";
 
@@ -74,35 +60,9 @@ public class HttpDeploymentUploadUnitTestCase {
 
     private static final String POST_REQUEST_METHOD = "POST";
 
-    private static final String TEST_WAR = "demos/war-example.war";
-
     private static final String BASIC_URL = "http://localhost:9990/domain-api/";
 
     private static final String UPLOAD_URL = BASIC_URL + "add-content";
-
-    private static ServiceContainer container;
-
-    @BeforeClass
-    public static void startServer() throws Exception {
-        EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
-        final ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
-        assertNotNull(serverEnvironment);
-        final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
-        configuration.setServerEnvironment(serverEnvironment);
-        configuration.setModuleLoader(Module.getBootModuleLoader());
-        configuration.setPortOffset(0);
-
-        container = bootstrap.startup(configuration, Collections.<ServiceActivator>emptyList()).get();
-        assertNotNull(container);
-    }
-
-    @AfterClass
-    public static void testServerStartupAndShutDown() throws Exception {
-        container.shutdown();
-        container.awaitTermination();
-        assertTrue(container.isShutdownComplete());
-    }
 
     @Test
     public void testHttpDeploymentUpload() throws Exception {

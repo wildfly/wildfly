@@ -21,58 +21,18 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
-import junit.framework.Assert;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.Bootstrap;
-import org.jboss.as.server.EmbeddedStandAloneServerFactory;
-import org.jboss.as.server.Main;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
-import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerDelegate;
-import javax.management.MBeanServerNotification;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.net.InetAddress;
+
+import junit.framework.Assert;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
 
 /**
  * Here to prove the forked surefire plugin is capable of running
@@ -80,47 +40,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * org.jboss.as.standalone.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class ServerInModuleStartupTestCase {
+public class ServerInModuleStartupTestCase extends AbstractServerInModuleTestCase {
 
-    private static String serverDetails = "";
-    static ServiceContainer container;
-    @BeforeClass
-    public static void startServer() throws Exception {
-
-        EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
-
-        ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
-
-        serverDetails += "AS server details: ";
-        serverDetails += "server homedir = " + serverEnvironment.getHomeDir();
-        serverDetails += ", javaextdirs = " +serverEnvironment.getJavaExtDirs();
-        serverDetails += ", modules_dir = " +serverEnvironment.getModulesDir();
-        serverDetails += ", server_base = " +serverEnvironment.getServerBaseDir();
-        serverDetails += ", server_config_dir = " +serverEnvironment.getServerConfigurationDir();
-        serverDetails += ", server_config_file = " +serverEnvironment.getServerConfigurationFile();
-
-        Assert.assertNotNull(serverEnvironment);
-        final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
-        configuration.setServerEnvironment(serverEnvironment);
-        configuration.setModuleLoader(Module.getBootModuleLoader());
-        configuration.setPortOffset(0);
-
-        container = bootstrap.startup(configuration, Collections.<ServiceActivator>emptyList()).get();
-        Assert.assertNotNull(serverDetails,container);
-    }
-
-    @AfterClass
-    public static void testServerStartupAndShutDown() throws Exception {
-        container.shutdown();
-        container.awaitTermination();
-        Assert.assertTrue(serverDetails, container.isShutdownComplete());
-    }
-
+    /**
+     * Validates that the model can be read in xml form.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testXmlConfigDemo() throws Exception {
+    public void testReadConfigAsXml() throws Exception {
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
@@ -134,8 +63,13 @@ public class ServerInModuleStartupTestCase {
         }
     }
 
+    /**
+     * Validates that all resource and operation descriptions can be generated.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testDescriptionDemo() throws Exception {
+    public void testReadResourceDescription() throws Exception {
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
@@ -156,283 +90,6 @@ public class ServerInModuleStartupTestCase {
             Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {
             StreamUtils.safeClose(client);
-        }
-    }
-
-    @Test
-    public void testDeploymentStreamApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(InetAddress.getByName("localhost"), 9999);
-
-        testDeployments(new DeploymentExecutor() {
-
-            @Override
-            public void initialDeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
-            }
-
-            @Override
-            public void fullReplace() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
-                awaitDeploymentExecution(future);
-            }
-
-            @Override
-            public void undeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
-            }
-        });
-    }
-
-    @Test
-    public void testDeploymentFileApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(InetAddress.getByName("localhost"), 9999);
-        final File dir = new File("target/archives");
-        dir.mkdirs();
-        final File file = new File(dir, "test-deployment.sar");
-        archive.as(ZipExporter.class).exportZip(file, true);
-
-        testDeployments(new DeploymentExecutor() {
-
-            @Override
-            public void initialDeploy() throws IOException{
-                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().add("test-deployment.sar", file).deploy("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
-            }
-
-            @Override
-            public void fullReplace() throws IOException {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().replace("test-deployment.sar", file).build());
-                awaitDeploymentExecution(future);
-            }
-
-            @Override
-            public void undeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().withRollback().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
-                awaitDeploymentExecution(future);
-            }
-        });
-    }
-
-    @Test
-    public void testFilesystemDeployment() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
-        final File dir = new File("target/archives");
-        dir.mkdirs();
-        final File file = new File(dir, "test-deployment.sar");
-        archive.as(ZipExporter.class).exportZip(file, true);
-
-
-        final File deployDir = new File("target", "deployments");
-        cleanFile(deployDir);
-        deployDir.mkdirs();
-        Assert.assertTrue(deployDir.exists());
-
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        ModelNode add = new ModelNode();
-        add.get(OP).set(ADD);
-        ModelNode addr = new ModelNode();
-        addr.add("subsystem", "deployment-scanner");
-        addr.add("scanner", "test");
-        add.get(OP_ADDR).set(addr);
-        add.get("path").set(deployDir.getAbsolutePath());
-        add.get("scan-enabled").set(true);
-        add.get("scan-interval").set(1000);
-
-        ModelNode result = client.execute(add);
-        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.require(ModelDescriptionConstants.OUTCOME).asString());
-
-        try {
-            final File target = new File(deployDir, "test-deployment.sar");
-            final File deployed = new File(deployDir, "test-deployment.sar.deployed");
-            Assert.assertFalse(target.exists());
-
-            testDeployments(new DeploymentExecutor() {
-                @Override
-                public void initialDeploy() throws IOException {
-                    //Copy file to deploy directory
-                    final InputStream in = new BufferedInputStream(new FileInputStream(file));
-                    try {
-                        final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-                        try {
-                            int i = in.read();
-                            while (i != -1) {
-                                out.write(i);
-                                i = in.read();
-                            }
-                        } finally {
-                            StreamUtils.safeClose(out);
-                        }
-                    } finally {
-                        StreamUtils.safeClose(in);
-                    }
-                    // Create the .dodeploy file
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(dodeploy));
-                    try {
-                        out.write("test-deployment.sar".getBytes());
-                    } finally {
-                        StreamUtils.safeClose(out);
-                    }
-                    Assert.assertTrue(dodeploy.exists());
-                }
-
-                @Override
-                public void fullReplace() throws IOException {
-                    // The test is going to call this as soon as the deployment sends a notification
-                    // but often before the scanner has completed the process and deleted the
-                    // .dodpeloy put down by initialDeploy(). So pause a bit to let that complete
-                    // so we don't end up having our own file deleted
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    for (int i = 0; i < 500; i++) {
-                        if (!dodeploy.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-
-                    if (dodeploy.exists()) {
-                        Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
-                    }
-
-                    //Copy file to deploy directory again
-                    initialDeploy();
-                }
-
-                @Override
-                public void undeploy() {
-                    final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
-                    for (int i = 0; i < 500; i++) {
-                        if (!dodeploy.exists() && deployed.exists()) {
-                            break;
-                        }
-                        // Wait for the last action to complete :(
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    }
-                    if (dodeploy.exists() || !deployed.exists()) {
-                        Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
-                    }
-
-                    //Delete file from deploy directory
-                    deployed.delete();
-                }
-            });
-        } finally {
-            try {
-                client.execute(result.get(ModelDescriptionConstants.COMPENSATING_OPERATION));
-            } catch (Exception e) {
-                client.close();
-            }
-        }
-    }
-
-    private void testDeployments(DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-        final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
-        final TestNotificationListener listener = new TestNotificationListener(name);
-        mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
-        try {
-            //Initial deploy
-            deploymentExecutor.initialDeploy();
-            listener.await();
-            Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
-
-            //Full replace
-            listener.reset(2);
-            deploymentExecutor.fullReplace();
-            listener.await();
-            Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
-
-            //Undeploy
-            listener.reset(1);
-            deploymentExecutor.undeploy();
-            listener.await();
-            try {
-                mbeanServer.getMBeanInfo(name);
-                Assert.fail("Should not have found MBean");
-            } catch (InstanceNotFoundException expected) {
-            }
-        } finally {
-            mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
-        }
-
-    }
-
-    private void awaitDeploymentExecution(Future<?> future) {
-        try {
-            future.get(20, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e.getCause());
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private static void cleanFile(File toClean) {
-        if (toClean.isDirectory()) {
-            for (File child : toClean.listFiles())
-                cleanFile(child);
-        }
-        toClean.delete();
-    }
-
-    private interface DeploymentExecutor {
-        void initialDeploy() throws IOException;
-        void fullReplace() throws IOException;
-        void undeploy() throws IOException;
-    }
-
-    private static class TestNotificationListener implements NotificationListener {
-        private final ObjectName name;
-        private volatile CountDownLatch latch = new CountDownLatch(1);
-
-        private TestNotificationListener(ObjectName name) {
-            this.name = name;
-        }
-
-        @Override
-        public void handleNotification(Notification notification, Object handback) {
-            if (notification instanceof MBeanServerNotification == false) {
-                return;
-            }
-
-            MBeanServerNotification mBeanServerNotification = (MBeanServerNotification)notification;
-            if (!name.equals(mBeanServerNotification.getMBeanName())) {
-                return;
-            }
-
-            if (MBeanServerNotification.REGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())){
-                latch.countDown();
-            } else if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())){
-                latch.countDown();
-            }
-        }
-
-        void reset(int i) {
-            latch = new CountDownLatch(i);
-        }
-        void await() throws Exception {
-            if (!latch.await(20, TimeUnit.SECONDS)) {
-                Assert.fail("Timed out waiting for registration/unregistration");
-            }
         }
     }
 
