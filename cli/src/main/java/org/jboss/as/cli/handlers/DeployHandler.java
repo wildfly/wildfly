@@ -64,7 +64,7 @@ public class DeployHandler extends BatchModeCommandHandler {
         l.setExclusive(true);
         argsCompleter.addArgument(l);
 
-        path = new ArgumentWithValue(true, FilenameTabCompleter.INSTANCE, 0, "--path");
+        path = new ArgumentWithValue(false, FilenameTabCompleter.INSTANCE, 0, "--path");
         path.addCantAppearAfter(l);
         argsCompleter.addArgument(path);
 
@@ -73,7 +73,8 @@ public class DeployHandler extends BatchModeCommandHandler {
         argsCompleter.addArgument(force);
 
         name = new ArgumentWithValue("--name");
-        name.addRequiredPreceding(path);
+        path.addCantAppearAfter(l);
+        //name.addRequiredPreceding(path);
         argsCompleter.addArgument(name);
 
         rtName = new ArgumentWithValue("--runtime-name");
@@ -89,6 +90,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         argsCompleter.addArgument(allServerGroups);
         allServerGroups.addRequiredPreceding(path);
+        allServerGroups.addRequiredPreceding(name);
 
         serverGroups = new ArgumentWithValue(false, new CommandLineCompleter() {
             @Override
@@ -136,8 +138,9 @@ public class DeployHandler extends BatchModeCommandHandler {
                 return ctx.isDomainMode();
             }
         };
-        serverGroups.addRequiredPreceding(path);
         argsCompleter.addArgument(serverGroups);
+        serverGroups.addRequiredPreceding(path);
+        serverGroups.addRequiredPreceding(name);
 
         serverGroups.addCantAppearAfter(allServerGroups);
         allServerGroups.addCantAppearAfter(serverGroups);
@@ -155,27 +158,30 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         }
 
-        final String path;
-        try {
-            path = this.path.getValue(args);
-        } catch(IllegalArgumentException e) {
-            ctx.printLine("The path argument is missing.");
-            return;
-        }
-        File f = new File(path);
-        if(!f.exists()) {
-            ctx.printLine("Path " + f.getAbsolutePath() + " doesn't exist.");
-            return;
+        final String path = this.path.getValue(args);
+        final File f;
+        if(path != null) {
+            f = new File(path);
+            if(!f.exists()) {
+                ctx.printLine("Path " + f.getAbsolutePath() + " doesn't exist.");
+                return;
+            }
+        } else {
+            f = null;
         }
 
         String name = this.name.getValue(args);
         if(name == null) {
+            if(f == null) {
+                ctx.printLine("Either path or --name is requied.");
+                return;
+            }
             name = f.getName();
         }
 
         String runtimeName = rtName.getValue(args);
 
-        if(Util.isDeployed(name, client)) {
+        if(Util.isDeployed(name, client) && f != null) {
             if(force.isPresent(args)) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
@@ -242,31 +248,32 @@ public class DeployHandler extends BatchModeCommandHandler {
             ModelNode result;
 
             // add
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("add");
-            builder.addNode("deployment", name);
-            if (runtimeName != null) {
-                builder.addProperty("runtime-name", runtimeName);
-            }
+            if (f != null) {
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName("add");
+                builder.addNode("deployment", name);
+                if (runtimeName != null) {
+                    builder.addProperty("runtime-name", runtimeName);
+                }
 
-            FileInputStream is = null;
-            try {
-                is = new FileInputStream(f);
-                ModelNode request = builder.buildRequest();
-                OperationBuilder op = OperationBuilder.Factory.create(request);
-                op.addInputStream(is);
-                request.get("input-stream-index").set(0);
-                result = client.execute(op.build());
-            } catch (Exception e) {
-                ctx.printLine("Failed to add the deployment content to the repository: "
-                        + e.getLocalizedMessage());
-                return;
-            } finally {
-                StreamUtils.safeClose(is);
-            }
-            if (!Util.isSuccess(result)) {
-                ctx.printLine(Util.getFailureDescription(result));
-                return;
+                FileInputStream is = null;
+                try {
+                    is = new FileInputStream(f);
+                    ModelNode request = builder.buildRequest();
+                    OperationBuilder op = OperationBuilder.Factory.create(request);
+                    op.addInputStream(is);
+                    request.get("input-stream-index").set(0);
+                    result = client.execute(op.build());
+                } catch (Exception e) {
+                    ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
+                    return;
+                } finally {
+                    StreamUtils.safeClose(is);
+                }
+                if (!Util.isSuccess(result)) {
+                    ctx.printLine(Util.getFailureDescription(result));
+                    return;
+                }
             }
 
             final ModelNode request;

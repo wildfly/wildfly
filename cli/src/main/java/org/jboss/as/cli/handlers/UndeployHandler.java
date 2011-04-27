@@ -50,6 +50,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue name;
     private final ArgumentWithValue serverGroups;
     private final ArgumentWithoutValue allServerGroups;
+    private final ArgumentWithoutValue keepContent;
 
     public UndeployHandler() {
         super("undeploy", true);
@@ -107,7 +108,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         argsCompleter.addArgument(allServerGroups);
         allServerGroups.addRequiredPreceding(name);
 
-        serverGroups = new ArgumentWithValue(true, new CommandLineCompleter() {
+        serverGroups = new ArgumentWithValue(false, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
@@ -158,6 +159,10 @@ public class UndeployHandler extends BatchModeCommandHandler {
 
         serverGroups.addCantAppearAfter(allServerGroups);
         allServerGroups.addCantAppearAfter(serverGroups);
+
+        keepContent = new ArgumentWithoutValue("--keep-content");
+        argsCompleter.addArgument(keepContent);
+        keepContent.addRequiredPreceding(name);
     }
 
     @Override
@@ -221,9 +226,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
             if(allServerGroups.isPresent(args)) {
                 serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
             } else {
-                String serverGroupsStr = this.serverGroups.getValue(args);
+                final String serverGroupsStr = this.serverGroups.getValue(args);
                 if(serverGroupsStr == null) {
-                    new OperationFormatException("Either --all-server-groups or --server-groups must be specified.");
+                    throw new OperationFormatException("Either --all-server-groups or --server-groups must be specified.");
                 }
                 serverGroups = Arrays.asList(serverGroupsStr.split(","));
             }
@@ -248,10 +253,12 @@ public class UndeployHandler extends BatchModeCommandHandler {
             steps.add(builder.buildRequest());
         }
 
-        builder = new DefaultOperationRequestBuilder();
-        builder.setOperationName("remove");
-        builder.addNode("deployment", name);
-        steps.add(builder.buildRequest());
+        if (!keepContent.isPresent(args)) {
+            builder = new DefaultOperationRequestBuilder();
+            builder.setOperationName("remove");
+            builder.addNode("deployment", name);
+            steps.add(builder.buildRequest());
+        }
         return composite;
     }
 }

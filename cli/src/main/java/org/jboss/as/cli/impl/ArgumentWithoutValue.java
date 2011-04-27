@@ -41,7 +41,7 @@ public class ArgumentWithoutValue implements CommandArgument {
     protected final String defaultName;
     protected final String[] names;
 
-    protected CommandArgument requiredPreceding;
+    protected List<CommandArgument> requiredPreceding;
     protected List<CommandArgument> cantAppearAfter = Collections.emptyList();
     protected boolean exclusive;
 
@@ -69,10 +69,14 @@ public class ArgumentWithoutValue implements CommandArgument {
         if(arg == null) {
             throw new IllegalArgumentException("The argument is null.");
         }
-        if(requiredPreceding != null) {
-            throw new IllegalStateException("Currently supports only one required preceding arg.");
+        if(requiredPreceding == null) {
+            requiredPreceding = Collections.singletonList(arg);
+            return;
         }
-        requiredPreceding = arg;
+        if(requiredPreceding.size() == 1) {
+            requiredPreceding = new ArrayList<CommandArgument>(requiredPreceding);
+        }
+        requiredPreceding.add(arg);
     }
 
     public void addCantAppearAfter(CommandArgument arg) {
@@ -146,7 +150,12 @@ public class ArgumentWithoutValue implements CommandArgument {
         }
 
         if(requiredPreceding != null) {
-            return requiredPreceding.isPresent(args);
+            for(CommandArgument arg : requiredPreceding) {
+                if(arg.isPresent(args)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         return true;
