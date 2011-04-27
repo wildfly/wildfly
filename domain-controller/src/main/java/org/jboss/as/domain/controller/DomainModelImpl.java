@@ -28,9 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -1025,7 +1023,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
         @Override
         protected OperationResult executeStep(final ModelNode step, final ResultHandler stepResultHandler) {
-            boolean forHost = isOperationForHost(operation.getOperation());
+            boolean forHost = isOperationForHost(step);
             return DomainModelImpl.this.execute(operation.clone(step), stepResultHandler, getOperationControllerContext(forHost), resolve);
         }
 
