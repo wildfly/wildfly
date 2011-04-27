@@ -26,9 +26,9 @@ import static org.jboss.as.domain.http.server.Constants.MOVED_PERMENANTLY;
 import java.io.IOException;
 import java.net.URI;
 
-import com.sun.net.httpserver.Filter;
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
+import org.jboss.com.sun.net.httpserver.Filter;
+import org.jboss.com.sun.net.httpserver.Headers;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
 
 /**
  * Filter to ensure request to a context have a trailing slash.

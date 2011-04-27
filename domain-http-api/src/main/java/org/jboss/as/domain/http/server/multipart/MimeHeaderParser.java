@@ -22,10 +22,10 @@
 
 package org.jboss.as.domain.http.server.multipart;
 
-import com.sun.net.httpserver.Headers;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.jboss.com.sun.net.httpserver.Headers;
 
 /**
  * Parses MIME headers

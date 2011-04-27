@@ -21,8 +21,8 @@
  */
 package org.jboss.as.domain.http.server;
 
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import org.jboss.com.sun.net.httpserver.HttpHandler;
+import org.jboss.com.sun.net.httpserver.HttpServer;
 
 /**
  * An interface to add a couple of additional lifecycle methods to the HttpHandler interface.

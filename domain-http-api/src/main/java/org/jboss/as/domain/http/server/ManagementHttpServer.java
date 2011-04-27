@@ -21,7 +21,6 @@
  */
 package org.jboss.as.domain.http.server;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
@@ -29,8 +28,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.ModelController;
-
-import com.sun.net.httpserver.HttpServer;
+import org.jboss.com.sun.net.httpserver.HttpServer;
 
 /**
  * The general HTTP server for handling management API requests.
