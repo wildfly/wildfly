@@ -60,6 +60,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private boolean autoDeployZipped;
     private boolean autoDeployExploded;
     private Long deploymentTimeout;
+    private final String relativeTo;
 
     /** The created scanner. */
     private DeploymentScanner scanner;
@@ -88,7 +89,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      */
     public static void addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
             final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout) {
-        final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
+        final DeploymentScannerService service = new DeploymentScannerService(relativeTo, scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
 
@@ -110,8 +111,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             .install();
     }
 
-    DeploymentScannerService(final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
+    DeploymentScannerService(final String relativeTo, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
             final Boolean autoDeployExploded, final Boolean enabled, final Long deploymentTimeout) {
+        this.relativeTo = relativeTo;
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
         this.unit = unit;
         this.autoDeployZipped = autoDeployZipped == null ? true : autoDeployZipped.booleanValue();
@@ -127,7 +129,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         try {
             final String pathName = pathValue.getValue();
 
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(new File(pathName), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);

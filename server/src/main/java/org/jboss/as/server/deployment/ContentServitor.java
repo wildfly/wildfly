@@ -23,6 +23,7 @@ package org.jboss.as.server.deployment;
 
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -40,9 +41,9 @@ class ContentServitor extends AbstractService<VirtualFile> {
         this.hash = hash;
     }
 
-    static void addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final byte[] hash) {
+    static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final byte[] hash) {
         final ContentServitor service = new ContentServitor(hash);
-        serviceTarget.addService(serviceName, service)
+        return serviceTarget.addService(serviceName, service)
             .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryInjectedValue)
             .install();
     }

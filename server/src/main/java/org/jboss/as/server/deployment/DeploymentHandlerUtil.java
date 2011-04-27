@@ -37,6 +37,8 @@ import org.jboss.vfs.VirtualFile;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
+
 /**
  * Utility methods used by operation handlers involved with deployment.
  *
@@ -90,28 +92,43 @@ public class DeploymentHandlerUtil {
             controller.setMode(ServiceController.Mode.ACTIVE);
         } else {
             final ServiceTarget serviceTarget = context.getServiceTarget();
+            final ServiceController<?> previous;
             // TODO: overlay service
             final ServiceName contentsServiceName = deploymentUnitServiceName.append("contents");
             if (contents[0].hash != null)
-                ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash);
+                previous = ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash);
             else {
                 final String path = contents[0].path;
                 final ServiceName pathServiceName = AbstractPathService.pathNameOf(path);
                 final String relativeTo = contents[0].relativeTo;
                 if (relativeTo != null) {
-                    RelativePathService.addService(pathServiceName, path, relativeTo, serviceTarget);
+                    previous = RelativePathService.addService(pathServiceName, path, relativeTo, serviceTarget);
                 } else {
-                    AbsolutePathService.addService(pathServiceName, path, serviceTarget);
+                    previous = AbsolutePathService.addService(pathServiceName, path, serviceTarget);
                 }
-                PathContentServitor.addService(serviceTarget, contentsServiceName, pathServiceName);
+                final ServiceController<VirtualFile> contentServiceController = PathContentServitor.addService(serviceTarget, contentsServiceName, pathServiceName);
+                contentServiceController.addListener(new AbstractServiceListener<VirtualFile>() {
+                    @Override
+                    public void serviceRemoved(ServiceController<? extends VirtualFile> serviceController) {
+                        contentServiceController.removeListener(this);
+                        previous.setMode(REMOVE);
+                    }
+                });
             }
             final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, null);
-            serviceTarget.addService(deploymentUnitServiceName, service)
+            final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
                     .addDependency(contentsServiceName, VirtualFile.class, service.contentsInjector)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            previous.addListener(new AbstractServiceListener<Object>() {
+                @Override
+                public void serviceRemoved(ServiceController<? extends Object> controller) {
+                    controller.removeListener(this);
+                    deploymentUnitController.setMode(REMOVE);
+                }
+            });
         }
         resultHandler.handleResultComplete();
     }
@@ -123,11 +140,6 @@ public class DeploymentHandlerUtil {
             final ServiceController<?> controller = serviceRegistry.getService(serviceName);
             if (controller != null) {
                 controller.addListener(new AbstractServiceListener<Object>() {
-                    @Override
-                    public void listenerAdded(ServiceController<? extends Object> serviceController) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-
                     @Override
                     public void serviceRemoved(ServiceController<? extends Object> serviceController) {
                         controller.removeListener(this);
@@ -178,7 +190,7 @@ public class DeploymentHandlerUtil {
 
     private static void remove(final ServiceRegistry serviceRegistry, final ServiceName serviceName) {
         final ServiceController<?> controller = serviceRegistry.getService(serviceName);
-        controller.setMode(ServiceController.Mode.REMOVE);
+        controller.setMode(REMOVE);
     }
 
     public static void replace(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
@@ -194,7 +206,8 @@ public class DeploymentHandlerUtil {
                         public void run() {
                             deploy(runtimeContext, deploymentUnitName, runtimeName, resultHandler, contents);
                         }
-                    }, runtimeContext.getServiceRegistry(), deploymentUnitServiceName, contentsServiceName);
+                    }, runtimeContext.getServiceRegistry(), deploymentUnitServiceName);
+                    remove(runtimeContext.getServiceRegistry(), contentsServiceName);
                 }
             });
         } else {
@@ -209,7 +222,6 @@ public class DeploymentHandlerUtil {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry();
                     remove(serviceRegistry, deploymentUnitServiceName.append("contents"));
-                    remove(serviceRegistry, deploymentUnitServiceName);
                     resultHandler.handleResultComplete();
                 }
             });

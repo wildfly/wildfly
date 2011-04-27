@@ -27,8 +27,10 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.protocol.StreamUtils;
@@ -36,24 +38,30 @@ import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -64,12 +72,6 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
-    static final ModelNode getOperation(ModelNode address) {
-        return Util.getEmptyOperation(OPERATION_NAME, address);
-    }
-
-    private static final List<String> VALID_DEPLOYMENT_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, HASH, URL);
-
     private final ContentRepository contentRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
@@ -78,10 +80,27 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         this.contentRepository = contentRepository;
         this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        this.validator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
-        this.validator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
-        this.validator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
-        this.validator.registerValidator(URL, new StringLengthValidator(1, true));
+        // TODO: can we force enablement on replace?
+        //this.validator.registerValidator(ENABLED, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        final ParametersValidator contentValidator = new ParametersValidator();
+        // existing managed content
+        contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
+        // existing unmanaged content
+        contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
+        contentValidator.registerValidator(PATH, new ModelTypeValidator(ModelType.STRING, true));
+        contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
+        // content additions
+        contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
+        contentValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
+        contentValidator.registerValidator(URL, new StringLengthValidator(1, true));
+        this.validator.registerValidator(CONTENT, chain(new ListValidator(new ParametersOfValidator(contentValidator)),
+                new AbstractParameterValidator() {
+                    @Override
+                    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                        validateOnePieceOfContent(value);
+                    }
+                }));
+
     }
 
     @Override
@@ -99,29 +118,38 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
 
         String name = operation.require(NAME).asString();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
-        // TODO: JBAS-9020: FIXME
-        byte[] hash;
-        if (tooManyDeploymentParametersDefined(operation)) {
-            throw createFailureException("Only allowed one of the following parameters is allowed %s.", VALID_DEPLOYMENT_PARAMETERS);
-        } else if (operation.hasDefined(HASH)) {
 
-            hash = operation.get(HASH).asBytes();
-            if (!contentRepository.hasContent(hash)) {
+        final byte[] hash;
+        // clone it, so we can modify it to our own content
+        final ModelNode content = operation.require(CONTENT).clone();
+        // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
+        final DeploymentHandlerUtil.ContentItem contentItem;
+        final ModelNode contentItemNode = content.require(0);
+        if (contentItemNode.hasDefined(HASH)) {
+            hash = contentItemNode.require(HASH).asBytes();
+            if (!contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
-            }
-        } else if (hasValidDeploymentParameterDefined(operation)) {
-            InputStream in = getContents(context, operation);
+            contentItem = new DeploymentHandlerUtil.ContentItem(hash);
+        } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
+            InputStream in = getInputStream(context, contentItemNode);
             try {
                 try {
                     hash = contentRepository.addContent(in);
                 } catch (IOException e) {
                     throw createFailureException(e.toString());
                 }
+
             } finally {
                 StreamUtils.safeClose(in);
             }
+            contentItemNode.get(HASH).set(hash);
+            // TODO: remove the content addition stuff?
+            contentItem = new DeploymentHandlerUtil.ContentItem(hash);
         } else {
-            throw createFailureException("None of the following parameters were defined %s.", VALID_DEPLOYMENT_PARAMETERS);
+            final String path = contentItemNode.require(PATH).asString();
+            final String relativeTo = asString(contentItemNode, RELATIVE_TO);
+            final boolean archive = contentItemNode.require(ARCHIVE).asBoolean();
+            contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
         }
 
         ModelNode rootModel = context.getSubModel();
@@ -137,20 +165,19 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         ModelNode deployNode = new ModelNode();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
-        deployNode.get(HASH).set(hash);
+        deployNode.get(CONTENT).set(content);
         deployNode.get(ENABLED).set(start);
 
         deployments.get(name).set(deployNode);
 
         ModelNode compensatingOp = operation.clone();
         compensatingOp.get(RUNTIME_NAME).set(replaceNode.get(RUNTIME_NAME).asString());
-        compensatingOp.get(HASH).set(replaceNode.get(HASH).asBytes());
-        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            operation.remove(INPUT_STREAM_INDEX);
-        }
+        compensatingOp.get(CONTENT).set(replaceNode.require(CONTENT).clone());
+        // the content repo will already have these, note that content should not be empty
+        removeContentAdditions(compensatingOp.require(CONTENT));
 
         if (start) {
-            DeploymentHandlerUtil.replace(context, name, runtimeName, resultHandler, new DeploymentHandlerUtil.ContentItem(hash));
+            DeploymentHandlerUtil.replace(context, name, runtimeName, resultHandler, contentItem);
         } else {
             resultHandler.handleResultComplete();
         }
@@ -158,84 +185,15 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         return new BasicOperationResult(compensatingOp);
     }
 
-
-    private InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
-        InputStream in = null;
-        String message = "";
-        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            if (streamIndex > context.getInputStreams().size() - 1) {
-                IllegalArgumentException e = new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
-                throw createFailureException(e, e.getMessage());
-            }
-            message = "Null stream at index " + streamIndex;
-            in = context.getInputStreams().get(streamIndex);
-        } else if (operation.hasDefined(BYTES)) {
-            message = "Invalid byte stream.";
-            in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
-        } else if (operation.hasDefined(URL)) {
-            final String urlSpec = operation.get(URL).asString();
-            try {
-                message = "Invalid url stream.";
-                in = new URL(urlSpec).openStream();
-            } catch (MalformedURLException e) {
-                throw createFailureException(message);
-            } catch (IOException e) {
-                throw createFailureException(message);
-            }
+    private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {
+        for (final String attributeName : attributeNames) {
+            node.remove(attributeName);
         }
-        if (in == null) {
-            throw createFailureException(message);
+    }
+
+    private static void removeContentAdditions(final ModelNode content) {
+        for (final ModelNode contentItem : content.asList()) {
+            removeAttributes(contentItem, CONTENT_ADDITION_PARAMETERS);
         }
-        return in;
-    }
-
-    /**
-     * Checks to see if a valid deployment parameter has been defined.
-     *
-     * @param operation the operation to check.
-     *
-     * @return {@code true} of the parameter is valid, otherwise {@code false}.
-     */
-    private boolean hasValidDeploymentParameterDefined(ModelNode operation) {
-        for (String s : VALID_DEPLOYMENT_PARAMETERS) {
-            if (operation.hasDefined(s)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks to see if too many deployment parameters have been defined.
-     *
-     * @param operation the operation.
-     *
-     * @return {@code true} if there are too many deployment parameters, otherwise {@code false}.
-     */
-    private boolean tooManyDeploymentParametersDefined(ModelNode operation) {
-        int count = 0;
-        for (String s : VALID_DEPLOYMENT_PARAMETERS) {
-            if (operation.hasDefined(s)) {
-                count++;
-            }
-        }
-        return (count > 1);
-    }
-
-    private OperationFailedException createFailureException(String format, Object... params) {
-        return createFailureException(String.format(format, params));
-    }
-
-    private OperationFailedException createFailureException(Throwable cause, String format, Object... params) {
-        return createFailureException(cause, String.format(format, params));
-    }
-
-    private OperationFailedException createFailureException(String msg) {
-        return new OperationFailedException(new ModelNode().set(msg));
-    }
-
-    private OperationFailedException createFailureException(Throwable cause, String msg) {
-        return new OperationFailedException(cause, new ModelNode().set(msg));
     }
 }

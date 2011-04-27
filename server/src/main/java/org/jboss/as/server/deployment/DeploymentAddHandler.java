@@ -40,13 +40,8 @@ import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -63,6 +58,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
 /**
  * Handles addition of a deployment to the model.
@@ -80,8 +80,6 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         op.get(ENABLED).set(state.get(ENABLED));
         return op;
     }
-
-    private static final List<String> CONTENT_ADDITION_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, URL);
 
     private final ContentRepository contentRepository;
 
@@ -109,10 +107,6 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
                         validateOnePieceOfContent(value);
                     }
                 }));
-    }
-
-    private static String asString(final ModelNode node, final String name) {
-        return node.has(name) ? node.require(name).asString() : null;
     }
 
     @Override
@@ -178,74 +172,5 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));
-    }
-
-    private static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
-        InputStream in = null;
-        String message = "";
-        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            if (streamIndex > context.getInputStreams().size() - 1) {
-                IllegalArgumentException e = new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
-                throw createFailureException(e, e.getMessage());
-            }
-            message = "Null stream at index " + streamIndex;
-            in = context.getInputStreams().get(streamIndex);
-        } else if (operation.hasDefined(BYTES)) {
-            message = "Invalid byte stream.";
-            in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
-        } else if (operation.hasDefined(URL)) {
-            final String urlSpec = operation.get(URL).asString();
-            try {
-                message = "Invalid url stream.";
-                in = new URL(urlSpec).openStream();
-            } catch (MalformedURLException e) {
-                throw createFailureException(message);
-            } catch (IOException e) {
-                throw createFailureException(message);
-            }
-        }
-        if (in == null) {
-            throw createFailureException(message);
-        }
-        return in;
-    }
-
-    /**
-     * Checks to see if a valid deployment parameter has been defined.
-     *
-     * @param operation the operation to check.
-     *
-     * @return {@code true} of the parameter is valid, otherwise {@code false}.
-     */
-    private static boolean hasValidContentAdditionParameterDefined(ModelNode operation) {
-        for (String s : CONTENT_ADDITION_PARAMETERS) {
-            if (operation.hasDefined(s)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static OperationFailedException createFailureException(String format, Object... params) {
-        return createFailureException(String.format(format, params));
-    }
-
-    private static OperationFailedException createFailureException(Throwable cause, String format, Object... params) {
-        return createFailureException(cause, String.format(format, params));
-    }
-
-    private static OperationFailedException createFailureException(String msg) {
-        return new OperationFailedException(new ModelNode().set(msg));
-    }
-
-    private static OperationFailedException createFailureException(Throwable cause, String msg) {
-        return new OperationFailedException(cause, new ModelNode().set(msg));
-    }
-
-    private static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
-        // TODO: implement overlays
-        if (content.asList().size() != 1)
-            throw createFailureException("Only 1 piece of content is current supported (JBAS-9020)");
     }
 }

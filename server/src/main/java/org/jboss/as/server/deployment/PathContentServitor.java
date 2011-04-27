@@ -22,6 +22,7 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -34,9 +35,9 @@ import org.jboss.vfs.VirtualFile;
 class PathContentServitor extends AbstractService<VirtualFile> {
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
 
-    static void addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final ServiceName pathServiceName) {
+    static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final ServiceName pathServiceName) {
         final PathContentServitor service = new PathContentServitor();
-        serviceTarget.addService(serviceName, service)
+        return serviceTarget.addService(serviceName, service)
             .addDependency(pathServiceName, String.class, service.pathValue)
             .install();
     }

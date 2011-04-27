@@ -44,10 +44,8 @@ import org.jboss.logging.Logger;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,10 +58,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -71,10 +71,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -130,6 +131,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private volatile long deploymentTimeout = DEFAULT_DEPLOYMENT_TIMEOUT;
 
+    private final String relativeTo;
+
     private final Runnable scanRunnable = new Runnable() {
         @Override
         public void run() {
@@ -141,7 +144,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     };
 
-    FileSystemDeploymentService(final File deploymentDir, final ServerController serverController, final ScheduledExecutorService scheduledExecutor,
+    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final ServerController serverController, final ScheduledExecutorService scheduledExecutor,
             final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository) throws OperationFailedException {
         assert contentRepository != null : "content repository is null";
         if (scheduledExecutor == null) {
@@ -165,6 +168,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         if (!deploymentDir.canWrite()) {
             throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not writable");
         }
+        this.relativeTo = relativeTo;
         this.deploymentDir = deploymentDir;
         this.serverController = serverController;
         this.scheduledExecutor = scheduledExecutor;
@@ -351,13 +355,23 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         final ModelNode results;
                         try {
                             results = futureResults.get(deploymentTimeout, TimeUnit.SECONDS);
-                        } catch (Exception e) {
+                        } catch (TimeoutException e) {
                             futureResults.cancel(true);
                             final ModelNode failure = new ModelNode();
                             failure.get(OUTCOME).set(FAILED);
                             failure.get(FAILURE_DESCRIPTION).set("Did not receive a response to the deployment operation within " +
                                     "the allowed timeout period [" + deploymentTimeout + " seconds]. Check the server configuration" +
                                     "file and the server logs to find more about the status of the deployment.");
+                            for (ScannerTask task : scannerTasks) {
+                                task.handleFailureResult(failure);
+                            }
+                            break;
+                        } catch (Exception e) {
+                            log.error("File system deployment service failed", e);
+                            futureResults.cancel(true);
+                            final ModelNode failure = new ModelNode();
+                            failure.get(OUTCOME).set(FAILED);
+                            failure.get(FAILURE_DESCRIPTION).set(e.getMessage());
                             for (ScannerTask task : scannerTasks) {
                                 task.handleFailureResult(failure);
                             }
@@ -431,7 +445,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     continue;
                 }
                 long timestamp = getDeploymentTimestamp(deploymentFile);
-                addContentAddingTask(deploymentName, deploymentFile, timestamp, scanContext);
+                final String path = relativeTo == null ? deploymentFile.getAbsolutePath() : deploymentName; // TODO: sub-directories in the deploymentDir
+                final boolean archive = deploymentFile.isFile();
+                addContentAddingTask(path, archive, deploymentName, deploymentFile, timestamp, scanContext);
             }
             else if (fileName.endsWith(FAILED_DEPLOY)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - FAILED_DEPLOY.length());
@@ -458,7 +474,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         if (marker == null || marker.lastModified != timestamp) {
                             try {
                                 if (isZipComplete(child)) {
-                                    addContentAddingTask(fileName, child, timestamp, scanContext);
+                                    final String path =  relativeTo == null ? child.getAbsolutePath() : fileName;
+                                    final boolean archive = child.isFile();
+                                    addContentAddingTask(path, archive, fileName, child, timestamp, scanContext);
                                 }
                                 else {
                                     scanContext.incompleteFiles.put(child, new IncompleteDeploymentStatus(child));
@@ -494,12 +512,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private long addContentAddingTask(final String deploymentName, final File deploymentFile, final long timestamp,
+    private long addContentAddingTask(final String path, final boolean archive, final String deploymentName, final File deploymentFile, final long timestamp,
             final ScanContext scanContext) {
         if (scanContext.registeredDeployments.contains(deploymentName)) {
-            scanContext.scannerTasks.add(new ReplaceTask(deploymentName, deploymentFile, timestamp));
+            scanContext.scannerTasks.add(new ReplaceTask(path, archive, deploymentName, deploymentFile, timestamp));
         } else {
-            scanContext.scannerTasks.add(new DeployTask(deploymentName, deploymentFile, timestamp));
+            scanContext.scannerTasks.add(new DeployTask(path, archive, deploymentName, deploymentFile, timestamp));
         }
         scanContext.toRemove.remove(deploymentName);
         return timestamp;
@@ -832,41 +850,28 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private abstract class ContentAddingTask extends ScannerTask {
+        private final String path;
+        private final boolean archive;
         protected final File deploymentFile;
         protected final long doDeployTimestamp;
 
-        protected ContentAddingTask(final String deploymentName, final File deploymentFile, long markerTimestamp) {
+        protected ContentAddingTask(final String path, final boolean archive, final String deploymentName, final File deploymentFile, long markerTimestamp) {
             super(deploymentName, deploymentFile.getParentFile(), DEPLOYING);
+            this.path = path;
+            this.archive = archive;
             this.deploymentFile = deploymentFile;
             this.doDeployTimestamp = markerTimestamp;
         }
 
-        @Override
-        protected ModelNode getUpdate() {
-            byte[] hash = new byte[0];
-
-            if(deploymentFile.isDirectory()) {
-                try {
-                    hash = deploymentRepository.addExternalFileReference(deploymentFile);
-                } catch(IOException e) {
-                    log.error("Failed to add content to deployment repository for [" + deploymentName + "]", e);
-                }
-                return getUpdatesAfterContent(hash);
-            }
-
-            InputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(deploymentFile);
-                hash = contentRepository.addContent(inputStream);
-            } catch (IOException e) {
-                log.error("Failed to add content to deployment repository for [" + deploymentName + "]", e);
-            } finally {
-                safeClose(inputStream);
-            }
-            return getUpdatesAfterContent(hash);
+        protected ModelNode createContent() {
+            final ModelNode content = new ModelNode();
+            final ModelNode contentItem = content.get(0);
+            contentItem.get(PATH).set(path);
+            if (relativeTo != null)
+                contentItem.get(RELATIVE_TO).set(relativeTo);
+            contentItem.get(ARCHIVE).set(archive);
+            return content;
         }
-
-        protected abstract ModelNode getUpdatesAfterContent(final byte[] hash);
 
         @Override
         protected void handleSuccessResult() {
@@ -895,15 +900,15 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private final class DeployTask extends ContentAddingTask {
-        private DeployTask(final String deploymentName, final File deploymentFile, long markerTimestamp) {
-            super(deploymentName, deploymentFile, markerTimestamp);
+        private DeployTask(final String path, final boolean archive, final String deploymentName, final File deploymentFile, long markerTimestamp) {
+            super(path, archive, deploymentName, deploymentFile, markerTimestamp);
         }
 
         @Override
-        protected ModelNode getUpdatesAfterContent(final byte[] hash) {
+        protected ModelNode getUpdate() {
             final ModelNode address = new ModelNode().add(DEPLOYMENT, deploymentName);
             final ModelNode addOp = Util.getEmptyOperation(DeploymentAddHandler.OPERATION_NAME, address);
-            addOp.get(CONTENT).get(0).get(HASH).set(hash);
+            addOp.get(CONTENT).set(createContent());
             final ModelNode deployOp = Util.getEmptyOperation(DeploymentDeployHandler.OPERATION_NAME, address);
             return getCompositeUpdate(addOp, deployOp);
         }
@@ -920,15 +925,15 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private final class ReplaceTask extends ContentAddingTask {
-        private ReplaceTask(String deploymentName, File deploymentFile, long markerTimestamp) {
-            super(deploymentName, deploymentFile, markerTimestamp);
+        private ReplaceTask(final String path, final boolean archive, String deploymentName, File deploymentFile, long markerTimestamp) {
+            super(path, archive, deploymentName, deploymentFile, markerTimestamp);
         }
 
         @Override
-        protected ModelNode getUpdatesAfterContent(byte[] hash) {
+        protected ModelNode getUpdate() {
             final ModelNode replaceOp = Util.getEmptyOperation(DeploymentFullReplaceHandler.OPERATION_NAME, new ModelNode());
             replaceOp.get(NAME).set(deploymentName);
-            replaceOp.get(HASH).set(hash);
+            replaceOp.get(CONTENT).set(createContent());
             return replaceOp;
         }
 
