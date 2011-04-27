@@ -38,6 +38,6 @@
     <module name="javax.xml.stream.api"/>
     <module name="org.jboss.common-core"/>
     <module name="org.jboss.logging"/>
-    <module name="org.picketbox"/>
+    <module name="org.infinispan"/>
   </dependencies>
 </module>

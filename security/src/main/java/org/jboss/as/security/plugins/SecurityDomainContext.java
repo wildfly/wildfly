@@ -31,7 +31,6 @@ import javax.security.jacc.PolicyContextException;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.JSSESecurityDomain;
-import org.jboss.security.RealmMapping;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.identitytrust.IdentityTrustManager;
 import org.jboss.security.mapping.MappingManager;
@@ -47,12 +46,10 @@ public class SecurityDomainContext {
 
     static final String ACTIVE_SUBJECT = "subject";
     static final String AUTHENTICATION_MGR = "authenticationMgr";
-    static final String REALM_MAPPING = "realmMapping";
     static final String AUTHORIZATION_MGR = "authorizationMgr";
     static final String AUDIT_MGR = "auditMgr";
     static final String MAPPING_MGR = "mappingMgr";
     static final String IDENTITY_TRUST_MGR = "identityTrustMgr";
-    static final String AUTH_CACHE = "authenticationCache";
     static final String DOMAIN_CONTEXT = "domainContext";
     static final String JSSE = "jsse";
 
@@ -62,15 +59,11 @@ public class SecurityDomainContext {
     MappingManager mappingMgr;
     IdentityTrustManager identityTrustMgr;
     JSSESecurityDomain jsseSecurityDomain;
-    // FIXME
-    Object authenticationCache;
 
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
 
-    // FIXME
-    public SecurityDomainContext(AuthenticationManager authenticationMgr, Object authenticationCache) {
+    public SecurityDomainContext(AuthenticationManager authenticationMgr) {
         this.authenticationMgr = authenticationMgr;
-        this.authenticationCache = authenticationCache;
     }
 
     public Object lookup(String name) throws NamingException {
@@ -82,8 +75,6 @@ public class SecurityDomainContext {
             binding = getSubject();
         else if (name.equals(AUTHENTICATION_MGR))
             binding = getAuthenticationManager();
-        else if (name.equals(REALM_MAPPING))
-            binding = getRealmMapping();
         else if (name.equals(AUTHORIZATION_MGR))
             binding = getAuthorizationManager();
         else if (name.equals(AUDIT_MGR))
@@ -92,8 +83,6 @@ public class SecurityDomainContext {
             binding = getMappingManager();
         else if (name.equals(IDENTITY_TRUST_MGR))
             binding = getIdentityTrustManager();
-        else if (name.equals(AUTH_CACHE))
-            binding = authenticationCache;
         else if (name.equals(DOMAIN_CONTEXT))
             binding = this;
         else if (name.equals(JSSE))
@@ -115,16 +104,6 @@ public class SecurityDomainContext {
         return authenticationMgr;
     }
 
-    public RealmMapping getRealmMapping() {
-        RealmMapping realmMapping = null;
-        if (authorizationMgr != null && authorizationMgr instanceof RealmMapping) {
-            realmMapping = (RealmMapping) authorizationMgr;
-        } else if (authenticationMgr instanceof RealmMapping) {
-            realmMapping = (RealmMapping) authenticationMgr;
-        }
-        return realmMapping;
-    }
-
     public void setAuthenticationManager(AuthenticationManager am) {
         this.authenticationMgr = am;
     }
@@ -135,16 +114,6 @@ public class SecurityDomainContext {
 
     public AuthorizationManager getAuthorizationManager() {
         return authorizationMgr;
-    }
-
-    // FIXME
-    public void setAuthenticationCache(Object cp) {
-        this.authenticationCache = cp;
-    }
-
-    // FIXME
-    public Object getAuthenticationCache() {
-        return authenticationCache;
     }
 
     public AuditManager getAuditManager() {

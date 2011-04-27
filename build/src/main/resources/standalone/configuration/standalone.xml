@@ -347,7 +347,13 @@
                     <eviction strategy="NONE"/>
                 </local-cache>
             </cache-container>
-        </subsystem>
+            <cache-container name="security" default-cache="auth-cache">
+                <local-cache name="auth-cache">
+                    <eviction strategy="FIFO" max-entries="10000" interval="600000"/>
+                    <expiration max-idle="3600000" lifespan="86400000"/>
+                </local-cache>
+            </cache-container>
+       </subsystem>
     </profile>
 
     <interfaces>

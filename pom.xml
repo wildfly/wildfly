@@ -192,6 +192,7 @@
         <version.org.jgroups>2.12.1.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.0.Beta1</version.org.picketbox>
+        <version.org.picketbox.infinispan>4.0.0.Beta1</version.org.picketbox.infinispan>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j.jcl-over-slf4j>1.5.10</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.10</version.org.slf4j.slf4j-api>
@@ -4301,6 +4302,30 @@
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-infinispan</artifactId>
+                <version>${version.org.picketbox.infinispan}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>picketbox-spi-bare</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.picketbox</groupId>
+                    <artifactId>jbosssx-bare</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging-spi</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-core</artifactId>
+                  </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

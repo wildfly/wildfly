@@ -52,7 +52,6 @@ import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -63,8 +62,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public class SecurityExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.security");
-
     public static final ServiceName JBOSS_SECURITY = ServiceName.JBOSS.append("security");
 
     public static final String SUBSYSTEM_NAME = "security";
@@ -73,8 +70,6 @@ public class SecurityExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        log.debug("Initializing Security Extension");
-
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemDescriptions.SUBSYSTEM);
         registration.registerOperationHandler(ADD, SecuritySubsystemAdd.INSTANCE, SecuritySubsystemDescriptions.SUBSYSTEM_ADD,

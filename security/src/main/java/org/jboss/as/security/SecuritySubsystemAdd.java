@@ -35,6 +35,8 @@ import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
 
 import javax.security.auth.login.Configuration;
 
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -57,15 +59,17 @@ import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.login.XMLLoginConfigImpl;
+import org.jboss.security.authentication.JBossCachedAuthenticationManager;
 import org.jboss.security.plugins.JBossAuthorizationManager;
 import org.jboss.security.plugins.JBossSecuritySubjectFactory;
 import org.jboss.security.plugins.audit.JBossAuditManager;
-import org.jboss.security.plugins.auth.JaasSecurityManagerBase;
 import org.jboss.security.plugins.identitytrust.JBossIdentityTrustManager;
 import org.jboss.security.plugins.mapping.JBossMappingManager;
 
@@ -78,8 +82,10 @@ import org.jboss.security.plugins.mapping.JBossMappingManager;
  */
 class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.security");
+
     private static final String AUTHENTICATION_MANAGER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot()
-            + ":" + JaasSecurityManagerBase.class.getName();
+            + ":" + JBossCachedAuthenticationManager.class.getName();
 
     private static final String CALLBACK_HANDLER = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
             + JBossCallbackHandler.class.getName();
@@ -100,6 +106,8 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
     private static final String SUBJECT_FACTORY = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
             + JBossSecuritySubjectFactory.class.getName();
+
+    private static final String CACHE_CONTAINER_NAME = "security";
 
     static final SecuritySubsystemAdd INSTANCE = new SecuritySubsystemAdd();
 
@@ -132,10 +140,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         if (operation.hasDefined(DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
             callbackHandlerClassName = operation.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).asString();
             subModel.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(callbackHandlerClassName);
-        } else {
-            callbackHandlerClassName = CALLBACK_HANDLER;
         }
-
         if (operation.hasDefined(SUBJECT_FACTORY_CLASS_NAME)) {
             subjectFactoryClassName = operation.get(SUBJECT_FACTORY_CLASS_NAME).asString();
             subModel.get(SUBJECT_FACTORY_CLASS_NAME).set(subjectFactoryClassName);
@@ -208,13 +213,14 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
                             new SecurityDependencyProcessor());
+                    log.info("Activating Security Subsystem");
 
                     final ServiceTarget target = context.getServiceTarget();
 
                     // add bootstrap service
                     final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
-                    target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService).setInitialMode(
-                            ServiceController.Mode.ACTIVE).install();
+                    target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
+                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
                     // add service to bind SecurityDomainJndiInjectable to JNDI
                     final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
@@ -222,30 +228,36 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                     target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss", "jaas"), binderService)
                             .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
                             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("jboss"), NamingStore.class,
-                                    binderService.getNamingStoreInjector()).addDependency(
-                                    SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                                    securityDomainJndiInjectable.getSecurityManagementInjector()).setInitialMode(
-                                    ServiceController.Mode.ACTIVE).install();
+                                    binderService.getNamingStoreInjector())
+                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                                    securityDomainJndiInjectable.getSecurityManagementInjector())
+                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
+                    // add security management service
                     final SecurityManagementService securityManagementService = new SecurityManagementService(
                             resolvedAuthenticationManagerClassName, deepCopySubject, resolvedCallbackHandlerClassName,
                             resolvedAuthorizationManagerClassName, resolvedAuditManagerClassName,
                             resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
-                    target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService).setInitialMode(
-                            ServiceController.Mode.ACTIVE).install();
+                    target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
+                            .addDependency(DependencyType.REQUIRED,
+                                    EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
+                                    EmbeddedCacheManager.class,
+                                    securityManagementService.getAuthenticationCacheManagerInjector())
+                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
+                    // add subject factory service
                     final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(
                             resolvedSubjectFactoryClassName);
-                    target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService).addDependency(
-                            SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                            subjectFactoryService.getSecurityManagementInjector())
+                    target.addService(SubjectFactoryService.SERVICE_NAME, subjectFactoryService)
+                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                                    subjectFactoryService.getSecurityManagementInjector())
                             .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
                     // add jaas configuration service
                     Configuration loginConfig = XMLLoginConfigImpl.getInstance();
                     final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
-                    target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService).setInitialMode(
-                            ServiceController.Mode.ACTIVE).install();
+                    target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
+                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
                     resultHandler.handleResultComplete();
                 }

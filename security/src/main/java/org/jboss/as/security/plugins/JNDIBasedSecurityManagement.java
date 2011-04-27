@@ -24,19 +24,25 @@ package org.jboss.as.security.plugins;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.security.auth.callback.CallbackHandler;
 
+import org.infinispan.Cache;
+import org.infinispan.config.Configuration;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
+import org.jboss.security.CacheableManager;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.audit.AuditManager;
+import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 import org.jboss.security.identitytrust.IdentityTrustManager;
 import org.jboss.security.mapping.MappingManager;
 
@@ -69,6 +75,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private String auditManagerClassName;
     private String identityTrustManagerClassName;
     private String mappingManagerClassName;
+    private EmbeddedCacheManager cacheManager;
 
     // creating a singleton
     private JNDIBasedSecurityManagement() {
@@ -230,6 +237,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /**
      * Removes one security domain from the maps
+     *
      * @param securityDomain name of the security domain
      */
     public void removeSecurityDomain(String securityDomain) {
@@ -273,16 +281,25 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     public SecurityDomainContext createSecurityDomainContext(String securityDomain) throws Exception {
         log.debug("Creating SDC for domain=" + securityDomain);
         AuthenticationManager am = createAuthenticationManager(securityDomain);
-        // TODO create auth cache and set it in am
+        // create authentication cache
+        Cache<Principal, DomainInfo> cache = null;
+        if (cacheManager != null) {
+            // TODO override global settings with security domain specific
+            cacheManager.defineConfiguration(securityDomain, "auth-cache", new Configuration());
+            cache = cacheManager.getCache(securityDomain);
+        }
+        if (cache != null && am instanceof CacheableManager) {
+            @SuppressWarnings("unchecked")
+            CacheableManager<Cache<Principal, DomainInfo>, Principal> cm = (CacheableManager<Cache<Principal, DomainInfo>, Principal>) am;
+            cm.setCache(cache);
+        }
 
         // set DeepCopySubject option if supported
         if (deepCopySubjectMode) {
             setDeepCopySubjectMode(am);
         }
 
-        // TODO set auth cache
-        SecurityDomainContext securityDomainContext = new SecurityDomainContext(am, null);
-
+        SecurityDomainContext securityDomainContext = new SecurityDomainContext(am);
         securityDomainContext.setAuthorizationManager(createAuthorizationManager(securityDomain));
         securityDomainContext.setAuditManager(createAuditManager(securityDomain));
         securityDomainContext.setIdentityTrustManager(createIdentityTrustManager(securityDomain));
@@ -403,6 +420,15 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             if (log.isTraceEnabled())
                 log.trace("Optional setDeepCopySubjectMode failed: " + e.getLocalizedMessage());
         }
+    }
+
+    /**
+     * Sets {@code EmbeddedCacheManager} implementation to create cache instances.
+     *
+     * @param cacheManager {@code EmbeddedCacheManager} implementation
+     */
+    public void setCacheManager(EmbeddedCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
     }
 
 }

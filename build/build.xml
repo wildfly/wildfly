@@ -897,6 +897,7 @@
 
         <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="picketbox"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">
