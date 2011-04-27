@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,6 +53,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue name;
     private final ArgumentWithoutValue rtName;
     private final ArgumentWithValue serverGroups;
+    private final ArgumentWithoutValue allServerGroups;
 
     public DeployHandler() {
         super("deploy", true);
@@ -78,7 +80,17 @@ public class DeployHandler extends BatchModeCommandHandler {
         rtName.addRequiredPreceding(path);
         argsCompleter.addArgument(rtName);
 
-        serverGroups = new ArgumentWithValue(true, new CommandLineCompleter() {
+        allServerGroups = new ArgumentWithoutValue("--all-server-groups")  {
+            @Override
+            public boolean isAvailable(CommandContext ctx) {
+                return ctx.isDomainMode();
+            }
+        };
+
+        argsCompleter.addArgument(allServerGroups);
+        allServerGroups.addRequiredPreceding(path);
+
+        serverGroups = new ArgumentWithValue(false, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
@@ -126,6 +138,9 @@ public class DeployHandler extends BatchModeCommandHandler {
         };
         serverGroups.addRequiredPreceding(path);
         argsCompleter.addArgument(serverGroups);
+
+        serverGroups.addCantAppearAfter(allServerGroups);
+        allServerGroups.addCantAppearAfter(serverGroups);
     }
 
     @Override
@@ -201,13 +216,21 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         } else {
 
-            final String[] serverGroups;
+            final List<String> serverGroups;
             if (ctx.isDomainMode()) {
-                try {
+                if(allServerGroups.isPresent(args)) {
+                    serverGroups = Util.getServerGroups(client);
+                } else {
                     String serverGroupsStr = this.serverGroups.getValue(args);
-                    serverGroups = serverGroupsStr.split(",");
-                } catch (IllegalArgumentException e) {
-                    ctx.printLine("--server-groups is missing");
+                    if(serverGroupsStr == null) {
+                        ctx.printLine("Either --all-server-groups or --server-groups must be specified.");
+                        return;
+                    }
+                    serverGroups = Arrays.asList(serverGroupsStr.split(","));
+                }
+
+                if(serverGroups.isEmpty()) {
+                    ctx.printLine("No server group is available.");
                     return;
                 }
             } else {
@@ -335,13 +358,20 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
         }
 
-        final String[] serverGroups;
+        final List<String> serverGroups;
         if (ctx.isDomainMode()) {
-            try {
+            if(allServerGroups.isPresent(args)) {
+                serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
+            } else {
                 String serverGroupsStr = this.serverGroups.getValue(args);
-                serverGroups = serverGroupsStr.split(",");
-            } catch (IllegalArgumentException e) {
-                throw new OperationFormatException("--server-groups is missing");
+                if(serverGroupsStr == null) {
+                    new OperationFormatException("Either --all-server-groups or --server-groups must be specified.");
+                }
+                serverGroups = Arrays.asList(serverGroupsStr.split(","));
+            }
+
+            if(serverGroups.isEmpty()) {
+                new OperationFormatException("No server group is available.");
             }
         } else {
             serverGroups = null;

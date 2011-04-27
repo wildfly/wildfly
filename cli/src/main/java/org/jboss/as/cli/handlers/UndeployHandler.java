@@ -25,6 +25,7 @@ package org.jboss.as.cli.handlers;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REMOVE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue l;
     private final ArgumentWithValue name;
     private final ArgumentWithValue serverGroups;
+    private final ArgumentWithoutValue allServerGroups;
 
     public UndeployHandler() {
         super("undeploy", true);
@@ -95,6 +97,15 @@ public class UndeployHandler extends BatchModeCommandHandler {
             }}, 0, "--name");
         name.addCantAppearAfter(l);
         argsCompleter.addArgument(name);
+
+        allServerGroups = new ArgumentWithoutValue("--all-server-groups") {
+            @Override
+            public boolean isAvailable(CommandContext ctx) {
+                return ctx.isDomainMode();
+            }
+        };
+        argsCompleter.addArgument(allServerGroups);
+        allServerGroups.addRequiredPreceding(name);
 
         serverGroups = new ArgumentWithValue(true, new CommandLineCompleter() {
             @Override
@@ -144,6 +155,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
         };
         serverGroups.addRequiredPreceding(name);
         argsCompleter.addArgument(serverGroups);
+
+        serverGroups.addCantAppearAfter(allServerGroups);
+        allServerGroups.addCantAppearAfter(serverGroups);
     }
 
     @Override
@@ -194,7 +208,8 @@ public class UndeployHandler extends BatchModeCommandHandler {
         composite.get("address").setEmptyList();
         ModelNode steps = composite.get("steps");
 
-        final String name = this.name.getValue(ctx.getParsedArguments());
+        final ParsedArguments args = ctx.getParsedArguments();
+        final String name = this.name.getValue(args);
         if(name == null) {
             throw new OperationFormatException("Required argument name are missing.");
         }
@@ -202,16 +217,19 @@ public class UndeployHandler extends BatchModeCommandHandler {
         DefaultOperationRequestBuilder builder;
 
         if(ctx.isDomainMode()) {
-            final String[] serverGroups;
-            if (ctx.isDomainMode()) {
-                try {
-                    String serverGroupsStr = this.serverGroups.getValue(ctx.getParsedArguments());
-                    serverGroups = serverGroupsStr.split(",");
-                } catch (IllegalArgumentException e) {
-                    throw new OperationFormatException("--server-groups is missing");
-                }
+            final List<String> serverGroups;
+            if(allServerGroups.isPresent(args)) {
+                serverGroups = Util.getServerGroups(ctx.getModelControllerClient());
             } else {
-                serverGroups = null;
+                String serverGroupsStr = this.serverGroups.getValue(args);
+                if(serverGroupsStr == null) {
+                    new OperationFormatException("Either --all-server-groups or --server-groups must be specified.");
+                }
+                serverGroups = Arrays.asList(serverGroupsStr.split(","));
+            }
+
+            if(serverGroups.isEmpty()) {
+                new OperationFormatException("No server group is available.");
             }
 
             for (String group : serverGroups) {

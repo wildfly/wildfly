@@ -508,6 +508,7 @@ public class CommandLineMain {
                 this.controllerPort = -1;
                 domainMode = false;
             }
+            promptConnectPart = null;
         }
 
         @Override
@@ -520,29 +521,38 @@ public class CommandLineMain {
             return controllerPort;
         }
 
+        String promptConnectPart;
+
         String getPrompt() {
             StringBuilder buffer = new StringBuilder();
-            buffer.append('[');
-            if(controllerHost != null) {
-                buffer.append(controllerHost)
-                .append(':')
-                .append(controllerPort)
-                .append(' ');
+            if(promptConnectPart == null) {
+                buffer.append('[');
+                if (controllerHost != null) {
+                    if (domainMode) {
+                        buffer.append("domain@");
+                    } else {
+                        buffer.append("standalone@");
+                    }
+                    buffer.append(controllerHost).append(':').append(controllerPort).append(' ');
+                } else {
+                    buffer.append("disconnected ");
+                }
+                promptConnectPart = buffer.toString();
             } else {
-                buffer.append("disconnected ");
+                buffer.append(promptConnectPart);
             }
 
-            if(prefix.isEmpty()) {
+            if (prefix.isEmpty()) {
                 buffer.append('/');
             } else {
                 buffer.append(prefix.getNodeType());
                 final String nodeName = prefix.getNodeName();
-                if(nodeName != null) {
+                if (nodeName != null) {
                     buffer.append('=').append(nodeName);
                 }
             }
 
-            if(isBatchMode()) {
+            if (isBatchMode()) {
                 buffer.append(" #");
             }
             buffer.append("] ");
