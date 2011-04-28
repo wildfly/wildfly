@@ -24,6 +24,7 @@ package org.jboss.as.testsuite.integration.jpa.hibernate;
 
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
 /**
@@ -42,7 +43,10 @@ public class SFSB1 {
         emp.setAddress(address);
         emp.setName(name);
         em.persist(emp);
+    }
 
+    public Employee getEmployeeNoTX(int id) {
+        return em.find(Employee.class, id, LockModeType.NONE);
     }
 
 }

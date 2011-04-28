@@ -358,6 +358,7 @@
             <maven-resource group="org.hibernate" artifact="hibernate-core" />
             <maven-resource group="org.hibernate" artifact="hibernate-commons-annotations" />
             <maven-resource group="org.hibernate" artifact="hibernate-entitymanager" />
+            <maven-resource group="org.hibernate" artifact="hibernate-infinispan" />
         </module-def>
 
         <module-def name="org.hibernate.validator">

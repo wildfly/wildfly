@@ -22,9 +22,14 @@
 
 package org.jboss.as.jpa.hibernate;
 
+import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
+import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.msc.service.ServiceName;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -35,11 +40,37 @@ import java.util.Map;
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
     @Override
-    public void addProviderProperties(Map properties) {
+    public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
         properties.put("hibernate.transaction.manager_lookup_class", "org.jboss.as.jpa.hibernate.HibernateTransactionManagerLookup");
         properties.put("hibernate.id.new_generator_mappings", "true");
         properties.put("hibernate.ejb.resource_scanner","org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
     }
+
+    @Override
+    public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
+        String cacheManager;
+        // AS7-680 Add BinderService dependency for infinispan hibernate 2LC
+        if ((cacheManager = pu.getProperties().getProperty("hibernate.cache.infinispan.cachemanager")) != null) {
+            ArrayList<ServiceName> result = new ArrayList<ServiceName>();
+            result.add(adjustJndiName(cacheManager));
+            return result;
+        }
+        return null;
+    }
+
+    private ServiceName adjustJndiName(String jndiName) {
+        jndiName = toJndiName(jndiName).toString();
+        int index = jndiName.indexOf("/");
+        String namespace = (index > 5) ? jndiName.substring(5, index) : null;
+        String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
+        ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
+        return naming.append(binding);
+    }
+
+    private static JndiName toJndiName(String value) {
+        return value.startsWith("java:") ? JndiName.of(value) : JndiName.of("java:jboss").append(value.startsWith("/") ? value.substring(1) : value);
+    }
+
 
     @Override
     public void beforeCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu) {

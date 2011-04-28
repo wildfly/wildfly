@@ -22,16 +22,20 @@
 
 package org.jboss.as.testsuite.integration.jpa.hibernate;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 /**
- * Employee entity class
+ * Cachable Employee entity class
  *
  * @author Scott Marlow
  */
 @Entity
-public class Employee {
+@Cacheable(true)
+public class Employee  {
+
     @Id
     private int id;
 

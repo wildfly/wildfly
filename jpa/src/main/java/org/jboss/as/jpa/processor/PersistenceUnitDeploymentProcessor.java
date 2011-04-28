@@ -235,6 +235,12 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(JPAService.getDefaultDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
                             log.trace(serviceName + " is using the default data source '" + JPAService.getDefaultDataSourceName() + "'");
                         }
+
+                        Iterable<ServiceName> providerDependencies = getProviderDependencies(pu);
+                        if (providerDependencies != null) {
+                            builder.addDependencies(providerDependencies);
+                        }
+
                         builder.addDependency(TransactionManagerService.SERVICE_NAME, new CastingInjector<TransactionManager>(transactionManagerInjector, TransactionManager.class))
                             .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, new CastingInjector<TransactionSynchronizationRegistry>(transactionRegistryInjector, TransactionSynchronizationRegistry.class))
                             .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -253,9 +259,14 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
     private void addProviderProperties(PersistenceUnitMetadata pu, Map properties) {
         PersistenceProviderAdaptor adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
-        adaptor.addProviderProperties(properties);
+        adaptor.addProviderProperties(properties, pu);
     }
 
+    private Iterable<ServiceName>getProviderDependencies(PersistenceUnitMetadata pu) {
+        PersistenceProviderAdaptor adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
+        Iterable<ServiceName> providerDependencies = adaptor.getProviderDependencies(pu);
+        return providerDependencies;
+    }
 
     static boolean isEarDeployment(final DeploymentUnit context) {
         return (DeploymentTypeMarker.isType(DeploymentType.EAR, context));

@@ -4107,6 +4107,12 @@
             </dependency>
 
             <dependency>
+              <groupId>org.hibernate</groupId>
+              <artifactId>hibernate-infinispan</artifactId>
+              <version>${version.org.hibernate}</version>
+            </dependency>
+
+            <dependency>
                <groupId>org.hibernate</groupId>
                <artifactId>hibernate-commons-annotations</artifactId>
                <version>${version.org.hibernate.commons.annotations}</version>
