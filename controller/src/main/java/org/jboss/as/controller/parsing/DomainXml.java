@@ -600,6 +600,29 @@ public class DomainXml extends CommonXml {
         }
     }
 
+    private void writeServerGroupDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+
+        final Set<String> deploymentNames = modelNode.keys();
+        if (deploymentNames.size() > 0) {
+            writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (String uniqueName : deploymentNames) {
+                final ModelNode deployment = modelNode.get(uniqueName);
+                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
+                final String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
+                final boolean enabled = !deployment.hasDefined(ENABLED) || deployment.get(ENABLED).asBoolean();
+                writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                writeAttribute(writer, Attribute.NAME, uniqueName);
+                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+                writeAttribute(writer, Attribute.SHA1, sha1);
+                if (!enabled) {
+                    writeAttribute(writer, Attribute.ENABLED, Boolean.FALSE.toString());
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
     private void writeServerGroup(final XMLExtendedStreamWriter writer, final String groupName, final ModelNode group) throws XMLStreamException {
         writer.writeStartElement(Element.SERVER_GROUP.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), groupName);
@@ -628,7 +651,7 @@ public class DomainXml extends CommonXml {
         }
 
         if(group.hasDefined(DEPLOYMENT)) {
-            writeDomainDeployments(writer, group.get(DEPLOYMENT));
+            writeServerGroupDeployments(writer, group.get(DEPLOYMENT));
         }
         // System properties
         if(group.hasDefined(SYSTEM_PROPERTIES)) {
