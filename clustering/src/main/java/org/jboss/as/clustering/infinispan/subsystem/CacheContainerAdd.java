@@ -57,9 +57,10 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -287,6 +288,8 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                             storeManagerConfig.addCacheLoaderConfig(storeConfig);
                         }
                         configurations.put(cacheName, configuration);
+                        StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;
+                        new CacheService<Object, Object>(cacheName).build(target, serviceName).setInitialMode(startMode.getMode()).install();
                     }
                     if (!configurations.containsKey(defaultCache)) {
                         throw new IllegalArgumentException(String.format("%s is not a valid default cache. The %s cache container does not contain a cache with that name", defaultCache, name));
@@ -324,18 +327,19 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     this.addScheduledExecutorDependency(builder, operation, ModelKeys.REPLICATION_QUEUE_EXECUTOR, config.getReplicationQueueExecutorInjector());
                     builder.install();
 
-                    if (operation.hasDefined(ModelKeys.JNDI_NAME)) {
-                        String binding = operation.get(ModelKeys.JNDI_NAME).asString();
-                        BinderService binder = new BinderService(binding);
-                        target.addService(EmbeddedCacheManagerService.getContextName(name), binder)
-                            .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding))
-                            .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, binder.getNamingStoreInjector())
-                            .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                            .install()
-                            ;
-                    }
-
+                    String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
+                    int index = jndiName.indexOf("/");
+                    String namespace = (index > 5) ? jndiName.substring(5, index) : null;
+                    String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
+                    ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
+                    BinderService binder = new BinderService(binding);
+                    target.addService(naming.append(binding), binder)
+                        .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
+                        .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
+                        .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                        .install()
+                        ;
                     resultHandler.handleResultComplete();
                 }
 
@@ -375,6 +379,10 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
         }
 
         return new BasicOperationResult(removeOperation);
+    }
+
+    private static JndiName toJndiName(String value) {
+        return value.startsWith("java:") ? JndiName.of(value) : JndiName.of("java:jboss").append(value.startsWith("/") ? value.substring(1) : value);
     }
 
     static class EmbeddedCacheManager implements EmbeddedCacheManagerConfiguration {

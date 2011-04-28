@@ -79,6 +79,7 @@ public class ModelKeys {
     static final String SINGLETON = "singleton";
     static final String SITE = "site";
     static final String STACK = "stack";
+    static final String START = "start";
     static final String STATE_TRANSFER = "state-transfer";
     static final String STOP_TIMEOUT = "stop-timeout";
     static final String STORE = "store";

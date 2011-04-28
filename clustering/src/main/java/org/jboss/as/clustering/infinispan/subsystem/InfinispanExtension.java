@@ -287,6 +287,14 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                 cache.get(ModelKeys.NAME).set(value);
                 break;
             }
+            case START: {
+                try {
+                    StartMode mode = StartMode.valueOf(value);
+                    cache.get(ModelKeys.START).set(mode.name());
+                } catch (IllegalArgumentException e) {
+                    throw ParseUtils.invalidAttributeValue(reader, index);
+                }
+            }
             case BATCHING: {
                 cache.get(ModelKeys.BATCHING).set(Boolean.parseBoolean(value));
                 break;
@@ -798,10 +806,9 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                         writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
                     }
                     this.writeRequired(writer, Attribute.NAME, cache, ModelKeys.NAME);
+                    this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
                     this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
-                    if (cache.hasDefined(ModelKeys.INDEXING)) {
-                        writer.writeAttribute(Attribute.INDEXING.getLocalName(), Indexing.valueOf(cache.get(ModelKeys.INDEXING).asString()).name());
-                    }
+                    this.writeOptional(writer, Attribute.INDEXING, cache, ModelKeys.INDEXING);
                     if (cache.hasDefined(ModelKeys.LOCKING)) {
                         writer.writeStartElement(Element.LOCKING.getLocalName());
                         ModelNode locking = cache.get(ModelKeys.LOCKING);

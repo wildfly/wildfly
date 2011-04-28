@@ -4,7 +4,7 @@
     <cache-container name="cluster" default-cache="default" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
         <alias>ha-partition</alias>
         <transport executor="infinispan-transport"/>
-        <replicated-cache name="default" mode="SYNC" batching="true"></replicated-cache>
+        <replicated-cache name="default" start="EAGER" mode="SYNC" batching="true"></replicated-cache>
     </cache-container>
 
     <cache-container name="web" default-cache="repl" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
@@ -32,7 +32,7 @@
         </distributed-cache>
     </cache-container>
 
-    <cache-container name="hibernate" default-cache="local-query" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
+    <cache-container name="hibernate" jndi-name="java:CacheManager/entity" default-cache="local-query" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
         <invalidation-cache name="entity" mode="SYNC">
             <locking isolation="READ_COMMITTED"/>
             <eviction strategy="LRU"/>

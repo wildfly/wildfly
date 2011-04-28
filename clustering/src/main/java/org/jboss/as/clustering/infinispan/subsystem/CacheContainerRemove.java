@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -39,8 +38,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author Paul Ferraro
@@ -65,12 +62,9 @@ public class CacheContainerRemove implements ModelRemoveOperationHandler, Descri
             RuntimeTask task = new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceRegistry registry = context.getServiceRegistry();
-                    for (ServiceName serviceName: Arrays.asList(EmbeddedCacheManagerService.getContextName(name), EmbeddedCacheManagerService.getServiceName(name))) {
-                        ServiceController<?> service = registry.getService(serviceName);
-                        if (service != null) {
-                            service.setMode(ServiceController.Mode.REMOVE);
-                        }
+                    ServiceController<?> service = context.getServiceRegistry().getService(EmbeddedCacheManagerService.getServiceName(name));
+                    if (service != null) {
+                        service.setMode(ServiceController.Mode.REMOVE);
                     }
                     resultHandler.handleResultComplete();
                 }

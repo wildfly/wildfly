@@ -75,6 +75,7 @@ public enum Attribute {
     SINGLETON(ModelKeys.SINGLETON),
     SITE(ModelKeys.SITE),
     STACK(ModelKeys.STACK),
+    START(ModelKeys.START),
     STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),

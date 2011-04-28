@@ -192,6 +192,11 @@
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="start" type="tns:controller-mode" default="LAZY">
+            <xs:annotation>
+                <xs:documentation>Should this cache be started on server startup, or lazily when requested by a service or deployment.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="batching" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
@@ -601,6 +606,21 @@
                 </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="SYNC">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="controller-mode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EAGER">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LAZY">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
                 </xs:annotation>

@@ -50,7 +50,6 @@ import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.StreamingMarshaller;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -74,10 +73,6 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
     public static ServiceName getServiceName(String name) {
         return SERVICE_NAME.append(name);
-    }
-
-    public static ServiceName getContextName(String name) {
-        return ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("java:" + InfinispanExtension.SUBSYSTEM_NAME + "/" + name);
     }
 
     @SuppressWarnings("unchecked")

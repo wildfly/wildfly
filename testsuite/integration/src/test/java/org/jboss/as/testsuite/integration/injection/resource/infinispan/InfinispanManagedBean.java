@@ -26,10 +26,13 @@ import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import junit.framework.Assert;
 
 import org.infinispan.Cache;
+import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.Marshaller;
 import org.infinispan.marshall.StreamingMarshaller;
@@ -39,12 +42,10 @@ import org.infinispan.marshall.StreamingMarshaller;
  */
 @ManagedBean("infinispan")
 public class InfinispanManagedBean {
-
-    @Resource(lookup = "java:infinispan/hibernate")
-    private EmbeddedCacheManager container;
-
-    @Resource(lookup = "java:CacheManager/entity")
-    private EmbeddedCacheManager containerAlias;
+    private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/hibernate";
+    
+    @Resource(lookup = CONTAINER_JNDI_NAME)
+    private CacheContainer container;
     private Cache<Integer, Object> cache;
     
     @PostConstruct
@@ -58,7 +59,6 @@ public class InfinispanManagedBean {
     }
     
     public void test() {
-        Assert.assertSame(this.container, this.containerAlias);
         try {
             // Test simple value
             this.cache.put(1, "test");
@@ -68,6 +68,15 @@ public class InfinispanManagedBean {
             e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
+
+        try {
+            // Make sure we can also perform a vanilla jndi lookup of container
+            Object result = new InitialContext().lookup(CONTAINER_JNDI_NAME);
+            Assert.assertSame(this.container, result);
+        } catch (NamingException e) {
+            Assert.fail(e.getMessage());
+        }
+
     }
     
     public static class Bean implements java.io.Serializable
