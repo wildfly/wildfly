@@ -259,6 +259,12 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
                 // System.out.println("------ route to host " + host);
                 return executeOnHost(host, operation, handler);
             }
+            else if (routing.getSingleHost() != null && !localHostName.equals(routing.getSingleHost())) {
+                // Two step operation, but not coordinated by this host
+                String host = routing.getSingleHost();
+                // System.out.println("------ route two-step operation to host " + host);
+                return executeOnHost(host, operation, handler);
+            }
             else {
                 // Else we are responsible for coordinating a two-phase op
                 // -- apply to DomainController models across domain and then push to servers
