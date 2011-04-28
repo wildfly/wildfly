@@ -42,12 +42,9 @@ import static org.jboss.as.modcluster.CommonAttributes.DYNAMIC_LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.EXCLUDED_CONTEXTS;
 import static org.jboss.as.modcluster.CommonAttributes.FACTOR;
 import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
-import static org.jboss.as.modcluster.CommonAttributes.HTTPD_CONF;
 import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.LOAD_PROVIDER;
 import static org.jboss.as.modcluster.CommonAttributes.MOD_CLUSTER_CONFIG;
-import static org.jboss.as.modcluster.CommonAttributes.NODES_CONF;
-import static org.jboss.as.modcluster.CommonAttributes.PROXY_CONF;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_LIST;
 import static org.jboss.as.modcluster.CommonAttributes.PROXY_URL;
 import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER;
@@ -110,7 +107,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(ModClusterSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, ModClusterSubsystemAdd.INSTANCE, false);
         registration.registerOperationHandler(DESCRIBE, ModClusterSubsystemDescribe.INSTANCE, ModClusterSubsystemDescribe.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerOperationHandler("list-proxies", ModClusterListProxies.INSTANCE, ModClusterListProxies.INSTANCE, false); //, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler("list-proxies", ModClusterListProxies.INSTANCE, ModClusterListProxies.INSTANCE, false);
 
         subsystem.registerXMLElementWriter(parser);
     }
@@ -178,27 +175,41 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     static void writeModClusterConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.MOD_CLUSTER_CONFIG.getLocalName());
-        if (config.hasDefined(LOAD_PROVIDER)) {
-            writeLoadProvider(writer, config.get(LOAD_PROVIDER));
+        // write Attributes
+        writePropConf(writer, config);
+
+        // write the elements.
+        if (config.hasDefined(SIMPLE_LOAD_PROVIDER)) {
+            writeSimpleLoadProvider(writer, config.get(SIMPLE_LOAD_PROVIDER));
         }
-        if (config.hasDefined(PROXY_CONF)) {
-            writeProxyConf(writer, config.get(PROXY_CONF));
+        if (config.hasDefined(DYNAMIC_LOAD_PROVIDER)) {
+            writeDynamicLoadProvider(writer, config.get(LOAD_PROVIDER));
+        }
+        if (config.hasDefined(SSL)) {
+            writeSSL(writer, config.get(SSL));
         }
         writer.writeEndElement();
     }
 
     static ModelNode parseModClusterConfig(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode config = new ModelNode();
+        // Parse the attributes.
+        parsePropConf(reader, config);
+        // Parse the elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case LOAD_PROVIDER:
-                    final ModelNode load = parseLoadProvider(reader);
-                    config.get(LOAD_PROVIDER).set(load);
+                case SIMPLE_LOAD_PROVIDER:
+                    final ModelNode load = parseSimpleLoadProvider(reader);
+                    config.get(SIMPLE_LOAD_PROVIDER).set(load);
                     break;
-                case PROXY_CONF:
-                    final ModelNode conf = parseProxyConf(reader);
-                    config.get(PROXY_CONF).set(conf);
+                case DYNAMIC_LOAD_PROVIDER:
+                    final ModelNode dynload = parseDynamicLoadProvider(reader);
+                    config.get(DYNAMIC_LOAD_PROVIDER).set(dynload);
+                    break;
+                case SSL:
+                    final ModelNode ssl = parseSSL(reader);
+                    config.get(SSL).set(ssl);
                     break;
                 default:
                     unexpectedElement(reader);
@@ -207,52 +218,19 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         return config;
     }
 
-    static void writeProxyConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.PROXY_CONF.getLocalName());
-        if (config.hasDefined(HTTPD_CONF)) {
-            writeHttpdConf(writer, config.get(HTTPD_CONF));
-        }
-        if (config.hasDefined(NODES_CONF)) {
-            writeNodesConf(writer, config.get(NODES_CONF));
-        }
-        writer.writeEndElement();
-    }
-
-    static ModelNode parseProxyConf(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode config = new ModelNode();
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-            case HTTPD_CONF:
-                final ModelNode proxy = parseHttpdConf(reader);
-                config.get(HTTPD_CONF).set(proxy);
-                break;
-            case NODES_CONF:
-                final ModelNode nodes = parseNodesConf(reader);
-                config.get(NODES_CONF).set(nodes);
-                break;
-            default:
-                unexpectedElement(reader);
-            }
-        }
-        return config;
-    }
-
-
-    static void writeHttpdConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.HTTPD_CONF.getLocalName());
+    /* prop-confType */
+    static void writePropConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writeAttribute(writer, ADVERTISE_SOCKET, config);
         writeAttribute(writer, PROXY_LIST, config);
         writeAttribute(writer, PROXY_URL, config);
         writeAttribute(writer, ADVERTISE, config);
         writeAttribute(writer, ADVERTISE_SECURITY_KEY, config);
-        if (config.hasDefined(SSL)) {
-            writeSSL(writer, config.get(SSL));
-        }
-        writer.writeEndElement();
+        writeAttribute(writer, EXCLUDED_CONTEXTS, config);
+        writeAttribute(writer, AUTO_ENABLE_CONTEXTS, config);
+        writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
+        writeAttribute(writer, SOCKET_TIMEOUT, config);
     }
-    static ModelNode parseHttpdConf(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode conf = new ModelNode();
+    static void parsePropConf(XMLExtendedStreamReader reader, ModelNode conf) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -275,60 +253,22 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             case ADVERTISE_SECURITY_KEY:
                 conf.get(ADVERTISE_SECURITY_KEY).set(value);
                 break;
+            case EXCLUDED_CONTEXTS:
+                conf.get(EXCLUDED_CONTEXTS).set(value);
+                break;
+            case AUTO_ENABLE_CONTEXTS:
+                conf.get(AUTO_ENABLE_CONTEXTS).set(value);
+                break;
+            case STOP_CONTEXT_TIMEOUT:
+                conf.get(STOP_CONTEXT_TIMEOUT).set(value);
+                break;
+            case SOCKET_TIMEOUT:
+                conf.get(SOCKET_TIMEOUT).set(value);
+                break;
             default:
                 unexpectedAttribute(reader, i);
             }
         }
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case SSL:
-                    final ModelNode ssl = parseSSL(reader);
-                    conf.get(SSL).set(ssl);
-                    break;
-                default:
-                    unexpectedElement(reader);
-            }
-        }
-        return conf;
-    }
-
-    static void writeNodesConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.NODES_CONF.getLocalName());
-        writeAttribute(writer, EXCLUDED_CONTEXTS, config);
-        writeAttribute(writer, AUTO_ENABLE_CONTEXTS, config);
-        writeAttribute(writer, STOP_CONTEXT_TIMEOUT, config);
-        writeAttribute(writer, SOCKET_TIMEOUT, config);
-        writer.writeEndElement();
-    }
-    static ModelNode parseNodesConf(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode conf = new ModelNode();
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case EXCLUDED_CONTEXTS:
-                    conf.get(EXCLUDED_CONTEXTS).set(value);
-                    break;
-                case AUTO_ENABLE_CONTEXTS:
-                    conf.get(AUTO_ENABLE_CONTEXTS).set(value);
-                    break;
-                case STOP_CONTEXT_TIMEOUT:
-                    conf.get(STOP_CONTEXT_TIMEOUT).set(value);
-                    break;
-                case SOCKET_TIMEOUT:
-                    conf.get(SOCKET_TIMEOUT).set(value);
-                    break;
-                default:
-                    unexpectedAttribute(reader, i);
-            }
-        }
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            //TODO: Just read it...
-        }
-        return conf;
     }
 
     static void writeSSL(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
@@ -343,31 +283,13 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         return conf;
     }
 
-    static void writeLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        writer.writeStartElement(Element.LOAD_PROVIDER.getLocalName());
+    /* Simple Load provider */
+    static void writeSimpleLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
+        // TODO need something...
         writer.writeEndElement();
     }
-    static ModelNode parseLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode load = new ModelNode();
-        // TODO that is elements... not attributes.
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            // read the load-metric and the custom-load-metric
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-            case SIMPLE_LOAD_PROVIDER:
-                final ModelNode simple = parseSimpleLoadProvider(reader);
-                load.get(SIMPLE_LOAD_PROVIDER).set(simple);
-                break;
-            case DYNAMIC_LOAD_PROVIDER:
-                final ModelNode server = parseDynamicLoadProvider(reader);
-                load.get(DYNAMIC_LOAD_PROVIDER).set(server);
-                break;
-            default:
-                unexpectedElement(reader);
-            }
-        }
-        return load;
-    }
+
     static ModelNode parseSimpleLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();
@@ -386,6 +308,14 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         return load;
     }
+
+    /* Dynamic load provider */
+    static void writeDynamicLoadProvider(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        writer.writeStartElement(Element.SIMPLE_LOAD_PROVIDER.getLocalName());
+        // TODO need something...
+        writer.writeEndElement();
+    }
+
     static ModelNode parseDynamicLoadProvider(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode load = new ModelNode();
         final int count = reader.getAttributeCount();

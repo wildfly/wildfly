@@ -33,51 +33,39 @@
 
   <xs:complexType name="mod-cluster-configType">
     <xs:sequence>
-      <xs:element ref="load-provider" minOccurs="0" maxOccurs="1"/>
-      <xs:element ref="proxy-conf" minOccurs="0" maxOccurs="1"/>
+      <!-- Simple load-provider or a dynamic one -->
+      <xs:complexType>
+        <xs:choice>
+          <xs:element name="simple-load-provider" type="simple-load-providerType"/>
+          <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
+        </xs:choice>
+      </xs:complexType>
+      <xs:element ref="load-provider" minOccurs="0" maxOccurs="1" type="load-providerType"/>
+      <xs:element ref="prop-conf" minOccurs="0" maxOccurs="1"  type="prop-confType"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:element name="proxy-conf">
-    <xs:complexType>
-    <xs:sequence>
-      <xs:element name="httpd-conf" type="httpd-conf-attlistType" minOccurs="0" maxOccurs="1" />
-      <xs:element name="nodes-conf" type="nodes-conf-attlistType" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+  <!-- Server-side Configuration Properties -->
+  <xs:complexType name="prop-confType">
 
-  <!-- mod_cluster parameters that correspond to httpd directive -->
-  <xs:complexType name="httpd-conf-attlistType">
-    <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
+    <!-- mod_cluster parameters that correspond to httpd directive -->
     <xs:sequence>
       <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
+    <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
     <xs:attribute name="advertise-socket" />
     <xs:attribute name="proxy-list" />
     <xs:attribute name="proxy-url" />
     <xs:attribute name="advertise" />
     <xs:attribute name="advertise-security-key" />
-  </xs:complexType>
 
-  <!-- mod_cluster parameters that describe node behaviour -->
-  <xs:complexType name="nodes-conf-attlistType">
+    <!-- mod_cluster parameters that describe node behaviour -->
     <xs:attribute name="excluded-contexts" default="ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console" />
     <xs:attribute name="auto-enable-contexts" default="true" />
     <xs:attribute name="stop-context-timeout" default="10" />
     <xs:attribute name="socket-timeout" />
   </xs:complexType>
   
-  <!-- Set of possible loadmetrics -->
-  <xs:element name="load-provider">
-    <xs:complexType>
-      <xs:choice>
-        <xs:element name="simple-load-provider" type="simple-load-providerType"/>
-        <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
-      </xs:choice>
-    </xs:complexType>
-  </xs:element> 
-
   <!-- <simple-load-provider load="1"/> -->
   <xs:complexType name="simple-load-providerType">
     <xs:attribute name="factor" default="1" />

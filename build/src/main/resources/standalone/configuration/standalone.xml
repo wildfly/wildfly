@@ -360,12 +360,7 @@
         </subsystem>
        </subsystem>
        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config>
-               <proxy-conf>
-                 <httpd-conf advertise-socket="mod_cluster" >
-                 </httpd-conf>
-               </proxy-conf>
-            </mod-cluster-config>
+           <mod-cluster-config advertise-socket="mod_cluster" />
        </subsystem>
     </profile>
 
