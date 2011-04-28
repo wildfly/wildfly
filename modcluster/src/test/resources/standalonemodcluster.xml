@@ -1,0 +1,383 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<server name="example"
+        xmlns="urn:jboss:domain:1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
+                            urn:jboss:domain:connector:1.0 jboss-connector.xsd
+                            urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:ejb3:1.0 jboss-ejb3.xsd
+                            urn:jboss:domain:ee:1.0 jboss-ee.xsd
+                            urn:jboss:domain:jaxrs:1.0 jboss-jaxrs.xsd
+                            urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
+                            urn:jboss:domain:jpa:1.0 jboss-jpa.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
+                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
+                            urn:jboss:domain:osgi:1.0 jboss-osgi.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
+                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
+                            urn:jboss:domain:web:1.0 jboss-web.xsd
+                            urn:jboss:domain:deployment-scanner:1.0 jboss-deployment-scanner.xsd
+                            urn:jboss:domain:security:1.0 jboss-security.xsd
+                            urn:jboss:domain:webservices:1.0 jboss-webservices.xsd
+                            urn:jboss:domain:weld:1.0 jboss-weld.xsd">
+
+    <extensions>
+        <extension module="org.jboss.as.arquillian.service"/>
+        <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.deployment-scanner"/>
+        <extension module="org.jboss.as.ee"/>
+        <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.jmx"/>
+        <extension module="org.jboss.as.jpa"/>
+        <extension module="org.jboss.as.logging"/>
+        <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.modcluster"/>
+        <extension module="org.jboss.as.naming"/>
+        <extension module="org.jboss.as.osgi"/>
+        <extension module="org.jboss.as.remoting"/>
+        <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.threads"/>
+        <extension module="org.jboss.as.transactions"/>
+        <extension module="org.jboss.as.web" />
+        <extension module="org.jboss.as.webservices" />
+        <extension module="org.jboss.as.weld" />
+    </extensions>
+
+    <paths>
+       <path name="absolute" path="tmp"/>
+       <path name="relative" path="relative" relative-to="absolute"/>
+    </paths>
+
+    <management-interfaces>
+       <native-interface interface="default" port="9999"/>
+       <http-interface interface="default" port="9990"/>
+    </management-interfaces>
+
+    <profile name="ignore">
+        <subsystem xmlns="urn:jboss:domain:logging:1.0">
+            <console-handler name="CONSOLE">
+                <level name="INFO"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+            </console-handler>
+
+            <periodic-rotating-file-handler name="FILE">
+                <level name="INFO"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="server.log"/>
+                <suffix value=".yyyy-MM-dd"/>
+            </periodic-rotating-file-handler>
+
+            <logger category="com.arjuna">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.apache.tomcat.util.modeler">
+                <level name="WARN"/>
+            </logger>
+            <logger category="sun.rmi">
+                <level name="WARN"/>
+            </logger>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </root-logger>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:threads:1.0">
+            <scheduled-thread-pool name="remoting">
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="seconds"/>
+            </scheduled-thread-pool>
+            <bounded-queue-thread-pool name="jca-short-running" blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                <queue-length count="10" per-cpu="20"/>
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="seconds"/>
+            </bounded-queue-thread-pool>
+            <bounded-queue-thread-pool name="jca-long-running" blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                <queue-length count="10" per-cpu="20"/>
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="seconds"/>
+            </bounded-queue-thread-pool>
+            <bounded-queue-thread-pool name="ejb3-async" blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                <queue-length count="10" per-cpu="20"/>
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="seconds"/>
+            </bounded-queue-thread-pool>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />
+        <subsystem xmlns="urn:jboss:domain:ee:1.0" />
+        <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
+        <subsystem xmlns="urn:jboss:domain:naming:1.0" />
+        <subsystem xmlns="urn:jboss:domain:security:1.0">
+            <security-domains>
+                <security-domain name="other">
+                    <authentication>
+                        <login-module code="UsersRoles" flag="required"/>
+                    </authentication>
+                </security-domain>
+            </security-domains>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
+        <subsystem xmlns="urn:jboss:domain:jmx:1.0">
+            <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:jpa:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:transactions:1.0">
+            <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+            <core-environment socket-binding="txn-socket-process-id"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:connector:1.0">
+            <archive-validation enabled="false" />
+            <bean-validation enabled="false" />
+            <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
+                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+                    <driver-class>org.h2.Driver</driver-class>
+                    <driver>org.h2.Driver#1.2</driver>
+                    <pool></pool>
+                    <security>
+                        <user-name>sa</user-name>
+                        <password>sa</password>
+                    </security>
+                    <validation></validation>
+                    <timeout></timeout>
+                    <statement></statement>
+                </datasource>
+            </datasources>
+            <drivers>
+                <driver module="com.h2database.h2"/>
+            </drivers>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0">
+                <!--  <resource-adapters>
+				  <resource-adapter>
+				    <archive>ra16out.rar</archive>
+				    <connection-definitions>
+				      <connection-definition jndi-name="java:/eis/ra16out-raxml"
+				                             class-name="org.jboss.jca.test.deployers.spec.rars.ra16out.TestManagedConnectionFactory">
+				      </connection-definition>
+				    </connection-definitions>
+				  </resource-adapter>
+				</resource-adapters>-->
+       </subsystem>
+<subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+            <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
+                <property name="manager.root">jboss-osgi</property>
+            </configuration>
+            <properties>
+                <property name="org.jboss.osgi.system.modules">
+                org.apache.log4j,
+                org.jboss.arquillian.api,
+                org.jboss.arquillian.junit,
+                org.jboss.arquillian.protocol.jmx,
+                org.jboss.arquillian.protocol.osgi,
+                org.jboss.arquillian.spi,
+                org.jboss.as.osgi,
+                org.jboss.shrinkwrap.api,
+                javax.inject.api,
+                org.junit
+                </property>
+                <property name="org.osgi.framework.system.packages.extra">
+                javax.transaction;version=1.1,
+                org.apache.log4j;version=1.2,
+                org.jboss.as.osgi.service;version=7.0,
+                org.jboss.logging;version=3.0,
+                org.jboss.osgi.deployment.deployer;version=1.0,
+                org.jboss.osgi.deployment.interceptor;version=1.0,
+                org.jboss.osgi.spi;version=1.0,
+                org.jboss.osgi.spi.capability;version=1.0,
+                org.jboss.osgi.spi.util;version=1.0,
+                org.jboss.osgi.testing;version=1.0,
+                org.jboss.osgi.vfs;version=1.0,
+
+                org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.jmx, org.jboss.arquillian.osgi,
+                org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
+                org.jboss.shrinkwrap.impl.base,
+                org.junit, org.junit.runner, javax.inject
+                </property>
+            </properties>
+            <modules>
+                <module identifier="org.osgi.compendium"/>
+                <module identifier="org.apache.aries.util"/>
+                <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
+                <module identifier="org.apache.felix.configadmin" start="true"/>
+                <module identifier="org.jboss.osgi.common" start="true"/>
+                <module identifier="org.apache.aries.jmx" start="true"/>
+                <module identifier="org.jboss.osgi.jmx" start="true"/>
+            </modules>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:messaging:1.0">
+            <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+            <journal-file-size>102400</journal-file-size>
+            <journal-min-files>2</journal-min-files>
+            <journal-type>NIO</journal-type>
+            <!-- disable messaging persistence -->
+            <persistence-enabled>false</persistence-enabled>
+
+            <connectors>
+               <in-vm-connector name="in-vm" server-id="0" />
+               <netty-connector name="netty" socket-binding="messaging" />
+               <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+                  <param key="batch-delay" value="50"/>
+               </netty-connector>
+            </connectors>
+
+            <acceptors>
+               <in-vm-acceptor name="in-vm" server-id="0" />
+               <netty-acceptor name="netty" socket-binding="messaging" />
+               <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+                  <param key="batch-delay" value="50"/>
+                  <param key="direct-deliver" value="false"/>
+               </netty-acceptor>
+            </acceptors>
+
+            <security-settings>
+               <security-setting match="#">
+                   <permission type="createNonDurableQueue" roles="guest"/>
+                   <permission type="deleteNonDurableQueue" roles="guest"/>
+                    <permission type="consume" roles="guest"/>
+                    <permission type="send" roles="guest"/>
+               </security-setting>
+            </security-settings>
+
+            <address-settings>
+               <!--default for catch all-->
+               <address-setting match="#">
+                  <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+                  <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+                  <redelivery-delay>0</redelivery-delay>
+                  <max-size-bytes>10485760</max-size-bytes>
+                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                  <address-full-policy>BLOCK</address-full-policy>
+               </address-setting>
+            </address-settings>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
+            <connection-factory name="InVmConnectionFactory">
+               <connectors>
+                  <connector-ref connector-name="in-vm" backup-connector-name="netty"/>
+               </connectors>
+               <entries>
+                  <entry name="java:/ConnectionFactory" />
+               </entries>
+            </connection-factory>
+            <connection-factory name="RemoteConnectionFactory">
+               <connectors>
+                  <connector-ref connector-name="netty" backup-connector-name="in-vm"/>
+               </connectors>
+               <entries>
+                  <entry name="RemoteConnectionFactory" />
+               </entries>
+            </connection-factory>
+            <queue name="testQueue">
+               <entry name="queue/test" />
+            </queue>
+            <topic name="testTopic">
+               <entry name="topic/test" />
+            </topic>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:web:1.0">
+            <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+            <virtual-server name="localhost">
+               <alias name="example.com" />
+            </virtual-server>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:weld:1.0" />
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.0">
+            <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:webservices:1.0">
+           <configuration>
+              <webServiceHost>localhost</webServiceHost>
+              <modifySOAPAddress>true</modifySOAPAddress>
+              <!-- <webServiceSecurePort>8443</webServiceSecurePort>
+                 <webServicePort>8080</webServicePort> -->
+           </configuration>
+       </subsystem>
+       <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+           <mod-cluster-config advertise-socket="mod_cluster" />
+       </subsystem>
+    </profile>
+
+    <interfaces>
+        <interface name="default">
+            <inet-address value="127.0.0.1"/>
+        </interface>
+        <interface name="any">
+           <any-address/>
+        </interface>
+        <interface name="complex">
+           <any>
+              <subnet-match value="192.168.0.0/16"/>
+              <public-address/>
+           </any>
+           <not>
+             <site-local-address/>
+           </not>
+           <up/>
+           <multicast/>
+        </interface>
+    </interfaces>
+
+        <socket-binding-group name="standard-sockets" default-interface="default">
+           <socket-binding name="jndi" port="1099"/>
+           <socket-binding name="jmx-connector-registry" port="1090"/>
+           <socket-binding name="jmx-connector-server" port="1091"/>
+           <socket-binding name="http" port="8080"/>
+           <socket-binding name="https" port="8447"/>
+           <socket-binding name="osgi-http" port="8090"/>
+           <socket-binding name="remoting" port="4447"/>
+           <socket-binding name="txn-recovery-environment" port="4712"/>
+           <socket-binding name="txn-status-manager" port="4713"/>
+           <socket-binding name="txn-socket-process-id" port="4714"/>
+           <socket-binding name="messaging" port="5445" />
+           <socket-binding name="messaging-throughput" port="5455"/>
+        </socket-binding-group>
+
+    <system-properties>
+        <property name="foo" value="bar"/>
+        <property name="key" value="value"/>
+    </system-properties>
+</server>
+
