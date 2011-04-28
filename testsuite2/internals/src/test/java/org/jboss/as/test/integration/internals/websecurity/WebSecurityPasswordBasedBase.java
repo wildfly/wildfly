@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.websecurity;
+package org.jboss.as.test.integration.internals.websecurity;
 
 import java.net.URL;
 
@@ -51,8 +51,8 @@ public abstract class WebSecurityPasswordBasedBase {
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-        war.addResource(tccl.getResource("security/users.properties"), "/WEB-INF/classes/users.properties");
-        war.addResource(tccl.getResource("security/roles.properties"), "/WEB-INF/classes/roles.properties");
+        war.addAsResource(tccl.getResource("security/users.properties"), "users.properties");
+        war.addAsResource(tccl.getResource("security/roles.properties"), "roles.properties");
 
         if (webxml != null) {
             war.setWebXML(webxml);

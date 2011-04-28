@@ -104,7 +104,7 @@
                         </property>
                         <property>
                           <name>jboss.options</name>
-                          <value>-Djavax.net.ssl.trustStore=${project.build.directory}/test-classes/security/server.keystore -Djavax.net.ssl.trustStorePassword=changeit -XX:MaxPermSize=256m</value>
+                          <value>-XX:MaxPermSize=256m</value>
                         </property>
                      </systemProperties>
                     <includes>

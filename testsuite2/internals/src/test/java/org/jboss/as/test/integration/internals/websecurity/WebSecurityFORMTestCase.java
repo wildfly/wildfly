@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.websecurity;
+package org.jboss.as.test.integration.internals.websecurity;
 
 import static org.junit.Assert.assertEquals;
 
@@ -40,8 +40,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
@@ -52,7 +51,7 @@ import org.junit.runner.RunWith;
  * @author Anil Saldhana
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
 
     @Deployment
@@ -61,8 +60,8 @@ public class WebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
         URL webxml = tccl.getResource("web-secure.war/web.xml");
         WebArchive war = WebSecurityPasswordBasedBase.create("web-secure.war", SecuredServlet.class, true, webxml);
 
-        war.addResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
-        war.addResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
+        war.addAsWebResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
+        war.addAsWebResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
 
         WebSecurityPasswordBasedBase.printWar(war);
         return war;

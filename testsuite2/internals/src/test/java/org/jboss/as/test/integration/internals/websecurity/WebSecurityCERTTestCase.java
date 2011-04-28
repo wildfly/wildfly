@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.websecurity;
+package org.jboss.as.test.integration.internals.websecurity;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -56,8 +56,7 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -65,6 +64,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -74,7 +74,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class WebSecurityCERTTestCase {
 
     protected final String URL = "https://localhost:8380/" + getContextPath() + "/secured/";
@@ -94,8 +94,8 @@ public class WebSecurityCERTTestCase {
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-        war.addResource(tccl.getResource("web-secure-client-cert.war/roles.properties"), "/WEB-INF/classes/roles.properties");
-        war.addResource(tccl.getResource("web-secure-client-cert.war/jboss-web.xml"), "/WEB-INF/jboss-web.xml");
+        war.addAsResource(tccl.getResource("web-secure-client-cert.war/roles.properties"), "roles.properties");
+        war.addAsWebInfResource(tccl.getResource("web-secure-client-cert.war/jboss-web.xml"), "jboss-web.xml");
 
         if (webxml != null) {
             war.setWebXML(webxml);
@@ -106,6 +106,17 @@ public class WebSecurityCERTTestCase {
 
     @Deployment
     public static WebArchive deployment() {
+        // FIXME hack to get things prepared before the deployment happens
+        try {
+            final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            // create the test connector
+            createTestConnector(client);
+            // create required security domains
+            createSecurityDomains(client);
+        } catch (Exception e) {
+            // ignore
+        }
+
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL webxml = tccl.getResource("web-secure-client-cert.war/web.xml");
         WebArchive war = create("web-secure-client-cert.war", SecuredServlet.class, true, webxml);
@@ -113,40 +124,23 @@ public class WebSecurityCERTTestCase {
         return war;
     }
 
+    @AfterClass
+    public static void after() throws Exception {
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        // and remove the connector again
+        removeTestConnector(client);
+        // remove test security domains
+        removeSecurityDomains(client);
+    }
+
     @Test
     public void testClientCertSucessfulAuth() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        try {
-            // create the test connector
-            createTestConnector(client);
-            // create required security domains
-            createSecurityDomains(client);
-
-            makeCall("test", 200);
-        } finally {
-            // and remove the connector again
-            removeTestConnector(client);
-            // remove test security domains
-            removeSecurityDomains(client);
-        }
+        makeCall("test", 200);
     }
 
     @Test
     public void testClientCertUnsucessfulAuth() throws Exception {
-        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        try {
-            // create the test connector
-            createTestConnector(client);
-            // create required security domains
-            createSecurityDomains(client);
-
-            makeCall("test2", 403);
-        } finally {
-            // and remove the connector again
-            removeTestConnector(client);
-            // remove test security domains
-            removeSecurityDomains(client);
-        }
+        makeCall("test2", 403);
     }
 
     protected void makeCall(String alias, int expectedStatusCode) throws Exception {
@@ -168,7 +162,7 @@ public class WebSecurityCERTTestCase {
         }
     }
 
-    public void createTestConnector(final ModelControllerClient client) throws Exception {
+    public static void createTestConnector(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -204,7 +198,7 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public void createSecurityDomains(final ModelControllerClient client) throws Exception {
+    public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -231,7 +225,7 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public void removeTestConnector(final ModelControllerClient client) throws Exception {
+    public static void removeTestConnector(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -249,7 +243,7 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public void removeSecurityDomains(final ModelControllerClient client) throws Exception {
+    public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -267,13 +261,13 @@ public class WebSecurityCERTTestCase {
         applyUpdates(updates, client);
     }
 
-    public void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
             applyUpdate(update, client);
         }
     }
 
-    public void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
+    public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
         ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
@@ -299,8 +293,6 @@ public class WebSecurityCERTTestCase {
             URL keystore = tccl.getResource("security/client.keystore");
             jsseSecurityDomain.setKeyStoreURL(keystore.getPath());
             jsseSecurityDomain.setClientAlias(alias);
-//            jsseSecurityDomain.setTrustStorePassword("changeit");
-//            jsseSecurityDomain.setTrustStoreURL(keystore.getPath());
             jsseSecurityDomain.reloadKeyAndTrustStore();
             KeyManager[] keyManagers = jsseSecurityDomain.getKeyManagers();
             TrustManager[] trustManagers = jsseSecurityDomain.getTrustManagers();
