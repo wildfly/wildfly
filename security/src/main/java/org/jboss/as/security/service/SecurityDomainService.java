@@ -79,18 +79,21 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
                     .getValue();
             applicationPolicyRegistration.addApplicationPolicy(applicationPolicy.getName(), applicationPolicy);
         }
+        final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
+        try {
+            securityDomainContext = securityManagement.createSecurityDomainContext(name);
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
         if (jsseSecurityDomain != null) {
-            final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue
-                    .getValue();
             try {
-                securityDomainContext = securityManagement.createSecurityDomainContext(name);
                 jsseSecurityDomain.reloadKeyAndTrustStore();
+                securityDomainContext.setJSSE(jsseSecurityDomain);
             } catch (Exception e) {
                 throw new StartException(e);
             }
-            securityDomainContext.setJSSE(jsseSecurityDomain);
-            securityManagement.getSecurityManagerMap().put(name, securityDomainContext);
         }
+        securityManagement.getSecurityManagerMap().put(name, securityDomainContext);
     }
 
     /** {@inheritDoc} */

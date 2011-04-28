@@ -20,7 +20,8 @@ public class WebSubsystemServices {
     public static final ServiceName JBOSS_WEB_CONNECTOR = JBOSS_WEB.append("connector");
     /** The base name for jboss.web host services. */
     public static final ServiceName JBOSS_WEB_HOST = JBOSS_WEB.append("host");
-
+    /** The base name for jboss.web realm services. */
+    public static final ServiceName JBOSS_WEB_REALM = JBOSS_WEB.append("realm");
 
     private WebSubsystemServices() {
     }

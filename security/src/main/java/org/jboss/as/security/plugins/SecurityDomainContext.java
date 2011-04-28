@@ -87,11 +87,11 @@ public class SecurityDomainContext {
         else if (name.equals(AUTHORIZATION_MGR))
             binding = getAuthorizationManager();
         else if (name.equals(AUDIT_MGR))
-            binding = getAuditMgr();
+            binding = getAuditManager();
         else if (name.equals(MAPPING_MGR))
-            binding = getMappingMgr();
+            binding = getMappingManager();
         else if (name.equals(IDENTITY_TRUST_MGR))
-            binding = getIdentityTrustMgr();
+            binding = getIdentityTrustManager();
         else if (name.equals(AUTH_CACHE))
             binding = authenticationCache;
         else if (name.equals(DOMAIN_CONTEXT))
@@ -147,27 +147,27 @@ public class SecurityDomainContext {
         return authenticationCache;
     }
 
-    public AuditManager getAuditMgr() {
+    public AuditManager getAuditManager() {
         return auditMgr;
     }
 
-    public void setAuditMgr(AuditManager auditMgr) {
+    public void setAuditManager(AuditManager auditMgr) {
         this.auditMgr = auditMgr;
     }
 
-    public MappingManager getMappingMgr() {
+    public MappingManager getMappingManager() {
         return mappingMgr;
     }
 
-    public void setMappingMgr(MappingManager mappingMgr) {
+    public void setMappingManager(MappingManager mappingMgr) {
         this.mappingMgr = mappingMgr;
     }
 
-    public IdentityTrustManager getIdentityTrustMgr() {
+    public IdentityTrustManager getIdentityTrustManager() {
         return identityTrustMgr;
     }
 
-    public void setIdentityTrustMgr(IdentityTrustManager identityTrustMgr) {
+    public void setIdentityTrustManager(IdentityTrustManager identityTrustMgr) {
         this.identityTrustMgr = identityTrustMgr;
     }
 

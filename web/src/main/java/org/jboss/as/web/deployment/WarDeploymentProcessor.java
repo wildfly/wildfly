@@ -23,24 +23,23 @@
 package org.jboss.as.web.deployment;
 
 import java.io.IOException;
-import java.security.AccessController;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 
-import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
+import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.jboss.as.ee.naming.NamespaceSelectorService;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,21 +48,17 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.NamingListener;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
-import org.jboss.as.web.security.JBossWebRealm;
+import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
-import org.jboss.security.mapping.MappingManager;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
-import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -177,37 +172,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             metaDataSecurityDomain = metaDataSecurityDomain.trim();
         }
 
-        // Get the realm details from the domain model
-        JBossWebRealm realm = new JBossWebRealm();
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain);
-
-        // Set the Module Class loader as the tccl such that the JNDI lookup of the JBoss Authentication/Authz managers succeed
-        @SuppressWarnings("unchecked")
-        ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController
-                .doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
-        SwitchContext switchContext = switcher.getSwitchContext(classLoader);
-
-        try {
-            AuthenticationManager authM = getAuthenticationManager(securityDomain);
-            realm.setAuthenticationManager(authM);
-
-            AuthorizationManager authzM = getAuthorizationManager(securityDomain);
-            realm.setAuthorizationManager(authzM);
-
-            MappingManager mapM = getMappingManager(securityDomain);
-            realm.setMappingManager(mapM);
-
-            Map<String, Set<String>> principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
-            realm.setPrincipalVersusRolesMap(principalVersusRolesMap);
-
-            webContext.setRealm(realm);
-        } catch (NamingException ne) {
-            throw new RuntimeException(ne);
-        } finally {
-            // restore previous tccl
-            switchContext.reset();
-        }
+        Map<String, Set<String>> principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
 
         // Setup an deployer configured ServletContext attributes
         final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
@@ -219,12 +186,19 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         try {
+            JBossWebRealmService realmService = new JBossWebRealmService(principalVersusRolesMap);
+            ServiceBuilder<?> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_REALM.append(securityDomain),
+                    realmService);
+            builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
+                    SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
+                    .install();
             ServiceName namespaceSelectorServiceName = deploymentUnit.getServiceName().append(NamespaceSelectorService.NAME);
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
-            ServiceBuilder<Context> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName),
-                    webDeploymentService);
+            builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService);
             builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class,
                     new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
+            builder.addDependency(WebSubsystemServices.JBOSS_WEB_REALM.append(securityDomain), Realm.class,
+                    webDeploymentService.getRealm());
             builder.addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
                     webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE);
 
@@ -235,21 +209,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);
         }
-    }
-
-    private AuthenticationManager getAuthenticationManager(String secDomain) throws NamingException {
-        InitialContext ic = new InitialContext();
-        return (AuthenticationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/authenticationMgr");
-    }
-
-    private AuthorizationManager getAuthorizationManager(String secDomain) throws NamingException {
-        InitialContext ic = new InitialContext();
-        return (AuthorizationManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/authorizationMgr");
-    }
-
-    private MappingManager getMappingManager(String secDomain) throws NamingException {
-        InitialContext ic = new InitialContext();
-        return (MappingManager) ic.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + secDomain + "/mappingMgr");
     }
 
 }

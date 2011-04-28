@@ -23,6 +23,7 @@ package org.jboss.as.web.deployment;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.web.NamingListener;
@@ -43,6 +44,7 @@ class WebDeploymentService implements Service<Context> {
     private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
     private final InjectedValue<NamespaceContextSelector> namespaceSelector = new InjectedValue<NamespaceContextSelector>();
+    private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
 
     public WebDeploymentService(final StandardContext context) {
         this.context = context;
@@ -50,6 +52,7 @@ class WebDeploymentService implements Service<Context> {
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext startContext) throws StartException {
+        context.setRealm(realm.getValue());
         try {
             NamingListener.beginComponentStart(namespaceSelector.getValue());
             try {
@@ -93,6 +96,10 @@ class WebDeploymentService implements Service<Context> {
 
     public InjectedValue<NamespaceContextSelector> getNamespaceSelector() {
         return namespaceSelector;
+    }
+
+    public InjectedValue<Realm> getRealm() {
+        return realm;
     }
 
 }

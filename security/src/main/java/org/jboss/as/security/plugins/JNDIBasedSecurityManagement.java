@@ -284,9 +284,9 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
         SecurityDomainContext securityDomainContext = new SecurityDomainContext(am, null);
 
         securityDomainContext.setAuthorizationManager(createAuthorizationManager(securityDomain));
-        securityDomainContext.setAuditMgr(createAuditManager(securityDomain));
-        securityDomainContext.setIdentityTrustMgr(createIdentityTrustManager(securityDomain));
-        securityDomainContext.setMappingMgr(createMappingManager(securityDomain));
+        securityDomainContext.setAuditManager(createAuditManager(securityDomain));
+        securityDomainContext.setIdentityTrustManager(createIdentityTrustManager(securityDomain));
+        securityDomainContext.setMappingManager(createMappingManager(securityDomain));
         return securityDomainContext;
     }
 
