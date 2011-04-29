@@ -175,6 +175,10 @@
             <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.6_spec"/>
         </module-def>
 
+        <module-def name="javax.rmi.api">
+            <maven-resource group="org.jboss.spec.javax.rmi" artifact="jboss-rmi-api_1.0_spec"/>
+        </module-def>
+
         <module-def name="javax.security.auth.message.api">
             <maven-resource group="org.jboss.spec.javax.security.auth.message" artifact="jboss-jaspi-api_1.0_spec"/>
         </module-def>
@@ -397,6 +401,10 @@
             <maven-resource group="org.infinispan" artifact="infinispan-core"/>
         </module-def>
 
+        <module-def name="org.jacorb">
+            <maven-resource group="jacorb" artifact="jacorb"/>
+        </module-def>
+
         <module-def name="org.javassist">
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
@@ -457,6 +465,10 @@
 
         <module-def name="org.jboss.as.host-controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-host-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jacorb">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jacorb"/>
         </module-def>
 
         <module-def name="org.jboss.as.jaxrs">
@@ -844,6 +856,8 @@
         <module-def name="org.junit">
             <maven-resource group="junit" artifact="junit"/>
         </module-def>
+
+        <module-def name="org.omg.api" />
 
         <module-def name="org.osgi.core">
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>

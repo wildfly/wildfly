@@ -66,6 +66,7 @@
         <version.com.h2database.h2>1.2.145</version.com.h2database.h2>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
+        <version.jacorb>2.3.1jboss.patch01-brew</version.jacorb>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-impl>2.0.4-b09</version.javax.faces.jsf-impl>
@@ -165,6 +166,7 @@
         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
+        <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.0.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
@@ -233,6 +235,7 @@
         <module>ejb3</module>
         <module>embedded</module>
         <module>host-controller</module>
+        <module>jacorb</module>
         <module>jaxrs</module>
         <module>jmx</module>
         <module>jpa</module>
@@ -676,7 +679,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-logging</artifactId>
+                <artifactId>jboss-as-jacorb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -689,6 +692,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jmx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -874,6 +883,12 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>jacorb</groupId>
+                <artifactId>jacorb</artifactId>
+                <version>${version.jacorb}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>jboss.jaxbintros</groupId>
                 <artifactId>jboss-jaxb-intros</artifactId>
@@ -4085,6 +4100,12 @@
                 <groupId>org.jboss.spec.javax.resource</groupId>
                 <artifactId>jboss-connector-api_1.6_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.rmi</groupId>
+                <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec}</version>
             </dependency>
 
             <dependency>

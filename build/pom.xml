@@ -156,6 +156,11 @@
         </dependency>
 
         <dependency>
+            <groupId>jacorb</groupId>
+            <artifactId>jacorb</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
@@ -672,6 +677,11 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jacorb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-logging</artifactId>
         </dependency>
 
@@ -1140,6 +1150,11 @@
         <dependency>
             <groupId>org.jboss.spec.javax.resource</groupId>
             <artifactId>jboss-connector-api_1.6_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.rmi</groupId>
+            <artifactId>jboss-rmi-api_1.0_spec</artifactId>
         </dependency>
 
         <dependency>

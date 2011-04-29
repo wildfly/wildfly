@@ -1,0 +1,135 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.jacorb.service;
+
+import org.jacorb.config.Configuration;
+import org.jboss.as.jacorb.naming.NamingContextImpl;
+import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.PortableServer.POA;
+
+/**
+ * <p>
+ * This class implements a {@code Service} that provides the default CORBA naming service for JBoss to use.
+ * </p>
+ *
+ * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ */
+public class CorbaNamingService implements Service<NamingContextExt> {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
+
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "naming-service");
+
+    private InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
+
+    private InjectedValue<POA> namingPOAInjector = new InjectedValue<POA>();
+
+    private InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
+
+    private NamingContextExt namingService;
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        log.debugf("Starting Service " + context.getController().getName().getCanonicalName());
+
+        ORB orb = orbInjector.getValue();
+        POA rootPOA = rootPOAInjector.getValue();
+        POA namingPOA = namingPOAInjector.getValue();
+
+        try {
+            // Create the naming service
+            org.jacorb.naming.NamingContextImpl.init(orb, rootPOA);
+            NamingContextImpl ns = new NamingContextImpl(namingPOA);
+            Configuration config = ((org.jacorb.orb.ORB) orb).getConfiguration();
+            ns.configure(config); // configure the name service using the JacORB config
+            byte[] rootContextId = "root".getBytes();
+            namingPOA.activate_object_with_id(rootContextId, ns);
+            namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
+                    "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
+        } catch (Exception e) {
+            throw new StartException("Failed to start the CORBA Naming Service", e);
+        }
+
+        // bind the corba naming service to JNDI.
+        CorbaServiceUtil.bindObject(context.getChildTarget(), "corbanaming", namingService);
+
+        log.info("CORBA Naming Service Started");
+        log.debugf("Naming: [" + orb.object_to_string(namingService) + "]");
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        log.debugf("Stopping Service " + context.getController().getName().getCanonicalName());
+    }
+
+    @Override
+    public NamingContextExt getValue() throws IllegalStateException, IllegalArgumentException {
+        return this.namingService;
+    }
+
+    /**
+     * <p>
+     * Obtains a reference to the {@code ORB} injector which allows the injection of the running {@code ORB} that will
+     * be used to initialize the naming service.
+     * </p>
+     *
+     * @return the {@code Injector<ORB>} used to inject the running {@code ORB}.
+     */
+    public Injector<ORB> getORBInjector() {
+        return this.orbInjector;
+    }
+
+    /**
+     * <p>
+     * Obtains a reference to the {@code RootPOA} injector which allows the injection of the root {@code POA} that will
+     * be used to initialize the naming service.
+     * </p>
+     *
+     * @return the {@code Injector<POA>} used to inject the root {@code POA}.
+     */
+    public Injector<POA> getRootPOAInjector() {
+        return this.rootPOAInjector;
+    }
+
+    /**
+     * <p>
+     * Obtains a reference to the {@code POA} injector which allows the injection of the {@code POA} that will be used
+     * activate the naming service.
+     * </p>
+     *
+     * @return the {@code Injector<POA>} used to inject the naming service {@code POA}.
+     */
+    public Injector<POA> getNamingPOAInjector() {
+        return this.namingPOAInjector;
+    }
+}
