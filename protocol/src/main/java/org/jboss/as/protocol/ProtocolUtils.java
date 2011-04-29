@@ -71,7 +71,7 @@ public class    ProtocolUtils {
         expectHeader(input.readByte(), expected);
     }
 
-    private static void expectHeader(final byte actual, int expected) throws IOException {
+    public static void expectHeader(final byte actual, int expected) throws IOException {
         if (actual != (byte) expected) {
             throw new IOException("Invalid byte token.  Expecting '" + expected + "' received '" + actual + "'");
         }

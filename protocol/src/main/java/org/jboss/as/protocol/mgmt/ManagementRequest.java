@@ -116,7 +116,11 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     public void handle(Connection connection, InputStream input) throws IOException {
         try {
             connection.setMessageHandler(responseBodyHandler);
-            expectHeader(input, ManagementProtocol.RESPONSE_START);
+            byte header = StreamUtils.readByte(input);
+            if (header == ManagementProtocol.REMOTE_EXCEPTION) {
+                throw new IOException("Remote side caught an (unknown) exception and cannot process the request");
+            }
+            expectHeader(header, ManagementProtocol.RESPONSE_START);
             byte responseCode = StreamUtils.readByte(input);
             if (responseCode != getResponseCode()) {
                 throw new IOException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
@@ -134,7 +138,11 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
             try {
                 input = new SimpleByteDataInput(inputStream);
                 responseHeader = new ManagementResponseHeader(input);
-                if (requestId != responseHeader.getResponseId()) {
+                int responseId = responseHeader.getResponseId();
+                if (responseId == ManagementProtocol.REMOTE_EXCEPTION) {
+                    throw new IOException("Remote side caught an (unknown) exception and cannot process the request");
+                }
+                else if (requestId != responseId) {
                     throw new IOException("Invalid request ID expecting " + requestId + " received " + responseHeader.getResponseId());
                 }
                 connection.setMessageHandler(ManagementRequest.this);
@@ -209,7 +217,11 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             try {
                 connection.setMessageHandler(responseEndHandler);
-                expectHeader(input, ManagementProtocol.RESPONSE_BODY);
+                byte header = StreamUtils.readByte(input);
+                if (header == ManagementProtocol.REMOTE_EXCEPTION) {
+                    throw new IOException("Remote side caught an (unknown) exception and cannot process the request");
+                }
+                expectHeader(header, ManagementProtocol.RESPONSE_BODY);
                 synchronized (resultLock) {
                     result = receiveResponse(input);
                 }
@@ -274,6 +286,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         private volatile Exception exception;
         private AtomicBoolean valueSet = new AtomicBoolean();
 
+        @Override
         public R get() throws InterruptedException, ExecutionException {
             boolean intr = false;
             try {
@@ -314,18 +327,22 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
             }
         }
 
+        @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             return false;
         }
 
+        @Override
         public boolean isCancelled() {
             return false;
         }
 
+        @Override
         public synchronized boolean isDone() {
             return result != null || exception != null;
         }
 
+        @Override
         public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }

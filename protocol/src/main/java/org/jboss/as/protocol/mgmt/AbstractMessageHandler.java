@@ -36,7 +36,7 @@ import org.jboss.logging.Logger;
  * @author John Bailey
  */
 public abstract class AbstractMessageHandler implements MessageHandler {
-    private static final Logger log = Logger.getLogger("org.jboss.as.management");
+    protected static final Logger log = Logger.getLogger("org.jboss.as.management");
 
     /** {@inheritDoc} */
     @Override

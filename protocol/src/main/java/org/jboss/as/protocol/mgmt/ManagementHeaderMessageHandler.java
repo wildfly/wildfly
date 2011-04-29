@@ -41,11 +41,13 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
  */
 public abstract class ManagementHeaderMessageHandler extends AbstractMessageHandler {
 
+    @Override
     public void handle(Connection connection, InputStream dataStream) throws IOException {
-        final int workingVersion;
         final ManagementRequestHeader requestHeader;
         final MessageHandler handler;
         ByteDataInput input = null;
+        int workingVersion = 1;
+        int responseId = ManagementProtocol.REMOTE_EXCEPTION;
         try {
             input = new SimpleByteDataInput(dataStream);
 
@@ -65,6 +67,7 @@ public abstract class ManagementHeaderMessageHandler extends AbstractMessageHand
                 throw new IOException(msg);
             }
             connection.setMessageHandler(handler);
+            responseId = requestHeader.getRequestId();
         } catch (IOException e) {
             throw e;
         } catch (Throwable t) {
@@ -72,8 +75,11 @@ public abstract class ManagementHeaderMessageHandler extends AbstractMessageHand
         } finally {
             safeClose(input);
             safeClose(dataStream);
+            writeResponseHeader(connection, workingVersion, responseId);
         }
+    }
 
+    private void writeResponseHeader(Connection connection, int version, int responseId) throws IOException {
         OutputStream dataOutput = null;
         ByteDataOutput output = null;
         try {
@@ -81,7 +87,7 @@ public abstract class ManagementHeaderMessageHandler extends AbstractMessageHand
             output = new SimpleByteDataOutput(dataOutput);
 
             // Now write the response header
-            final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
+            final ManagementResponseHeader responseHeader = new ManagementResponseHeader(version, responseId);
             responseHeader.write(output);
 
             output.close();

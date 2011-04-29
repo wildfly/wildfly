@@ -84,7 +84,7 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
     protected void sendResponse(final OutputStream output) throws IOException {
     }
 
-    final MessageHandler requestBodyHandler = new AbstractMessageHandler() {
+    final MessageHandler requestBodyHandler = new ReportExceptionHandler() {
         @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(requestEndHandler);
@@ -97,7 +97,13 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
         @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(finalMessageHandler);
-            expectHeader(input, ManagementProtocol.REQUEST_END);
+            try {
+                expectHeader(input, ManagementProtocol.REQUEST_END);
+            }
+            catch (IOException e) {
+                writeExceptionHeader(connection);
+                throw e;
+            }
 
             OutputStream outputStream = null;
             ByteDataOutput output = null;
@@ -131,4 +137,38 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
             }
         }
     };
+
+    private abstract class ReportExceptionHandler extends AbstractMessageHandler {
+
+        @Override
+        public void handleMessage(Connection connection, InputStream inputStream) throws IOException {
+            try {
+                super.handleMessage(connection, inputStream);
+            }
+            catch (IOException e) {
+                writeExceptionHeader(connection);
+                throw e;
+            }
+            catch (RuntimeException e) {
+                writeExceptionHeader(connection);
+                throw e;
+            }
+        }
+
+    }
+
+    private static void writeExceptionHeader(Connection connection) throws IOException {
+
+        OutputStream outputStream = null;
+        try {
+            outputStream = connection.writeMessage();
+            outputStream.write(ManagementProtocol.REMOTE_EXCEPTION);
+            outputStream.close();
+        } catch (Exception e) {
+            ManagementResponse.log.errorf(e, "Failed to write REMOTE_EXCEPTION response header to notify requestor of exception on this side");
+        }
+        finally {
+            safeClose(outputStream);
+        }
+    }
 }
