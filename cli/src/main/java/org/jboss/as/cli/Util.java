@@ -54,12 +54,25 @@ public class Util {
         if(operationResult == null) {
             return null;
         }
-
         ModelNode descr = operationResult.get("failure-description");
         if(descr == null) {
             return null;
         }
+        return descr.asString();
+    }
 
+    public static String getDomainFailureDescription(ModelNode operationResult) {
+        if(operationResult == null) {
+            return null;
+        }
+        ModelNode descr = operationResult.get("failure-description");
+        if(descr == null) {
+            return null;
+        }
+        descr = descr.get("domain-failure-description");
+        if(descr == null) {
+            return null;
+        }
         return descr.asString();
     }
 
@@ -76,6 +89,22 @@ public class Util {
             list.add(node.asString());
         }
         return list;
+    }
+
+    public static boolean listContains(ModelNode operationResult, String item) {
+        if(!operationResult.hasDefined("result"))
+            return false;
+
+        List<ModelNode> nodeList = operationResult.get("result").asList();
+        if(nodeList.isEmpty())
+            return false;
+
+        for(ModelNode node : nodeList) {
+            if(node.asString().equals(item)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static byte[] getHash(ModelNode operationResult) {
@@ -103,8 +132,151 @@ public class Util {
         return list;
     }
 
-    public static boolean isDeployed(String name, ModelControllerClient client) {
+    public static boolean isDeploymentInRepository(String name, ModelControllerClient client) {
         return getDeployments(client).contains(name);
+    }
+
+    public static boolean isDeployedAndEnabledInStandalone(String name, ModelControllerClient client) {
+
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        ModelNode request;
+        try {
+            builder.operationName("read-children-names");
+            builder.addProperty("child-type", "deployment");
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                if(!listContains(outcome, name)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        builder = new DefaultOperationRequestBuilder();
+        builder.addNode("deployment", name);
+        builder.setOperationName("read-attribute");
+        builder.addProperty("name", "enabled");
+        try {
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                if(!outcome.hasDefined("result")) {
+                    return false;
+                }
+                return outcome.get("result").asBoolean();
+            }
+        } catch(Exception e) {
+        }
+        return false;
+    }
+
+    public static List<String> getAllEnabledServerGroups(String deploymentName, ModelControllerClient client) {
+
+        List<String> serverGroups = getServerGroups(client);
+        if(serverGroups.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<String>();
+        for(String serverGroup : serverGroups) {
+            DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+            ModelNode request;
+            try {
+                builder.operationName("read-children-names");
+                builder.addNode("server-group", serverGroup);
+                builder.addProperty("child-type", "deployment");
+                request = builder.buildRequest();
+            } catch (OperationFormatException e) {
+                throw new IllegalStateException("Failed to build operation", e);
+            }
+
+            try {
+                ModelNode outcome = client.execute(request);
+                if (isSuccess(outcome)) {
+                    if(!listContains(outcome, deploymentName)) {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+            } catch (Exception e) {
+                continue;
+            }
+
+            builder = new DefaultOperationRequestBuilder();
+            builder.addNode("server-group", serverGroup);
+            builder.addNode("deployment", deploymentName);
+            builder.setOperationName("read-attribute");
+            builder.addProperty("name", "enabled");
+            try {
+                request = builder.buildRequest();
+            } catch (OperationFormatException e) {
+                throw new IllegalStateException("Failed to build operation", e);
+            }
+
+            try {
+                ModelNode outcome = client.execute(request);
+                if (isSuccess(outcome)) {
+                    if(!outcome.hasDefined("result")) {
+                        continue;
+                    }
+                    if(outcome.get("result").asBoolean()) {
+                        result.add(serverGroup);
+                    }
+                }
+            } catch(Exception e) {
+                continue;
+            }
+        }
+
+        return result;
+    }
+
+    public static List<String> getAllReferencingServerGroups(String deploymentName, ModelControllerClient client) {
+
+        List<String> serverGroups = getServerGroups(client);
+        if(serverGroups.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<String>();
+        for(String serverGroup : serverGroups) {
+            DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+            ModelNode request;
+            try {
+                builder.operationName("read-children-names");
+                builder.addNode("server-group", serverGroup);
+                builder.addProperty("child-type", "deployment");
+                request = builder.buildRequest();
+            } catch (OperationFormatException e) {
+                throw new IllegalStateException("Failed to build operation", e);
+            }
+
+            try {
+                ModelNode outcome = client.execute(request);
+                if (isSuccess(outcome)) {
+                    if(listContains(outcome, deploymentName)) {
+                        result.add(serverGroup);
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+        return result;
     }
 
     public static List<String> getDeployments(ModelControllerClient client) {

@@ -181,7 +181,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         String runtimeName = rtName.getValue(args);
 
-        if(Util.isDeployed(name, client) && f != null) {
+        if(Util.isDeploymentInRepository(name, client) && f != null) {
             if(force.isPresent(args)) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
@@ -345,7 +345,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             name = f.getName();
         }
 
-        if(Util.isDeployed(name, ctx.getModelControllerClient())) {
+        if(Util.isDeploymentInRepository(name, ctx.getModelControllerClient())) {
             if(force.isPresent(args)) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 

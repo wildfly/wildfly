@@ -534,10 +534,10 @@ public class CommandLineMain {
                         buffer.append("standalone@");
                     }
                     buffer.append(controllerHost).append(':').append(controllerPort).append(' ');
+                    promptConnectPart = buffer.toString();
                 } else {
                     buffer.append("disconnected ");
                 }
-                promptConnectPart = buffer.toString();
             } else {
                 buffer.append(promptConnectPart);
             }
