@@ -31,7 +31,6 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public final class ResourceAdapterDeployment {
 
-    private final ModuleIdentifier identifier;
     private final CommonDeployment deployment;
 
     /**
@@ -39,17 +38,8 @@ public final class ResourceAdapterDeployment {
      * @param identifier The identifier
      * @param deployment The deployment
      */
-    public ResourceAdapterDeployment(ModuleIdentifier identifier, CommonDeployment deployment) {
-        this.identifier = identifier;
+    public ResourceAdapterDeployment(CommonDeployment deployment) {
         this.deployment = deployment;
-    }
-
-    /**
-     * Get the identifier
-     * @return The value
-     */
-    public ModuleIdentifier getIdentifier() {
-        return identifier;
     }
 
     /**

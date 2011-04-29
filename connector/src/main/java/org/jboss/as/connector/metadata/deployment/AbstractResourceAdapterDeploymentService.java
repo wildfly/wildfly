@@ -22,19 +22,60 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.resource.spi.IllegalStateException;
+import javax.resource.spi.ResourceAdapter;
+import javax.transaction.TransactionManager;
+
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
+import org.jboss.as.connector.services.AdminObjectService;
+import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
+import org.jboss.as.connector.services.ConnectionFactoryService;
+import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.connector.util.Injection;
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
+import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
+import org.jboss.jca.common.api.metadata.ra.AdminObject;
+import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
+import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.api.metadata.ra.Connector.Version;
+import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
+import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.jca.core.spi.naming.JndiStrategy;
-import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
+import org.jboss.jca.deployers.common.CommonDeployment;
+import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.SubjectFactory;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -56,7 +97,12 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     protected final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<ManagementRepository>();
 
-    public ResourceAdapterDeployment getValue() throws IllegalStateException {
+    protected final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
+    protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
+    protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
+    protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+
+    public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
     }
 
@@ -127,6 +173,272 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<ResourceAdapterDeploymentRegistry> getRegistryInjector() {
         return registry;
+    }
+
+    public InjectedValue<ConnectorSubsystemConfiguration> getConfig() {
+        return config;
+    }
+
+    public InjectedValue<TransactionIntegration> getTxIntegration() {
+        return txInt;
+    }
+
+    public Injector<TransactionIntegration> getTxIntegrationInjector() {
+        return txInt;
+    }
+
+    public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
+        return config;
+    }
+
+    public Injector<SubjectFactory> getSubjectFactoryInjector() {
+        return subjectFactory;
+    }
+
+    public Injector<CachedConnectionManager> getCcmInjector() {
+        return ccmValue;
+    }
+
+    protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
+
+        private final ServiceContainer serviceContainer;
+
+        protected final URL url;
+        protected final String deploymentName;
+        protected final File root;
+        protected final ClassLoader cl;
+        protected final Connector cmd;
+
+        protected AbstractAS7RaDeployer(ServiceContainer serviceContainer, URL url, String deploymentName, File root,
+                ClassLoader cl, Connector cmd) {
+            super(true, Logger.getLogger(AbstractAS7RaDeployer.class));
+            this.serviceContainer = serviceContainer;
+            this.url = url;
+            this.deploymentName = deploymentName;
+            this.root = root;
+            this.cl = cl;
+            this.cmd = cmd;
+        }
+
+        public abstract CommonDeployment doDeploy() throws Throwable;
+
+        @Override
+        public String[] bindConnectionFactory(URL url, String deployment, Object cf) throws Throwable {
+            throw new IllegalStateException("Non-explicit JNDI bindings not supported");
+        }
+
+        @Override
+        public String[] bindConnectionFactory(URL url, String deployment, Object cf, final String jndi) throws Throwable {
+
+            mdr.getValue().registerJndiMapping(url.toExternalForm(), cf.getClass().getName(), jndi);
+
+            log.infof("Registered connection factory %s on mdr", jndi);
+
+            final ConnectionFactoryService connectionFactoryService = new ConnectionFactoryService(cf);
+
+            final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
+            serviceContainer.addService(connectionFactoryServiceName, connectionFactoryService)
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
+            final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
+                    .append(jndi);
+            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
+                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final BinderService binderService = new BinderService(jndi.substring(6));
+            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
+            serviceContainer
+                    .addService(binderServiceName, binderService)
+                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                            binderService.getManagedObjectInjector())
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                            binderService.getNamingStoreInjector())
+                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName))
+                    .addListener(new AbstractServiceListener<Object>() {
+                        public void serviceStarted(ServiceController<?> controller) {
+                            log.infof("Bound JCA ConnectionFactory [%s]", jndi);
+                        }
+
+                        public void serviceStopped(ServiceController<?> serviceController) {
+                            log.infof("Unbound JCA ConnectionFactory [%s]", jndi);
+                        }
+
+                        public void serviceRemoved(ServiceController<?> serviceController) {
+                            log.debugf("Removed JCA ConnectionFactory [%s]", jndi);
+                            serviceController.removeListener(this);
+                        }
+                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            return new String[] { jndi };
+        }
+
+        @Override
+        public String[] bindAdminObject(URL url, String deployment, Object ao) throws Throwable {
+            throw new IllegalStateException("Non-explicit JNDI bindings not supported");
+        }
+
+        @Override
+        public String[] bindAdminObject(URL url, String deployment, Object ao, final String jndi) throws Throwable {
+
+            mdr.getValue().registerJndiMapping(url.toExternalForm(), ao.getClass().getName(), jndi);
+
+            log.infof("Registerred admin object at %s on mdr", jndi);
+
+            final AdminObjectService adminObjectService = new AdminObjectService(ao);
+
+            final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
+            serviceContainer.addService(adminObjectServiceName, adminObjectService)
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
+            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
+            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
+                    .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final BinderService binderService = new BinderService(jndi.substring(6));
+            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
+            serviceContainer
+                    .addService(binderServiceName, binderService)
+                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                            binderService.getManagedObjectInjector())
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                        public void serviceStarted(ServiceController<?> controller) {
+                            log.infof("Bound JCA AdminObject [%s]", jndi);
+                        }
+
+                        public void serviceStopped(ServiceController<?> serviceController) {
+                            log.infof("Unbound JCA AdminObject [%s]", jndi);
+                        }
+
+                        public void serviceRemoved(ServiceController<?> serviceController) {
+                            log.debugf("Removed JCA AdminObject [%s]", jndi);
+                            serviceController.removeListener(this);
+                        }
+                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            return new String[] { jndi };
+        }
+
+        @Override
+        protected abstract boolean checkActivation(Connector cmd, IronJacamar ijmd);
+
+        @Override
+        protected boolean checkConfigurationIsValid() {
+            return this.getConfiguration() != null;
+        }
+
+        @Override
+        protected PrintWriter getLogPrintWriter() {
+            return new PrintWriter(System.out);
+        }
+
+        @Override
+        protected File getReportDirectory() {
+            // TODO: evaluate if provide something in config about that. atm
+            // returning null and so skip its use
+            return null;
+        }
+
+        @Override
+        protected TransactionManager getTransactionManager() {
+            AccessController.doPrivileged(new SetContextLoaderAction(
+                    com.arjuna.ats.jbossatx.jta.TransactionManagerService.class.getClassLoader()));
+            try {
+                return getTxIntegration().getValue().getTransactionManager();
+            } finally {
+                AccessController.doPrivileged(CLEAR_ACTION);
+            }
+        }
+
+        @Override
+        public Object initAndInject(String className, List<? extends ConfigProperty> configs, ClassLoader cl)
+                throws DeployException {
+            try {
+                Class clz = Class.forName(className, true, cl);
+                Object o = clz.newInstance();
+
+                if (configs != null) {
+                    Injection injector = new Injection();
+                    for (ConfigProperty cpmd : configs) {
+                        if (cpmd.isValueSet()) {
+                            boolean setValue = true;
+
+                            if (cpmd instanceof org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) {
+                                org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16 cpmd16 = (org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) cpmd;
+
+                                if (cpmd16.getConfigPropertyIgnore() != null && cpmd16.getConfigPropertyIgnore().booleanValue())
+                                    setValue = false;
+                            }
+
+                            if (setValue)
+                                injector.inject(cpmd.getConfigPropertyType().getValue(), cpmd.getConfigPropertyName()
+                                        .getValue(), cpmd.getConfigPropertyValue().getValue(), o);
+                        }
+                    }
+                }
+
+                return o;
+            } catch (Throwable t) {
+                throw new DeployException("Deployment " + className + " failed", t);
+            }
+        }
+
+        @Override
+        protected void registerResourceAdapterToMDR(URL url, File file, Connector connector, IronJacamar ij)
+                throws AlreadyExistsException {
+            log.debugf("Registering ResourceAdapter %s", deploymentName);
+            mdr.getValue().registerResourceAdapter(deploymentName, file, connector, ij);
+        }
+
+        @Override
+        protected String registerResourceAdapterToResourceAdapterRepository(ResourceAdapter instance) {
+            return raRepository.getValue().registerResourceAdapter(instance);
+
+        }
+
+        @Override
+        protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
+            if (securityDomain == null || securityDomain.trim().equals("")) {
+                return null;
+            } else {
+                return subjectFactory.getValue();
+            }
+        }
+
+        @Override
+        protected TransactionIntegration getTransactionIntegration() {
+            return getTxIntegration().getValue();
+        }
+
+        @Override
+        protected CachedConnectionManager getCachedConnectionManager() {
+            return ccmValue.getValue();
+        }
+
+        // Override this method to change how jndiName is build in AS7
+        @Override
+        protected String buildJndiName(String jndiName, Boolean javaContext) {
+            return super.buildJndiName(jndiName, javaContext);
+        }
+
+    }
+
+    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
+
+    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
+
+        private final ClassLoader classLoader;
+
+        public SetContextLoaderAction(final ClassLoader classLoader) {
+            this.classLoader = classLoader;
+        }
+
+        public Void run() {
+            Thread.currentThread().setContextClassLoader(classLoader);
+            return null;
+        }
     }
 
 }

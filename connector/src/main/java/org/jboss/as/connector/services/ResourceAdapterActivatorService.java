@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.metadata.deployment;
+package org.jboss.as.connector.services;
 
 import java.io.File;
 import java.net.URL;
@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.services.ResourceAdapterService;
+import org.jboss.as.connector.metadata.deployment.AbstractResourceAdapterDeploymentService;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.AdminObject;
 import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
@@ -41,7 +41,6 @@ import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
 import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -55,42 +54,42 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements
+public final class ResourceAdapterActivatorService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
 
-    private final Module module;
-    private final ConnectorXmlDescriptor connectorXmlDescriptor;
+    private final ClassLoader cl;
     private final Connector cmd;
     private final IronJacamar ijmd;
+    private final String deploymentName;
 
-    public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
-            final IronJacamar ijmd, final Module module) {
-        this.connectorXmlDescriptor = connectorXmlDescriptor;
+    public ResourceAdapterActivatorService(final Connector cmd, final IronJacamar ijmd, ClassLoader cl,
+            final String deploymentName) {
         this.cmd = cmd;
         this.ijmd = ijmd;
-        this.module = module;
+        this.cl = cl;
+        this.deploymentName = deploymentName;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        final ServiceContainer container = context.getController().getServiceContainer();
-        final URL url = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getUrl();
-        final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
-        final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
-        CommonDeployment raDeployment = null;
-        final AS7RaDeployer raDeployer = new AS7RaDeployer(container, url, deploymentName, root, module.getClassLoader(), cmd,
-                ijmd);
-        raDeployer.setConfiguration(config.getValue());
 
+        String pathname = "file://RaActivator" + deploymentName;
+
+        final ServiceContainer container = context.getController().getServiceContainer();
+        CommonDeployment deploymentMD;
         try {
-            raDeployment = raDeployer.doDeploy();
-        } catch (Throwable t) {
-            throw new StartException("Failed to start RA deployment [" + deploymentName + "]", t);
+            ResourceAdapterActivator activator = new ResourceAdapterActivator(container, new URL(pathname), deploymentName,
+                    new File(pathname), cl, cmd, ijmd);
+            activator.setConfiguration(getConfig().getValue());
+
+            deploymentMD = activator.doDeploy();
+        } catch (Throwable e) {
+            throw new StartException("Failed to activate resource adapter " + deploymentName, e);
         }
 
-        value = new ResourceAdapterDeployment(raDeployment);
+        value = new ResourceAdapterDeployment(deploymentMD);
         registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
         log.debugf("Starting sevice %s",
@@ -100,7 +99,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
                         new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                 .install();
-
+        log.debugf("Starting sevice %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
     }
 
     /**
@@ -108,18 +107,16 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
      */
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping sevice %s",
-                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
-        managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
-        super.stop(context);
+        log.debugf("Stopping sevice %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+
     }
 
-    private class AS7RaDeployer extends AbstractAS7RaDeployer {
+    private class ResourceAdapterActivator extends AbstractAS7RaDeployer {
 
         private final IronJacamar ijmd;
 
-        public AS7RaDeployer(ServiceContainer serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, IronJacamar ijmd) {
+        public ResourceAdapterActivator(ServiceContainer serviceContainer, URL url, String deploymentName, File root,
+                ClassLoader cl, Connector cmd, IronJacamar ijmd) {
             super(serviceContainer, url, deploymentName, root, cl, cmd);
             this.ijmd = ijmd;
         }

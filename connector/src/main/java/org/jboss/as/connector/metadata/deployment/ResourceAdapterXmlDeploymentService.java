@@ -89,11 +89,6 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final Connector cmd;
     private final IronJacamar ijmd;
 
-    private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
-    private final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
-    private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
-    private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
-
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
             Connector cmd, IronJacamar ijmd, Module module, String deploymentName, File root) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
@@ -113,18 +108,19 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
         final ServiceContainer container = context.getController().getServiceContainer();
-        final AS7RaDeployer raDeployer = new AS7RaDeployer(container);
+        final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(container, connectorXmlDescriptor.getUrl(), deploymentName, root,
+                module.getClassLoader(), cmd, raxml);
+
         raDeployer.setConfiguration(config.getValue());
 
         CommonDeployment raxmlDeployment = null;
         try {
-            raxmlDeployment = raDeployer.doDeploy(connectorXmlDescriptor.getUrl(), deploymentName, root,
-                    module.getClassLoader(), cmd, ijmd, raxml);
+            raxmlDeployment = raDeployer.doDeploy();
         } catch (Throwable t) {
             throw new StartException("Failed to start RA deployment [" + deploymentName + "]", t);
         }
 
-        value = new ResourceAdapterDeployment(module.getIdentifier(), raxmlDeployment);
+        value = new ResourceAdapterDeployment(raxmlDeployment);
 
         registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
@@ -142,48 +138,20 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         super.stop(context);
     }
 
-    public Value<TransactionIntegration> getTxIntegration() {
-        return txInt;
-    }
+    private class AS7RaXmlDeployer extends AbstractAS7RaDeployer {
 
-    public Value<ConnectorSubsystemConfiguration> getConfig() {
-        return config;
-    }
+        private final ResourceAdapter ra;
 
-    public Injector<TransactionIntegration> getTxIntegrationInjector() {
-        return txInt;
-    }
-
-    public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
-        return config;
-    }
-
-    public Injector<SubjectFactory> getSubjectFactoryInjector() {
-        return subjectFactory;
-    }
-
-    public Injector<CachedConnectionManager> getCcmInjector() {
-        return ccmValue;
-    }
-
-    private class AS7RaDeployer extends AbstractResourceAdapterDeployer {
-
-        private String deploymentName;
-
-        private final ServiceContainer serviceContainer;
-
-        public AS7RaDeployer(ServiceContainer serviceContainer) {
-            // validate at class level
-            super(true, ParsedRaDeploymentProcessor.log);
-            this.serviceContainer = serviceContainer;
+        public AS7RaXmlDeployer(ServiceContainer serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
+                Connector cmd, ResourceAdapter ra) {
+            super(serviceContainer, url, deploymentName, root, cl, cmd);
+            this.ra = ra;
         }
 
-        public CommonDeployment doDeploy(URL url, String deploymentName, File root, ClassLoader cl, Connector cmd,
-                IronJacamar ijmd, ResourceAdapter ra) throws Throwable {
+        @Override
+        public CommonDeployment doDeploy() throws Throwable {
 
             this.setConfiguration(getConfig().getValue());
-
-            this.deploymentName = deploymentName;
 
             this.start();
 
@@ -193,220 +161,9 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         }
 
         @Override
-        public String[] bindConnectionFactory(URL url, String deployment, Object cf) throws Throwable {
-            throw new IllegalStateException("Non-explicit JNDI bindings not supported");
-        }
-
-        @Override
-        public String[] bindConnectionFactory(URL url, String deployment, Object cf, final String jndi) throws Throwable {
-
-            mdr.getValue().registerJndiMapping(url.toExternalForm(), cf.getClass().getName(), jndi);
-
-            log.debugf("Registered connection factory %s on mdr", jndi);
-
-            final ConnectionFactoryService connectionFactoryService = new ConnectionFactoryService(cf);
-
-            final ServiceName connectionFactoryServiceName = ConnectionFactoryService.SERVICE_NAME_BASE.append(jndi);
-            serviceContainer.addService(connectionFactoryServiceName, connectionFactoryService)
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-            final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
-            final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
-                    .append(jndi);
-            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
-                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            final BinderService binderService = new BinderService(jndi.substring(6));
-            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
-            serviceContainer
-                    .addService(binderServiceName, binderService)
-                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
-                            binderService.getManagedObjectInjector())
-                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
-                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                        public void serviceStarted(ServiceController<?> controller) {
-                            log.infof("Bound JCA ConnectionFactory [%s]", jndi);
-                        }
-
-                        public void serviceStopped(ServiceController<?> serviceController) {
-                            log.infof("Unbound JCA ConnectionFactory [%s]", jndi);
-                        }
-
-                        public void serviceRemoved(ServiceController<?> serviceController) {
-                            log.infof("Removed JCA ConnectionFactory [%s]", jndi);
-                            serviceController.removeListener(this);
-                        }
-                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-            return new String[] { jndi };
-        }
-
-        @Override
-        public String[] bindAdminObject(URL url, String deployment, Object ao) throws Throwable {
-            throw new IllegalStateException("Non-explicit JNDI bindings not supported");
-        }
-
-        @Override
-        public String[] bindAdminObject(URL url, String deployment, Object ao, final String jndi) throws Throwable {
-
-            mdr.getValue().registerJndiMapping(url.toExternalForm(), ao.getClass().getName(), jndi);
-
-            log.debugf("Registerred admin object at %s on mdr", jndi);
-
-            final AdminObjectService adminObjectService = new AdminObjectService(ao);
-
-            final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
-            serviceContainer.addService(adminObjectServiceName, adminObjectService)
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-            final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
-            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
-            serviceContainer.addService(referenceFactoryServiceName, referenceFactoryService)
-                    .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            final BinderService binderService = new BinderService(jndi.substring(6));
-            final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndi);
-            serviceContainer
-                    .addService(binderServiceName, binderService)
-                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
-                            binderService.getManagedObjectInjector())
-                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
-                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                        public void serviceStarted(ServiceController<?> controller) {
-                            log.infof("Bound JCA AdminObject [%s]", jndi);
-                        }
-
-                        public void serviceStopped(ServiceController<?> serviceController) {
-                            log.infof("Unbound JCA AdminObject [%s]", jndi);
-                        }
-
-                        public void serviceRemoved(ServiceController<?> serviceController) {
-                            log.infof("Removed JCA AdminObject [%s]", jndi);
-                            serviceController.removeListener(this);
-                        }
-                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-            return new String[] { jndi };
-        }
-
-        @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
             return true;
         }
 
-        @Override
-        protected boolean checkConfigurationIsValid() {
-            return this.getConfiguration() != null;
-        }
-
-        @Override
-        protected PrintWriter getLogPrintWriter() {
-            return new PrintWriter(System.out);
-        }
-
-        @Override
-        protected File getReportDirectory() {
-            // TODO: evaluate if provide something in config about that. atm
-            // returning null and so skip its use
-            return null;
-        }
-
-        @Override
-        protected TransactionManager getTransactionManager() {
-            AccessController.doPrivileged(new SetContextLoaderAction(
-                    com.arjuna.ats.jbossatx.jta.TransactionManagerService.class.getClassLoader()));
-            try {
-                return getTxIntegration().getValue().getTransactionManager();
-            } finally {
-                AccessController.doPrivileged(CLEAR_ACTION);
-            }
-        }
-
-        @Override
-        public Object initAndInject(String className, List<? extends ConfigProperty> configs, ClassLoader cl)
-                throws DeployException {
-            try {
-                Class clz = Class.forName(className, true, cl);
-                Object o = clz.newInstance();
-
-                if (configs != null) {
-                    Injection injector = new Injection();
-                    for (ConfigProperty cpmd : configs) {
-                        if (cpmd.isValueSet()) {
-                            boolean setValue = true;
-
-                            if (cpmd instanceof org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) {
-                                org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16 cpmd16 = (org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) cpmd;
-
-                                if (cpmd16.getConfigPropertyIgnore() != null && cpmd16.getConfigPropertyIgnore().booleanValue())
-                                    setValue = false;
-                            }
-
-                            if (setValue)
-                                injector.inject(cpmd.getConfigPropertyType().getValue(), cpmd.getConfigPropertyName()
-                                        .getValue(), cpmd.getConfigPropertyValue().getValue(), o);
-                        }
-                    }
-                }
-
-                return o;
-            } catch (Throwable t) {
-                throw new DeployException("Deployment " + className + " failed", t);
-            }
-        }
-
-        @Override
-        protected void registerResourceAdapterToMDR(URL url, File file, Connector connector, IronJacamar ij)
-                throws AlreadyExistsException {
-            log.debugf("Registering ResourceAdapter %s", deploymentName);
-            mdr.getValue().registerResourceAdapter(deploymentName, file, connector, ij);
-        }
-
-        @Override
-        protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            if (securityDomain == null || securityDomain.trim().equals("")) {
-                return null;
-            } else {
-                return subjectFactory.getValue();
-            }
-        }
-
-        @Override
-        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
-            return raRepository.getValue().registerResourceAdapter(instance);
-
-        }
-
-        @Override
-        protected TransactionIntegration getTransactionIntegration() {
-            return getTxIntegration().getValue();
-        }
-
-        @Override
-        protected CachedConnectionManager getCachedConnectionManager() {
-            return ccmValue.getValue();
-        }
-
-        // Override this method to change how jndiName is build in AS7
-        @Override
-        protected String buildJndiName(String jndiName, Boolean javaContext) {
-            return super.buildJndiName(jndiName, javaContext);
-        }
-    }
-
-    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
-
-    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
-
-        private final ClassLoader classLoader;
-
-        public SetContextLoaderAction(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        public Void run() {
-            Thread.currentThread().setContextClassLoader(classLoader);
-            return null;
-        }
     }
 }

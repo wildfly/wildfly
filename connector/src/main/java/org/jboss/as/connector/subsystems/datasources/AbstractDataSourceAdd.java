@@ -132,17 +132,17 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                                     binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                                 @Override
                                 public void serviceStarted(ServiceController<?> controller) {
-                                    log.infof("Bound JDBC Data-source [%s]", jndiName);
+                                    log.infof("Bound data source [%s]", jndiName);
                                 }
 
                                 @Override
                                 public void serviceStopped(ServiceController<?> serviceController) {
-                                    log.infof("Unbound JDBC Data-source [%s]", jndiName);
+                                    log.infof("Unbound data source [%s]", jndiName);
                                 }
 
                                 @Override
                                 public void serviceRemoved(ServiceController<?> serviceController) {
-                                    log.infof("Removed JDBC Data-source [%s]", jndiName);
+                                    log.debugf("Removed JDBC Data-source [%s]", jndiName);
                                     serviceController.removeListener(this);
                                 }
                             });
