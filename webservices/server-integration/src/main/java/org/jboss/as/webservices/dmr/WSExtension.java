@@ -77,6 +77,7 @@ public class WSExtension implements Extension {
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(WSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, WSSubsystemAdd.INSTANCE, WSSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, WSSubsystemDescribe.INSTANCE, WSSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(WSEndpointsListOperationHandler.OPERATION_NAME, WSEndpointsListOperationHandler.INSTANCE, WSSubsystemProviders.ENDPOINTS_LIST, false);
         subsystem.registerXMLElementWriter(PARSER);
     }
 

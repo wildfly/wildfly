@@ -74,6 +74,13 @@ class WSSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider ENDPOINTS_LIST = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndointsList(locale);
+        }
+    };
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
@@ -137,6 +144,17 @@ class WSSubsystemProviders {
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
+            return op;
+        }
+
+        static ModelNode getEndointsList(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(OPERATION_NAME).set("list-endpoints");
+            op.get(DESCRIPTION).set(bundle.getString("endpoints.list"));
+            // request and response properties
             return op;
         }
     }
