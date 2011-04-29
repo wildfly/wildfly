@@ -126,19 +126,20 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
 
             long timeout = getContainerConfiguration().getStartupTimeout();
 
-            // FIXME JBAS-9312 reenable when whatever causes it to intermittently hang is resolved
-//            boolean serverAvailable = false;
-//            while (timeout > 0 && serverAvailable == false) {
-//
-//                serverAvailable = isServerStarted();
-//
-//                Thread.sleep(100);
-//                timeout -= 100;
-//            }
-//
-//            if (!serverAvailable) {
-//                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
-//            }
+            boolean serverAvailable = false;
+            while (timeout > 0 && serverAvailable == false) {
+
+                serverAvailable = isServerStarted();
+
+                if (!serverAvailable) {
+                    Thread.sleep(100);
+                    timeout -= 100;
+                }
+            }
+
+            if (!serverAvailable) {
+                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+            }
 
             boolean testRunnerMBeanAvailable = false;
             MBeanServerConnection mbeanServer = null;
