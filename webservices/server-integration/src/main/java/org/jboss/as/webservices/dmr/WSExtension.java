@@ -78,6 +78,9 @@ public class WSExtension implements Extension {
         registration.registerOperationHandler(ADD, WSSubsystemAdd.INSTANCE, WSSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, WSSubsystemDescribe.INSTANCE, WSSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(WSEndpointsListOperationHandler.OPERATION_NAME, WSEndpointsListOperationHandler.INSTANCE, WSSubsystemProviders.ENDPOINTS_LIST, false);
+        for (String attributeName : WSEndpointMetrics.ATTRIBUTES) {
+            registration.registerMetric(attributeName, WSEndpointMetrics.INSTANCE);
+        }
         subsystem.registerXMLElementWriter(PARSER);
     }
 
