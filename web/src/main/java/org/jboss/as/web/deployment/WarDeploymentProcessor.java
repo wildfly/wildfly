@@ -187,7 +187,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         try {
             JBossWebRealmService realmService = new JBossWebRealmService(principalVersusRolesMap);
-            ServiceBuilder<?> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_REALM.append(securityDomain),
+            ServiceBuilder<?> builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_REALM.append(deploymentName),
                     realmService);
             builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
@@ -197,7 +197,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService);
             builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class,
                     new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
-            builder.addDependency(WebSubsystemServices.JBOSS_WEB_REALM.append(securityDomain), Realm.class,
+            builder.addDependency(WebSubsystemServices.JBOSS_WEB_REALM.append(deploymentName), Realm.class,
                     webDeploymentService.getRealm());
             builder.addDependency(namespaceSelectorServiceName, NamespaceContextSelector.class,
                     webDeploymentService.getNamespaceSelector()).setInitialMode(Mode.ACTIVE);
