@@ -40,6 +40,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
+import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeployer;
 import org.jboss.as.connector.registry.DriverRegistryService;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.services.CcmService;
@@ -57,6 +58,7 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -79,7 +81,9 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     static final OperationHandler INSTANCE = new ConnectorSubsystemAdd();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
         final String shortRunningThreadPool = operation.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).asString();
@@ -124,6 +128,10 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext bootContext = BootOperationContext.class.cast(context);
+            // Add the deployer which processes EE @DataSourceDefinition and @DataSourceDefinitions
+            // TODO: The DataSourceDefinitionDeployer should perhaps belong to EE subsystem
+            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION, new DataSourceDefinitionDeployer());
+
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {

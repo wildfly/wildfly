@@ -48,6 +48,8 @@ import static org.jboss.as.connector.deployers.processors.DirectDataSourceDescri
 /**
  * Deployment processor responsible for analyzing each attached {@link AbstractComponentDescription} instance to configure
  * required DataSourceDefinition annotations.
+ * <p/>
+ * TODO: This should belong to EE subsystem
  *
  * @author John Bailey
  * @author Jason T. Greene
@@ -57,10 +59,12 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
     private static final DotName DATASOURCE_DEFINITION = DotName.createSimple(DataSourceDefinition.class.getName());
     private static final DotName DATASOURCE_DEFINITIONS = DotName.createSimple(DataSourceDefinitions.class.getName());
 
-    /** {@inheritDoc} **/
+    /**
+     * {@inheritDoc} *
+     */
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final AbstractComponentDescription description) throws DeploymentUnitProcessingException {
         final ClassInfo classInfo = index.getClassByName(DotName.createSimple(description.getComponentClassName()));
-        if(classInfo == null) {
+        if (classInfo == null) {
             return; // We can't continue without the annotation index info.
         }
         description.addAnnotationBindings(getDatasourceDefinitions(classInfo));
@@ -68,7 +72,7 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
         final Collection<InterceptorDescription> interceptorConfigurations = description.getAllInterceptors().values();
         for (InterceptorDescription interceptorConfiguration : interceptorConfigurations) {
             final ClassInfo interceptorClassInfo = index.getClassByName(DotName.createSimple(interceptorConfiguration.getInterceptorClassName()));
-            if(interceptorClassInfo == null) {
+            if (interceptorClassInfo == null) {
                 continue;
             }
             description.addAnnotationBindings(getDatasourceDefinitions(interceptorClassInfo));
@@ -98,7 +102,11 @@ public class DataSourceDefinitionDeployer extends AbstractComponentConfigProcess
         if (nameValue == null || nameValue.asString().isEmpty()) {
             throw new IllegalArgumentException("@DataSourceDefinition annotations must provide a name.");
         }
-        final String name = nameValue.asString();
+        String name = nameValue.asString();
+        // if the name doesn't have a namespace then it defaults to java:comp/env
+        if (!name.startsWith("java:")) {
+            name = "java:comp/env/" + name;
+        }
 
         final AnnotationValue classValue = annotation.value("className");
         if (classValue == null || classValue.asString().equals(Object.class.getName())) {
