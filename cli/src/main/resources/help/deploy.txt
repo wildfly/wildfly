@@ -1,24 +1,37 @@
-Synopsis:	deploy [file_path] [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force]
+Synopsis:	deploy (file_path [--name=deployment_name] [--runtime_name=deployment_runtime_name] [--force] | --name=deployment_name) [--server-groups=group_name (,group_name)* | --all-server-groups]
 
-Description:	deploys the application designated by the file_path.
-				File name tab-completion is supported for the file_path.
+Description:	deploys the application designated by the file_path or enables an already existing
+				but disabled in the repository deployment designated by the name argument.
 				If executed w/o arguments, will list all the existing deployments.
 
 Arguments:
 
-	file_path		- the path to the application to deploy.
-					The path can be either absolute or relative to the current directory.
+	file_path			- the path to the application to deploy. Required in case the deployment
+						doesn't exist in the repository.
+						The path can be either absolute or relative to the current directory.
 
-	name			- optional, the unique name for the deployment. If not provided,
-					the file name will be used.
+	name				- the unique name of the deployment. If the file path argument is specified
+						the name argument is optional with the file name been the default value.
+						If the file path argument isn't specified then the command is supposed to
+						enable an already existing but disabled deployment, and in this case the
+						name argument is required.
 				
-	runtime_name	- optional, the runtime name for the deployment.
+	runtime_name		- optional, the runtime name for the deployment.
 	
-	--force			- if the deployment with the specified name already exists, by default,
-					deploy will be aborted and the corresponding message will printed.
-					Switch -f will force replacement of the existing deployment with the one
-					specified in the command arguments.
-					
-	-l				- in case the file_path isn't specified, the presence of the -l switch
-					will make the existing deployments printed one deployment per line, instead of
-					columns (the default).
+	force				- if the deployment with the specified name already exists, by default,
+						deploy will be aborted and the corresponding message will printed.
+						Switch --force (or -f) will force the replacement of the existing deployment
+						with the one specified in the command arguments.
+
+	server-groups		- comma separated list of server group names the deploy command should apply to.
+						Either server-groups or all-server-groups is required in the domain mode.
+						This argument is not applicable in the standalone mode.
+
+	all-server-groups	- indicates that deploy should apply to all the available server groups.
+						Either server-groups or all-server-groups is required in domain mode.
+						This argument is not applicable in the standalone mode.
+	
+	l					- in case none of the required arguments is specified the command will
+						print all of the existing deployments in the repository. The presence of the -l switch
+						will make the existing deployments printed one deployment per line, instead of
+						in columns (the default).

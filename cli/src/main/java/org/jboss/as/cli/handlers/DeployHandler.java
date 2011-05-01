@@ -72,8 +72,48 @@ public class DeployHandler extends BatchModeCommandHandler {
         force.addRequiredPreceding(path);
         argsCompleter.addArgument(force);
 
-        name = new ArgumentWithValue("--name");
+        name = new ArgumentWithValue( new CommandLineCompleter() {
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+
+                ParsedArguments args = ctx.getParsedArguments();
+                if(!ctx.isDomainMode() || path.isPresent(args)) {
+                    return -1;
+                }
+
+                int nextCharIndex = 0;
+                while (nextCharIndex < buffer.length()) {
+                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
+                        break;
+                    }
+                    ++nextCharIndex;
+                }
+
+                if(ctx.getModelControllerClient() != null) {
+                    List<String> deployments = Util.getDeployments(ctx.getModelControllerClient());
+                    if(deployments.isEmpty()) {
+                        return -1;
+                    }
+
+                    String opBuffer = buffer.substring(nextCharIndex).trim();
+                    if (opBuffer.isEmpty()) {
+                        candidates.addAll(deployments);
+                    } else {
+                        for(String name : deployments) {
+                            if(name.startsWith(opBuffer)) {
+                                candidates.add(name);
+                            }
+                        }
+                        Collections.sort(candidates);
+                    }
+                    return nextCharIndex;
+                } else {
+                    return -1;
+                }
+
+            }}, "--name");
         path.addCantAppearAfter(l);
+        path.addCantAppearAfter(name);
         //name.addRequiredPreceding(path);
         argsCompleter.addArgument(name);
 

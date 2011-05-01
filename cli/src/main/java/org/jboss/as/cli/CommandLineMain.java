@@ -292,6 +292,7 @@ public class CommandLineMain {
                         + "'. Type 'help' for the list of supported commands.");
             }
         }
+        cmdCtx.setArgs(null, null);
     }
 
     protected static jline.ConsoleReader initConsoleReader() {

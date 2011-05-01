@@ -61,21 +61,6 @@ public class Util {
         return descr.asString();
     }
 
-    public static String getDomainFailureDescription(ModelNode operationResult) {
-        if(operationResult == null) {
-            return null;
-        }
-        ModelNode descr = operationResult.get("failure-description");
-        if(descr == null) {
-            return null;
-        }
-        descr = descr.get("domain-failure-description");
-        if(descr == null) {
-            return null;
-        }
-        return descr.asString();
-    }
-
     public static List<String> getList(ModelNode operationResult) {
         if(!operationResult.hasDefined("result"))
             return Collections.emptyList();

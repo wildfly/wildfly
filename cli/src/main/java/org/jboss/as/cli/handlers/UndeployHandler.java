@@ -111,12 +111,20 @@ public class UndeployHandler extends BatchModeCommandHandler {
         serverGroups = new ArgumentWithValue(false, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-                List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+
                 if(buffer.isEmpty()) {
-                    candidates.addAll(allGroups);
+                    candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
                     Collections.sort(candidates);
                     return 0;
                 }
+
+//                final String deploymentName = name.getValue(ctx.getParsedArguments());
+                final List<String> allGroups;
+//                if(deploymentName == null) {
+                    allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+//                } else {
+//                    allGroups = Util.getAllReferencingServerGroups(deploymentName, ctx.getModelControllerClient());
+//                }
 
                 final String[] groups = buffer.split(",+");
 
@@ -198,11 +206,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
             return;
         }
         if (!Util.isSuccess(result)) {
-            if(ctx.isDomainMode()) {
-                ctx.printLine("Undeploy failed: " + Util.getDomainFailureDescription(result));
-            } else {
-                ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
-            }
+            ctx.printLine("Undeploy failed: " + Util.getFailureDescription(result));
             return;
         }
 
@@ -238,26 +242,29 @@ public class UndeployHandler extends BatchModeCommandHandler {
             } else {
                 final String serverGroupsStr = this.serverGroups.getValue(args);
                 if(serverGroupsStr == null) {
-                    throw new OperationFormatException("Either --all-server-groups or --server-groups must be specified.");
+                    //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
+                    serverGroups = Collections.emptyList();
                 } else {
                     serverGroups = Arrays.asList(serverGroupsStr.split(","));
                 }
             }
 
-/*            if(serverGroups.isEmpty()) {
-                throw new OperationFormatException("No server group is available.");
-            }
-*/
-            for (String group : serverGroups) {
-                ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_UNDEPLOY_OPERATION, name, group);
-                steps.add(groupStep);
-            }
-
-            if(!keepContent) {
-                for (String group : serverGroups) {
-                    ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_REMOVE_OPERATION, name, group);
+            if(serverGroups.isEmpty()) {
+                if(keepContent) {
+                    throw new OperationFormatException("None server group is specified or available.");
+                }
+            } else {
+                for (String group : serverGroups){
+                    ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_UNDEPLOY_OPERATION, name, group);
                     steps.add(groupStep);
                 }
+
+//                if(!keepContent) {
+                    for (String group : serverGroups) {
+                        ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_REMOVE_OPERATION, name, group);
+                        steps.add(groupStep);
+                    }
+//                }
             }
         } else if(Util.isDeployedAndEnabledInStandalone(name, client)) {
             builder = new DefaultOperationRequestBuilder();
