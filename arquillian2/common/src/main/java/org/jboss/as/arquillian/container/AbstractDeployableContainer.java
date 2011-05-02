@@ -66,6 +66,7 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
     private static final Logger log = Logger.getLogger(AbstractDeployableContainer.class.getName());
 
     private T containerConfig;
+    private ModelControllerClient modelControllerClient;
     private ServerDeploymentManager deploymentManager;
 
     private final Map<Object, String> registry = new HashMap<Object, String>();
@@ -78,10 +79,10 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
     @Override
     public void setup(T configuration) {
         containerConfig = configuration;
-        ModelControllerClient client = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
+        modelControllerClient = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
                 containerConfig.getManagementPort());
 
-        deploymentManager = ServerDeploymentManager.Factory.create(client);
+        deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
     }
 
     @Override
@@ -119,6 +120,10 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
 
     protected T getContainerConfiguration() {
         return containerConfig;
+    }
+
+    protected ModelControllerClient getModelControllerClient() {
+        return modelControllerClient;
     }
 
     private String getContextRootName(Archive<?> archive) {

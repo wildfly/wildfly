@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
@@ -31,6 +32,13 @@ import org.jboss.arquillian.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.AbstractDeployableContainer;
 import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.ServerController;
+import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 /**
  * JBossASEmbeddedContainer
@@ -100,6 +108,18 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAs
             process = processBuilder.start();
             new Thread(new ConsoleConsumer()).start();
             long timeout = config.getStartupTimeoutInSeconds() * 1000;
+
+            boolean serverAvailable = false;
+            do {
+                Thread.sleep(100);
+                timeout -= 100;
+
+                serverAvailable = isServerStarted();
+            } while (timeout > 0 && serverAvailable == false);
+
+            if (!serverAvailable) {
+                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+            }
             boolean testRunnerMBeanAvaialble = false;
             MBeanServerConnection mbeanServer = null;
             do {
@@ -165,6 +185,20 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAs
     // protected ProtocolMetaData getProtocolMetaData(String deploymentName) {
     // return new ProtocolMetaData();
     // }
+
+    private boolean isServerStarted() {
+        try {
+            ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());
+            op.get(NAME).set("server-state");
+
+            ModelNode rsp = getModelControllerClient().execute(op);
+            return SUCCESS.equals(rsp.get(OUTCOME).asString()) && !ServerController.State.STARTING.toString().equals(rsp.get(RESULT).asString());
+        }
+        catch (Exception ignored) {
+            // ignore, as we will get exceptions until the management comm services start
+        }
+        return false;
+    }
 
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
