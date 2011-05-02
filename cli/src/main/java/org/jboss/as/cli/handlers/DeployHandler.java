@@ -224,7 +224,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             name = f.getName();
         }
 
-        String runtimeName = rtName.getValue(args);
+        final String runtimeName = rtName.getValue(args);
 
         if(Util.isDeploymentInRepository(name, client) && f != null) {
             if(force.isPresent(args)) {
@@ -267,29 +267,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             return;
         } else {
 
-            final List<String> serverGroups;
-            if (ctx.isDomainMode()) {
-                if(allServerGroups.isPresent(args)) {
-                    serverGroups = Util.getServerGroups(client);
-                } else {
-                    String serverGroupsStr = this.serverGroups.getValue(args);
-                    if(serverGroupsStr == null) {
-                        ctx.printLine("Either --all-server-groups or --server-groups must be specified.");
-                        return;
-                    }
-                    serverGroups = Arrays.asList(serverGroupsStr.split(","));
-                }
-
-                if(serverGroups.isEmpty()) {
-                    ctx.printLine("No server group is available.");
-                    return;
-                }
-            } else {
-                serverGroups = null;
-            }
-
             DefaultOperationRequestBuilder builder;
-
             ModelNode result;
 
             // add
@@ -321,10 +299,33 @@ public class DeployHandler extends BatchModeCommandHandler {
                 }
             }
 
+            //deploy
             if (!disabled.isPresent(args)) {
                 final ModelNode request;
-                // deploy
+
                 if (ctx.isDomainMode()) {
+
+                    final List<String> serverGroups;
+                    if (ctx.isDomainMode()) {
+                        if(allServerGroups.isPresent(args)) {
+                            serverGroups = Util.getServerGroups(client);
+                        } else {
+                            String serverGroupsStr = this.serverGroups.getValue(args);
+                            if(serverGroupsStr == null) {
+                                ctx.printLine("Either --all-server-groups or --server-groups must be specified.");
+                                return;
+                            }
+                            serverGroups = Arrays.asList(serverGroupsStr.split(","));
+                        }
+
+                        if(serverGroups.isEmpty()) {
+                            ctx.printLine("No server group is available.");
+                            return;
+                        }
+                    } else {
+                        serverGroups = null;
+                    }
+
                     request = new ModelNode();
                     request.get("operation").set("composite");
                     request.get("address").setEmptyList();
