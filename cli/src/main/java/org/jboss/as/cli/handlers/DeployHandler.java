@@ -77,7 +77,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
                 ParsedArguments args = ctx.getParsedArguments();
-                if(!ctx.isDomainMode() || path.isPresent(args)) {
+                if(/*!ctx.isDomainMode() || */path.isPresent(args)) {
                     return -1;
                 }
 
