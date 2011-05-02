@@ -40,6 +40,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 /**
  * {@code SocketBinding} metric handlers.
  *
@@ -95,6 +98,44 @@ public final class BindingMetricHandlers {
         void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
             // The socket should be bound when it's registered at the SocketBindingManager
             handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(binding.isBound()));
+        }
+    }
+
+    public static class BoundAddressHandler extends AbstractBindingMetricsHandler {
+
+        public static final String ATTRIBUTE_NAME = "bound-address";
+        public static final OperationHandler INSTANCE = new BoundAddressHandler();
+
+        private BoundAddressHandler() {
+            //
+        }
+
+        @Override
+        void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
+            ManagedBinding managedBinding = binding.getManagedBinding();
+            if (managedBinding != null) {
+                InetAddress addr = managedBinding.getBindAddress().getAddress();
+                handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(addr.getHostAddress()));
+            }
+        }
+    }
+
+    public static class BoundPortHandler extends AbstractBindingMetricsHandler {
+
+        public static final String ATTRIBUTE_NAME = "bound-port";
+        public static final OperationHandler INSTANCE = new BoundPortHandler();
+
+        private BoundPortHandler() {
+            //
+        }
+
+        @Override
+        void execute(final ModelNode operation, final SocketBinding binding, final ResultHandler handler) {
+            ManagedBinding managedBinding = binding.getManagedBinding();
+            if (managedBinding != null) {
+                int port = managedBinding.getBindAddress().getPort();
+                handler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(port));
+            }
         }
     }
 

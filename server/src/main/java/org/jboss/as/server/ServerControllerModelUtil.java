@@ -204,6 +204,8 @@ public class ServerControllerModelUtil {
         socketBinding.registerOperationHandler(BindingAddHandler.OPERATION_NAME, BindingAddHandler.INSTANCE, BindingAddHandler.INSTANCE, false);
         socketBinding.registerOperationHandler(BindingRemoveHandler.OPERATION_NAME, BindingRemoveHandler.INSTANCE, BindingRemoveHandler.INSTANCE, false);
         socketBinding.registerMetric(BindingMetricHandlers.BoundHandler.ATTRIBUTE_NAME, BindingMetricHandlers.BoundHandler.INSTANCE);
+        socketBinding.registerMetric(BindingMetricHandlers.BoundAddressHandler.ATTRIBUTE_NAME, BindingMetricHandlers.BoundAddressHandler.INSTANCE);
+        socketBinding.registerMetric(BindingMetricHandlers.BoundPortHandler.ATTRIBUTE_NAME, BindingMetricHandlers.BoundPortHandler.INSTANCE);
         socketBinding.registerReadWriteAttribute(INTERFACE, null, BindingInterfaceHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(PORT, null, BindingPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         socketBinding.registerReadWriteAttribute(FIXED_PORT, null, BindingFixedPortHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
