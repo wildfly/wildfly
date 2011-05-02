@@ -18,6 +18,18 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.ServerController;
+import org.jboss.dmr.ModelNode;
+import org.jboss.threads.StoppedExecutorException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +38,9 @@ import java.net.InetAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
@@ -35,6 +49,9 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 /**
  *
@@ -58,16 +75,18 @@ public class DomainStarterUtil {
     private Process process;
     private Thread shutdownThread;
 
-    private int[] portOffsets;
+    private final InetAddress managementAddress;
+    private final int managementPort;
+    private DomainClient domainClient;
+    private Map<ServerIdentity, ServerStatus> serverStatuses = new HashMap<ServerIdentity, ServerStatus>();
+    private Map<ServerIdentity, MBeanServerConnectionProvider> jmxConnectionProviders = new HashMap<ServerIdentity, MBeanServerConnectionProvider>();
+    private Map<ServerIdentity, MBeanServerConnection> jmxConnections = new HashMap<ServerIdentity, MBeanServerConnection>();
     private MBeanServerConnectionProvider[] providers;
 
-    public DomainStarterUtil(final long timeout, final InetAddress addr, final int jmxPort, final int[] portOffsets) {
+    public DomainStarterUtil(final long timeout, final InetAddress managementAddress, final int managementPort) {
         this.timeout = timeout;
-        this.portOffsets = portOffsets;
-        providers = new MBeanServerConnectionProvider[portOffsets.length];
-        for (int i = 0 ; i < portOffsets.length ; i++) {
-            providers[i] = new MBeanServerConnectionProvider(addr, jmxPort + portOffsets[i]);
-        }
+        this.managementAddress = managementAddress;
+        this.managementPort = managementPort;
     }
 
     public void start() {
@@ -139,55 +158,66 @@ public class DomainStarterUtil {
             });
             Runtime.getRuntime().addShutdownHook(shutdownThread);
 
+            domainClient = DomainClient.Factory.create(managementAddress, managementPort);
+
             long timeout = this.timeout;
 
-            // FIXME JBAS-9312 reenable when whatever causes it to intermittently hang is resolved
-            //This will need putting in a loop similar to the mbean check below
-//            boolean serverAvailable = false;
-//            while (timeout > 0 && serverAvailable == false) {
-//
-//                serverAvailable = isServerStarted();
-//
-//                Thread.sleep(100);
-//                timeout -= 100;
-//            }
-//
-//            if (!serverAvailable) {
-//                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
-//            }
+            boolean serversAvailable = false;
+            while (timeout > 0 && serversAvailable == false) {
 
-            final boolean[] testRunnerMBeansAvailable = new boolean[portOffsets.length];
+                serversAvailable = areServersStarted();
+
+                if (!serversAvailable) {
+                    Thread.sleep(100);
+                    timeout -= 100;
+                }
+            }
+
+            if (!serversAvailable) {
+                throw new TimeoutException(String.format("Managed servers were not started within [%d] ms", timeout));
+            }
+
+            Map<ServerIdentity, MBeanServerConnection> connections = new HashMap<ServerIdentity, MBeanServerConnection>();
+            for (Map.Entry<ServerIdentity, ServerStatus> entry : serverStatuses.entrySet()) {
+                switch (entry.getValue()) {
+                case STARTED:
+                    connections.put(entry.getKey(), null);
+                }
+            }
+
+
             int available = 0;
-            while (timeout > 0 && available < portOffsets.length) {
-                for (int i = 0 ; i < portOffsets.length ; i++) {
-                    if (!testRunnerMBeansAvailable[i]) {
+            int enabledCount = connections.size();
+            while (timeout > 0 && available < enabledCount) {
+                for (Map.Entry<ServerIdentity, MBeanServerConnection> entry : connections.entrySet()) {
+                    if (entry.getValue() == null) {
                         try {
-                            MBeanServerConnection mbeanServer = providers[i].getConnection();
+                            MBeanServerConnectionProvider provider = getMBeanServerConnectionProvider(entry.getKey());
+                            MBeanServerConnection mbeanServer = provider == null ? null : provider.getConnection();
                             boolean isAvailable = mbeanServer != null && mbeanServer.isRegistered(OBJECT_NAME);
                             if (isAvailable) {
-                                available++;
-                                testRunnerMBeansAvailable[i] = true;
+                                connections.put(entry.getKey(), mbeanServer);
                             }
                         } catch (Exception ignore) {
                         }
                     }
                 }
 
-                if (available < portOffsets.length) {
+                if (available < enabledCount) {
                     final long sleep = 100;
                     Thread.sleep(sleep);
                     timeout -= sleep;
                 }
             }
 
-            if (available < portOffsets.length) {
-                ArrayList<Integer> notStartedPorts = new ArrayList<Integer>();
-                for (int i = 0 ; i < testRunnerMBeansAvailable.length ; i++) {
-                    if (!testRunnerMBeansAvailable[i]) {
-                        notStartedPorts.add(portOffsets[i]);
+            if (available < enabledCount) {
+                ArrayList<ServerIdentity> notStartedServers = new ArrayList<ServerIdentity>();
+                for (Map.Entry<ServerIdentity, MBeanServerConnection> entry : connections.entrySet()) {
+                    if (entry.getValue() == null) {
+                        notStartedServers.add(entry.getKey());
                     }
                 }
-                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers with port offsets %s within [%d] ms", notStartedPorts.toString(), this.timeout));
+                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers with port offsets %s within [%d] ms", notStartedServers.toString(), this.timeout));
             }
 
             log.info("All containers started");
@@ -195,6 +225,36 @@ public class DomainStarterUtil {
             throw new RuntimeException("Could not start container", e);
         }
 
+    }
+
+    private MBeanServerConnectionProvider getMBeanServerConnectionProvider(ServerIdentity server) throws IOException{
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-children-names");
+        ModelNode opAddr = op.get("address");
+        opAddr.add("host", server.getHostName());
+        opAddr.add("server", server.getServerName());
+        op.get("child-type").set("socket-binding-group");
+        ModelNode result = executeForResult(op);
+        String groupName = result.asList().get(0).asString();
+
+        op = new ModelNode();
+        op.get("operation").set("read-attribute");
+        opAddr = op.get("address");
+        opAddr.add("host", server.getHostName());
+        opAddr.add("server", server.getServerName());
+        opAddr.add("socket-binding-group", groupName);
+        opAddr.add("socket-binding", "jmx-connector-registry");
+        op.get("name").set("bound");
+        result = executeForResult(op);
+
+        if (result.asBoolean(false)) {
+            op.get("name").set("bound-address");
+            String address = executeForResult(op).asString();
+            op.get("name").set("bound-port");
+            int port = executeForResult(op).asInt();
+            return new MBeanServerConnectionProvider(InetAddress.getByName(address), port);
+        }
+        return null;
     }
 
     public void stop() {
@@ -211,10 +271,65 @@ public class DomainStarterUtil {
         } catch (Exception e) {
             throw new RuntimeException("Could not stop container", e);
         }
+        try {
+            if (domainClient != null) {
+                domainClient.close();
+            }
+        }  catch (Exception e) {
+            throw new RuntimeException("Could not stop DomainClient", e);
+        }
+    }
+
+    private boolean areServersStarted() {
+        try {
+            Map<ServerIdentity, ServerStatus> statuses = domainClient.getServerStatuses();
+            for (ServerStatus status : statuses.values()) {
+                switch (status) {
+                    case STOPPING:
+                    case STOPPED:
+                        return false;
+                    default:
+                        continue;
+                }
+            }
+            serverStatuses.putAll(statuses);
+            return true;
+        }
+        catch (Exception ignored) {
+            // ignore, as we will get exceptions until the management comm services start
+        }
+        return false;
+    }
+
+    private ModelNode executeForResult(ModelNode op) {
+        return executeForResult(OperationBuilder.Factory.create(op).build());
+    }
+
+    ModelNode executeForResult(Operation op) {
+        try {
+            ModelNode result = domainClient.execute(op);
+            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+                return result.get("result");
+            }
+            else if (result.hasDefined("failure-description")) {
+                throw new RuntimeException(result.get("failure-description").toString());
+            }
+            else if (result.hasDefined("domain-failure-description")) {
+                throw new RuntimeException(result.get("domain-failure-description").toString());
+            }
+            else if (result.hasDefined("host-failure-descriptions")) {
+                throw new RuntimeException(result.get("host-failure-descriptions").toString());
+            }
+            else {
+                throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) throws Exception {
-        DomainStarterUtil starterUtil = new DomainStarterUtil(20000, InetAddress.getByName("127.0.0.1"), 1090, new int[]{0,150}) ;
+        DomainStarterUtil starterUtil = new DomainStarterUtil(20000, InetAddress.getByName("127.0.0.1"), 9999) ;
         starterUtil.start();
         System.out.println("--------- STARTED");
         starterUtil.stop();
