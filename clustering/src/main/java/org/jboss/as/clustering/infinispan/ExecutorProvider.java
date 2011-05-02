@@ -42,25 +42,25 @@ public class ExecutorProvider implements ExecutorFactory, ScheduledExecutorFacto
     public static void initListenerExecutor(GlobalConfiguration global, Executor executor) {
         Properties properties = global.getAsyncListenerExecutorProperties();
         properties.put(EXECUTOR, executor);
-        global.setAsyncListenerExecutorFactoryClass(ExecutorProvider.class.getName());
+        global.fluent().asyncListenerExecutor().factory(ExecutorProvider.class);
     }
 
     public static void initTransportExecutor(GlobalConfiguration global, Executor executor) {
         Properties properties = global.getAsyncTransportExecutorProperties();
         properties.put(EXECUTOR, executor);
-        global.setAsyncTransportExecutorFactoryClass(ExecutorProvider.class.getName());
+        global.fluent().asyncTransportExecutor().factory(ExecutorProvider.class);
     }
 
     public static void initEvictionExecutor(GlobalConfiguration global, ScheduledExecutorService executor) {
         Properties properties = global.getEvictionScheduledExecutorProperties();
         properties.put(EXECUTOR, executor);
-        global.setEvictionScheduledExecutorFactoryClass(ExecutorProvider.class.getName());
+        global.fluent().evictionScheduledExecutor().factory(ExecutorProvider.class);
     }
 
     public static void initReplicationQueueExecutor(GlobalConfiguration global, ScheduledExecutorService executor) {
         Properties properties = global.getReplicationQueueScheduledExecutorProperties();
         properties.put(EXECUTOR, executor);
-        global.setReplicationQueueScheduledExecutorFactoryClass(ExecutorProvider.class.getName());
+        global.fluent().replicationQueueScheduledExecutor().factory(ExecutorProvider.class);
     }
 
     /**

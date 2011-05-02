@@ -33,9 +33,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
 
-import org.infinispan.config.CacheLoaderManagerConfig;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
+import org.infinispan.config.FluentConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.loaders.AbstractCacheStoreConfig;
 import org.infinispan.loaders.CacheStore;
@@ -171,113 +171,117 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     for (ModelNode cache: operation.require(ModelKeys.CACHE).asList()) {
                         String cacheName = cache.require(ModelKeys.NAME).asString();
                         Configuration configuration = new Configuration();
+                        FluentConfiguration fluent = configuration.fluent();
                         Configuration.CacheMode mode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
                         requiresTransport |= mode.isClustered();
-                        configuration.setCacheMode(mode);
+                        fluent.mode(mode);
                         if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
-                            int queueSize = cache.get(ModelKeys.QUEUE_SIZE).asInt();
-                            configuration.setUseReplQueue(queueSize > 0);
-                            configuration.setReplQueueMaxElements(queueSize);
+                            fluent.async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
                         }
                         if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
-                            configuration.setReplQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
+                            fluent.async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
                         }
                         if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
-                            configuration.setSyncReplTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
+                            fluent.sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
                         }
                         if (cache.hasDefined(ModelKeys.OWNERS)) {
-                            configuration.setNumOwners(cache.get(ModelKeys.OWNERS).asInt());
+                            fluent.hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
                         }
                         if (cache.hasDefined(ModelKeys.L1_LIFESPAN)) {
                             long lifespan = cache.get(ModelKeys.L1_LIFESPAN).asLong();
-                            configuration.setL1CacheEnabled(lifespan > 0);
-                            configuration.setL1Lifespan(lifespan);
+                            if (lifespan > 0) {
+                                fluent.l1().lifespan(lifespan);
+                            } else {
+                                fluent.l1().disable();
+                            }
                         }
                         if (cache.hasDefined(ModelKeys.LOCKING)) {
                             ModelNode locking = cache.get(ModelKeys.LOCKING);
+                            FluentConfiguration.LockingConfig fluentLocking = fluent.locking();
                             if (locking.hasDefined(ModelKeys.ISOLATION)) {
-                                IsolationLevel level = IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString());
-                                configuration.setIsolationLevel(level);
+                                fluentLocking.isolationLevel(IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString()));
                             }
                             if (locking.hasDefined(ModelKeys.STRIPING)) {
-                                configuration.setUseLockStriping(locking.get(ModelKeys.STRIPING).asBoolean());
+                                fluentLocking.useLockStriping(locking.get(ModelKeys.STRIPING).asBoolean());
                             }
                             if (locking.hasDefined(ModelKeys.ACQUIRE_TIMEOUT)) {
-                                configuration.setLockAcquisitionTimeout(locking.get(ModelKeys.ACQUIRE_TIMEOUT).asLong());
+                                fluentLocking.lockAcquisitionTimeout(locking.get(ModelKeys.ACQUIRE_TIMEOUT).asLong());
                             }
                             if (locking.hasDefined(ModelKeys.CONCURRENCY_LEVEL)) {
-                                configuration.setConcurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
+                                fluentLocking.concurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
                             }
                         }
                         if (cache.hasDefined(ModelKeys.TRANSACTION)) {
                             ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
+                            FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
                             if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
-                                configuration.setCacheStopTimeout(transaction.get(ModelKeys.TIMEOUT).asInt());
+                                fluentTx.cacheStopTimeout(transaction.get(ModelKeys.TIMEOUT).asInt());
                             }
                             if (transaction.hasDefined(ModelKeys.SYNC_PHASE)) {
                                 SyncPhase phase = SyncPhase.valueOf(transaction.get(ModelKeys.SYNC_PHASE).asString());
-                                configuration.setSyncCommitPhase(phase.isCommit());
-                                configuration.setSyncRollbackPhase(phase.isRollback());
+                                fluentTx.syncCommitPhase(phase.isCommit()).syncRollbackPhase(phase.isRollback());
                             }
                             if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
                                 EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
-                                configuration.setUseEagerLocking(eager.isEnabled());
-                                configuration.setEagerLockSingleNode(eager.isSingleOwner());
+                                fluentTx.useEagerLocking(eager.isEnabled()).eagerLockSingleNode(eager.isSingleOwner());
                             }
                         }
                         if (cache.hasDefined(ModelKeys.EVICTION)) {
                             ModelNode eviction = cache.get(ModelKeys.EVICTION);
+                            FluentConfiguration.EvictionConfig fluentEviction = fluent.eviction();
                             if (eviction.hasDefined(ModelKeys.STRATEGY)) {
-                                EvictionStrategy strategy = EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString());
-                                configuration.setEvictionStrategy(strategy);
+                                fluentEviction.strategy(EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString()));
                             }
                             if (eviction.hasDefined(ModelKeys.MAX_ENTRIES)) {
-                                configuration.setEvictionMaxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
+                                fluentEviction.maxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
                             }
                             if (eviction.hasDefined(ModelKeys.INTERVAL)) {
-                                configuration.setEvictionWakeUpInterval(eviction.get(ModelKeys.INTERVAL).asLong());
+                                fluentEviction.wakeUpInterval(eviction.get(ModelKeys.INTERVAL).asLong());
                             }
                         }
                         if (cache.hasDefined(ModelKeys.EXPIRATION)) {
                             ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
+                            FluentConfiguration.ExpirationConfig fluentExpiration = fluent.expiration();
                             if (expiration.hasDefined(ModelKeys.MAX_IDLE)) {
-                                configuration.setExpirationMaxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
+                                fluentExpiration.maxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
                             }
                             if (expiration.hasDefined(ModelKeys.LIFESPAN)) {
-                                configuration.setExpirationLifespan(expiration.get(ModelKeys.LIFESPAN).asLong());
+                                fluentExpiration.lifespan(expiration.get(ModelKeys.LIFESPAN).asLong());
                             }
                         }
                         if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
                             ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER);
+                            FluentConfiguration.StateRetrievalConfig fluentStateTransfer = fluent.stateRetrieval();
                             if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
-                                configuration.setFetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
+                                fluentStateTransfer.fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
                             }
                             if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
-                                configuration.setStateRetrievalTimeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
+                                fluentStateTransfer.timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
                             }
                             if (stateTransfer.hasDefined(ModelKeys.FLUSH_TIMEOUT)) {
-                                configuration.setStateRetrievalLogFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
+                                fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
                             }
                         }
                         if (cache.hasDefined(ModelKeys.REHASHING)) {
                             ModelNode rehashing = cache.get(ModelKeys.REHASHING);
+                            FluentConfiguration.HashConfig fluentHash = fluent.hash();
                             if (rehashing.hasDefined(ModelKeys.ENABLED)) {
-                                configuration.setRehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
+                                fluentHash.rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
                             }
                             if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
-                                configuration.setRehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
+                                fluentHash.rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
                             }
                         }
                         if (cache.hasDefined(ModelKeys.STORE)) {
                             ModelNode store = cache.get(ModelKeys.STORE);
-                            CacheLoaderManagerConfig storeManagerConfig = configuration.getCacheLoaderManagerConfig();
-                            storeManagerConfig.setShared(store.hasDefined(ModelKeys.SHARED) ? store.get(ModelKeys.SHARED).asBoolean() : false);
-                            storeManagerConfig.setPreload(store.hasDefined(ModelKeys.PRELOAD) ? store.get(ModelKeys.PRELOAD).asBoolean() : false);
-                            storeManagerConfig.setPassivation(store.hasDefined(ModelKeys.PASSIVATION) ? store.get(ModelKeys.PASSIVATION).asBoolean() : true);
+                            FluentConfiguration.LoadersConfig fluentStores = fluent.loaders();
+                            fluentStores.shared(store.hasDefined(ModelKeys.SHARED) ? store.get(ModelKeys.SHARED).asBoolean() : false);
+                            fluentStores.preload(store.hasDefined(ModelKeys.PRELOAD) ? store.get(ModelKeys.PRELOAD).asBoolean() : false);
+                            fluentStores.passivation(store.hasDefined(ModelKeys.PASSIVATION) ? store.get(ModelKeys.PASSIVATION).asBoolean() : true);
                             CacheStoreConfig storeConfig = this.buildCacheStore(builder, store);
-                            storeConfig.getSingletonStoreConfig().setSingletonStoreEnabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
-                            storeConfig.setFetchPersistentState(store.hasDefined(ModelKeys.FETCH_STATE) ? store.get(ModelKeys.FETCH_STATE).asBoolean() : true);
-                            storeConfig.setPurgeOnStartup(store.hasDefined(ModelKeys.PURGE) ? store.get(ModelKeys.PURGE).asBoolean() : true);
+                            storeConfig.singletonStore().enabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
+                            storeConfig.fetchPersistentState(store.hasDefined(ModelKeys.FETCH_STATE) ? store.get(ModelKeys.FETCH_STATE).asBoolean() : true);
+                            storeConfig.purgeOnStartup(store.hasDefined(ModelKeys.PURGE) ? store.get(ModelKeys.PURGE).asBoolean() : true);
                             if (store.hasDefined(ModelKeys.PROPERTY) && (storeConfig instanceof AbstractCacheStoreConfig)) {
                                 Properties properties = new Properties();
                                 for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
@@ -285,7 +289,7 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                                 }
                                 ((AbstractCacheStoreConfig) storeConfig).setProperties(properties);
                             }
-                            storeManagerConfig.addCacheLoaderConfig(storeConfig);
+                            fluentStores.addCacheLoader(storeConfig);
                         }
                         configurations.put(cacheName, configuration);
                         StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;

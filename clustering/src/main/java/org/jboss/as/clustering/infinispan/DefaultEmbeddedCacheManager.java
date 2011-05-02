@@ -71,6 +71,11 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
+        return this.getCache(cacheName, true);
+    }
+
+    @Override
+    public <K, V> Cache<K, V> getCache(String cacheName, boolean start) {
         SwitchContext context = switcher.getSwitchContext(this.getClass().getClassLoader());
         try {
             return new DelegatingCache<K, V>(this.container.<K, V>getCache(this.getCacheName(cacheName)));
@@ -243,6 +248,24 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         return this.container.isRunning(this.defaultCache);
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.infinispan.manager.EmbeddedCacheManager#cacheExists(java.lang.String)
+     */
+    @Override
+    public boolean cacheExists(String cacheName) {
+        return this.container.cacheExists(this.getCacheName(cacheName));
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see org.infinispan.manager.EmbeddedCacheManager#removeCache(java.lang.String)
+     */
+    @Override
+    public void removeCache(String cacheName) {
+        this.container.removeCache(this.getCacheName(cacheName));
+    }
+
     private String getCacheName(String name) {
         return ((name == null) || name.equals(CacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
     }
@@ -270,7 +293,7 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         }
 
         @Override
-        public CacheContainer getCacheManager() {
+        public EmbeddedCacheManager getCacheManager() {
             return DefaultEmbeddedCacheManager.this;
         }
 

@@ -33,6 +33,7 @@ import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.config.Configuration;
+import org.infinispan.config.FluentGlobalConfiguration;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.jmx.ComponentsJmxRegistration;
@@ -49,7 +50,6 @@ import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
-import org.jboss.as.clustering.infinispan.StreamingMarshaller;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -104,26 +104,28 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
         EmbeddedCacheManagerDefaults defaults = this.configuration.getDefaults();
         GlobalConfiguration global = defaults.getGlobalConfiguration().clone();
+        FluentGlobalConfiguration fluentGlobal = global.fluent();
         TransportConfiguration transport = this.configuration.getTransportConfiguration();
+        FluentGlobalConfiguration.TransportConfig fluentTransport = fluentGlobal.transport();
         if (transport != null) {
             Long timeout = transport.getLockTimeout();
             if (timeout != null) {
-                global.setDistributedSyncTimeout(timeout.longValue());
+                fluentTransport.distributedSyncTimeout(timeout.longValue());
             }
             String site = transport.getSite();
             if (site != null) {
-                global.setSiteId(site);
+                fluentTransport.siteId(site);
             }
             String rack = transport.getRack();
             if (rack != null) {
-                global.setRackId(rack);
+                fluentTransport.rackId(rack);
             }
             String machine = transport.getMachine();
             if (machine != null) {
-                global.setMachineId(machine);
+                fluentTransport.machineId(machine);
             }
-            global.setTransportNodeName(transport.getEnvironment().getNodeName());
-            global.setClusterName(this.configuration.getName());
+            fluentTransport.nodeName(transport.getEnvironment().getNodeName());
+            fluentTransport.clusterName(this.configuration.getName());
 
             ChannelProvider.init(global, transport.getChannelFactory());
 
@@ -132,22 +134,18 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
                 ExecutorProvider.initTransportExecutor(global, executor);
             }
         } else {
-            global.setTransportClass(null);
+            fluentTransport.transportClass(null);
         }
 
-        global.setCacheManagerName(this.configuration.getName());
-        global.setMarshallerClass(StreamingMarshaller.class.getName());
+        FluentGlobalConfiguration.GlobalJmxStatisticsConfig globalJmx = fluentGlobal.globalJmxStatistics();
+        globalJmx.cacheManagerName(this.configuration.getName());
 
-        Configuration defaultConfig = new Configuration();
         MBeanServer server = this.configuration.getMBeanServer();
         if (server != null) {
-            global.setExposeGlobalJmxStatistics(true);
-            global.setMBeanServerLookupInstance(new MBeanServerProvider(server));
-            global.setJmxDomain(server.getDefaultDomain());
-            defaultConfig.setExposeJmxStatistics(true);
+            globalJmx.mBeanServerLookup(new MBeanServerProvider(server));
+            globalJmx.jmxDomain(server.getDefaultDomain());
         } else {
-            global.setExposeGlobalJmxStatistics(false);
-            defaultConfig.setExposeJmxStatistics(false);
+            globalJmx.disable();
         }
 
         Executor listenerExecutor = this.configuration.getListenerExecutor();
@@ -163,9 +161,11 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             ExecutorProvider.initReplicationQueueExecutor(global, replicationQueueExecutor);
         }
 
+        Configuration defaultConfig = new Configuration();
+
         TransactionManager transactionManager = this.configuration.getTransactionManager();
         if (transactionManager != null) {
-            defaultConfig.setTransactionManagerLookup(new TransactionManagerProvider(transactionManager));
+            defaultConfig.fluent().transaction().transactionManagerLookup(new TransactionManagerProvider(transactionManager));
         }
 
         SwitchContext switchContext = switcher.getSwitchContext(this.getClass().getClassLoader());

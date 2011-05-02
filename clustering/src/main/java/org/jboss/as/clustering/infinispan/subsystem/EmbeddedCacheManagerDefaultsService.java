@@ -91,7 +91,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
             if (overrides != null) {
                 configuration.applyOverrides(overrides);
             }
-            configuration.setCacheMode(mode);
+            configuration.fluent().mode(mode);
             defaults.add(mode, configuration);
         }
         this.defaults = defaults;
