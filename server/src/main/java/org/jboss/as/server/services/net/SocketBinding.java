@@ -122,7 +122,7 @@ public final class SocketBinding {
      * @throws IOException
      */
     public Socket createSocket() throws IOException {
-        final Socket socket = getSocketFactory().createSocket();
+        final Socket socket = getSocketFactory().createSocket(name);
         socket.bind(getSocketAddress());
         return socket;
     }
@@ -134,7 +134,7 @@ public final class SocketBinding {
      * @throws IOException
      */
     public ServerSocket createServerSocket() throws IOException {
-        final ServerSocket socket = getServerSocketFactory().createServerSocket();
+        final ServerSocket socket = getServerSocketFactory().createServerSocket(name);
         socket.bind(getSocketAddress());
         return socket;
     }
@@ -147,7 +147,7 @@ public final class SocketBinding {
      * @throws IOException
      */
     public ServerSocket createServerSocket(int backlog) throws IOException {
-        final ServerSocket socket = getServerSocketFactory().createServerSocket();
+        final ServerSocket socket = getServerSocketFactory().createServerSocket(name);
         socket.bind(getSocketAddress(), backlog);
         return socket;
     }
@@ -237,11 +237,11 @@ public final class SocketBinding {
         }
     }
 
-    SocketFactory getSocketFactory() {
+    ManagedSocketFactory getSocketFactory() {
         return socketBindings.getSocketFactory();
     }
 
-    ServerSocketFactory getServerSocketFactory() {
+    ManagedServerSocketFactory getServerSocketFactory() {
         return socketBindings.getServerSocketFactory();
     }
 
