@@ -54,6 +54,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue rtName;
     private final ArgumentWithValue serverGroups;
     private final ArgumentWithoutValue allServerGroups;
+    private final ArgumentWithoutValue disabled;
 
     public DeployHandler() {
         super("deploy", true);
@@ -77,7 +78,7 @@ public class DeployHandler extends BatchModeCommandHandler {
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
                 ParsedArguments args = ctx.getParsedArguments();
-                if(/*!ctx.isDomainMode() || */path.isPresent(args)) {
+                if(path.isPresent(args)) {
                     return -1;
                 }
 
@@ -184,6 +185,10 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         serverGroups.addCantAppearAfter(allServerGroups);
         allServerGroups.addCantAppearAfter(serverGroups);
+
+        disabled = new ArgumentWithoutValue("--disabled");
+        argsCompleter.addArgument(disabled);
+        disabled.addRequiredPreceding(path);
     }
 
     @Override
@@ -316,44 +321,45 @@ public class DeployHandler extends BatchModeCommandHandler {
                 }
             }
 
-            final ModelNode request;
-            // deploy
-            if (ctx.isDomainMode()) {
-                request = new ModelNode();
-                request.get("operation").set("composite");
-                request.get("address").setEmptyList();
-                ModelNode steps = request.get("steps");
+            if (!disabled.isPresent(args)) {
+                final ModelNode request;
+                // deploy
+                if (ctx.isDomainMode()) {
+                    request = new ModelNode();
+                    request.get("operation").set("composite");
+                    request.get("address").setEmptyList();
+                    ModelNode steps = request.get("steps");
 
-                for(String serverGroup : serverGroups) {
-                    steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+                    for (String serverGroup : serverGroups) {
+                        steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+                    }
+
+                    for (String serverGroup : serverGroups) {
+                        steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
+                    }
+                } else {
+                    builder = new DefaultOperationRequestBuilder();
+                    builder.setOperationName("deploy");
+                    builder.addNode("deployment", name);
+                    try {
+                        request = builder.buildRequest();
+                    } catch (Exception e) {
+                        ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
+                        return;
+                    }
                 }
 
-                for(String serverGroup : serverGroups) {
-                    steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
-                }
-
-            } else {
-                builder = new DefaultOperationRequestBuilder();
-                builder.setOperationName("deploy");
-                builder.addNode("deployment", name);
                 try {
-                    request = builder.buildRequest();
+                    result = client.execute(request);
                 } catch (Exception e) {
                     ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
                     return;
                 }
-            }
 
-            try {
-                result = client.execute(request);
-            } catch (Exception e) {
-                ctx.printLine("Failed to deploy: " + e.getLocalizedMessage());
-                return;
-            }
-
-            if (!Util.isSuccess(result)) {
-                ctx.printLine(Util.getFailureDescription(result));
-                return;
+                if (!Util.isSuccess(result)) {
+                    ctx.printLine(Util.getFailureDescription(result));
+                    return;
+                }
             }
             ctx.printLine("'" + name + "' deployed successfully.");
         }
@@ -443,21 +449,22 @@ public class DeployHandler extends BatchModeCommandHandler {
         builder.getModelNode().get("bytes").set(bytes);
         steps.add(builder.buildRequest());
 
-        // deploy
-        if (ctx.isDomainMode()) {
-            for (String serverGroup : serverGroups) {
-                steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+        if(!disabled.isPresent(args)) {
+            // deploy
+            if (ctx.isDomainMode()) {
+                for (String serverGroup : serverGroups) {
+                    steps.add(Util.configureDeploymentOperation("add", name, serverGroup));
+                }
+                for (String serverGroup : serverGroups) {
+                    steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
+                }
+            } else {
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName("deploy");
+                builder.addNode("deployment", name);
+                steps.add(builder.buildRequest());
             }
-            for (String serverGroup : serverGroups) {
-                steps.add(Util.configureDeploymentOperation("deploy", name, serverGroup));
-            }
-        } else {
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("deploy");
-            builder.addNode("deployment", name);
-            steps.add(builder.buildRequest());
         }
-
         return composite;
     }
 
