@@ -87,9 +87,12 @@ public class JMXConnectorService implements Service<Void> {
         log.info("Starting remote JMX connector");
         setRmiServerProperty(serverPortBinding.getValue().getAddress().getHostAddress());
         try {
-            RMIServerSocketFactory serverSocketFactory = new JMXServerSocketFactory(getRmiRegistryAddress());
+            SocketBinding registryBinding = registryPortBinding.getValue();
+            RMIServerSocketFactory registrySocketFactory = new JMXServerSocketFactory(registryBinding);
+            SocketBinding rmiServerBinding = serverPortBinding.getValue();
+            RMIServerSocketFactory serverSocketFactory = new JMXServerSocketFactory(rmiServerBinding);
 
-            registry = LocateRegistry.createRegistry(getRmiRegistryPort(), null, serverSocketFactory);
+            registry = LocateRegistry.createRegistry(getRmiRegistryPort(), null, registrySocketFactory);
             HashMap<String, Object> env = new HashMap<String, Object>();
 
             rmiServer = new RMIJRMPServerImpl(getRmiServerPort(), null, serverSocketFactory, env);
@@ -172,15 +175,19 @@ public class JMXConnectorService implements Service<Void> {
 
     private static class JMXServerSocketFactory implements RMIServerSocketFactory, Serializable {
         private static final long serialVersionUID = 1564081885379700777L;
-        private final InetAddress address;
+        private final SocketBinding socketBinding;
 
-        public JMXServerSocketFactory(InetAddress address) {
-            this.address = address;
+        public JMXServerSocketFactory(final SocketBinding socketBinding) {
+            this.socketBinding = socketBinding;
         }
 
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
-            return new ServerSocket(port, BACKLOG, address);
+            if (port != socketBinding.getPort()) {
+                throw new IllegalStateException(String.format("Received request for server socket %s on port [%d] but am configured for port [%d]",
+                        socketBinding.getName(), port, socketBinding.getPort()));
+            }
+            return socketBinding.createServerSocket(BACKLOG);
         }
     }
 
