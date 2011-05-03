@@ -59,10 +59,6 @@ public final class JVMDescriptions {
         node.get(ATTRIBUTES, JVM_AGENT_LIB, DESCRIPTION).set(bundle.getString("jvm.agent.lib"));
         node.get(ATTRIBUTES, JVM_AGENT_PATH, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, JVM_AGENT_PATH, DESCRIPTION).set(bundle.getString("jvm.agent.path"));
-        node.get(ATTRIBUTES, JVM_DEBUG_ENABLED, TYPE).set(ModelType.BOOLEAN);
-        node.get(ATTRIBUTES, JVM_DEBUG_ENABLED, DESCRIPTION).set(bundle.getString("jvm.debug.enabled"));
-        node.get(ATTRIBUTES, JVM_DEBUG_OPTIONS, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, JVM_DEBUG_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.debug.options"));
         node.get(ATTRIBUTES, JVM_ENV_CLASSPATH_IGNORED, TYPE).set(ModelType.BOOLEAN);
         node.get(ATTRIBUTES, JVM_ENV_CLASSPATH_IGNORED, DESCRIPTION).set(bundle.getString("jvm.env.classpath.ignored"));
         node.get(ATTRIBUTES, JVM_ENV_VARIABLES, TYPE).set(ModelType.LIST);
@@ -93,6 +89,16 @@ public final class JVMDescriptions {
         return node;
     }
 
+    public static ModelNode getServerJVMDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = getJVMDescription(locale);
+        node.get(ATTRIBUTES, JVM_DEBUG_ENABLED, TYPE).set(ModelType.BOOLEAN);
+        node.get(ATTRIBUTES, JVM_DEBUG_ENABLED, DESCRIPTION).set(bundle.getString("jvm.debug.enabled"));
+        node.get(ATTRIBUTES, JVM_DEBUG_OPTIONS, TYPE).set(ModelType.STRING);
+        node.get(ATTRIBUTES, JVM_DEBUG_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.debug.options"));
+        return node;
+    }
+
     public static ModelNode getJVMAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
@@ -108,12 +114,6 @@ public final class JVMDescriptions {
         node.get(REQUEST_PROPERTIES, JVM_AGENT_PATH, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, JVM_AGENT_PATH, DESCRIPTION).set(bundle.getString("jvm.agent.path"));
         node.get(REQUEST_PROPERTIES, JVM_AGENT_PATH, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, TYPE).set(ModelType.BOOLEAN);
-        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, DESCRIPTION).set(bundle.getString("jvm.debug.enabled"));
-        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.debug.options"));
-        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, JVM_ENV_CLASSPATH_IGNORED, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, JVM_ENV_CLASSPATH_IGNORED, DESCRIPTION).set(bundle.getString("jvm.env.classpath.ignored"));
         node.get(REQUEST_PROPERTIES, JVM_ENV_CLASSPATH_IGNORED, REQUIRED).set(false);
@@ -150,6 +150,18 @@ public final class JVMDescriptions {
         node.get(REQUEST_PROPERTIES, JVM_PERMGEN, REQUIRED).set(false);
 
         node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+
+    public static ModelNode getServerJVMAddDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = getJVMAddDescription(locale);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, DESCRIPTION).set(bundle.getString("jvm.debug.enabled"));
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_ENABLED, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, DESCRIPTION).set(bundle.getString("jvm.debug.options"));
+        node.get(REQUEST_PROPERTIES, JVM_DEBUG_OPTIONS, REQUIRED).set(false);
         return node;
     }
 

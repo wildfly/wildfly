@@ -225,8 +225,8 @@ public class HostModelUtil {
         serverInterfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
         //TODO register server system properties description provider
         //TODO register server jvm description provider
-        final ModelNodeRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
-        JVMHandlers.register(serverVMs);
+        final ModelNodeRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), JVMHandlers.SERVER_MODEL_PROVIDER);
+        JVMHandlers.register(serverVMs, true);
 
         //TODO register the rest of the server values
 

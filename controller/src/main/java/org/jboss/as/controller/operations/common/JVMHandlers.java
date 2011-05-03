@@ -48,6 +48,13 @@ import org.jboss.dmr.ModelNode;
  */
 public final class JVMHandlers {
 
+    public static final DescriptionProvider SERVER_MODEL_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return JVMDescriptions.getServerJVMDescription(locale);
+        }
+    };
+
     public static final String JVM_AGENT_LIB = "agent-lib";
     public static final String JVM_AGENT_PATH = "agent-path";
     public static final String JVM_DEBUG_ENABLED = "debug-enabled";
@@ -67,9 +74,10 @@ public final class JVMHandlers {
     public static final String SIZE = "size";
     public static final String MAX_SIZE = "max-size";
 
-    static final String[] ATTRIBUTES = {JVM_AGENT_LIB, JVM_AGENT_PATH, JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS, JVM_ENV_CLASSPATH_IGNORED,
-        JVM_ENV_VARIABLES, JVM_HEAP, JVM_MAX_HEAP, JVM_JAVA_AGENT, JVM_JAVA_HOME, JVM_OPTIONS, JVM_PERMGEN, JVM_MAX_PERMGEN,
-        JVM_STACK};
+    static final String[] ATTRIBUTES = {JVM_AGENT_LIB, JVM_AGENT_PATH, JVM_ENV_CLASSPATH_IGNORED, JVM_ENV_VARIABLES,
+         JVM_HEAP, JVM_MAX_HEAP, JVM_JAVA_AGENT, JVM_JAVA_HOME, JVM_OPTIONS, JVM_PERMGEN, JVM_MAX_PERMGEN, JVM_STACK};
+
+    static final String[] SERVER_ATTRIBUTES = {JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS};
 
     private static final OperationHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
     private static final OperationHandler booleanWriteHandler = new ModelUpdateOperationHandler() {
@@ -88,14 +96,20 @@ public final class JVMHandlers {
     };
 
     public static void register(final ModelNodeRegistration registration) {
+        register(registration, false);
+    }
+
+    public static void register(final ModelNodeRegistration registration, final boolean server) {
 
         registration.registerOperationHandler(JVMAddHandler.OPERATION_NAME, JVMAddHandler.INSTANCE, JVMAddHandler.INSTANCE, false);
         registration.registerOperationHandler(JVMRemoveHandler.OPERATION_NAME, JVMRemoveHandler.INSTANCE, JVMRemoveHandler.INSTANCE, false);
 
         registration.registerReadWriteAttribute(JVM_AGENT_LIB, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_AGENT_PATH, null, writeHandler, Storage.CONFIGURATION);
-        registration.registerReadWriteAttribute(JVM_DEBUG_ENABLED, null, booleanWriteHandler, Storage.CONFIGURATION);
-        registration.registerReadWriteAttribute(JVM_DEBUG_OPTIONS, null, booleanWriteHandler, Storage.CONFIGURATION);
+        if(server) {
+            registration.registerReadWriteAttribute(JVM_DEBUG_ENABLED, null, booleanWriteHandler, Storage.CONFIGURATION);
+            registration.registerReadWriteAttribute(JVM_DEBUG_OPTIONS, null, booleanWriteHandler, Storage.CONFIGURATION);
+        }
         registration.registerReadWriteAttribute(JVM_ENV_CLASSPATH_IGNORED, null, booleanWriteHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_ENV_VARIABLES, null, writeHandler, Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(JVM_HEAP, null, writeHandler, Storage.CONFIGURATION);

@@ -208,7 +208,7 @@
 
             <!--<xs:element name="loggers" type="loggersType" minOccurs="0"/>-->
             <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0"/>
-            <xs:element name="jvm" minOccurs="0" type="namedJvmType"/>
+            <xs:element name="jvm" minOccurs="0" type="serverJvmType"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
@@ -1120,8 +1120,6 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="debug-enabled" type="xs:boolean" default="false"/>
-        <xs:attribute name="debug-options" type="xs:string" default="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"/>
         <xs:attribute name="env-classpath-ignored" default="true" type="xs:boolean"/>
     </xs:complexType>
 
@@ -1129,6 +1127,15 @@
         <xs:complexContent>
             <xs:extension base="jvmType">
                 <xs:attribute name="name" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="serverJvmType">
+        <xs:complexContent>
+            <xs:extension base="namedJvmType">
+                <xs:attribute name="debug-enabled" type="xs:boolean" default="false"/>
+                <xs:attribute name="debug-options" type="xs:string" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

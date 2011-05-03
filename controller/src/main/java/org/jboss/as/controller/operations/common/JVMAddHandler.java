@@ -45,7 +45,14 @@ import org.jboss.dmr.ModelNode;
 public final class JVMAddHandler implements ModelAddOperationHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
-    public static final JVMAddHandler INSTANCE = new JVMAddHandler();
+    public static final JVMAddHandler INSTANCE = new JVMAddHandler(false);
+    public static final JVMAddHandler SERVER_INSTANCE = new JVMAddHandler(true);
+
+    private final boolean server;
+
+    private JVMAddHandler(boolean server) {
+        this.server = server;
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -67,6 +74,15 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
                 subModel.get(attr);
             }
         }
+        if(server) {
+            for(final String attr : JVMHandlers.SERVER_ATTRIBUTES) {
+                if(operation.has(attr)) {
+                    subModel.get(attr).set(operation.get(attr));
+                } else {
+                    subModel.get(attr);
+                }
+            }
+        }
 
         resultHandler.handleResultComplete();
 
@@ -76,6 +92,9 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
     /** {@inheritDoc} */
     @Override
     public ModelNode getModelDescription(final Locale locale) {
+        if(server) {
+            return JVMDescriptions.getServerJVMAddDescription(locale);
+        }
         return JVMDescriptions.getJVMAddDescription(locale);
     }
 

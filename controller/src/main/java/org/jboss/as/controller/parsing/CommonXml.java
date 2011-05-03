@@ -571,6 +571,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> updates, final Set<String> jvmNames) throws XMLStreamException {
+        parseJvm(reader, parentAddress, updates, jvmNames, false);
+    }
+
+    protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> updates, final Set<String> jvmNames, final boolean server) throws XMLStreamException {
 
         // Handle attributes
         final List<ModelNode> attrUpdates = new ArrayList<ModelNode>();
@@ -617,16 +621,24 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         break;
                     }
                     case DEBUG_ENABLED: {
-                        if (debugEnabled != null)
+                        if(! server) {
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                        }
+                        if (debugEnabled != null) {
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        }
                         debugEnabled = Boolean.valueOf(value);
                         final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_DEBUG_ENABLED, debugEnabled);
                         attrUpdates.add(update);
                         break;
                     }
                     case DEBUG_OPTIONS: {
-                        if (debugOptions != null)
+                        if(! server) {
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                        }
+                        if (debugOptions != null) {
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        }
                         debugOptions = value;
                         final ModelNode update = Util.getWriteAttributeOperation(null, JVMHandlers.JVM_DEBUG_OPTIONS, debugOptions);
                         attrUpdates.add(update);
@@ -651,6 +663,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             // levels it can be unnamed, in which case configuration from
             // domain and host levels aren't mixed in. OR make name required in xsd always
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if(debugEnabled != null && debugOptions == null && debugEnabled.booleanValue()) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DEBUG_OPTIONS));
         }
 
         final ModelNode address = parentAddress.clone();
@@ -1462,6 +1477,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             writer.writeAttribute(Attribute.DEBUG_ENABLED.getLocalName(), jvmElement.get(JVMHandlers.JVM_DEBUG_ENABLED).asString());
         }
         if(jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_OPTIONS)) {
+            if(! jvmElement.hasDefined(JVMHandlers.JVM_DEBUG_ENABLED)) {
+                writer.writeAttribute(Attribute.DEBUG_ENABLED.getLocalName(), "false");
+            }
             writer.writeAttribute(Attribute.DEBUG_OPTIONS.getLocalName(), jvmElement.get(JVMHandlers.JVM_DEBUG_OPTIONS).asString());
         }
         if(jvmElement.hasDefined(JVMHandlers.JVM_ENV_CLASSPATH_IGNORED)) {
