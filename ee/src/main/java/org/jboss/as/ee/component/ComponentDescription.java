@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
@@ -57,6 +58,8 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 public class ComponentDescription {
 
     private static final DefaultFirstConfigurator FIRST_CONFIGURATOR = new DefaultFirstConfigurator();
+
+    private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
 
     private final ServiceName serviceName;
     private final String componentName;
@@ -113,7 +116,7 @@ public class ComponentDescription {
         if (deploymentUnitServiceName == null) {
             throw new IllegalArgumentException("deploymentUnitServiceName is null");
         }
-        serviceName = deploymentUnitServiceName.append("component");
+        serviceName = deploymentUnitServiceName.append("component").append(componentName);
         this.componentName = componentName;
         this.componentClassName = componentClassName;
         configurators.addLast(FIRST_CONFIGURATOR);
@@ -538,7 +541,12 @@ public class ComponentDescription {
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Could not load view class " + view.getViewClassName() + " for component " + configuration, e);
                 }
-                final ViewConfiguration viewConfiguration = new ViewConfiguration(viewClass,configuration, view.getServiceName(), new ProxyFactory(viewClass));
+                final ViewConfiguration viewConfiguration;
+                if(viewClass.isInterface()) {
+                    viewConfiguration = new ViewConfiguration(viewClass, configuration, view.getServiceName(), new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, viewClass.getClassLoader(),  viewClass));
+                } else {
+                    viewConfiguration = new ViewConfiguration(viewClass, configuration, view.getServiceName(), new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, viewClass.getClassLoader()));
+                }
                 for(final ViewConfigurator configurator : view.getConfigurators()) {
                     configurator.configure(context, configuration, view, viewConfiguration);
                 }

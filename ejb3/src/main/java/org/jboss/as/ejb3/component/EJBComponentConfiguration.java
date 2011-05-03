@@ -80,9 +80,7 @@ public abstract class EJBComponentConfiguration extends ComponentConfiguration {
     }
 
     protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
-        throw new RuntimeException("NYI");
-        // TODO: FIXME
-        //super.getComponentSystemInterceptorFactories().add(interceptorFactory);
+        getComponentSystemInterceptorFactories().add(interceptorFactory);
     }
 
     protected abstract void addCurrentInvocationContextInterceptorFactory();

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -145,6 +146,24 @@ final class ViewService implements Service<ComponentView> {
 
         public Component getComponent() {
             return component;
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            final ComponentViewInstance instance = createInstance();
+            final Object proxy = instance.createProxy();
+            return new ManagedReference() {
+
+                @Override
+                public void release() {
+                    instance.destroy();
+                }
+
+                @Override
+                public Object getInstance() {
+                    return proxy;
+                }
+            };
         }
 
         class ViewInstance implements ComponentViewInstance {

@@ -55,6 +55,7 @@ public class ComponentConfiguration {
     private final Deque<InterceptorFactory> postConstructInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Deque<InterceptorFactory> preDestroyInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Map<Method, Deque<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, Deque<InterceptorFactory>>();
+    private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
 
     // Component instance management
     private ManagedReferenceFactory instanceFactory;
@@ -239,6 +240,10 @@ public class ComponentConfiguration {
             throw new IllegalArgumentException("componentCreateServiceFactory is null");
         }
         this.componentCreateServiceFactory = componentCreateServiceFactory;
+    }
+
+    public List<InterceptorFactory> getComponentSystemInterceptorFactories() {
+        return componentSystemInterceptorFactories;
     }
 
     public String toString() {

@@ -22,12 +22,14 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.ManagedReferenceFactory;
+
 /**
  * A component view.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ComponentView {
+public interface ComponentView extends ManagedReferenceFactory {
 
     /**
      * Create the component view instance.
