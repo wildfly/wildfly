@@ -76,26 +76,25 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
             // container managed concurrency interceptor
             if (description.getConcurrencyManagementType() != ConcurrencyManagementType.BEAN) {
                 // Add ComponentInstance level interceptor
-//                this.addComponentInstanceSystemInterceptorFactory(new ComponentInterceptorFactory() {
-//                    @Override
-//                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
-//                        if (component instanceof LockableComponent) {
-//                            return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
-//                        } else {
-//                            // TODO: This shouldn't be required
-//                            return new Interceptor() {
-//                                @Override
-//                                public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-//                                    return interceptorContext.proceed();
-//                                }
-//
-//                            };
-//                        }
-//
-//
-//                    }
-//                });
-                throw new RuntimeException("Adding a interceptor at ComponentInstance level (for ex: locking interceptor) is not yet implemented");
+                this.addComponentInstanceSystemInterceptorFactory(new ComponentInterceptorFactory() {
+                    @Override
+                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                        if (component instanceof LockableComponent) {
+                            return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
+                        } else {
+                            // TODO: This shouldn't be required
+                            return new Interceptor() {
+                                @Override
+                                public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+                                    return interceptorContext.proceed();
+                                }
+
+                            };
+                        }
+
+
+                    }
+                });
             }
 
         }

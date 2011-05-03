@@ -83,6 +83,10 @@ public abstract class EJBComponentConfiguration extends ComponentConfiguration {
         getComponentSystemInterceptorFactories().add(interceptorFactory);
     }
 
+    protected void addComponentInstanceSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
+        getComponentSystemInterceptorFactories().add(interceptorFactory);
+    }
+
     protected abstract void addCurrentInvocationContextInterceptorFactory();
 
     /**
