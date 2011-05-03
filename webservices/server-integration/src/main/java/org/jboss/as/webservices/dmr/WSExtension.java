@@ -48,6 +48,8 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.webservices.dmr.management.WSEndpointMetricsOperationHandler;
+import org.jboss.as.webservices.dmr.management.WSEndpointsListOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
@@ -78,8 +80,8 @@ public class WSExtension implements Extension {
         registration.registerOperationHandler(ADD, WSSubsystemAdd.INSTANCE, WSSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, WSSubsystemDescribe.INSTANCE, WSSubsystemProviders.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(WSEndpointsListOperationHandler.OPERATION_NAME, WSEndpointsListOperationHandler.INSTANCE, WSSubsystemProviders.ENDPOINTS_LIST, false);
-        for (String attributeName : WSEndpointMetrics.ATTRIBUTES) {
-            registration.registerMetric(attributeName, WSEndpointMetrics.INSTANCE);
+        for (String attributeName : WSEndpointMetricsOperationHandler.ATTRIBUTES) {
+            registration.registerMetric(attributeName, WSEndpointMetricsOperationHandler.INSTANCE);
         }
         subsystem.registerXMLElementWriter(PARSER);
     }
