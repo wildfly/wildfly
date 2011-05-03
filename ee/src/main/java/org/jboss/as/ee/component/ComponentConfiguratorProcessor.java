@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.Collection;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+
+import java.util.Collection;
 
 /**
  * Deployment processor responsible for executing the {@link ComponentConfigurator} instances for a component within
@@ -48,10 +49,11 @@ public class ComponentConfiguratorProcessor implements DeploymentUnitProcessor {
         }
         final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
         if(componentDescriptions != null) for(ComponentDescription componentDescription : componentDescriptions) {
-            final ComponentConfiguration componentConfiguration = moduleConfiguration.getComponentConfigurationByClassName(componentDescription.getComponentClassName());
+            final ComponentConfiguration componentConfiguration = new ComponentConfiguration(componentDescription, moduleConfiguration.getClassConfiguration(componentDescription.getComponentClassName()));
             for(ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
                 componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
             }
+            moduleConfiguration.addComponentConfiguration(componentConfiguration);
         }
     }
 

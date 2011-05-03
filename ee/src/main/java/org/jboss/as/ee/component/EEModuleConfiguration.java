@@ -30,6 +30,7 @@ import org.jboss.modules.ModuleClassLoader;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,7 @@ public final class EEModuleConfiguration {
     private final String applicationName;
     private final String moduleName;
     private final Map<String, EEModuleClassConfiguration> classesByName;
-    private final Map<String, ComponentConfiguration> componentsByName;
-    private final Map<String, ComponentConfiguration> componentsByClassName;
+    private final List<ComponentConfiguration> componentConfigurations;
 
     // Module Bindings
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
@@ -76,17 +76,8 @@ public final class EEModuleConfiguration {
             }
             classesByName.put(className, classConfiguration);
         }
-        final Map<String, ComponentConfiguration> componentsByName = new HashMap<String, ComponentConfiguration>();
-        final Map<String, ComponentConfiguration> componentsByClassName = new HashMap<String, ComponentConfiguration>();
-        for (ComponentDescription componentDescription : description.getComponentDescriptions()) {
-            ComponentConfiguration componentConfiguration = new ComponentConfiguration(componentDescription, classesByName.get(componentDescription.getComponentClassName()));
-            for (ComponentConfigurator configurator : componentDescription.getConfigurators()) {
-                configurator.configure(context, componentDescription, componentConfiguration);
-            }
-        }
         this.classesByName = classesByName;
-        this.componentsByName = componentsByName;
-        this.componentsByClassName = componentsByClassName;
+        this.componentConfigurations = new ArrayList<ComponentConfiguration>();
     }
 
     public String getApplicationName() {
@@ -101,16 +92,12 @@ public final class EEModuleConfiguration {
         return classesByName.get(className);
     }
 
-    public ComponentConfiguration getComponentConfiguration(String componentName) {
-        return componentsByName.get(componentName);
-    }
-
-    public ComponentConfiguration getComponentConfigurationByClassName(String className) {
-        return componentsByClassName.get(className);
-    }
-
     public Collection<ComponentConfiguration> getComponentConfigurations() {
-        return componentsByName.values();
+        return Collections.unmodifiableList(componentConfigurations);
+    }
+
+    public void addComponentConfiguration(ComponentConfiguration configuration) {
+        componentConfigurations.add(configuration);
     }
 
     public List<BindingConfiguration> getBindingConfigurations() {

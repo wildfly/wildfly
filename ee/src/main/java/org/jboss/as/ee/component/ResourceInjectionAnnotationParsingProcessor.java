@@ -120,7 +120,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
 
-        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldName, fieldInfo.declaringClass().name().toString(), injectionType);
+        final InjectionTarget targetDescription = new FieldInjectionTarget( fieldInfo.declaringClass().name().toString(), fieldName,injectionType);
         process(classDescription, annotation, injectionType, localContextName, targetDescription);
     }
 
@@ -149,7 +149,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     }
 
     private void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription) {
-        String lookup = annotation.value("lookup").asString();
+        final AnnotationValue lookupAnnotation = annotation.value("lookup");
+        String lookup = lookupAnnotation == null ? null : lookupAnnotation.asString();
+
         if (isEmpty(lookup) && FIXED_LOCATIONS.containsKey(injectionType)) {
             lookup = FIXED_LOCATIONS.get(injectionType);
         }

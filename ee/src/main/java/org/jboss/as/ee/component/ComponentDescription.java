@@ -22,10 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,9 +34,13 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
+import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -474,6 +474,7 @@ public class ComponentDescription {
                 postConstructInterceptors.addFirst(instantiatorIterator.next());
             }
             postConstructInterceptors.addAll(userPostConstruct);
+            postConstructInterceptors.add(TerminatingInterceptorFactory.INSTANCE);
 
             // Apply pre-destroy
             final Deque<InterceptorFactory> preDestroyInterceptors = configuration.getPreDestroyInterceptors();
@@ -486,6 +487,7 @@ public class ComponentDescription {
                 preDestroyInterceptors.addFirst(destructorIterator.next());
             }
             preDestroyInterceptors.addAll(userPreDestroy);
+            preDestroyInterceptors.add(TerminatingInterceptorFactory.INSTANCE);
 
             // Method interceptors
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();

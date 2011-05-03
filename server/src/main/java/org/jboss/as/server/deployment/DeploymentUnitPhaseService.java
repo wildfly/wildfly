@@ -80,9 +80,16 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final Phase nextPhase = phase.next();
         final String name = deploymentUnit.getName();
         final DeploymentUnit parent = deploymentUnit.getParent();
-        final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
-        final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
-        final ServiceBuilder<?> phaseServiceBuilder = nextPhase == null ? null : serviceTarget.addService(serviceName, phaseService);
+        final ServiceBuilder<?> phaseServiceBuilder;
+        final DeploymentUnitPhaseService<?> phaseService;
+        if(nextPhase != null) {
+            final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
+            phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
+            phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
+        } else {
+            phaseServiceBuilder = null;
+            phaseService = null;
+        }
         final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), phaseServiceBuilder, deploymentUnit, phase);
 
         // attach any injected values from the last phase

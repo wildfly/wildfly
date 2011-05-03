@@ -175,7 +175,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         });
 
         // setup the injection target
-        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldName, fieldInfo.declaringClass().name().toString(), fieldInfo.type().name().toString());
+        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName,  fieldInfo.type().name().toString());
         // source is always local ENC jndi
         final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
         final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);

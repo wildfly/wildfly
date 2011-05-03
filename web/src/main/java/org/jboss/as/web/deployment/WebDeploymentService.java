@@ -53,8 +53,8 @@ class WebDeploymentService implements Service<Context> {
     /** {@inheritDoc} */
     public synchronized void start(StartContext startContext) throws StartException {
         context.setRealm(realm.getValue());
+        NamingListener.beginComponentStart(namespaceSelector.getOptionalValue());
         try {
-            NamingListener.beginComponentStart(namespaceSelector.getValue());
             try {
                 context.create();
             } catch (Exception e) {

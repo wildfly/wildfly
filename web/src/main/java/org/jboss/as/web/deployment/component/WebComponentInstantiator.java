@@ -21,6 +21,7 @@
  */
 package org.jboss.as.web.deployment.component;
 
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.naming.ManagedReference;
@@ -39,7 +40,7 @@ import java.util.Set;
  */
 public class WebComponentInstantiator implements ComponentInstantiator {
 
-    private volatile WebComponent component;
+    private volatile BasicComponent component;
     private final ServiceRegistry serviceRegistry;
     private final ServiceName serviceName;
 
@@ -53,7 +54,7 @@ public class WebComponentInstantiator implements ComponentInstantiator {
         if (component == null) {
             synchronized (this) {
                 if (component == null) {
-                    component = ((ServiceController<WebComponent>) serviceRegistry.getRequiredService(serviceName)).getValue();
+                    component = ((ServiceController<BasicComponent>) serviceRegistry.getRequiredService(serviceName)).getValue();
                 }
             }
         }
@@ -65,8 +66,7 @@ public class WebComponentInstantiator implements ComponentInstantiator {
             @Override
             public synchronized void release() {
                 if (!destroyed) {
-                    // TODO: Implement destroyInstance
-//                    instance.getComponent().destroyInstance(instance);
+                    instance.destroy();
                     destroyed = true;
                     throw new RuntimeException("destroyInstance for web components not yet implemented");
                 }

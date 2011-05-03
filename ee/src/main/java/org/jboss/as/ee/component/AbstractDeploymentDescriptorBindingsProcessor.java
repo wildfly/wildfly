@@ -156,8 +156,8 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 }
                 String injectionTargetName = injectionTarget.getInjectionTargetName();
                 final InjectionTarget injectionTargetDescription = method == null ?
-                        new FieldInjectionTarget(injectionTargetName, memberName, classType.getName()) :
-                        new MethodInjectionTarget(injectionTargetName, memberName, classType.getName());
+                        new FieldInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName()) :
+                        new MethodInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName());
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
                 eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {

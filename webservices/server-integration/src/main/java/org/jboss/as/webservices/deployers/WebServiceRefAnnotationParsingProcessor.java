@@ -118,7 +118,7 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
     private void processFieldRef(final DeploymentUnit deploymentUnit, final Module module, final EEModuleDescription eeModuleDescription, final WebServiceRefWrapper annotation, final FieldInfo fieldInfo) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.type();
-        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldName, fieldInfo.declaringClass().name().toString(), injectionType);
+        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(),  fieldName, injectionType);
         final String localContextName = isEmpty(annotation.name()) ? fieldInfo.declaringClass().name().toString() + "/" + fieldInfo.name() : annotation.name();
         processRef(deploymentUnit, module, eeModuleDescription, annotation.name(), targetDescription.getClassName(), annotation.value(), annotation.wsdlLocation(), fieldInfo.declaringClass(), targetDescription, localContextName);
     }

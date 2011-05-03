@@ -62,7 +62,10 @@ public class NamingListener implements InstanceListener {
                 || type.equals(InstanceEvent.AFTER_DESTROY_EVENT)
                 || type.equals(InstanceEvent.AFTER_INIT_EVENT)) {
             // Pop naming id
-            NamespaceContextSelector.popCurrentSelector();
+            //TODO: This is statement should not be here, but afterDestroy is coming up twice
+            if(NamespaceContextSelector.getCurrentSelector() == selector) {
+                NamespaceContextSelector.popCurrentSelector();
+            }
         }
     }
 

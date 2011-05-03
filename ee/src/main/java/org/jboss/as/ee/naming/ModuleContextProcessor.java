@@ -78,6 +78,9 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         final InjectedEENamespaceContextSelector selector = new InjectedEENamespaceContextSelector();
         phaseContext.addDependency(appContextServiceName, NamingStore.class, selector.getAppContextInjector());
         phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getModuleContextInjector());
+        phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getCompContextInjector());
+
+        moduleDescription.setNamespaceContextSelector(selector);
 
         // add the arquillian setup action, so the module namespace is available in arquillian tests
         final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector);
