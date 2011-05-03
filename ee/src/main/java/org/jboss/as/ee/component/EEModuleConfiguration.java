@@ -61,22 +61,7 @@ public final class EEModuleConfiguration {
             configurator.configure(context, description, this);
         }
 
-        final Map<String, EEModuleClassConfiguration> classesByName = new HashMap<String, EEModuleClassConfiguration>();
-        for (EEModuleClassDescription classDescription : description.getClassDescriptions()) {
-            String className = classDescription.getClassName();
-            Class<?> clazz = null;
-            try {
-                clazz = Class.forName(className, false, classLoader);
-            } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Failed to load class " + className, e);
-            }
-            EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, this);
-            for (ClassConfigurator configurator : classDescription.getConfigurators()) {
-                configurator.configure(context, classDescription, classConfiguration);
-            }
-            classesByName.put(className, classConfiguration);
-        }
-        this.classesByName = classesByName;
+        this.classesByName = new HashMap<String, EEModuleClassConfiguration>();
         this.componentConfigurations = new ArrayList<ComponentConfiguration>();
     }
 
@@ -86,6 +71,10 @@ public final class EEModuleConfiguration {
 
     public String getModuleName() {
         return moduleName;
+    }
+
+    public void addClassConfiguration(EEModuleClassConfiguration configuration) {
+        classesByName.put(configuration.getModuleClass().getName(), configuration);
     }
 
     public EEModuleClassConfiguration getClassConfiguration(String className) {

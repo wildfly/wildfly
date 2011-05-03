@@ -31,9 +31,11 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.deployment.TldsMetaData;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.web.deployment.WebAttachments;
+import org.jboss.jandex.DotName;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
@@ -76,6 +78,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         final Map<String, ComponentDescription> componentByClass = new HashMap<String, ComponentDescription>();
         final Map<String, ComponentInstantiator> webComponents = new HashMap<String, ComponentInstantiator>();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final String applicationName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName();
         if (moduleDescription == null) {
             return; //not an ee deployment
@@ -99,6 +102,10 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 ManagedBeanComponentInstantiator instantiator = new ManagedBeanComponentInstantiator(deploymentUnit, description);
                 webComponents.put(clazz, instantiator);
             } else {
+                //there is no point making these items a component if there is no annotation index info
+                if(compositeIndex.getClassByName(DotName.createSimple(clazz)) == null) {
+                    continue;
+                }
                 description = new WebComponentDescription(clazz, clazz, moduleDescription, deploymentUnit.getServiceName());
                 moduleDescription.addComponent(description);
                 webComponents.put(clazz, new WebComponentInstantiator(deploymentUnit, description));

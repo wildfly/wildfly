@@ -22,14 +22,17 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.Iterator;
-import java.util.Set;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+
+import java.util.Iterator;
+import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
@@ -57,7 +60,37 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         if (iterator.hasNext()) {
             throw new DeploymentUnitProcessingException("Multiple components found for type '" + typeName + "'");
         }
-        serviceBuilder.addDependency(description.getServiceName(), ManagedReferenceFactory.class, injector);
+
+        //TODO: should ComponentView also be a managed reference factory?
+        serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new Injector<ComponentView>() {
+
+            @Override
+            public void inject(ComponentView value) throws InjectionException {
+                final ComponentViewInstance instance = value.createInstance();
+                final Object proxy = instance.createProxy();
+                injector.inject(new ManagedReferenceFactory() {
+                    @Override
+                    public ManagedReference getReference() {
+                        return new ManagedReference() {
+                            @Override
+                            public void release() {
+                                instance.destroy();
+                            }
+
+                            @Override
+                            public Object getInstance() {
+                                return proxy;
+                            }
+                        };
+                    }
+                });
+            }
+
+            @Override
+            public void uninject() {
+
+            }
+        });
     }
 
     public boolean equals(final Object injectionSource) {

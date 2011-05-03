@@ -30,6 +30,8 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -76,7 +78,7 @@ public class ComponentDescription {
     private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
 
 
-    private ComponentNamingMode namingMode = ComponentNamingMode.NONE;
+    private ComponentNamingMode namingMode = ComponentNamingMode.USE_MODULE;
     private boolean excludeDefaultInterceptors = false;
     private DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
 
@@ -115,6 +117,10 @@ public class ComponentDescription {
         this.componentName = componentName;
         this.componentClassName = componentClassName;
         configurators.addLast(FIRST_CONFIGURATOR);
+    }
+
+    public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
+        return new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(this.getComponentClassName()));
     }
 
     /**
@@ -521,6 +527,23 @@ public class ComponentDescription {
                 visited.clear();
                 interceptorDeque.addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, componentMethod));
             }
+
+            final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+
+            //views
+            for(ViewDescription view : description.getViews()) {
+                Class<?> viewClass;
+                try {
+                    viewClass = module.getClassLoader().loadClass(view.getViewClassName());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load view class " + view.getViewClassName() + " for component " + configuration, e);
+                }
+                final ViewConfiguration viewConfiguration = new ViewConfiguration(viewClass,configuration, view.getServiceName(), new ProxyFactory(viewClass));
+                for(final ViewConfigurator configurator : view.getConfigurators()) {
+                    configurator.configure(context, configuration, view, viewConfiguration);
+                }
+                configuration.getViews().add(viewConfiguration);
+            }
         }
     }
 
@@ -548,4 +571,5 @@ public class ComponentDescription {
             injectionConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, context, managedReferenceFactoryValue);
         }
     }
+
 }

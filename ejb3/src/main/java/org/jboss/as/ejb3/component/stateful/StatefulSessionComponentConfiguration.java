@@ -27,7 +27,6 @@ import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.ejb.TransactionManagementType;
@@ -58,5 +57,6 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
 //            });
             throw new RuntimeException("Adding a interceptor at ComponentInstance level (for ex: locking interceptor) is not yet implemented");
         }
+        setComponentCreateServiceFactory(StatefulSessionComponentCreateService.FACTORY);
     }
 }

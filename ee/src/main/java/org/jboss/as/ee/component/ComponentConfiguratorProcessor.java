@@ -49,7 +49,7 @@ public class ComponentConfiguratorProcessor implements DeploymentUnitProcessor {
         }
         final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
         if(componentDescriptions != null) for(ComponentDescription componentDescription : componentDescriptions) {
-            final ComponentConfiguration componentConfiguration = new ComponentConfiguration(componentDescription, moduleConfiguration.getClassConfiguration(componentDescription.getComponentClassName()));
+            final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(moduleConfiguration);
             for(ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
                 componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
             }

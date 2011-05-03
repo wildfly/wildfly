@@ -57,7 +57,7 @@ public final class LookupInjectionSource extends InjectionSource {
         final boolean compUsesModule = resolutionContext.isCompUsesModule();
         final String lookupName;
         if(! this.lookupName.startsWith("java:")) {
-            if (componentName != null) {
+            if (componentName != null && !compUsesModule) {
                 lookupName = "java:comp/env/" + this.lookupName;
             } else if (compUsesModule) {
                 lookupName = "java:module/env/" + this.lookupName;

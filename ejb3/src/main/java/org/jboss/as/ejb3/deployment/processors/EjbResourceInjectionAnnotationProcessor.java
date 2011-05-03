@@ -89,7 +89,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         final String injectionType = isEmpty(annotation.beanInterface()) || annotation.beanInterface().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.beanInterface();
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, injectionType);
         final String localContextName = isEmpty(annotation.name()) ? fieldInfo.declaringClass().name().toString() + "/" + fieldInfo.name() : annotation.name();
-        process(eeModuleDescription, targetDescription.getClassName(), annotation.beanName(), annotation.lookup(), fieldInfo.declaringClass(), targetDescription, localContextName);
+        process(eeModuleDescription, targetDescription.getDeclaredValueClassName(), annotation.beanName(), annotation.lookup(), fieldInfo.declaringClass(), targetDescription, localContextName);
     }
 
     private void processMethod(final EEModuleDescription eeModuleDescription, final EJBResourceWrapper annotation, final MethodInfo methodInfo) {

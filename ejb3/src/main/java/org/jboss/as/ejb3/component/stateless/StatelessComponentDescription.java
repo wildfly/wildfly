@@ -33,13 +33,13 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.stateful.ComponentInstanceInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.Interceptor;
@@ -63,6 +63,11 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
                                          final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName);
+    }
+
+    @Override
+    public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
+        return new StatelessSessionComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
     }
 
     @Override

@@ -22,13 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -37,6 +30,14 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
+
+import java.lang.reflect.Method;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
@@ -98,7 +99,12 @@ public class ViewDescription {
      * @return the service name
      */
     public ServiceName getServiceName() {
-        return componentDescription.getServiceName().append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
+        //TODO: need to set viewNameParts somewhere
+        if(!viewNameParts.isEmpty()) {
+            return componentDescription.getServiceName().append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
+        } else {
+            return componentDescription.getServiceName().append("VIEW").append(viewClassName);
+        }
     }
 
     /**
@@ -142,7 +148,13 @@ public class ViewDescription {
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
             List<String> viewNameParts = description.getViewNameParts();
-            final ServiceName serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
+            ///TODO: viewNameParts should be always populated
+            final ServiceName serviceName;
+            if(!viewNameParts.isEmpty()) {
+                serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
+            } else {
+                serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(description.getViewClassName());
+            }
             for (String bindingName : description.getBindingNames()) {
                 bindingConfigurations.add(new BindingConfiguration(bindingName, new ViewBindingInjectionSource(serviceName)));
             }

@@ -22,14 +22,9 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.msc.value.ImmediateValue;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -49,33 +44,6 @@ import java.util.Set;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class ComponentConfiguration {
-
-    public class DefaultComponentManagedReferenceFactory implements ManagedReferenceFactory {
-
-        private final Constructor<?> constructor;
-
-        public DefaultComponentManagedReferenceFactory(Class<?> clazz) {
-            try {
-                constructor = clazz.getDeclaredConstructor();
-                constructor.setAccessible(true);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Class " + clazz + " has no default constructor");
-            }
-        }
-
-        @Override
-        public ManagedReference getReference() {
-            try {
-                return new ValueManagedReference(new ImmediateValue<Object>(constructor.newInstance()));
-            }  catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     private final ComponentDescription componentDescription;
 
@@ -103,7 +71,7 @@ public class ComponentConfiguration {
     public ComponentConfiguration(final ComponentDescription componentDescription, final EEModuleClassConfiguration moduleClassConfiguration) {
         this.componentDescription = componentDescription;
         this.moduleClassConfiguration = moduleClassConfiguration;
-        this.instanceFactory = new DefaultComponentManagedReferenceFactory(moduleClassConfiguration.getModuleClass());
+        this.instanceFactory = new DefaultConstructorManagedReferenceFactory(moduleClassConfiguration.getModuleClass());
     }
 
     /**
@@ -271,5 +239,9 @@ public class ComponentConfiguration {
             throw new IllegalArgumentException("componentCreateServiceFactory is null");
         }
         this.componentCreateServiceFactory = componentCreateServiceFactory;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[name=" + componentDescription.getComponentName() + " class=" + componentDescription.getComponentClassName() + "]";
     }
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,9 +40,9 @@ public class EEApplicationDescription {
      * @param description the component description
      */
     public void addComponent(ComponentDescription description) {
-        for(ViewDescription viewDescription : description.getViews()) {
-            Set<ViewDescription> viewComponents = componentsByViewName.get(viewDescription);
-            if(viewComponents == null) {
+        for (ViewDescription viewDescription : description.getViews()) {
+            Set<ViewDescription> viewComponents = componentsByViewName.get(viewDescription.getViewClassName());
+            if (viewComponents == null) {
                 viewComponents = new HashSet<ViewDescription>();
                 componentsByViewName.put(viewDescription.getViewClassName(), viewComponents);
             }
@@ -50,6 +51,7 @@ public class EEApplicationDescription {
     }
 
     public Set<ViewDescription> getComponentsForViewName(final String name) {
-        return componentsByViewName.get(name);
+        final Set<ViewDescription> ret = componentsByViewName.get(name);
+        return ret == null ? Collections.<ViewDescription>emptySet() : ret;
     }
 }

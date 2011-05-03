@@ -22,11 +22,13 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.Collection;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
+
+import java.util.Collection;
 
 /**
  * Deployment processor responsible for executing the {@link ClassConfigurator} instances for a class within
@@ -38,6 +40,7 @@ public class ClassConfiguratorProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if(moduleDescription == null) {
             return;
         }
@@ -47,10 +50,17 @@ public class ClassConfiguratorProcessor implements DeploymentUnitProcessor {
         }
         final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
         if(classDescriptions != null) for(EEModuleClassDescription classDescription : classDescriptions) {
-            final EEModuleClassConfiguration classConfiguration = moduleConfiguration.getClassConfiguration(classDescription.getClassName());
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(classDescription.getClassName(), false, module.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
+            }
+            final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz,moduleConfiguration);
             for(ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
                 classConfigurator.configure(phaseContext, classDescription, classConfiguration);
             }
+            moduleConfiguration.addClassConfiguration(classConfiguration);
         }
     }
 

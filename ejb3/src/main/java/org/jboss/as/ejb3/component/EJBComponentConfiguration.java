@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;

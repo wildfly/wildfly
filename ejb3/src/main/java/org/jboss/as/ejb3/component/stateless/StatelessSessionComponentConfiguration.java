@@ -56,5 +56,6 @@ public class StatelessSessionComponentConfiguration extends SessionBeanComponent
                 }
             });
         }
+        setComponentCreateServiceFactory(StatelessSessionComponentCreateService.FACTORY);
     }
 }

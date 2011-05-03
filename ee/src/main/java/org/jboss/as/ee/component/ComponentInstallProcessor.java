@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import org.jboss.as.ee.naming.ContextNames;
 import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -90,12 +91,14 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         // START depends on CREATE
         startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
-
+        final ServiceName contextServiceName;
         //set up the naming context if nessesary
         if(configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             final RootContextService contextService = new RootContextService();
-            final ServiceName contextServiceName = ContextNames.contextServiceNameOfComponent(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName());
+            contextServiceName = ContextNames.contextServiceNameOfComponent(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName());
             serviceTarget.addService(contextServiceName, contextService).install();
+        } else {
+            contextServiceName = ContextNames.contextServiceNameOfModule(configuration.getApplicationName(), configuration.getModuleName());
         }
 
         InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
@@ -119,15 +122,30 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final BinderService service = new BinderService(bindingName);
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+                serviceBuilder.install();
             }
         }
+
 
         // The bindings for the component
         for (BindingConfiguration bindingConfiguration : configuration.getBindingConfigurations()) {
             final String bindingName = bindingConfiguration.getName();
             final BinderService service = new BinderService(bindingName);
-            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
+            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration, bindingName), service);
             bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+            serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
+            serviceBuilder.install();
+        }
+
+        //TODO: we need to deal with duplicates
+        // The bindings for the component class
+        for (BindingConfiguration bindingConfiguration : configuration.getModuleClassConfiguration().getBindingConfigurations()) {
+            final String bindingName = bindingConfiguration.getName();
+            final BinderService service = new BinderService(bindingName);
+            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration, bindingName), service);
+            bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
+            serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
+            serviceBuilder.install();
         }
 
         createBuilder.install();

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.naming;
 
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
 
@@ -145,6 +147,29 @@ public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
             }
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Get the service name of an environment entry
+     *
+     * @param component The component that declared the environment entry
+     * @param envEntryName The env entry name
+     * @return the service name or {@code null} if there is no service
+     */
+    public static ServiceName serviceNameOfEnvEntry(final ComponentConfiguration component, final String envEntryName) {
+        if (envEntryName.startsWith("java:")) {
+            if(component.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
+                return serviceNameOfContext(component.getApplicationName(), component.getModuleName(), component.getComponentName(), envEntryName);
+            } else {
+                return serviceNameOfContext(component.getApplicationName(), component.getModuleName(), component.getModuleName(), envEntryName);
+            }
+        } else {
+            if(component.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
+                return serviceNameOfContext(component.getApplicationName(), component.getModuleName(), component.getComponentName(), "java:comp/env/" + envEntryName);
+            } else {
+                return serviceNameOfContext(component.getApplicationName(), component.getModuleName(), component.getModuleName(), "java:module/env/" + envEntryName);
+            }
         }
     }
 }
