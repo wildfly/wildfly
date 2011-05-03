@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -89,6 +90,13 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         // START depends on CREATE
         startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
+
+        //set up the naming context if nessesary
+        if(configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
+            final RootContextService contextService = new RootContextService();
+            final ServiceName contextServiceName = ContextNames.contextServiceNameOfComponent(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName());
+            serviceTarget.addService(contextServiceName, contextService).install();
+        }
 
         InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
                 configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.USE_MODULE,
