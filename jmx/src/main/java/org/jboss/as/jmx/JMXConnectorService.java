@@ -183,9 +183,11 @@ public class JMXConnectorService implements Service<Void> {
 
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
-            if (port != socketBinding.getPort()) {
+            int fixed = socketBinding.isFixedPort() ? 0 : 1;
+            int configuredPort = socketBinding.getPort() + (socketBinding.getSocketBindings().getPortOffset() * fixed);
+            if (port != configuredPort) {
                 throw new IllegalStateException(String.format("Received request for server socket %s on port [%d] but am configured for port [%d]",
-                        socketBinding.getName(), port, socketBinding.getPort()));
+                        socketBinding.getName(), port, configuredPort));
             }
             return socketBinding.createServerSocket(BACKLOG);
         }
