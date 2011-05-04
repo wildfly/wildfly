@@ -124,8 +124,11 @@ public class DeployHandler extends BatchModeCommandHandler {
 
         allServerGroups = new ArgumentWithoutValue("--all-server-groups")  {
             @Override
-            public boolean isAvailable(CommandContext ctx) {
-                return ctx.isDomainMode();
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
             }
         };
 
@@ -175,8 +178,11 @@ public class DeployHandler extends BatchModeCommandHandler {
                 return result;
             }}, "--server-groups") {
             @Override
-            public boolean isAvailable(CommandContext ctx) {
-                return ctx.isDomainMode();
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
             }
         };
         argsCompleter.addArgument(serverGroups);

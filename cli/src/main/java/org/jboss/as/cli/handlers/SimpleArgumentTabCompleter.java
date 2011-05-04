@@ -28,7 +28,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.impl.DefaultParsedArguments;
+
 
 /**
  *
@@ -100,11 +100,10 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
 
                     if(buffer.charAt(result) != '-') {
                         // it's an argument with optional name
-                        DefaultParsedArguments parsedArgs = new DefaultParsedArguments();
-                        parsedArgs.parse(buffer.substring(firstCharIndex, result));
+                        ctx.setArgumentsString(buffer.substring(firstCharIndex, result));
 
                         for(CommandArgument arg : allArgs) {
-                            if(arg.isAvailable(ctx) && arg.getIndex() >= 0 && arg.canAppearNext(parsedArgs)) {
+                            if(arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
                                 valueCompleter = arg.getValueCompleter();
                                 break;
                             }
@@ -119,11 +118,10 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                         result = i + 1;
                         chunk = buffer.substring(result);
                         // it's an argument with optional name
-                        DefaultParsedArguments parsedArgs = new DefaultParsedArguments();
-                        parsedArgs.parse(buffer.substring(firstCharIndex, result));
+                        ctx.setArgumentsString(buffer.substring(firstCharIndex, result));
 
                         for (CommandArgument arg : allArgs) {
-                            if (arg.isAvailable(ctx) && arg.getIndex() >= 0 && arg.canAppearNext(parsedArgs)) {
+                            if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
                                 valueCompleter = arg.getValueCompleter();
                                 break;
                             }
@@ -153,17 +151,18 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
             }
         }
 
-        DefaultParsedArguments parsedArgs = new DefaultParsedArguments();
         int charLength = buffer.length() - firstCharIndex;
         if(charLength == 1 && buffer.charAt(firstCharIndex) == '-' ||
                 charLength == 2 && '-' == buffer.charAt(firstCharIndex) && '-' == buffer.charAt(firstCharIndex + 1)) {
-            parsedArgs.parse("");
+            //parsedArgs.parse("");
+            ctx.setArgumentsString("");
         } else {
-            parsedArgs.parse(buffer.substring(firstCharIndex, result));
+            //parsedArgs.parse(buffer.substring(firstCharIndex, result));
+            ctx.setArgumentsString(buffer.substring(firstCharIndex, result));
         }
 
         for(CommandArgument arg : allArgs) {
-            if(arg.isAvailable(ctx) && arg.canAppearNext(parsedArgs)) {
+            if(arg.canAppearNext(ctx)) {
                 if(arg.getIndex() >= 0) {
                     CommandLineCompleter valCompl = arg.getValueCompleter();
                     if(valCompl != null) {

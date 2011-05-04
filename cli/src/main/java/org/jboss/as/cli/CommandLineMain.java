@@ -338,7 +338,7 @@ public class CommandLineMain {
         return firstChar == '.' || firstChar == ':' || firstChar == '/' || line.startsWith("..") || line.startsWith(".type");
     }
 
-    private static class CommandContextImpl implements CommandContext {
+    static class CommandContextImpl implements CommandContext {
 
         private final jline.ConsoleReader console;
         private final CommandHistory history;
@@ -402,8 +402,12 @@ public class CommandLineMain {
 
         @Override
         public String getArgumentsString() {
-            //return argsStr;
             return parsedArgs.getArgumentsString();
+        }
+
+        @Override
+        public void setArgumentsString(String args) {
+            parsedArgs.reset(args);
         }
 
         @Override
@@ -577,7 +581,7 @@ public class CommandLineMain {
 
         private void setArgs(String cmd, String args) {
             this.cmd = cmd;
-            parsedArgs.reset(args);
+            setArgumentsString(args);
         }
 
         @Override

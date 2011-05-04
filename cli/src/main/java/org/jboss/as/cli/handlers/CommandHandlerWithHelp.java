@@ -29,7 +29,6 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
@@ -48,8 +47,8 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
     private CommandLineCompleter argsCompleter;
     protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue("--help", "-h") {
         @Override
-        public boolean canAppearNext(ParsedArguments args) {
-            return !args.hasArguments();
+        public boolean canAppearNext(CommandContext ctx) {
+            return !ctx.getParsedArguments().hasArguments();
         }
     };
 

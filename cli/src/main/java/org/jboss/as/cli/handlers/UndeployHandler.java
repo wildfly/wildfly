@@ -101,8 +101,11 @@ public class UndeployHandler extends BatchModeCommandHandler {
 
         allRelevantServerGroups = new ArgumentWithoutValue("--all-relevant-server-groups") {
             @Override
-            public boolean isAvailable(CommandContext ctx) {
-                return ctx.isDomainMode();
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
             }
         };
         argsCompleter.addArgument(allRelevantServerGroups);
@@ -158,8 +161,11 @@ public class UndeployHandler extends BatchModeCommandHandler {
                 return result;
             }}, "--server-groups") {
             @Override
-            public boolean isAvailable(CommandContext ctx) {
-                return ctx.isDomainMode();
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
             }
         };
         serverGroups.addRequiredPreceding(name);

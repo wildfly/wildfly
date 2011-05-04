@@ -38,7 +38,7 @@ import org.junit.Test;
  *
  * @author Alexey Loubyansky
  */
-public class ParamListStateTestCase extends BaseStateParserTest {
+public class OperationParamListStateTestCase extends BaseStateParserTest {
 
     @Test
     public void testParamSimple() throws Exception {

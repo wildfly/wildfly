@@ -25,9 +25,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.DefaultCompleter;
+import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -39,6 +40,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
 
+    private final ArgumentWithValue profile;
     private final ArgumentWithValue name;
 
     public DeleteJmsQueueHandler() {
@@ -46,41 +48,50 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
 
         SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
 
-        name = new ArgumentWithValue(true, new CommandLineCompleter() {
+        profile = new ArgumentWithValue(new DefaultCompleter(new CandidatesProvider(){
             @Override
-            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-
-                int nextCharIndex = 0;
-                while (nextCharIndex < buffer.length()) {
-                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                        break;
-                    }
-                    ++nextCharIndex;
+            public List<String> getAllCandidates(CommandContext ctx) {
+                return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
+            }}), "--profile") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
                 }
+                return super.canAppearNext(ctx);
+            }
+        };
+        argsCompleter.addArgument(profile);
 
-                if(ctx.getModelControllerClient() != null) {
-                    List<String> deployments = Util.getJmsResources(ctx.getModelControllerClient(), "queue");
-                    if(deployments.isEmpty()) {
-                        return -1;
+        name = new ArgumentWithValue(true, new DefaultCompleter(new DefaultCompleter.CandidatesProvider() {
+            @Override
+            public List<String> getAllCandidates(CommandContext ctx) {
+                ModelControllerClient client = ctx.getModelControllerClient();
+                if (client == null) {
+                    return Collections.emptyList();
                     }
 
-                    String opBuffer = buffer.substring(nextCharIndex).trim();
-                    if (opBuffer.isEmpty()) {
-                        candidates.addAll(deployments);
-                    } else {
-                        for(String name : deployments) {
-                            if(name.startsWith(opBuffer)) {
-                                candidates.add(name);
-                            }
-                        }
-                        Collections.sort(candidates);
-                    }
-                    return nextCharIndex;
+                final String profileArg;
+                if (!ctx.isDomainMode()) {
+                    profileArg = null;
                 } else {
-                    return -1;
-                }
+                    profileArg = profile.getValue(ctx.getParsedArguments());
+                    if (profileArg == null) {
+                        return Collections.emptyList();
+                        }
+                    }
 
-            }}, 0, "--name");
+                return Util.getJmsResources(ctx.getModelControllerClient(), profileArg, "queue");
+                }
+            }), 0, "--name") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) {
+                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
         argsCompleter.addArgument(name);
     }
 
@@ -119,6 +130,15 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
     public ModelNode buildRequest(CommandContext ctx)
             throws OperationFormatException {
 
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        if(ctx.isDomainMode()) {
+            final String profile = this.profile.getValue(ctx.getParsedArguments());
+            if(profile == null) {
+                throw new OperationFormatException("Required argument --profile is missing.");
+            }
+            builder.addNode("profile", profile);
+        }
+
         final String name;
         try {
             name = this.name.getValue(ctx.getParsedArguments());
@@ -126,7 +146,6 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("Missing required name argument.");
         }
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
         builder.addNode("queue", name);
         builder.setOperationName("remove");

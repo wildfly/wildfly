@@ -1,8 +1,11 @@
-Synopsis:	create-jms-topic --name=topic_name [--entries=entry(,entry)*]
+Synopsis:	create-jms-topic [--profile=profile_name] --name=topic_name [--entries=entry(,entry)*]
 
 Description:	creates a JMS topic
 
 Arguments:
+
+	profile		- is allowed and required only in the domain mode, specifies the profile
+				in which the JMS resource should be created. 
 
 	name		- the name of the topic.
 	

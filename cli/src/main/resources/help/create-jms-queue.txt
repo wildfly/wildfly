@@ -1,8 +1,11 @@
-Synopsis:	create-jms-queue --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
+Synopsis:	create-jms-queue [--profile=profile_name] --name=queue_name [--entries=entry(,entry)*] [--selector=selector_name] [--durable=(true|false)]
 
 Description:	creates a JMS queue
 
 Arguments:
+
+	profile		- is allowed and required only in the domain mode, specifies the profile
+				in which the JMS resource should be created. 
 
 	name		- the name of the queue.
 	

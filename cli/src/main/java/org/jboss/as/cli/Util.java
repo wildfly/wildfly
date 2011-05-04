@@ -343,11 +343,48 @@ public class Util {
         return result;
     }
 
-    public static List<String> getJmsResources(ModelControllerClient client, String type) {
+    public static List<String> getNodeNames(ModelControllerClient client, OperationRequestAddress address, String type) {
+        if(client == null) {
+            return Collections.emptyList();
+        }
+
+        if(address != null && address.endsOnType()) {
+            throw new IllegalArgumentException("The address isn't expected to end on a type.");
+        }
+
+        final ModelNode request;
+        DefaultOperationRequestBuilder builder = address == null ? new DefaultOperationRequestBuilder() : new DefaultOperationRequestBuilder(address);
+        try {
+            builder.operationName("read-children-names");
+            builder.addProperty("child-type", type);
+            request = builder.buildRequest();
+        } catch (OperationFormatException e1) {
+            throw new IllegalStateException("Failed to build operation", e1);
+        }
+
+        List<String> result;
+        try {
+            ModelNode outcome = client.execute(request);
+            if (!Util.isSuccess(outcome)) {
+                // TODO logging... exception?
+                result = Collections.emptyList();
+            } else {
+                result = Util.getList(outcome);
+            }
+        } catch (Exception e) {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    public static List<String> getJmsResources(ModelControllerClient client, String profile, String type) {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
+            if(profile != null) {
+                builder.addNode("profile", profile);
+            }
             builder.addNode("subsystem", "jms");
             builder.operationName("read-children-names");
             builder.addProperty("child-type", type);
@@ -368,17 +405,17 @@ public class Util {
     }
 
     public static boolean isTopic(ModelControllerClient client, String name) {
-        List<String> topics = getJmsResources(client, "topic");
+        List<String> topics = getJmsResources(client, null, "topic");
         return topics.contains(name);
     }
 
     public static boolean isQueue(ModelControllerClient client, String name) {
-        List<String> queues = getJmsResources(client, "queue");
+        List<String> queues = getJmsResources(client, null, "queue");
         return queues.contains(name);
     }
 
     public static boolean isConnectionFactory(ModelControllerClient client, String name) {
-        List<String> cf = getJmsResources(client, "connection-factory");
+        List<String> cf = getJmsResources(client, null, "connection-factory");
         return cf.contains(name);
     }
 

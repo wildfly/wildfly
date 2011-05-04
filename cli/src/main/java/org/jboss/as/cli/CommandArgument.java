@@ -53,17 +53,10 @@ public interface CommandArgument {
     /**
      * Checks whether the argument can appear on the command
      * given the already present arguments. (Used for tab-completion.)
-     * @param args parsed arguments
+     * @param args  parsed arguments.
      * @return true if the argument can appear on the command line next, false - otherwise.
      */
-    boolean canAppearNext(ParsedArguments args);
-
-    /**
-     * Checks whether the argument is available in the given context.
-     * @param ctx  the CLI context
-     * @return  true if the argument is available in the given CLI context, false otherwise.
-     */
-    boolean isAvailable(CommandContext ctx);
+    boolean canAppearNext(CommandContext ctx);
 
     /**
      * Returns the value of the argument specified on the command line.

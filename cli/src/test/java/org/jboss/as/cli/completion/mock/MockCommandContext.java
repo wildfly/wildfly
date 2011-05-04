@@ -239,4 +239,10 @@ public class MockCommandContext implements CommandContext {
         // TODO Auto-generated method stub
         return false;
     }
+
+    @Override
+    public void setArgumentsString(String args) {
+        // TODO Auto-generated method stub
+
+    }
 }

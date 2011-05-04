@@ -21,10 +21,14 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.DefaultCompleter;
+import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -39,6 +43,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue name;
     private final ArgumentWithValue autoGroup;
     private final ArgumentWithValue entries;
+    private final ArgumentWithValue profile;
 /*    private final ArgumentWithValue connector;
     private final ArgumentWithValue blockOnAcknowledge;
     private final ArgumentWithValue blockOnDurableSend;
@@ -76,7 +81,30 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
 
         SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
 
-        name = new ArgumentWithValue(true, /*0,*/ "--name");
+        profile = new ArgumentWithValue(new DefaultCompleter(new CandidatesProvider(){
+            @Override
+            public List<String> getAllCandidates(CommandContext ctx) {
+                return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
+            }}), "--profile") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
+        argsCompleter.addArgument(profile);
+
+        name = new ArgumentWithValue(true, /*0, */"--name") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) {
+                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
         argsCompleter.addArgument(name);
 
         autoGroup = new ArgumentWithValue("--auto-group");
@@ -124,10 +152,20 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
             throws OperationFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+
+        ParsedArguments args = ctx.getParsedArguments();
+
+        if(ctx.isDomainMode()) {
+            String profile = this.profile.getValue(args);
+            if(profile == null) {
+                throw new OperationFormatException("--profile argument value is missing.");
+            }
+            builder.addNode("profile",profile);
+        }
+
         builder.addNode("subsystem", "jms");
         builder.setOperationName("add");
 
-        ParsedArguments args = ctx.getParsedArguments();
         final String name;
         try {
             name = this.name.getValue(args);

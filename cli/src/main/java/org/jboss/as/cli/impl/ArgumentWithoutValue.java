@@ -133,8 +133,9 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
-    public boolean canAppearNext(ParsedArguments args) {
+    public boolean canAppearNext(CommandContext ctx) {
 
+        ParsedArguments args = ctx.getParsedArguments();
         if(exclusive) {
             return !args.hasArguments();
         }
@@ -164,10 +165,5 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public boolean isValueRequired() {
         return false;
-    }
-
-    @Override
-    public boolean isAvailable(CommandContext ctx) {
-        return true;
     }
 }

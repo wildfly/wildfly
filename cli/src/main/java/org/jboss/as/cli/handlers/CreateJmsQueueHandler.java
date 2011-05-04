@@ -21,10 +21,14 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.DefaultCompleter;
+import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -40,13 +44,37 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
     private final ArgumentWithValue entries;
     private final ArgumentWithValue selector;
     private final ArgumentWithValue durable;
+    private final ArgumentWithValue profile;
 
     public CreateJmsQueueHandler() {
         super("create-jms-queue", true);
 
         SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
 
-        name = new ArgumentWithValue(true, /*0,*/ "--name");
+        profile = new ArgumentWithValue(new DefaultCompleter(new CandidatesProvider(){
+            @Override
+            public List<String> getAllCandidates(CommandContext ctx) {
+                return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
+            }}), "--profile") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
+        argsCompleter.addArgument(profile);
+
+        name = new ArgumentWithValue(true, /*0,*/ "--name") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) {
+                if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
+                    return false;
+                }
+                return super.canAppearNext(ctx);
+            }
+        };
         argsCompleter.addArgument(name);
 
         entries = new ArgumentWithValue("--entries");
@@ -94,7 +122,16 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
     public ModelNode buildRequest(CommandContext ctx)
             throws OperationFormatException {
 
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ParsedArguments args = ctx.getParsedArguments();
+
+        if(ctx.isDomainMode()) {
+            String profile = this.profile.getValue(args);
+            if(profile == null) {
+                throw new OperationFormatException("--profile argument value is missing.");
+            }
+            builder.addNode("profile",profile);
+        }
 
         final String name;
         try {
@@ -103,7 +140,6 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
             throw new OperationFormatException(e.getLocalizedMessage());
         }
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "jms");
         builder.addNode("queue", name);
         builder.setOperationName("add");
