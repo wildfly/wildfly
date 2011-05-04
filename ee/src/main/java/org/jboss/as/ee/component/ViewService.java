@@ -167,6 +167,10 @@ final class ViewService implements Service<ComponentView> {
 
             public Object createProxy() {
                 final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+                factoryContext.getContextData().put(Component.class, component);
+                factoryContext.getContextData().put(ComponentView.class, View.this);
+                factoryContext.getContextData().put(ComponentViewInstance.class, this);
+
                 final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
                 final Map<Method, Interceptor> clientEntryPoints = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
                 for (Method method : clientInterceptorFactories.keySet()) {
@@ -174,9 +178,10 @@ final class ViewService implements Service<ComponentView> {
                 }
                 final Interceptor postConstructInterceptor = clientPostConstruct.create(factoryContext);
                 try {
-                    Object object = proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints));
+                    Object object = proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints, component, View.this, this));
                     InterceptorContext interceptorContext = new InterceptorContext();
                     interceptorContext.putPrivateData(ComponentView.class, View.this);
+                    interceptorContext.putPrivateData(ComponentViewInstance.class, this);
                     interceptorContext.putPrivateData(Component.class, component);
                     try {
                         postConstructInterceptor.processInvocation(interceptorContext);
