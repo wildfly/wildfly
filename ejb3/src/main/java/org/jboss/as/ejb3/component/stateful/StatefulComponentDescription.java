@@ -108,7 +108,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                     final ComponentInterceptorFactory bmtComponentInterceptorFactory = new ComponentInterceptorFactory() {
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                            if (component instanceof StatefulComponentDescription == false) {
+                            if (component instanceof StatefulSessionComponent == false) {
                                 throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
                                         " isn't a stateful component");
                             }
