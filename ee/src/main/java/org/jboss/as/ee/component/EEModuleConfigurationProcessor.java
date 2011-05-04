@@ -22,14 +22,18 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
+
+import java.util.Collection;
 
 /**
  * Deployment processor responsible for creating a {@link EEModuleConfiguration} from a {@link EEModuleDescription} and
- * attaching it to the deployment.
+ * populating it with component and class configurations
  *
  * @author John Bailey
  */
@@ -37,11 +41,38 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if(moduleDescription == null) {
             return;
         }
         final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription, phaseContext);
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
+
+        final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
+        if(classDescriptions != null) for(EEModuleClassDescription classDescription : classDescriptions) {
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(classDescription.getClassName(), false, module.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
+            }
+            final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz,moduleConfiguration);
+            for(ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
+                classConfigurator.configure(phaseContext, classDescription, classConfiguration);
+            }
+            moduleConfiguration.addClassConfiguration(classConfiguration);
+        }
+
+        final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
+        if(componentDescriptions != null) for(ComponentDescription componentDescription : componentDescriptions) {
+            final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(moduleConfiguration);
+            for(ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
+                componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+            }
+            moduleConfiguration.addComponentConfiguration(componentConfiguration);
+        }
+
+
     }
 
     public void undeploy(DeploymentUnit context) {
