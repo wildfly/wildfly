@@ -60,7 +60,7 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         }
 
         //TODO: should ComponentView also be a managed reference factory?
-        serviceBuilder.addDependency(description.getServiceName(), ManagedReferenceFactory.class, injector);
+        serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
     }
 
     public boolean equals(final Object injectionSource) {

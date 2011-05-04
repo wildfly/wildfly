@@ -31,13 +31,13 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ViewBindingInjectionSource extends InjectionSource {
+public final class ViewBindingInjectionSource extends InjectionSource {
 
     private static final int HASH_BASE = ViewBindingInjectionSource.class.hashCode() * 127;
 
     private final ServiceName serviceName;
 
-    ViewBindingInjectionSource(final ServiceName serviceName) {
+    public ViewBindingInjectionSource(final ServiceName serviceName) {
         this.serviceName = serviceName;
     }
 

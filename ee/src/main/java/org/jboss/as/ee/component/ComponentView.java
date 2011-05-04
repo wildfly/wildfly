@@ -29,7 +29,7 @@ import org.jboss.as.naming.ManagedReferenceFactory;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ComponentView extends ManagedReferenceFactory {
+public interface ComponentView {
 
     /**
      * Create the component view instance.

@@ -28,7 +28,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
-import org.jboss.as.ee.component.ServiceInjectionSource;
+import org.jboss.as.ee.component.ViewBindingInjectionSource;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -106,7 +106,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             String viewClassName = viewDescription.getViewClassName();
             // java:global bindings
             String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
-            final InjectionSource globalBindingSource = new ServiceInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
+            final InjectionSource globalBindingSource = new ViewBindingInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
             final BindingConfiguration globalBinding = new BindingConfiguration(globalJNDIName, globalBindingSource);
             // add the binding to the view configuration
             this.addBindingConfiguration(viewDescription, globalBinding);
@@ -114,7 +114,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
             // java:app bindings
             String appJNDIName = appJNDIBaseName + "!" + viewClassName;
-            final InjectionSource appBindingSource = new ServiceInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
+            final InjectionSource appBindingSource = new ViewBindingInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
             final BindingConfiguration appBinding = new BindingConfiguration(appJNDIName, appBindingSource);
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, appBinding);
@@ -122,7 +122,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
             // java:module bindings
             String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
-            final InjectionSource moduleBindingSource = new ServiceInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
+            final InjectionSource moduleBindingSource = new ViewBindingInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
             final BindingConfiguration moduleBinding = new BindingConfiguration(moduleJNDIName, moduleBindingSource);
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, moduleBinding);
@@ -144,21 +144,21 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             final String viewClassName = viewDescription.getViewClassName();
 
             // java:global binding
-            final InjectionSource globalBindingSource = new ServiceInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
+            final InjectionSource globalBindingSource = new ViewBindingInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
             final BindingConfiguration globalBinding = new BindingConfiguration(globalJNDIBaseName, globalBindingSource);
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, globalBinding);
             logger.debug("Added java:global jndi binding at " + globalJNDIBaseName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
             // java:app binding
-            final InjectionSource appBindingSource = new ServiceInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
+            final InjectionSource appBindingSource = new ViewBindingInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
             final BindingConfiguration appBinding = new BindingConfiguration(appJNDIBaseName, appBindingSource);
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, appBinding);
             logger.debug("Added java:app jndi binding at " + appJNDIBaseName + " for view: " + viewClassName + " of session bean: " + sessionBean.getEJBName());
 
             // java:module binding
-            final InjectionSource moduleBindingSource = new ServiceInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
+            final InjectionSource moduleBindingSource = new ViewBindingInjectionSource(baseServiceName.append("VIEW").append(viewClassName));
             final BindingConfiguration moduleBinding = new BindingConfiguration(moduleJNDIBaseName, moduleBindingSource);
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, moduleBinding);

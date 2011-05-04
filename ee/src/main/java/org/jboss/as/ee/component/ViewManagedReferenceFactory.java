@@ -22,17 +22,18 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.inject.InjectionException;
+
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * A managed reference factory for a component view.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ViewManagedReferenceFactory implements ManagedReferenceFactory {
+public final class ViewManagedReferenceFactory implements ManagedReferenceFactory {
     private final ComponentView view;
 
     /**
@@ -54,7 +55,7 @@ final class ViewManagedReferenceFactory implements ManagedReferenceFactory {
      * The bridge injector for binding views into JNDI.  Injects a {@link ComponentView}
      * wrapped as a {@link ManagedReferenceFactory}.
      */
-    static class Injector implements org.jboss.msc.inject.Injector<ComponentView> {
+    public static class Injector implements org.jboss.msc.inject.Injector<ComponentView> {
         private final org.jboss.msc.inject.Injector<ManagedReferenceFactory> referenceFactoryInjector;
 
         /**

@@ -22,18 +22,21 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.Set;
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.ViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+
+import java.util.Set;
+
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
@@ -58,7 +61,7 @@ public class EjbBeanNameInjectionSource extends InjectionSource {
         }
         for(ViewDescription description : componentsForViewName) {
             if(beanName.equals(description.getComponentDescription().getComponentName())) {
-                serviceBuilder.addDependency(description.getServiceName(), ManagedReferenceFactory.class, injector);
+                serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
                 return;
             }
         }
