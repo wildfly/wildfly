@@ -75,7 +75,6 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                                     ServiceName.JBOSS.append("persistenceprovider", providerName ),
                                     new ValueService<PersistenceProvider>(new ImmediateValue<PersistenceProvider>(provider))).setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
-// temp hack for testing  PersistenceProviderResolverImpl.getInstance().clearCachedProviders();
                     PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(provider);
 
                 } catch (Exception e) {

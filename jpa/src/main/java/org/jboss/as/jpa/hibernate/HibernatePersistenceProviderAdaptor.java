@@ -28,7 +28,6 @@ import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 

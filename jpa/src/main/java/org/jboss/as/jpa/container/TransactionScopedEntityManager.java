@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.container;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
-import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
@@ -44,8 +43,6 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
     private final EntityManagerFactory emf;
-
-    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
         super(puScopedName, false);
