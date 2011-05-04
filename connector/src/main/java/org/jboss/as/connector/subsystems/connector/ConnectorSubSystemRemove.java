@@ -21,7 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.*;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
@@ -63,7 +63,8 @@ public class ConnectorSubSystemRemove implements ModelRemoveOperationHandler {
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
+                    final ServiceController<?> controller = context.getServiceRegistry().getService(
+                            ConnectorServices.CONNECTOR_CONFIG_SERVICE);
                     if (controller != null) {
                         controller.setMode(ServiceController.Mode.REMOVE);
                     }
@@ -98,6 +99,12 @@ public class ConnectorSubSystemRemove implements ModelRemoveOperationHandler {
         if (model.has(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
             compensating.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(
                     model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
+        }
+        if (model.has(CACHED_CONNECTION_MANAGER_DEBUG)) {
+            compensating.get(CACHED_CONNECTION_MANAGER_DEBUG).set(model.get(CACHED_CONNECTION_MANAGER_DEBUG));
+        }
+        if (model.has(CACHED_CONNECTION_MANAGER_ERROR)) {
+            compensating.get(CACHED_CONNECTION_MANAGER_ERROR).set(model.get(CACHED_CONNECTION_MANAGER_ERROR));
         }
         return new BasicOperationResult(compensating);
     }

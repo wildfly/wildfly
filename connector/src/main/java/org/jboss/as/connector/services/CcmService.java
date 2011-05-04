@@ -22,10 +22,14 @@ public class CcmService implements Service<CachedConnectionManager> {
 
     private CachedConnectionManager value;
 
-    /** create an instance **/
-    public CcmService() {
-        super();
+    private final boolean debug;
+    private final boolean error;
 
+    /** create an instance **/
+    public CcmService(final boolean debug, final boolean error) {
+        super();
+        this.debug = debug;
+        this.error = error;
     }
 
     @Override
@@ -36,6 +40,8 @@ public class CcmService implements Service<CachedConnectionManager> {
     @Override
     public void start(StartContext context) throws StartException {
         value = new CachedConnectionManagerImpl(transactionIntegration.getValue().getTransactionManager());
+        value.setDebug(debug);
+        value.setError(error);
         log.debugf("started CcmService %s", context.getController().getName());
 
     }

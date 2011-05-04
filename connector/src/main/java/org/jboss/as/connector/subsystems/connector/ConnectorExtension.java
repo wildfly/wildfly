@@ -21,7 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.*;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
@@ -92,7 +92,8 @@ public class ConnectorExtension implements Extension {
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ConnectorSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(REMOVE, ConnectorSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE, ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE,
+                ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
 
     @Override
@@ -124,6 +125,7 @@ public class ConnectorExtension implements Extension {
             writeArchiveValidation(writer, node);
             writeBeanValidation(writer, node);
             writeDefaultWorkManager(writer, node);
+            writeCachedConnectionManager(writer, node);
             writer.writeEndElement();
         }
 
@@ -146,6 +148,16 @@ public class ConnectorExtension implements Extension {
             if (has(node, BEAN_VALIDATION_ENABLED)) {
                 writer.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
                 writeAttribute(writer, Attribute.ENABLED, node.require(BEAN_VALIDATION_ENABLED));
+            }
+        }
+
+        private void writeCachedConnectionManager(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+            if (has(node, CACHED_CONNECTION_MANAGER_DEBUG) || has(node, CACHED_CONNECTION_MANAGER_ERROR)) {
+                writer.writeEmptyElement(Element.CACHED_CONNECTION_MANAGER.getLocalName());
+                if (has(node, CACHED_CONNECTION_MANAGER_DEBUG))
+                    writeAttribute(writer, Attribute.DEBUG, node.require(CACHED_CONNECTION_MANAGER_DEBUG));
+                if (has(node, CACHED_CONNECTION_MANAGER_ERROR))
+                    writeAttribute(writer, Attribute.ERROR, node.require(CACHED_CONNECTION_MANAGER_ERROR));
             }
         }
 
@@ -214,6 +226,10 @@ public class ConnectorExtension implements Extension {
                                 requiredElement.remove(Element.DEFAULT_WORKMANAGER);
                                 break;
 
+                            }
+                            case CACHED_CONNECTION_MANAGER: {
+                                parseCcm(reader, subsystem);
+                                break;
                             }
                             default:
                                 throw unexpectedElement(reader);
@@ -291,23 +307,38 @@ public class ConnectorExtension implements Extension {
         private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
             final boolean enabled = readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
             node.get(BEAN_VALIDATION_ENABLED).set(enabled);
-            // Don't add a requireNoContent here as readBooleanAttributeElement already performs that check.
+            // Don't add a requireNoContent here as readBooleanAttributeElement
+            // already performs that check.
+        }
+
+        private void parseCcm(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
+
+            final boolean debug = Boolean.parseBoolean(reader.getAttributeValue("", Attribute.DEBUG.getLocalName()));
+            final boolean error = Boolean.parseBoolean(reader.getAttributeValue("", Attribute.ERROR.getLocalName()));
+
+            node.get(CACHED_CONNECTION_MANAGER_DEBUG).set(debug);
+            node.get(CACHED_CONNECTION_MANAGER_ERROR).set(error);
+
+            requireNoContent(reader);
         }
     }
 
-
     private static class ConnectorSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final ConnectorSubsystemDescribeHandler INSTANCE = new ConnectorSubsystemDescribeHandler();
+
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public OperationResult execute(final OperationContext context, final ModelNode operation,
+                final ResultHandler resultHandler) {
             final ModelNode add = createEmptyAddOperation();
             final ModelNode model = context.getSubModel();
 
             if (model.hasDefined(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL)) {
-                add.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
+                add.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL).set(
+                        model.get(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL));
             }
             if (model.hasDefined(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
-                add.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
+                add.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL).set(
+                        model.get(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL));
             }
             if (model.hasDefined(BEAN_VALIDATION_ENABLED)) {
                 add.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
@@ -320,6 +351,12 @@ public class ConnectorExtension implements Extension {
             }
             if (model.hasDefined(ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
                 add.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN));
+            }
+            if (model.hasDefined(CACHED_CONNECTION_MANAGER_DEBUG)) {
+                add.get(CACHED_CONNECTION_MANAGER_DEBUG).set(model.get(CACHED_CONNECTION_MANAGER_DEBUG));
+            }
+            if (model.hasDefined(CACHED_CONNECTION_MANAGER_ERROR)) {
+                add.get(CACHED_CONNECTION_MANAGER_ERROR).set(model.get(CACHED_CONNECTION_MANAGER_ERROR));
             }
 
             ModelNode result = new ModelNode();

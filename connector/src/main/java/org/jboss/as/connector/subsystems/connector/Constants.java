@@ -33,5 +33,7 @@ class Constants {
     static final String BEAN_VALIDATION_ENABLED = "bean-validation-enabled";
     static final String DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL = "default-workmanager-short-running-thread-pool";
     static final String DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL = "default-workmanager-long-running-thread-pool";
+    static final String CACHED_CONNECTION_MANAGER_DEBUG = "cached-connection-manager-debug";
+    static final String CACHED_CONNECTION_MANAGER_ERROR = "cached-connection-manager-error";
 
 }

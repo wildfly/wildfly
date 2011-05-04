@@ -21,7 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.*;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
@@ -96,6 +96,16 @@ class ConnectorSubsystemProviders {
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, REQUIRED).set(false);
 
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
+                    bundle.getString("cached-connection-manager.debug"));
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
+
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
+                    bundle.getString("cached-connection-manager.error"));
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
+
             return subsystem;
         }
     };
@@ -144,6 +154,16 @@ class ConnectorSubsystemProviders {
                     bundle.getString("connector.default-workmanager.long-running-thread-pool"));
             operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, REQUIRED).set(false);
+
+            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
+                    bundle.getString("cached-connection-manager.debug"));
+            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
+            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
+
+            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
+                    bundle.getString("cached-connection-manager.error"));
+            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
+            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
 
             return operation;
         }

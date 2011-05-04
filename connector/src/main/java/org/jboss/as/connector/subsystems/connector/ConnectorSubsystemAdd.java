@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.*;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
@@ -89,6 +89,8 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                 .parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
         final boolean failOnError = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_ERROR, true);
         final boolean failOnWarn = ParamsUtils.parseBooleanParameter(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN, false);
+        final boolean ccmDebug = ParamsUtils.parseBooleanParameter(operation, CACHED_CONNECTION_MANAGER_DEBUG, false);
+        final boolean ccmError = ParamsUtils.parseBooleanParameter(operation, CACHED_CONNECTION_MANAGER_ERROR, false);
 
         // Apply to the model
         final ModelNode model = context.getSubModel();
@@ -112,6 +114,12 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         }
         if (ParamsUtils.has(operation, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
             model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(failOnWarn);
+        }
+        if (ParamsUtils.has(operation, CACHED_CONNECTION_MANAGER_DEBUG)) {
+            model.get(CACHED_CONNECTION_MANAGER_DEBUG).set(ccmDebug);
+        }
+        if (ParamsUtils.has(operation, CACHED_CONNECTION_MANAGER_ERROR)) {
+            model.get(CACHED_CONNECTION_MANAGER_ERROR).set(ccmError);
         }
 
         if (context instanceof BootOperationContext) {
@@ -139,7 +147,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                             .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionLocalDelegate.class,
                                     tiService.getTldInjector()).setInitialMode(Mode.ACTIVE).install();
 
-                    CcmService ccmService = new CcmService();
+                    CcmService ccmService = new CcmService(ccmDebug, ccmError);
                     serviceTarget
                             .addService(ConnectorServices.CCM_SERVICE, ccmService)
                             .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,

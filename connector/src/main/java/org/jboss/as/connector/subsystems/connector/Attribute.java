@@ -14,19 +14,21 @@ public enum Attribute {
     ENABLED("enabled"),
     /**
      * fail-on-error attribute
-     *
      */
     FAIL_ON_ERROR("fail-on-error"),
 
     /**
      * fail-on-warn attribute
-     *
      */
     FAIL_ON_WARN("fail-on-warn"),
 
     SHORT_RUNNING_THREAD_POOL("short-running-thread-pool"),
 
-    LONG_RUNNING_THREAD_POOL("long-running-thread-pool");
+    LONG_RUNNING_THREAD_POOL("long-running-thread-pool"),
+
+    DEBUG("debug"),
+
+    ERROR("error");
 
     private final String name;
 
@@ -36,7 +38,6 @@ public enum Attribute {
 
     /**
      * Get the local name of this element.
-     *
      * @return the local name
      */
     public String getLocalName() {

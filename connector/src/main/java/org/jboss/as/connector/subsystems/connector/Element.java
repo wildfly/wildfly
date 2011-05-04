@@ -40,7 +40,10 @@ public enum Element {
     BEAN_VALIDATION("bean-validation"),
 
     /** default-workmanager element **/
-    DEFAULT_WORKMANAGER("default-workmanager");
+    DEFAULT_WORKMANAGER("default-workmanager"),
+
+    /** cached-connection-manager element **/
+    CACHED_CONNECTION_MANAGER("cached-connection-manager");
 
     private final String name;
 
@@ -50,7 +53,6 @@ public enum Element {
 
     /**
      * Get the local name of this element.
-     *
      * @return the local name
      */
     public String getLocalName() {
