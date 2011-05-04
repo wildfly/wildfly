@@ -151,6 +151,42 @@ public class ContextNames extends org.jboss.as.naming.deployment.ContextNames{
     }
 
     /**
+     * Get the service name of a NamingStore
+     *
+     * @param app the application name
+     * @param module the module name
+     * @param comp the component name
+     * @param context the context to check
+     * @return the service name or {@code null} if there is no service
+     */
+    public static ServiceName serviceNameOfNamingStore(String app, String module, String comp, String context) {
+        if (context.startsWith("java:")) {
+            final String namespace;
+            final int i = context.indexOf('/');
+            if (i == -1) {
+                namespace = context.substring(5);
+            } else {
+                namespace = context.substring(5, i);
+            }
+            if (namespace.equals("global")) {
+                return GLOBAL_CONTEXT_SERVICE_NAME;
+            } else if (namespace.equals("jboss")) {
+                return JBOSS_CONTEXT_SERVICE_NAME;
+            } else if (namespace.equals("app")) {
+                return contextServiceNameOfApplication(app);
+            } else if (namespace.equals("module")) {
+                return contextServiceNameOfModule(app, module);
+            } else if (namespace.equals("comp")) {
+                return contextServiceNameOfComponent(app, module, comp);
+            } else {
+                return JAVA_CONTEXT_SERVICE_NAME;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Get the service name of an environment entry
      *
      * @param component The component that declared the environment entry

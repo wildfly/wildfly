@@ -55,7 +55,9 @@ public class ComponentConfiguration {
     private final Deque<InterceptorFactory> postConstructInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Deque<InterceptorFactory> preDestroyInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Map<Method, Deque<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, Deque<InterceptorFactory>>();
+
     private final List<InterceptorFactory> componentSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
+    private final List<InterceptorFactory> componentInstanceSystemInterceptorFactories = new ArrayList<InterceptorFactory>();
 
     // Component instance management
     private ManagedReferenceFactory instanceFactory;
@@ -228,6 +230,10 @@ public class ComponentConfiguration {
      */
     public ComponentCreateServiceFactory getComponentCreateServiceFactory() {
         return componentCreateServiceFactory;
+    }
+
+    public List<InterceptorFactory> getComponentInstanceSystemInterceptorFactories() {
+        return componentInstanceSystemInterceptorFactories;
     }
 
     /**

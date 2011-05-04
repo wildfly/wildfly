@@ -122,7 +122,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final BinderService service = new BinderService(bindingName);
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfContext(applicationName, moduleName, componentName, bindingName), service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
-                serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
+                serviceBuilder.addDependency(ContextNames.serviceNameOfNamingStore(applicationName, moduleName, componentName, bindingName), NamingStore.class, service.getNamingStoreInjector());
                 serviceBuilder.install();
             }
         }

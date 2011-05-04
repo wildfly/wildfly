@@ -51,10 +51,15 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     /**
      * Construct new instance.
      *
-     * @param name  The JNDI name to use for binding
+     * @param name  The JNDI name to use for binding. May be either an absolute or relative name
      */
     public BinderService(final String name) {
-        this.name = name;
+        if(name.startsWith("java:")) {
+            //this is an absolute reference
+            this.name = name.substring(name.indexOf('/') + 1);
+        } else {
+            this.name = name;
+        }
     }
 
     /**

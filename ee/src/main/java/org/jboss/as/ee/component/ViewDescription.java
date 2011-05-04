@@ -145,6 +145,12 @@ public class ViewDescription {
                 configuration.getClientInterceptorDeque(method).addLast(CLIENT_DISPATCHER_INTERCEPTOR_FACTORY);
             }
 
+            configuration.getViewPostConstructInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
+            configuration.getViewPreDestroyInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
+
+            configuration.getClientPostConstructInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
+            configuration.getClientPreDestroyInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
+
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
             List<String> viewNameParts = description.getViewNameParts();
