@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
@@ -132,7 +132,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         for (BindingConfiguration bindingConfiguration : configuration.getBindingConfigurations()) {
             final String bindingName = bindingConfiguration.getName();
             final BinderService service = new BinderService(bindingName);
-            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration, bindingName), service);
+            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName), service);
             bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
             serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
             serviceBuilder.install();
@@ -143,7 +143,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         for (BindingConfiguration bindingConfiguration : configuration.getModuleClassConfiguration().getBindingConfigurations()) {
             final String bindingName = bindingConfiguration.getName();
             final BinderService service = new BinderService(bindingName);
-            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration, bindingName), service);
+            ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName), service);
             bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
             serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
             serviceBuilder.install();

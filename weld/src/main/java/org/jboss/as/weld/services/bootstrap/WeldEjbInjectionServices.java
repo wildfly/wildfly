@@ -22,7 +22,7 @@
 package org.jboss.as.weld.services.bootstrap;
 
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;

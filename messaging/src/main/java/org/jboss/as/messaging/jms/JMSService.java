@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import javax.naming.CompositeName;
-import javax.naming.Name;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -41,6 +39,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.naming.CompositeName;
+import javax.naming.Name;
 
 /**
  * The {@code JMSServerManager} service.

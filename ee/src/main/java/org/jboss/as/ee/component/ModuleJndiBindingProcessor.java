@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.BinderService;

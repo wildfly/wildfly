@@ -24,7 +24,7 @@ package org.jboss.as.weld.deployment.processors;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.service.BinderService;
@@ -92,7 +92,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
                 WeldContainer.class, beanManagerService.getWeldContainer()).install();
 
         // bind the bean manager to JNDI
-        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
+        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
         bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName);
 
         //bind the bm into java:comp for all components that require it

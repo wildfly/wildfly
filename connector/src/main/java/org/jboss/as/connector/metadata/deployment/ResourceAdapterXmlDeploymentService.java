@@ -22,15 +22,6 @@
 
 package org.jboss.as.connector.metadata.deployment;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.List;
-
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -69,7 +60,13 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.jboss.security.SubjectFactory;
 
-import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
+import javax.transaction.TransactionManager;
+import java.io.File;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.List;
 
 /**
  * A ResourceAdapterXmlDeploymentService.

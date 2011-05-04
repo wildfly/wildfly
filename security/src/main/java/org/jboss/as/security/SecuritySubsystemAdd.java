@@ -22,18 +22,6 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
-import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
-import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
-
-import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -69,6 +57,11 @@ import org.jboss.security.plugins.JBossSecuritySubjectFactory;
 import org.jboss.security.plugins.audit.JBossAuditManager;
 import org.jboss.security.plugins.identitytrust.JBossIdentityTrustManager;
 import org.jboss.security.plugins.mapping.JBossMappingManager;
+
+import javax.security.auth.login.Configuration;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.security.Constants.*;
 
 /**
  * Add Security Subsystem Operation.

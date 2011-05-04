@@ -23,8 +23,8 @@
 package org.jboss.as.ee.component;
 
 import java.lang.reflect.Method;
-import java.util.Deque;
-import org.jboss.as.ee.naming.ContextNames;
+
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;

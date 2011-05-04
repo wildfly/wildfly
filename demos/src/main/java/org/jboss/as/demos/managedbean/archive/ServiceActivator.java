@@ -22,7 +22,7 @@
 
 package org.jboss.as.demos.managedbean.archive;
 
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;

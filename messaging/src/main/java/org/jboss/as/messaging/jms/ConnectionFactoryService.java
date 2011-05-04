@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import java.util.Map;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.as.naming.MockContext;
@@ -39,6 +38,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Values;
+
+import java.util.Map;
 
 /**
  * {@code Service} responsible for creating and destroying a {@link javax.jms.ConnectionFactory}.

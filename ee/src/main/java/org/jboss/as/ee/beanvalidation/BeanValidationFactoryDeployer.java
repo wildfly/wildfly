@@ -24,7 +24,7 @@ package org.jboss.as.ee.beanvalidation;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.naming.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -107,7 +107,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
             .addDependency(contextServiceName, NamingStore.class, validatorFactoryBindingService.getNamingStoreInjector())
             .install();
 
-        final ServiceName validatorServiceName = ContextNames.serviceNameOfContext(description.getApplicationName(),description.getModuleName(),componentName,"java:comp/Validator");
+        final ServiceName validatorServiceName = ContextNames.serviceNameOfContext(description.getApplicationName(), description.getModuleName(), componentName, "java:comp/Validator");
         BinderService validatorBindingService = new BinderService("Validator");
         validatorBindingService.getManagedObjectInjector().inject(new ValidatorJndiInjectable(factory));
         serviceTarget.addService(validatorServiceName, validatorBindingService)
