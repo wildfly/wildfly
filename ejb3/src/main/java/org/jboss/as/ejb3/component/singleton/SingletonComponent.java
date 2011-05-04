@@ -79,7 +79,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }
-        return super.createInstance();
+        return new SingletonComponentInstance(this);
     }
 
     @Override

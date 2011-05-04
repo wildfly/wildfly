@@ -56,6 +56,7 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
         description.addDependency(raServiceName, ServiceBuilder.DependencyType.REQUIRED);
 
         addComponentSystemInterceptorFactory(pooled());
+        setComponentCreateServiceFactory(MessageDrivenComponentCreateService.FACTORY);
     }
 
     @Override

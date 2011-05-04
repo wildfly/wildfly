@@ -22,15 +22,16 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -54,7 +55,7 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
         @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
         final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
-        contextData.put(valueContextKey, contextData);
+        contextData.put(valueContextKey, valueReference);
         return new ManagedReferenceFieldInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), field);
     }
 }

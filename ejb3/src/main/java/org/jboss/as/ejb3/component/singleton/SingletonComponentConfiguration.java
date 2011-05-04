@@ -56,16 +56,18 @@ public class SingletonComponentConfiguration extends SessionBeanComponentConfigu
         // instance associating interceptor
         this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
 
-        // BMT interceptor
-        if (TransactionManagementType.BEAN.equals(description.getTransactionManagementType())) {
-            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
-                @Override
-                protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-                    return new SingletonBMTInterceptor((SingletonComponent) component);
-                }
-            });
-        }
 
+        // BMT interceptor
+//        if (TransactionManagementType.BEAN.equals(description.getTransactionManagementType())) {
+//            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
+//                @Override
+//                protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+//                    return new SingletonBMTInterceptor((SingletonComponent) component);
+//                }
+//            });
+//        }
+
+        setComponentCreateServiceFactory(SingletonComponentCreateService.FACTORY);
     }
 
     public boolean isInitOnStartup() {

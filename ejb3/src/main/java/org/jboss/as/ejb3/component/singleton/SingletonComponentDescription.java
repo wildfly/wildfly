@@ -23,21 +23,17 @@
 package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentConfigurator;
-import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.List;
 
 /**
  * Component description for a singleton bean
@@ -61,6 +57,11 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                          final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+    }
+
+    @Override
+    public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
+        return new SingletonComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
     }
 
     /**
