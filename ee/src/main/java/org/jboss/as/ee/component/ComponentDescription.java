@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
@@ -483,7 +484,7 @@ public class ComponentDescription {
                 postConstructInterceptors.addFirst(instantiatorIterator.next());
             }
             postConstructInterceptors.addAll(userPostConstruct);
-            postConstructInterceptors.add(TerminatingInterceptorFactory.INSTANCE);
+            postConstructInterceptors.add(Interceptors.getTerminalInterceptorFactory());
 
             // Apply pre-destroy
             final Deque<InterceptorFactory> preDestroyInterceptors = configuration.getPreDestroyInterceptors();
@@ -496,7 +497,7 @@ public class ComponentDescription {
                 preDestroyInterceptors.addFirst(destructorIterator.next());
             }
             preDestroyInterceptors.addAll(userPreDestroy);
-            preDestroyInterceptors.add(TerminatingInterceptorFactory.INSTANCE);
+            preDestroyInterceptors.add(Interceptors.getTerminalInterceptorFactory());
 
             // Method interceptors
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();

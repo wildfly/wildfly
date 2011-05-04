@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.Interceptors;
 import org.jboss.msc.service.ServiceName;
 
 import java.lang.reflect.Method;
@@ -145,11 +146,11 @@ public class ViewDescription {
                 configuration.getClientInterceptorDeque(method).addLast(CLIENT_DISPATCHER_INTERCEPTOR_FACTORY);
             }
 
-            configuration.getViewPostConstructInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
-            configuration.getViewPreDestroyInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
+            configuration.getViewPostConstructInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
+            configuration.getViewPreDestroyInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
 
-            configuration.getClientPostConstructInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
-            configuration.getClientPreDestroyInterceptors().addLast(TerminatingInterceptorFactory.INSTANCE);
+            configuration.getClientPostConstructInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
+            configuration.getClientPreDestroyInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
 
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
