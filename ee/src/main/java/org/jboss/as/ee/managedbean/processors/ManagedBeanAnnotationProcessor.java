@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -45,6 +43,8 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 import javax.annotation.ManagedBean;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -88,7 +88,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, moduleDescription.getClassByName(beanClassName), deploymentUnit.getServiceName());
+            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, moduleDescription.getOrAddClassByName(beanClassName), deploymentUnit.getServiceName());
 
             // Add the view
             ViewDescription viewDescription = new ViewDescription(componentDescription, beanClassName);
