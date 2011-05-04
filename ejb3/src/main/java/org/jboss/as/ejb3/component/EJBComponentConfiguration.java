@@ -21,16 +21,10 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
-import org.jboss.as.ejb3.tx.CMTTxInterceptor;
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceBuilder;
 
 import javax.ejb.TransactionAttributeType;
@@ -63,28 +57,20 @@ public abstract class EJBComponentConfiguration extends ComponentConfiguration {
         transactionManagementType = description.getTransactionManagementType();
 
         // CMTTx
-        if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
-            // slurp some memory
-            txAttrs = new ConcurrentHashMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>>();
+//        if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
+//            // slurp some memory
+//            txAttrs = new ConcurrentHashMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>>();
+//            //TODO: interceptors
+//            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
+//                @Override
+//                protected Interceptor create(Component component, InterceptorFactoryContext context) {
+//                    return new CMTTxInterceptor((TransactionalComponent) component);
+//                }
+//            });
+//        }
 
-            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {
-                @Override
-                protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                    return new CMTTxInterceptor((TransactionalComponent) component);
-                }
-            });
-        } else {
-            txAttrs = null;
-        }
+        txAttrs = null;
 
-    }
-
-    protected void addComponentSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
-        getComponentSystemInterceptorFactories().add(interceptorFactory);
-    }
-
-    protected void addComponentInstanceSystemInterceptorFactory(InterceptorFactory interceptorFactory) {
-        getComponentInstanceSystemInterceptorFactories().add(interceptorFactory);
     }
 
     protected abstract void addCurrentInvocationContextInterceptorFactory();

@@ -21,16 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
-import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-
-import javax.ejb.TransactionManagementType;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -39,7 +31,8 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
 
     public StatefulSessionComponentConfiguration(final StatefulComponentDescription description, final EEModuleClassConfiguration ejbClassConfiguration) {
         super(description, ejbClassConfiguration);
-
+        //TODO: interceptors
+        /*
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
 
         if(description.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
@@ -57,6 +50,7 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
                 }
             });
         }
+        */
         setComponentCreateServiceFactory(StatefulSessionComponentCreateService.FACTORY);
     }
 }

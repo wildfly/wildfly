@@ -54,9 +54,9 @@ public class SingletonComponentConfiguration extends SessionBeanComponentConfigu
         this.initOnStartup = description.isInitOnStartup();
 
         // instance associating interceptor
-        this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
+        //TODO: interceptors
 
-
+//        this.addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
         // BMT interceptor
 //        if (TransactionManagementType.BEAN.equals(description.getTransactionManagementType())) {
 //            addComponentSystemInterceptorFactory(new ComponentInterceptorFactory() {

@@ -23,11 +23,8 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor.pooled;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -54,14 +51,19 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
         // See ResourceAdapterDeploymentService
         this.raServiceName = ServiceName.of(deploymentName);
         description.addDependency(raServiceName, ServiceBuilder.DependencyType.REQUIRED);
-
+        //TODO: interceptors
+        /*
         addComponentSystemInterceptorFactory(pooled());
+        */
         setComponentCreateServiceFactory(MessageDrivenComponentCreateService.FACTORY);
     }
 
     @Override
     protected void addCurrentInvocationContextInterceptorFactory() {
+        //TODO: interceptors
+        /*
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(MessageDrivenInvocationContextInterceptor.INSTANCE));
+        */
     }
 
     Class<?> getMessageListenerInterface() {

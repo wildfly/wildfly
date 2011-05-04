@@ -22,27 +22,18 @@
 
 package org.jboss.as.ejb3.component.session;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentConfiguration;
-import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptor;
-import org.jboss.ejb3.concurrency.spi.LockableComponent;
-import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
-import java.util.HashMap;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Jaikiran Pai
@@ -76,6 +67,8 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
             // container managed concurrency interceptor
             if (description.getConcurrencyManagementType() != ConcurrencyManagementType.BEAN) {
                 // Add ComponentInstance level interceptor
+                //TODO: interceptors
+                /*
                 this.addComponentInstanceSystemInterceptorFactory(new ComponentInterceptorFactory() {
                     @Override
                     protected Interceptor create(Component component, InterceptorFactoryContext context) {
@@ -95,6 +88,7 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
 
                     }
                 });
+                */
             }
 
         }
@@ -102,7 +96,10 @@ public abstract class SessionBeanComponentConfiguration extends EJBComponentConf
 
     @Override
     protected void addCurrentInvocationContextInterceptorFactory() {
+        //TODO: interceptors
+        /*
         addComponentSystemInterceptorFactory(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
+        */
     }
 
     public LockType getBeanLevelLockType() {
