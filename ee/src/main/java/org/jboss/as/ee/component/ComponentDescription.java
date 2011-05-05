@@ -40,6 +40,7 @@ import org.jboss.msc.value.InjectedValue;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -524,6 +525,35 @@ public class ComponentDescription {
             // Method interceptors
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
             final Set<String> visited = new HashSet<String>();
+
+            Class clazz = componentClassConfiguration.getModuleClass();
+            while(clazz != null) {
+                final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
+                for(final Method method : (Collection <Method>)classIndex.getMethods()) {
+                    MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
+                    Deque<InterceptorFactory> interceptorDeque = configuration.getComponentInterceptorDeque(method);
+                    if (! description.isExcludeClassInterceptors(identifier)) {
+                        for (InterceptorDescription interceptorDescription : classInterceptors) {
+                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                            if (visited.add(interceptorClassName)) {
+                                List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                                if(aroundInvokes != null) {
+                                    interceptorDeque.addAll(aroundInvokes);
+                                }
+                            }
+                        }
+                        if (componentUserAroundInvoke != null) {
+                            interceptorDeque.addAll(componentUserAroundInvoke);
+                        }
+                    }
+                    if (! description.isExcludeDefaultInterceptors() && ! description.isExcludeDefaultInterceptors(identifier)) {
+                        // todo: default interceptors here
+                    }
+                }
+                clazz = clazz.getSuperclass();
+            }
+
+            //now handle method level interceptors
             final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = description.getMethodInterceptors();
             for (MethodIdentifier identifier : methodInterceptors.keySet()) {
                 final List<InterceptorDescription> descriptions = methodInterceptors.get(identifier);
@@ -533,26 +563,19 @@ public class ComponentDescription {
                 for (InterceptorDescription interceptorDescription : descriptions) {
                     String interceptorClassName = interceptorDescription.getInterceptorClassName();
                     if (visited.add(interceptorClassName)) {
-                        interceptorDeque.addAll(userAroundInvokesByInterceptorClass.get(interceptorClassName));
-                    }
-                }
-                if (! description.isExcludeClassInterceptors(identifier)) {
-                    for (InterceptorDescription interceptorDescription : classInterceptors) {
-                        String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                        if (visited.add(interceptorClassName)) {
-                            interceptorDeque.addAll(userAroundInvokesByInterceptorClass.get(interceptorClassName));
+                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                        if(aroundInvokes != null) {
+                            interceptorDeque.addAll(aroundInvokes);
                         }
                     }
-                    if (componentUserAroundInvoke != null) {
-                        interceptorDeque.addAll(componentUserAroundInvoke);
-                    }
                 }
-                if (! description.isExcludeDefaultInterceptors() && ! description.isExcludeDefaultInterceptors(identifier)) {
-                    // todo: default interceptors here
-                }
-                visited.clear();
-                interceptorDeque.addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, componentMethod));
             }
+
+            //now add the interceptor that actually invokes to the end of the interceptor chain
+            for(Method method : configuration.getDefinedComponentMethods()) {
+                configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
+            }
+            visited.clear();
 
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
