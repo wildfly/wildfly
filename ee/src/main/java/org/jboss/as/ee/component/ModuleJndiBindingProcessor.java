@@ -43,7 +43,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
-
+        if(moduleConfiguration == null) {
+            return;
+        }
         // bindings
         for (BindingConfiguration binding : moduleConfiguration.getBindingConfigurations()) {
             addJndiBinding(moduleConfiguration, binding, phaseContext);

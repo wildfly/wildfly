@@ -44,7 +44,11 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         if(moduleDescription == null) {
             return;
         }
-        final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription, phaseContext);
+        if(module == null) {
+            return;
+        }
+
+        final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription, phaseContext, module);
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
 
         final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();

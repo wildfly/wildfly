@@ -84,6 +84,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
 
+        if(moduleConfiguration == null) {
+            return;
+        }
+
         // Add all service dependencies
         for (DependencyConfigurator configurator : configuration.getCreateDependencies()) {
             configurator.configureDependency(createBuilder);

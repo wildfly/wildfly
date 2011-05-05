@@ -35,8 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -49,9 +47,8 @@ public final class EEModuleConfiguration {
     // Module Bindings
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
 
-    EEModuleConfiguration(EEModuleDescription description, DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
+    EEModuleConfiguration(EEModuleDescription description, DeploymentPhaseContext context, final Module module) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-        Module module = deploymentUnit.getAttachment(MODULE);
         ModuleClassLoader classLoader = module.getClassLoader();
         applicationName = description.getApplicationName();
         moduleName = description.getModuleName();
