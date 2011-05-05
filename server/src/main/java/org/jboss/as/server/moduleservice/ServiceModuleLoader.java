@@ -21,9 +21,6 @@
  */
 package org.jboss.as.server.moduleservice;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
@@ -42,6 +39,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link ModuleLoader} that loads module definitions from msc services. Module specs are looked up in msc services that
@@ -65,8 +65,8 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
         private final CountDownLatch latch = new CountDownLatch(1);
         private final ModuleIdentifier identifier;
-        private StartException startException;
-        private ModuleSpec moduleSpec;
+        private volatile StartException startException;
+        private volatile ModuleSpec moduleSpec;
 
         private ModuleSpecLoadListener(ModuleIdentifier identifier) {
             this.identifier = identifier;
@@ -92,7 +92,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
         @Override
         public void serviceStopping(ServiceController<? extends ModuleSpec> controller) {
-            ModuleSpec moduleSpec = controller.getValue();
+            ModuleSpec moduleSpec = this.moduleSpec;
             try {
                 Module module = loadModule(moduleSpec.getModuleIdentifier());
                 unloadModuleLocal(module);
