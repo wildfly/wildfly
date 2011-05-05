@@ -28,9 +28,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -47,11 +45,11 @@ public class ConfigurationFile {
 
     private static final String LAST = "last";
     private static final String INITIAL = "initial";
-    private static final String ORIGINAL = "original";
+    private static final String BOOT = "boot";
 
     private static final String LAST_SUFFIX = LAST + ".xml";
     private static final String INITIAL_SUFFIX = INITIAL + ".xml";
-    private static final String ORIGINAL_SUFFIX = ORIGINAL + ".xml";
+    private static final String ORIGINAL_SUFFIX = BOOT + ".xml";
 
     private static final int CURRENT_HISTORY_LENGTH = 100;
     private static final int HISTORY_DAYS = 30;
@@ -83,7 +81,7 @@ public class ConfigurationFile {
         this.rawFileName = rawName;
         this.bootFileName = name != null ? name : rawName;
         this.configurationDir = configurationDir;
-        this.historyRoot = new File(configurationDir, rawName.replace('.', '_'));
+        this.historyRoot = new File(configurationDir, rawName.replace('.', '_') + "_history");
         this.currentHistory = new File(historyRoot, "current");
         this.snapshotsDirectory = new File(historyRoot, "snapshot");
         this.mainFile = determineMainFile(configurationDir, rawName, name);
@@ -113,9 +111,9 @@ public class ConfigurationFile {
         if (name == null) {
             mainName = rawName;
         }
-        else if (name.equals(LAST) || name.equals(INITIAL) || name.equals(ORIGINAL)) {
+        else if (name.equals(LAST) || name.equals(INITIAL) || name.equals(BOOT)) {
             // Search for a *single* file in the configuration dir with suffix == name.xml
-            mainName = findMainFileFromBackupSuffix(configurationDir, name);
+            mainName = findMainFileFromBackupSuffix(historyRoot, name);
         } else if (VERSION_PATTERN.matcher(name).matches()) {
             // Search for a *single* file in the currentHistory dir with suffix == name.xml
             mainName = findMainFileFromBackupSuffix(currentHistory, name);
@@ -149,7 +147,7 @@ public class ConfigurationFile {
      * and returns its name with {@code .backupType} removed.
      *
      * @param searchDir the directory to search
-     * @param suffix the backup type; {@link #LAST}, {@link #ORIGINAL}, {@link #INITIAL} or {@code v\d+}
+     * @param backupType the backup type; {@link #LAST}, {@link #BOOT}, {@link #INITIAL} or {@code v\d+}
      *
      * @return the single file that meets the criteria. Will not return {@code null}
      *
@@ -242,8 +240,8 @@ public class ConfigurationFile {
     }
 
     private File determineBootFile(final File configurationDir, final String name) {
-        if (name.equals(LAST) || name.equals(INITIAL) || name.equals(ORIGINAL)) {
-            return addSuffixToFile(mainFile, name);
+        if (name.equals(LAST) || name.equals(INITIAL) || name.equals(BOOT)) {
+            return addSuffixToFile(new File(historyRoot, mainFile.getName()), name);
         } else if (VERSION_PATTERN.matcher(name).matches()) {
             File versioned = getVersionedFile(mainFile, name);
             if (versioned.exists()) {
@@ -288,9 +286,10 @@ public class ConfigurationFile {
 
                 createHistoryDirectory();
 
-                final File last = addSuffixToFile(mainFile, LAST);
-                final File original = addSuffixToFile(mainFile, ORIGINAL);
-                final File initial = addSuffixToFile(mainFile, INITIAL);
+                final File historyBase = new File(historyRoot, mainFile.getName());
+                final File last = addSuffixToFile(historyBase, LAST);
+                final File original = addSuffixToFile(historyBase, BOOT);
+                final File initial = addSuffixToFile(historyBase, INITIAL);
 
                 if (!initial.exists()) {
                     copyFile(mainFile, initial);
@@ -329,7 +328,7 @@ public class ConfigurationFile {
         if (!doneBootup.get()) {
             return;
         }
-        File last = addSuffixToFile(mainFile, LAST);
+        File last = addSuffixToFile(new File(currentHistory, mainFile.getName()), LAST);
         try {
             copyFile(mainFile, last);
         } catch (IOException e) {
