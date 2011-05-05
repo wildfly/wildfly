@@ -145,6 +145,27 @@
         <subsystem xmlns="urn:jboss:domain:ee:1.0" />
         <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
+            <cache-container name="hibernate" default-cache="entity">
+                <local-cache name="entity">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="local-query">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="timestamps">
+                    <eviction strategy="NONE"/>
+                </local-cache>
+            </cache-container>
+            <cache-container name="security" default-cache="auth-cache">
+                <local-cache name="auth-cache">
+                    <eviction strategy="FIFO" max-entries="10000" interval="600000"/>
+                    <expiration max-idle="3600000" lifespan="86400000"/>
+                </local-cache>
+            </cache-container>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
                 <security-domain name="other">
@@ -333,27 +354,6 @@
                  <webServicePort>8080</webServicePort> -->
            </configuration>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
-            <cache-container name="hibernate" default-cache="entity">
-                <local-cache name="entity">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
-                </local-cache>
-                <local-cache name="local-query">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
-                </local-cache>
-                <local-cache name="timestamps">
-                    <eviction strategy="NONE"/>
-                </local-cache>
-            </cache-container>
-            <cache-container name="security" default-cache="auth-cache">
-                <local-cache name="auth-cache">
-                    <eviction strategy="FIFO" max-entries="10000" interval="600000"/>
-                    <expiration max-idle="3600000" lifespan="86400000"/>
-                </local-cache>
-            </cache-container>
-       </subsystem>
     </profile>
 
     <interfaces>

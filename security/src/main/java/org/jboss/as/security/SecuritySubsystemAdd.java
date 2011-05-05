@@ -239,7 +239,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                             resolvedAuthorizationManagerClassName, resolvedAuditManagerClassName,
                             resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
                     target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
-                            .addDependency(DependencyType.REQUIRED,
+                            .addDependency(DependencyType.OPTIONAL,
                                     EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
                                     EmbeddedCacheManager.class,
                                     securityManagementService.getAuthenticationCacheManagerInjector())
