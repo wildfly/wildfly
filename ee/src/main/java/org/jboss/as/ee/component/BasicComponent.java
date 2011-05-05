@@ -23,16 +23,16 @@
 package org.jboss.as.ee.component;
 
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
+import org.jboss.msc.service.StopContext;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import org.jboss.msc.service.StopContext;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A basic component implementation.
@@ -176,9 +176,12 @@ public class BasicComponent implements Component {
             stopContext.asynchronous();
             synchronized (this) {
                 gate = false;
-                this.stopContext = stopContext;
+                //this.stopContext = stopContext;
             }
-            finishDestroy();
+            //TODO: only run this if there is no instances
+            //TODO: trigger destruction of all component instances
+            //TODO: this has lots of potential for race conditions unless we are careful
+            stopContext.complete();
         }
     }
 
@@ -199,8 +202,10 @@ public class BasicComponent implements Component {
     }
 
     void finishDestroy() {
+        //otherwise the server will hang
         if (instanceCount.decrementAndGet() == 0) {
-            stopContext.complete();
+            if(stopContext != null)
+                stopContext.complete();
         }
     }
 }
