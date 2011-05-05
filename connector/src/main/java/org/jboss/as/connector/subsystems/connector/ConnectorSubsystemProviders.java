@@ -21,15 +21,17 @@
  */
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.*;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
+import static org.jboss.as.connector.subsystems.connector.Constants.CACHED_CONNECTION_MANAGER_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -155,15 +157,15 @@ class ConnectorSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL, REQUIRED).set(false);
 
-            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
+            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
                     bundle.getString("cached-connection-manager.debug"));
-            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
-            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
+            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
 
-            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
+            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
                     bundle.getString("cached-connection-manager.error"));
-            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
-            operation.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
+            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
 
             return operation;
         }
