@@ -65,24 +65,20 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -291,8 +287,8 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
         private final Map<ServiceController<?>, String> lastReportFailedControllers = new IdentityHashMap<ServiceController<?>, String>();
         /** Services with missing deps */
         private final Set<ServiceController<?>> servicesWithMissingDeps = identitySet();
-        /** Services with missing deps as of the last time tick reached zero */
-        private Set<ServiceName> previousMissingDepSet = new HashSet<ServiceName>();
+        /** Map of Services with missing deps as of the last time tick reached zero */
+        private Map<ServiceName, Set<ServiceName>> previousMissingDeps = new HashMap<ServiceName, Set<ServiceName>>();
         /** Services with missing deps as of the last time getServerStateChangeReport() was called */
         private final Set<ServiceName> lastReportMissingDepSet = new TreeSet<ServiceName>();
         /** Flag indicating we've created our first post-boot report */
@@ -444,31 +440,36 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             if (tick == 0) {
                 synchronized (this) {
                     notifyAll();
-                    final Set<ServiceName> missingDeps = new HashSet<ServiceName>();
+                    final Map<ServiceName, Set<ServiceName>> missingDeps = new HashMap<ServiceName, Set<ServiceName>>();
                     for (ServiceController<?> controller : servicesWithMissingDeps) {
-                        missingDeps.addAll(controller.getImmediateUnavailableDependencies());
+                        for(ServiceName missing : controller.getImmediateUnavailableDependencies()) {
+                            if(!missingDeps.containsKey(missing)) {
+                                missingDeps.put(missing, new HashSet<ServiceName>());
+                            }
+                            missingDeps.get(missing).add(controller.getName());
+                        }
                     }
 
-                    final Set<ServiceName> previousMissing = previousMissingDepSet;
+                    final Set<ServiceName> previousMissing = previousMissingDeps.keySet();
 
                     // no longer missing deps...
                     final Set<ServiceName> noLongerMissing = new TreeSet<ServiceName>();
                     for (ServiceName name : previousMissing) {
-                        if (! missingDeps.contains(name)) {
+                        if (! missingDeps.containsKey(name)) {
                             noLongerMissing.add(name);
                         }
                     }
 
                     // newly missing deps
-                    final Set<ServiceName> newlyMissing = new TreeSet<ServiceName>();
+                    final Map<ServiceName, Set<ServiceName>> newlyMissing = new TreeMap<ServiceName, Set<ServiceName>>();
                     newlyMissing.clear();
-                    for (ServiceName name : missingDeps) {
-                        if (! previousMissing.contains(name)) {
-                            newlyMissing.add(name);
+                    for (Map.Entry<ServiceName, Set<ServiceName>> entry : missingDeps.entrySet()) {
+                        if (! previousMissing.contains(entry.getKey())) {
+                            newlyMissing.put(entry.getKey(), entry.getValue());
                         }
                     }
 
-                    previousMissingDepSet = missingDeps;
+                    previousMissingDeps = missingDeps;
 
                     // track failed services for the change report
                     latestSettledFailedControllers.clear();
@@ -480,13 +481,25 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
                     if (! newlyMissing.isEmpty()) {
                         print = true;
                         msg.append("   New missing/unsatisfied dependencies:\n");
-                        for (ServiceName name : newlyMissing) {
+                        for (Map.Entry<ServiceName, Set<ServiceName>> entry : newlyMissing.entrySet()) {
+                            final ServiceName name = entry.getKey();
                             ServiceController<?> controller = serviceRegistry.getService(name);
                             if (controller == null) {
-                                msg.append("      ").append(name).append(" (missing)\n");
+                                msg.append("      ").append(name).append(" (missing)");
                             } else {
-                                msg.append("      ").append(name).append(" (unavailable)\n");
+                                msg.append("      ").append(name).append(" (unavailable)");
                             }
+                            msg.append(" required by [");
+                            Iterator<ServiceName> it = entry.getValue().iterator();
+                            while(it.hasNext()) {
+                                ServiceName requiring = it.next();
+                                msg.append(requiring);
+                                if(it.hasNext()) {
+                                    msg.append(", ");
+                                }
+                            }
+                            msg.append("]");
+                            msg.append('\n');
                         }
                     }
                     if (! noLongerMissing.isEmpty()) {
@@ -530,24 +543,39 @@ class ServerControllerImpl extends BasicModelController implements ServerControl
             lastReportFailedControllers.clear();
             lastReportFailedControllers.putAll(latestSettledFailedControllers);
             // Determine the new missing dependencies
-            final Set<ServiceName> newReportMissingDepSet = new TreeSet<ServiceName>(previousMissingDepSet);
-            newReportMissingDepSet.removeAll(lastReportMissingDepSet);
+            final Map<ServiceName, Set<ServiceName>> newReportMissingDeps = new TreeMap<ServiceName, Set<ServiceName>>(previousMissingDeps);
+            for(ServiceName dep : lastReportMissingDepSet) {
+                newReportMissingDeps.remove(dep);
+            }
             // Back up current state for use in next report
             lastReportMissingDepSet.clear();
-            lastReportMissingDepSet.addAll(previousMissingDepSet);
+            lastReportMissingDepSet.addAll(previousMissingDeps.keySet());
 
             ModelNode report = null;
-            if (!newFailedControllers.isEmpty() || !newReportMissingDepSet.isEmpty()) {
+            if (!newFailedControllers.isEmpty() || !newReportMissingDeps.isEmpty()) {
                 report = new ModelNode();
-                if (! newReportMissingDepSet.isEmpty()) {
+                if (! newReportMissingDeps.isEmpty()) {
                     ModelNode missing = report.get("New missing/unsatisfied dependencies");
-                    for (ServiceName name : newReportMissingDepSet) {
+                    for (Map.Entry<ServiceName, Set<ServiceName>> entry : newReportMissingDeps.entrySet()) {
+                        final ServiceName name = entry.getKey();
                         ServiceController<?> controller = serviceRegistry.getService(name);
+                        StringBuilder missingText = new StringBuilder(name.toString());
                         if (controller == null) {
-                            missing.add(name + " (missing)");
+                            missingText.append(" (missing)");
                         } else {
-                            missing.add(name + " (unavailable)\n");
+                            missingText.append(" (unavailable)\n");
                         }
+                        missingText.append(" required by [");
+                        Iterator<ServiceName> it = entry.getValue().iterator();
+                        while(it.hasNext()) {
+                            ServiceName requiring = it.next();
+                            missingText.append(requiring);
+                            if(it.hasNext()) {
+                                missingText.append(", ");
+                            }
+                        }
+                        missingText.append("]");
+                        missing.add(missingText.toString());
                     }
                 }
                 if (! newFailedControllers.isEmpty()) {
