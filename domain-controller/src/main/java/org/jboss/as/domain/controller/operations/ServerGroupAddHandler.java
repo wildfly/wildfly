@@ -34,7 +34,13 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
 /**
  * @author Emanuel Muckenhuber
@@ -64,6 +70,7 @@ public class ServerGroupAddHandler implements ModelAddOperationHandler, Descript
             subModel.get(JVM);
         }
 
+        subModel.get(SYSTEM_PROPERTY);
         subModel.get(DEPLOYMENT);
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.get(OP_ADDR));

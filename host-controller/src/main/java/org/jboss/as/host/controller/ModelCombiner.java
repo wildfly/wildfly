@@ -44,7 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.File;
@@ -323,8 +323,9 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         Map<String, String> props = getAllSystemProperties(false);
 
         for (Map.Entry<String, String> entry : props.entrySet()) {
-            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS.toModelNode());
-            op.get(NAME).set(entry.getKey());
+            ModelNode address = new ModelNode();
+            address.add(SYSTEM_PROPERTY, entry.getKey());
+            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, address);
             if (entry.getValue() != null) {
                 op.get(VALUE).set(entry.getValue());
             }
@@ -344,12 +345,13 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     }
 
     private void addSystemProperties(final ModelNode source, final Map<String, String> props, boolean boottimeOnly) {
-        if (source.hasDefined(SYSTEM_PROPERTIES)) {
-            for (Property prop : source.get(SYSTEM_PROPERTIES).asPropertyList()) {
-                if (boottimeOnly && !prop.getValue().get(BOOT_TIME).asBoolean()) {
+        if (source.hasDefined(SYSTEM_PROPERTY)) {
+            for (Property prop : source.get(SYSTEM_PROPERTY).asPropertyList()) {
+                ModelNode propResource = prop.getValue();
+                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean()) {
                     continue;
                 }
-                String val = prop.getValue().get(VALUE).isDefined() ? prop.getValue().get(VALUE).asString() : null;
+                String val = propResource.hasDefined(VALUE) ? propResource.get(VALUE).asString() : null;
                 props.put(prop.getName(), val);
             }
         }

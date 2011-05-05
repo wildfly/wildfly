@@ -42,14 +42,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -81,11 +81,6 @@ public class ServerGroupDescription {
         root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
         root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
 
-        root.get(ATTRIBUTES, SYSTEM_PROPERTIES, DESCRIPTION).set(bundle.getString("server-group.system-property"));
-        root.get(ATTRIBUTES, SYSTEM_PROPERTIES, TYPE).set(ModelType.LIST);
-        root.get(ATTRIBUTES, SYSTEM_PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
-        root.get(ATTRIBUTES, SYSTEM_PROPERTIES, REQUIRED).set(false);
-
         root.get(OPERATIONS).setEmptyObject();
 
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("server-group.deployment"));
@@ -96,6 +91,11 @@ public class ServerGroupDescription {
         root.get(CHILDREN, JVM, MIN_OCCURS).set(0);
         root.get(CHILDREN, JVM, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, JVM, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server-group.system-property"));
+        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
 
         return root;
     }
@@ -144,6 +144,11 @@ public class ServerGroupDescription {
         root.get(DESCRIPTION).set(bundle.getString("server-group.deployment.remove"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
+    }
+
+    public static ModelNode getSystemPropertiesDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server-group.system-property"), false);
     }
 
 

@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.dmr.ModelNode;
@@ -56,6 +57,11 @@ public class ServerDescriptions {
         root.get(DESCRIPTION).set(bundle.getString("reload"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
+    }
+
+    public static final ModelNode getSystemPropertyDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server.system-property"), false);
     }
 
     private static ResourceBundle getResourceBundle(Locale locale) {

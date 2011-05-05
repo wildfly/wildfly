@@ -45,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
@@ -113,8 +113,8 @@ public class HostXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        if (modelNode.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
+        if (modelNode.hasDefined(SYSTEM_PROPERTY)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
         }
 
         writeManagement(writer, modelNode.get(MANAGEMENT));
@@ -581,8 +581,8 @@ public class HostXml extends CommonXml {
             if (server.hasDefined(PATH)) {
                 writePaths(writer, server.get(PATH));
             }
-            if (server.hasDefined(SYSTEM_PROPERTIES)) {
-                writeProperties(writer, server.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
+            if (server.hasDefined(SYSTEM_PROPERTY)) {
+                writeProperties(writer, server.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
             }
             if (server.hasDefined(INTERFACE)) {
                 writeInterfaces(writer, server.get(INTERFACE));

@@ -61,7 +61,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -121,8 +121,8 @@ public class DomainXml extends CommonXml {
             }
             writer.writeEndElement();
         }
-        if(modelNode.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, modelNode.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
+        if(modelNode.hasDefined(SYSTEM_PROPERTY)) {
+            writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
         }
         if(modelNode.hasDefined(DEPLOYMENT)) {
             writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
@@ -579,8 +579,8 @@ public class DomainXml extends CommonXml {
             writeServerGroupDeployments(writer, group.get(DEPLOYMENT));
         }
         // System properties
-        if(group.hasDefined(SYSTEM_PROPERTIES)) {
-            writeProperties(writer, group.get(SYSTEM_PROPERTIES), Element.SYSTEM_PROPERTIES, false);
+        if(group.hasDefined(SYSTEM_PROPERTY)) {
+            writeProperties(writer, group.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);
         }
 
         writer.writeEndElement();

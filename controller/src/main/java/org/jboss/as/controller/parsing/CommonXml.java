@@ -78,6 +78,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -954,8 +955,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             requireNoContent(reader);
 
-            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, address);
-            op.get(NAME).set(name);
+            ModelNode propAddr = new ModelNode().set(address).add(SYSTEM_PROPERTY, name);
+            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, propAddr);
             op.get(VALUE).set(value);
             if (boottime != null) {
                 op.get(BOOT_TIME).set(boottime.booleanValue());
@@ -2108,11 +2109,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             for (Property prop : properties) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writeAttribute(writer, Attribute.NAME, prop.getName());
-                if (standalone) {
-                    writeAttribute(writer, Attribute.VALUE, prop.getValue().asString());
-                } else {
-                    writeAttribute(writer, Attribute.VALUE, prop.getValue().get(VALUE).asString());
-                    writeAttribute(writer, Attribute.BOOT_TIME, prop.getValue().get(BOOT_TIME).asString());
+                ModelNode sysProp = prop.getValue();
+                if (sysProp.hasDefined(VALUE)) {
+                    writeAttribute(writer, Attribute.VALUE, sysProp.get(VALUE).asString());
+                }
+                if (!standalone && sysProp.hasDefined(BOOT_TIME) && !sysProp.get(BOOT_TIME).asBoolean()) {
+                    writeAttribute(writer, Attribute.BOOT_TIME, "false");
                 }
 
                 writer.writeEndElement();

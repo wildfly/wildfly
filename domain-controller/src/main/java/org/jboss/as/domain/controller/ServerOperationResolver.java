@@ -9,7 +9,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -18,11 +17,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.Collections;
@@ -33,10 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.allen_sauer.gwt.log.client.FirebugLogger;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.operations.SystemPropertyAddHandler;
-import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -53,6 +57,7 @@ public class ServerOperationResolver {
         UNKNOWN(null),
         EXTENSION("extension"),
         PATH("path"),
+        SYSTEM_PROPERTY("system-property"),
         PROFILE("profile"),
         INTERFACE("interface"),
         SOCKET_BINDING_GROUP("socket-binding-group"),
@@ -88,6 +93,7 @@ public class ServerOperationResolver {
 
         UNKNOWN(null),
         PATH("path"),
+        SYSTEM_PROPERTY("system-property"),
         MANAGEMENT("management"),
         INTERFACE("interface"),
         JVM("jvm"),
@@ -118,6 +124,10 @@ public class ServerOperationResolver {
 
     }
 
+    private enum Level {
+        DOMAIN, SERVER_GROUP, HOST, SERVER;
+    }
+
     private final String localHostName;
 
     ServerOperationResolver(final String localHostName) {
@@ -141,6 +151,9 @@ public class ServerOperationResolver {
                 }
                 case PATH: {
                     return getServerPathOperations(operation, address, host, true);
+                }
+                case SYSTEM_PROPERTY: {
+                    return getServerSystemPropertyOperations(operation, address, Level.DOMAIN, domain, null, host);
                 }
                 case PROFILE: {
                     return getServerProfileOperations(operation, address, domain, host);
@@ -235,6 +248,7 @@ public class ServerOperationResolver {
         serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
         return Collections.singletonMap(allServers, serverOp);
     }
+
     private Map<Set<ServerIdentity>, ModelNode> getServerInterfaceOperations(ModelNode operation, PathAddress address,
             ModelNode hostModel, boolean forDomain) {
         String pathName = address.getElement(0).getValue();
@@ -404,38 +418,12 @@ public class ServerOperationResolver {
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
                 result = Collections.singletonMap(servers, serverOp);
             }
-        }
-
-        if (result == null) {
-            String opName = operation.require(OP).asString();
-            if (SystemPropertyAddHandler.OPERATION_NAME.equals(opName) ||
-                    SystemPropertyRemoveHandler.OPERATION_NAME.equals(opName)) {
-
-                String propName = operation.require(NAME).asString();
-                Set<ServerIdentity> servers = null;
-                // See if overridden at the host
-                if (!hasSystemProperty(host, propName)) {
-                    if (host.hasDefined(SERVER_CONFIG)) {
-                        servers = new HashSet<ServerIdentity>();
-                        String groupName = address.getElement(0).getValue();
-                        for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
-                            ModelNode server = serverProp.getValue();
-                            if (groupName.equals(server.require(GROUP).asString())
-                                    && !hasSystemProperty(server, propName)
-                                    && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
-                                servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
-                            }
-                        }
-                    }
-                }
-
-                if (servers != null && servers.size() > 0) {
-                    ModelNode serverOp = operation.clone();
-                    serverOp.get(OP_ADDR).setEmptyList();
-                    result = Collections.singletonMap(servers, serverOp);
-                }
+            else if (SYSTEM_PROPERTY.equals(type)) {
+                String affectedGroup = address.getElement(0).getValue();
+                result = getServerSystemPropertyOperations(operation, address, Level.SERVER_GROUP, domain, affectedGroup, host);
             }
         }
+
         if (result == null) {
             result = Collections.emptyMap();
         }
@@ -445,34 +433,7 @@ public class ServerOperationResolver {
     private Map<Set<ServerIdentity>, ModelNode> resolveDomainRootOperation(ModelNode operation, ModelNode domain, ModelNode host) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
         String opName = operation.require(OP).asString();
-        if (SystemPropertyAddHandler.OPERATION_NAME.equals(opName) || SystemPropertyRemoveHandler.OPERATION_NAME.equals(opName)) {
-            String propName = operation.require(NAME).asString();
-            Set<ServerIdentity> servers = null;
-            // See if overridden at the host
-            if (!hasSystemProperty(host, propName)) {
-                if (host.hasDefined(SERVER_CONFIG)) {
-                    servers = new HashSet<ServerIdentity>();
-                    for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
-                        ModelNode server = serverProp.getValue();
-                        if (!hasSystemProperty(server, propName)
-                                && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
-                            String groupName = server.require(GROUP).asString();
-                            ModelNode serverGroup = domain.get(GROUP, groupName);
-                            if (!hasSystemProperty(serverGroup, propName)) {
-                                servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (servers != null && servers.size() > 0) {
-                ModelNode serverOp = operation.clone();
-                serverOp.get(OP_ADDR).setEmptyList();
-                result = Collections.singletonMap(servers, serverOp);
-            }
-        }
-        else if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName)) {
+        if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName)) {
             String propName = operation.require(NAME).asString();
             Set<String> groups = getServerGroupsForDeployment(propName, domain);
             Set<ServerIdentity> allServers = new HashSet<ServerIdentity>();
@@ -508,19 +469,13 @@ public class ServerOperationResolver {
 
     private boolean hasSystemProperty(ModelNode resource, String propName) {
         boolean result = false;
-        if (resource.hasDefined(SYSTEM_PROPERTIES)) {
-            for (Property prop : resource.get(SYSTEM_PROPERTIES).asPropertyList()) {
-                if (propName.equals(prop.getName()))
-                    return true;
-            }
-        }
-        return result;
+        return resource.hasDefined(SYSTEM_PROPERTY) && resource.get(SYSTEM_PROPERTY).hasDefined(propName);
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerHostOperations(ModelNode operation, PathAddress address,
             ModelNode domain, ModelNode host) {
         if (address.size() == 1) {
-            return resolveHostRootOperation(operation, host);
+            return Collections.emptyMap();
         }
         else {
             HostKey hostKey = HostKey.forName(address.getElement(1).getKey());
@@ -528,6 +483,9 @@ public class ServerOperationResolver {
             switch (hostKey) {
                 case PATH: {
                     return getServerPathOperations(operation, address, host, false);
+                }
+                case SYSTEM_PROPERTY: {
+                    return getServerSystemPropertyOperations(operation, address, Level.HOST,  domain, null, host);
                 }
                 case MANAGEMENT: {
                     // TODO does server need to know about change?
@@ -541,7 +499,7 @@ public class ServerOperationResolver {
                     return Collections.emptyMap();
                 }
                 case SERVER_CONFIG: {
-                    return resolveServerConfigOperation(operation, address, host);
+                    return resolveServerConfigOperation(operation, address, domain, host);
                 }
                 case SERVER:
                 default:
@@ -550,58 +508,176 @@ public class ServerOperationResolver {
         }
     }
 
-    private Map<Set<ServerIdentity>, ModelNode> resolveHostRootOperation(ModelNode operation, ModelNode host) {
+    /**
+     * Get server operations to affect a change to a system property.
+     *
+     * @param operation the domain or host level operation
+     * @param address   address associated with {@code operation}
+     * @param domain the domain model, or {@code null} if {@code address} isn't for a domain level resource
+     * @param affectedGroup the name of the server group affected by the operation, or {@code null}
+     *                      if {@code address} isn't for a server group level resource
+     * @param host the host model
+     * @return the server operations
+     */
+    private Map<Set<ServerIdentity>,ModelNode> getServerSystemPropertyOperations(ModelNode operation, PathAddress address, Level level,
+                                                                                 ModelNode domain, String affectedGroup, ModelNode host) {
+
         Map<Set<ServerIdentity>, ModelNode> result = null;
-        String opName = operation.require(OP).asString();
-        if (WRITE_ATTRIBUTE_OPERATION.equals(opName)) {
-            // TODO add an op notifying server of host's name?
-            result = Collections.emptyMap();
-        }
-        else if (SystemPropertyAddHandler.OPERATION_NAME.equals(opName) || SystemPropertyRemoveHandler.OPERATION_NAME.equals(opName)) {
-            String propName = operation.require(NAME).asString();
+
+        if (isServerAffectingSystemPropertyOperation(operation)) {
+            String propName = address.getLastElement().getValue();
+
+            boolean overridden = false;
+            Set<String> groups = null;
+            if (level == Level.DOMAIN || level == Level.SERVER_GROUP) {
+                if (hasSystemProperty(host, propName)) {
+                    // host level value takes precedence
+                    overridden = true;
+                } else if (affectedGroup != null) {
+                    groups = Collections.singleton(affectedGroup);
+                }
+                else if (domain.hasDefined(SERVER_GROUP)) {
+                    // Top level domain update applies to all groups where it was not overridden
+                    groups = new HashSet<String>();
+                    for (Property groupProp : domain.get(SERVER_GROUP).asPropertyList()) {
+                        String groupName = groupProp.getName();
+                        if (!hasSystemProperty(groupProp.getValue(), propName)) {
+                            groups.add(groupName);
+                        }
+                    }
+                }
+            }
+
             Set<ServerIdentity> servers = null;
-            if (host.hasDefined(SERVER_CONFIG)) {
+            if (!overridden && host.hasDefined(SERVER_CONFIG)) {
                 servers = new HashSet<ServerIdentity>();
                 for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
                     ModelNode server = serverProp.getValue();
                     if (!hasSystemProperty(server, propName)
                             && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
                         String groupName = server.require(GROUP).asString();
-                        servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
+                        if (groups == null || groups.contains(groupName)) {
+                            servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
+                        }
                     }
                 }
             }
 
             if (servers != null && servers.size() > 0) {
-                ModelNode serverOp = operation.clone();
-                serverOp.get(OP_ADDR).setEmptyList();
-                result = Collections.singletonMap(servers, serverOp);
+                Map<ModelNode, Set<ServerIdentity>> ops = new HashMap<ModelNode, Set<ServerIdentity>>();
+                for (ServerIdentity server : servers) {
+                    ModelNode serverOp = getServerSystemPropertyOperation(operation, propName, server, level, domain, host);
+                    Set<ServerIdentity> set = ops.get(serverOp);
+                    if (set == null) {
+                        set = new HashSet<ServerIdentity>();
+                        ops.put(serverOp, set);
+                    }
+                    set.add(server);
+                }
+                result = new HashMap<Set<ServerIdentity>, ModelNode>();
+                for (Map.Entry<ModelNode, Set<ServerIdentity>> entry : ops.entrySet()) {
+                    result.put(entry.getValue(), entry.getKey());
+                }
             }
         }
+
         if (result == null) {
             result = Collections.emptyMap();
         }
         return result;
     }
 
+    private ModelNode getServerSystemPropertyOperation(ModelNode operation, String propName, ServerIdentity server, Level level, ModelNode domain, ModelNode host) {
+
+        ModelNode result = null;
+        String opName = operation.get(OP).asString();
+        if (ADD.equals(opName) || REMOVE.equals(opName)) {
+            // See if there is a higher level value
+            ModelNode value = null;
+            switch (level) {
+                case SERVER : {
+                    value = getSystemPropertyValue(host, propName);
+                    if (value == null) {
+                        value = getSystemPropertyValue(domain.get(SERVER_GROUP, server.getServerGroupName()), propName);
+                    }
+                    if (value == null) {
+                        value = getSystemPropertyValue(domain, propName);
+                    }
+                    break;
+                }
+                case HOST: {
+                    value = getSystemPropertyValue(domain.get(SERVER_GROUP, server.getServerGroupName()), propName);
+                    if (value == null) {
+                        value = getSystemPropertyValue(domain, propName);
+                    }
+                    break;
+                }
+                case SERVER_GROUP: {
+                    value = getSystemPropertyValue(domain, propName);
+                    break;
+                }
+                default: {
+                    break;
+                }
+
+            }
+            if (value != null) {
+                // A higher level defined the property, so we know this property exists on the server.
+                // We convert the op to WRITE_ATTRIBUTE since we cannot ADD again and a REMOVE
+                // means the higher level definition again takes effect.
+                if (ADD.equals(opName)) {
+                    // Use the ADD op's value
+                    value = operation.has(VALUE) ? operation.get(VALUE) : new ModelNode();
+                }
+                // else use the higher level value that is no longer overridden
+                ModelNode addr = new ModelNode();
+                addr.add(SYSTEM_PROPERTY, propName);
+                result = Util.getEmptyOperation(WRITE_ATTRIBUTE_OPERATION, addr);
+                result.get(NAME).set(VALUE);
+                if (value.isDefined()) {
+                    result.get(VALUE).set(value);
+                }
+            }
+        }
+
+        if (result == null) {
+            result = operation.clone();
+            ModelNode addr = new ModelNode();
+            addr.add(SYSTEM_PROPERTY, propName);
+            result.get(OP_ADDR).set(addr);
+        }
+        return result;
+    }
+
+    private ModelNode getSystemPropertyValue(ModelNode root, String propName) {
+        ModelNode result = null;
+        if (root.hasDefined(SYSTEM_PROPERTY) && root.get(SYSTEM_PROPERTY).hasDefined(propName)) {
+            ModelNode resource = root.get(SYSTEM_PROPERTY, propName);
+            result = resource.hasDefined(VALUE) ? resource.get(VALUE) : new ModelNode();
+        }
+        return result;
+    }
+
+
     private Map<Set<ServerIdentity>, ModelNode> resolveServerConfigOperation(ModelNode operation, PathAddress address,
-            ModelNode host) {
+            ModelNode domain, ModelNode host) {
         Map<Set<ServerIdentity>, ModelNode> result;
         ModelNode serverOp = null;
-        if (address.size() > 2) {
-            String type = address.getElement(2).getKey();
+        if (address.size() > 1) {
+            String type = address.getElement(1).getKey();
             if (PATH.equals(type) || INTERFACE.equals(type)) {
                 serverOp = operation.clone();
-                PathAddress serverAddress = address.subAddress(2);
+                PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
+            }
+            else if (SYSTEM_PROPERTY.equals(type) && isServerAffectingSystemPropertyOperation(operation)) {
+                String propName = address.getLastElement().getValue();
+                String serverName = address.getElement(0).getValue();
+                ServerIdentity serverId = getServerIdentity(serverName, host);
+                serverOp = getServerSystemPropertyOperation(operation, propName, serverId, Level.SERVER, domain,  host);
             }
         }
         else {
-            String opName = operation.require(OP).asString();
-            if (SystemPropertyAddHandler.OPERATION_NAME.equals(opName) || SystemPropertyRemoveHandler.OPERATION_NAME.equals(opName)) {
-                serverOp = operation.clone();
-                serverOp.get(OP_ADDR).setEmptyList();
-            }
             // TODO - deal with "add", "remove" and changing "auto-start" attribute
         }
 
@@ -610,11 +686,22 @@ public class ServerOperationResolver {
         }
         else {
             String serverName = address.getElement(0).getValue();
-            ModelNode serverNode = host.get(SERVER_CONFIG, serverName);
-            ServerIdentity gs = new ServerIdentity(localHostName, serverNode.require(GROUP).asString(), serverName);
+            ServerIdentity gs = getServerIdentity(serverName, host);
             Set<ServerIdentity> set = Collections.singleton(gs);
             result = Collections.singletonMap(set, serverOp);
         }
         return result;
+    }
+
+    private ServerIdentity getServerIdentity(String serverName, ModelNode host) {
+        ModelNode serverNode = host.get(SERVER_CONFIG, serverName);
+        return new ServerIdentity(localHostName, serverNode.require(GROUP).asString(), serverName);
+    }
+
+    private boolean isServerAffectingSystemPropertyOperation(ModelNode operation) {
+        String opName = operation.require(OP).asString();
+        return (SystemPropertyAddHandler.OPERATION_NAME.equals(opName)
+                || SystemPropertyRemoveHandler.OPERATION_NAME.equals(opName)
+                || (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(opName) && VALUE.equals(operation.require(NAME).asString())));
     }
 }

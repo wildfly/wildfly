@@ -20,35 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.domain.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Model description for the domain root.
@@ -81,6 +60,11 @@ public class DomainRootDescription {
         root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
 
+        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("domain.system-properties"));
+        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
+
         root.get(CHILDREN, PROFILE, DESCRIPTION).set(bundle.getString("domain.profile"));
         root.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
         root.get(CHILDREN, PROFILE, MAX_OCCURS).set(Integer.MAX_VALUE);
@@ -95,11 +79,6 @@ public class DomainRootDescription {
         root.get(CHILDREN, SOCKET_BINDING_GROUP, MIN_OCCURS).set(0);
         root.get(CHILDREN, SOCKET_BINDING_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("domain.system-property"));
-        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
 
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("domain.deployment"));
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
@@ -128,11 +107,15 @@ public class DomainRootDescription {
         return root;
     }
 
+    public static ModelNode getSystemPropertiesDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("domain.system-property"), false);
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
-
 }

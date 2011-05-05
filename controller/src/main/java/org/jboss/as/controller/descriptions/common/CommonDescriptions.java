@@ -21,6 +21,7 @@
  */package org.jboss.as.controller.descriptions.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -137,35 +138,36 @@ public class CommonDescriptions {
         return root;
     }
 
-    public static ModelNode getSystemPropertiesAttribute(final Locale locale) {
+    public static ModelNode getSystemPropertyDescription(final Locale locale, final String description, final boolean useBoottime) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(TYPE).set(ModelType.OBJECT);
-        root.get(VALUE_TYPE).set(ModelType.STRING);
-        root.get(DESCRIPTION).set(bundle.getString("system-properties"));
-        root.get(REQUIRED).set(false);
+        root.get(DESCRIPTION).set(description);
         root.get(HEAD_COMMENT_ALLOWED).set(true);
-        root.get(TAIL_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(false);
+        root.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString("system-property.value"));
+        root.get(ATTRIBUTES, VALUE, REQUIRED).set(false);
+        if (useBoottime) {
+            root.get(ATTRIBUTES, BOOT_TIME, TYPE).set(ModelType.BOOLEAN);
+            root.get(ATTRIBUTES, BOOT_TIME, DESCRIPTION).set(bundle.getString("system-property.boottime"));
+            root.get(ATTRIBUTES, BOOT_TIME, REQUIRED).set(false);
+            root.get(ATTRIBUTES, BOOT_TIME, DEFAULT).set(true);
+        }
         return root;
     }
 
-    public static ModelNode getAddSystemPropertyOperation(final Locale locale, boolean standalone) {
+    public static ModelNode getAddSystemPropertyOperation(final Locale locale, final boolean useBoottime) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(SystemPropertyAddHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("system-properties.add"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("system-properties.add.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(DESCRIPTION).set(bundle.getString("system-property.add"));
         root.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("system-properties.add.value"));
+        root.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("system-property.value"));
         root.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
         root.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
-        if (!standalone) {
+        if (useBoottime) {
             root.get(REQUEST_PROPERTIES, BOOT_TIME, TYPE).set(ModelType.STRING);
-            root.get(REQUEST_PROPERTIES, BOOT_TIME, DESCRIPTION).set(bundle.getString("system-properties.add.boottime"));
+            root.get(REQUEST_PROPERTIES, BOOT_TIME, DESCRIPTION).set(bundle.getString("system-property.boottime"));
             root.get(REQUEST_PROPERTIES, BOOT_TIME, REQUIRED).set(false);
             root.get(REQUEST_PROPERTIES, BOOT_TIME, NILLABLE).set(true);
             root.get(REQUEST_PROPERTIES, BOOT_TIME, DEFAULT).set(true);
@@ -178,12 +180,8 @@ public class CommonDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(SystemPropertyRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("system-properties.remove"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("system-properties.remove.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
+        root.get(DESCRIPTION).set(bundle.getString("system-property.remove"));
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }

@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.descriptions;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -78,10 +79,14 @@ public class HostServerDescription {
         root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
         root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
 
-
         root.get(OPERATIONS).setEmptyObject();
 
         root.get(CHILDREN, PATH, DESCRIPTION).set(bundle.getString("server.path"));
+        root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
+        root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server.system-properties"));
         root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
         root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
@@ -90,13 +95,6 @@ public class HostServerDescription {
         root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);
         root.get(CHILDREN, INTERFACE, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server.system-property"));
-        root.get(CHILDREN, SYSTEM_PROPERTY, TYPE).set(ModelType.LIST);
-        root.get(CHILDREN, SYSTEM_PROPERTY, VALUE_TYPE).set(ModelType.PROPERTY);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
 
         root.get(CHILDREN, JVM, DESCRIPTION).set(bundle.getString("server.jvm"));
         root.get(CHILDREN, JVM, MIN_OCCURS).set(0);
@@ -155,5 +153,10 @@ public class HostServerDescription {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    }
+
+    public static ModelNode getSystemPropertiesDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server.system-property"), false);
     }
 }

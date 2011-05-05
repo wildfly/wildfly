@@ -39,6 +39,8 @@ import org.jboss.dmr.ModelNode;
  */
 public final class DomainDescriptionProviders {
 
+
+
     // Prevent instantiation
     private DomainDescriptionProviders() {}
 
@@ -49,6 +51,13 @@ public final class DomainDescriptionProviders {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
             return DomainRootDescription.getDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider SYSTEM_PROPERTY_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DomainRootDescription.getSystemPropertiesDescription(locale);
         }
     };
 
@@ -99,6 +108,13 @@ public final class DomainDescriptionProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return DeploymentDescription.getDeploymentDescription(locale, true, false);
+        }
+    };
+
+    public static final DescriptionProvider SERVER_GROUP_SYSTEM_PROPERTY_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return ServerGroupDescription.getSystemPropertiesDescription(locale);
         }
     };
 }

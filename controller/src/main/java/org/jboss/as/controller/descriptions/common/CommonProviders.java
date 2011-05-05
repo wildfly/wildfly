@@ -35,6 +35,8 @@ import org.jboss.dmr.ModelNode;
  */
 public final class CommonProviders {
 
+
+
     // Prevent instantiation
     private CommonProviders() {}
 
@@ -210,6 +212,4 @@ public final class CommonProviders {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     };
-
-
 }

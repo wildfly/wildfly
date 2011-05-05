@@ -59,7 +59,7 @@
                 <heap size="64m" max-size="256m"/>
             </jvm>
         </server>
-        <server name="other-two" group="other-server-group" auto-start="false">
+        <server name="other-two" group="other-server-group">
             <socket-binding-group ref="standard-sockets" port-offset="550"/>
         </server>
     </servers>
