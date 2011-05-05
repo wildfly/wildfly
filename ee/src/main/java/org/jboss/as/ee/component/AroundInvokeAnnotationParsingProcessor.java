@@ -72,7 +72,7 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         final EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
 
         validateArgumentType(classInfo, methodInfo);
-        classDescription.setAroundInvokeMethod(MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name(), InvocationContext.class));
+        classDescription.setAroundInvokeMethod(MethodIdentifier.getIdentifier(Object.class, methodInfo.name(), InvocationContext.class));
     }
 
     private void validateArgumentType(final ClassInfo classInfo, final MethodInfo methodInfo) {
