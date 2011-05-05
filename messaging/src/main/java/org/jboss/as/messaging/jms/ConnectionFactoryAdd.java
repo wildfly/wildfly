@@ -211,7 +211,7 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
 
         for(final NodeAttribute attribute : JMSServices.CONNECTION_FACTORY_ATTRS) {
             final String attrName = attribute.getName();
-            if(operation.hasDefined(attrName)) {
+            if(subModel.has(attrName)) {
                 operation.get(attrName).set(subModel.get(attrName));
             }
         }
