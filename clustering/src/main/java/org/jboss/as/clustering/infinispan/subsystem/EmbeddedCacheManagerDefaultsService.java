@@ -22,25 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.AccessController;
 import java.util.EnumMap;
 import java.util.Map;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
+import org.infinispan.config.FluentConfiguration;
 import org.infinispan.config.GlobalConfiguration;
-import org.infinispan.config.InfinispanConfiguration;
-import org.jboss.logging.Logger;
+import org.infinispan.config.GlobalConfiguration.ShutdownHookBehavior;
+import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
-import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
 /**
  * Service that provides infinispan cache configuration defaults per cache mode.
@@ -48,14 +43,12 @@ import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
  */
 public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCacheManagerDefaults> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME, "config", "defaults");
-
+/*
     private static final String DEFAULTS = "infinispan-defaults.xml";
     private static final Logger log = Logger.getLogger(CacheContainerAdd.class.getPackage().getName());
-
-    @SuppressWarnings("unchecked")
-    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
-
+*/
     private volatile EmbeddedCacheManagerDefaults defaults;
+/*
     private final String resource;
 
     public EmbeddedCacheManagerDefaultsService() {
@@ -65,7 +58,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
     public EmbeddedCacheManagerDefaultsService(String resource) {
         this.resource = resource;
     }
-
+*/
     /**
      * {@inheritDoc}
      * @see org.jboss.msc.value.Value#getValue()
@@ -81,6 +74,9 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
      */
     @Override
     public void start(StartContext context) throws StartException {
+        // Don't pull defaults from external file until Infinispan's configuration
+        // file parsing performs better (ISPN-1065).
+/*
         InfinispanConfiguration config = load(this.resource);
         Defaults defaults = new Defaults(config.parseGlobalConfiguration());
         Configuration defaultConfig = config.parseDefaultConfiguration();
@@ -94,6 +90,38 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
             configuration.fluent().mode(mode);
             defaults.add(mode, configuration);
         }
+*/
+        GlobalConfiguration global = new GlobalConfiguration();
+        global.fluent()
+            .transport().strictPeerToPeer(false)
+            .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
+            ;
+        Defaults defaults = new Defaults(global);
+        Configuration defaultConfig = new Configuration();
+        defaultConfig.fluent()
+            .locking().lockAcquisitionTimeout(15000L).useLockStriping(false).concurrencyLevel(1000)
+            .eviction().strategy(EvictionStrategy.NONE).maxEntries(10000)
+            ;
+        for (Configuration.CacheMode mode: Configuration.CacheMode.values()) {
+            Configuration configuration = defaultConfig.clone();
+            FluentConfiguration fluent = configuration.fluent();
+            if (mode.isClustered()) {
+                fluent.mode(mode).storeAsBinary();
+            }
+            if (mode.isReplicated()) {
+                fluent.stateRetrieval().fetchInMemoryState(true).timeout(60000L);
+            }
+            if (mode.isSynchronous()) {
+                fluent.sync().replTimeout(17500L);
+            } else {
+                FluentConfiguration.AsyncConfig async = fluent.async();
+                // ISPN-835 workaround
+                if (configuration.isFetchInMemoryState()) {
+                    async.useReplQueue(true).replQueueMaxElements(10);
+                }
+            }
+            defaults.add(mode, configuration);
+        }
         this.defaults = defaults;
     }
 
@@ -105,7 +133,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
     public void stop(StopContext context) {
         this.defaults = null;
     }
-
+/*
     private static InfinispanConfiguration load(String resource) throws StartException {
         URL url = find(resource, InfinispanExtension.class.getClassLoader());
         log.debugf("Loading Infinispan defaults from %s", url.toString());
@@ -138,7 +166,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
         }
         throw new StartException(String.format("Failed to locate %s", resource));
     }
-
+*/
     class Defaults implements EmbeddedCacheManagerDefaults {
         private final GlobalConfiguration global;
         private final Map<Configuration.CacheMode, Configuration> configs = new EnumMap<Configuration.CacheMode, Configuration>(Configuration.CacheMode.class);

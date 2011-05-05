@@ -50,29 +50,29 @@
     <namedCache name="DIST_SYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
-            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
+            <stateRetrieval fetchInMemoryState="false"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="DIST_ASYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="distribution">
-            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
-            <async useReplQueue="true" replQueueInterval="10"/>
+            <stateRetrieval fetchInMemoryState="false"/>
+            <async/>
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_SYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="replication">
-            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
+            <stateRetrieval fetchInMemoryState="false"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_ASYNC">
         <storeAsBinary enabled="true"/>
         <clustering mode="replication">
-            <stateRetrieval timeout="60000" fetchInMemoryState="false"/>
-            <async useReplQueue="true" replQueueInterval="10" />
+            <stateRetrieval fetchInMemoryState="false"/>
+            <async/>
         </clustering>
     </namedCache>
 </infinispan>
