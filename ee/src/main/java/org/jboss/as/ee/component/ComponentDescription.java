@@ -389,7 +389,7 @@ public class ComponentDescription {
     private static class DefaultFirstConfigurator implements ComponentConfigurator {
 
         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-            DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+            final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
             final DeploymentReflectionIndex index = deploymentUnit.getAttachment(REFLECTION_INDEX);
             final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
 
@@ -406,72 +406,94 @@ public class ComponentDescription {
             final Deque<InterceptorFactory> userPreDestroy = new ArrayDeque<InterceptorFactory>();
 
             final ClassReflectionIndex<?> componentClassIndex = index.getClassIndex(componentClassConfiguration.getModuleClass());
-            final InterceptorFactory componentUserAroundInvoke;
-            final Map<String, InterceptorFactory> userAroundInvokesByInterceptorClass = new HashMap<String, InterceptorFactory>();
+            final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<InterceptorFactory>();
+            final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
 
             // Primary instance
             instantiators.addFirst(new ManagedReferenceInterceptorFactory(configuration.getInstanceFactory(), instanceKey));
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
-            for (final ResourceInjectionConfiguration injectionConfiguration : componentClassConfiguration.getInjectionConfigurations()) {
-                final Object valueContextKey = new Object();
-                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
-                configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
-                injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
-                uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
-            }
-            final MethodIdentifier componentPostConstructMethod = componentClassDescription.getPostConstructMethod();
-            if (componentPostConstructMethod != null) {
-                Method method = componentClassIndex.getMethod(componentPostConstructMethod);
-                InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
-                userPostConstruct.addLast(interceptorFactory);
-            }
-            final MethodIdentifier componentPreDestroyMethod = componentClassDescription.getPreDestroyMethod();
-            if (componentPreDestroyMethod != null) {
-                Method method = componentClassIndex.getMethod(componentPreDestroyMethod);
-                InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
-                userPreDestroy.addLast(interceptorFactory);
-            }
-            final MethodIdentifier componentAroundInvokeMethod = componentClassDescription.getAroundInvokeMethod();
-            if (componentAroundInvokeMethod != null) {
-                Method method = componentClassIndex.getMethod(componentAroundInvokeMethod);
-                componentUserAroundInvoke = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false);
-            } else {
-                componentUserAroundInvoke = null;
-            }
+
+            new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
+
+                @Override
+                public void handle(EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    for (final ResourceInjectionConfiguration injectionConfiguration : classConfiguration.getInjectionConfigurations()) {
+                        final Object valueContextKey = new Object();
+                        final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
+                        configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
+                        injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
+                        uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
+                    }
+                }
+            }.run();
 
             // Interceptor instances
             final Map<String, InterceptorDescription> interceptors = description.getAllInterceptors();
             for (InterceptorDescription interceptorDescription : interceptors.values()) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                final EEModuleClassConfiguration interceptorClassConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
-                final Object contextKey = new Object();
-                instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorClassConfiguration.getInstantiator(), contextKey));
-                destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
-                for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
-                    final Object valueContextKey = new Object();
-                    final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
-                    configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
-                    injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(contextKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
-                    uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
-                }
-                final MethodIdentifier postConstructMethod = componentClassDescription.getPostConstructMethod();
-                if (postConstructMethod != null) {
-                    Method method = componentClassIndex.getMethod(postConstructMethod);
-                    InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
-                    userPostConstruct.addLast(interceptorFactory);
-                }
-                final MethodIdentifier preDestroyMethod = componentClassDescription.getPreDestroyMethod();
-                if (preDestroyMethod != null) {
-                    Method method = componentClassIndex.getMethod(preDestroyMethod);
-                    InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
-                    userPreDestroy.addLast(interceptorFactory);
-                }
-                final MethodIdentifier aroundInvokeMethod = componentClassDescription.getAroundInvokeMethod();
-                if (aroundInvokeMethod != null) {
-                    Method method = componentClassIndex.getMethod(aroundInvokeMethod);
-                    userAroundInvokesByInterceptorClass.put(interceptorClassName, new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, false));
-                }
+                 new ClassDescriptionTraversal(moduleConfiguration.getClassConfiguration(interceptorClassName), moduleConfiguration) {
+                    @Override
+                    public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                        final ClassReflectionIndex<?> interceptorClassIndex = index.getClassIndex(interceptorClassConfiguration.getModuleClass());
+                        final Object contextKey = new Object();
+                        instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorClassConfiguration.getInstantiator(), contextKey));
+                        destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
+                        for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
+                            final Object valueContextKey = new Object();
+                            final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
+                            configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
+                            injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(contextKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
+                            uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
+                        }
+                        final MethodIdentifier postConstructMethod = classDescription.getPostConstructMethod();
+                        if (postConstructMethod != null) {
+                            Method method = interceptorClassIndex.getMethod(postConstructMethod);
+                            InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
+                            userPostConstruct.addLast(interceptorFactory);
+                        }
+                        final MethodIdentifier preDestroyMethod = classDescription.getPreDestroyMethod();
+                        if (preDestroyMethod != null) {
+                            Method method = interceptorClassIndex.getMethod(preDestroyMethod);
+                            InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
+                            userPreDestroy.addLast(interceptorFactory);
+                        }
+                        final MethodIdentifier aroundInvokeMethod = classDescription.getAroundInvokeMethod();
+                        if (aroundInvokeMethod != null) {
+                            Method method = interceptorClassIndex.getMethod(aroundInvokeMethod);
+                            List<InterceptorFactory> interceptors;
+                            if((interceptors = userAroundInvokesByInterceptorClass.get(interceptorClassName)) == null) {
+                                userAroundInvokesByInterceptorClass.put(interceptorClassName, interceptors = new ArrayList<InterceptorFactory>());
+                            }
+                            interceptors.add(new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, false));
+                        }
+                    }
+                 }.run();
             }
+
+            new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
+                @Override
+                public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) {
+                    final MethodIdentifier componentPostConstructMethod = classDescription.getPostConstructMethod();
+                    if (componentPostConstructMethod != null) {
+                        Method method = componentClassIndex.getMethod(componentPostConstructMethod);
+                        InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
+                        userPostConstruct.addLast(interceptorFactory);
+                    }
+                    final MethodIdentifier componentPreDestroyMethod = classDescription.getPreDestroyMethod();
+                    if (componentPreDestroyMethod != null) {
+                        Method method = componentClassIndex.getMethod(componentPreDestroyMethod);
+                        InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
+                        userPreDestroy.addLast(interceptorFactory);
+                    }
+                    final MethodIdentifier componentAroundInvokeMethod = classDescription.getAroundInvokeMethod();
+                    if (componentAroundInvokeMethod != null) {
+                        Method method = componentClassIndex.getMethod(componentAroundInvokeMethod);
+                        componentUserAroundInvoke.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
+                    }
+                }
+            }.run();
+
+
 
             // Apply post-construct
             final Deque<InterceptorFactory> postConstructInterceptors = configuration.getPostConstructInterceptors();
@@ -511,18 +533,18 @@ public class ComponentDescription {
                 for (InterceptorDescription interceptorDescription : descriptions) {
                     String interceptorClassName = interceptorDescription.getInterceptorClassName();
                     if (visited.add(interceptorClassName)) {
-                        interceptorDeque.addLast(userAroundInvokesByInterceptorClass.get(interceptorClassName));
+                        interceptorDeque.addAll(userAroundInvokesByInterceptorClass.get(interceptorClassName));
                     }
                 }
                 if (! description.isExcludeClassInterceptors(identifier)) {
                     for (InterceptorDescription interceptorDescription : classInterceptors) {
                         String interceptorClassName = interceptorDescription.getInterceptorClassName();
                         if (visited.add(interceptorClassName)) {
-                            interceptorDeque.addLast(userAroundInvokesByInterceptorClass.get(interceptorClassName));
+                            interceptorDeque.addAll(userAroundInvokesByInterceptorClass.get(interceptorClassName));
                         }
                     }
                     if (componentUserAroundInvoke != null) {
-                        interceptorDeque.addLast(componentUserAroundInvoke);
+                        interceptorDeque.addAll(componentUserAroundInvoke);
                     }
                 }
                 if (! description.isExcludeDefaultInterceptors() && ! description.isExcludeDefaultInterceptors(identifier)) {
@@ -579,6 +601,36 @@ public class ComponentDescription {
             );
             injectionConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, context, managedReferenceFactoryValue);
         }
+    }
+
+    /**
+     * throwaway utility class for traversing a class configuration from most general superclass down
+     */
+    private abstract static class ClassDescriptionTraversal {
+        final EEModuleClassConfiguration classConfiguration;
+        final EEModuleConfiguration moduleConfiguration;
+
+        ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEModuleConfiguration moduleConfiguration ) {
+            this.classConfiguration = classConfiguration;
+            this.moduleConfiguration = moduleConfiguration;
+        }
+
+        public void run() throws DeploymentUnitProcessingException {
+            Class clazz = classConfiguration.getModuleClass();
+            final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
+            while(clazz != null && clazz != Object.class) {
+                EEModuleClassConfiguration configuration = moduleConfiguration.getClassConfiguration(clazz.getName());
+                if(configuration != null) {
+                    queue.addFirst(configuration);
+                }
+                clazz = clazz.getSuperclass();
+            }
+            for(EEModuleClassConfiguration configuration : queue) {
+                handle(configuration, configuration.getModuleClassDescription());
+            }
+        }
+
+        public abstract void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
     }
 
 }

@@ -22,16 +22,17 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Configuration for a class in an EE module.  Each interceptor and component corresponds to one of these.
@@ -62,6 +63,8 @@ public final class EEModuleClassConfiguration {
     // Module
     private final EEModuleConfiguration moduleConfiguration;
 
+    private final EEModuleClassDescription moduleClassDescription;
+
     // Module class
     private final Class<?> moduleClass;
 
@@ -80,9 +83,10 @@ public final class EEModuleClassConfiguration {
     // Instantiation
     private ManagedReferenceFactory instantiator;
 
-    EEModuleClassConfiguration(final Class<?> moduleClass, final EEModuleConfiguration moduleConfiguration) {
+    EEModuleClassConfiguration(final Class<?> moduleClass, final EEModuleConfiguration moduleConfiguration, EEModuleClassDescription moduleClassDescription) {
         this.moduleClass = moduleClass;
         this.moduleConfiguration = moduleConfiguration;
+        this.moduleClassDescription = moduleClassDescription;
     }
 
     /**
@@ -173,5 +177,9 @@ public final class EEModuleClassConfiguration {
      */
     public void setInstantiator(final ManagedReferenceFactory instantiator) {
         this.instantiator = instantiator;
+    }
+
+    public EEModuleClassDescription getModuleClassDescription() {
+        return moduleClassDescription;
     }
 }

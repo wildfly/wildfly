@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.Attachable;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -56,7 +55,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             } catch (ClassNotFoundException e) {
                 throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
             }
-            final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz,moduleConfiguration);
+            final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz,moduleConfiguration, classDescription);
             for(ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
                 classConfigurator.configure(phaseContext, classDescription, classConfiguration);
             }
