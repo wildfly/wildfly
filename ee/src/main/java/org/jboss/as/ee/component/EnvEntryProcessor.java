@@ -74,7 +74,7 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
-            classType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
 
             BindingConfiguration bindingConfiguration = null;
             if (!isEmpty(envEntry.getLookupName())) {
@@ -113,7 +113,7 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
 
             BindingConfiguration bindingConfiguration = null;
             if (!isEmpty(envEntry.getLookupName())) {
@@ -152,7 +152,7 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
             if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>. Component");
             }

@@ -22,12 +22,13 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+
+import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An interceptor which constructs and injects a managed reference into a field.  The context key given
@@ -52,7 +53,7 @@ final class ManagedReferenceFieldInjectionInterceptor implements Interceptor {
 
     /** {@inheritDoc} */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        Object target = targetReference.get();
+        Object target = targetReference.get().getInstance();
         if (target == null) {
             throw new IllegalStateException("No injection target found");
         }

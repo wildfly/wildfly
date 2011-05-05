@@ -85,7 +85,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     /**
      * Processes the injection targets of a resource binding
      *
-     * @param eeModuleClassDescription  The class description
      * @param injectionSource           The injection source for the injection target
      * @param classLoader               The module class loader
      * @param deploymentReflectionIndex The deployment reflection index
@@ -95,7 +94,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      * @throws DeploymentUnitProcessingException
      *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(EEModuleClassDescription eeModuleClassDescription, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
+    protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
 
@@ -105,6 +104,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Could not load " + injectionTarget.getInjectionTargetClass() + " referenced in env-entry injection point ", e);
                 }
+                EEModuleClassDescription eeModuleClassDescription = moduleDescription.getOrAddClassByName(injectionTargetClass.getName());
                 final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
                 String methodName = "set" + injectionTarget.getInjectionTargetName().substring(0, 1).toUpperCase() + injectionTarget.getInjectionTargetName().substring(1);
 
@@ -154,7 +154,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 } else {
                     classType = injectionTargetType;
                 }
-                String injectionTargetName = injectionTarget.getInjectionTargetName();
                 final InjectionTarget injectionTargetDescription = method == null ?
                         new FieldInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName()) :
                         new MethodInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName());

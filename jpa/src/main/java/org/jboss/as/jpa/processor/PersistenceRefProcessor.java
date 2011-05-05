@@ -105,7 +105,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
                 //add any injection targets
-                processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManagerFactory.class);
+                processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManagerFactory.class);
 
                 BindingConfiguration bindingConfiguration = null;
                 if (!isEmpty(lookup)) {
@@ -154,7 +154,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 // our injection (source) comes from the local (ENC) lookup, no matter what.
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
                 //add any injection targets
-                processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManager.class);
+                processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, puRef, EntityManager.class);
 
                 BindingConfiguration bindingConfiguration = null;
                 if (!isEmpty(lookup)) {

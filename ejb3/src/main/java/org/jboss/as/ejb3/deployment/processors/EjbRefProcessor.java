@@ -83,7 +83,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
                 //add any injection targets
-                localInterfaceType = processInjectionTargets(componentDescription.getClassDescription(), injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
+                localInterfaceType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
 
                 if (localInterfaceType == null) {
                     throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for component " + componentDescription);
