@@ -173,6 +173,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 } else {
                     throw new RuntimeException("Support for persistence-context-ref without a lookup or persistence-unit-name, isn't yet implemented");
                 }
+                bindingConfigurations.add(bindingConfiguration);
             }
         }
         return bindingConfigurations;
