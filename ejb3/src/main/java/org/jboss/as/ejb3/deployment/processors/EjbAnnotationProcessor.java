@@ -117,7 +117,7 @@ public final class EjbAnnotationProcessor implements DeploymentUnitProcessor {
 
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         if (ejbJarDescription == null) {
-            ejbJarDescription = new EjbJarDescription(moduleDescription);
+            ejbJarDescription = new EjbJarDescription(moduleDescription, deploymentUnit.getName().endsWith(".war"));
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
         }
 

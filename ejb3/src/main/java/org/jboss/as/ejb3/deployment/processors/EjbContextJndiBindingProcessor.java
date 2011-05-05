@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.naming.ManagedReference;
@@ -47,8 +48,8 @@ import org.jboss.msc.service.ServiceBuilder;
  */
 public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProcessor {
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        if (!(componentDescription instanceof EJBComponentDescription)) {
-            return;  // Only process EJB deployments
+        if (!(componentDescription instanceof EJBComponentDescription) || componentDescription.getNamingMode() != ComponentNamingMode.CREATE) {
+            return;  // Only process EJB's that are not packaged in a war
         }
         final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
         // add the binding configuration to the component description

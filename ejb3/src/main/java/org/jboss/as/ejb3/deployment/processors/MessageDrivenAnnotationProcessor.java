@@ -62,7 +62,7 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
         EjbDeploymentMarker.mark(deploymentUnit);
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         if (ejbJarDescription == null) {
-            ejbJarDescription = new EjbJarDescription(moduleDescription);
+            ejbJarDescription = new EjbJarDescription(moduleDescription, deploymentUnit.getName().endsWith(".war"));
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
         }
         for (final AnnotationInstance instance : instances) {

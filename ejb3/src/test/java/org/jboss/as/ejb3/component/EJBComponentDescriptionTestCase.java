@@ -55,7 +55,7 @@ public class EJBComponentDescriptionTestCase {
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp","TestModule");
         final ServiceName duServiceName = Services.deploymentUnitName("Dummy Deployment Unit");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", ejbJarDescription, duServiceName) {
 
             @Override

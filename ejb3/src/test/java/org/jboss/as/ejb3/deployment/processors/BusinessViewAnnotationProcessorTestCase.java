@@ -92,7 +92,7 @@ public class BusinessViewAnnotationProcessorTestCase {
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestModule", "TestApp");
 
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         final ServiceName duServiceName = deploymentUnit.getServiceName();
         EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
 
@@ -122,7 +122,7 @@ public class BusinessViewAnnotationProcessorTestCase {
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestModule", "TestApp");
 
         final ServiceName duServiceName = deploymentUnit.getServiceName();
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ejbClass.getSimpleName(), ejbClass.getName(), ejbJarDescription, duServiceName);
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
@@ -148,7 +148,7 @@ public class BusinessViewAnnotationProcessorTestCase {
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestModule", "TestApp");
 
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         final ServiceName duServiceName = deploymentUnit.getServiceName();
         SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(ImplicitNoInterfaceBean.class.getSimpleName(), ImplicitNoInterfaceBean.class.getName(), ejbJarDescription, duServiceName);
         BusinessViewAnnotationProcessor processor = new BusinessViewAnnotationProcessor();

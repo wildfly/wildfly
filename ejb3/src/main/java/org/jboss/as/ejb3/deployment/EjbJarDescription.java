@@ -44,11 +44,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EjbJarDescription {
 
-    private EEModuleDescription eeModuleDescription;
+    private final EEModuleDescription eeModuleDescription;
 
-    private Map<String, ApplicationException> applicationExceptions = new ConcurrentHashMap();
+    private final Map<String, ApplicationException> applicationExceptions = new ConcurrentHashMap();
 
-    public EjbJarDescription(EEModuleDescription eeModuleDescription) {
+    /**
+     * True if this represents EJB's packaged in a war
+     */
+    private final boolean war;
+
+    public EjbJarDescription(EEModuleDescription eeModuleDescription, boolean war) {
+        this.war = war;
         if (eeModuleDescription == null) {
             throw new IllegalArgumentException(EEModuleDescription.class.getSimpleName() + " cannot be null");
         }
@@ -148,5 +154,9 @@ public class EjbJarDescription {
         for (SessionBeanComponentDescription sessionBean : sessionBeans) {
             this.eeModuleDescription.addComponent(sessionBean);
         }
+    }
+
+    public boolean isWar() {
+        return war;
     }
 }

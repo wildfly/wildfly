@@ -86,8 +86,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), ejbJarDescription.getEEModuleDescription().getOrAddClassByName(componentClassName), deploymentUnitServiceName);
-        //TODO: This should not be create for EJB's in a war
-        setNamingMode(ComponentNamingMode.CREATE);
+        if(ejbJarDescription.isWar()) {
+            setNamingMode(ComponentNamingMode.USE_MODULE);
+        } else {
+            setNamingMode(ComponentNamingMode.CREATE);
+        }
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
     }

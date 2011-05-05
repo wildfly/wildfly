@@ -125,7 +125,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         EjbDeploymentMarker.mark(deploymentUnit);
         if (!deploymentUnit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION)) {
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            final EjbJarDescription ejbModuleDescription = new EjbJarDescription(moduleDescription);
+            final EjbJarDescription ejbModuleDescription = new EjbJarDescription(moduleDescription, deploymentUnit.getName().endsWith(".war"));
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbModuleDescription);
         }
 

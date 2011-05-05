@@ -77,7 +77,7 @@ public class TransactionAttributeAnnotationProcessorTestCase {
 
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         final ServiceName duServiceName = deploymentUnit.getServiceName();
         EJBComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
@@ -100,7 +100,7 @@ public class TransactionAttributeAnnotationProcessorTestCase {
 
         final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
         final ServiceName duServiceName = deploymentUnit.getServiceName();
-        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription);
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         SessionBeanComponentDescription componentDescription = new StatelessComponentDescription(MyBean.class.getSimpleName(), MyBean.class.getName(), ejbJarDescription, duServiceName);
         Collection<String> views = new HashSet<String>();
         views.add(ViewA.class.getName());
