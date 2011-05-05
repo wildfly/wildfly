@@ -22,19 +22,12 @@
 package org.jboss.as.ejb3.component.session;
 
 
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInjector;
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.SessionContext;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
@@ -164,43 +157,43 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         }
     }
 
-    @Override
-    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-        // ignore the session id. Session aware components like (StatefulSessionComponent) should override
-        // this method to take into account the session id.
-        return this.createClientInterceptor(view);
-    }
-
-    @Override
-    public Interceptor createClientInterceptor(final Class<?> view) {
-
-        return new Interceptor() {
-            @Override
-            public Object processInvocation(InterceptorContext context) throws Exception {
-                final Method method = context.getMethod();
-                // if no-interface view, then check whether invocation on the method is allowed
-                // (for ex: invocation on protected methods isn't allowed)
-                if (SessionBeanComponent.this.getComponentClass().equals(view)) {
-                    if (!SessionBeanComponent.this.isInvocationAllowed(method)) {
-                        throw new javax.ejb.EJBException("Cannot invoke method " + method
-                                + " on nointerface view of bean " + SessionBeanComponent.this.getComponentName());
-
-                    }
-                }
-                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-                // runs on remote clients.
-                context.putPrivateData(Component.class, SessionBeanComponent.this);
-                try {
-                    if (isAsynchronous(method)) {
-                        return invokeAsynchronous(method, context);
-                    }
-                    return context.proceed();
-                } finally {
-                    context.putPrivateData(Component.class, null);
-                }
-            }
-        };
-    }
+//    @Override
+//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
+//        // ignore the session id. Session aware components like (StatefulSessionComponent) should override
+//        // this method to take into account the session id.
+//        return this.createClientInterceptor(view);
+//    }
+//
+//    @Override
+//    public Interceptor createClientInterceptor(final Class<?> view) {
+//
+//        return new Interceptor() {
+//            @Override
+//            public Object processInvocation(InterceptorContext context) throws Exception {
+//                final Method method = context.getMethod();
+//                // if no-interface view, then check whether invocation on the method is allowed
+//                // (for ex: invocation on protected methods isn't allowed)
+//                if (SessionBeanComponent.this.getComponentClass().equals(view)) {
+//                    if (!SessionBeanComponent.this.isInvocationAllowed(method)) {
+//                        throw new javax.ejb.EJBException("Cannot invoke method " + method
+//                                + " on nointerface view of bean " + SessionBeanComponent.this.getComponentName());
+//
+//                    }
+//                }
+//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
+//                // runs on remote clients.
+//                context.putPrivateData(Component.class, SessionBeanComponent.this);
+//                try {
+//                    if (isAsynchronous(method)) {
+//                        return invokeAsynchronous(method, context);
+//                    }
+//                    return context.proceed();
+//                } finally {
+//                    context.putPrivateData(Component.class, null);
+//                }
+//            }
+//        };
+//    }
 
     /**
      * EJB 3.1 spec mandates that the view should allow invocation on only public, non-final, non-static

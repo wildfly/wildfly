@@ -25,7 +25,6 @@ package org.jboss.as.jpa.hibernate;
 import org.hibernate.cfg.AvailableSettings;
 import org.jboss.as.ee.naming.ContextNames;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.jboss.as.jpa.config.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.naming.deployment.JndiName;

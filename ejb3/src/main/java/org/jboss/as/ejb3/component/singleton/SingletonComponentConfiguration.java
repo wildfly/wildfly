@@ -23,18 +23,8 @@
 package org.jboss.as.ejb3.component.singleton;
 
 
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
-import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
-
-import javax.ejb.TransactionManagementType;
-
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 
 /**
  * @author Jaikiran Pai

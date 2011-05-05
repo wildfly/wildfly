@@ -79,7 +79,7 @@ public class MessageDrivenAnnotationProcessor implements DeploymentUnitProcessor
             final String messageListenerInterfaceName = instance.value("messageListenerInterface").asClass().name().toString();
             // TODO: if messageListenerInterface is not set use the implemented interface
 
-            MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName());
+            MessageDrivenComponentDescription messageDrivenComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
 
             messageDrivenComponentDescription.setMessageListenerInterfaceName(messageListenerInterfaceName);
 

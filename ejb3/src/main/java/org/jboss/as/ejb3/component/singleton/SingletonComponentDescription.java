@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;

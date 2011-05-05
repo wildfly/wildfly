@@ -175,7 +175,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         });
 
         // setup the injection target
-        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName,  fieldInfo.type().name().toString());
+        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
         // source is always local ENC jndi
         final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
         final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
@@ -357,9 +357,17 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         // register interceptor on stateful/stateless SB with transactional entity manager.
         if (!isExtendedPersistenceContext(annotation) &&
-            (componentDescription instanceof  StatefulComponentDescription ||
-            componentDescription instanceof StatelessComponentDescription)) {
-            componentDescription.addInterceptorFactory(SBInvocationInterceptorFactory.getInstance());
+                (componentDescription instanceof StatefulComponentDescription ||
+                        componentDescription instanceof StatelessComponentDescription)) {
+            //TODO: this probably adds the interceptor in the wrong order
+            componentDescription.getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    for (Method method : configuration.getDefinedComponentMethods()) {
+                        configuration.getComponentInterceptorDeque(method).add(SBInvocationInterceptorFactory.getInstance());
+                    }
+                }
+            });
         }
     }
 

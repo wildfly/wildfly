@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ee.component.AbstractComponentDescription;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -36,7 +36,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -127,7 +126,7 @@ public class EjbJarDescription {
      */
     public Collection<SessionBeanComponentDescription> getSessionBeans() {
         Collection<SessionBeanComponentDescription> sessionBeans = new ArrayList<SessionBeanComponentDescription>();
-        for (AbstractComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
+        for (ComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
             if (componentDescription instanceof SessionBeanComponentDescription) {
                 sessionBeans.add((SessionBeanComponentDescription) componentDescription);
             }
@@ -137,7 +136,7 @@ public class EjbJarDescription {
 
     public Collection<MessageDrivenComponentDescription> getMessageDrivenBeans() {
         Collection<MessageDrivenComponentDescription> mdbs = new ArrayList<MessageDrivenComponentDescription>();
-        for (AbstractComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
+        for (ComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
             if (componentDescription instanceof MessageDrivenComponentDescription) {
                 mdbs.add((MessageDrivenComponentDescription) componentDescription);
             }

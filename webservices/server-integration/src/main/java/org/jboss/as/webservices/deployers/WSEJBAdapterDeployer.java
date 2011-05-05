@@ -21,16 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -48,6 +38,15 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
+
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceProvider;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
@@ -88,14 +87,14 @@ public final class WSEJBAdapterDeployer {
                final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1);
                final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: hacky, hacky, hacky :(
                if (absCD instanceof StatelessComponentDescription || absCD instanceof SingletonComponentDescription) {
-                   final String ejbContainerName = newEJBContainerName(unit, component);
+                   final String ejbContainerName = newEJBContainerName(unit, absCD);
                    endpoints.add(new WebServiceDeclarationAdapter((SessionBeanComponentDescription)absCD, webServiceClassInfo, ejbContainerName));
                }
            }
        }
    }
 
-   private static String newEJBContainerName(final DeploymentUnit unit, final AbstractComponentDescription componentDescription) {
+   private static String newEJBContainerName(final DeploymentUnit unit, final ComponentDescription componentDescription) {
        // TODO: algorithm copied from org.jboss.as.ee.component.ComponentInstallProcessor.deployComponent() method - remove this construction code duplicity
        return unit.getServiceName().append("component").append(componentDescription.getComponentName()).append("START").getCanonicalName();
    }
@@ -119,9 +118,7 @@ public final class WSEJBAdapterDeployer {
       /**
        * Constructor.
        *
-       * @param ejbMetaData EJB metadata
-       * @param ejbContainer EJB container
-       * @param loader class loader
+       * @param ejbMD EJB metadata
        */
       private WebServiceDeclarationAdapter(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo, final String containerName) {
          this.ejbMD = ejbMD;
