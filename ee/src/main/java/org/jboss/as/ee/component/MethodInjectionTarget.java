@@ -22,9 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Iterator;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -34,6 +31,10 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Iterator;
 
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
@@ -68,11 +69,11 @@ public final class MethodInjectionTarget extends InjectionTarget {
         }
         Iterator<Method> iterator = methods.iterator();
         if (! iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("No matching method found for '" + className + "'");
+            throw new DeploymentUnitProcessingException("No matching method found for method '"+ name +"' on '" + className + "'");
         }
         Method method = iterator.next();
         if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("Multiple matching methods found for '" + className + "'");
+            throw new DeploymentUnitProcessingException("More than one matching method found for method '"+ name +"' on '" + className + "'");
         }
         return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method);
     }

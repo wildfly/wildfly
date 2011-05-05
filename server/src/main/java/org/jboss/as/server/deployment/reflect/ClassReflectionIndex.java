@@ -418,7 +418,7 @@ public final class ClassReflectionIndex<T> {
         }
 
         public boolean equals(Object other) {
-            return other instanceof ParamList && equals((ParamList)other);
+            return other instanceof ParamNameList && equals((ParamNameList)other);
         }
 
         public boolean equals(ParamNameList other) {
