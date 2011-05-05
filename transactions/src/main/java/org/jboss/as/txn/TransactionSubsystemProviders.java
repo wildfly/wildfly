@@ -38,6 +38,7 @@ import static org.jboss.as.txn.CommonAttributes.BINDING;
 import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
+import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
 import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
 import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
 import static org.jboss.as.txn.CommonAttributes.PATH;
@@ -130,13 +131,10 @@ class TransactionSubsystemProviders {
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DEFAULT).set(true);
-
-            /* Not currently used
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DEFAULT).set(300);
-            */
 
             subsystem.get(ATTRIBUTES, OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
             subsystem.get(ATTRIBUTES, OBJECT_STORE, TYPE).set(ModelType.OBJECT);
@@ -199,13 +197,10 @@ class TransactionSubsystemProviders {
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, TYPE).set(ModelType.BOOLEAN);
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DEFAULT).set(true);
-
-            /* Not currently used
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, TYPE).set(ModelType.INT);
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DEFAULT).set(300);
-             */
 
             op.get(REQUEST_PROPERTIES, OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
             op.get(REQUEST_PROPERTIES, OBJECT_STORE, TYPE).set(ModelType.OBJECT);
