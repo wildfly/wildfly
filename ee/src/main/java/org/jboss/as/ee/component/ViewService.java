@@ -123,11 +123,15 @@ final class ViewService implements Service<ComponentView> {
             final Map<Method, InterceptorFactory> viewInterceptorFactories = ViewService.this.viewInterceptorFactories;
             final Map<Method, Interceptor> viewEntryPoints = new IdentityHashMap<Method, Interceptor>(viewInterceptorFactories.size());
             factoryContext.getContextData().put(Component.class, component);
+
+            //the post construct interceptors currently MUST be created first
+            //and in some cases the instance is attached in this create process
+            //TODO: this is probably not a good thing. {@see ManagedBeanCreateInterceptorFactory}
+            final Interceptor postConstructInterceptor = viewPostConstruct.create(factoryContext);
+
             for (Method method : viewInterceptorFactories.keySet()) {
                 viewEntryPoints.put(method, viewInterceptorFactories.get(method).create(factoryContext));
             }
-
-            final Interceptor postConstructInterceptor = viewPostConstruct.create(factoryContext);
             final Interceptor preDestroyInterceptor = viewPreDestroy.create(factoryContext);
 
             final ComponentViewInstance instance = new ViewInstance(viewEntryPoints, preDestroyInterceptor);
