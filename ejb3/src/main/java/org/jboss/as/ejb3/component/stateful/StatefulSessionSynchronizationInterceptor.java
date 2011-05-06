@@ -31,7 +31,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.jboss.as.ejb3.component.stateful.ComponentInstanceInterceptor.getComponentInstance;
+import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

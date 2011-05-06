@@ -36,11 +36,14 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionManagementType;
+import java.io.Serializable;
 
 /**
  * User: jpai
@@ -81,12 +84,25 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         // let super do its job
         super.setupViewInterceptors(view);
 
-        // add the instance associating interceptor at the start of the interceptor chain
+        final Object sessionIdContextKey = new Object();
+
+        // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
+        view.getConfigurators().addFirst(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
+                // interceptor factory return an interceptor which sets up the session id on component view instance creation
+                InterceptorFactory sessionIdGeneratingInterceptorFactory = new StatefulComponentSessionIdGeneratingInterceptorFactory(sessionIdContextKey);
+                // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
+                viewConfiguration.getViewPostConstructInterceptors().addFirst(sessionIdGeneratingInterceptorFactory);
+            }
+        });
+
+        // add the instance associating interceptor to the *start of the invocation interceptor chain*
         view.getConfigurators().addFirst(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 // add the stateful component instance associator
-                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new ComponentInstanceInterceptor()));
+                configuration.addViewInterceptor(new StatefulComponentInstanceInterceptorFactory(sessionIdContextKey));
             }
         });
 

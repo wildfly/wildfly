@@ -28,20 +28,31 @@ import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Associate the proper component instance to the invocation based on the passed in session identifier.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class ComponentInstanceInterceptor extends AbstractEJBInterceptor {
-    private static final Logger log = Logger.getLogger(ComponentInstanceInterceptor.class);
+public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor {
+    private static final Logger log = Logger.getLogger(StatefulComponentInstanceInterceptor.class);
+
+    private AtomicReference<Serializable> sessionIdReference;
+
+    public StatefulComponentInstanceInterceptor(AtomicReference<Serializable> sessionIdReference) {
+        this.sessionIdReference = sessionIdReference;
+    }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         // TODO: this is a contract with the client interceptor
-        Serializable sessionId = context.getPrivateData(Serializable.class);
+        Serializable sessionId = this.sessionIdReference.get();
+        if (sessionId == null) {
+            throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
+        }
+        log.debug("Looking for stateful component instance with session id: " + sessionId);
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         try {
             context.putPrivateData(ComponentInstance.class, instance);
