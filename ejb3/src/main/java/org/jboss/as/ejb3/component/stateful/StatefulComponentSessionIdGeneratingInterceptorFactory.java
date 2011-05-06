@@ -51,7 +51,7 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
     private class StatefulComponentSessionIdGeneratingInterceptor implements Interceptor {
 
-        final private AtomicReference<Serializable> sessionIdReference;
+        private final AtomicReference<Serializable> sessionIdReference;
 
         StatefulComponentSessionIdGeneratingInterceptor(AtomicReference<Serializable> sessionIdReference) {
             this.sessionIdReference = sessionIdReference;

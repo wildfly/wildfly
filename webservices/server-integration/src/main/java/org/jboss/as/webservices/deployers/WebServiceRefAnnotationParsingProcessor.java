@@ -172,7 +172,7 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
         reference.setServiceRefName(name);
         // TODO handle mappedName
 
-        if (wsdlLocation.length() > 0) {
+        if (wsdlLocation != null && wsdlLocation.length() > 0) {
             reference.setWsdlFile(wsdlLocation);
         }
         reference.setServiceRefType(type);
