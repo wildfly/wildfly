@@ -38,7 +38,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.ws.WebServiceException;
 
-import org.jboss.wsf.common.JavaUtils;
+import org.jboss.ws.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.util.StAXUtils;
 

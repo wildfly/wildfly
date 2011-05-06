@@ -28,36 +28,36 @@
     <property name="provides" class="java.lang.String">ContainerMetaData, VFSRoot</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.BackwardCompatibleContextRootDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.BackwardCompatibleContextRootDeploymentAspect">
     <property name="requires" class="java.lang.String">ContainerMetaData</property>
     <property name="provides" class="java.lang.String">ContextRoot</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointAddressDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointAddressDeploymentAspect">
     <property name="requires" class="java.lang.String">URLPattern</property>
     <property name="provides" class="java.lang.String">EndpointAddress</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointLifecycleDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect">
     <property name="provides" class="java.lang.String">LifecycleHandler</property>
     <property name="last" class="boolean">true</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointMetricsDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointMetricsDeploymentAspect">
     <property name="provides" class="java.lang.String">EndpointMetrics</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointNameDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointNameDeploymentAspect">
     <property name="requires" class="java.lang.String">URLPattern</property>
     <property name="provides" class="java.lang.String">EndpointName</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointRegistryDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointRegistryDeploymentAspect">
     <property name="requires" class="java.lang.String">EndpointName, EndpointAddress</property>
     <property name="provides" class="java.lang.String">RegisteredEndpoint</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.URLPatternDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.URLPatternDeploymentAspect">
     <property name="requires" class="java.lang.String">ContextRoot, ContainerMetaData</property>
     <property name="provides" class="java.lang.String">URLPattern</property>
   </deploymentAspect>
@@ -75,7 +75,7 @@
 
   <!--
 
-  <deploymentAspect class="org.jboss.wsf.framework.deployment.VirtualHostDeploymentAspect">
+  <deploymentAspect class="org.jboss.ws.common.deployment.VirtualHostDeploymentAspect">
     <property name="requires" class="java.lang.String">ContainerMetaData</property>
     <property name="provides" class="java.lang.String">VirtualHosts</property>
   </deploymentAspect>

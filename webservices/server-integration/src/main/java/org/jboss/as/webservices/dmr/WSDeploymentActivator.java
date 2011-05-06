@@ -32,7 +32,7 @@ import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WebServiceContextDeploymentUnitProcessor;
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
 import org.jboss.logging.Logger;
-import org.jboss.wsf.common.sort.DeploymentAspectSorter;
+import org.jboss.ws.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 

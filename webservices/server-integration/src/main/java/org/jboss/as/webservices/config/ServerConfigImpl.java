@@ -27,8 +27,8 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.common.management.AbstractServerConfig;
-import org.jboss.wsf.common.management.AbstractServerConfigMBean;
+import org.jboss.ws.common.management.AbstractServerConfig;
+import org.jboss.ws.common.management.AbstractServerConfigMBean;
 
 /**
  * AS specific ServerConfig.

@@ -37,7 +37,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.wsf.common.management.AbstractServerConfig;
+import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.wsf.spi.management.ServerConfig;
 
 /**

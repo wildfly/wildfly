@@ -23,7 +23,7 @@ package org.jboss.as.webservices.tomcat;
 
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
-import org.jboss.wsf.common.integration.WSHelper;
+import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;

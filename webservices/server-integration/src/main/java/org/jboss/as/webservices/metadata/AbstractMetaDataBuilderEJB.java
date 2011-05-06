@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
 import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.metadata.ejb.jboss.WebservicesMetaData;
-import org.jboss.wsf.common.integration.WSHelper;
+import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;

@@ -35,8 +35,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.framework.management.DefaultEndpointRegistry;
-import org.jboss.wsf.framework.management.ManagedEndpointRegistry;
+import org.jboss.ws.common.management.DefaultEndpointRegistry;
+import org.jboss.ws.common.management.ManagedEndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistry;
 
 /**

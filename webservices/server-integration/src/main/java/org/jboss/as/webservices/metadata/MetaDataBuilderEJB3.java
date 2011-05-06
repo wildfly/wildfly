@@ -24,7 +24,7 @@ package org.jboss.as.webservices.metadata;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.wsf.common.integration.WSHelper;
+import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;

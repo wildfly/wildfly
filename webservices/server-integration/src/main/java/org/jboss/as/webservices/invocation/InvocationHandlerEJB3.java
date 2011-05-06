@@ -23,8 +23,8 @@ package org.jboss.as.webservices.invocation;
 
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.wsf.common.injection.ThreadLocalAwareWebServiceContext;
-import org.jboss.wsf.common.invocation.AbstractInvocationHandler;
+import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
+import org.jboss.ws.common.invocation.AbstractInvocationHandler;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;

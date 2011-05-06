@@ -35,7 +35,7 @@ import org.jboss.metadata.web.spec.LoginConfigMetaData;
 import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
-import org.jboss.wsf.common.integration.WSHelper;
+import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 

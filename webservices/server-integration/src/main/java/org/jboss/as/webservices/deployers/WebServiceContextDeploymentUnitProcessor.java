@@ -33,7 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.wsf.common.injection.ThreadLocalAwareWebServiceContext;
+import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
 
 /**
  * DeploymentUnitProcessor that adds a lazy binding source description handler that can resolve it.

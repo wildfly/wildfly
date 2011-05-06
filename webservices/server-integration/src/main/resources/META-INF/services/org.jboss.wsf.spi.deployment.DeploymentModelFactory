@@ -1,1 +1,1 @@
-org.jboss.wsf.framework.deployment.ArchiveDeploymentModelFactory
+org.jboss.ws.common.deployment.ArchiveDeploymentModelFactory

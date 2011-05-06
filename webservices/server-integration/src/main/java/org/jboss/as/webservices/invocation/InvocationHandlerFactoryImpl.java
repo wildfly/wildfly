@@ -21,8 +21,8 @@
  */
 package org.jboss.as.webservices.invocation;
 
-import org.jboss.wsf.common.invocation.InvocationHandlerJAXRPC;
-import org.jboss.wsf.common.invocation.InvocationHandlerJAXWS;
+import org.jboss.ws.common.invocation.InvocationHandlerJAXRPC;
+import org.jboss.ws.common.invocation.InvocationHandlerJAXWS;
 import org.jboss.wsf.spi.invocation.InvocationHandler;
 import org.jboss.wsf.spi.invocation.InvocationHandlerFactory;
 import org.jboss.wsf.spi.invocation.InvocationType;
