@@ -68,7 +68,6 @@ public class WebComponentInstantiator implements ComponentInstantiator {
                 if (!destroyed) {
                     instance.destroy();
                     destroyed = true;
-                    throw new RuntimeException("destroyInstance for web components not yet implemented");
                 }
             }
 
