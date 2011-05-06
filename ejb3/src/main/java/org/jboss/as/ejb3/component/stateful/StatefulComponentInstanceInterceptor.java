@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor {
     private static final Logger log = Logger.getLogger(StatefulComponentInstanceInterceptor.class);
 
-    private AtomicReference<Serializable> sessionIdReference;
+    private final AtomicReference<Serializable> sessionIdReference;
 
     public StatefulComponentInstanceInterceptor(AtomicReference<Serializable> sessionIdReference) {
         this.sessionIdReference = sessionIdReference;
