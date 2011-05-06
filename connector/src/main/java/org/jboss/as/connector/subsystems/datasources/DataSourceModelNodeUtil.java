@@ -84,6 +84,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURC
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.dmr.ModelNode;
@@ -199,7 +200,7 @@ class DataSourceModelNodeUtil {
 
     static void fillFrom(final ModelNode xaDataSourceModel, final XaDataSource xaDataSource) {
         for (Map.Entry<String, String> entry : xaDataSource.getXaDataSourceProperty().entrySet()) {
-            xaDataSourceModel.get(XADATASOURCEPROPERTIES, entry.getKey()).set(entry.getValue());
+            xaDataSourceModel.get(XADATASOURCEPROPERTIES).add(entry.getKey(), entry.getValue());
         }
         setStringIfNotNull(xaDataSourceModel, XADATASOURCECLASS, xaDataSource.getXaDataSourceClass());
         setStringIfNotNull(xaDataSourceModel, JNDINAME, xaDataSource.getJndiName());
@@ -373,10 +374,10 @@ class DataSourceModelNodeUtil {
     }
 
     static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
-        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(dataSourceNode.get(XADATASOURCEPROPERTIES)
-                .asList().size());
-        for (ModelNode property : dataSourceNode.get(XADATASOURCEPROPERTIES).asList()) {
-            xaDataSourceProperty.put(property.asProperty().getName(), property.asString());
+        List<Property> propertyList = dataSourceNode.get(XADATASOURCEPROPERTIES).asPropertyList();
+        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(propertyList.size());
+        for (Property property : propertyList) {
+            xaDataSourceProperty.put(property.getName(), property.getValue().asString());
         }
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
