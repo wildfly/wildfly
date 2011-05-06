@@ -233,7 +233,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         String methodName = namedMethodMetaData.getMethodName();
         MethodParametersMetaData methodParams = namedMethodMetaData.getMethodParams();
         if (methodParams == null) {
-            return new EJBMethodDescription(methodName, null);
+            return new EJBMethodDescription(methodName, (String[]) null);
         }
         return new EJBMethodDescription(methodName, methodParams.toArray(new String[methodParams.size()]));
     }

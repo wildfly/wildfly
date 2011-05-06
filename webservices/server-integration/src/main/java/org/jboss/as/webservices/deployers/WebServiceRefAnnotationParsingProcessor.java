@@ -212,6 +212,16 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
             serviceBuilder.addInjection(injector, factory);
         }
 
+        public int hashCode() {
+            // For now, cannot be shared.
+            return System.identityHashCode(this);
+        }
+
+        public boolean equals(final Object obj) {
+            // For now, cannot be shared.
+            return obj == this;
+        }
+
         public Object getValue() throws IllegalStateException, IllegalArgumentException {
             // FIXME this is a workaround to class loader issues
             final ClassLoader tccl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();

@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.ee.component.InjectionSource;
@@ -308,5 +309,15 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
 
     public void setProperties(String[] properties) {
         this.properties = properties;
+    }
+
+    public int hashCode() {
+        // Can never be shared
+        return System.identityHashCode(this);
+    }
+
+    public boolean equals(final Object obj) {
+        // Can never be shared
+        return this == obj;
     }
 }

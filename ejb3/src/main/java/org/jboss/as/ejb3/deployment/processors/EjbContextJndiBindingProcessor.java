@@ -70,16 +70,25 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
         }
     };
 
-    private final ManagedReferenceFactory ejbContextManagedReferenceFactory = new ManagedReferenceFactory() {
+    private static final ManagedReferenceFactory ejbContextManagedReferenceFactory = new ManagedReferenceFactory() {
         public ManagedReference getReference() {
             return ejbContextManagedReference;
         }
     };
 
-    private final InjectionSource directEjbContextReferenceSource = new InjectionSource() {
+    private static final InjectionSource directEjbContextReferenceSource = new InjectionSource() {
         public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
             injector.inject(ejbContextManagedReferenceFactory);
         }
 
+        public int hashCode() {
+            // singleton
+            return System.identityHashCode(this);
+        }
+
+        public boolean equals(final Object obj) {
+            // singleton
+            return obj == this;
+        }
     };
 }

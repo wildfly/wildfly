@@ -109,4 +109,14 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
             return new ValueManagedReference(new ImmediateValue<Object>(emf));
         }
     }
+
+    public int hashCode() {
+        // For now, cannot be shared.
+        return System.identityHashCode(this);
+    }
+
+    public boolean equals(final Object obj) {
+        // For now, cannot be shared.
+        return obj == this;
+    }
 }

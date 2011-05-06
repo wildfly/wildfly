@@ -43,8 +43,24 @@ public abstract class InjectionSource {
      * @param serviceBuilder the builder for the binder service
      * @param phaseContext the deployment phase context
      * @param injector the injector into which the value should be placed
+     * @throws DeploymentUnitProcessingException if an error occurs
      */
     public abstract void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException;
+
+    /**
+     * Get the hash code of this injection source.  The hash code should include an adjustment for the class.
+     *
+     * @return the hash code
+     */
+    public abstract int hashCode();
+
+    /**
+     * Compare this injection source to another for equality.
+     *
+     * @param obj the other injection source
+     * @return {@code true} if the other object refers to the same injection source
+     */
+    public abstract boolean equals(final Object obj);
 
     /**
      * A resolution context for the injection source.

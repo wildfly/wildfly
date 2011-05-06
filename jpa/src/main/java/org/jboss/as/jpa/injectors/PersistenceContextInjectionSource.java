@@ -182,4 +182,14 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         }
 
     }
+
+    public int hashCode() {
+        // For now, cannot be shared.
+        return System.identityHashCode(this);
+    }
+
+    public boolean equals(final Object obj) {
+        // For now, cannot be shared.
+        return obj == this;
+    }
 }
