@@ -45,14 +45,25 @@ public final class ValueManagedReferenceFactory implements ManagedReferenceFacto
     @Override
     public ManagedReference getReference() {
         return new ManagedReference() {
+
+            private volatile Object instance;
+
             @Override
             public void release() {
-
+                this.instance = null;
             }
 
             @Override
             public Object getInstance() {
-                return value.getValue();
+                if (instance != null) {
+                    return this.instance;
+                }
+                synchronized (this) {
+                    if (instance == null) {
+                        this.instance = value.getValue();
+                    }
+                }
+                return this.instance;
             }
         };
     }

@@ -522,9 +522,8 @@ public class ComponentDescription {
             preDestroyInterceptors.addAll(userPreDestroy);
             preDestroyInterceptors.add(Interceptors.getTerminalInterceptorFactory());
 
-            // Method interceptors
+            // @AroundInvoke interceptors
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
-            final Set<String> visited = new HashSet<String>();
 
             Class clazz = componentClassConfiguration.getModuleClass();
             while(clazz != null) {
@@ -535,11 +534,9 @@ public class ComponentDescription {
                     if (! description.isExcludeClassInterceptors(identifier)) {
                         for (InterceptorDescription interceptorDescription : classInterceptors) {
                             String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                            if (visited.add(interceptorClassName)) {
-                                List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                                if(aroundInvokes != null) {
-                                    interceptorDeque.addAll(aroundInvokes);
-                                }
+                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                            if(aroundInvokes != null) {
+                                interceptorDeque.addAll(aroundInvokes);
                             }
                         }
                         if (componentUserAroundInvoke != null) {
@@ -562,11 +559,9 @@ public class ComponentDescription {
                 // TODO - ordering...?
                 for (InterceptorDescription interceptorDescription : descriptions) {
                     String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                    if (visited.add(interceptorClassName)) {
-                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                        if(aroundInvokes != null) {
-                            interceptorDeque.addAll(aroundInvokes);
-                        }
+                    List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                    if(aroundInvokes != null) {
+                        interceptorDeque.addAll(aroundInvokes);
                     }
                 }
             }
@@ -575,7 +570,6 @@ public class ComponentDescription {
             for(Method method : configuration.getDefinedComponentMethods()) {
                 configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
             }
-            visited.clear();
 
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
