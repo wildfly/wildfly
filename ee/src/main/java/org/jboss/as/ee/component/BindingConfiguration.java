@@ -36,10 +36,17 @@ public final class BindingConfiguration {
     /**
      * Construct a new instance.
      *
-     * @param name the binding name
-     * @param source
+     * @param name   the binding name
+     * @param source The source which will be used to resolve a value to be bound in the JNDI
+     * @throws IllegalArgumentException If either of the passed <code>name</code> or <code>source</code> is null
      */
     public BindingConfiguration(final String name, final InjectionSource source) {
+        if (name == null) {
+            throw new IllegalArgumentException("Name cannot be null while constructing " + this.getClass().getName());
+        }
+        if (source == null) {
+            throw new IllegalArgumentException("Source cannot be null while constructing " + this.getClass().getName());
+        }
         this.name = name;
         this.source = source;
     }
@@ -61,5 +68,25 @@ public final class BindingConfiguration {
      */
     public InjectionSource getSource() {
         return source;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BindingConfiguration that = (BindingConfiguration) o;
+
+        if (!name.equals(that.name)) return false;
+        if (!source.equals(that.source)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + source.hashCode();
+        return result;
     }
 }

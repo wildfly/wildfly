@@ -23,9 +23,7 @@
 package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 
 /**
@@ -33,13 +31,20 @@ import org.jboss.as.ejb3.component.EJBComponentCreateService;
  */
 public class SingletonComponentCreateService extends EJBComponentCreateService {
 
+    private final boolean initOnStartup;
+
     /**
      * Construct a new instance.
      *
      * @param componentConfiguration the component configuration
      */
     public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration) {
+        this(componentConfiguration, false);
+    }
+
+    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final boolean initOnStartup) {
         super(componentConfiguration);
+        this.initOnStartup = initOnStartup;
     }
 
     @Override
@@ -47,11 +52,7 @@ public class SingletonComponentCreateService extends EJBComponentCreateService {
         return new SingletonComponent(this);
     }
 
-    public static final ComponentCreateServiceFactory FACTORY = new ComponentCreateServiceFactory() {
-        @Override
-        public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
-            return new SingletonComponentCreateService(configuration);
-        }
-    };
-
+    public boolean isInitOnStartup() {
+        return this.initOnStartup;
+    }
 }

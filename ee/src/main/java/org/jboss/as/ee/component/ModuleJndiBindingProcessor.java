@@ -33,6 +33,9 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Processor that sets up JNDI bindings that are owned by the module.
  *
@@ -47,7 +50,11 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             return;
         }
         // bindings
-        for (BindingConfiguration binding : moduleConfiguration.getBindingConfigurations()) {
+        // Handle duplicates binding from the same source
+        // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
+        // handle these duplicates?
+        final Set<BindingConfiguration> bindingConfigurations = new HashSet<BindingConfiguration>(moduleConfiguration.getBindingConfigurations());
+        for (BindingConfiguration binding : bindingConfigurations) {
             addJndiBinding(moduleConfiguration, binding, phaseContext);
         }
 

@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class SessionInvocationContextInterceptor implements Interceptor {
+public class SessionInvocationContextInterceptor implements Interceptor {
     public static final SessionInvocationContextInterceptor INSTANCE = new SessionInvocationContextInterceptor();
 
     @Override

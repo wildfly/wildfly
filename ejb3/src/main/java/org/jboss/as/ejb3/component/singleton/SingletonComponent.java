@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.InterceptorContext;
@@ -63,11 +62,11 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     /**
      * Construct a new instance.
      *
-     * @param ejbComponentCreateService the component configuration
+     * @param singletonComponentCreateService the component configuration
      */
-    public SingletonComponent(final EJBComponentCreateService ejbComponentCreateService) {
-        super(ejbComponentCreateService);
-        this.initOnStartup = false; //ejbComponentCreateService.isInitOnStartup();
+    public SingletonComponent(final SingletonComponentCreateService singletonComponentCreateService) {
+        super(singletonComponentCreateService);
+        this.initOnStartup = singletonComponentCreateService.isInitOnStartup();
 
         this.beanLevelLockType = null; //ejbComponentCreateService.getBeanLevelLockType();
         this.methodLockTypes = null; //ejbComponentCreateService.getMethodApplicableLockTypes();

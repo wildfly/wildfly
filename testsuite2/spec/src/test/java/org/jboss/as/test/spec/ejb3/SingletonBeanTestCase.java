@@ -23,12 +23,14 @@
 package org.jboss.as.test.spec.ejb3;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.api.Deployment;
@@ -96,11 +98,20 @@ public class SingletonBeanTestCase {
 
     }
 
+    /**
+     * Tests that a @Startup @Singleton bean is inited when the deployment is completed.
+     * 
+     * @throws Exception
+     */
     @Test
     public void testStartupSingleton() throws Exception {
         Assert.assertTrue("@Startup singleton bean was not created", callTrackerSingletonBean.wasStartupSingletonBeanCreated());
     }
 
+    /**
+     * Tests that the concurrency on a singleton bean with lock type READ works as expected
+     * @throws Exception
+     */
     @Test
     public void testReadOnlySingleton() throws Exception {
         final int NUM_THREADS = 10;
@@ -126,8 +137,17 @@ public class SingletonBeanTestCase {
         for (int i = 0; i < NUM_THREADS; i++) {
             results[i] = executor.submit(new LongWritesSingletonBeanInvoker(longWritesSingletonBean));
         }
-        for (int i = 0; i < NUM_THREADS; i++) {
-            results[i].get(10, TimeUnit.SECONDS);
+        // the first one is expected to complete successfully
+        results[0].get(10, TimeUnit.SECONDS);
+        // rest all are expected to timeout
+        for (int i = 1; i < NUM_THREADS; i++) {
+            try {
+                results[i].get(10, TimeUnit.SECONDS);
+                Assert.fail("Invocation on a singleton bean with WRITE lock was expected to fail for thread numbered: " + i);
+            }
+            catch (ExecutionException ee) {
+                Assert.assertTrue("Unexpected exception during invocation on a singleton bean with WRITE lock", ee.getCause() instanceof ConcurrentAccessTimeoutException);
+            }
         }
     }
 

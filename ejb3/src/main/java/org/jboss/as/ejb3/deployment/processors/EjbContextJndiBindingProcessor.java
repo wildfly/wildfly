@@ -28,6 +28,9 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ee.component.EEModuleConfigurator;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.naming.ManagedReference;
@@ -48,17 +51,36 @@ import org.jboss.msc.service.ServiceBuilder;
  */
 public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProcessor {
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        if (!(componentDescription instanceof EJBComponentDescription) || componentDescription.getNamingMode() != ComponentNamingMode.CREATE) {
-            return;  // Only process EJB's that are not packaged in a war
+        if (!(componentDescription instanceof EJBComponentDescription)) {
+            return;  // Only process EJBs
         }
-        final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
-        // add the binding configuration to the component description
-        componentDescription.getConfigurators().add(new ComponentConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(ejbContextBinding);
-            }
-        });
+        // if the EJB is packaged in a .war, then we need to bind the java:comp/EJBContext only once for the entire module
+        if (componentDescription.getNamingMode() != ComponentNamingMode.CREATE) {
+            // get the module description
+            final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
+            // create a configurator which binds at the module level
+            moduleDescription.getConfigurators().add(new EEModuleConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, EEModuleDescription description, EEModuleConfiguration configuration) throws DeploymentUnitProcessingException {
+                    // the java:module/EJBContext binding configuration
+                    // Note that we bind to java:module/EJBContext since it's a .war. End users can still lookup java:comp/EJBContext
+                    // and that will internally get translated to java:module/EJBContext for .war, since java:comp == java:module in
+                    // a web ENC. So binding to java:module/EJBContext is OK.
+                    final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:module/EJBContext", directEjbContextReferenceSource);
+                    configuration.getBindingConfigurations().add(ejbContextBinding);
+                }
+            });
+        } else { // EJB packaged outside of a .war. So process normally.
+            // add the binding configuration to the component description
+            componentDescription.getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    // the java:comp/EJBContext binding configuration
+                    final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
+                    configuration.getBindingConfigurations().add(ejbContextBinding);
+                }
+            });
+        }
     }
 
     private static final ManagedReference ejbContextManagedReference = new ManagedReference() {

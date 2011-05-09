@@ -22,7 +22,9 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -60,7 +62,18 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        return new SingletonComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+
+        ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        // setup the component create service
+        singletonComponentConfiguration.setComponentCreateServiceFactory(new ComponentCreateServiceFactory() {
+            @Override
+            public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
+                // return the singleton component create service
+                return new SingletonComponentCreateService(configuration, SingletonComponentDescription.this.isInitOnStartup());
+            }
+        });
+
+        return singletonComponentConfiguration;
     }
 
     /**
