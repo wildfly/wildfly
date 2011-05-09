@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.security.AccessController;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,11 +37,15 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.Stats;
+import org.jboss.util.loading.ContextClassLoaderSwitcher;
+import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
 /**
  * @author Paul Ferraro
  */
 public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
+    @SuppressWarnings("unchecked")
+    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     private final String defaultCache;
     private final EmbeddedCacheManager container;
@@ -74,7 +79,14 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean start) {
-        return new DelegatingCache<K, V>(this.container.<K, V>getCache(this.getCacheName(cacheName)));
+        SwitchContext context = start ? switcher.getSwitchContext(DefaultEmbeddedCacheManager.class.getClassLoader()) : null;
+        try {
+            return new DelegatingCache<K, V>(this.container.<K, V>getCache(this.getCacheName(cacheName)));
+        } finally {
+            if (context != null) {
+                context.reset();
+            }
+        }
     }
 
     /**
