@@ -88,13 +88,6 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     long begin = System.currentTimeMillis();
                     SubsystemState subsystemState = createSubsystemState(operation);
 
-                    // TODO: Hack, which registers the framework module with the {@link ModularURLStreamHandlerFactory}
-                    String value = SecurityActions.getSystemProperty("jboss.protocol.handler.modules", "org.jboss.osgi.framework");
-                    if (!value.equals("org.jboss.osgi.framework")) {
-                        value = value + "|org.jboss.osgi.framework";
-                    }
-                    SecurityActions.setSystemProperty("jboss.protocol.handler.modules", value);
-
                     ServiceTarget serviceTarget = context.getServiceTarget();
                     BundleStartTracker.addService(serviceTarget);
                     InstallHandlerIntegration.addService(serviceTarget);
