@@ -58,26 +58,13 @@ public class ExceptionsFromInterceptorsTestCase {
     }
 
     @Test
-    public void testCCE() throws Exception {
-        try {
-            lookup("java:global/interceptors-exceptions/PitcherBean", PitcherBean.class).curveball();
-            fail("Should have thrown EJBException");
-        }
-        catch (EJBException e) {
-            // EJB 3.1 FR 14.3.1 table 15 condition #2, not an app exception
-            Exception cause = e.getCausedByException();
-            assertEquals(ClassCastException.class, cause.getClass());
-        }
-    }
-
-    @Test
     public void testUndeclared() throws Exception {
         try {
             lookup("java:global/interceptors-exceptions/PitcherBean", PitcherBean.class).fastball();
             fail("Should have thrown a (Runtime)Exception");
         }
         catch (Exception e) {
-            assertTrue("Did not declare exception " + e, e instanceof RuntimeException);
+            assertTrue("Did not declare exception - " + e, e instanceof RuntimeException);
         }
     }
 }

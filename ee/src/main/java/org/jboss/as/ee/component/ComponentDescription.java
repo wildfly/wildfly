@@ -566,8 +566,9 @@ public class ComponentDescription {
                 }
             }
 
-            //now add the interceptor that actually invokes to the end of the interceptor chain
+            //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
             for(Method method : configuration.getDefinedComponentMethods()) {
+                configuration.getComponentInterceptorDeque(method).addFirst(Interceptors.getInitialInterceptorFactory());
                 configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
             }
 
