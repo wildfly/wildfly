@@ -432,13 +432,16 @@ public class ComponentDescription {
             final Map<String, InterceptorDescription> interceptors = description.getAllInterceptors();
             for (InterceptorDescription interceptorDescription : interceptors.values()) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                 new ClassDescriptionTraversal(moduleConfiguration.getClassConfiguration(interceptorClassName), moduleConfiguration) {
+                final EEModuleClassConfiguration interceptorConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
+                final Object contextKey = new Object();
+                instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorConfiguration.getInstantiator(), contextKey));
+                destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
+
+                new ClassDescriptionTraversal(interceptorConfiguration, moduleConfiguration) {
                     @Override
                     public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         final ClassReflectionIndex<?> interceptorClassIndex = index.getClassIndex(interceptorClassConfiguration.getModuleClass());
-                        final Object contextKey = new Object();
-                        instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorClassConfiguration.getInstantiator(), contextKey));
-                        destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
+
                         for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
                             final Object valueContextKey = new Object();
                             final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
