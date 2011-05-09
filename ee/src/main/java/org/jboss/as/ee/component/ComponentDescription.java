@@ -102,10 +102,10 @@ public class ComponentDescription {
     /**
      * Construct a new instance.
      *
-     * @param componentName      the component name
-     * @param componentClassName the component instance class name
-     * @param moduleDescription  the EE module description
-     * @param classDescription   the component class' description
+     * @param componentName             the component name
+     * @param componentClassName        the component instance class name
+     * @param moduleDescription         the EE module description
+     * @param classDescription          the component class' description
      * @param deploymentUnitServiceName the service name of the DU containing this component
      */
     public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final EEModuleClassDescription classDescription, final ServiceName deploymentUnitServiceName) {
@@ -259,7 +259,7 @@ public class ComponentDescription {
      * @return
      */
     public InterceptorDescription getClassInterceptor(String interceptorClassName) {
-        if (! classInterceptorsSet.contains(interceptorClassName)) {
+        if (!classInterceptorsSet.contains(interceptorClassName)) {
             return null;
         }
         for (InterceptorDescription interceptor : classInterceptors) {
@@ -421,11 +421,11 @@ public class ComponentDescription {
 
             // Primary instance
             final ManagedReferenceFactory instanceFactory = configuration.getInstanceFactory();
-            if(instanceFactory != null) {
+            if (instanceFactory != null) {
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(instanceFactory, instanceKey));
             } else {
                 //use the default constructor if no instanceFactory has been set
-                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>((Constructor<Object>)componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY), Collections.<Value<?>>emptyList()));
+                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>((Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY), Collections.<Value<?>>emptyList()));
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(factory, instanceKey));
             }
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
@@ -486,13 +486,13 @@ public class ComponentDescription {
                         if (aroundInvokeMethod != null) {
                             Method method = interceptorClassIndex.getMethod(aroundInvokeMethod);
                             List<InterceptorFactory> interceptors;
-                            if((interceptors = userAroundInvokesByInterceptorClass.get(interceptorClassName)) == null) {
+                            if ((interceptors = userAroundInvokesByInterceptorClass.get(interceptorClassName)) == null) {
                                 userAroundInvokesByInterceptorClass.put(interceptorClassName, interceptors = new ArrayList<InterceptorFactory>());
                             }
                             interceptors.add(new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, false));
                         }
                     }
-                 }.run();
+                }.run();
             }
 
             new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
@@ -552,16 +552,16 @@ public class ComponentDescription {
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
 
             Class clazz = componentClassConfiguration.getModuleClass();
-            while(clazz != null) {
+            while (clazz != null) {
                 final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
-                for(final Method method : (Collection <Method>)classIndex.getMethods()) {
+                for (final Method method : (Collection<Method>) classIndex.getMethods()) {
                     MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
                     Deque<InterceptorFactory> interceptorDeque = configuration.getComponentInterceptorDeque(method);
-                    if (! description.isExcludeClassInterceptors(identifier)) {
+                    if (!description.isExcludeClassInterceptors(identifier)) {
                         for (InterceptorDescription interceptorDescription : classInterceptors) {
                             String interceptorClassName = interceptorDescription.getInterceptorClassName();
                             List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if(aroundInvokes != null) {
+                            if (aroundInvokes != null) {
                                 interceptorDeque.addAll(aroundInvokes);
                             }
                         }
@@ -569,7 +569,7 @@ public class ComponentDescription {
                             interceptorDeque.addAll(componentUserAroundInvoke);
                         }
                     }
-                    if (! description.isExcludeDefaultInterceptors() && ! description.isExcludeDefaultInterceptors(identifier)) {
+                    if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
                         // todo: default interceptors here
                     }
                 }
@@ -586,21 +586,21 @@ public class ComponentDescription {
                 for (InterceptorDescription interceptorDescription : descriptions) {
                     String interceptorClassName = interceptorDescription.getInterceptorClassName();
                     List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                    if(aroundInvokes != null) {
+                    if (aroundInvokes != null) {
                         interceptorDeque.addAll(aroundInvokes);
                     }
                 }
             }
 
             //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain and the TCCL interceptor
-            for(Method method : configuration.getDefinedComponentMethods()) {
+            for (Method method : configuration.getDefinedComponentMethods()) {
                 configuration.getComponentInterceptorDeque(method).addFirst(Interceptors.getInitialInterceptorFactory());
                 configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
                 configuration.getComponentInterceptorDeque(method).addFirst(tcclInterceptor);
             }
 
             //views
-            for(ViewDescription view : description.getViews()) {
+            for (ViewDescription view : description.getViews()) {
                 Class<?> viewClass;
                 try {
                     viewClass = module.getClassLoader().loadClass(view.getViewClassName());
@@ -608,12 +608,12 @@ public class ComponentDescription {
                     throw new DeploymentUnitProcessingException("Could not load view class " + view.getViewClassName() + " for component " + configuration, e);
                 }
                 final ViewConfiguration viewConfiguration;
-                if(viewClass.isInterface()) {
-                    viewConfiguration = new ViewConfiguration(viewClass, configuration, view.getServiceName(), new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, viewClass.getClassLoader(),  viewClass));
+                if (viewClass.isInterface()) {
+                    viewConfiguration = new ViewConfiguration(viewClass, configuration, view.getServiceName(), new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, viewClass.getClassLoader(), viewClass));
                 } else {
                     viewConfiguration = new ViewConfiguration(viewClass, configuration, view.getServiceName(), new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, viewClass.getClassLoader()));
                 }
-                for(final ViewConfigurator configurator : view.getConfigurators()) {
+                for (final ViewConfigurator configurator : view.getConfigurators()) {
                     configurator.configure(context, configuration, view, viewConfiguration);
                 }
                 configuration.getViews().add(viewConfiguration);
@@ -653,7 +653,7 @@ public class ComponentDescription {
         final EEModuleClassConfiguration classConfiguration;
         final EEModuleConfiguration moduleConfiguration;
 
-        ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEModuleConfiguration moduleConfiguration ) {
+        ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEModuleConfiguration moduleConfiguration) {
             this.classConfiguration = classConfiguration;
             this.moduleConfiguration = moduleConfiguration;
         }
@@ -661,14 +661,14 @@ public class ComponentDescription {
         public void run() throws DeploymentUnitProcessingException {
             Class clazz = classConfiguration.getModuleClass();
             final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
-            while(clazz != null && clazz != Object.class) {
+            while (clazz != null && clazz != Object.class) {
                 EEModuleClassConfiguration configuration = moduleConfiguration.getClassConfiguration(clazz.getName());
-                if(configuration != null) {
+                if (configuration != null) {
                     queue.addFirst(configuration);
                 }
                 clazz = clazz.getSuperclass();
             }
-            for(EEModuleClassConfiguration configuration : queue) {
+            for (EEModuleClassConfiguration configuration : queue) {
                 handle(configuration, configuration.getModuleClassDescription());
             }
         }
