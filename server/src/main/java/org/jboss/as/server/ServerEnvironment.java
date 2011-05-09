@@ -30,6 +30,10 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Encapsulates the runtime environment for a server.
@@ -40,35 +44,30 @@ public class ServerEnvironment implements Serializable {
 
     private static final long serialVersionUID = -349976376447122910L;
 
-    /////////////////////////////////////////////////////////////////////////
-    //                   Configuration Value Identifiers                   //
-    /////////////////////////////////////////////////////////////////////////
+    // Provide logging
+    private static final transient Logger log = Logger.getLogger(ServerEnvironment.class);
+
+    // ///////////////////////////////////////////////////////////////////////
+    // Configuration Value Identifiers //
+    // ///////////////////////////////////////////////////////////////////////
 
     /**
-     * Constant that holds the name of the system property
-     * for specifying the JDK extension directory paths.
+     * Constant that holds the name of the system property for specifying the JDK extension directory paths.
      */
     public static final String JAVA_EXT_DIRS = "java.ext.dirs";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the home directory for JBoss.
+     * Constant that holds the name of the environment property for specifying the home directory for JBoss.
      */
     public static final String HOME_DIR = "jboss.home.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory from which JBoss will read modules.
+     * Constant that holds the name of the environment property for specifying the directory from which JBoss will read modules.
      *
-     * <p>Defaults to <tt><em>HOME_DIR</em>/modules</tt>/
+     * <p>
+     * Defaults to <tt><em>HOME_DIR</em>/modules</tt>/
      */
     public static final String MODULES_DIR = "jboss.modules.dir";
-
-    /**
-     * Constant that holds the name of the system property for specifying
-     * the modules that provide protocol handlers.
-     */
-    public static final String PROTOCOL_HANDLER_MODULES = "jboss.protocol.handler.modules";
 
     /**
      * VFS module identifier
@@ -76,86 +75,84 @@ public class ServerEnvironment implements Serializable {
     public static final String VFS_MODULE_IDENTIFIER = "org.jboss.vfs";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the base directory for server content.
+     * Constant that holds the name of the environment property for specifying the base directory for server content.
      *
-     * <p>Defaults to <tt><em>HOME_DIR</em>/standalone</tt>.
+     * <p>
+     * Defaults to <tt><em>HOME_DIR</em>/standalone</tt>.
      */
     public static final String SERVER_BASE_DIR = "jboss.server.base.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the server configuration URL.
+     * Constant that holds the name of the environment property for specifying the server configuration URL.
      *
-     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/configuration</tt> .
+     * <p>
+     * Defaults to <tt><em>SERVER_BASE_DIR</em>/configuration</tt> .
      */
     public static final String SERVER_CONFIG_DIR = "jboss.server.config.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory which JBoss will use for
-     * persistent data file storage.
+     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for persistent
+     * data file storage.
      *
-     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/data</tt>.
+     * <p>
+     * Defaults to <tt><em>SERVER_BASE_DIR</em>/data</tt>.
      */
     public static final String SERVER_DATA_DIR = "jboss.server.data.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory which JBoss will use for
+     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for
      * deployments.
      *
-     * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/content</tt>.
+     * <p>
+     * Defaults to <tt><em>SERVER_DATA_DIR</em>/content</tt>.
      */
     public static final String SERVER_DEPLOY_DIR = "jboss.server.deploy.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the server log directory for JBoss.
+     * Constant that holds the name of the environment property for specifying the server log directory for JBoss.
      *
-     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/<em>log</em></tt>.
+     * <p>
+     * Defaults to <tt><em>SERVER_BASE_DIR</em>/<em>log</em></tt>.
      */
     public static final String SERVER_LOG_DIR = "jboss.server.log.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory which JBoss will use for
-     * temporary file storage.
+     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for temporary
+     * file storage.
      *
-     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/tmp</tt> .
+     * <p>
+     * Defaults to <tt><em>SERVER_BASE_DIR</em>/tmp</tt> .
      */
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
 
     /**
-     * Constant that holds the name of the environment property
-     * for specifying the directory which JBoss will use for internal
+     * Constant that holds the name of the environment property for specifying the directory which JBoss will use for internal
      * system deployments.
      *
-     * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/system-content</tt>.
+     * <p>
+     * Defaults to <tt><em>SERVER_DATA_DIR</em>/system-content</tt>.
      */
     public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
     /**
-     * Constant that holds the name of the system property for specifying the
-     * node name within a cluster.
+     * Constant that holds the name of the system property for specifying the node name within a cluster.
      */
     public static final String NODE_NAME = "jboss.node.name";
 
     /**
-     * Constant that holds the name of the system property for specifying the
-     * name of this server instance.
+     * Constant that holds the name of the system property for specifying the name of this server instance.
      */
     public static final String SERVER_NAME = "jboss.server.name";
 
     /**
-     * Constant that holds the name of the system property for specifying the
-     * local part of the name of the host that this server is running on.
+     * Constant that holds the name of the system property for specifying the local part of the name of the host that this
+     * server is running on.
      */
     public static final String HOST_NAME = "jboss.host.name";
 
     /**
-     * Constant that holds the name of the system property for specifying the
-     * fully-qualified name of the host that this server is running on.
+     * Constant that holds the name of the system property for specifying the fully-qualified name of the host that this server
+     * is running on.
      */
     public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
 
@@ -243,7 +240,7 @@ public class ServerEnvironment implements Serializable {
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
         if (homeDir == null)
-           throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
+            throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
 
         File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
@@ -303,13 +300,21 @@ public class ServerEnvironment implements Serializable {
         SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
+
+        // Register the vfs module as URLStreamHandlerFactory
+        try {
+            ModuleLoader bootLoader = Module.getBootModuleLoader();
+            Module vfsModule = bootLoader.loadModule(ModuleIdentifier.create(VFS_MODULE_IDENTIFIER));
+            Module.registerURLStreamHandlerFactoryModule(vfsModule);
+        } catch (Exception ex) {
+            log.errorf(ex, "Cannot add module '%s' as URLStreamHandlerFactory provider", VFS_MODULE_IDENTIFIER);
+        }
     }
 
     /**
-     * Get the name of this server instance.  For domain-mode servers, this is the name
-     * given in the domain configuration.  For standalone servers, this is the name either
-     * provided in the server configuration, or, if not given, the name specified via system
-     * property, or auto-detected based on host name.
+     * Get the name of this server instance. For domain-mode servers, this is the name given in the domain configuration. For
+     * standalone servers, this is the name either provided in the server configuration, or, if not given, the name specified
+     * via system property, or auto-detected based on host name.
      *
      * @return the server name
      */
@@ -417,7 +422,7 @@ public class ServerEnvironment implements Serializable {
             final String[] paths = value.split(Pattern.quote(sep));
             final int len = paths.length;
             final File[] files = new File[len];
-            for (int i = 0; i < len; i ++) {
+            for (int i = 0; i < len; i++) {
                 files[i] = new File(paths[i]);
             }
             return files;

@@ -40,6 +40,7 @@ import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -109,7 +110,12 @@ public class FrameworkBootstrapService implements Service<Void> {
             Map<String, Object> props = new HashMap<String, Object>(subsystemState.getProperties());
             setupIntegrationProperties(context, props);
 
-            // Start the OSGi {@link Framework}
+            // Register the URLStreamHandlerFactory
+            Module coreFrameworkModule = ((ModuleClassLoader) FrameworkBuilder.class.getClassLoader()).getModule();
+            Module.registerURLStreamHandlerFactoryModule(coreFrameworkModule);
+            Module.registerContentHandlerFactoryModule(coreFrameworkModule);
+
+            // Configure the {@link Framework} builder
             FrameworkBuilder builder = new FrameworkBuilder(props);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(context.getChildTarget());
@@ -119,6 +125,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.addProvidedService(Services.MODULE_LOADER_PROVIDER);
             builder.addProvidedService(Services.SYSTEM_SERVICES_PROVIDER);
 
+            // Create the {@link Framework} services
             Activation activation = subsystemState.getActivationPolicy();
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
             builder.createFrameworkServices(initialMode, true);
