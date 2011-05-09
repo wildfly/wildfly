@@ -22,8 +22,6 @@
 
 package org.jboss.as.weld.deployment.processors;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -65,27 +63,25 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
             return; // Skip if there are no beans.xml files in the deployment
         }
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        addDepdenency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
-        addDepdenency(moduleSpecification, moduleLoader, JAVAEE_API_ID);
-        addDepdenency(moduleSpecification, moduleLoader, JBOSS_INTERCEPTOR_ID);
-        addDepdenency(moduleSpecification, moduleLoader, JBOSS_LOGGING_ID);
-        addDepdenency(moduleSpecification, moduleLoader, JAVASSIST_ID);
-        addDepdenency(moduleSpecification, moduleLoader, WELD_CORE_ID);
-        addDepdenency(moduleSpecification, moduleLoader, WELD_API_ID);
-        addDepdenency(moduleSpecification, moduleLoader, WELD_SPI_ID);
+        addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
+        addDependency(moduleSpecification, moduleLoader, JAVAEE_API_ID);
+        addDependency(moduleSpecification, moduleLoader, JBOSS_INTERCEPTOR_ID);
+        addDependency(moduleSpecification, moduleLoader, JBOSS_LOGGING_ID);
+        addDependency(moduleSpecification, moduleLoader, JAVASSIST_ID);
+        addDependency(moduleSpecification, moduleLoader, WELD_CORE_ID);
+        addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
+        addDependency(moduleSpecification, moduleLoader, WELD_SPI_ID);
 
-        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            // we just want the faces-config.xml file
-            ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false);
-            dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
-            dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
-            moduleSpecification.addDependency(dep);
-        }
+
+        ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false);
+        dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addDependency(dep);
 
     }
 
-    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-            ModuleIdentifier moduleIdentifier) {
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
+                               ModuleIdentifier moduleIdentifier) {
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
     }
 

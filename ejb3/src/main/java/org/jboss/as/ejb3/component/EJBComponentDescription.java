@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.msc.service.ServiceBuilder;
@@ -86,11 +87,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), ejbJarDescription.getEEModuleDescription().getOrAddClassByName(componentClassName), deploymentUnitServiceName);
-        if(ejbJarDescription.isWar()) {
+        if (ejbJarDescription.isWar()) {
             setNamingMode(ComponentNamingMode.USE_MODULE);
         } else {
             setNamingMode(ComponentNamingMode.CREATE);
         }
+
+        getConfigurators().addFirst(new NamespaceConfigurator());
+
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
     }

@@ -23,11 +23,13 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -35,12 +37,16 @@ import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +68,8 @@ public class ComponentDescription {
     private static final DefaultFirstConfigurator FIRST_CONFIGURATOR = new DefaultFirstConfigurator();
 
     private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
+
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
     private final ServiceName serviceName;
     private final String componentName;
@@ -393,6 +401,7 @@ public class ComponentDescription {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
             final DeploymentReflectionIndex index = deploymentUnit.getAttachment(REFLECTION_INDEX);
             final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
+            final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
             // Module stuff
             final EEModuleClassDescription componentClassDescription = description.getClassDescription();
@@ -411,7 +420,14 @@ public class ComponentDescription {
             final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
 
             // Primary instance
-            instantiators.addFirst(new ManagedReferenceInterceptorFactory(configuration.getInstanceFactory(), instanceKey));
+            final ManagedReferenceFactory instanceFactory = configuration.getInstanceFactory();
+            if(instanceFactory != null) {
+                instantiators.addFirst(new ManagedReferenceInterceptorFactory(instanceFactory, instanceKey));
+            } else {
+                //use the default constructor if no instanceFactory has been set
+                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>((Constructor<Object>)componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY), Collections.<Value<?>>emptyList()));
+                instantiators.addFirst(new ManagedReferenceInterceptorFactory(factory, instanceKey));
+            }
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
 
             new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
@@ -429,11 +445,16 @@ public class ComponentDescription {
             }.run();
 
             // Interceptor instances
-            final Map<String, InterceptorDescription> interceptors = description.getAllInterceptors();
-            for (InterceptorDescription interceptorDescription : interceptors.values()) {
+            final List<InterceptorDescription> interceptors = new ArrayList<InterceptorDescription>();
+            //TODO: add default interceptor
+            interceptors.addAll(description.getClassInterceptors());
+
+            for (InterceptorDescription interceptorDescription : interceptors) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
                 final EEModuleClassConfiguration interceptorConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
-                final Object contextKey = new Object();
+
+                //we store the interceptor instance under the class key
+                final Object contextKey = interceptorConfiguration.getModuleClass();
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorConfiguration.getInstantiator(), contextKey));
                 destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
 
@@ -497,7 +518,7 @@ public class ComponentDescription {
                 }
             }.run();
 
-
+            final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
 
             // Apply post-construct
             final Deque<InterceptorFactory> postConstructInterceptors = configuration.getPostConstructInterceptors();
@@ -511,6 +532,7 @@ public class ComponentDescription {
             }
             postConstructInterceptors.addAll(userPostConstruct);
             postConstructInterceptors.add(Interceptors.getTerminalInterceptorFactory());
+            postConstructInterceptors.addFirst(tcclInterceptor);
 
             // Apply pre-destroy
             final Deque<InterceptorFactory> preDestroyInterceptors = configuration.getPreDestroyInterceptors();
@@ -524,6 +546,7 @@ public class ComponentDescription {
             }
             preDestroyInterceptors.addAll(userPreDestroy);
             preDestroyInterceptors.add(Interceptors.getTerminalInterceptorFactory());
+            preDestroyInterceptors.addFirst(tcclInterceptor);
 
             // @AroundInvoke interceptors
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
@@ -569,13 +592,12 @@ public class ComponentDescription {
                 }
             }
 
-            //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
+            //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain and the TCCL interceptor
             for(Method method : configuration.getDefinedComponentMethods()) {
                 configuration.getComponentInterceptorDeque(method).addFirst(Interceptors.getInitialInterceptorFactory());
                 configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
+                configuration.getComponentInterceptorDeque(method).addFirst(tcclInterceptor);
             }
-
-            final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
             //views
             for(ViewDescription view : description.getViews()) {

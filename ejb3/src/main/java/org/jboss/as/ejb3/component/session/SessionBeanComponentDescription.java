@@ -25,6 +25,8 @@ package org.jboss.as.ejb3.component.session;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -133,6 +135,15 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
         // Add a dependency on the asyc-executor
         addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+
+        //TODO: is adding configurators in the constructor ok, if not where should this go
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
+                configuration.getPreDestroyInterceptors().addFirst(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
+            }
+        });
     }
 
     /**

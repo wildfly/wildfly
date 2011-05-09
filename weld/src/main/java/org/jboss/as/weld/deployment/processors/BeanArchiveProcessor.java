@@ -71,7 +71,6 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WeldDeploymentMetadata cdiDeploymentMetadata = deploymentUnit
                 .getAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY);
 

@@ -109,27 +109,6 @@ public class BasicComponent implements Component {
     }
 
     /**
-     * Create a new component object instance.  After the instance is constructed, injections and lifecycle methods will
-     * be called upon it.
-     *
-     * @return the new instance
-     */
-    protected Object createObjectInstance() {
-        try {
-            Object instance = componentClass.newInstance();
-            return instance;
-        } catch (InstantiationException e) {
-            InstantiationError error = new InstantiationError(e.getMessage());
-            error.setStackTrace(e.getStackTrace());
-            throw error;
-        } catch (IllegalAccessException e) {
-            IllegalAccessError error = new IllegalAccessError(e.getMessage());
-            error.setStackTrace(e.getStackTrace());
-            throw error;
-        }
-    }
-
-    /**
      * Construct the component instance.  Upon return, the object instance should have injections and lifecycle
      * invocations completed already.
      *

@@ -21,8 +21,7 @@
  */
 package org.jboss.as.weld.services;
 
-import javax.enterprise.inject.spi.BeanManager;
-
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -30,6 +29,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * Service that provides access to the BeanManger for a (sub)deployment
@@ -69,5 +70,9 @@ public class BeanManagerService implements Service<BeanManager> {
 
     public InjectedValue<WeldContainer> getWeldContainer() {
         return weldContainer;
+    }
+
+    public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
+        return deploymentUnit.getServiceName().append(BeanManagerService.NAME);
     }
 }

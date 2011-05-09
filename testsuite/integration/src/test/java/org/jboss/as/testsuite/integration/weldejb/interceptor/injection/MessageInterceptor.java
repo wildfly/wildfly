@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,27 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.weldejb.interceptor.injection;
 
-package org.jboss.as.ee.component;
+import javax.inject.Inject;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
- * A component view.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * EJB interceptor that uses CDI injection
+ * @author Stuart Douglas
  */
-public interface ComponentView {
+public class MessageInterceptor {
 
-    /**
-     * Create the component view instance.
-     *
-     * @return the component view instance
-     */
-    ComponentViewInstance createInstance();
+    @Inject
+    private Message message;
 
-    /**
-     * Get the associated component.
-     *
-     * @return the component
-     */
-    Component getComponent();
+    @AroundInvoke
+    public Object invoke(InvocationContext ctx) throws Exception {
+        return ctx.proceed().toString() + message.getMessage();
+    }
+
 }

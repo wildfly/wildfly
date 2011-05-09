@@ -106,7 +106,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        final Set<BeanDeploymentModule> beanDeploymentModules = new HashSet<BeanDeploymentModule>();
         final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
         final Map<ModuleIdentifier,BeanDeploymentModule> bdmsByIdentifier = new HashMap<ModuleIdentifier,BeanDeploymentModule>();
         final Map<ModuleIdentifier,ModuleSpecification> moduleSpecByIdentifier = new HashMap<ModuleIdentifier,ModuleSpecification>();
@@ -141,7 +140,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
-            beanDeploymentModules.add(bdm);
             bdmsByIdentifier.put(subDeploymentModule.getIdentifier(),bdm);
             moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(),subDeploymentModuleSpec);
         }

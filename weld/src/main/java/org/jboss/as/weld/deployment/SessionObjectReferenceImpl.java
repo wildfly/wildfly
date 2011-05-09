@@ -23,7 +23,6 @@ package org.jboss.as.weld.deployment;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -38,27 +37,25 @@ import org.jboss.weld.ejb.api.SessionObjectReference;
 public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private volatile boolean removed = false;
-    private volatile Component component;
+    private final ComponentInstance instance;
 
     public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         final ServiceName createServiceName = descriptor.getCreateServiceName();
         final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
-        component = (Component) controller.getValue();
+        final Component component = (Component) controller.getValue();
+        instance = component.createInstance();
     }
 
 
     @Override
     @SuppressWarnings({"unchecked"})
     public <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        ComponentInstance instance = component.createInstance();
         return (S) instance.getInstance();
     }
 
     @Override
     public void remove() {
-        if (component instanceof StatefulSessionComponent) {
-            StatefulSessionComponent ssc = (StatefulSessionComponent) component;
-        }
+        instance.destroy();
         removed = true;
     }
 

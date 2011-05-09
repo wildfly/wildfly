@@ -22,12 +22,13 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An interceptor factory which gets an object instance from a managed resource.  A reference to the resource will be
@@ -38,23 +39,23 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 class ManagedReferenceInterceptorFactory implements InterceptorFactory {
 
-    private final ManagedReferenceFactory managedReferenceFactory;
+    private final ManagedReferenceFactory componentInstantiation;
     private final Object contextKey;
 
     /**
      * Construct a new instance.
      *
-     * @param managedReferenceFactory the managed reference factory to create from
+     * @param componentInstantiation the managed reference factory to create from
      * @param contextKey the context key
      */
-    public ManagedReferenceInterceptorFactory(final ManagedReferenceFactory managedReferenceFactory, final Object contextKey) {
-        if (managedReferenceFactory == null) {
-            throw new IllegalArgumentException("managedReferenceFactory is null");
+    public ManagedReferenceInterceptorFactory(final ManagedReferenceFactory componentInstantiation, final Object contextKey) {
+        if (componentInstantiation == null) {
+            throw new IllegalArgumentException("componentInstantiation is null");
         }
         if (contextKey == null) {
             throw new IllegalArgumentException("contextKey is null");
         }
-        this.managedReferenceFactory = managedReferenceFactory;
+        this.componentInstantiation = componentInstantiation;
         this.contextKey = contextKey;
     }
 
@@ -62,6 +63,6 @@ class ManagedReferenceInterceptorFactory implements InterceptorFactory {
     public Interceptor create(final InterceptorFactoryContext context) {
         final AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>();
         context.getContextData().put(contextKey, referenceReference);
-        return new ManagedReferenceInterceptor(managedReferenceFactory, referenceReference);
+        return new ManagedReferenceInterceptor(componentInstantiation, referenceReference);
     }
 }

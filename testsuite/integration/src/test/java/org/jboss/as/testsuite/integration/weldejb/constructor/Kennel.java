@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,21 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.weldejb.constructor;
 
-package org.jboss.as.ee.component;
+import javax.ejb.Stateful;
+import javax.inject.Inject;
 
 /**
- * An instantiator for a component.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
-public interface ComponentInstantiator {
+@Stateful
+public class Kennel {
 
-    /**
-     * Construct a new instance of this component.
-     *
-     * @return the instance
-     * @throws ComponentCreateException if creation failed for some reason
-     */
-    Object construct() throws ComponentCreateException;
+    private final Dog dog;
+
+    public Kennel() {
+        dog = null;
+    }
+
+    @Inject
+    public Kennel(Dog dog) {
+        this.dog = dog;
+    }
+
+    public Dog getDog() {
+        return dog;
+    }
 }

@@ -71,7 +71,6 @@ public class ComponentConfiguration {
     public ComponentConfiguration(final ComponentDescription componentDescription, final EEModuleClassConfiguration moduleClassConfiguration) {
         this.componentDescription = componentDescription;
         this.moduleClassConfiguration = moduleClassConfiguration;
-        this.instanceFactory = new DefaultConstructorManagedReferenceFactory(moduleClassConfiguration.getModuleClass());
     }
 
     /**

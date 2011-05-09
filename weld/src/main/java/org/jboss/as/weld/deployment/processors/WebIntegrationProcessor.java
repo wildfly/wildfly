@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -28,6 +30,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.as.web.deployment.component.WebComponentDescription;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -53,16 +56,23 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.weld");
 
+
+    private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
+
+    private static final String JSP_LISTENER = "org.jboss.as.weld.webtier.jsp.JspInitializationListener";
+
+    private static final String CONVERSATION_FILTER = "org.jboss.weld.servlet.ConversationPropagationFilter";
+
     public WebIntegrationProcessor() {
 
         // create wbl listener
         WBL = new ListenerMetaData();
-        WBL.setListenerClass("org.jboss.weld.servlet.WeldListener");
+        WBL.setListenerClass(WELD_LISTENER);
         JIL = new ListenerMetaData();
-        JIL.setListenerClass("org.jboss.as.weld.webtier.jsp.JspInitializationListener");
+        JIL.setListenerClass(JSP_LISTENER);
         CPF = new FilterMetaData();
         CPF.setFilterName("Weld Conversation Propagation Filter");
-        CPF.setFilterClass("org.jboss.weld.servlet.ConversationPropagationFilter");
+        CPF.setFilterClass(CONVERSATION_FILTER);
         CPFM = new FilterMappingMetaData();
         CPFM.setFilterName("Weld Conversation Propagation Filter");
         CPFM.setUrlPatterns(Arrays.asList("/*"));
@@ -71,6 +81,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEModuleDescription module = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
 
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
@@ -85,9 +96,9 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             log.info("Not installing Weld web tier integration as no war metadata found");
             return;
         }
-        JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
+        final JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {
-            log.info("Not installing Weld web tier integration as no web metadata found");
+            log.info("Not installing Weld web tier integration as no merged metadata found");
             return;
         }
 
@@ -98,6 +109,9 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         }
         listeners.add(0, WBL);
         listeners.add(1, JIL);
+
+        //This uses resource injection, so it needs to be a component
+        module.addComponent(new WebComponentDescription(JSP_LISTENER,JSP_LISTENER,module, deploymentUnit.getServiceName()));
 
         FiltersMetaData filters = webMetaData.getFilters();
         if (filters == null) {

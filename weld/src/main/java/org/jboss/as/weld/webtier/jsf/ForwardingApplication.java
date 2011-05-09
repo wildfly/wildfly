@@ -16,12 +16,6 @@
  */
 package org.jboss.as.weld.webtier.jsf;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import javax.el.ELContextListener;
 import javax.el.ELException;
 import javax.el.ELResolver;
@@ -48,11 +42,17 @@ import javax.faces.event.ActionListener;
 import javax.faces.event.SystemEvent;
 import javax.faces.event.SystemEventListener;
 import javax.faces.validator.Validator;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author pmuir
  *
  */
+@SuppressWarnings({"deprecation"})
 public abstract class ForwardingApplication extends Application {
 
     protected abstract Application delegate();

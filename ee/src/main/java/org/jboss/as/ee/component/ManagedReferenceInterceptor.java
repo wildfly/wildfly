@@ -22,27 +22,28 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class ManagedReferenceInterceptor implements Interceptor {
 
-    private final ManagedReferenceFactory managedReferenceFactory;
+    private final ManagedReferenceFactory componentInstantiator;
     private final AtomicReference<ManagedReference> referenceReference;
 
-    public ManagedReferenceInterceptor(final ManagedReferenceFactory managedReferenceFactory, final AtomicReference<ManagedReference> referenceReference) {
-        this.managedReferenceFactory = managedReferenceFactory;
+    public ManagedReferenceInterceptor(final ManagedReferenceFactory componentInstantiator, final AtomicReference<ManagedReference> referenceReference) {
+        this.componentInstantiator = componentInstantiator;
         this.referenceReference = referenceReference;
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        final ManagedReference reference = managedReferenceFactory.getReference();
+        final ManagedReference reference = componentInstantiator.getReference();
         boolean ok = false;
         try {
             referenceReference.set(reference);

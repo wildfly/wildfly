@@ -22,19 +22,19 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An abstract base component instance.
@@ -74,6 +74,7 @@ public class BasicComponentInstance implements ComponentInstance {
         final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
 
         context.getContextData().put(Component.class, component);
+        context.getContextData().put(ComponentInstance.class, this);
 
         // Call post-construct hooks
         final Interceptor postConstruct = component.getPostConstruct().create(context);
@@ -83,6 +84,11 @@ public class BasicComponentInstance implements ComponentInstance {
 
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.putPrivateData(Component.class, component);
+
+        //TODO: this is very nasty, as we are exposing a partially constructed instance to the interceptor chain
+        // this removes all the java memory model guarentees that having final fields gives us
+        // this needs to be done ATM as we need this to get the EjbContext
+        interceptorContext.putPrivateData(ComponentInstance.class, this);
         try {
             postConstruct.processInvocation(interceptorContext);
         } catch (Exception e) {
@@ -96,6 +102,7 @@ public class BasicComponentInstance implements ComponentInstance {
         methodMap = Collections.unmodifiableMap(interceptorMap);
         instance = referenceReference.get().getInstance();
     }
+
 
     /** {@inheritDoc} */
     public Component getComponent() {

@@ -22,11 +22,9 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
-
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -34,6 +32,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import java.lang.reflect.Method;
 
 /**
  * A configurator which adds interceptors to the component which establish the naming context.  The interceptor is
@@ -66,7 +66,7 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
             public void configureDependency(final ServiceBuilder<?> serviceBuilder) {
                 serviceBuilder.addDependency(appContextServiceName, NamingStore.class, appInjector);
                 serviceBuilder.addDependency(moduleContextServiceName, NamingStore.class, moduleInjector);
-                if (namingMode != ComponentNamingMode.CREATE) {
+                if (namingMode == ComponentNamingMode.CREATE) {
                     serviceBuilder.addDependency(compContextServiceName, NamingStore.class, compInjector);
                 }
             }

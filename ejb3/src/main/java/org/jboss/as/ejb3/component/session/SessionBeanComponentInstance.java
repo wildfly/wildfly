@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.session;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.spi.SessionContext;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
 
@@ -32,7 +31,7 @@ import java.io.Serializable;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponentInstance extends BasicComponentInstance {
-    private SessionBeanComponentInstanceContext sessionContext;
+    private volatile SessionBeanComponentInstanceContext sessionContext;
 
     protected class SessionBeanComponentInstanceContext extends BaseSessionContext {
         protected SessionBeanComponentInstanceContext() {
@@ -56,12 +55,19 @@ public abstract class SessionBeanComponentInstance extends BasicComponentInstanc
     protected SessionBeanComponentInstance(final SessionBeanComponent component) {
         super(component);
 
-        this.sessionContext = new SessionBeanComponentInstanceContext();
     }
 
     protected abstract Serializable getId();
 
     protected SessionContext getSessionContext() {
+        if (sessionContext == null) {
+            synchronized (this) {
+                if (sessionContext == null) {
+
+                    this.sessionContext = new SessionBeanComponentInstanceContext();
+                }
+            }
+        }
         return sessionContext;
     }
 }
