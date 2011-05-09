@@ -48,7 +48,7 @@
                             urn:jboss:domain:weld:1.0 jboss-weld.xsd">
 
     <extensions>
-        <extension module="org.jboss.as.clustering"/>
+        <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>

@@ -78,7 +78,7 @@
         
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering</artifactId>
+            <artifactId>jboss-as-clustering-infinispan</artifactId>
         </dependency>
         
         <dependency>

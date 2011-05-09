@@ -33,9 +33,7 @@
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-build</artifactId>
-    <version>7.0.0.Beta4-SNAPSHOT</version>
 
     <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
@@ -590,8 +588,32 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-clustering</artifactId>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-api</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-common</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-impl</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-infinispan</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-jgroups</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-clustering-web-spi</artifactId>
         </dependency>
 
         <dependency>

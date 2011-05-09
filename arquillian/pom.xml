@@ -32,9 +32,7 @@
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-arquillian</artifactId>
-    <version>7.0.0.Beta4-SNAPSHOT</version>
 
     <name>JBoss Application Server: Arquillian</name>
 
@@ -44,6 +42,7 @@
         <module>protocol-jmx</module>
         <module>testenricher-msc</module>
         <module>container-managed-domain</module>
+        <module>container-managed-clustering</module>
         <!--
         <module>container-embedded</module>
         <module>container-remote</module>

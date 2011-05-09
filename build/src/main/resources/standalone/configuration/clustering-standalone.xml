@@ -48,7 +48,8 @@
                             urn:jboss:domain:weld:1.0 jboss-weld.xsd">
 
     <extensions>
-        <extension module="org.jboss.as.clustering"/>
+        <extension module="org.jboss.as.clustering.infinispan"/>
+        <extension module="org.jboss.as.clustering.jgroups"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
@@ -58,6 +59,7 @@
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
         <extension module="org.jboss.as.remoting"/>
@@ -73,6 +75,7 @@
     <system-properties>
         <property name="foo" value="bar"/>
         <property name="key" value="value"/>
+        <property name="java.net.preferIPv4Stack" value="true"/>
     </system-properties>
 
     <paths>
@@ -81,8 +84,8 @@
     </paths>
 
     <management-interfaces>
-       <native-interface interface="default" port="9999"/>
-       <http-interface interface="default" port="9990"/>
+       <native-interface interface="management" port="9999"/>
+       <http-interface interface="management" port="9990"/>
     </management-interfaces>
 
     <profile>
@@ -126,18 +129,6 @@
                 <max-threads count="10" per-cpu="20"/>
                 <keepalive-time time="10" unit="seconds"/>
             </scheduled-thread-pool>
-            <bounded-queue-thread-pool name="jca-short-running" blocking="true">
-                <core-threads count="10" per-cpu="20"/>
-                <queue-length count="10" per-cpu="20"/>
-                <max-threads count="10" per-cpu="20"/>
-                <keepalive-time time="10" unit="seconds"/>
-            </bounded-queue-thread-pool>
-            <bounded-queue-thread-pool name="jca-long-running" blocking="true">
-                <core-threads count="10" per-cpu="20"/>
-                <queue-length count="10" per-cpu="20"/>
-                <max-threads count="10" per-cpu="20"/>
-                <keepalive-time time="10" unit="seconds"/>
-            </bounded-queue-thread-pool>
             <bounded-queue-thread-pool name="ejb3-async" blocking="true">
                 <core-threads count="10" per-cpu="20"/>
                 <queue-length count="10" per-cpu="20"/>
@@ -150,7 +141,7 @@
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
-                <security-domain name="other">
+                <security-domain name="other" cache-type="default">
                     <authentication>
                         <login-module code="UsersRoles" flag="required"/>
                     </authentication>
@@ -169,29 +160,27 @@
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment>
-                <process-id><uuid/></process-id>
+                <process-id>
+                    <uuid />
+                </process-id>
             </core-environment>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false" />
             <bean-validation enabled="false" />
             <default-workmanager>
-            	<short-running-threads>
-            		<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-short-running" blocking="true">
-                		<core-threads count="10" per-cpu="20"/>
-                		<queue-length count="10" per-cpu="20"/>
-                		<max-threads count="10" per-cpu="20"/>
-                		<keepalive-time time="10" unit="seconds"/>
-            		</bounded-queue-thread-pool>
-            	</short-running-threads>
-            	<long-running-threads>
-	            	<bounded-queue-thread-pool xmlns="urn:jboss:domain:threads:1.0" name="jca-long-running" blocking="true">
-		                <core-threads count="10" per-cpu="20"/>
-		                <queue-length count="10" per-cpu="20"/>
-		                <max-threads count="10" per-cpu="20"/>
-		                <keepalive-time time="10" unit="seconds"/>
-	            	</bounded-queue-thread-pool>
-            	</long-running-threads>
+                <short-running-threads blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                </short-running-threads>
+                <long-running-threads blocking="true">
+                        <core-threads count="10" per-cpu="20"/>
+                        <queue-length count="10" per-cpu="20"/>
+                        <max-threads count="10" per-cpu="20"/>
+                        <keepalive-time time="10" unit="seconds"/>
+                </long-running-threads>
             </default-workmanager>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:datasources:1.0">
@@ -208,11 +197,11 @@
                     <timeout></timeout>
                     <statement></statement>
                 </datasource>
-	            <drivers>
-	                <driver name="h2" module="com.h2database.h2">
-	                	<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
-	                </driver>
-	            </drivers>
+                <drivers>
+                    <driver name="h2" module="com.h2database.h2">
+                        <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                    </driver>
+                </drivers>
             </datasources>
        </subsystem>
        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
@@ -363,7 +352,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:web:1.0">
             <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
-            <virtual-server name="localhost">
+            <virtual-server name="localhost" enable-welcome-root="true">
                <alias name="example.com" />
             </virtual-server>
         </subsystem>
@@ -378,6 +367,9 @@
              <wsdl-port>8080</wsdl-port>
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config advertise-socket="mod_cluster" />
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="udp">
             <stack name="udp">
@@ -426,17 +418,21 @@
                     <locking isolation="REPEATABLE_READ"/>
                 </replicated-cache>
             </cache-container>
-            <cache-container name="web" default-cache="repl-async">
+            <cache-container name="web" default-cache="repl">
                 <alias>standard-session-cache</alias>
-                <replicated-cache name="repl-async" mode="ASYNC" batching="true">
+                <replicated-cache name="repl" mode="ASYNC" batching="true">
                     <locking isolation="REPEATABLE_READ"/>
                     <file-store/>
                 </replicated-cache>
+                <distributed-cache name="dist" mode="ASYNC" batching="true">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <file-store/>
+                </distributed-cache>
             </cache-container>
-            <cache-container name="sfsb" default-cache="repl-async">
+            <cache-container name="sfsb" default-cache="repl">
                 <alias>sfsb-cache</alias>
                 <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
-                <replicated-cache name="repl-async" mode="ASYNC" batching="true">
+                <replicated-cache name="repl" mode="ASYNC" batching="true">
                     <locking isolation="REPEATABLE_READ"/>
                     <eviction strategy="LRU" max-entries="10000"/>
                     <file-store/>
@@ -459,26 +455,15 @@
     </profile>
 
     <interfaces>
-        <interface name="default">
+        <interface name="management">
             <inet-address value="127.0.0.1"/>
         </interface>
-        <interface name="any">
-           <any-address/>
-        </interface>
-        <interface name="complex">
-           <any>
-              <subnet-match value="192.168.0.0/16"/>
-              <public-address/>
-           </any>
-           <not>
-             <site-local-address/>
-           </not>
-           <up/>
-           <multicast/>
+        <interface name="public">
+           <inet-address value="127.0.0.1"/>
         </interface>
     </interfaces>
 
-        <socket-binding-group name="standard-sockets" default-interface="default">
+        <socket-binding-group name="standard-sockets" default-interface="public">
            <socket-binding name="jndi" port="1099"/>
            <socket-binding name="jmx-connector-registry" port="1090"/>
            <socket-binding name="jmx-connector-server" port="1091"/>

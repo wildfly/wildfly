@@ -21,8 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-// $Id: JBossContextConfig.java 104399 2010-05-03 20:50:38Z remy.maucherat@jboss.com $
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -59,9 +57,12 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
+import org.jboss.as.clustering.web.ClusteringNotSupportedException;
+import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
+import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -112,7 +113,6 @@ import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -134,6 +134,7 @@ public class JBossContextConfig extends ContextConfig {
         this.deploymentUnitContext = deploymentUnitContext;
     }
 
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
         if (event.getType().equals(Lifecycle.AFTER_START_EVENT)) {
             // Invoke ServletContainerInitializer
@@ -158,12 +159,14 @@ public class JBossContextConfig extends ContextConfig {
         super.lifecycleEvent(event);
     }
 
+    @Override
     protected void applicationWebConfig() {
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         processJBossWebMetaData(warMetaData.getMergedJBossWebMetaData());
         processWebMetaData(warMetaData.getMergedJBossWebMetaData());
     }
 
+    @Override
     protected void defaultWebConfig() {
         JBossWebMetaData sharedJBossWebMetaData = new JBossWebMetaData();
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -270,8 +273,14 @@ public class JBossContextConfig extends ContextConfig {
         }
 
         // Distributable
-        if (metaData.getDistributable() != null)
-            context.setDistributable(true);
+        if (metaData.getDistributable() != null) {
+            try {
+                context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.context.getParent(), metaData, this.deploymentUnitContext.getServiceRegistry()));
+                context.setDistributable(true);
+            } catch (ClusteringNotSupportedException e) {
+                log.warn("Clustering not supported, falling back to non-clustered session manager.", e);
+            }
+        }
 
         // Context params
         List<ParamValueMetaData> contextParams = metaData.getContextParams();
@@ -554,12 +563,13 @@ public class JBossContextConfig extends ContextConfig {
     /**
      * Process a "init" event for this Context.
      */
+    @Override
     protected void init() {
         context.setConfigured(false);
         ok = true;
-        // FIXME: Add clustered manager support
     }
 
+    @Override
     protected void destroy() {
     }
 
@@ -567,6 +577,7 @@ public class JBossContextConfig extends ContextConfig {
      * Migrate TLD metadata to Catalina. This is separate, and is not subject to
      * the order defined.
      */
+    @Override
     protected void applicationTldConfig() {
         final TldsMetaData tldsMetaData = deploymentUnitContext.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         if (tldsMetaData == null) {
@@ -750,14 +761,17 @@ public class JBossContextConfig extends ContextConfig {
         }
     }
 
+    @Override
     public void applicationServletContainerInitializerConfig() {
         // Do nothing here
     }
 
+    @Override
     protected void createFragmentsOrder() {
         // Do nothing here
     }
 
+    @Override
     protected void applicationExtraDescriptorsConfig() {
         // Do nothing here
     }
@@ -837,6 +851,7 @@ public class JBossContextConfig extends ContextConfig {
         }
     }
 
+    @Override
     protected void completeConfig() {
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
@@ -907,5 +922,4 @@ public class JBossContextConfig extends ContextConfig {
         }
 
     }
-
 }
