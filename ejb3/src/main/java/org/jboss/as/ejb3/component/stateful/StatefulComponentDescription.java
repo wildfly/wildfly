@@ -110,7 +110,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 // add the stateful component instance associator
-                configuration.addViewInterceptor(new StatefulComponentInstanceInterceptorFactory(sessionIdContextKey), true);
+                configuration.addViewInterceptorToFront(new StatefulComponentInstanceInterceptorFactory(sessionIdContextKey));
             }
         });
 
@@ -137,7 +137,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         }
                     };
                     // add the bmt interceptor factory to the view
-                    configuration.addViewInterceptor(bmtComponentInterceptorFactory, true);
+                    configuration.addViewInterceptorToFront(bmtComponentInterceptorFactory);
                 }
             });
         }

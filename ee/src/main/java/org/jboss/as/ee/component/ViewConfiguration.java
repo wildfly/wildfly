@@ -185,21 +185,30 @@ public class ViewConfiguration {
     }
 
     /**
-     * Adds a "server side" interceptor which will be applicable for all methods exposed by this view.
+     * Adds a "server side" interceptor  to the front of the chain which will be applicable for all methods exposed by this view.
      *
      * @param interceptorFactory The interceptor to add
-     * @param first If this interceptor should be added to the front of the chain
      * @see #getViewInterceptorDeque(java.lang.reflect.Method)
      */
-    public void addViewInterceptor(InterceptorFactory interceptorFactory, boolean first) {
+    public void addViewInterceptorToFront(InterceptorFactory interceptorFactory) {
         Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
         for (Method method : allMethodsOnView) {
             Deque<InterceptorFactory> interceptorsForMethod = this.getViewInterceptorDeque(method);
-            if(first) {
-                interceptorsForMethod.addFirst(interceptorFactory);
-            } else {
-                interceptorsForMethod.add(interceptorFactory);
-            }
+            interceptorsForMethod.addFirst(interceptorFactory);
+        }
+    }
+
+    /**
+     * Adds a "server side" interceptor  to the back of the chain which will be applicable for all methods exposed by this view.
+     *
+     * @param interceptorFactory The interceptor to add
+     * @see #getViewInterceptorDeque(java.lang.reflect.Method)
+     */
+    public void addViewInterceptorToBack(InterceptorFactory interceptorFactory) {
+        Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
+        for (Method method : allMethodsOnView) {
+            Deque<InterceptorFactory> interceptorsForMethod = this.getViewInterceptorDeque(method);
+            interceptorsForMethod.addFirst(interceptorFactory);
         }
     }
 

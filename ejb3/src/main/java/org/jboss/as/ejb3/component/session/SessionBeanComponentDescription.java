@@ -466,7 +466,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
                 // Add CMT interceptor factory
                 if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
-                    configuration.addViewInterceptor(new ComponentInterceptorFactory() {
+                    configuration.addViewInterceptorToFront(new ComponentInterceptorFactory() {
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
                             if (component instanceof TransactionalComponent == false) {
@@ -475,7 +475,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                             }
                             return new CMTTxInterceptor((TransactionalComponent) component);
                         }
-                    }, true);
+                    });
                 }
             }
         });
@@ -497,7 +497,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()), true);
+                configuration.addViewInterceptorToFront(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()));
             }
         });
 
