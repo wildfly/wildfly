@@ -38,7 +38,7 @@ import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION_PROPERTIES
 import static org.jboss.as.osgi.parser.CommonAttributes.MODULES;
 import static org.jboss.as.osgi.parser.CommonAttributes.PID;
 import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.START;
+import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
 
 import java.util.Collections;
 import java.util.List;
@@ -327,7 +327,7 @@ public class OSGiExtension implements Extension {
                                         identifier = reader.getAttributeValue(i);
                                         break;
                                     }
-                                    case START: {
+                                    case STARTLEVEL: {
                                         start = reader.getAttributeValue(i);
                                         break;
                                     }
@@ -342,7 +342,7 @@ public class OSGiExtension implements Extension {
 
                             ModelNode module = new ModelNode();
                             if (start != null) {
-                                module.get(START).set(start);
+                                module.get(STARTLEVEL).set(start);
                             }
                             modules.get(identifier).set(module);
 
@@ -409,8 +409,8 @@ public class OSGiExtension implements Extension {
                     ModelNode currentModule = modules.get(current);
                     writer.writeEmptyElement(Element.MODULE.getLocalName());
                     writer.writeAttribute(Attribute.IDENTIFIER.getLocalName(), current);
-                    if (has(currentModule, START)) {
-                        writeAttribute(writer, Attribute.START, currentModule.require(START));
+                    if (has(currentModule, STARTLEVEL)) {
+                        writeAttribute(writer, Attribute.STARTLEVEL, currentModule.require(STARTLEVEL));
                     }
                 }
                 writer.writeEndElement();

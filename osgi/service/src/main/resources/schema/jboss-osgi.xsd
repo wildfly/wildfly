@@ -68,7 +68,7 @@
 
     <xs:complexType name="moduleType">
         <xs:attribute name="identifier" type="xs:string" use="required"/>
-        <xs:attribute name="start" type="xs:boolean"/>
+        <xs:attribute name="startlevel" type="xs:integer"/>
     </xs:complexType>
     
     <xs:complexType name="propertiesType">

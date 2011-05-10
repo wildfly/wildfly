@@ -44,7 +44,7 @@
             </properties>
             <modules>
                 <module identifier="org.osgi.compendium"/>
-                <module identifier="org.jboss.osgi.common" start="true"/>
+                <module identifier="org.jboss.osgi.common" startlevel="1"/>
             </modules>
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                 <property name="manager.root">jboss-osgi</property>
