@@ -30,7 +30,7 @@ import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION_PROPERTIES
 import static org.jboss.as.osgi.parser.CommonAttributes.MODULES;
 import static org.jboss.as.osgi.parser.CommonAttributes.PID;
 import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.START;
+import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
 
 import java.util.Hashtable;
 import java.util.Set;
@@ -86,18 +86,22 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     log.infof("Activating OSGi Subsystem");
                     long begin = System.currentTimeMillis();
-                    SubsystemState subsystemState = createSubsystemState(operation);
+                    try {
+                        SubsystemState subsystemState = createSubsystemState(operation);
 
-                    ServiceTarget serviceTarget = context.getServiceTarget();
-                    BundleStartTracker.addService(serviceTarget);
-                    InstallHandlerIntegration.addService(serviceTarget);
-                    FrameworkBootstrapService.addService(serviceTarget, subsystemState);
+                        ServiceTarget serviceTarget = context.getServiceTarget();
+                        BundleStartTracker.addService(serviceTarget);
+                        InstallHandlerIntegration.addService(serviceTarget);
+                        FrameworkBootstrapService.addService(serviceTarget, subsystemState);
 
-                    ConfigAdminServiceImpl.addService(serviceTarget, subsystemState);
+                        ConfigAdminServiceImpl.addService(serviceTarget, subsystemState);
 
-                    new OSGiDeploymentActivator().activate(updateContext);
-                    resultHandler.handleResultComplete();
-
+                        new OSGiDeploymentActivator().activate(updateContext);
+                        resultHandler.handleResultComplete();
+                    } catch (RuntimeException rte) {
+                        log.errorf(rte, "Failed to activate OSGi subsystem");
+                        throw rte;
+                    }
                     long end = System.currentTimeMillis();
                     log.debugf("Activated OSGi Subsystem in %dms", end - begin);
                 }
@@ -159,8 +163,9 @@ class OSGiSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             Set<String> keys = modules.keys();
             if (keys != null) {
                 for (String current : keys) {
-                    String value = modules.get(current).get(START).asString();
-                    subsystemState.addModule(new OSGiModule(ModuleIdentifier.fromString(current), Boolean.parseBoolean(value)));
+                    ModelNode modelNode = modules.get(current).get(STARTLEVEL);
+                    Integer startLevel = modelNode.isDefined() ? modelNode.asInt() : null;
+                    subsystemState.addModule(new OSGiModule(ModuleIdentifier.fromString(current), startLevel));
                 }
             }
         }
