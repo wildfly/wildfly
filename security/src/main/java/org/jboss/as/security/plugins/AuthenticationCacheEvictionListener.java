@@ -23,43 +23,26 @@
 package org.jboss.as.security.plugins;
 
 import java.security.Principal;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager;
+import org.infinispan.util.concurrent.BoundedConcurrentHashMap.EvictionListener;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
- * Factory that creates default {@code ConcurrentMap}s for authentication cache.
+ * Listener to perform a JAAS logout when an entry is evicted from the cache.
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public class DefaultAuthenticationCacheFactory {
+public class AuthenticationCacheEvictionListener implements EvictionListener<Principal, DomainInfo> {
 
-    /**
-     * Returns a default cache implementation
-     *
-     * @return cache implementation
-     */
-    public ConcurrentMap<Principal, DomainInfo> getCache() {
-        ConcurrentMap<Principal, DomainInfo> map = new BoundedConcurrentHashMap<Principal, JBossCachedAuthenticationManager.DomainInfo>(
-                1000, 16, Eviction.LIRS, new AuthenticationCacheEvictionListener()) {
-
-            private static final long serialVersionUID = 1459490003748298538L;
-
-            /** {@inheritDoc} */
-            @Override
-            public DomainInfo remove(Object key) {
-                DomainInfo removed = super.remove(key);
-                if (removed != null) {
-                    removed.logout();
-                }
-                return removed;
-            }
-
-        };
-        return map;
+    /** {@inheritDoc} */
+    @Override
+    public void onEntryEviction(Map<Principal, DomainInfo> evicted) {
+        for (Entry<Principal, DomainInfo> entry : evicted.entrySet()) {
+            DomainInfo domainInfo = entry.getValue();
+            domainInfo.logout();
+        }
     }
 
 }
