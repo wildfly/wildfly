@@ -447,8 +447,8 @@ public class ComponentDescription {
             // Interceptor instances
             final List<InterceptorDescription> interceptors = new ArrayList<InterceptorDescription>();
             //TODO: add default interceptor
-            interceptors.addAll(description.getClassInterceptors());
-
+            //interceptors.addAll(description.getClassInterceptors());
+            interceptors.addAll(description.getAllInterceptors().values());
             for (InterceptorDescription interceptorDescription : interceptors) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
                 final EEModuleClassConfiguration interceptorConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
@@ -458,6 +458,7 @@ public class ComponentDescription {
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorConfiguration.getInstantiator(), contextKey));
                 destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
 
+                final boolean isClassLevelInterceptor = description.getClassInterceptors().contains(interceptorDescription);
                 new ClassDescriptionTraversal(interceptorConfiguration, moduleConfiguration) {
                     @Override
                     public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
@@ -470,17 +471,22 @@ public class ComponentDescription {
                             injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(contextKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
                             uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
                         }
-                        final MethodIdentifier postConstructMethod = classDescription.getPostConstructMethod();
-                        if (postConstructMethod != null) {
-                            Method method = interceptorClassIndex.getMethod(postConstructMethod);
-                            InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
-                            userPostConstruct.addLast(interceptorFactory);
-                        }
-                        final MethodIdentifier preDestroyMethod = classDescription.getPreDestroyMethod();
-                        if (preDestroyMethod != null) {
-                            Method method = interceptorClassIndex.getMethod(preDestroyMethod);
-                            InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
-                            userPreDestroy.addLast(interceptorFactory);
+                        // Only class level interceptors are processed for postconstruct/predestroy methods.
+                        // Method level interceptors aren't supposed to be processed for postconstruct/predestroy lifecycle
+                        // methods, as per interceptors spec
+                        if (isClassLevelInterceptor) {
+                            final MethodIdentifier postConstructMethod = classDescription.getPostConstructMethod();
+                            if (postConstructMethod != null) {
+                                Method method = interceptorClassIndex.getMethod(postConstructMethod);
+                                InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
+                                userPostConstruct.addLast(interceptorFactory);
+                            }
+                            final MethodIdentifier preDestroyMethod = classDescription.getPreDestroyMethod();
+                            if (preDestroyMethod != null) {
+                                Method method = interceptorClassIndex.getMethod(preDestroyMethod);
+                                InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
+                                userPreDestroy.addLast(interceptorFactory);
+                            }
                         }
                         final MethodIdentifier aroundInvokeMethod = classDescription.getAroundInvokeMethod();
                         if (aroundInvokeMethod != null) {
