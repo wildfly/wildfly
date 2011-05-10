@@ -210,37 +210,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 //        processTxAttr((EJBComponentConfiguration) configuration, methodIntf, viewMethod);
 //    }
 
-    private void processTxAttr(EJBComponentConfiguration configuration, MethodIntf methodIntf, Method method) {
-        if (configuration.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
-            // it's a BMT bean
-            return;
-        }
-
-        String methodName = method.getName();
-        TransactionAttributeType txAttr = getTransactionAttribute(methodIntf, methodName, toString(method.getParameterTypes()));
-
-        ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> txAttrs = configuration.getTxAttrs();
-        ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = txAttrs.get(methodIntf);
-        if (perMethodIntf == null) {
-            perMethodIntf = new ConcurrentHashMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>();
-            txAttrs.put(methodIntf, perMethodIntf);
-        }
-        ConcurrentMap<ArrayKey, TransactionAttributeType> perMethod = perMethodIntf.get(methodName);
-        if (perMethod == null) {
-            perMethod = new ConcurrentHashMap<ArrayKey, TransactionAttributeType>();
-            perMethodIntf.put(methodName, perMethod);
-        }
-        perMethod.put(new ArrayKey((Object[]) method.getParameterTypes()), txAttr);
-    }
-
-    private static String[] toString(Class<?>[] a) {
-        final String[] result = new String[a.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = a[i].getName();
-        }
-        return result;
-    }
-
     protected void setupViewInterceptors(ViewDescription view) {
         this.addCurrentInvocationContextFactory(view);
     }

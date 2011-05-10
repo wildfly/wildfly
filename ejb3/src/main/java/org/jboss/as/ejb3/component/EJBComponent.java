@@ -22,14 +22,17 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 
 import javax.ejb.ApplicationException;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -62,14 +65,14 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         //this.applicationExceptions = configuration.getEjbJarConfiguration().getApplicationExceptions();
 
-        // TODO: FIXME: Fix these initialization once we have migrated to the new EE framework
         // constructs
-        this.utilities = null; //ejbComponentCreateService.getInjectionValue(EJBUtilities.SERVICE_NAME, EJBUtilities.class);
+        final DeploymentUnit deploymentUnit = ejbComponentCreateService.getDeploymentUnitInjector().getValue();
+        final ServiceController<EJBUtilities> serviceController = (ServiceController<EJBUtilities>) deploymentUnit.getServiceRegistry().getRequiredService(EJBUtilities.SERVICE_NAME);
+        this.utilities = serviceController.getValue();
 
 
-        // slurp some memory
-        txAttrs = null; //ejbComponentCreateService.getTxAttrs();
-        isBeanManagedTransaction = false; //ejbComponentCreateService.getTransactionManagementType().equals(TransactionManagementType.BEAN);
+        txAttrs = ejbComponentCreateService.getTxAttrs();
+        isBeanManagedTransaction = TransactionManagementType.BEAN.equals(ejbComponentCreateService.getTransactionManagementType());
     }
 
     @Override
@@ -135,13 +138,13 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     public TransactionAttributeType getTransactionAttributeType(MethodIntf methodIntf, Method method) {
         ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = txAttrs.get(methodIntf);
         if (perMethodIntf == null)
-            throw new IllegalStateException("Can't find tx attrs for " + methodIntf);
+            throw new IllegalStateException("Can't find tx attrs for view type " + methodIntf + " on bean named " + this.getComponentName());
         ConcurrentMap<ArrayKey, TransactionAttributeType> perMethod = perMethodIntf.get(method.getName());
         if (perMethod == null)
-            throw new IllegalStateException("Can't find tx attrs for method name " + method.getName() + " via " + methodIntf);
+            throw new IllegalStateException("Can't find tx attrs for method name " + method.getName() + " on view type " + methodIntf + " on bean named " + this.getComponentName());
         TransactionAttributeType txAttr = perMethod.get(new ArrayKey((Object[]) method.getParameterTypes()));
         if (txAttr == null)
-            throw new IllegalStateException("Can't find tx attr for method " + method + " via " + methodIntf);
+            throw new IllegalStateException("Can't find tx attr for method " + method + " on view type " + methodIntf + " on bean named " + this.getComponentName());
         return txAttr;
     }
 

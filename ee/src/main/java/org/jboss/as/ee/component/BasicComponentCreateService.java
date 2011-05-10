@@ -116,7 +116,7 @@ public class BasicComponentCreateService implements Service<Component> {
      *
      * @return the deployment unit injector
      */
-    public Injector<DeploymentUnit> getDeploymentUnitInjector() {
+    public InjectedValue<DeploymentUnit> getDeploymentUnitInjector() {
         return deploymentUnit;
     }
 

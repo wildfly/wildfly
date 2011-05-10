@@ -80,6 +80,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceName startServiceName = baseName.append("START");
         final BasicComponentCreateService createService = configuration.getComponentCreateServiceFactory().constructService(configuration);
         final ServiceBuilder<Component> createBuilder = serviceTarget.addService(createServiceName, createService);
+        // inject the DU
+        createBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, createService.getDeploymentUnitInjector());
+
         final ComponentStartService startService = new ComponentStartService();
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
@@ -87,7 +90,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         if(moduleConfiguration == null) {
             return;
         }
-
         // Add all service dependencies
         for (DependencyConfigurator configurator : configuration.getCreateDependencies()) {
             configurator.configureDependency(createBuilder);
