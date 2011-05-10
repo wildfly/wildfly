@@ -37,6 +37,9 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.MINOR_VERS
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
+
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -59,6 +62,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.jca.adapters.jdbc.statistics.JdbcStatisticsPlugin;
+import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPoolStatisticsImpl;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -68,7 +73,7 @@ import org.jboss.dmr.ModelType;
 class DataSourcesSubsystemProviders {
 
     static final AttributeDefinition[] DATASOURCE_ATTRIBUTE = new AttributeDefinition[] { AttributeDefinition.CONNECTION_URL,
-            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.JNDINAME, AttributeDefinition.MODULE,
+            AttributeDefinition.DRIVER_CLASS, AttributeDefinition.JNDINAME, AttributeDefinition.DRIVER,
             AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
             AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
             AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
@@ -85,7 +90,7 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.SPY };
 
     static final AttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new AttributeDefinition[] {
-            AttributeDefinition.XADATASOURCECLASS, AttributeDefinition.JNDINAME, AttributeDefinition.MODULE,
+            AttributeDefinition.XADATASOURCECLASS, AttributeDefinition.JNDINAME, AttributeDefinition.DRIVER,
             AttributeDefinition.NEW_CONNECTION_SQL, AttributeDefinition.POOLNAME, AttributeDefinition.URL_DELIMITER,
             AttributeDefinition.URL_SELECTOR_STRATEGY_CLASS_NAME, AttributeDefinition.USE_JAVA_CONTEXT,
             AttributeDefinition.ENABLED, AttributeDefinition.MAX_POOL_SIZE, AttributeDefinition.MIN_POOL_SIZE,
@@ -104,6 +109,9 @@ class DataSourcesSubsystemProviders {
             AttributeDefinition.SPY };
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+
+    static final JdbcStatisticsPlugin jdbcMetrics = new JdbcStatisticsPlugin();
+    static final ManagedConnectionPoolStatisticsImpl poolMetrics = new ManagedConnectionPoolStatisticsImpl(1);
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
@@ -245,6 +253,33 @@ class DataSourcesSubsystemProviders {
                 node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
             }
+
+            for (String name : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
+                node.get(ATTRIBUTES, name, DESCRIPTION).set(jdbcMetrics.getDescription(name));
+                ModelType modelType = ModelType.STRING;
+                if (jdbcMetrics.getType(name) == int.class) {
+                    modelType = ModelType.INT;
+                }
+                if (jdbcMetrics.getType(name) == long.class) {
+                    modelType = ModelType.LONG;
+                }
+                node.get(ATTRIBUTES, name, TYPE).set(modelType);
+                node.get(ATTRIBUTES, name, REQUIRED).set(false);
+            }
+
+            for (String name : PoolMetrics.ATTRIBUTES) {
+                node.get(ATTRIBUTES, name, DESCRIPTION).set(poolMetrics.getDescription(name));
+                ModelType modelType = ModelType.STRING;
+                if (poolMetrics.getType(name) == int.class) {
+                    modelType = ModelType.INT;
+                }
+                if (poolMetrics.getType(name) == long.class) {
+                    modelType = ModelType.LONG;
+                }
+                node.get(ATTRIBUTES, name, TYPE).set(modelType);
+                node.get(ATTRIBUTES, name, REQUIRED).set(false);
+            }
+
             return node;
         }
     };
@@ -349,6 +384,32 @@ class DataSourcesSubsystemProviders {
                 node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
             }
+
+            for (String name : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
+                node.get(ATTRIBUTES, name, DESCRIPTION).set(jdbcMetrics.getDescription(name));
+                ModelType modelType = ModelType.STRING;
+                if (jdbcMetrics.getType(name) == int.class) {
+                    modelType = ModelType.INT;
+                }
+                if (jdbcMetrics.getType(name) == long.class) {
+                    modelType = ModelType.LONG;
+                }
+                node.get(ATTRIBUTES, name, TYPE).set(modelType);
+                node.get(ATTRIBUTES, name, REQUIRED).set(false);
+            }
+            for (String name : PoolMetrics.ATTRIBUTES) {
+                node.get(ATTRIBUTES, name, DESCRIPTION).set(poolMetrics.getDescription(name));
+                ModelType modelType = ModelType.STRING;
+                if (poolMetrics.getType(name) == int.class) {
+                    modelType = ModelType.INT;
+                }
+                if (poolMetrics.getType(name) == long.class) {
+                    modelType = ModelType.LONG;
+                }
+                node.get(ATTRIBUTES, name, TYPE).set(modelType);
+                node.get(ATTRIBUTES, name, REQUIRED).set(false);
+            }
+
             return node;
         }
     };
