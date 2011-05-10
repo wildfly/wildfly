@@ -26,6 +26,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ *         TODO: Delete this class once new EE framework refactoring is done
  */
 public class StatefulSessionComponentConfiguration extends SessionBeanComponentConfiguration {
 
@@ -51,6 +52,5 @@ public class StatefulSessionComponentConfiguration extends SessionBeanComponentC
             });
         }
         */
-        setComponentCreateServiceFactory(StatefulSessionComponentCreateService.FACTORY);
     }
 }

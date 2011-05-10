@@ -23,9 +23,7 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 
 /**
@@ -47,10 +45,4 @@ public class StatefulSessionComponentCreateService extends EJBComponentCreateSer
         return new StatefulSessionComponent(this);
     }
 
-        public static final ComponentCreateServiceFactory FACTORY = new ComponentCreateServiceFactory() {
-        @Override
-        public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
-            return new StatefulSessionComponentCreateService(configuration);
-        }
-    };
 }

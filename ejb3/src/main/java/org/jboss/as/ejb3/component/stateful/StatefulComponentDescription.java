@@ -23,8 +23,10 @@
 package org.jboss.as.ejb3.component.stateful;
 
 
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -65,7 +67,17 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        return new StatefulSessionComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+
+        final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        // setup the component create service
+        statefulComponentConfiguration.setComponentCreateServiceFactory(new ComponentCreateServiceFactory() {
+            @Override
+            public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
+                // return the stateful component create service
+                return new StatefulSessionComponentCreateService(configuration);
+            }
+        });
+        return statefulComponentConfiguration;
     }
 
     @Override

@@ -23,8 +23,10 @@
 package org.jboss.as.ejb3.component.stateless;
 
 
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -49,9 +51,9 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     /**
      * Construct a new instance.
      *
-     * @param componentName      the component name
-     * @param componentClassName the component instance class name
-     * @param ejbModuleDescription  the module description
+     * @param componentName        the component name
+     * @param componentClassName   the component instance class name
+     * @param ejbModuleDescription the module description
      */
     public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
                                          final ServiceName deploymentUnitServiceName) {
@@ -60,7 +62,16 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
 
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        return new StatelessSessionComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        // setup the component create service
+        statelessComponentConfiguration.setComponentCreateServiceFactory(new ComponentCreateServiceFactory() {
+            @Override
+            public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
+                // return the stateless component create service
+                return new StatelessSessionComponentCreateService(configuration);
+            }
+        });
+        return statelessComponentConfiguration;
     }
 
     @Override
