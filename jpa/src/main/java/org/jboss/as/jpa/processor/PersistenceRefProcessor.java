@@ -87,6 +87,9 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         PersistenceUnitReferencesMetaData persistenceUnitRefs = environment.getEnvironment().getPersistenceUnitRefs();
 
         if (persistenceUnitRefs != null) {
+            if (persistenceUnitRefs.size() > 0) {
+                JPADeploymentMarker.mark(deploymentUnit);
+            }
             for (PersistenceUnitReferenceMetaData puRef : persistenceUnitRefs) {
                 String name = puRef.getName();
                 String persistenceUnitName = puRef.getPersistenceUnitName();
