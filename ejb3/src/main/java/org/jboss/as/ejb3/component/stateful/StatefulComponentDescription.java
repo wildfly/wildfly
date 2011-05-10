@@ -37,14 +37,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionManagementType;
-import java.io.Serializable;
 
 /**
  * User: jpai
@@ -113,7 +111,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 // add the stateful component instance associator
-                configuration.addViewInterceptor(new StatefulComponentInstanceInterceptorFactory(sessionIdContextKey));
+                configuration.addViewInterceptor(new StatefulComponentInstanceInterceptorFactory(sessionIdContextKey), true);
             }
         });
 
@@ -140,7 +138,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         }
                     };
                     // add the bmt interceptor factory to the view
-                    configuration.addViewInterceptor(bmtComponentInterceptorFactory);
+                    configuration.addViewInterceptor(bmtComponentInterceptorFactory, true);
                 }
             });
         }

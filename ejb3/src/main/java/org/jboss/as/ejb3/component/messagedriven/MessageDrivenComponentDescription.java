@@ -126,7 +126,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(PooledInstanceInterceptor.pooled());
+                configuration.addViewInterceptor(PooledInstanceInterceptor.pooled(), true);
             }
         });
 
@@ -138,7 +138,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 // current invocation context interceptor for MDBs
-                configuration.addViewInterceptor(new ImmediateInterceptorFactory(MessageDrivenInvocationContextInterceptor.INSTANCE));
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(MessageDrivenInvocationContextInterceptor.INSTANCE), true);
             }
         });
     }

@@ -22,6 +22,10 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.msc.service.ServiceName;
+
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -29,10 +33,6 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * A configuration of a component view.
@@ -188,13 +188,18 @@ public class ViewConfiguration {
      * Adds a "server side" interceptor which will be applicable for all methods exposed by this view.
      *
      * @param interceptorFactory The interceptor to add
+     * @param first If this interceptor should be added to the front of the chain
      * @see #getViewInterceptorDeque(java.lang.reflect.Method)
      */
-    public void addViewInterceptor(InterceptorFactory interceptorFactory) {
+    public void addViewInterceptor(InterceptorFactory interceptorFactory, boolean first) {
         Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
         for (Method method : allMethodsOnView) {
             Deque<InterceptorFactory> interceptorsForMethod = this.getViewInterceptorDeque(method);
-            interceptorsForMethod.add(interceptorFactory);
+            if(first) {
+                interceptorsForMethod.addFirst(interceptorFactory);
+            } else {
+                interceptorsForMethod.add(interceptorFactory);
+            }
         }
     }
 

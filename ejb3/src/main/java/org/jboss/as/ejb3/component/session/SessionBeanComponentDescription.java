@@ -483,7 +483,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                             }
                             return new CMTTxInterceptor((TransactionalComponent) component);
                         }
-                    });
+                    }, true);
                 }
             }
         });
@@ -494,7 +494,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE), true);
             }
         });
     }
