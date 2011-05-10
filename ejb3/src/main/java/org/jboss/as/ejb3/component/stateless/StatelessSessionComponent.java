@@ -99,15 +99,8 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 //        return createClientInterceptor(view);
 //    }
 
-    //TODO: This should be getInstance()
     @Override
-    public ComponentInstance createInstance() {
-        // TODO: Use a pool
-        return super.createInstance();
-    }
-
-    @Override
-    protected BasicComponentInstance constructComponentInstance() {
+    protected BasicComponentInstance instantiateComponentInstance() {
         return new StatelessSessionComponentInstance(this);
     }
 

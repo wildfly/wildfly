@@ -36,7 +36,6 @@ import java.util.Map;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class MessageDrivenInvocationContextInterceptor implements Interceptor {
-    static final MessageDrivenInvocationContextInterceptor INSTANCE = new MessageDrivenInvocationContextInterceptor();
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {

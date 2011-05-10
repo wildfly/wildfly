@@ -119,7 +119,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     @Override
-    protected BasicComponentInstance constructComponentInstance() {
+    protected BasicComponentInstance instantiateComponentInstance() {
         return new StatefulSessionComponentInstance(this);
     }
 

@@ -520,15 +520,17 @@ public class ComponentDescription {
 
             final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
 
+            // apply instantiation interceptors
+            final Deque<InterceptorFactory> instantiationInterceptors = configuration.getInstantiationInterceptors();
+            instantiationInterceptors.addAll(instantiators);
+            instantiationInterceptors.add(Interceptors.getTerminalInterceptorFactory());
+            instantiationInterceptors.addFirst(tcclInterceptor);
+
             // Apply post-construct
             final Deque<InterceptorFactory> postConstructInterceptors = configuration.getPostConstructInterceptors();
             final Iterator<InterceptorFactory> injectorIterator = injectors.descendingIterator();
             while (injectorIterator.hasNext()) {
                 postConstructInterceptors.addFirst(injectorIterator.next());
-            }
-            final Iterator<InterceptorFactory> instantiatorIterator = instantiators.descendingIterator();
-            while (instantiatorIterator.hasNext()) {
-                postConstructInterceptors.addFirst(instantiatorIterator.next());
             }
             postConstructInterceptors.addAll(userPostConstruct);
             postConstructInterceptors.add(Interceptors.getTerminalInterceptorFactory());
@@ -592,10 +594,12 @@ public class ComponentDescription {
                 }
             }
 
-            //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain and the TCCL interceptor
+            //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
+            // and also add the tccl interceptor
             for (Method method : configuration.getDefinedComponentMethods()) {
                 configuration.getComponentInterceptorDeque(method).addFirst(Interceptors.getInitialInterceptorFactory());
                 configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
+                // add to the beginning
                 configuration.getComponentInterceptorDeque(method).addFirst(tcclInterceptor);
             }
 

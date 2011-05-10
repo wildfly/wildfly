@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.component.session;
 
-import org.jboss.as.ejb3.component.CancellationFlag;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.CancellationFlag;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
@@ -38,7 +38,6 @@ import java.util.Map;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class SessionInvocationContextInterceptor implements Interceptor {
-    public static final SessionInvocationContextInterceptor INSTANCE = new SessionInvocationContextInterceptor();
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
@@ -88,7 +87,7 @@ public class SessionInvocationContextInterceptor implements Interceptor {
 
         public boolean wasCancelCalled() throws IllegalStateException {
             final CancellationFlag flag = context.getPrivateData(CancellationFlag.class);
-            if(flag != null) {
+            if (flag != null) {
                 return flag.get();
             }
             return super.wasCancelCalled();

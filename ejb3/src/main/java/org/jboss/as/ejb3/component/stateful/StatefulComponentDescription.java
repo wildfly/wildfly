@@ -33,11 +33,9 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -96,17 +94,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         super.setupViewInterceptors(view);
 
         final Object sessionIdContextKey = new Object();
-
-        // add the CurrentInvocationContext associating interceptor to the *post-construct interceptor chain of componet view instance*.
-        // We need it to the post-construct chain too because the SFSB instance gets created on lookup and the current invocation context
-        // might be required during injection into the SFSB (for resource like EJBContext)
-        view.getConfigurators().add(new ViewConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
-                viewConfiguration.getViewPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
-            }
-        });
-
         // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
         view.getConfigurators().addFirst(new ViewConfigurator() {
             @Override
@@ -114,7 +101,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 // interceptor factory return an interceptor which sets up the session id on component view instance creation
                 InterceptorFactory sessionIdGeneratingInterceptorFactory = new StatefulComponentSessionIdGeneratingInterceptorFactory(sessionIdContextKey);
                 // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
-                viewConfiguration.getViewPostConstructInterceptors().add(sessionIdGeneratingInterceptorFactory);
+                viewConfiguration.getViewPostConstructInterceptors().addFirst(sessionIdGeneratingInterceptorFactory);
             }
         });
 

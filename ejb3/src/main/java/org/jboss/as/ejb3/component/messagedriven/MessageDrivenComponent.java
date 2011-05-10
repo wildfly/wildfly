@@ -117,7 +117,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    protected BasicComponentInstance constructComponentInstance() {
+    protected BasicComponentInstance instantiateComponentInstance() {
         return new MessageDrivenComponentInstance(this);
     }
 

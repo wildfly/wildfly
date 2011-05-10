@@ -136,14 +136,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // Add a dependency on the asyc-executor
         addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
 
-        //TODO: is adding configurators in the constructor ok, if not where should this go
-        getConfigurators().add(new ComponentConfigurator() {
-            @Override
-            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
-                configuration.getPreDestroyInterceptors().addFirst(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE));
-            }
-        });
     }
 
     /**
@@ -490,12 +482,24 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     @Override
+    protected void addCurrentInvocationContextFactory() {
+        // add the current invocation context interceptor at the beginning of the component instance post construct chain
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()));
+            }
+        });
+    }
+
+    @Override
     protected void addCurrentInvocationContextFactory(ViewDescription view) {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(new ImmediateInterceptorFactory(SessionInvocationContextInterceptor.INSTANCE), true);
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()), true);
             }
         });
+
     }
 }

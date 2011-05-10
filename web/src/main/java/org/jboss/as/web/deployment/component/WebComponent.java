@@ -24,7 +24,7 @@ package org.jboss.as.web.deployment.component;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
-import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.BasicComponentInstance;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} for web components
@@ -43,7 +43,7 @@ public class WebComponent extends BasicComponent {
     }
 
     @Override
-    public ComponentInstance createInstance() {
+    public BasicComponentInstance instantiateComponentInstance() {
         return new WebComponentInstance(this);
     }
 

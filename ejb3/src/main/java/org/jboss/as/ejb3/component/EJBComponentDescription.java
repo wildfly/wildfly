@@ -97,6 +97,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+        // setup a current invocation interceptor
+        this.addCurrentInvocationContextFactory();
+
     }
 
     private static <K, V> V get(Map<K, V> map, K key) {
@@ -246,5 +249,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     }
 
+    /**
+     * Setup the current invocation context interceptor, which will be used during the post-construct
+     * lifecycle of the component instance
+     */
+    protected abstract void addCurrentInvocationContextFactory();
+
+    /**
+     * Setup the current invocation context interceptor, which will be used during the invocation on the view (methods)
+     *
+     * @param view The view for which the interceptor has to be setup
+     */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
+
 }

@@ -53,7 +53,7 @@ public class EJBComponentDescriptionTestCase {
         final EJBComponentConfiguration configuration = mock(EJBComponentConfiguration.class);
         when(configuration.getTransactionManagementType()).thenReturn(TransactionManagementType.BEAN);
 
-        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp","TestModule");
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
         final ServiceName duServiceName = Services.deploymentUnitName("Dummy Deployment Unit");
         final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
         final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", ejbJarDescription, duServiceName) {
@@ -65,6 +65,11 @@ public class EJBComponentDescriptionTestCase {
 
             @Override
             protected void addCurrentInvocationContextFactory(ViewDescription view) {
+                // no-op
+            }
+
+            @Override
+            protected void addCurrentInvocationContextFactory() {
                 // no-op
             }
         };

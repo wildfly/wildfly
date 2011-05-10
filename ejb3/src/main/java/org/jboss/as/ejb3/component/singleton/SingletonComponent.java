@@ -62,7 +62,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     /**
      * Construct a new instance.
      *
-     * @param singletonComponentCreateService the component configuration
+     * @param singletonComponentCreateService
+     *         the component configuration
      */
     public SingletonComponent(final SingletonComponentCreateService singletonComponentCreateService) {
         super(singletonComponentCreateService);
@@ -74,15 +75,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    public synchronized ComponentInstance createInstance() {
-        if (this.singletonComponentInstance != null) {
-            throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
-        }
-        return new SingletonComponentInstance(this);
-    }
-
-    @Override
-    protected BasicComponentInstance constructComponentInstance() {
+    protected synchronized BasicComponentInstance instantiateComponentInstance() {
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }

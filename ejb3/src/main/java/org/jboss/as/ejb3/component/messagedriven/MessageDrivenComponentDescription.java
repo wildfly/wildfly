@@ -23,6 +23,8 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -30,6 +32,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
+import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -133,12 +136,22 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     @Override
+    protected void addCurrentInvocationContextFactory() {
+        // add the current invocation context interceptor at the beginning of the component instance post construct chain
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(new MessageDrivenInvocationContextInterceptor()));
+            }
+        });
+    }
+
+    @Override
     protected void addCurrentInvocationContextFactory(ViewDescription view) {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                // current invocation context interceptor for MDBs
-                configuration.addViewInterceptor(new ImmediateInterceptorFactory(MessageDrivenInvocationContextInterceptor.INSTANCE), true);
+                configuration.addViewInterceptor(new ImmediateInterceptorFactory(new MessageDrivenInvocationContextInterceptor()), true);
             }
         });
     }

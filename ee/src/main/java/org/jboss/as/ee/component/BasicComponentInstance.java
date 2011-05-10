@@ -50,6 +50,7 @@ public class BasicComponentInstance implements ComponentInstance {
     private final BasicComponent component;
     private final Object instance;
     private final Interceptor preDestroy;
+    private final Interceptor postConstruct;
     @SuppressWarnings("unused")
     private volatile int done;
 
@@ -72,16 +73,19 @@ public class BasicComponentInstance implements ComponentInstance {
 
         // Interceptor factory context
         final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
-
         context.getContextData().put(Component.class, component);
         context.getContextData().put(ComponentInstance.class, this);
 
-        // Call post-construct hooks
-        final Interceptor postConstruct = component.getPostConstruct().create(context);
+        // create the instantiation interceptors
+        final Interceptor instantiationInterceptors = component.getInstantiationInterceptorFactory().create(context);
+        // Create the post-construct interceptors for the component instance
+        postConstruct = component.getPostConstruct().create(context);
+        // create the pre-destroy interceptors
         preDestroy = component.getPreDestroy().create(context);
-        @SuppressWarnings("unchecked")
-        final AtomicReference<ManagedReference> referenceReference = (AtomicReference<ManagedReference>) context.getContextData().get(INSTANCE_KEY);
 
+        final AtomicReference<ManagedReference> instanceReference = (AtomicReference<ManagedReference>) context.getContextData().get(INSTANCE_KEY);
+
+        // now invoke the instantiation interceptors
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.putPrivateData(Component.class, component);
 
@@ -90,31 +94,38 @@ public class BasicComponentInstance implements ComponentInstance {
         // this needs to be done ATM as we need this to get the EjbContext
         interceptorContext.putPrivateData(ComponentInstance.class, this);
         try {
-            postConstruct.processInvocation(interceptorContext);
+            instantiationInterceptors.processInvocation(interceptorContext);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to construct component instance", e);
         }
-        final Map<Method,InterceptorFactory> interceptorFactoryMap = component.getInterceptorFactoryMap();
+
+        final Map<Method, InterceptorFactory> interceptorFactoryMap = component.getInterceptorFactoryMap();
         final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
         for (Method method : interceptorFactoryMap.keySet()) {
             interceptorMap.put(method, interceptorFactoryMap.get(method).create(context));
         }
         methodMap = Collections.unmodifiableMap(interceptorMap);
-        instance = referenceReference.get().getInstance();
+        // get the object instance
+        this.instance = instanceReference.get().getInstance();
     }
 
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Component getComponent() {
         return component;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getInstance() {
-        return instance;
+        return this.instance;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Interceptor getInterceptor(final Method method) throws IllegalStateException {
         Interceptor interceptor = methodMap.get(method);
         if (interceptor == null) {
@@ -123,12 +134,16 @@ public class BasicComponentInstance implements ComponentInstance {
         return interceptor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Collection<Method> allowedMethods() {
         return methodMap.keySet();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
             final InterceptorContext interceptorContext = new InterceptorContext();
@@ -144,5 +159,9 @@ public class BasicComponentInstance implements ComponentInstance {
 
     protected void finalize() {
         destroy();
+    }
+
+    Interceptor getPostConstruct() {
+        return this.postConstruct;
     }
 }

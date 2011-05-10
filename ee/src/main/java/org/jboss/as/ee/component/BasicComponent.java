@@ -24,6 +24,8 @@ package org.jboss.as.ee.component;
 
 
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
@@ -58,6 +60,7 @@ public class BasicComponent implements Component {
 
     private final String componentName;
     private final Class<?> componentClass;
+    private final InterceptorFactory instantiationInterceptorFactory;
     private final InterceptorFactory postConstruct;
     private final InterceptorFactory preDestroy;
     private final ManagedReferenceFactory componentInstantiator;
@@ -76,6 +79,7 @@ public class BasicComponent implements Component {
     public BasicComponent(final BasicComponentCreateService createService) {
         componentName = createService.getComponentName();
         componentClass = createService.getComponentClass();
+        this.instantiationInterceptorFactory = createService.getInstantiationInterceptorFactory();
         postConstruct = createService.getPostConstruct();
         preDestroy = createService.getPreDestroy();
         interceptorFactoryMap = createService.getComponentInterceptors();
@@ -114,7 +118,34 @@ public class BasicComponent implements Component {
      *
      * @return the component instance
      */
-    protected BasicComponentInstance constructComponentInstance() {
+    protected final BasicComponentInstance constructComponentInstance() {
+        // create the component instance
+        BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance();
+        // now invoke the post construct interceptors
+        final Interceptor postConstructInterceptorChain = basicComponentInstance.getPostConstruct();
+        final InterceptorContext interceptorContext = new InterceptorContext();
+        interceptorContext.putPrivateData(Component.class, this);
+        interceptorContext.putPrivateData(ComponentInstance.class, basicComponentInstance);
+        try {
+            postConstructInterceptorChain.processInvocation(interceptorContext);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to invoke post construct for component instance", e);
+        }
+
+        // return the component instance
+        return basicComponentInstance;
+    }
+
+    /**
+     * Responsible for instantiating the {@link BasicComponentInstance}. This method is *not* responsible for
+     * handling the post construct activities like injection and lifecycle invocation. That is handled by
+     * {@link #constructComponentInstance()}.
+     * <p/>
+     *
+     * @return
+     */
+    protected BasicComponentInstance instantiateComponentInstance() {
+        // create and return the component instance
         return new BasicComponentInstance(this);
     }
 
@@ -148,6 +179,7 @@ public class BasicComponent implements Component {
 
     /**
      * {@inheritDoc}
+     *
      * @param stopContext
      */
     public void stop(final StopContext stopContext) {
@@ -168,6 +200,16 @@ public class BasicComponent implements Component {
         return interceptorFactoryMap;
     }
 
+    /**
+     * Returns the {@link InterceptorFactory} which will be used to create {@link Interceptor}s for intercepting
+     * the instantiation of a {@link BasicComponentInstance}
+     *
+     * @return
+     */
+    InterceptorFactory getInstantiationInterceptorFactory() {
+        return this.instantiationInterceptorFactory;
+    }
+
     InterceptorFactory getPostConstruct() {
         return postConstruct;
     }
@@ -183,7 +225,7 @@ public class BasicComponent implements Component {
     void finishDestroy() {
         //otherwise the server will hang
         if (instanceCount.decrementAndGet() == 0) {
-            if(stopContext != null)
+            if (stopContext != null)
                 stopContext.complete();
         }
     }
