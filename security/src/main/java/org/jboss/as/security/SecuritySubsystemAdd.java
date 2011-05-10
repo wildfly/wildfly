@@ -35,8 +35,6 @@ import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
 
 import javax.security.auth.login.Configuration;
 
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -60,7 +58,6 @@ import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
@@ -106,8 +103,6 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
     private static final String SUBJECT_FACTORY = ModuleName.PICKETBOX.getName() + ":" + ModuleName.PICKETBOX.getSlot() + ":"
             + JBossSecuritySubjectFactory.class.getName();
-
-    private static final String CACHE_CONTAINER_NAME = "security";
 
     static final SecuritySubsystemAdd INSTANCE = new SecuritySubsystemAdd();
 
@@ -239,10 +234,6 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                             resolvedAuthorizationManagerClassName, resolvedAuditManagerClassName,
                             resolvedIdentityTrustManagerClassName, resolvedMappingManagerClassName);
                     target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
-                            .addDependency(DependencyType.OPTIONAL,
-                                    EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
-                                    EmbeddedCacheManager.class,
-                                    securityManagementService.getAuthenticationCacheManagerInjector())
                             .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
                     // add subject factory service

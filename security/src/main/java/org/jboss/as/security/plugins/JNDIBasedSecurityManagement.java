@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -75,7 +76,6 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private String auditManagerClassName;
     private String identityTrustManagerClassName;
     private String mappingManagerClassName;
-    private EmbeddedCacheManager cacheManager;
 
     // creating a singleton
     private JNDIBasedSecurityManagement() {
@@ -275,23 +275,35 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * Creates a {@code SecurityDomainContext}
      *
      * @param securityDomain name of the security domain
+     * @param cacheFactory creates a cache implementation
      * @return an instance of {@code SecurityDomainContext}
      * @throws Exception if an error occurs during creation
      */
-    public SecurityDomainContext createSecurityDomainContext(String securityDomain) throws Exception {
+    public SecurityDomainContext createSecurityDomainContext(String securityDomain, Object cacheFactory) throws Exception {
         log.debug("Creating SDC for domain=" + securityDomain);
         AuthenticationManager am = createAuthenticationManager(securityDomain);
         // create authentication cache
-        Cache<Principal, DomainInfo> cache = null;
-        if (cacheManager != null) {
-            // TODO override global settings with security domain specific
-            cacheManager.defineConfiguration(securityDomain, "auth-cache", new Configuration());
-            cache = cacheManager.getCache(securityDomain);
-        }
-        if (cache != null && am instanceof CacheableManager) {
-            @SuppressWarnings("unchecked")
-            CacheableManager<Cache<Principal, DomainInfo>, Principal> cm = (CacheableManager<Cache<Principal, DomainInfo>, Principal>) am;
-            cm.setCache(cache);
+        if (cacheFactory instanceof EmbeddedCacheManager) {
+            EmbeddedCacheManager cacheManager = EmbeddedCacheManager.class.cast(cacheFactory);
+            Cache<Principal, DomainInfo> cache = null;
+            if (cacheManager != null) {
+                // TODO override global settings with security domain specific
+                cacheManager.defineConfiguration(securityDomain, "auth-cache", new Configuration());
+                cache = cacheManager.getCache(securityDomain);
+            }
+            if (cache != null && am instanceof CacheableManager) {
+                @SuppressWarnings("unchecked")
+                CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) am;
+                cm.setCache(cache);
+            }
+        } else if (cacheFactory instanceof DefaultAuthenticationCacheFactory) {
+            DefaultAuthenticationCacheFactory cacheManager = DefaultAuthenticationCacheFactory.class.cast(cacheFactory);
+            ConcurrentMap<Principal, DomainInfo> cache = cacheManager.getCache();
+            if (cache != null && am instanceof CacheableManager) {
+                @SuppressWarnings("unchecked")
+                CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) am;
+                cm.setCache(cache);
+            }
         }
 
         // set DeepCopySubject option if supported
@@ -420,15 +432,6 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             if (log.isTraceEnabled())
                 log.trace("Optional setDeepCopySubjectMode failed: " + e.getLocalizedMessage());
         }
-    }
-
-    /**
-     * Sets {@code EmbeddedCacheManager} implementation to create cache instances.
-     *
-     * @param cacheManager {@code EmbeddedCacheManager} implementation
-     */
-    public void setCacheManager(EmbeddedCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
     }
 
 }

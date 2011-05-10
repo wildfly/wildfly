@@ -37,6 +37,7 @@ public enum Attribute {
     AUDIT_MANAGER_CLASS_NAME("audit-manager-class-name"),
     AUTHENTICATION_MANAGER_CLASS_NAME("authentication-manager-class-name"),
     AUTHORIZATION_MANAGER_CLASS_NAME("authorization-manager-class-name"),
+    CACHE_TYPE("cache-type"),
     CIPHER_SUITES("cipher-suites"),
     CLIENT_ALIAS("client-alias"),
     CLIENT_AUTH("client-auth"),

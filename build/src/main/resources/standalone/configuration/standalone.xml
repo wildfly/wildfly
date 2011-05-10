@@ -159,16 +159,10 @@
                     <eviction strategy="NONE"/>
                 </local-cache>
             </cache-container>
-            <cache-container name="security" default-cache="auth-cache">
-                <local-cache name="auth-cache">
-                    <eviction strategy="FIFO" max-entries="10000" interval="600000"/>
-                    <expiration max-idle="3600000" lifespan="86400000"/>
-                </local-cache>
-            </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
-                <security-domain name="other">
+                <security-domain name="other" cache-type="default">
                     <authentication>
                         <login-module code="UsersRoles" flag="required"/>
                     </authentication>

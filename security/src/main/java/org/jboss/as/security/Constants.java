@@ -39,6 +39,7 @@ public interface Constants {
     String AUTHENTICATION_MANAGER_CLASS_NAME = "authentication-manager-class-name";
     String AUTHORIZATION = "authorization";
     String AUTHORIZATION_MANAGER_CLASS_NAME = "authorization-manager-class-name";
+    String CACHE_TYPE = "cache-type";
     String CIPHER_SUITES = "cipher-suites";
     String CLIENT_ALIAS = "client-alias";
     String CLIENT_AUTH = "client-auth";

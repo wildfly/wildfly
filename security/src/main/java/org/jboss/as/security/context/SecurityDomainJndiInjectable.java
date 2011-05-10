@@ -40,6 +40,7 @@ import javax.naming.OperationNotSupportedException;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.modules.ModuleLoadException;
@@ -137,7 +138,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ManagedR
             throws Exception {
         SecurityDomainContext sdc = securityManagerMap.get(securityDomain);
         if (sdc == null) {
-            sdc = securityManagement.createSecurityDomainContext(securityDomain);
+            sdc = securityManagement.createSecurityDomainContext(securityDomain, new DefaultAuthenticationCacheFactory());
             securityManagerMap.put(securityDomain, sdc);
         }
         return sdc;

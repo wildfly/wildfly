@@ -24,7 +24,9 @@ package org.jboss.as.security.service;
 
 import javax.security.auth.login.Configuration;
 
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityExtension;
+import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.logging.Logger;
@@ -55,6 +57,8 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     private final InjectedValue<Configuration> configurationValue = new InjectedValue<Configuration>();
 
+    private final InjectedValue<EmbeddedCacheManager> cacheManagerValue = new InjectedValue<EmbeddedCacheManager>();
+
     private final String name;
 
     private final ApplicationPolicy applicationPolicy;
@@ -63,10 +67,14 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     private SecurityDomainContext securityDomainContext;
 
-    public SecurityDomainService(String name, ApplicationPolicy applicationPolicy, JSSESecurityDomain jsseSecurityDomain) {
+    private final String cacheType;
+
+    public SecurityDomainService(String name, ApplicationPolicy applicationPolicy, JSSESecurityDomain jsseSecurityDomain,
+            String cacheType) {
         this.name = name;
         this.applicationPolicy = applicationPolicy;
         this.jsseSecurityDomain = jsseSecurityDomain;
+        this.cacheType = cacheType;
     }
 
     /** {@inheritDoc} */
@@ -80,8 +88,14 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
             applicationPolicyRegistration.addApplicationPolicy(applicationPolicy.getName(), applicationPolicy);
         }
         final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
+        Object cacheFactory = null;
+        if ("infinispan".equals(cacheType)) {
+            cacheFactory = cacheManagerValue.getValue();
+        } else if ("default".equals(cacheType)) {
+            cacheFactory = new DefaultAuthenticationCacheFactory();
+        }
         try {
-            securityDomainContext = securityManagement.createSecurityDomainContext(name);
+            securityDomainContext = securityManagement.createSecurityDomainContext(name, cacheFactory);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -129,6 +143,15 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
      */
     public Injector<Configuration> getConfigurationInjector() {
         return configurationValue;
+    }
+
+    /**
+     * Target {@code Injector}
+     *
+     * @return target
+     */
+    public Injector<EmbeddedCacheManager> getCacheManagerInjector() {
+        return cacheManagerValue;
     }
 
 }

@@ -49,6 +49,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CACHE_TYPE;
 import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
@@ -287,6 +288,9 @@ class SecuritySubsystemDescriptions {
             op.get(ATTRIBUTES, EXTENDS, DESCRIPTION).set(bundle.getString("extends"));
             op.get(ATTRIBUTES, EXTENDS, TYPE).set(ModelType.STRING);
             op.get(ATTRIBUTES, EXTENDS, REQUIRED).set(false);
+            op.get(ATTRIBUTES, CACHE_TYPE, DESCRIPTION).set(bundle.getString("cache-type"));
+            op.get(ATTRIBUTES, CACHE_TYPE, TYPE).set(ModelType.STRING);
+            op.get(ATTRIBUTES, CACHE_TYPE, REQUIRED).set(false);
             op.get(CHILDREN, AUTHENTICATION).set(getAuthentication(locale));
             op.get(CHILDREN, AUTHENTICATION_JASPI).set(getAuthenticationJaspi(locale));
             op.get(CHILDREN, AUTHORIZATION).set(getAuthorization(locale));
@@ -308,6 +312,9 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, EXTENDS, DESCRIPTION).set(bundle.getString("extends"));
             op.get(REQUEST_PROPERTIES, EXTENDS, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, EXTENDS, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, CACHE_TYPE, DESCRIPTION).set(bundle.getString("cache-type"));
+            op.get(REQUEST_PROPERTIES, CACHE_TYPE, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, CACHE_TYPE, REQUIRED).set(false);
             op.get(CHILDREN, AUTHENTICATION).set(getAuthenticationAdd(locale));
             op.get(CHILDREN, AUTHENTICATION_JASPI).set(getAuthenticationJaspiAdd(locale));
             op.get(CHILDREN, AUTHORIZATION).set(getAuthorizationAdd(locale));
@@ -836,5 +843,7 @@ class SecuritySubsystemDescriptions {
 
             return node;
         }
+
     }
+
 }

@@ -22,17 +22,14 @@
 
 package org.jboss.as.security.service;
 
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.ISecurityManagement;
 
 /**
@@ -62,8 +59,6 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
 
     private ISecurityManagement securityManagement;
 
-    private final InjectedValue<EmbeddedCacheManager> cacheManager = new InjectedValue<EmbeddedCacheManager>();
-
     public SecurityManagementService(String authenticationManagerClassName, boolean deepCopySubjectMode,
             String callbackHandlerClassName, String authorizationManagerClassName, String auditManagerClassName,
             String identityTrustManagerClassName, String mappingManagerClassName) {
@@ -90,8 +85,6 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
         securityManagement.setAuditManagerClassName(auditManagerClassName);
         securityManagement.setIdentityTrustManagerClassName(identityTrustManagerClassName);
         securityManagement.setMappingManagerClassName(mappingManagerClassName);
-        // set injected cache manager
-        securityManagement.setCacheManager(cacheManager.getOptionalValue());
         this.securityManagement = securityManagement;
     }
 
@@ -105,15 +98,6 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
     @Override
     public ISecurityManagement getValue() throws IllegalStateException {
         return securityManagement;
-    }
-
-    /**
-     * Target {@code Injector}
-     *
-     * @return target
-     */
-    public Injector<EmbeddedCacheManager> getAuthenticationCacheManagerInjector() {
-        return cacheManager;
     }
 
 }

@@ -31,6 +31,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.AUTHENTICATION_JASPI;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CACHE_TYPE;
 import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
@@ -73,6 +74,8 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -83,11 +86,13 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
@@ -121,6 +126,8 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
 
     static final String OPERATION_NAME = ADD;
 
+    private static final String CACHE_CONTAINER_NAME = "security";
+
     static final ModelNode getRecreateOperation(ModelNode address, ModelNode securityDomain) {
         return Util.getOperation(OPERATION_NAME, address, securityDomain);
     }
@@ -141,21 +148,27 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
 
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, operation);
         final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(securityDomain, operation);
+        final String cacheType = getAuthenticationCacheType(operation);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
-                            applicationPolicy, jsseSecurityDomain);
+                            applicationPolicy, jsseSecurityDomain, cacheType);
                     final ServiceTarget target = context.getServiceTarget();
-                    target.addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
+                    ServiceBuilder<SecurityDomainContext> builder = target
+                            .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
                             .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                                     securityDomainService.getSecurityManagementInjector())
                             .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
-                                    securityDomainService.getConfigurationInjector())
-                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                                    securityDomainService.getConfigurationInjector());
 
+                    if ("infinispan".equals(cacheType)) {
+                        builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
+                                EmbeddedCacheManager.class, securityDomainService.getCacheManagerInjector());
+                    }
+                    builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                     resultHandler.handleResultComplete();
                 }
             });
@@ -515,6 +528,15 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
         if ("requisite".equalsIgnoreCase(flag))
             return LoginModuleControlFlag.REQUISITE;
         throw new RuntimeException(flag + " is not recognized");
+    }
+
+    private String getAuthenticationCacheType(ModelNode operation) {
+        String type = null;
+        if (operation.hasDefined(CACHE_TYPE)) {
+            type = operation.get(CACHE_TYPE).asString();
+        }
+
+        return type;
     }
 
 }

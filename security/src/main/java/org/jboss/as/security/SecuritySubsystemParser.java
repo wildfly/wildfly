@@ -43,6 +43,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CACHE_TYPE;
 import static org.jboss.as.security.Constants.CIPHER_SUITES;
 import static org.jboss.as.security.Constants.CLIENT_ALIAS;
 import static org.jboss.as.security.Constants.CLIENT_AUTH;
@@ -219,6 +220,9 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 if (policyDetails.hasDefined(EXTENDS)) {
                     writeAttribute(writer, Attribute.EXTENDS, policyDetails.get(EXTENDS));
                 }
+                if (policyDetails.hasDefined(CACHE_TYPE)) {
+                    writeAttribute(writer, Attribute.CACHE_TYPE, policyDetails.get(CACHE_TYPE));
+                }
                 writeSecurityDomainContent(writer, policyDetails);
                 writer.writeEndElement();
             }
@@ -231,6 +235,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         Set<String> keys = new HashSet<String>(policyDetails.keys());
         keys.remove(NAME);
         keys.remove(EXTENDS);
+        keys.remove(CACHE_TYPE);
 
         for (String key : keys) {
             Element element = Element.forName(key);
@@ -609,6 +614,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case EXTENDS: {
                     op.get(EXTENDS).set(value);
+                    break;
+                }
+                case CACHE_TYPE: {
+                    op.get(CACHE_TYPE).set(value);
                     break;
                 }
                 default:

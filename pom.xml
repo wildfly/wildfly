@@ -191,8 +191,7 @@
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>2.12.1.Final</version.org.jgroups>
         <version.org.mockito>1.8.5</version.org.mockito>
-        <version.org.picketbox>4.0.0.Beta1</version.org.picketbox>
-        <version.org.picketbox.infinispan>4.0.0.Beta1</version.org.picketbox.infinispan>
+        <version.org.picketbox>4.0.0.Beta2</version.org.picketbox>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j.jcl-over-slf4j>1.5.10</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.10</version.org.slf4j.slf4j-api>
@@ -4307,7 +4306,7 @@
             <dependency>
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox-infinispan</artifactId>
-                <version>${version.org.picketbox.infinispan}</version>
+                <version>${version.org.picketbox}</version>
                 <exclusions>
                   <exclusion>
                     <groupId>org.picketbox</groupId>
