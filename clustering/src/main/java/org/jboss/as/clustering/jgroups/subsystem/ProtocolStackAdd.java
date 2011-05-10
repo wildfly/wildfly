@@ -289,10 +289,12 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
             this.name = name;
         }
 
+        @Override
         public String getName() {
             return this.name;
         }
 
+        @Override
         public Map<String, String> getProperties() {
             return this.properties;
         }

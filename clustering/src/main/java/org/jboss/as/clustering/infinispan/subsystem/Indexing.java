@@ -46,6 +46,7 @@ public enum Indexing {
         return this.localOnly;
     }
 
+    @Override
     public String toString() {
         return this.name().toLowerCase();
     }

@@ -48,6 +48,7 @@ public enum Mode {
         return this.sync;
     }
 
+    @Override
     public String toString() {
         return this.name().toLowerCase();
     }
