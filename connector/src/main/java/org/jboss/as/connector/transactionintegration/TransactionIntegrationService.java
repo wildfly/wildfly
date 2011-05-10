@@ -74,8 +74,8 @@ public final class TransactionIntegrationService implements Service<TransactionI
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.value = new TransactionIntegrationImpl(tm.getValue(), tsr.getValue(), utr.getValue(), terminator.getValue(), null,
-                (TransactionLocalDelegate) tld.getValue());
+        this.value = new TransactionIntegrationImpl(tm.getValue(), tsr.getValue(), utr.getValue(), terminator.getValue(),
+                rr.getValue(), (TransactionLocalDelegate) tld.getValue());
         log.debugf("Starting JCA TransactionIntegrationService");
     }
 
