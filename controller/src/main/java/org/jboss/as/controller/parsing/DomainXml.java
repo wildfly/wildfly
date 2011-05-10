@@ -621,14 +621,16 @@ public class DomainXml extends CommonXml {
             for (String uniqueName : deploymentNames) {
                 final ModelNode deployment = modelNode.get(uniqueName);
                 final String runtimeName = deployment.get(RUNTIME_NAME).asString();
-                final String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
                 final boolean enabled = !deployment.hasDefined(ENABLED) || deployment.get(ENABLED).asBoolean();
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
                 writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                writeAttribute(writer, Attribute.SHA1, sha1);
                 if (!enabled) {
                     writeAttribute(writer, Attribute.ENABLED, Boolean.FALSE.toString());
+                }
+                final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
+                for (ModelNode contentItem : contentItems) {
+                    writeContentItem(writer, contentItem);
                 }
                 writer.writeEndElement();
             }
