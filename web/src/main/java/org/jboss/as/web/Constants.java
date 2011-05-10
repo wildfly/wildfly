@@ -76,7 +76,7 @@ interface Constants {
     String PROXY_PORT = "proxy-port";
     String READ_ONLY = "read-only";
     String RECOMPILE_ON_FAIL = "recompile-on-fail";
-    String REDIRECT_PORT = "redirect-por";
+    String REDIRECT_PORT = "redirect-port";
     String RELATIVE_TO = "relative-to";
     String RESOLVE_HOSTS = "resolve-hosts";
     String REWRITE = "rewrite";
