@@ -220,20 +220,25 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         ServiceBuilder builder = serviceTarget.addService(serviceName, service);
                         boolean useDefaultDataSource = true;
-                        if (pu.getJtaDataSourceName() != null) {
-                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getJtaDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
+                        final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
+                        final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
+
+                        if (jtaDataSource != null) {
+                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
                             useDefaultDataSource = false;
                         }
-                        if (pu.getNonJtaDataSourceName() != null) {
-                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(pu.getNonJtaDataSourceName()),new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(),DataSource.class));
+                        if (nonJtaDataSource != null) {
+                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource),new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(),DataSource.class));
                             useDefaultDataSource = false;
                         }
                         // JPA 2.0 8.2.1.5, container provides default JTA datasource
-                        if (useDefaultDataSource &&
-                            JPAService.getDefaultDataSourceName() != null &&
-                            JPAService.getDefaultDataSourceName().length() > 0) {
-                            builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(JPAService.getDefaultDataSourceName()),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
-                            log.trace(serviceName + " is using the default data source '" + JPAService.getDefaultDataSourceName() + "'");
+                        if (useDefaultDataSource) {
+                            final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                            if (defaultJtaDataSource != null &&
+                                defaultJtaDataSource.length() > 0) {
+                                builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource),new CastingInjector<DataSource>(service.getJtaDataSourceInjector(),DataSource.class));
+                                log.trace(serviceName + " is using the default data source '" + defaultJtaDataSource + "'");
+                            }
                         }
 
                         Iterable<ServiceName> providerDependencies = getProviderDependencies(pu);
@@ -255,6 +260,14 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 }
             }
         }
+    }
+
+    private String adjustJndi(String dataSourceName) {
+        if (dataSourceName != null &&
+            !dataSourceName.startsWith("java:")) {
+            return "java:/" + dataSourceName;
+        }
+        return dataSourceName;
     }
 
     private void addProviderProperties(PersistenceUnitMetadata pu, Map properties) {
