@@ -253,7 +253,7 @@ public class DomainDeploymentUtils implements Closeable {
             if (deployments.contains(archiveName)) {
                 result.get("operation").set("full-replace-deployment");
                 result.get("name").set(archiveName);
-                result.get("input-stream-index").set(index);
+                result.get("content").get(0).get("input-stream-index").set(index);
             }
             else {
                 result.get("operation").set("composite");
