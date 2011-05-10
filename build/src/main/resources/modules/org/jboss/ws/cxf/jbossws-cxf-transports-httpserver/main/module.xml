@@ -40,6 +40,6 @@
             <include path="META-INF/"/>
           </imports>
         </module>
-        <module name="com.sun.httpserver"/>
+        <module name="org.jboss.com.sun.httpserver"/>
     </dependencies>
 </module>

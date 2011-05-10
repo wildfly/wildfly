@@ -65,7 +65,6 @@
         <version.commons-lang>2.4</version.commons-lang>
         <version.com.google.guava>r06</version.com.google.guava>
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
-        <version.com.sun.httpserver>20100812-JBoss</version.com.sun.httpserver>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.12-brew</version.gnu.getopt>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
@@ -112,6 +111,7 @@
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
         <version.org.jboss.classfilewriter>1.0.0.Alpha6</version.org.jboss.classfilewriter>
+        <version.org.jboss.com.sun.httpserver>1.0.0.Beta1</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb3>2.0.0-alpha-3</version.org.jboss.ejb3>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
@@ -2378,9 +2378,9 @@
                 <version>${version.sun.jaxb}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.httpserver</groupId>
+                <groupId>org.jboss.com.sun.httpserver</groupId>
                 <artifactId>httpserver</artifactId>
-                <version>${version.com.sun.httpserver}</version>
+                <version>${version.org.jboss.com.sun.httpserver}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>junit</groupId>

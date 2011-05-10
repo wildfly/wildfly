@@ -32,9 +32,9 @@
 
     <dependencies>
         <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.com.sun.httpserver"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
-        <module name="com.sun.httpserver"/>
     </dependencies>
 </module>

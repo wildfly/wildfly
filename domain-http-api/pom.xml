@@ -74,7 +74,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.httpserver</groupId>
+            <groupId>org.jboss.com.sun.httpserver</groupId>
             <artifactId>httpserver</artifactId>
         </dependency>
 

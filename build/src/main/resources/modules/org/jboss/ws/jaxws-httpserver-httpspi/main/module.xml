@@ -30,6 +30,6 @@
 
     <dependencies>
         <module name="javax.xml.ws.api" />
-        <module name="com.sun.httpserver"/>
+        <module name="org.jboss.com.sun.httpserver"/>
     </dependencies>
 </module>

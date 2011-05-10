@@ -86,11 +86,6 @@
             <maven-resource group="com.h2database" artifact="h2"/>
         </module-def>
 
-        <module-def name="com.sun.httpserver">
-            <maven-resource group="com.sun.httpserver" artifact="httpserver"/>
-            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
-        </module-def>
-
         <module-def name="com.sun.jsf-impl">
             <maven-resource group="com.sun.faces" artifact="jsf-impl"/>
         </module-def>
@@ -598,6 +593,11 @@
             <maven-resource group="org.jboss" artifact="jboss-common-core"/>
         </module-def>
 
+        <module-def name="org.jboss.com.sun.httpserver">
+            <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
+            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
+        </module-def>
+
         <module-def name="org.jboss.dmr">
             <maven-resource group="org.jboss" artifact="jboss-dmr"/>
         </module-def>
@@ -960,7 +960,7 @@
         <bundle-def name="org.jboss.as.osgi.configadmin">
             <maven-bundle group="org.jboss.as" artifact="jboss-as-osgi-configadmin"/>
         </bundle-def>
-        
+
         <bundle-def name="org.jboss.osgi.blueprint">
             <maven-bundle group="org.jboss.osgi.blueprint" artifact="jbosgi-blueprint"/>
         </bundle-def>
@@ -1007,6 +1007,6 @@
     <target name="clean" depends="clean-target">
         <delete file="maven-ant-tasks.jar"/>
     </target>
-	
+
     <target name="all" depends="clean-target, modules, bundles, copy-files, make-dirs"/>
 </project>
