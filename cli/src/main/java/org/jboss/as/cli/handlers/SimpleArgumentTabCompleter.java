@@ -28,6 +28,8 @@ import java.util.List;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.parsing.CommandLineParser;
 
 
 /**
@@ -37,6 +39,8 @@ import org.jboss.as.cli.CommandLineCompleter;
 public class SimpleArgumentTabCompleter implements CommandLineCompleter {
 
     private final List<CommandArgument> allArgs = new ArrayList<CommandArgument>();
+
+    private final ParsingResults results = new ParsingResults();
 
     public void addArgument(CommandArgument arg) {
         allArgs.add(arg);
@@ -60,83 +64,85 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
         String chunk = null;
         CommandLineCompleter valueCompleter = null;
         if (firstCharIndex != result) {
-            if (Character.isWhitespace(buffer.charAt(buffer.length() - 1))) {
-
-                int lastNonWS = buffer.length() - 1;
-                while(lastNonWS > 0 && Character.isWhitespace(buffer.charAt(lastNonWS))) {
-                    --lastNonWS;
-                }
-
-                if(lastNonWS > 0 && buffer.charAt(lastNonWS) == '=') {
-                    // value completion
-                    String argName = buffer.substring(firstCharIndex, lastNonWS - 1);
-                    for(CommandArgument arg : allArgs) {
-                        if(argName.equals(arg.getDefaultName())) {
-                            valueCompleter = arg.getValueCompleter();
-                            if(valueCompleter == null) {
-                                return -1;
-                            }
-                            break;
-                        }
+            results.reset();
+            try {
+                CommandLineParser.parse(buffer, new CommandLineParser.CallbackHandler() {
+                    @Override
+                    public void argument(String name, int nameStart, String value, int valueStart, int end) {
+                        results.argName = name;
+                        results.argValue = value;
+                        results.nameStart = nameStart;
+                        results.valueStart = valueStart;
+                        results.endIndex = end;
                     }
-                }
-            } else {
-                int i = buffer.length() - 1;
-                while (i >= 0) {
-                    char ch = buffer.charAt(i);
-                    if(Character.isWhitespace(ch)) {
-                        break;
-                    }
-                    if(ch == '=') {
-                        result = i + 1;
-                        chunk = buffer.substring(result);
-                    }
-                    --i;
-                }
+                });
+            } catch (CommandLineException e) {
+                return -1;
+            }
 
-                if(chunk == null) {
-                    result = i + 1;
-                    chunk = buffer.substring(result);
+            if(results.argValue != null) {
+                if(results.argValue.isEmpty()) {
+                    chunk = null;
+                    result = results.valueStart;
 
-                    if(buffer.charAt(result) != '-') {
-                        // it's an argument with optional name
-                        ctx.setArgumentsString(buffer.substring(firstCharIndex, result));
-
+                    if(results.argName != null) {
+                        ctx.setArgumentsString(buffer.substring(0, results.nameStart));
                         for(CommandArgument arg : allArgs) {
-                            if(arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
+                            if(results.argName.equals(arg.getDefaultName())) {
                                 valueCompleter = arg.getValueCompleter();
                                 break;
                             }
                         }
-                        if(valueCompleter == null) {
-                            return -1;
-                        }
-                    }
-                } else {
-                    // value completion
-                    if(buffer.charAt(i + 1) != '-') {
-                        result = i + 1;
-                        chunk = buffer.substring(result);
-                        // it's an argument with optional name
-                        ctx.setArgumentsString(buffer.substring(firstCharIndex, result));
-
+                    } else {
+                        ctx.setArgumentsString(buffer.substring(0, results.valueStart));
                         for (CommandArgument arg : allArgs) {
                             if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
                                 valueCompleter = arg.getValueCompleter();
                                 break;
                             }
                         }
-                    } else {
-                        String argName = buffer.substring(i + 1, result - 1);
-                        for (CommandArgument arg : allArgs) {
-                            if (argName.equals(arg.getDefaultName())) {
-                                valueCompleter = arg.getValueCompleter();
-                                break;
-                            }
-                        }
                     }
+
                     if(valueCompleter == null) {
                         return -1;
+                    }
+                } else {
+                    if(results.endIndex < buffer.length() && Character.isWhitespace(buffer.charAt(results.endIndex))) {
+                        chunk = null;
+                    } else {
+                        chunk = results.argValue;
+                        result = results.valueStart;
+
+                        if(results.argName != null) {
+                            ctx.setArgumentsString(buffer.substring(0, results.nameStart));
+                            for(CommandArgument arg : allArgs) {
+                                if(results.argName.equals(arg.getDefaultName())) {
+                                    valueCompleter = arg.getValueCompleter();
+                                    break;
+                                }
+                            }
+                        } else {
+                            ctx.setArgumentsString(buffer.substring(0, results.valueStart));
+                            for (CommandArgument arg : allArgs) {
+                                if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
+                                    valueCompleter = arg.getValueCompleter();
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(valueCompleter == null) {
+                            return -1;
+                        }
+                    }
+                }
+            } else {
+                if(results.endIndex < buffer.length() && Character.isWhitespace(buffer.charAt(results.endIndex))) {
+                    chunk = null;
+                } else {
+                    chunk = results.argName;
+                    if (results.argName != null) {
+                        result = results.nameStart;
                     }
                 }
             }
@@ -187,5 +193,21 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
 
         Collections.sort(candidates);
         return result;
+    }
+
+    private static final class ParsingResults {
+        String argName;
+        String argValue;
+        int nameStart;
+        int valueStart;
+        int endIndex;
+
+        void reset() {
+            argName = null;
+            argValue = null;
+            nameStart = -1;
+            valueStart = -1;
+            endIndex = -1;
+        }
     }
 }

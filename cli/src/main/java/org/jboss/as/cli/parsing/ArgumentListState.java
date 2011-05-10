@@ -19,25 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation.parsing;
+package org.jboss.as.cli.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+
+import org.jboss.as.cli.operation.parsing.DefaultParsingState;
+import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
+
 
 /**
-*
-* @author Alexey Loubyansky
-*/
-public class EnterStateCharacterHandler implements CharacterHandler {
+ *
+ * @author Alexey Loubyansky
+ */
+public class ArgumentListState extends DefaultParsingState {
 
-    protected final ParsingState state;
+    public static final ArgumentListState INSTANCE = new ArgumentListState();
+    public static final String ID = "ARG_LIST";
 
-    public EnterStateCharacterHandler(ParsingState state) {
-        this.state = state;
+    ArgumentListState() {
+        this(ArgumentState.INSTANCE, ArgumentValueState.INSTANCE);
     }
 
-    @Override
-    public void handle(ParsingContext ctx)
-            throws OperationFormatException {
-        ctx.enterState(state);
+    ArgumentListState(ArgumentState argState, ArgumentValueState valueState) {
+        super(ID);
+        this.enterState('-', argState);
+        setDefaultHandler(new EnterStateCharacterHandler(valueState));
+        setIgnoreWhitespaces(true);
     }
 }

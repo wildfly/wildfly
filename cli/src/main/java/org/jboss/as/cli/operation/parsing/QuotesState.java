@@ -27,8 +27,8 @@ package org.jboss.as.cli.operation.parsing;
  */
 public class QuotesState extends DefaultParsingState {
 
-    static final QuotesState QUOTES_EXCLUDED = new QuotesState(false);
-    static final QuotesState QUOTES_INCLUDED = new QuotesState(true);
+    public static final QuotesState QUOTES_EXCLUDED = new QuotesState(false);
+    public static final QuotesState QUOTES_INCLUDED = new QuotesState(true);
 
     public QuotesState(boolean quotesInContent) {
         super("QUOTES", quotesInContent);

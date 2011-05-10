@@ -19,25 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.operation.parsing;
+package org.jboss.as.cli.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+
+import org.jboss.as.cli.operation.parsing.DefaultParsingState;
+import org.jboss.as.cli.operation.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.operation.parsing.GlobalCharacterHandlers;
+
 
 /**
-*
-* @author Alexey Loubyansky
-*/
-public class EnterStateCharacterHandler implements CharacterHandler {
+ *
+ * @author Alexey Loubyansky
+ */
+public class ArgumentState extends DefaultParsingState {
 
-    protected final ParsingState state;
+    public static final ArgumentState INSTANCE = new ArgumentState();
+    public static final String ID = "ARG";
 
-    public EnterStateCharacterHandler(ParsingState state) {
-        this.state = state;
+    ArgumentState() {
+        this(ArgumentValueState.INSTANCE);
     }
 
-    @Override
-    public void handle(ParsingContext ctx)
-            throws OperationFormatException {
-        ctx.enterState(state);
+    ArgumentState(ArgumentValueState valueState) {
+        super(ID);
+        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('=', new EnterStateCharacterHandler(valueState));
+        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }

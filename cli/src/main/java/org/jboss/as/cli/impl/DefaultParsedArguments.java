@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.parsing.CommandLineParser;
 
 /**
  *
@@ -123,61 +125,32 @@ public class DefaultParsedArguments implements ParsedArguments {
         namedArgs = null;
         otherArgs = null;
         if (argsStr != null && !argsStr.isEmpty()) {
-            String[] arr = argsStr.split("\\s+");
-            if (arr.length > 0) {
-                for (int i = 0; i < arr.length; ++i) {
-                    String arg = arr[i];
-                    if (arg.charAt(0) == '-') {
-                        final String dashedArg = arg;
-/*                        if (arg.length() > 1 && arg.charAt(1) == '-') {
-                            dashedArg = arg.substring(2);
-                        } else {
-                            dashedArg = arg.substring(1);
-                        }
-*/
-                        if (dashedArg.length() > 0) {
+            try {
+                CommandLineParser.parse(argsStr, new CommandLineParser.CallbackHandler() {
+                    @Override
+                    public void argument(String name, int nameStart, String value, int valueStart, int leaveIndex) {
+                        if(name != null) {
                             if(namedArgs == null) {
-                                namedArgs = new HashMap<String, String>();
-                            }
-
-                            int equalsIndex = dashedArg.indexOf('=');
-                            if(equalsIndex > 0 && equalsIndex < dashedArg.length() - 1 && dashedArg.indexOf(equalsIndex + 1, '=') < 0) {
-                                final String name = dashedArg.substring(0, equalsIndex).trim();
-                                final String value = dashedArg.substring(equalsIndex + 1).trim();
-                                if (namedArgs == null) {
-                                    namedArgs = new HashMap<String, String>();
+                                namedArgs = Collections.singletonMap(name, value);
+                            } else {
+                                if(namedArgs.size() == 1) {
+                                    namedArgs = new HashMap<String, String>(namedArgs);
                                 }
                                 namedArgs.put(name, value);
-                            } else {
-                                namedArgs.put(dashedArg, null);
                             }
-/*                        } else {
+                        } else if(value != null) {
                             if(otherArgs == null) {
-                                otherArgs = new ArrayList<String>();
+                                otherArgs = Collections.singletonList(value);
+                            } else {
+                                if(otherArgs.size() == 1) {
+                                    otherArgs = new ArrayList<String>(otherArgs);
+                                }
+                                otherArgs.add(value);
                             }
-                            otherArgs.add(arg);
-*/                        }
-                    } else {
-                        if(otherArgs == null) {
-                            otherArgs = new ArrayList<String>();
-                        }
-                        otherArgs.add(arg);
-//TODO this check for name=value should go away
-                        int equalsIndex = arg.indexOf('=');
-                        if(equalsIndex > 0 && equalsIndex < arg.length() - 1 && arg.indexOf(equalsIndex + 1, '=') < 0) {
-                            final String name = arg.substring(0, equalsIndex).trim();
-                            final String value = arg.substring(equalsIndex + 1).trim();
-                            if (namedArgs == null) {
-                                namedArgs = new HashMap<String, String>();
-                            }
-                            namedArgs.put(name, value);
                         }
                     }
-                }
-
-                if(otherArgs != null) {
-                    otherArgs = Collections.unmodifiableList(otherArgs);
-                }
+                });
+            } catch (CommandLineException e) {
             }
         }
 

@@ -30,7 +30,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
  *
  * @author Alexey Loubyansky
  */
-class GlobalCharacterHandlers {
+public class GlobalCharacterHandlers {
 
     private static final Map<Character, CharacterHandler> handlers = new HashMap<Character, CharacterHandler>();
 
@@ -57,7 +57,7 @@ class GlobalCharacterHandlers {
         }
     };
 
-    static final CharacterHandler CONTENT_CHARACTER_HANDLER = new CharacterHandler() {
+    public static final CharacterHandler CONTENT_CHARACTER_HANDLER = new CharacterHandler() {
 
         @Override
         public void handle(ParsingContext ctx)
@@ -66,7 +66,7 @@ class GlobalCharacterHandlers {
         }
     };
 
-    static final CharacterHandler LEAVE_STATE_HANDLER = new CharacterHandler() {
+    public static final CharacterHandler LEAVE_STATE_HANDLER = new CharacterHandler() {
 
         @Override
         public void handle(ParsingContext ctx)

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
-
-import jline.FileNameCompletor;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
@@ -34,7 +34,6 @@ import org.jboss.as.cli.CommandLineCompleter;
  */
 public class FilenameTabCompleter implements CommandLineCompleter {
 
-    private static final FileNameCompletor fnCompleter = new FileNameCompletor();
     public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
 
     /* (non-Javadoc)
@@ -45,8 +44,145 @@ public class FilenameTabCompleter implements CommandLineCompleter {
         if(cursor > 0 && cursor <= buffer.length()) {
             buffer = buffer.substring(cursor);
         }
-        int result = fnCompleter.complete(buffer, cursor, candidates);
-        return result < 0 ? result : cursor + result;
+
+        final String translated;
+        // special character: ~ maps to the user's home directory
+        if (buffer.startsWith("~" + File.separator)) {
+            translated = System.getProperty("user.home") + buffer.substring(1);
+        } else if (buffer.startsWith("~")) {
+            translated = new File(System.getProperty("user.home")).getParentFile().getAbsolutePath();
+        } else if (!(buffer.startsWith(File.separator))) {
+            translated = new File("").getAbsolutePath() + File.separator + buffer;
+        } else {
+            translated = buffer;
+        }
+
+        final File f = new File(translated);
+        final File dir;
+        if (translated.endsWith(File.separator)) {
+            dir = f;
+        } else {
+            dir = f.getParentFile();
+        }
+
+        final File[] entries = (dir == null) ? new File[0] : dir.listFiles();
+        int result = matchFiles(buffer, translated, entries, candidates);
+
+        int correction = 0;
+        if(buffer.length() > 0) {
+            final int lastSeparator = buffer.lastIndexOf(File.separatorChar);
+            if(lastSeparator > 0) {
+                final String path = buffer.substring(0, lastSeparator);
+                final String escaped = escapeName(path);
+                correction = escaped.length() - path.length();
+            }
+        }
+
+        if(candidates.size() == 1) {
+            candidates.set(0, escapeName(candidates.get(0)));
+        } else {
+            Collections.sort(candidates);
+        }
+        return cursor + result + correction;
     }
 
+    private static String escapeName(String name) {
+        for(int i = 0; i < name.length(); ++i) {
+            char ch = name.charAt(i);
+            if(ch == '\\' || ch == ' ' || ch == '"') {
+                StringBuilder builder = new StringBuilder();
+                builder.append(name, 0, i);
+                builder.append('\\').append(ch);
+                for(int j = i + 1; j < name.length(); ++j) {
+                    ch = name.charAt(j);
+                    if(ch == '\\' || ch == ' ' || ch == '"') {
+                        builder.append('\\');
+                    }
+                    builder.append(ch);
+                }
+                return builder.toString();
+            }
+        }
+        return name;
+    }
+
+    private static String unescapeName(String name) {
+        for(int i = 0; i < name.length(); ++i) {
+            char ch = name.charAt(i);
+            if(ch == '\\') {
+                StringBuilder builder = new StringBuilder();
+                builder.append(name, 0, i);
+                boolean escaped = true;
+                for(int j = i + 1; j < name.length(); ++j) {
+                    ch = name.charAt(j);
+                    if(escaped) {
+                        builder.append(ch);
+                        escaped = false;
+                    } else if(ch == '\\') {
+                        escaped = true;
+                    } else {
+                        builder.append(ch);
+                    }
+                }
+                return builder.toString();
+            }
+        }
+        return name;
+    }
+
+    /**
+     * Match the specified <i>buffer</i> to the array of <i>entries</i> and
+     * enter the matches into the list of <i>candidates</i>. This method can be
+     * overridden in a subclass that wants to do more sophisticated file name
+     * completion.
+     *
+     * @param buffer
+     *            the untranslated buffer
+     * @param translated
+     *            the buffer with common characters replaced
+     * @param entries
+     *            the list of files to match
+     * @param candidates
+     *            the list of candidates to populate
+     *
+     * @return the offset of the match
+     */
+    public int matchFiles(String buffer, String translated, File[] entries, List<String> candidates) {
+        if (entries == null) {
+            return -1;
+        }
+
+        int matches = 0;
+
+        // first pass: just count the matches
+        for (int i = 0; i < entries.length; i++) {
+            if (entries[i].getAbsolutePath().startsWith(translated)) {
+                matches++;
+            }
+        }
+
+        for (int i = 0; i < entries.length; i++) {
+            if (entries[i].getAbsolutePath().startsWith(translated)) {
+
+                final String name;
+                if(matches == 1 && entries[i].isDirectory()) {
+                    name = entries[i].getName() + File.separator;
+                } else {
+                    name = entries[i].getName();
+                }
+                candidates.add(name);
+            }
+        }
+
+        final int index = buffer.lastIndexOf(File.separator);
+        return index + File.separator.length();
+    }
+
+    public static void main(String[] args) throws Exception {
+        String name = "../../../../my\\ dir/";
+//        System.out.println(name);
+//        name = escapeName(name);
+//        System.out.println(name);
+        System.out.println(unescapeName(name));
+    }
 }

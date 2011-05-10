@@ -25,7 +25,7 @@ package org.jboss.as.cli.operation.parsing;
  *
  * @author Alexey Loubyansky
  */
-class DefaultStateWithEndCharacter extends DefaultParsingState {
+public class DefaultStateWithEndCharacter extends DefaultParsingState {
 
     private final char leaveStateChar;
 
@@ -41,7 +41,7 @@ class DefaultStateWithEndCharacter extends DefaultParsingState {
         this(id, leaveStateChar, endRequired, enterLeaveContent, new DefaultCharacterHandlerMap());
     }
 
-    DefaultStateWithEndCharacter(String id, char leaveStateChar, boolean endRequired, boolean enterLeaveContent, CharacterHandlerMap enterStateHandlers) {
+    public DefaultStateWithEndCharacter(String id, char leaveStateChar, boolean endRequired, boolean enterLeaveContent, CharacterHandlerMap enterStateHandlers) {
         super(id, enterLeaveContent, enterStateHandlers);
         this.leaveStateChar = leaveStateChar;
         if(endRequired) {
