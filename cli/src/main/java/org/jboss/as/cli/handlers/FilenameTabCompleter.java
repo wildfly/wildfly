@@ -36,6 +36,9 @@ public class FilenameTabCompleter implements CommandLineCompleter {
 
     public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
 
+    private static final String SEPARATOR = "/";
+    private static final boolean replaceSeparator = !File.separator.equals(SEPARATOR);
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
      */
@@ -43,6 +46,10 @@ public class FilenameTabCompleter implements CommandLineCompleter {
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
         if(cursor > 0 && cursor <= buffer.length()) {
             buffer = buffer.substring(cursor);
+        }
+
+        if(replaceSeparator) {
+            buffer = buffer.replace('/', File.separatorChar);
         }
 
         final String translated;
@@ -166,7 +173,7 @@ public class FilenameTabCompleter implements CommandLineCompleter {
 
                 final String name;
                 if(matches == 1 && entries[i].isDirectory()) {
-                    name = entries[i].getName() + File.separator;
+                    name = entries[i].getName() + SEPARATOR;
                 } else {
                     name = entries[i].getName();
                 }
@@ -175,7 +182,7 @@ public class FilenameTabCompleter implements CommandLineCompleter {
         }
 
         final int index = buffer.lastIndexOf(File.separator);
-        return index + File.separator.length();
+        return index + SEPARATOR.length();
     }
 
     public static void main(String[] args) throws Exception {

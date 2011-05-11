@@ -65,7 +65,18 @@ public class DeployHandler extends BatchModeCommandHandler {
         l.setExclusive(true);
         argsCompleter.addArgument(l);
 
-        path = new ArgumentWithValue(false, FilenameTabCompleter.INSTANCE, 0, "--path");
+        path = new ArgumentWithValue(false, FilenameTabCompleter.INSTANCE, 0, "--path") {
+            @Override
+            public String getValue(ParsedArguments args) {
+                String value = super.getValue(args);
+                if(value != null) {
+                    if('/' != File.separatorChar) {
+                        value = value.replace('/', File.separatorChar);
+                    }
+                }
+                return value;
+            }
+        };
         path.addCantAppearAfter(l);
         argsCompleter.addArgument(path);
 
