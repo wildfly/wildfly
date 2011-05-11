@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.osgi;
+package org.jboss.as.testsuite.integration.osgi.xservice;
 
 import static org.junit.Assert.assertEquals;
 

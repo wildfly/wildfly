@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.osgi.module;
+package org.jboss.as.testsuite.integration.osgi.xservice.module;
 
-import org.jboss.as.testsuite.integration.osgi.api.Echo;
+import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -36,9 +36,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Services;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 /**
  * A simple MSC service activator
@@ -46,10 +43,10 @@ import org.osgi.framework.ServiceReference;
  * @author Thomas.Diesler@jboss.org
  * @since 09-Nov-2010
  */
-public class ClientModuleTwoActivator implements ServiceActivator
+public class ClientModuleOneActivator implements ServiceActivator
 {
    public static final ServiceName INVOKER_SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "invoker", "service");
-   private static final Logger log = Logger.getLogger(ClientModuleTwoActivator.class);
+   private static final Logger log = Logger.getLogger(ClientModuleOneActivator.class);
 
    @Override
    public void activate(ServiceActivatorContext context)
@@ -66,13 +63,13 @@ public class ClientModuleTwoActivator implements ServiceActivator
    {
       private static final Logger log = Logger.getLogger(EchoInvokerService.class);
 
-      private InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+      private InjectedValue<Echo> injectedService = new InjectedValue<Echo>();
 
       static void addService(ServiceTarget serviceTarget)
       {
          EchoInvokerService service = new EchoInvokerService();
          ServiceBuilder<?> serviceBuilder = serviceTarget.addService(INVOKER_SERVICE_NAME, service);
-         serviceBuilder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
+         serviceBuilder.addDependency(EchoService.SERVICE_NAME, Echo.class, service.injectedService);
          serviceBuilder.setInitialMode(Mode.ACTIVE);
          serviceBuilder.install();
          log.infof("Service added: %s", INVOKER_SERVICE_NAME);
@@ -82,9 +79,7 @@ public class ClientModuleTwoActivator implements ServiceActivator
       @Override
       public void start(StartContext context) throws StartException
       {
-         BundleContext systemContext = injectedBundleContext.getValue();
-         ServiceReference sref = systemContext.getServiceReference(Echo.class.getName());
-         Echo service = (Echo)systemContext.getService(sref);
+         Echo service = injectedService.getValue();
          service.echo("hello world");
       }
    }

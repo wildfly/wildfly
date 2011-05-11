@@ -20,30 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.osgi.bundle;
+package org.jboss.as.testsuite.integration.osgi.xservice.module;
 
-import org.jboss.as.testsuite.integration.osgi.api.Echo;
 import org.jboss.logging.Logger;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceTarget;
 
-public class ClientBundleActivator implements BundleActivator
+/**
+ * A simple MSC service activator
+ *
+ * @author Thomas.Diesler@jboss.org
+ * @since 09-Nov-2010
+ */
+public class TargetModuleActivator implements ServiceActivator
 {
-   private static final Logger log = Logger.getLogger(ClientBundleActivator.class);
+   private static final Logger log = Logger.getLogger(TargetModuleActivator.class);
 
    @Override
-   public void start(final BundleContext context) throws Exception
+   public void activate(ServiceActivatorContext context)
    {
-      log.infof("Echo Loader: %s", Echo.class.getClassLoader());
-      ServiceReference sref = context.getServiceReference(Echo.class.getName());
-      Echo service = (Echo)context.getService(sref);
-      String result = service.echo("hello world");
-      context.registerService(StringBuffer.class.getName(), new StringBuffer(result), null);
-   }
+      ServiceTarget serviceTarget = context.getServiceTarget();
+      EchoService.addService(serviceTarget);
 
-   @Override
-   public void stop(BundleContext context) throws Exception
-   {
+      ModuleClassLoader classLoader = (ModuleClassLoader)getClass().getClassLoader();
+      ModuleIdentifier identifier = classLoader.getModule().getIdentifier();
+      log.infof("ModuleIdentifier: %s", identifier);
    }
 }

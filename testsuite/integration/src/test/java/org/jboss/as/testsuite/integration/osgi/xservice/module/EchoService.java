@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.osgi.module;
+package org.jboss.as.testsuite.integration.osgi.xservice.module;
 
-import org.jboss.as.testsuite.integration.osgi.api.Echo;
+import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
