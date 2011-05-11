@@ -75,7 +75,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     static final ModelNode getOperation(ModelNode address, ModelNode state) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         op.get(RUNTIME_NAME).set(state.get(RUNTIME_NAME));
-        op.get(HASH).set(state.get(HASH));
+        op.get(CONTENT).set(state.get(CONTENT));
         return op;
     }
 

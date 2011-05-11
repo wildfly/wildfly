@@ -87,10 +87,11 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
         // Ensure the local repo has the files
         fileRepository.getDeploymentFiles(hash);
 
+        final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : deployment.get(RUNTIME_NAME).asString();
+
         ModelNode subModel = context.getSubModel();
         subModel.get(NAME).set(name);
-        subModel.get(RUNTIME_NAME).set(deployment.get(RUNTIME_NAME).asString());
-        subModel.get(CONTENT).get(0).get(HASH).set(hash);
+        subModel.get(RUNTIME_NAME).set(runtimeName);
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
 
         resultHandler.handleResultComplete();

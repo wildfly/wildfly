@@ -80,6 +80,14 @@ public final class DomainDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DeploymentDescription.getDeploymentDescription(locale, false, true);
+        }
+    };
+
     public static final DescriptionProvider SERVER_GROUP = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -90,7 +98,7 @@ public final class DomainDescriptionProviders {
     public static final DescriptionProvider SERVER_GROUP_DEPLOYMENT = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return DeploymentDescription.getDeploymentDescription(locale, true);
+            return DeploymentDescription.getDeploymentDescription(locale, true, false);
         }
     };
 }

@@ -30,6 +30,7 @@ import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -65,6 +66,8 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     /** The created scanner. */
     private DeploymentScanner scanner;
 
+
+    private final InjectedValue<String> relativePathValue = new InjectedValue<String>();
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
     private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
@@ -92,6 +95,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         final DeploymentScannerService service = new DeploymentScannerService(relativeTo, scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
+        final ServiceName relativePathService = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
 
         if(relativeTo != null) {
             RelativePathService.addService(pathService, path, relativeTo, serviceTarget);
@@ -101,13 +105,16 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeploymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
 
-        serviceTarget.addService(serviceName, service)
+        ServiceBuilder builder = serviceTarget.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
             .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
-            .addInjection(service.scheduledExecutorValue, scheduledExecutorService)
-            .setInitialMode(Mode.ACTIVE)
+            .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
+        if (relativePathService != null) {
+            builder.addDependency(relativePathService, String.class, service.relativePathValue);
+        }
+         builder.setInitialMode(Mode.ACTIVE)
             .install();
     }
 
@@ -128,8 +135,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     public synchronized void start(StartContext context) throws StartException {
         try {
             final String pathName = pathValue.getValue();
-
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
+            final String relativePathName = relativePathValue.getOptionalValue();
+            final File relativePath = relativePathName != null ? new File(relativePathName) : null;
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);

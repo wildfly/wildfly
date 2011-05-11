@@ -132,6 +132,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private volatile long deploymentTimeout = DEFAULT_DEPLOYMENT_TIMEOUT;
 
     private final String relativeTo;
+    private final String relativePath;
 
     private final Runnable scanRunnable = new Runnable() {
         @Override
@@ -144,7 +145,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     };
 
-    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final ServerController serverController, final ScheduledExecutorService scheduledExecutor,
+    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final ServerController serverController, final ScheduledExecutorService scheduledExecutor,
             final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository) throws OperationFailedException {
         assert contentRepository != null : "content repository is null";
         if (scheduledExecutor == null) {
@@ -174,6 +175,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
         this.scheduledExecutor = scheduledExecutor;
         this.deploymentRepository = deploymentRepository;
         this.contentRepository = contentRepository;
+
+        if (relativeToDir != null) {
+            String fullDir = deploymentDir.getAbsolutePath();
+            String relDir = relativeToDir.getAbsolutePath();
+            String sub = fullDir.substring(relDir.length());
+            if (sub.startsWith(File.separator)) {
+                sub = sub.length() == 1 ? "" : sub.substring(1);
+            }
+            this.relativePath = sub.length() > 0 ? sub + "/" : sub;
+        }
+        else {
+            relativePath = null;
+        }
         establishDeployedContentList(deploymentDir);
     }
 
@@ -445,7 +459,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     continue;
                 }
                 long timestamp = getDeploymentTimestamp(deploymentFile);
-                final String path = relativeTo == null ? deploymentFile.getAbsolutePath() : deploymentName; // TODO: sub-directories in the deploymentDir
+                final String path = relativeTo == null ? deploymentFile.getAbsolutePath() : relativePath + deploymentName; // TODO: sub-directories in the deploymentDir
                 final boolean archive = deploymentFile.isFile();
                 addContentAddingTask(path, archive, deploymentName, deploymentFile, timestamp, scanContext);
             }
@@ -474,7 +488,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         if (marker == null || marker.lastModified != timestamp) {
                             try {
                                 if (isZipComplete(child)) {
-                                    final String path =  relativeTo == null ? child.getAbsolutePath() : fileName;
+                                    final String path =  relativeTo == null ? child.getAbsolutePath() : relativePath + fileName;
                                     final boolean archive = child.isFile();
                                     addContentAddingTask(path, archive, fileName, child, timestamp, scanContext);
                                 }

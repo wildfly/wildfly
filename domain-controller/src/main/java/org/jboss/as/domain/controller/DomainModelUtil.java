@@ -254,7 +254,7 @@ class DomainModelUtil {
         serverGroupDeployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, ServerGroupDeploymentRemoveHandler.INSTANCE, ServerGroupDeploymentRemoveHandler.INSTANCE);
 
         // Root Deployments
-        final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+        final ModelNodeRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.DEPLOYMENT_PROVIDER);
         DeploymentAddHandler dah = new DeploymentAddHandler(contentRepo, isMaster);
         deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
         deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE);

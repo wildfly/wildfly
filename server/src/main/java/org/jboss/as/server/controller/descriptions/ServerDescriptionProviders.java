@@ -63,7 +63,7 @@ public final class ServerDescriptionProviders {
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return DeploymentDescription.getDeploymentDescription(locale, true);
+            return DeploymentDescription.getDeploymentDescription(locale, true, true);
         }
     };
 

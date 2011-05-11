@@ -542,10 +542,6 @@ public class DomainXml extends CommonXml {
                 if (!enabled) {
                     writeAttribute(writer, Attribute.ENABLED, Boolean.FALSE.toString());
                 }
-                final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
-                for (ModelNode contentItem : contentItems) {
-                    writeContentItem(writer, contentItem);
-                }
                 writer.writeEndElement();
             }
             writer.writeEndElement();

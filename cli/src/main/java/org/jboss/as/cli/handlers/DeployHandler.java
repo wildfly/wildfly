@@ -263,7 +263,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                     ModelNode request = builder.buildRequest();
                     OperationBuilder op = OperationBuilder.Factory.create(request);
                     op.addInputStream(is);
-                    request.get("input-stream-index").set(0);
+                    request.get("content").get(0).get("input-stream-index").set(0);
                     result = client.execute(op.build());
                 } catch(Exception e) {
                     ctx.printLine("Failed to replace the deployment: " + e.getLocalizedMessage());
@@ -302,7 +302,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                     ModelNode request = builder.buildRequest();
                     OperationBuilder op = OperationBuilder.Factory.create(request);
                     op.addInputStream(is);
-                    request.get("input-stream-index").set(0);
+                    request.get("content").get(0).get("input-stream-index").set(0);
                     result = client.execute(op.build());
                 } catch (Exception e) {
                     ctx.printLine("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());

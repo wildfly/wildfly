@@ -398,7 +398,7 @@ public class ServerOperationResolver {
                     // The op is missing the runtime-name and hash values that the server will need
                     ModelNode domainDeployment = domain.get(DEPLOYMENT, address.getElement(1).getValue());
                     serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
-                    serverOp.get(CONTENT).get(0).get(HASH).set(domainDeployment.require(CONTENT).require(0).require(HASH).asBytes());
+                    serverOp.get(CONTENT).set(domainDeployment.require(CONTENT));
                 }
                 PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
