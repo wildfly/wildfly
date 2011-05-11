@@ -26,7 +26,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -47,7 +46,6 @@ public class BasicComponentCreateService implements Service<Component> {
 
     private final String componentName;
     private final Class<?> componentClass;
-    private final InterceptorFactory instantiationInterceptorFactory;
     private final InterceptorFactory postConstruct;
     private final InterceptorFactory preDestroy;
     private final Map<Method, InterceptorFactory> componentInterceptors;
@@ -63,7 +61,6 @@ public class BasicComponentCreateService implements Service<Component> {
      */
     public BasicComponentCreateService(final ComponentConfiguration componentConfiguration) {
         componentName = componentConfiguration.getComponentName();
-        this.instantiationInterceptorFactory = Interceptors.getChainedInterceptorFactory(componentConfiguration.getInstantiationInterceptors());
         postConstruct = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPostConstructInterceptors());
         preDestroy = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPreDestroyInterceptors());
         final IdentityHashMap<Method, InterceptorFactory> componentInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
@@ -127,17 +124,6 @@ public class BasicComponentCreateService implements Service<Component> {
      */
     public String getComponentName() {
         return componentName;
-    }
-
-    /**
-     * Returns the {@link InterceptorFactory} which will be used to create {@link org.jboss.invocation.Interceptor}s for intercepting
-     * the instantiation of a {@link BasicComponentInstance}
-     *
-     * @return
-     */
-
-    public InterceptorFactory getInstantiationInterceptorFactory() {
-        return this.instantiationInterceptorFactory;
     }
 
     /**

@@ -455,7 +455,7 @@ public class ComponentDescription {
 
                 //we store the interceptor instance under the class key
                 final Object contextKey = interceptorConfiguration.getModuleClass();
-                if(interceptorConfiguration.getInstantiator() == null) {
+                if (interceptorConfiguration.getInstantiator() == null) {
                     throw new DeploymentUnitProcessingException("No default constructor for interceptor class " + interceptorClassName + " on component " + componentClassConfiguration.getModuleClass());
                 }
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorConfiguration.getInstantiator(), contextKey));
@@ -483,7 +483,7 @@ public class ComponentDescription {
                                 Method method = interceptorClassIndex.getMethod(postConstructMethod);
                                 InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
                                 List<InterceptorFactory> userPostConstruct = userPostConstructByInterceptorClass.get(interceptorClassName);
-                                if(userPostConstruct == null) {
+                                if (userPostConstruct == null) {
                                     userPostConstructByInterceptorClass.put(interceptorClassName, userPostConstruct = new ArrayList<InterceptorFactory>());
                                 }
                                 userPostConstruct.add(interceptorFactory);
@@ -493,7 +493,7 @@ public class ComponentDescription {
                                 Method method = interceptorClassIndex.getMethod(preDestroyMethod);
                                 InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
                                 List<InterceptorFactory> userPreDestroy = userPreDestroyByInterceptorClass.get(interceptorClassName);
-                                if(userPreDestroy == null) {
+                                if (userPreDestroy == null) {
                                     userPreDestroyByInterceptorClass.put(interceptorClassName, userPreDestroy = new ArrayList<InterceptorFactory>());
                                 }
                                 userPreDestroy.add(interceptorFactory);
@@ -517,16 +517,14 @@ public class ComponentDescription {
 
             //now add the lifecycle interceptors in the correct order
             //TODO: default interceptors
-            for(final InterceptorDescription interceptorClass : description.getClassInterceptors()) {
-                if(userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
+            for (final InterceptorDescription interceptorClass : description.getClassInterceptors()) {
+                if (userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                     userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
                 }
-                if(userPreDestroyByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
+                if (userPreDestroyByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                     userPreDestroy.addAll(userPreDestroyByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
                 }
             }
-
-
 
 
             new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
@@ -554,17 +552,15 @@ public class ComponentDescription {
 
             final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
 
-            // apply instantiation interceptors
-            final Deque<InterceptorFactory> instantiationInterceptors = configuration.getInstantiationInterceptors();
-            instantiationInterceptors.addAll(instantiators);
-            instantiationInterceptors.add(Interceptors.getTerminalInterceptorFactory());
-            instantiationInterceptors.addFirst(tcclInterceptor);
-
             // Apply post-construct
             final Deque<InterceptorFactory> postConstructInterceptors = configuration.getPostConstructInterceptors();
             final Iterator<InterceptorFactory> injectorIterator = injectors.descendingIterator();
             while (injectorIterator.hasNext()) {
                 postConstructInterceptors.addFirst(injectorIterator.next());
+            }
+            final Iterator<InterceptorFactory> instantiatorIterator = instantiators.descendingIterator();
+            while (instantiatorIterator.hasNext()) {
+                postConstructInterceptors.addFirst(instantiatorIterator.next());
             }
             postConstructInterceptors.addAll(userPostConstruct);
             postConstructInterceptors.add(Interceptors.getTerminalInterceptorFactory());

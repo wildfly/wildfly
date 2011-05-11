@@ -52,7 +52,6 @@ public class ComponentConfiguration {
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
     // Interceptor config
-    private final Deque<InterceptorFactory> instantiationInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Deque<InterceptorFactory> postConstructInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Deque<InterceptorFactory> preDestroyInterceptors = new ArrayDeque<InterceptorFactory>();
     private final Map<Method, Deque<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, Deque<InterceptorFactory>>();
@@ -160,16 +159,6 @@ public class ComponentConfiguration {
      */
     public List<ViewConfiguration> getViews() {
         return views;
-    }
-
-    /**
-     * Returns the {@link InterceptorFactory} which will be used to create {@link org.jboss.invocation.Interceptor}s for intercepting
-     * the instantiation of a {@link BasicComponentInstance}
-     *
-     * @return
-     */
-    public Deque<InterceptorFactory> getInstantiationInterceptors() {
-        return this.instantiationInterceptors;
     }
 
     /**
