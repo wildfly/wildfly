@@ -55,7 +55,7 @@ public class MessageDrivenComponentConfiguration extends EJBComponentConfigurati
         /*
         addComponentSystemInterceptorFactory(pooled());
         */
-        setComponentCreateServiceFactory(MessageDrivenComponentCreateService.FACTORY);
+        //setComponentCreateServiceFactory(MessageDrivenComponentCreateService.FACTORY);
     }
 
     @Override

@@ -60,7 +60,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        return new MessageDrivenComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        // setup the component create service
+        mdbComponentConfiguration.setComponentCreateServiceFactory(new MessageDrivenComponentCreateServiceFactory());
+        return mdbComponentConfiguration;
     }
 
     @Override

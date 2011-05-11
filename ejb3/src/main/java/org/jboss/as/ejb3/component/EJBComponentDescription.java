@@ -98,7 +98,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
 
         getConfigurators().addFirst(new NamespaceConfigurator());
-        getConfigurators().addFirst(new EjbJarConfigurator());
+        getConfigurators().add(new EjbJarConfigurationConfigurator());
 
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
@@ -237,18 +237,25 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
 
     /**
-     * Configurator that attaches the ejb jar to the configuration
+     * A {@link ComponentConfigurator} which picks up {@link EjbJarConfiguration} from the attachment of the deployment
+     * unit and sets it to the {@link EJBComponentCreateServiceFactory component create service factory} of the component
+     * configuration.
+     * <p/>
+     * The component configuration is expected to be set with {@link EJBComponentCreateServiceFactory}, as its create
+     * service factory, before this {@link EjbJarConfigurationConfigurator} is run.
      */
-    private static final class EjbJarConfigurator implements ComponentConfigurator {
+    private class EjbJarConfigurationConfigurator implements ComponentConfigurator {
 
         @Override
-        public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+        public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-            final EjbJarConfiguration ejbJar = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_CONFIGURATION);
-            ((EJBComponentConfiguration)configuration).setEjbJarConfiguration(ejbJar);
+            final EjbJarConfiguration ejbJarConfiguration = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_CONFIGURATION);
+            if (ejbJarConfiguration == null) {
+                throw new DeploymentUnitProcessingException("EjbJarConfiguration not found as an attachment in deployment unit: " + deploymentUnit);
+            }
+            final EJBComponentCreateServiceFactory ejbComponentCreateServiceFactory = (EJBComponentCreateServiceFactory) configuration.getComponentCreateServiceFactory();
+            ejbComponentCreateServiceFactory.setEjbJarConfiguration(ejbJarConfiguration);
         }
-
-        public static final EjbJarConfigurator INSTANCE = new EjbJarConfigurator();
     }
 
 }

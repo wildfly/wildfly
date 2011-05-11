@@ -20,30 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentCreateService;
 
 /**
- * @author Stuart Douglas
+ * User: jpai
  */
-public class StatefulSessionComponentCreateService extends EJBComponentCreateService {
-
-    /**
-     * Construct a new instance.
-     *
-     * @param componentConfiguration the component configuration
-     */
-    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
-        super(componentConfiguration, ejbJarConfiguration);
-    }
+public class MessageDrivenComponentCreateServiceFactory extends EJBComponentCreateServiceFactory {
 
     @Override
-    protected BasicComponent createComponent() {
-        return new StatefulSessionComponent(this);
+    public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
+        if (this.ejbJarConfiguration == null) {
+            throw new IllegalStateException("EjbJarConfiguration hasn't been set in " + this +
+                    " .Cannot create component create service for EJB " + configuration.getComponentName());
+        }
+        return new MessageDrivenComponentCreateService(configuration, this.ejbJarConfiguration);
     }
-
 }

@@ -23,11 +23,9 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 
 /**
  * @author Stuart Douglas
@@ -39,20 +37,13 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
      *
      * @param componentConfiguration the component configuration
      */
-    public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration) {
-        super(componentConfiguration);
+    public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+        super(componentConfiguration, ejbJarConfiguration);
     }
 
     @Override
     protected BasicComponent createComponent() {
         return new MessageDrivenComponent(this);
     }
-
-    public static final ComponentCreateServiceFactory FACTORY = new ComponentCreateServiceFactory() {
-        @Override
-        public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
-            return new MessageDrivenComponentCreateService(configuration);
-        }
-    };
 
 }

@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Jaikiran Pai
  */
-public class SessionBeanComponentConfiguration extends EJBComponentConfiguration {
+public abstract class SessionBeanComponentConfiguration extends EJBComponentConfiguration {
 
     private LockType beanLevelLockType;
 

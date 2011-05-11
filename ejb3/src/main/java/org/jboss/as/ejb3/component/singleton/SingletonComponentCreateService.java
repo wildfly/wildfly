@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.singleton;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 
 /**
  * @author Stuart Douglas
@@ -33,17 +34,8 @@ public class SingletonComponentCreateService extends EJBComponentCreateService {
 
     private final boolean initOnStartup;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param componentConfiguration the component configuration
-     */
-    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration) {
-        this(componentConfiguration, false);
-    }
-
-    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final boolean initOnStartup) {
-        super(componentConfiguration);
+    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration, final boolean initOnStartup) {
+        super(componentConfiguration, ejbJarConfiguration);
         this.initOnStartup = initOnStartup;
     }
 

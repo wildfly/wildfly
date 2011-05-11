@@ -38,6 +38,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -63,7 +64,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         super(ejbComponentCreateService);
 
 
-        //this.applicationExceptions = configuration.getEjbJarConfiguration().getApplicationExceptions();
+        this.applicationExceptions = Collections.unmodifiableMap(ejbComponentCreateService.getEjbJarConfiguration().getApplicationExceptions());
 
         // constructs
         final DeploymentUnit deploymentUnit = ejbComponentCreateService.getDeploymentUnitInjector().getValue();
@@ -73,7 +74,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         txAttrs = ejbComponentCreateService.getTxAttrs();
         isBeanManagedTransaction = TransactionManagementType.BEAN.equals(ejbComponentCreateService.getTransactionManagementType());
-        applicationExceptions = ejbComponentCreateService.getApplicationExceptions();
     }
 
     @Override

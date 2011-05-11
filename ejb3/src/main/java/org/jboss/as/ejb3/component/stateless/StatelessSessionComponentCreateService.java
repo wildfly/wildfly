@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 
 /**
  * @author Stuart Douglas
@@ -36,8 +37,8 @@ public class StatelessSessionComponentCreateService extends EJBComponentCreateSe
      *
      * @param componentConfiguration the component configuration
      */
-    public StatelessSessionComponentCreateService(final ComponentConfiguration componentConfiguration) {
-        super(componentConfiguration);
+    public StatelessSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+        super(componentConfiguration, ejbJarConfiguration);
     }
 
     @Override

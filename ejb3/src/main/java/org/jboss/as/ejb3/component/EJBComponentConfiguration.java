@@ -22,12 +22,14 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.msc.service.ServiceBuilder;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -88,7 +90,7 @@ public abstract class EJBComponentConfiguration extends ComponentConfiguration {
         return txAttrs;
     }
 
-    public void setEjbJarConfiguration(final EjbJarConfiguration ejbJarConfiguration) {
+    void setEjbJarConfiguration(EjbJarConfiguration ejbJarConfiguration) {
         this.ejbJarConfiguration = ejbJarConfiguration;
     }
 

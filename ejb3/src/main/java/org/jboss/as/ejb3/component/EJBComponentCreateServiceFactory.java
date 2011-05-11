@@ -20,30 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentCreateService;
+import org.jboss.as.ejb3.component.singleton.SingletonComponentCreateService;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentCreateService;
+import org.jboss.as.ejb3.component.stateless.StatelessComponentCreateServiceFactory;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentCreateService;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 
 /**
- * @author Stuart Douglas
+ * User: jpai
  */
-public class StatefulSessionComponentCreateService extends EJBComponentCreateService {
+public abstract class EJBComponentCreateServiceFactory implements ComponentCreateServiceFactory {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param componentConfiguration the component configuration
-     */
-    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
-        super(componentConfiguration, ejbJarConfiguration);
-    }
+    protected EjbJarConfiguration ejbJarConfiguration;
 
-    @Override
-    protected BasicComponent createComponent() {
-        return new StatefulSessionComponent(this);
+    public void setEjbJarConfiguration(EjbJarConfiguration ejbJarConfiguration) {
+        if (ejbJarConfiguration == null) {
+            throw new IllegalArgumentException("EjbJarConfiguration cannot be null");
+        }
+        this.ejbJarConfiguration = ejbJarConfiguration;
     }
 
 }

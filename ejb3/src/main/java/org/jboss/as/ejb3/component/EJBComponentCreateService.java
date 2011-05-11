@@ -25,14 +25,12 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 
-import javax.ejb.ApplicationException;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,17 +44,19 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final TransactionManagementType transactionManagementType;
 
-    private final Map<Class<?>, ApplicationException> applicationExceptions;
+    private final EjbJarConfiguration ejbJarConfiguration;
 
     /**
      * Construct a new instance.
      *
      * @param componentConfiguration the component configuration
      */
-    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration) {
+    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
         super(componentConfiguration);
+
+        this.ejbJarConfiguration = ejbJarConfiguration;
+
         EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
-        EJBComponentConfiguration ejbComponentConfiguration = (EJBComponentConfiguration)componentConfiguration;
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
         // CMTTx
@@ -84,7 +84,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
             }
         }
-        applicationExceptions = Collections.unmodifiableMap(ejbComponentConfiguration.getEjbJarConfiguration().getApplicationExceptions());
     }
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
@@ -93,6 +92,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     TransactionManagementType getTransactionManagementType() {
         return transactionManagementType;
+    }
+
+    EjbJarConfiguration getEjbJarConfiguration() {
+        return this.ejbJarConfiguration;
     }
 
     private void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
@@ -125,7 +128,5 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return result;
     }
 
-    public Map<Class<?>, ApplicationException> getApplicationExceptions() {
-        return applicationExceptions;
-    }
+
 }
