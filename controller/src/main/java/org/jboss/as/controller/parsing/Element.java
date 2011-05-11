@@ -42,6 +42,8 @@ public enum Element {
     ANY_IPV4_ADDRESS("any-ipv4-address"),
     ANY_IPV6_ADDRESS("any-ipv6-address"),
 
+    CONTENT("content"),
+
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
@@ -51,6 +53,9 @@ public enum Element {
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),
     EXTENSIONS("extensions"),
+
+    FS_ARCHIVE("fs-archive"),
+    FS_EXPLODED("fs-exploded"),
 
     HEAP("heap"),
     HOST("host"),

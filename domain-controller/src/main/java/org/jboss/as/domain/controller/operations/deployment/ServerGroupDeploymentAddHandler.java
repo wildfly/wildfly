@@ -18,16 +18,6 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -41,6 +31,17 @@ import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
 /**
  * Handles addition of a deployment to a server group.
@@ -82,14 +83,14 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
 
         ModelNode deployment = context.getSubModel(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
 
-        byte[] hash = deployment.require(HASH).asBytes();
+        byte[] hash = deployment.require(CONTENT).require(0).require(HASH).asBytes();
         // Ensure the local repo has the files
         fileRepository.getDeploymentFiles(hash);
 
         ModelNode subModel = context.getSubModel();
         subModel.get(NAME).set(name);
         subModel.get(RUNTIME_NAME).set(deployment.get(RUNTIME_NAME).asString());
-        subModel.get(HASH).set(hash);
+        subModel.get(CONTENT).get(0).get(HASH).set(hash);
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
 
         resultHandler.handleResultComplete();

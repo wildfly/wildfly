@@ -58,6 +58,7 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
      */
     public ListValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.LIST, nullable, false, true);
+        assert elementValidator != null : "elementValidator is null";
         this.min = minSize;
         this.max = maxSize;
         this.elementValidator = elementValidator;

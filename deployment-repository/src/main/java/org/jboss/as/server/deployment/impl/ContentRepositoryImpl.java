@@ -22,6 +22,16 @@
 
 package org.jboss.as.server.deployment.impl;
 
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -34,21 +44,25 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.jboss.as.server.deployment.api.DeploymentRepository;
-import org.jboss.logging.Logger;
-
 /**
- * Default implementation of {@link org.jboss.as.server.deployment.api.DeploymentRepository}.
+ * Default implementation of {@link org.jboss.as.server.deployment.api.ContentRepository}.
  * @author John Bailey
  */
-public class DeploymentRepositoryImpl implements DeploymentRepository {
+public class ContentRepositoryImpl implements ContentRepository, Service<ContentRepository> {
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
     protected static final String CONTENT = "content";
     private final File repoRoot;
     protected final MessageDigest messageDigest;
 
-    protected DeploymentRepositoryImpl(final File repoRoot) {
+    // TODO: return void
+    public static ContentRepositoryImpl addService(final ServiceTarget serviceTarget, final File repoRoot) {
+        ContentRepositoryImpl contentRepository = new ContentRepositoryImpl(repoRoot);
+        serviceTarget.addService(ContentRepository.SERVICE_NAME, contentRepository).install();
+        return contentRepository;
+    }
+
+    protected ContentRepositoryImpl(final File repoRoot) {
         if (repoRoot == null)
             throw new IllegalArgumentException("repoRoot is null");
         if (repoRoot.exists()) {
@@ -72,7 +86,7 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
     }
 
     @Override
-    public byte[] addDeploymentContent(InputStream stream) throws IOException {
+    public byte[] addContent(InputStream stream) throws IOException {
         byte[] sha1Bytes = null;
         File tmp = File.createTempFile(CONTENT, "tmp", repoRoot);
         FileOutputStream fos = new FileOutputStream(tmp);
@@ -93,7 +107,7 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
             sha1Bytes = messageDigest.digest();
         }
         final File realFile = getDeploymentContentFile(sha1Bytes, true);
-        if(hasDeploymentContent(sha1Bytes)) {
+        if(hasContent(sha1Bytes)) {
             // we've already got this content
             if (!tmp.delete()) {
                 tmp.deleteOnExit();
@@ -108,7 +122,14 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
     }
 
     @Override
-    public boolean hasDeploymentContent(byte[] hash) {
+    public VirtualFile getContent(byte[] hash) {
+        if (hash == null)
+            throw new IllegalArgumentException("hash is null");
+        return VFS.getChild(getDeploymentContentFile(hash, true).toURI());
+    }
+
+    @Override
+    public boolean hasContent(byte[] hash) {
         return getDeploymentContentFile(hash).exists();
     }
 
@@ -179,6 +200,13 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
         }
     }
 
+    @Override
+    public void removeContent(byte[] hash) {
+        File file = getDeploymentContentFile(hash, true);
+        if(!file.delete())
+            file.deleteOnExit();
+    }
+
     protected static void safeClose(final Closeable closeable) {
         if(closeable != null) {
             try {
@@ -189,4 +217,18 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
         }
     }
 
+    @Override
+    public void start(StartContext context) throws StartException {
+        log.debugf("%s started", ContentRepository.class.getSimpleName());
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        log.debugf("%s stopped", ContentRepository.class.getSimpleName());
+    }
+
+    @Override
+    public ContentRepository getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
 }

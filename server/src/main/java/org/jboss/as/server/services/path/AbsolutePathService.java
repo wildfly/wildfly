@@ -22,13 +22,14 @@
 
 package org.jboss.as.server.services.path;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 import java.io.File;
 
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 /**
  * {@link AbstractPathService} implementation for paths that are not relative
@@ -40,13 +41,13 @@ public class AbsolutePathService extends AbstractPathService {
 
     private final String absolutePath;
 
-    public static void addService(final String name, final String abstractPath, final ServiceTarget serviceTarget) {
-        addService(pathNameOf(name), abstractPath, serviceTarget);
+    public static ServiceController<String> addService(final String name, final String abstractPath, final ServiceTarget serviceTarget) {
+        return addService(pathNameOf(name), abstractPath, serviceTarget);
     }
 
-    public static void addService(final ServiceName sname, final String abstractPath, final ServiceTarget serviceTarget) {
+    public static ServiceController<String> addService(final ServiceName sname, final String abstractPath, final ServiceTarget serviceTarget) {
         AbsolutePathService service = new AbsolutePathService(abstractPath);
-        serviceTarget.addService(sname, service).install();
+        return serviceTarget.addService(sname, service).install();
     }
 
     public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {

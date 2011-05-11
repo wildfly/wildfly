@@ -144,6 +144,9 @@ public class EmbeddedStandAloneServerFactory {
         configDir.mkdir();
         File dataDir = new File(tempRoot, "data");
         dataDir.mkdir();
+        // For jboss.server.deployment.scanner.default
+        File deploymentsDir = new File(tempRoot, "deployments");
+        deploymentsDir.mkdir();
 
         copyDirectory(originalConfigDir, configDir);
         if (originalDataDir.exists()) {

@@ -19,21 +19,25 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import java.util.Locale;
-
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 /**
  * Handles deployment into the runtime.
@@ -67,7 +71,10 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
         ModelNode model = context.getSubModel();
         model.get(ENABLED).set(true);
         ModelNode compensatingOp = DeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
-        DeploymentHandlerUtil.deploy(model, context, resultHandler);
+        final String name = model.require(NAME).asString();
+        final String runtimeName = model.require(RUNTIME_NAME).asString();
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+        DeploymentHandlerUtil.deploy(context, name, runtimeName, resultHandler, contents);
         return new BasicOperationResult(compensatingOp);
     }
 }

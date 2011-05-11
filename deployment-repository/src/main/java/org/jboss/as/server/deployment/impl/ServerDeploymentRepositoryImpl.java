@@ -22,20 +22,6 @@
 
 package org.jboss.as.server.deployment.impl;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.security.AccessController;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
-import java.util.concurrent.Executors;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -49,31 +35,47 @@ import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.AccessController;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.util.concurrent.Executors;
+
+import static org.jboss.as.server.deployment.impl.ContentRepositoryImpl.safeClose;
+
 /**
  * Default implementation of {@link ServerDeploymentRepository}.
  *
  * @author Brian Stansberry
  */
-public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
+public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
     private static final String EXTERNAL = "external";
     private final File systemDeployDir;
     private TempFileProvider tempFileProvider;
+    private final ContentRepositoryImpl contentRepository;
 
 
-    public static void addService(final ServiceTarget serviceTarget, final File repoRoot, final File systemDeployDir) {
+    public static void addService(final ServiceTarget serviceTarget, final File repoRoot, final File systemDeployDir, final ContentRepositoryImpl contentRepository) {
         serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
-                new ServerDeploymentRepositoryImpl(repoRoot, systemDeployDir))
+                new ServerDeploymentRepositoryImpl(repoRoot, systemDeployDir, contentRepository))
                 .install();
     }
 
     /**
      * Creates a new ServerDeploymentRepositoryImpl.
      */
-    public ServerDeploymentRepositoryImpl(final File repoRoot, final File systemDeployDir) {
-        super(repoRoot);
+    public ServerDeploymentRepositoryImpl(final File repoRoot, final File systemDeployDir, final ContentRepositoryImpl contentRepository) {
         this.systemDeployDir = systemDeployDir;
+        this.contentRepository = contentRepository;
     }
 
     /** {@inheritDoc} */
@@ -81,7 +83,7 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
     public byte[] addExternalFileReference(File file) throws IOException {
         byte[] sha1Bytes = null;
         final String fileName = file.getAbsolutePath();
-        final MessageDigest messageDigest = this.messageDigest;
+        final MessageDigest messageDigest = contentRepository.messageDigest;
         synchronized(messageDigest) {
             messageDigest.reset();
             if(! file.exists()) {
@@ -124,52 +126,31 @@ public class ServerDeploymentRepositoryImpl extends DeploymentRepositoryImpl imp
         }
     }
 
-    @Override
     public boolean hasDeploymentContent(byte[] hash) {
         if(getExternalFileReference(hash, false).exists()) {
             return true;
         }
-        return super.hasDeploymentContent(hash);
+        return contentRepository.hasContent(hash);
     }
 
     private File getExternalFileReference(byte[] deploymentHash, boolean validate) {
-        final File hashDir = getDeploymentHashDir(deploymentHash, validate);
+        final File hashDir = contentRepository.getDeploymentHashDir(deploymentHash, validate);
         return new File(hashDir, EXTERNAL);
     }
 
-    public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
-        return mountDeploymentContent(name, runtimeName, deploymentHash, mountPoint, false);
+    public Closeable mountDeploymentContent(String name, String runtimeName, final VirtualFile contents, VirtualFile mountPoint) throws IOException {
+        return mountDeploymentContent(name, runtimeName, contents, mountPoint, false);
     }
 
     @Override
-    public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
-        // Internal deployments have no hash, and are unique by name
-        if (deploymentHash == null) {
-            File file = new File(systemDeployDir, name);
-            return VFS.mountZip(file, mountPoint, tempFileProvider);
-        }
-
-        final File external = getExternalFileReference(deploymentHash, false);
-        if(external.exists()) {
-            final InputStream is = new FileInputStream(external);
-            try {
-                final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                final String fileName = reader.readLine();
-                final File realRoot = new File(fileName);
-                if(! realRoot.exists()) {
-                    throw new FileNotFoundException(fileName);
-                }
-                return VFS.mountReal(realRoot, mountPoint);
-            } finally {
-                safeClose(is);
-            }
-        }
-
-        final File content = getDeploymentContentFile(deploymentHash);
+    public Closeable mountDeploymentContent(String name, String runtimeName, final VirtualFile contents, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
+        // according to the javadoc contents can not be null
+        if (contents == null)
+            throw new IllegalArgumentException("contents is null");
         if(mountExpanded) {
-            return VFS.mountZipExpanded(content, mountPoint, tempFileProvider);
+            return VFS.mountZipExpanded(contents, mountPoint, tempFileProvider);
         } else {
-            return VFS.mountZip(content, mountPoint, tempFileProvider);
+            return VFS.mountZip(contents, mountPoint, tempFileProvider);
         }
     }
 

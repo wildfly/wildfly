@@ -36,7 +36,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -49,6 +49,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -632,16 +633,26 @@ public class ServerModelControllerImplUnitTestCase {
         }
     };
 
-    public static final DeploymentRepository NULL_REPO = new DeploymentRepository() {
+    public static final ContentRepository NULL_REPO = new ContentRepository() {
 
         @Override
-        public boolean hasDeploymentContent(byte[] hash) {
+        public boolean hasContent(byte[] hash) {
             return false;
         }
 
         @Override
-        public byte[] addDeploymentContent(InputStream stream) throws IOException {
+        public void removeContent(byte[] hash) {
+            throw new RuntimeException("NYI: .removeContent");
+        }
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
             return new byte[20];
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            throw new RuntimeException("NYI: .getContent");
         }
     };
 

@@ -41,6 +41,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_ADDRESS = "any-address";
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
+    public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String AUTO_START = "auto-start";
     public static final String BOOT_TIME = "boot-time";
@@ -53,6 +54,7 @@ public class ModelDescriptionConstants {
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String COMPENSATING_OPERATION = "compensating-operation";
+    public static final String CONTENT = "content";
     public static final String DEFAULT = "default";
     public static final String DESCRIBE = "describe";
     public static final String DEFAULT_INTERFACE = "default-interface";

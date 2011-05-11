@@ -22,8 +22,22 @@
 
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -37,22 +51,8 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 /**
  * @author Emanuel Muckenhuber
@@ -61,7 +61,7 @@ public final class DomainControllerService implements Service<DomainController> 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final ExtensibleConfigurationPersister configurationPersister;
-    private final DeploymentRepository deploymentRepository;
+    private final ContentRepository contentRepository;
     private final FileRepository localFileRepository;
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<MasterDomainControllerClient> masterDomainControllerClient = new InjectedValue<MasterDomainControllerClient>();
@@ -76,12 +76,12 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController controller;
 
     public DomainControllerService(final ExtensibleConfigurationPersister configurationPersister, final String localHostName, final int mgmtPort,
-                                   final DeploymentRepository deploymentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles,
+                                   final ContentRepository contentRepository, final FileRepository localFileRepository, final boolean backupDomainFiles,
                                    final boolean useCachedDc, final DomainModelImpl domainModel) {
         this.configurationPersister = configurationPersister;
         this.localHostName = localHostName;
         this.mgmtPort = mgmtPort;
-        this.deploymentRepository = deploymentRepository;
+        this.contentRepository = contentRepository;
         this.localFileRepository = localFileRepository;
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
@@ -146,7 +146,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController startMasterDomainController() throws StartException {
         log.info("Starting Domain Controller");
         loadLocalDomainModel();
-        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, deploymentRepository, hostRegistry.getValue());
+        return new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, contentRepository, hostRegistry.getValue());
     }
 
     private DomainController startSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
@@ -165,7 +165,7 @@ public final class DomainControllerService implements Service<DomainController> 
     private DomainController startRemoteSlaveDomainController(MasterDomainControllerClient masterClient) throws StartException {
         // By having a remote repo as a secondary content will be synced only if needed
         FallbackRepository fileRepository = new FallbackRepository(localFileRepository, masterClient.getRemoteFileRepository());
-        domainModel.initialiseAsSlaveDC(configurationPersister, deploymentRepository, fileRepository, hostRegistry.getValue());
+        domainModel.initialiseAsSlaveDC(configurationPersister, contentRepository, fileRepository, hostRegistry.getValue());
         final DomainControllerImpl controller = new DomainControllerImpl(scheduledExecutorService.getValue(), domainModel, localHostName, localFileRepository, masterClient, hostRegistry.getValue());
         try {
             masterClient.register(hostController.getValue().getName(), mgmtInterface.getValue().getAddress(), mgmtPort, controller);
@@ -188,7 +188,7 @@ public final class DomainControllerService implements Service<DomainController> 
     }
 
     private void loadLocalDomainModel() throws StartException {
-        domainModel.initialiseAsMasterDC(configurationPersister, deploymentRepository, localFileRepository, hostRegistry.getValue());
+        domainModel.initialiseAsMasterDC(configurationPersister, contentRepository, localFileRepository, hostRegistry.getValue());
 
         final List<ModelNode> updates;
         try {

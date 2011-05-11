@@ -21,10 +21,10 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.server.deployment.module.ResourceRoot;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jboss.as.server.deployment.module.ResourceRoot;
 
 /**
  * Helper class with static methods related to deployment
@@ -44,7 +44,10 @@ public final class DeploymentUtils {
      */
     public static List<ResourceRoot> allResourceRoots(DeploymentUnit deploymentUnit) {
         List<ResourceRoot> roots = new ArrayList<ResourceRoot>();
-        roots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
+        // not all deployment units have a deployment root
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        if (deploymentRoot != null)
+            roots.add(deploymentRoot);
         AttachmentList<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         if (resourceRoots != null) {
             roots.addAll(resourceRoots);

@@ -22,19 +22,19 @@
 
 package org.jboss.as.server.deployment.api;
 
+import org.jboss.msc.service.ServiceName;
+import org.jboss.vfs.VirtualFile;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * A server-level repository for deployment content.
  *
  * @author Brian Stansberry
  */
-public interface ServerDeploymentRepository extends DeploymentRepository {
+public interface ServerDeploymentRepository {
 
     /**
      * Standard ServiceName under which a service controller for an instance of
@@ -57,13 +57,13 @@ public interface ServerDeploymentRepository extends DeploymentRepository {
      *
      * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
      * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
-     * @param deploymentHash internal identification hash. Cannot be <code>null</code>
+     * @param deploymentContents the deployment contents. Cannot be <code>null</code>
      * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
      * @return {@link java.io.Closeable} that can be used to close the mount
      *
      * @throws IOException
      */
-    Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException;
+    Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile deploymentContents, VirtualFile mountPoint) throws IOException;
 
     /**
      * Requests that the content with the given unique name and hash be mounted
@@ -71,12 +71,12 @@ public interface ServerDeploymentRepository extends DeploymentRepository {
      *
      * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
      * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
-     * @param deploymentHash internal identification hash. Cannot be <code>null</code>
+     * @param deploymentContents the deployment contents. Cannot be <code>null</code>
      * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
      * @param mountExpanded
      * @return {@link java.io.Closeable} that can be used to close the mount
      *
      * @throws IOException
      */
-    Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint, boolean mountExpanded) throws IOException;
+    Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile deploymentContents, VirtualFile mountPoint, boolean mountExpanded) throws IOException;
 }

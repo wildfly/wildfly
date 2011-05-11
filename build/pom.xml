@@ -639,6 +639,12 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-welcome</artifactId>
+            <type>war</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-weld</artifactId>
         </dependency>
 

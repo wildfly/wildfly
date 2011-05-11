@@ -22,27 +22,12 @@
 
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
-import org.jboss.as.domain.controller.DomainDeploymentRepository;
 import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.HostRegistryService;
@@ -54,7 +39,7 @@ import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.RemoteDomainConnectionService;
 import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
 import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -62,6 +47,21 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 
 /**
  * Utility class to handle the add operations for both local and remote domain controllers.
@@ -87,8 +87,8 @@ public class DomainControllerAddUtil {
         final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
         final ExtensibleConfigurationPersister domainConfigurationPersister = createDomainConfigurationPersister(configDir, configurationFile, isSlave);
-        DeploymentRepository deploymentRepository = new DomainDeploymentRepository(environment.getDomainDeploymentDir());
-        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, mgmtPort, deploymentRepository, fileRepository, backupDomainFiles, useCachedDc, domainModel);
+        ContentRepository contentRepository = new DomainContentRepository(environment.getDomainDeploymentDir());
+        final DomainControllerService dcService = new DomainControllerService(domainConfigurationPersister, hostName, mgmtPort, contentRepository, fileRepository, backupDomainFiles, useCachedDc, domainModel);
         ServiceBuilder<DomainController> builder = serviceTarget.addService(DomainController.SERVICE_NAME, dcService);
         if (isSlave) {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());

@@ -22,14 +22,6 @@
 
 package org.jboss.as.controller.parsing;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -42,8 +34,19 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -56,6 +59,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -65,7 +69,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
@@ -295,7 +298,6 @@ public class StandaloneXml extends CommonXml {
             // Handle attributes
             String uniqueName = null;
             String runtimeName = null;
-            byte[] hash = null;
             String startInput = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
@@ -316,18 +318,6 @@ public class StandaloneXml extends CommonXml {
                             runtimeName = value;
                             break;
                         }
-                        case SHA1: {
-                            try {
-                                hash = HashUtil.hexStringToByteArray(value);
-                            }
-                            catch (final Exception e) {
-                               throw new XMLStreamException("Value " + value +
-                                       " for attribute " + attribute.getLocalName() +
-                                       " does not represent a properly hex-encoded SHA1 hash",
-                                       reader.getLocation(), e);
-                            }
-                            break;
-                        }
                         case ENABLED: {
                             startInput = value;
                             break;
@@ -343,18 +333,33 @@ public class StandaloneXml extends CommonXml {
             if (runtimeName == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
             }
-            if (hash == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
-            }
             final boolean enabled = startInput == null ? true : Boolean.parseBoolean(startInput);
-
-            // Handle elements
-            requireNoContent(reader);
 
             final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
             final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
+
+            // Handle elements
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+                    throw unexpectedElement(reader);
+                }
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case CONTENT:
+                        parseContentType(reader, deploymentAdd);
+                        break;
+                    case FS_ARCHIVE:
+                        parseFSBaseType(reader, deploymentAdd, true);
+                        break;
+                    case FS_EXPLODED:
+                        parseFSBaseType(reader, deploymentAdd, false);
+                        break;
+                    default:
+                        throw unexpectedElement(reader);
+                }
+            }
+
             deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
-            deploymentAdd.get(HASH).set(hash);
             deploymentAdd.get(ENABLED).set(enabled);
             list.add(deploymentAdd);
         }
@@ -457,6 +462,23 @@ public class StandaloneXml extends CommonXml {
         writer.writeEndDocument();
     }
 
+    private static void writeContentItem(final XMLExtendedStreamWriter writer, final ModelNode contentItem) throws XMLStreamException {
+        if (contentItem.has(HASH)) {
+            writeElement(writer, Element.CONTENT);
+            writeAttribute(writer, Attribute.SHA1, HashUtil.bytesToHexString(contentItem.require(HASH).asBytes()));
+            writer.writeEndElement();
+        } else {
+            if (contentItem.require(ARCHIVE).asBoolean()) {
+                writeElement(writer, Element.FS_ARCHIVE);
+            } else {
+                writeElement(writer, Element.FS_EXPLODED);
+            }
+            writeAttribute(writer, Attribute.PATH, contentItem.require(PATH).asString());
+            if (contentItem.has(RELATIVE_TO))
+                writeAttribute(writer, Attribute.RELATIVE_TO, contentItem.require(RELATIVE_TO).asString());
+            writer.writeEndElement();
+        }
+    }
 
     private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
             throws XMLStreamException {
@@ -465,16 +487,18 @@ public class StandaloneXml extends CommonXml {
         if (deploymentNames.size() > 0) {
             writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
             for (String uniqueName : deploymentNames) {
-                ModelNode deployment = modelNode.get(uniqueName);
-                String runtimeName = deployment.get(RUNTIME_NAME).asString();
-                String sha1 = HashUtil.bytesToHexString(deployment.get(HASH).asBytes());
+                final ModelNode deployment = modelNode.get(uniqueName);
+                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
                 boolean enabled = deployment.get(ENABLED).asBoolean();
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
                 writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                writeAttribute(writer, Attribute.SHA1, sha1);
                 if (!enabled) {
                     writeAttribute(writer, Attribute.ENABLED, "false");
+                }
+                final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
+                for (ModelNode contentItem : contentItems) {
+                    writeContentItem(writer, contentItem);
                 }
                 writer.writeEndElement();
 

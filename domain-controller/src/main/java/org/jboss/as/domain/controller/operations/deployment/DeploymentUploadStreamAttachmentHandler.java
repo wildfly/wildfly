@@ -18,20 +18,20 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
-
-import java.io.InputStream;
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
+
+import java.io.InputStream;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
 
 /**
 * Handler for the upload-deployment-stream operation.
@@ -46,7 +46,7 @@ implements DescriptionProvider {
 
     private final ParametersValidator streamValidator = new ParametersValidator();
 
-    public DeploymentUploadStreamAttachmentHandler(final DeploymentRepository repository) {
+    public DeploymentUploadStreamAttachmentHandler(final ContentRepository repository) {
         super(repository);
         this.streamValidator.registerValidator(INPUT_STREAM_INDEX, new IntRangeValidator(0));
     }

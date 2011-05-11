@@ -22,8 +22,19 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
+
+import java.util.concurrent.Future;
+
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_DEPLOY_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_FULL_REPLACE_OPERATION;
@@ -40,16 +51,6 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
-
-import java.util.concurrent.Future;
-
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -101,7 +102,8 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
                 configureDeploymentOperation(step, ADD, uniqueName);
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
                 builder.addInputStream(action.getContentStream());
-                step.get(INPUT_STREAM_INDEX).set(stream++);
+                //step.get(INPUT_STREAM_INDEX).set(stream++);
+                step.get(CONTENT).get(0).get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }
             case DEPLOY: {
@@ -114,7 +116,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
                 step.get(NAME).set(uniqueName);
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
                 builder.addInputStream(action.getContentStream());
-                step.get(INPUT_STREAM_INDEX).set(stream++);
+                step.get(CONTENT).get(0).get(INPUT_STREAM_INDEX).set(stream++);
                 break;
             }
             case REDEPLOY: {

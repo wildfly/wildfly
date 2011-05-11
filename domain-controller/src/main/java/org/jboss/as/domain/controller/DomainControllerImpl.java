@@ -22,6 +22,44 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.controller.AbstractModelController;
+import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.ControllerTransaction;
+import org.jboss.as.controller.ControllerTransactionContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
+import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
+import org.jboss.as.domain.controller.plan.RolloutPlanController;
+import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -65,44 +103,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-
-import org.jboss.as.controller.AbstractModelController;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ControllerTransaction;
-import org.jboss.as.controller.ControllerTransactionContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadUtil;
-import org.jboss.as.domain.controller.plan.RolloutPlanController;
-import org.jboss.as.domain.controller.plan.ServerOperationExecutor;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
-
 /**
  * Standard {@link DomainController} implementation.
  *
@@ -139,7 +139,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     private final DomainModel localDomainModel;
     private final ScheduledExecutorService scheduledExecutorService;
     private final FileRepository fileRepository;
-    private final DeploymentRepository deploymentRepository;
+    private final ContentRepository contentRepository;
     private final MasterDomainControllerClient masterDomainControllerClient;
     private final ServerOperationExecutor serverOperationExecutor = new ServerOperationExecutor() {
         @Override
@@ -149,14 +149,14 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
     };
 
     public DomainControllerImpl(final ScheduledExecutorService scheduledExecutorService, final DomainModel domainModel, final String hostName, final FileRepository fileRepository,
-            DeploymentRepository deploymentRepository, Map<String, DomainControllerSlaveClient> hosts) {
+            ContentRepository contentRepository, Map<String, DomainControllerSlaveClient> hosts) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.localHostName = hostName;
         this.localDomainModel = domainModel;
         this.hosts = hosts;
         this.hosts.put(hostName, new LocalDomainModelAdapter());
         this.fileRepository = fileRepository;
-        this.deploymentRepository = deploymentRepository;
+        this.contentRepository = contentRepository;
         this.masterDomainControllerClient = null;
 
     }
@@ -170,7 +170,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
         this.fileRepository = new FallbackRepository(fileRepository, masterDomainControllerClient.getRemoteFileRepository());
         this.hosts = hosts;
         this.hosts.put(hostName, new LocalDomainModelAdapter());
-        this.deploymentRepository = null;
+        this.contentRepository = null;
     }
 
     /** {@inheritDoc} */
@@ -548,7 +548,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
         final Set<String> targets = routing.getHosts();
         if (targets.remove(localHostName)) {
 
-            if (deploymentRepository != null) {
+            if (contentRepository != null) {
                 // Store any uploaded content now
                 storeDeploymentContent(operation, opNode);
             }
@@ -598,7 +598,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
         if (address.size() == 0) {
             String opName = opNode.get(OP).asString();
             if (DeploymentFullReplaceHandler.OPERATION_NAME.equals(opName) && opNode.hasDefined(INPUT_STREAM_INDEX)) {
-                byte[] hash = DeploymentUploadUtil.storeDeploymentContent(operation, opNode, deploymentRepository);
+                byte[] hash = DeploymentUploadUtil.storeDeploymentContent(operation, opNode, contentRepository);
                 opNode.remove(INPUT_STREAM_INDEX);
                 opNode.get(HASH).set(hash);
             }
@@ -611,7 +611,7 @@ public class DomainControllerImpl extends AbstractModelController<Void> implemen
         }
         else if (address.size() == 1 && DEPLOYMENT.equals(address.getElement(0).getKey())
                 && ADD.equals(opNode.get(OP).asString()) && opNode.hasDefined(INPUT_STREAM_INDEX)) {
-            byte[] hash = DeploymentUploadUtil.storeDeploymentContent(operation, opNode, deploymentRepository);
+            byte[] hash = DeploymentUploadUtil.storeDeploymentContent(operation, opNode, contentRepository);
             opNode.remove(INPUT_STREAM_INDEX);
             opNode.get(HASH).set(hash);
         }

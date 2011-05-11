@@ -5,7 +5,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
+import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
 import java.io.ByteArrayInputStream;
@@ -28,9 +28,9 @@ public class DeploymentUploadUtil {
     private DeploymentUploadUtil() {
     }
 
-    public static byte[] storeDeploymentContent(OperationAttachments context, ModelNode operation, DeploymentRepository deploymentRepository) throws IOException, OperationFailedException {
+    public static byte[] storeDeploymentContent(OperationAttachments context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
         InputStream in = getContents(context, operation);
-        return deploymentRepository.addDeploymentContent(in);
+        return contentRepository.addContent(in);
     }
 
     private static InputStream getContents(OperationAttachments context, ModelNode operation) throws OperationFailedException {

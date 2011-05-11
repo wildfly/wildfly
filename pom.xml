@@ -245,6 +245,7 @@
         <module>transactions</module>
         <module>web</module>
         <module>webservices</module>
+        <module>welcome</module>
         <module>weld</module>
     </modules>
 
@@ -756,6 +757,13 @@
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-webservices-server-integration</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-welcome</artifactId>
+                <version>${project.version}</version>
+                <type>war</type>
             </dependency>
 
             <dependency>
