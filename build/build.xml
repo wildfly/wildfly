@@ -45,7 +45,7 @@
     </target>
 
     <target name="copy-files-welcome">
-        <unwar src="${org.jboss.as:jboss-as-welcome:war}" dest="${output.dir}/content/welcome.war"/>
+        <unwar src="${org.jboss.as:jboss-as-welcome:war}" dest="${output.dir}/system-content/welcome.war"/>
     </target>
 
     <target name="make-dirs">

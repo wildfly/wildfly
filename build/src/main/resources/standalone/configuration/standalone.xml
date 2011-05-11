@@ -213,15 +213,15 @@
                     A comma seperated list of module identifiers. Each system module
                     is added as a dependency to the OSGi framework module. The packages
                     from these system modules can be made visible as framework system packages.
-                    http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA     
+                    http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
                 -->
                 <property name="org.jboss.osgi.system.modules">
                 org.apache.log4j,
                 org.jboss.as.osgi,
                 </property>
                 <!--
-                    Framework environment property identifying extra packages which the system bundle 
-                    must export from the current execution environment 
+                    Framework environment property identifying extra packages which the system bundle
+                    must export from the current execution environment
                 -->
                 <property name="org.osgi.framework.system.packages.extra">
                 org.apache.log4j;version=1.2,
@@ -375,10 +375,5 @@
         <property name="key" value="value"/>
     </system-properties>
 
-    <deployments>
-        <deployment name="welcome.war" runtime-name="welcome.war">
-            <fs-archive path="content/welcome.war" relative-to="jboss.home.dir"/>
-        </deployment>
-    </deployments>
 </server>
 
