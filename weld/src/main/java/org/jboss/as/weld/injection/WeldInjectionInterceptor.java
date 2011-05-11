@@ -29,27 +29,42 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class that performs CDI injection and calls intializer methods after resource injection
  * has been run
+ *
  * @author Stuart Douglas
  */
 public class WeldInjectionInterceptor implements Interceptor {
 
     final AtomicReference<ManagedReference> targetReference;
+    final Map<Class<?>, AtomicReference<ManagedReference>> interceptors;
 
-    public WeldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference) {
+    public WeldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final Map<Class<?>, AtomicReference<ManagedReference>> interceptors) {
         this.targetReference = targetReference;
+        this.interceptors = interceptors;
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final ManagedReference managedReference = targetReference.get();
-        if(managedReference instanceof WeldManagedReference) {
-            final WeldManagedReference reference = (WeldManagedReference)managedReference;
+        if (managedReference instanceof WeldManagedReference) {
+            final WeldManagedReference reference = (WeldManagedReference) managedReference;
             reference.getInjectionTarget().inject(targetReference.get().getInstance(), reference.getContext());
+
+            //now inject the interceptors
+            for (final Map.Entry<Class<?>, AtomicReference<ManagedReference>> entry : interceptors.entrySet()) {
+                final ManagedReference instance = entry.getValue().get();
+                if (instance != null) {
+                    reference.injectInterceptor(entry.getKey(), instance.getInstance());
+                }
+            }
+
         }
         return context.proceed();
     }
@@ -57,15 +72,26 @@ public class WeldInjectionInterceptor implements Interceptor {
     public static class Factory implements InterceptorFactory {
 
         final ComponentConfiguration configuration;
+        final Set<Class<?>> interceptorClasses;
 
-        public Factory(final ComponentConfiguration configuration) {
+        public Factory(final ComponentConfiguration configuration, final Set<Class<?>> interceptorClasses) {
             this.configuration = configuration;
+            this.interceptorClasses = interceptorClasses;
         }
 
         @Override
         public Interceptor create(final InterceptorFactoryContext context) {
             final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
-            return new WeldInjectionInterceptor(targetReference);
+            final Map<Class<?>, AtomicReference<ManagedReference>> interceptors = new HashMap<Class<?>, AtomicReference<ManagedReference>>();
+            for (Class<?> clazz : interceptorClasses) {
+                final AtomicReference<ManagedReference> interceptor = (AtomicReference<ManagedReference>) context.getContextData().get(clazz);
+                if(interceptor != null) {
+                    interceptors.put(clazz, interceptor);
+                }
+
+            }
+
+            return new WeldInjectionInterceptor(targetReference, interceptors);
         }
     }
 }

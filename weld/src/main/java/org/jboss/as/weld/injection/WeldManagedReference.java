@@ -24,6 +24,7 @@ package org.jboss.as.weld.injection;
 import org.jboss.as.naming.ManagedReference;
 
 import javax.enterprise.context.spi.CreationalContext;
+import java.util.Map;
 
 /**
 * @author Stuart Douglas
@@ -32,11 +33,13 @@ class WeldManagedReference implements ManagedReference {
     private final CreationalContext<?> context;
     private final Object instance;
     private final WeldEEInjection injectionTarget;
+    private final Map<Class<?>, WeldEEInjection> interceptorInjections;
 
-    public WeldManagedReference(CreationalContext<?> ctx, Object instance, final WeldEEInjection injectionTarget) {
+    public WeldManagedReference(CreationalContext<?> ctx, Object instance, final WeldEEInjection injectionTarget, final Map<Class<?>, WeldEEInjection> interceptorInjections) {
         this.context = ctx;
         this.instance = instance;
         this.injectionTarget = injectionTarget;
+        this.interceptorInjections = interceptorInjections;
     }
 
     /**
@@ -44,6 +47,15 @@ class WeldManagedReference implements ManagedReference {
      */
     public void inject() {
         injectionTarget.inject(instance, context);
+    }
+
+    public void injectInterceptor(Class<?> interceptorClass, Object instance) {
+        final WeldEEInjection injection = interceptorInjections.get(interceptorClass);
+        if(injection != null) {
+            injection.inject(instance, context);
+        } else {
+            throw new IllegalArgumentException("Unknown interceptor class for CDI injection " + interceptorClass);
+        }
     }
 
     @Override
