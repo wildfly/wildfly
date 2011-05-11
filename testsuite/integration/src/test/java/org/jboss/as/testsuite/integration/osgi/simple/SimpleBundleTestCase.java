@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.testsuite.integration.osgi;
+package org.jboss.as.testsuite.integration.osgi.simple;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,8 +25,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.osgi.bundle.SimpleActivator;
-import org.jboss.as.testsuite.integration.osgi.bundle.SimpleService;
+import org.jboss.as.testsuite.integration.osgi.xservice.bundle.SimpleActivator;
+import org.jboss.as.testsuite.integration.osgi.xservice.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

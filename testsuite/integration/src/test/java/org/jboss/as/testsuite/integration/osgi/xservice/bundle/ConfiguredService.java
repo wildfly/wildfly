@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.osgi.bundle;
+package org.jboss.as.testsuite.integration.osgi.xservice.bundle;
 
 import java.util.Dictionary;
 import java.util.concurrent.CountDownLatch;

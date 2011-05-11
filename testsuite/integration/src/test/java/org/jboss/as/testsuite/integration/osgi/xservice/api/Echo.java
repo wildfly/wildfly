@@ -19,34 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.osgi.xservice.api;
 
-package org.jboss.as.testsuite.integration.osgi.module;
+public interface Echo {
 
-import org.jboss.logging.Logger;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceTarget;
+    String echo(String message);
 
-/**
- * A simple MSC service activator
- *
- * @author Thomas.Diesler@jboss.org
- * @since 09-Nov-2010
- */
-public class TargetModuleActivator implements ServiceActivator
-{
-   private static final Logger log = Logger.getLogger(TargetModuleActivator.class);
-
-   @Override
-   public void activate(ServiceActivatorContext context)
-   {
-      ServiceTarget serviceTarget = context.getServiceTarget();
-      EchoService.addService(serviceTarget);
-
-      ModuleClassLoader classLoader = (ModuleClassLoader)getClass().getClassLoader();
-      ModuleIdentifier identifier = classLoader.getModule().getIdentifier();
-      log.infof("ModuleIdentifier: %s", identifier);
-   }
 }

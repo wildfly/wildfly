@@ -19,10 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.osgi.api;
 
-public interface Echo {
+package org.jboss.as.testsuite.integration.osgi.xservice.bundle;
 
-    String echo(String message);
+import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
+import org.jboss.logging.Logger;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
+public class ClientBundleActivator implements BundleActivator
+{
+   private static final Logger log = Logger.getLogger(ClientBundleActivator.class);
+
+   @Override
+   public void start(final BundleContext context) throws Exception
+   {
+      log.infof("Echo Loader: %s", Echo.class.getClassLoader());
+      ServiceReference sref = context.getServiceReference(Echo.class.getName());
+      Echo service = (Echo)context.getService(sref);
+      String result = service.echo("hello world");
+      context.registerService(StringBuffer.class.getName(), new StringBuffer(result), null);
+   }
+
+   @Override
+   public void stop(BundleContext context) throws Exception
+   {
+   }
 }
