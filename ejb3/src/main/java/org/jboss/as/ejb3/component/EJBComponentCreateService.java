@@ -26,10 +26,13 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 
+import javax.ejb.ApplicationException;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,6 +46,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final TransactionManagementType transactionManagementType;
 
+    private final Map<Class<?>, ApplicationException> applicationExceptions;
+
     /**
      * Construct a new instance.
      *
@@ -51,6 +56,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     public EJBComponentCreateService(final ComponentConfiguration componentConfiguration) {
         super(componentConfiguration);
         EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+        EJBComponentConfiguration ejbComponentConfiguration = (EJBComponentConfiguration)componentConfiguration;
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
         // CMTTx
@@ -78,6 +84,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
             }
         }
+        applicationExceptions = Collections.unmodifiableMap(ejbComponentConfiguration.getEjbJarConfiguration().getApplicationExceptions());
     }
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
@@ -118,5 +125,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return result;
     }
 
-
+    public Map<Class<?>, ApplicationException> getApplicationExceptions() {
+        return applicationExceptions;
+    }
 }

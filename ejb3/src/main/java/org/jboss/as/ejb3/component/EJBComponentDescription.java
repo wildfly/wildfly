@@ -21,21 +21,25 @@
  */
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -94,6 +98,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
 
         getConfigurators().addFirst(new NamespaceConfigurator());
+        getConfigurators().addFirst(new EjbJarConfigurator());
 
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
@@ -230,5 +235,20 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param view The view for which the interceptor has to be setup
      */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
+
+    /**
+     * Configurator that attaches the ejb jar to the configuration
+     */
+    private static final class EjbJarConfigurator implements ComponentConfigurator {
+
+        @Override
+        public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+            final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+            final EjbJarConfiguration ejbJar = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_CONFIGURATION);
+            ((EJBComponentConfiguration)configuration).setEjbJarConfiguration(ejbJar);
+        }
+
+        public static final EjbJarConfigurator INSTANCE = new EjbJarConfigurator();
+    }
 
 }

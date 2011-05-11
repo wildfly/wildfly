@@ -52,7 +52,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
     private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
-    private Map<Class<?>, ApplicationException> applicationExceptions;
+    private final Map<Class<?>, ApplicationException> applicationExceptions;
 
     /**
      * Construct a new instance.
@@ -73,6 +73,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
         txAttrs = ejbComponentCreateService.getTxAttrs();
         isBeanManagedTransaction = TransactionManagementType.BEAN.equals(ejbComponentCreateService.getTransactionManagementType());
+        applicationExceptions = ejbComponentCreateService.getApplicationExceptions();
     }
 
     @Override

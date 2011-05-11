@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -63,7 +64,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
 
-        ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        ComponentConfiguration singletonComponentConfiguration = new SessionBeanComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new ComponentCreateServiceFactory() {
             @Override

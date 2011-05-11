@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -66,7 +67,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
 
-        final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        final ComponentConfiguration statefulComponentConfiguration = new SessionBeanComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
         // setup the component create service
         statefulComponentConfiguration.setComponentCreateServiceFactory(new ComponentCreateServiceFactory() {
             @Override

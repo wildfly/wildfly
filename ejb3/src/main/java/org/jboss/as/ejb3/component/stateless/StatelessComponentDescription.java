@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -62,7 +63,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
 
     @Override
     public ComponentConfiguration createConfiguration(EEModuleConfiguration moduleConfiguration) {
-        final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
+        final ComponentConfiguration statelessComponentConfiguration = new SessionBeanComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
         // setup the component create service
         statelessComponentConfiguration.setComponentCreateServiceFactory(new ComponentCreateServiceFactory() {
             @Override
