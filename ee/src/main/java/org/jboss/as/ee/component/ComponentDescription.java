@@ -404,7 +404,6 @@ public class ComponentDescription {
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
             // Module stuff
-            final EEModuleClassDescription componentClassDescription = description.getClassDescription();
             final EEModuleClassConfiguration componentClassConfiguration = configuration.getModuleClassConfiguration();
             final EEModuleConfiguration moduleConfiguration = componentClassConfiguration.getModuleConfiguration();
 
@@ -412,12 +411,13 @@ public class ComponentDescription {
             final Deque<InterceptorFactory> injectors = new ArrayDeque<InterceptorFactory>();
             final Deque<InterceptorFactory> uninjectors = new ArrayDeque<InterceptorFactory>();
             final Deque<InterceptorFactory> destructors = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> userPostConstruct = new ArrayDeque<InterceptorFactory>();
-            final Deque<InterceptorFactory> userPreDestroy = new ArrayDeque<InterceptorFactory>();
 
             final ClassReflectionIndex<?> componentClassIndex = index.getClassIndex(componentClassConfiguration.getModuleClass());
             final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<InterceptorFactory>();
             final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+
+            final Map<String, List<InterceptorFactory>> userPostConstructByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            final Map<String, List<InterceptorFactory>> userPreDestroyByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
 
             // Primary instance
             final ManagedReferenceFactory instanceFactory = configuration.getInstanceFactory();
@@ -479,13 +479,21 @@ public class ComponentDescription {
                             if (postConstructMethod != null) {
                                 Method method = interceptorClassIndex.getMethod(postConstructMethod);
                                 InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
-                                userPostConstruct.addLast(interceptorFactory);
+                                List<InterceptorFactory> userPostConstruct = userPostConstructByInterceptorClass.get(interceptorClassName);
+                                if(userPostConstruct == null) {
+                                    userPostConstructByInterceptorClass.put(interceptorClassName, userPostConstruct = new ArrayList<InterceptorFactory>());
+                                }
+                                userPostConstruct.add(interceptorFactory);
                             }
                             final MethodIdentifier preDestroyMethod = classDescription.getPreDestroyMethod();
                             if (preDestroyMethod != null) {
                                 Method method = interceptorClassIndex.getMethod(preDestroyMethod);
                                 InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
-                                userPreDestroy.addLast(interceptorFactory);
+                                List<InterceptorFactory> userPreDestroy = userPreDestroyByInterceptorClass.get(interceptorClassName);
+                                if(userPreDestroy == null) {
+                                    userPreDestroyByInterceptorClass.put(interceptorClassName, userPreDestroy = new ArrayList<InterceptorFactory>());
+                                }
+                                userPreDestroy.add(interceptorFactory);
                             }
                         }
                         final MethodIdentifier aroundInvokeMethod = classDescription.getAroundInvokeMethod();
@@ -500,6 +508,23 @@ public class ComponentDescription {
                     }
                 }.run();
             }
+
+            final Deque<InterceptorFactory> userPostConstruct = new ArrayDeque<InterceptorFactory>();
+            final Deque<InterceptorFactory> userPreDestroy = new ArrayDeque<InterceptorFactory>();
+
+            //now add the lifecycle interceptors in the correct order
+            //TODO: default interceptors
+            for(final InterceptorDescription interceptorClass : description.getClassInterceptors()) {
+                if(userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
+                    userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
+                }
+                if(userPreDestroyByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
+                    userPreDestroy.addAll(userPreDestroyByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
+                }
+            }
+
+
+
 
             new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
                 @Override
