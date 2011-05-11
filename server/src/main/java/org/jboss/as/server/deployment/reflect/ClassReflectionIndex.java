@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.reflect;
 
+import org.jboss.invocation.proxy.MethodIdentifier;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -32,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * A short-lived index of all the declared fields and methods of a class.
@@ -81,15 +82,7 @@ public final class ClassReflectionIndex<T> {
                 }
             }
         }
-        for (Class<?> iface : indexedClass.getInterfaces()) {
-            for (Method method : deploymentReflectionIndex.getClassIndex(iface).getMethods()) {
-                int modifiers = method.getModifiers();
-                if (Modifier.isPublic(modifiers) && ! Modifier.isStatic(modifiers)) {
-                    addMethod(methods, method);
-                    addMethodByTypeName(methodsByTypeName, method);
-                }
-            }
-        }
+
         this.methods = methods;
         this.methodsByTypeName = methodsByTypeName;
         // -- constructors --
@@ -121,7 +114,10 @@ public final class ClassReflectionIndex<T> {
         if (paramsMap == null) {
             nameMap.put(list, paramsMap = new HashMap<Class<?>, Method>());
         }
-        paramsMap.put(method.getReturnType(), method);
+        //don't allow superclass / interface methods to overwrite existing methods
+        if(!paramsMap.containsKey(method.getReturnType())) {
+            paramsMap.put(method.getReturnType(), method);
+        }
     }
 
     private static void addMethodByTypeName(Map<String, Map<ParamNameList, Map<String, Method>>> methodsByTypeName, Method method) {
@@ -136,7 +132,11 @@ public final class ClassReflectionIndex<T> {
         if (paramsMap == null) {
             nameMap.put(list, paramsMap = new HashMap<String, Method>());
         }
-        paramsMap.put(method.getReturnType().getName(), method);
+
+        //don't allow superclass / interface methods to overwrite existing methods
+        if(!paramsMap.containsKey(method.getReturnType().getName())) {
+            paramsMap.put(method.getReturnType().getName(), method);
+        }
     }
 
     private static ParamNameList createParamNameList(final Class<?>[] types) {
