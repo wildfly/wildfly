@@ -32,7 +32,6 @@ import junit.framework.Assert;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
-import org.jboss.as.ee.naming.ContextNames;
 
 /**
  * @author Paul Ferraro
@@ -40,7 +39,7 @@ import org.jboss.as.ee.naming.ContextNames;
 @ManagedBean("infinispan")
 public class InfinispanBean {
     static final String CONTAINER_REF_NAME = "mycontainer";
-    private static final String CONTAINER_JNDI_NAME = ContextNames.COMPONENT_CONTEXT_NAME.append("env").append(CONTAINER_REF_NAME).getAbsoluteName();
+    private static final String CONTAINER_JNDI_NAME = "java:comp/env/" + CONTAINER_REF_NAME;
     
     private CacheContainer container;
     private Cache<Integer, Object> cache;

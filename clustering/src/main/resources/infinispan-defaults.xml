@@ -28,6 +28,7 @@
         <shutdown hookBehavior="DONT_REGISTER"/>
     </global>
     <default>
+        <transaction useSynchronization="true"></transaction>
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
         <storeAsBinary enabled="false"/>
         <clustering mode="local"></clustering>

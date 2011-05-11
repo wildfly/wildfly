@@ -560,10 +560,10 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                     transaction.get(ModelKeys.STOP_TIMEOUT).set(Long.parseLong(value));
                     break;
                 }
-                case SYNC_PHASE: {
+                case MODE: {
                     try {
-                        SyncPhase phase = SyncPhase.valueOf(value);
-                        transaction.get(ModelKeys.SYNC_PHASE).set(phase.name());
+                        TransactionMode mode = TransactionMode.valueOf(value);
+                        transaction.get(ModelKeys.MODE).set(mode.name());
                     } catch (IllegalArgumentException e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
@@ -823,7 +823,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                         writer.writeStartElement(Element.TRANSACTION.getLocalName());
                         ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
                         this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
-                        this.writeOptional(writer, Attribute.SYNC_PHASE, transaction, ModelKeys.SYNC_PHASE);
+                        this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
                         this.writeOptional(writer, Attribute.EAGER_LOCKING, transaction, ModelKeys.EAGER_LOCKING);
                         writer.writeEndElement();
                     }

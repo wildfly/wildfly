@@ -239,12 +239,12 @@
     </xs:complexType>
     
     <xs:complexType name="transaction">
-        <xs:attribute name="stop-timeout" type="xs:long" default="30000">
+        <xs:attribute name="mode" type="tns:transaction-mode" default="NON_XA">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="sync-phase" type="tns:sync-phase" default="ALL">
+        <xs:attribute name="stop-timeout" type="xs:long" default="30000">
             <xs:annotation>
                 <xs:documentation></xs:documentation>
             </xs:annotation>
@@ -503,26 +503,21 @@
         </xs:restriction>
     </xs:simpleType>
     
-    <xs:simpleType name="sync-phase">
+    <xs:simpleType name="transaction-mode">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="NONE">
+            <xs:enumeration value="NON_XA">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>Cache will enlist within transactions as a javax.transaction.Synchronization</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="COMMIT">
+            <xs:enumeration value="NON_DURABLE_XA">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>Cache will enlist within transactions as a javax.transaction.xa.XAResource, without recovery.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="ROLLBACK">
+            <xs:enumeration value="FULL_XA">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="ALL">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>Cache will enlist within transactions as a javax.transaction.xa.XAResource, with recovery.</xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
         </xs:restriction>

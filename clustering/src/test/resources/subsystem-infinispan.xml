@@ -35,6 +35,7 @@
     <cache-container name="hibernate" jndi-name="java:CacheManager/entity" default-cache="local-query" listener-executor="infinispan-listener" eviction-executor="infinispan-eviction" replication-queue-executor="infinispan-repl-queue">
         <invalidation-cache name="entity" mode="SYNC">
             <locking isolation="READ_COMMITTED"/>
+            <transaction mode="NON_XA"/>
             <eviction strategy="LRU"/>
             <expiration max-idle="100000"/>
         </invalidation-cache>
@@ -45,6 +46,7 @@
         </invalidation-cache>
         <replicated-cache name="replicated-entity" mode="SYNC">
             <locking isolation="READ_COMMITTED"/>
+            <transaction mode="NON_DURABLE_XA"/>
             <eviction strategy="LRU"/>
             <expiration max-idle="100000"/>
             <state-transfer enabled="false"/>

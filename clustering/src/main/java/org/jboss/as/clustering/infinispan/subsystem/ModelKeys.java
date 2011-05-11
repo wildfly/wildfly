@@ -85,7 +85,6 @@ public class ModelKeys {
     static final String STORE = "store";
     static final String STRATEGY = "strategy";
     static final String STRIPING = "striping";
-    static final String SYNC_PHASE = "sync-phase";
     static final String TIMEOUT = "timeout";
     static final String TRANSACTION = "transaction";
     static final String TRANSPORT = "transport";

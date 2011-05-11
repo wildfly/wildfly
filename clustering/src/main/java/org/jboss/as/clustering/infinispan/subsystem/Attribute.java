@@ -79,7 +79,6 @@ public enum Attribute {
     STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),
-    SYNC_PHASE(ModelKeys.SYNC_PHASE),
     TIMEOUT(ModelKeys.TIMEOUT),
     ;
 

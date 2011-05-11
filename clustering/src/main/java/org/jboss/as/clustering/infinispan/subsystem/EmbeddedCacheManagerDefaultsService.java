@@ -101,6 +101,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
         defaultConfig.fluent()
             .locking().lockAcquisitionTimeout(15000L).useLockStriping(false).concurrencyLevel(1000)
             .eviction().strategy(EvictionStrategy.NONE).maxEntries(10000)
+            .transaction().useSynchronization(true)
             ;
         for (Configuration.CacheMode mode: Configuration.CacheMode.values()) {
             Configuration configuration = defaultConfig.clone();

@@ -25,25 +25,24 @@ package org.jboss.as.clustering.infinispan.subsystem;
 /**
  * @author Paul Ferraro
  */
-public enum SyncPhase {
-    NONE(false, false),
-    COMMIT(true, false),
-    ROLLBACK(false, true),
-    ALL(true, true),
+public enum TransactionMode {
+    NON_XA(false, false),
+    NON_DURABLE_XA(true, false),
+    FULL_XA(true, true),
     ;
-    private final boolean commit;
-    private final boolean rollback;
+    private boolean xaEnabled;
+    private boolean recoveryEnabled;
 
-    private SyncPhase(boolean commit, boolean rollback) {
-        this.commit = commit;
-        this.rollback = rollback;
+    private TransactionMode(boolean xaEnabled, boolean recoveryEnabled) {
+        this.xaEnabled = xaEnabled;
+        this.recoveryEnabled = recoveryEnabled;
     }
 
-    public boolean isCommit() {
-        return this.commit;
+    public boolean isXAEnabled() {
+        return this.xaEnabled;
     }
 
-    public boolean isRollback() {
-        return this.rollback;
+    public boolean isRecoveryEnabled() {
+        return this.recoveryEnabled;
     }
 }

@@ -144,6 +144,7 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
             RuntimeTask task = new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    try {
                     String defaultCache = operation.require(ModelKeys.DEFAULT_CACHE).asString();
 
                     EmbeddedCacheManager config = new EmbeddedCacheManager(name, defaultCache);
@@ -160,11 +161,25 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     ServiceTarget target = context.getServiceTarget();
                     ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
                     ServiceBuilder<CacheContainer> builder = target.addService(serviceName, new EmbeddedCacheManagerService(config))
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
                         .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, config.getTransactionManagerInjector())
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())
                         .addAliases(aliases)
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                        ;
+                    String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
+                    int index = jndiName.indexOf("/");
+                    String namespace = (index > 5) ? jndiName.substring(5, index) : null;
+                    String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
+                    ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
+                    ServiceName bindingName = naming.append(binding);
+                    BinderService binder = new BinderService(binding);
+                    target.addService(bindingName, binder)
+                        .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
+                        .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
+                        .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                        .install()
                         ;
                     boolean requiresTransport = false;
                     Map<String, Configuration> configurations = config.getConfigurations();
@@ -217,9 +232,14 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                             if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
                                 fluentTx.cacheStopTimeout(transaction.get(ModelKeys.TIMEOUT).asInt());
                             }
-                            if (transaction.hasDefined(ModelKeys.SYNC_PHASE)) {
-                                SyncPhase phase = SyncPhase.valueOf(transaction.get(ModelKeys.SYNC_PHASE).asString());
-                                fluentTx.syncCommitPhase(phase.isCommit()).syncRollbackPhase(phase.isRollback());
+                            if (transaction.hasDefined(ModelKeys.MODE)) {
+                                TransactionMode txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
+                                FluentConfiguration.RecoveryConfig recovery = fluentTx.useSynchronization(!txMode.isXAEnabled()).recovery();
+                                if (txMode.isRecoveryEnabled()) {
+                                    recovery.syncCommitPhase(true).syncRollbackPhase(true);
+                                } else {
+                                    recovery.disable();
+                                }
                             }
                             if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
                                 EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
@@ -292,8 +312,9 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                             fluentStores.addCacheLoader(storeConfig);
                         }
                         configurations.put(cacheName, configuration);
+
                         StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;
-                        new CacheService<Object, Object>(cacheName).build(target, serviceName).setInitialMode(startMode.getMode()).install();
+                        new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindingName).setInitialMode(startMode.getMode()).install();
                     }
                     if (!configurations.containsKey(defaultCache)) {
                         throw new IllegalArgumentException(String.format("%s is not a valid default cache. The %s cache container does not contain a cache with that name", defaultCache, name));
@@ -329,22 +350,13 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
                     this.addExecutorDependency(builder, operation, ModelKeys.LISTENER_EXECUTOR, config.getListenerExecutorInjector());
                     this.addScheduledExecutorDependency(builder, operation, ModelKeys.EVICTION_EXECUTOR, config.getEvictionExecutorInjector());
                     this.addScheduledExecutorDependency(builder, operation, ModelKeys.REPLICATION_QUEUE_EXECUTOR, config.getReplicationQueueExecutorInjector());
+ 
                     builder.install();
 
-                    String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
-                    int index = jndiName.indexOf("/");
-                    String namespace = (index > 5) ? jndiName.substring(5, index) : null;
-                    String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
-                    ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-                    BinderService binder = new BinderService(binding);
-                    target.addService(naming.append(binding), binder)
-                        .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
-                        .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                        .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .install()
-                        ;
                     resultHandler.handleResultComplete();
+                    } catch (Throwable e) {
+                        e.printStackTrace(System.err);
+                    }
                 }
 
                 private void addExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<Executor> injector) {
