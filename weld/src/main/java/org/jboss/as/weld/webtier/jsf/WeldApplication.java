@@ -16,6 +16,8 @@
  */
 package org.jboss.as.weld.webtier.jsf;
 
+import org.jboss.weld.el.WeldELContextListener;
+
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.enterprise.inject.spi.BeanManager;
@@ -23,11 +25,8 @@ import javax.faces.application.Application;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.weld.el.WeldELContextListener;
-
 /**
  * @author pmuir
- *
  */
 public class WeldApplication extends ForwardingApplication {
 
@@ -46,9 +45,10 @@ public class WeldApplication extends ForwardingApplication {
     }
 
     private final Application application;
+    private final AdjustableELResolver elResolver;
+
     private volatile ExpressionFactory expressionFactory;
-    private AdjustableELResolver elResolver;
-    private volatile boolean initialized;
+    private volatile boolean initialized = false;
     private volatile BeanManager beanManager;
 
     public WeldApplication(Application application) {
@@ -60,9 +60,13 @@ public class WeldApplication extends ForwardingApplication {
     }
 
     private void init() {
-        if (!initialized && beanManager() != null) {
-            elResolver.setDelegate(beanManager().getELResolver());
-            initialized = true;
+        if (!initialized &&  beanManager() != null) {
+            synchronized (this) {
+                if(!initialized &&  beanManager() != null) {
+                    elResolver.setDelegate(beanManager().getELResolver());
+                    initialized = true;
+                }
+            }
         }
     }
 
@@ -78,11 +82,15 @@ public class WeldApplication extends ForwardingApplication {
         // may be improved for thread safety, but right now the only risk is to invoke wrapExpressionFactory
         // multiple times for concurrent threads. This is ok, as the call is
         if (expressionFactory == null) {
-            BeanManager bm = beanManager();
-            if (bm == null) {
-                expressionFactory = application.getExpressionFactory();
-            } else {
-                expressionFactory = bm.wrapExpressionFactory(application.getExpressionFactory());
+            synchronized (this) {
+                if (expressionFactory == null) {
+                    BeanManager bm = beanManager();
+                    if (bm == null) {
+                        expressionFactory = application.getExpressionFactory();
+                    } else {
+                        expressionFactory = bm.wrapExpressionFactory(application.getExpressionFactory());
+                    }
+                }
             }
         }
         return expressionFactory;

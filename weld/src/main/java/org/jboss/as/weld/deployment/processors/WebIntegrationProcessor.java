@@ -30,18 +30,25 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.as.web.deployment.WebAttachments;
+import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.deployment.component.WebComponentDescription;
+import org.jboss.as.web.deployment.component.WebComponentInstantiator;
 import org.jboss.as.weld.WeldDeploymentMarker;
+import org.jboss.as.weld.webtier.jsp.JspInitializationListener;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
+import org.jboss.weld.servlet.ConversationPropagationFilter;
+import org.jboss.weld.servlet.WeldListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Deployment processor that integrates weld into the web tier
@@ -57,11 +64,11 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.as.weld");
 
 
-    private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
+    private static final String WELD_LISTENER = WeldListener.class.getName();
 
-    private static final String JSP_LISTENER = "org.jboss.as.weld.webtier.jsp.JspInitializationListener";
+    private static final String JSP_LISTENER = JspInitializationListener.class.getName();
 
-    private static final String CONVERSATION_FILTER = "org.jboss.weld.servlet.ConversationPropagationFilter";
+    private static final String CONVERSATION_FILTER = ConversationPropagationFilter.class.getName();
 
     public WebIntegrationProcessor() {
 
@@ -96,9 +103,9 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             log.info("Not installing Weld web tier integration as no war metadata found");
             return;
         }
-        final JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
+        JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {
-            log.info("Not installing Weld web tier integration as no merged metadata found");
+            log.info("Not installing Weld web tier integration as no merged web metadata found");
             return;
         }
 
@@ -111,7 +118,10 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         listeners.add(1, JIL);
 
         //This uses resource injection, so it needs to be a component
-        module.addComponent(new WebComponentDescription(JSP_LISTENER,JSP_LISTENER,module, deploymentUnit.getServiceName()));
+        final WebComponentDescription componentDescription = new WebComponentDescription(JSP_LISTENER, JSP_LISTENER, module, deploymentUnit.getServiceName());
+        module.addComponent(componentDescription);
+        final Map<String, ComponentInstantiator> instantiators = deploymentUnit.getAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS);
+        instantiators.put(JSP_LISTENER, new WebComponentInstantiator(deploymentUnit, componentDescription));
 
         FiltersMetaData filters = webMetaData.getFilters();
         if (filters == null) {

@@ -43,7 +43,6 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 import java.util.HashSet;
@@ -68,8 +67,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ServiceName beanManagerServiceName = BeanManagerService.serviceName(deploymentUnit);
-
-        final InjectedValue<BeanManagerImpl> beanManager = new InjectedValue<BeanManagerImpl>();
 
         for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
             final String beanName;
@@ -96,7 +93,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     }
 
 
-                    addWeldInstantiator(context.getServiceTarget(), configuration, componentClass, beanName, deploymentUnit.getServiceName(), beanManagerServiceName, beanManager, interceptorClasses, classLoader);
+                    addWeldInstantiator(context.getServiceTarget(), configuration, componentClass, beanName, deploymentUnit.getServiceName(), beanManagerServiceName, interceptorClasses, classLoader);
 
                     configuration.getPostConstructInterceptors().addLast(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses));
                 }
@@ -109,11 +106,11 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     /**
      * As the weld based instantiator needs access to the bean manager it is installed as a service.
      */
-    private void addWeldInstantiator(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName deploymentServiceName, final ServiceName beanManagerServiceName, final InjectedValue<BeanManagerImpl> beanManager, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
+    private void addWeldInstantiator(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName deploymentServiceName, final ServiceName beanManagerServiceName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
 
         final ServiceName serviceName = configuration.getComponentDescription().getServiceName().append("WeldInstantiator");
 
-        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, beanManager, interceptorClasses, classLoader);
+        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, interceptorClasses, classLoader);
 
         target.addService(serviceName, factory)
                 .addDependency(beanManagerServiceName, BeanManagerImpl.class, factory.getBeanManager())

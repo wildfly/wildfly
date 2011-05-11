@@ -21,13 +21,12 @@ import javax.faces.application.ApplicationFactory;
 
 /**
  * @author pmuir
- *
  */
 public class WeldApplicationFactory extends ForwardingApplicationFactory {
 
     private final ApplicationFactory applicationFactory;
 
-    private Application application;
+    private volatile Application application;
 
     public WeldApplicationFactory(ApplicationFactory applicationFactory) {
         this.applicationFactory = applicationFactory;
@@ -41,7 +40,11 @@ public class WeldApplicationFactory extends ForwardingApplicationFactory {
     @Override
     public Application getApplication() {
         if (application == null) {
-            application = new WeldApplication(delegate().getApplication());
+            synchronized (this) {
+                if (application == null) {
+                    application = new WeldApplication(delegate().getApplication());
+                }
+            }
         }
         return application;
     }

@@ -245,6 +245,7 @@ public enum Phase {
     public static final int PARSE_MANAGED_BEAN_ANNOTATION               = 0x2900;
     public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x2A00;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
+    public static final int PARSE_WELD_WEB_INTEGRATION                  = 0x2B10;
     public static final int PARSE_WELD_COMPONENT_INTEGRATION            = 0x2B20;
     public static final int PARSE_WEBSERVICES_XML                       = 0x2C00;
     public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x2D00;
@@ -285,7 +286,6 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
 
     // POST_MODULE
-    public static final int POST_MODULE_WELD_WEB_INTEGRATION            = 0x0100;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0400;

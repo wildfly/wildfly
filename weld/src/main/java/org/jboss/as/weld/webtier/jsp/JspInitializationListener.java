@@ -22,6 +22,10 @@
  */
 package org.jboss.as.weld.webtier.jsp;
 
+import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.jboss.as.weld.util.Reflections;
+import org.jboss.weld.servlet.api.helpers.AbstractServletListener;
+
 import javax.el.ELContextListener;
 import javax.el.ExpressionFactory;
 import javax.enterprise.inject.spi.BeanManager;
@@ -29,10 +33,6 @@ import javax.inject.Inject;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.jsp.JspApplicationContext;
 import javax.servlet.jsp.JspFactory;
-
-import org.apache.jasper.runtime.JspApplicationContextImpl;
-import org.jboss.as.weld.util.Reflections;
-import org.jboss.weld.servlet.api.helpers.AbstractServletListener;
 
 /**
  * The Web Beans JSP initialization listener
@@ -72,7 +72,7 @@ public class JspInitializationListener extends AbstractServletListener {
 
     @Override
     public void requestInitialized(ServletRequestEvent sre) {
-        if (!installed && beanManager != null && JspFactory.getDefaultFactory() != null) {
+        if (!installed && beanManager!= null && JspFactory.getDefaultFactory() != null) {
             synchronized (this) {
                 if (!installed) {
                     installed = true;

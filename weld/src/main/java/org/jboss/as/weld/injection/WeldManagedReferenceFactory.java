@@ -54,10 +54,10 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     private volatile WeldEEInjection injectionTarget;
     private volatile Bean<?> bean;
 
-    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final InjectedValue<BeanManagerImpl> beanManager, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
+    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
         this.componentClass = componentClass;
         this.ejbName = ejbName;
-        this.beanManager = beanManager;
+        this.beanManager = new InjectedValue<BeanManagerImpl>();
         this.interceptorClasses = interceptorClasses;
         this.classLoader = classLoader;
     }
