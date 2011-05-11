@@ -23,6 +23,8 @@ package org.jboss.as.weld.deployment;
 
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
@@ -53,11 +55,14 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
     public EjbDescriptorImpl(EJBComponentDescription componentDescription, BeanDeploymentArchiveImpl beanDeploymentArchive, DeploymentUnit deploymentUnit) {
         this.componentDescription = componentDescription;
         this.beanDeploymentArchive = beanDeploymentArchive;
+        final SessionBeanComponentDescription description = componentDescription instanceof SessionBeanComponentDescription ? (SessionBeanComponentDescription) componentDescription : null;
         final Set<BusinessInterfaceDescriptor<?>> localInterfaces = new HashSet<BusinessInterfaceDescriptor<?>>();
         if (componentDescription.getViews() != null) {
             for (ViewDescription view : componentDescription.getViews()) {
                 String viewClassName = view.getViewClassName();
-                localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, viewClassName));
+                if(description == null || description.getMethodIntf(viewClassName) == MethodIntf.LOCAL) {
+                    localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, viewClassName));
+                }
             }
         }
         this.localInterfaces = localInterfaces;
