@@ -49,15 +49,17 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     private final String ejbName;
     private final Set<Class<?>> interceptorClasses;
     private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<Class<?>, WeldEEInjection>();
+    private final ClassLoader classLoader;
 
     private volatile WeldEEInjection injectionTarget;
     private volatile Bean<?> bean;
 
-    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final InjectedValue<BeanManagerImpl> beanManager, final Set<Class<?>> interceptorClasses) {
+    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final InjectedValue<BeanManagerImpl> beanManager, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader) {
         this.componentClass = componentClass;
         this.ejbName = ejbName;
         this.beanManager = beanManager;
         this.interceptorClasses = interceptorClasses;
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -75,17 +77,22 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
 
     @Override
     public void start(final StartContext context) throws StartException {
-        final BeanManagerImpl beanManager = this.beanManager.getValue();
-        for (final Class<?> interceptor : interceptorClasses) {
-            interceptorInjections.put(interceptor, WeldEEInjection.createWeldEEInjection(interceptor, null, beanManager));
-        }
+        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(classLoader);
+            final BeanManagerImpl beanManager = this.beanManager.getValue();
+            for (final Class<?> interceptor : interceptorClasses) {
+                interceptorInjections.put(interceptor, WeldEEInjection.createWeldEEInjection(interceptor, null, beanManager));
+            }
 
-        if (ejbName != null) {
-            EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
-            bean = beanManager.getBean(descriptor);
+            if (ejbName != null) {
+                EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
+                bean = beanManager.getBean(descriptor);
+            }
+            injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
+        } finally {
+            SecurityActions.setContextClassLoader(cl);
         }
-        injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
-
 
     }
 
