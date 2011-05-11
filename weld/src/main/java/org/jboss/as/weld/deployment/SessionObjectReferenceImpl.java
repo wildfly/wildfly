@@ -90,7 +90,9 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     @Override
     public void remove() {
-        instance.destroy();
+        if(instance != null) {
+            instance.destroy();
+        }
         removed = true;
     }
 

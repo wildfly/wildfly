@@ -38,9 +38,9 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.injection.WeldInjectionInterceptor;
 import org.jboss.as.weld.injection.WeldManagedReferenceFactory;
 import org.jboss.as.weld.services.BeanManagerService;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.manager.BeanManagerImpl;
 
@@ -59,7 +59,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+        if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return;
         }
 
@@ -67,11 +67,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ServiceName beanManagerServiceName = BeanManagerService.serviceName(deploymentUnit);
 
-        final ServiceName serviceName = deploymentUnit.getServiceName().append("WeldComponentInstantiatorService");
         final InjectedValue<BeanManagerImpl> beanManager = new InjectedValue<BeanManagerImpl>();
-        phaseContext.getServiceTarget().addService(serviceName, Service.NULL)
-                .addDependency(beanManagerServiceName, BeanManagerImpl.class, beanManager)
-                .install();
 
         for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
             final String beanName;
@@ -91,13 +87,13 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     final Set<Class<?>> interceptorClasses = new HashSet<Class<?>>();
                     for (InterceptorDescription interceptorDescription : description.getAllInterceptors().values()) {
                         EEModuleClassConfiguration clazz = module.getClassConfiguration(interceptorDescription.getInterceptorClassName());
-                        if(clazz != null) {
+                        if (clazz != null) {
                             interceptorClasses.add(clazz.getModuleClass());
                         }
                     }
 
 
-                    addWeldInstantiator(configuration, componentClass, beanName, serviceName, beanManager, interceptorClasses);
+                    addWeldInstantiator(context.getServiceTarget(), configuration, componentClass, beanName, deploymentUnit.getServiceName(), beanManagerServiceName, beanManager, interceptorClasses);
 
                     configuration.getPostConstructInterceptors().addLast(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses));
                 }
@@ -110,8 +106,16 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     /**
      * As the weld based instantiator needs access to the bean manager it is installed as a service.
      */
-    private void addWeldInstantiator(final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName serviceName, final InjectedValue<BeanManagerImpl> beanManager, final Set<Class<?>> interceptorClasses) {
+    private void addWeldInstantiator(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName deploymentServiceName, final ServiceName beanManagerServiceName, final InjectedValue<BeanManagerImpl> beanManager, final Set<Class<?>> interceptorClasses) {
+
+        final ServiceName serviceName = configuration.getComponentDescription().getServiceName().append("WeldInstantiator");
+
         final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, beanManager, interceptorClasses);
+
+        target.addService(serviceName, factory)
+                .addDependency(beanManagerServiceName, BeanManagerImpl.class, factory.getBeanManager())
+                .install();
+
         configuration.setInstanceFactory(factory);
         configuration.getStartDependencies().add(new DependencyConfigurator() {
             @Override

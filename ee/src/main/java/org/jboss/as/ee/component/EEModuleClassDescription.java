@@ -22,22 +22,21 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.MethodInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
@@ -174,10 +173,9 @@ public final class EEModuleClassDescription {
             // Use the basic instantiator if none was set up
             if (configuration.getInstantiator() == null) {
                 Constructor<?> constructor = classIndex.getConstructor(NO_CLASSES);
-                if (constructor == null) {
-                    throw new DeploymentUnitProcessingException("No acceptable constructor found for " + moduleClass);
+                if (constructor != null) {
+                    configuration.setInstantiator(new ValueManagedReferenceFactory(createConstructedValue(constructor)));
                 }
-                configuration.setInstantiator(new ValueManagedReferenceFactory(createConstructedValue(constructor)));
             }
         }
 

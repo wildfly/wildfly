@@ -455,6 +455,9 @@ public class ComponentDescription {
 
                 //we store the interceptor instance under the class key
                 final Object contextKey = interceptorConfiguration.getModuleClass();
+                if(interceptorConfiguration.getInstantiator() == null) {
+                    throw new DeploymentUnitProcessingException("No default constructor for interceptor class " + interceptorClassName + " on component " + componentClassConfiguration.getModuleClass());
+                }
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorConfiguration.getInstantiator(), contextKey));
                 destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
 

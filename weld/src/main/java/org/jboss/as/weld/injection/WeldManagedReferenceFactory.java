@@ -23,8 +23,11 @@ package org.jboss.as.weld.injection;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.manager.BeanManagerImpl;
 
@@ -39,10 +42,10 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-public class WeldManagedReferenceFactory implements ManagedReferenceFactory {
+public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Service<WeldManagedReferenceFactory> {
 
     private final Class<?> componentClass;
-    private final Value<BeanManagerImpl> beanManager;
+    private final InjectedValue<BeanManagerImpl> beanManager;
     private final String ejbName;
     private final Set<Class<?>> interceptorClasses;
     private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<Class<?>, WeldEEInjection>();
@@ -60,22 +63,6 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory {
     @Override
     public ManagedReference getReference() {
         final BeanManagerImpl beanManager = this.beanManager.getValue();
-        if (injectionTarget == null) {
-            synchronized (this) {
-                if (injectionTarget == null) {
-
-                    for(final Class<?> interceptor : interceptorClasses) {
-                        interceptorInjections.put(interceptor, WeldEEInjection.createWeldEEInjection(interceptor, null, beanManager));
-                    }
-
-                    if (ejbName != null) {
-                        EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
-                        bean = beanManager.getBean(descriptor);
-                    }
-                    injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
-                }
-            }
-        }
         final CreationalContext<?> ctx;
         if (bean == null) {
             ctx = beanManager.createCreationalContext(null);
@@ -86,4 +73,35 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory {
         return new WeldManagedReference(ctx, instance, injectionTarget, interceptorInjections);
     }
 
+    @Override
+    public void start(final StartContext context) throws StartException {
+        final BeanManagerImpl beanManager = this.beanManager.getValue();
+        for (final Class<?> interceptor : interceptorClasses) {
+            interceptorInjections.put(interceptor, WeldEEInjection.createWeldEEInjection(interceptor, null, beanManager));
+        }
+
+        if (ejbName != null) {
+            EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
+            bean = beanManager.getBean(descriptor);
+        }
+        injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
+
+
+    }
+
+    @Override
+    public void stop(final StopContext context) {
+        injectionTarget = null;
+        interceptorInjections.clear();
+        bean = null;
+    }
+
+    @Override
+    public WeldManagedReferenceFactory getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    public InjectedValue<BeanManagerImpl> getBeanManager() {
+        return beanManager;
+    }
 }
