@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.Map;
+
 /**
  * A component view.
  *
@@ -35,6 +37,14 @@ public interface ComponentView {
      * @return the component view instance
      */
     ComponentViewInstance createInstance();
+
+    /**
+     * Create the component view instance using the additional context data
+     *
+     * @param contextData Additional context data used in the view creation
+     * @return the component view instance
+     */
+    ComponentViewInstance createInstance(Map<Object, Object> contextData);
 
     /**
      * Get the associated component.

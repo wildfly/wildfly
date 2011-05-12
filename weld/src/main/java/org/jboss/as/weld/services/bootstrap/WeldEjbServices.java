@@ -23,6 +23,7 @@ package org.jboss.as.weld.services.bootstrap;
 
 import org.jboss.as.weld.deployment.EjbDescriptorImpl;
 import org.jboss.as.weld.deployment.SessionObjectReferenceImpl;
+import org.jboss.as.weld.deployment.StatefulSessionObjectReferenceImpl;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
@@ -40,22 +41,26 @@ public class WeldEjbServices implements EjbServices {
 
     private final ServiceRegistry serviceRegistry;
 
-    private volatile Map<String,InterceptorBindings> bindings = Collections.emptyMap();
+    private volatile Map<String, InterceptorBindings> bindings = Collections.emptyMap();
 
     public WeldEjbServices(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
     }
 
     @Override
-    public synchronized  void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
-        final Map<String,InterceptorBindings> bindings = new HashMap<String,InterceptorBindings>(this.bindings);
-        bindings.put(ejbDescriptor.getEjbName(),interceptorBindings);
+    public synchronized void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
+        final Map<String, InterceptorBindings> bindings = new HashMap<String, InterceptorBindings>(this.bindings);
+        bindings.put(ejbDescriptor.getEjbName(), interceptorBindings);
         this.bindings = bindings;
     }
 
     @Override
     public SessionObjectReference resolveEjb(EjbDescriptor<?> ejbDescriptor) {
-        return new SessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor,serviceRegistry);
+        if (ejbDescriptor.isStateful()) {
+            return new StatefulSessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor, serviceRegistry);
+        } else {
+            return new SessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor, serviceRegistry);
+        }
     }
 
     @Override

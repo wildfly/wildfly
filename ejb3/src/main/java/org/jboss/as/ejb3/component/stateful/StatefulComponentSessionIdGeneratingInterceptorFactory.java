@@ -27,6 +27,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,7 +47,15 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
     public Interceptor create(InterceptorFactoryContext context) {
         AtomicReference<Serializable> sessionIdReference = new AtomicReference<Serializable>();
         context.getContextData().put(this.sessionIdContextKey, sessionIdReference);
-        return new StatefulComponentSessionIdGeneratingInterceptor(sessionIdReference);
+
+        //if we are attaching to an existing instance this will not be null
+        final Serializable id = (Serializable) context.getContextData().get(StatefulSessionComponent.SESSION_ATTACH_KEY);
+        if(id == null) {
+            return new StatefulComponentSessionIdGeneratingInterceptor(sessionIdReference);
+        } else {
+            sessionIdReference.set(id);
+            return Interceptors.getTerminalInterceptor();
+        }
     }
 
     private class StatefulComponentSessionIdGeneratingInterceptor implements Interceptor {
@@ -59,7 +68,7 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
-            final Component component = (Component) context.getPrivateData(Component.class);
+            final Component component = context.getPrivateData(Component.class);
             if (component instanceof StatefulSessionComponent == false) {
                 throw new IllegalStateException("Unexpected component: " + component + " Expected " + StatefulSessionComponent.class);
             }
@@ -71,4 +80,6 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
             return context.proceed();
         }
     }
+
+
 }

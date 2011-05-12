@@ -119,11 +119,15 @@ final class ViewService implements Service<ComponentView> {
         }
 
         public ComponentViewInstance createInstance() {
+            return createInstance(Collections.<Object, Object>emptyMap());
+        }
+
+        public ComponentViewInstance createInstance(Map<Object, Object> contextData) {
             final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
             final Map<Method, InterceptorFactory> viewInterceptorFactories = ViewService.this.viewInterceptorFactories;
             final Map<Method, Interceptor> viewEntryPoints = new IdentityHashMap<Method, Interceptor>(viewInterceptorFactories.size());
             factoryContext.getContextData().put(Component.class, component);
-
+            factoryContext.getContextData().putAll(contextData);
             //the post construct interceptors currently MUST be created first
             //and in some cases the instance is attached in this create process
             //TODO: this is probably not a good thing. {@see ManagedBeanCreateInterceptorFactory}

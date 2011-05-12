@@ -21,43 +21,46 @@
  */
 package org.jboss.as.weld.deployment;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implementation for non-stateful beans, a new view instance is looked up each time
+ * Implementation for SFSB's
  *
  * @author Stuart Douglas
  */
-public class SessionObjectReferenceImpl implements SessionObjectReference {
+public class StatefulSessionObjectReferenceImpl implements SessionObjectReference {
 
     private volatile boolean removed = false;
     private final Map<String, ServiceName> viewServices;
     private final ServiceRegistry serviceRegistry;
+    private final StatefulSessionComponent component;
+    private final Serializable id;
 
-    final Component component;
 
-
-    public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
+    public StatefulSessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
         final ServiceName createServiceName = descriptor.getCreateServiceName();
         final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
 
-        component = (Component) controller.getValue();
+        component = (StatefulSessionComponent) controller.getValue();
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
 
-        for(ViewDescription view : descriptor.getComponentDescription().getViews()) {
+        for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
+        id = component.createSession();
         this.viewServices = viewServices;
 
     }
@@ -66,13 +69,11 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
     @Override
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        if(removed) {
-            return null;
-        }
-        if(viewServices.containsKey(businessInterfaceType.getName())) {
+
+        if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = serviceRegistry.getRequiredService(viewServices.get(businessInterfaceType.getName()));
-            final ComponentView view = (ComponentView)serviceController.getValue();
-            final ComponentViewInstance instance = view.createInstance();
+            final ComponentView view = (ComponentView) serviceController.getValue();
+            final ComponentViewInstance instance = view.createInstance(Collections.<Object, Object>singletonMap(StatefulSessionComponent.SESSION_ATTACH_KEY, id));
             return (S) instance.createProxy();
         } else {
             throw new IllegalArgumentException("View of type " + businessInterfaceType + " not found on bean " + component);
@@ -81,11 +82,17 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     @Override
     public void remove() {
-        //nop
+        if (!isRemoved()) {
+            component.getCache().remove(id);
+            removed = true;
+        }
     }
 
     @Override
     public boolean isRemoved() {
-        return false;
+        if(!removed) {
+            return component.getCache().get(id) == null;
+        }
+        return true;
     }
 }

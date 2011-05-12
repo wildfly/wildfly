@@ -41,6 +41,8 @@ import java.util.Map;
  */
 public class StatefulSessionComponent extends SessionBeanComponent {
 
+    public static final Object SESSION_ATTACH_KEY = new Object();
+
     private Cache<StatefulSessionComponentInstance> cache;
 
     /**
@@ -110,7 +112,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return getCache().create().getId();
     }
 
-    protected Cache<StatefulSessionComponentInstance> getCache() {
+    public Cache<StatefulSessionComponentInstance> getCache() {
         return cache;
     }
 
@@ -118,6 +120,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     protected BasicComponentInstance instantiateComponentInstance() {
         return new StatefulSessionComponentInstance(this);
     }
+
+
 
     @Override
     public Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method beanMethod, Object[] args) throws Exception {
