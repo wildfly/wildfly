@@ -33,6 +33,8 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class SBInvocationInterceptor implements Interceptor {
 
+    public static final SBInvocationInterceptor INSTANCE = new SBInvocationInterceptor();
+
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
 

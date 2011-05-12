@@ -22,7 +22,6 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.SFSBCallStack;
@@ -37,6 +36,8 @@ import org.jboss.invocation.InterceptorContext;
  * @author Scott Marlow
  */
 public class SFSBInvocationInterceptor implements Interceptor {
+
+    public static final SFSBInvocationInterceptor INSTANCE = new SFSBInvocationInterceptor();
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {

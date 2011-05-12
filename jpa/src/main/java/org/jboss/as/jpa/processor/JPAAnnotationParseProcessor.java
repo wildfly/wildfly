@@ -43,18 +43,19 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
-import org.jboss.as.jpa.interceptor.SBInvocationInterceptorFactory;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
+import org.jboss.as.jpa.interceptor.SBInvocationInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBCreateInterceptorFactory;
 import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptorFactory;
-import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptorFactory;
+import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptor;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
@@ -344,12 +345,12 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             // invocations on the view"?
             List<ViewDescription> views = componentDescription.getViews();
             for (ViewDescription view : views) {
-                view.getConfigurators().add(new ViewConfigurator() {
+                view.getConfigurators().addFirst(new ViewConfigurator() {
                     @Override
                     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                         Method[] viewMethods = configuration.getProxyFactory().getCachedMethods();
                         for (Method viewMethod : viewMethods) {
-                            configuration.getViewInterceptorDeque(viewMethod).add(SFSBInvocationInterceptorFactory.getInstance());
+                            configuration.getViewInterceptorDeque(viewMethod).addFirst(new ImmediateInterceptorFactory(SFSBInvocationInterceptor.INSTANCE));
                         }
                     }
                 });
@@ -364,7 +365,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                     for (Method method : configuration.getDefinedComponentMethods()) {
-                        configuration.getComponentInterceptorDeque(method).add(SBInvocationInterceptorFactory.getInstance());
+                        configuration.getComponentInterceptorDeque(method).addFirst(new ImmediateInterceptorFactory(SBInvocationInterceptor.INSTANCE));
                     }
                 }
             });
