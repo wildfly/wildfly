@@ -34,7 +34,7 @@ import org.jboss.as.ee.component.EEModuleConfigurationProcessor;
 import org.jboss.as.ee.component.InterceptorsAnnotationParsingProcessor;
 import org.jboss.as.ee.component.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.EEModuleNameProcessor;
-import org.jboss.as.ee.component.EnvEntryProcessor;
+import org.jboss.as.ee.component.ResourceReferenceProcessor;
 import org.jboss.as.ee.component.LifecycleAnnotationParsingProcessor;
 import org.jboss.as.ee.component.ModuleJndiBindingProcessor;
 import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
@@ -106,7 +106,7 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_INITIALIZE_IN_ORDER, new InitalizeInOrderProcessor());
 
-            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ENV_ENTRY, new EnvEntryProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ENV_ENTRY, new ResourceReferenceProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());

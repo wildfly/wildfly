@@ -35,11 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Deployment processor that sets up env-entry bindings
+ * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings
  *
  * @author Stuart Douglas
  */
-public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
+public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
