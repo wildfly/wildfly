@@ -399,7 +399,7 @@ public class ComponentDescription {
 
         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-            final DeploymentReflectionIndex index = deploymentUnit.getAttachment(REFLECTION_INDEX);
+            final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
             final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
@@ -412,7 +412,7 @@ public class ComponentDescription {
             final Deque<InterceptorFactory> uninjectors = new ArrayDeque<InterceptorFactory>();
             final Deque<InterceptorFactory> destructors = new ArrayDeque<InterceptorFactory>();
 
-            final ClassReflectionIndex<?> componentClassIndex = index.getClassIndex(componentClassConfiguration.getModuleClass());
+            final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(componentClassConfiguration.getModuleClass());
             final List<InterceptorFactory> componentUserAroundInvoke = new ArrayList<InterceptorFactory>();
             final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
 
@@ -465,7 +465,7 @@ public class ComponentDescription {
                 new ClassDescriptionTraversal(interceptorConfiguration, moduleConfiguration) {
                     @Override
                     public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                        final ClassReflectionIndex<?> interceptorClassIndex = index.getClassIndex(interceptorClassConfiguration.getModuleClass());
+                        final ClassReflectionIndex<?> interceptorClassIndex = deploymentReflectionIndex.getClassIndex(interceptorClassConfiguration.getModuleClass());
 
                         for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
                             final Object valueContextKey = new Object();
@@ -478,9 +478,9 @@ public class ComponentDescription {
                         // Method level interceptors aren't supposed to be processed for postconstruct/predestroy lifecycle
                         // methods, as per interceptors spec
                         if (isClassLevelInterceptor) {
-                            final MethodIdentifier postConstructMethod = classDescription.getPostConstructMethod();
-                            if (postConstructMethod != null) {
-                                Method method = interceptorClassIndex.getMethod(postConstructMethod);
+                            final MethodIdentifier postConstructMethodIdentifier = classDescription.getPostConstructMethod();
+                            if (postConstructMethodIdentifier != null) {
+                                final Method method = findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, postConstructMethodIdentifier);
                                 InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
                                 List<InterceptorFactory> userPostConstruct = userPostConstructByInterceptorClass.get(interceptorClassName);
                                 if (userPostConstruct == null) {
@@ -488,9 +488,9 @@ public class ComponentDescription {
                                 }
                                 userPostConstruct.add(interceptorFactory);
                             }
-                            final MethodIdentifier preDestroyMethod = classDescription.getPreDestroyMethod();
-                            if (preDestroyMethod != null) {
-                                Method method = interceptorClassIndex.getMethod(preDestroyMethod);
+                            final MethodIdentifier preDestroyMethodIdentifier = classDescription.getPreDestroyMethod();
+                            if (preDestroyMethodIdentifier != null) {
+                                final Method method = findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, preDestroyMethodIdentifier);
                                 InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true);
                                 List<InterceptorFactory> userPreDestroy = userPreDestroyByInterceptorClass.get(interceptorClassName);
                                 if (userPreDestroy == null) {
@@ -499,9 +499,9 @@ public class ComponentDescription {
                                 userPreDestroy.add(interceptorFactory);
                             }
                         }
-                        final MethodIdentifier aroundInvokeMethod = classDescription.getAroundInvokeMethod();
-                        if (aroundInvokeMethod != null) {
-                            Method method = interceptorClassIndex.getMethod(aroundInvokeMethod);
+                        final MethodIdentifier aroundInvokeMethodIdentifier = classDescription.getAroundInvokeMethod();
+                        if (aroundInvokeMethodIdentifier != null) {
+                            final Method method = findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, aroundInvokeMethodIdentifier);
                             List<InterceptorFactory> interceptors;
                             if ((interceptors = userAroundInvokesByInterceptorClass.get(interceptorClassName)) == null) {
                                 userAroundInvokesByInterceptorClass.put(interceptorClassName, interceptors = new ArrayList<InterceptorFactory>());
@@ -529,22 +529,22 @@ public class ComponentDescription {
 
             new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
                 @Override
-                public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) {
-                    final MethodIdentifier componentPostConstructMethod = classDescription.getPostConstructMethod();
-                    if (componentPostConstructMethod != null) {
-                        Method method = componentClassIndex.getMethod(componentPostConstructMethod);
+                public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    final MethodIdentifier componentPostConstructMethodIdentifier = classDescription.getPostConstructMethod();
+                    if (componentPostConstructMethodIdentifier != null) {
+                        final Method method = findRequiredMethod(deploymentReflectionIndex, componentClassIndex, componentPostConstructMethodIdentifier);
                         InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
                         userPostConstruct.addLast(interceptorFactory);
                     }
-                    final MethodIdentifier componentPreDestroyMethod = classDescription.getPreDestroyMethod();
-                    if (componentPreDestroyMethod != null) {
-                        Method method = componentClassIndex.getMethod(componentPreDestroyMethod);
+                    final MethodIdentifier componentPreDestroyMethodIdentifier = classDescription.getPreDestroyMethod();
+                    if (componentPreDestroyMethodIdentifier != null) {
+                        final Method method = findRequiredMethod(deploymentReflectionIndex, componentClassIndex, componentPreDestroyMethodIdentifier);
                         InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
                         userPreDestroy.addLast(interceptorFactory);
                     }
-                    final MethodIdentifier componentAroundInvokeMethod = classDescription.getAroundInvokeMethod();
-                    if (componentAroundInvokeMethod != null) {
-                        Method method = componentClassIndex.getMethod(componentAroundInvokeMethod);
+                    final MethodIdentifier componentAroundInvokeMethodIdentifier = classDescription.getAroundInvokeMethod();
+                    if (componentAroundInvokeMethodIdentifier != null) {
+                        final Method method = findRequiredMethod(deploymentReflectionIndex, componentClassIndex, componentAroundInvokeMethodIdentifier);
                         componentUserAroundInvoke.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
                     }
                 }
@@ -585,7 +585,7 @@ public class ComponentDescription {
 
             Class clazz = componentClassConfiguration.getModuleClass();
             while (clazz != null) {
-                final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
+                final ClassReflectionIndex classIndex = deploymentReflectionIndex.getClassIndex(clazz);
                 for (final Method method : (Collection<Method>) classIndex.getMethods()) {
                     MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
                     Deque<InterceptorFactory> interceptorDeque = configuration.getComponentInterceptorDeque(method);
@@ -612,7 +612,7 @@ public class ComponentDescription {
             final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = description.getMethodInterceptors();
             for (MethodIdentifier identifier : methodInterceptors.keySet()) {
                 final List<InterceptorDescription> descriptions = methodInterceptors.get(identifier);
-                final Method componentMethod = componentClassIndex.getMethod(identifier);
+                final Method componentMethod = findRequiredMethod(deploymentReflectionIndex, componentClassIndex, identifier);
                 final Deque<InterceptorFactory> interceptorDeque = configuration.getComponentInterceptorDeque(componentMethod);
                 // TODO - ordering...?
                 for (InterceptorDescription interceptorDescription : descriptions) {
@@ -680,4 +680,53 @@ public class ComponentDescription {
         }
     }
 
+    /**
+     * Finds and returns a method corresponding to the passed <code>methodIdentifier</code>.
+     * The passed <code>classReflectionIndex</code> will be used to traverse the class hierarchy while finding the method.
+     * <p/>
+     * Returns null if no such method is found
+     *
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param methodIdentifier          The method identifier of the method being searched for
+     * @return
+     */
+    private static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final MethodIdentifier methodIdentifier) {
+        Method method = classReflectionIndex.getMethod(methodIdentifier);
+        if (method != null) {
+            return method;
+        }
+        // find on super class
+        Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
+        if (superClass != null) {
+            ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
+            if (superClassIndex != null) {
+                return findMethod(deploymentReflectionIndex, superClassIndex, methodIdentifier);
+            }
+
+        }
+        return method;
+    }
+
+    /**
+     * Finds and returns a method corresponding to the passed <code>methodIdentifier</code>.
+     * The passed <code>classReflectionIndex</code> will be used to traverse the class hierarchy while finding the method.
+     * <p/>
+     * Throws {@link DeploymentUnitProcessingException} if no such method is found.
+     *
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param methodIdentifier          The method identifier of the method being searched for
+     * @return
+     * @throws DeploymentUnitProcessingException
+     *          If no such method is found
+     */
+    private static Method findRequiredMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final MethodIdentifier methodIdentifier) throws DeploymentUnitProcessingException {
+        Method method = findMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
+        if (method == null) {
+            throw new DeploymentUnitProcessingException("No method found with id: " + methodIdentifier + " on class (or its super class) "
+                    + classReflectionIndex.getIndexedClass());
+        }
+        return method;
+    }
 }
