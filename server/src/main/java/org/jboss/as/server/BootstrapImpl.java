@@ -25,6 +25,9 @@ package org.jboss.as.server;
 import java.util.List;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -66,6 +69,11 @@ final class BootstrapImpl implements Bootstrap {
         }
         if (configurationPersister == null) {
             throw new IllegalArgumentException("configurationPersister is null");
+        }
+        try {
+            Module.registerURLStreamHandlerFactoryModule(moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.vfs")));
+        } catch (ModuleLoadException e) {
+            throw new IllegalArgumentException("VFS is not available from the configured module loader");
         }
         final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
