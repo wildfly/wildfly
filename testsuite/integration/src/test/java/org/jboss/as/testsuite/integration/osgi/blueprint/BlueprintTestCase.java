@@ -55,6 +55,7 @@ import org.osgi.service.startlevel.StartLevel;
  */
 @RunWith(Arquillian.class)
 public class BlueprintTestCase {
+
     @Inject
     public BundleContext context;
 
@@ -80,7 +81,7 @@ public class BlueprintTestCase {
 
     @Test
     public void testBlueprintContainerAvailable() throws Exception {
-        assertStartLevel();
+        assertStartLevel(3);
         bundle.start();
         assertEquals("example-blueprint", bundle.getSymbolicName());
 
@@ -90,7 +91,7 @@ public class BlueprintTestCase {
 
     @Test
     public void testServiceA() throws Exception {
-        assertStartLevel();
+        assertStartLevel(3);
         bundle.start();
         ServiceReference sref = context.getServiceReference(ServiceA.class.getName());
         assertNotNull("ServiceA not null", sref);
@@ -102,7 +103,7 @@ public class BlueprintTestCase {
 
     @Test
     public void testServiceB() throws Exception {
-        assertStartLevel();
+        assertStartLevel(3);
         bundle.start();
         ServiceReference sref = context.getServiceReference(ServiceB.class.getName());
         assertNotNull("ServiceB not null", sref);
@@ -131,10 +132,10 @@ public class BlueprintTestCase {
         return bpContainer;
     }
 
-    private void assertStartLevel() {
+    private void assertStartLevel(int level) {
         // Icrease start level to make blueprint available
         ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
         StartLevel startLevel = (StartLevel) context.getService(sref);
-        startLevel.setStartLevel(3);
+        startLevel.setStartLevel(level);
     }
 }
