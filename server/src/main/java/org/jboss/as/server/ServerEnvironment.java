@@ -311,12 +311,6 @@ public class ServerEnvironment implements Serializable {
         SecurityActions.setSystemProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
-        String protocolHandlers = SecurityActions.getSystemProperty(PROTOCOL_HANDLER_MODULES);
-        if(protocolHandlers == null || protocolHandlers.trim().isEmpty()) {
-            SecurityActions.setSystemProperty(PROTOCOL_HANDLER_MODULES, VFS_MODULE_IDENTIFIER);
-        } else {
-            SecurityActions.setSystemProperty(PROTOCOL_HANDLER_MODULES, protocolHandlers + '|' + VFS_MODULE_IDENTIFIER);
-        }
     }
 
     /**
