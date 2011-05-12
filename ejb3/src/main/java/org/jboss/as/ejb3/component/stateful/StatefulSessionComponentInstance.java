@@ -21,12 +21,17 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Identifiable;
-import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptor;
 import org.jboss.util.id.GUID;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -34,8 +39,13 @@ import java.io.Serializable;
 public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
     private final GUID id;
 
-    protected StatefulSessionComponentInstance(final StatefulSessionComponent component) {
-        super(component);
+    /**
+     * Construct a new instance.
+     *
+     * @param component the component
+     */
+    protected StatefulSessionComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         this.id = new GUID();
     }
 

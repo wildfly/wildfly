@@ -27,15 +27,18 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
@@ -97,9 +100,11 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 //        return createClientInterceptor(view);
 //    }
 
+
     @Override
-    protected BasicComponentInstance instantiateComponentInstance() {
-        return new StatelessSessionComponentInstance(this);
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+        return new StatelessSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+
     }
 
     @Override

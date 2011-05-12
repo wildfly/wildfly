@@ -22,25 +22,29 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 import java.io.Serializable;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Jaikiran Pai
  */
 public class SingletonComponentInstance extends SessionBeanComponentInstance {
 
+
     /**
      * Construct a new instance.
      *
      * @param component the component
      */
-    public SingletonComponentInstance(final SingletonComponent component) {
-        super(component);
+    public SingletonComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override

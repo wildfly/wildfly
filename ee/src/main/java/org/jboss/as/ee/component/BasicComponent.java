@@ -23,16 +23,22 @@
 package org.jboss.as.ee.component;
 
 
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
 
 import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A basic component implementation.
@@ -115,11 +121,37 @@ public class BasicComponent implements Component {
      * @return the component instance
      */
     protected final BasicComponentInstance constructComponentInstance() {
-        // create the component instance
-        BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance();
-        // initialize the component instance so that the appropriate interceptors are created and invoked
-        basicComponentInstance.initialize();
+        // Interceptor factory context
+        final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        context.getContextData().put(Component.class, this);
 
+        // Create the post-construct interceptors for the component instance
+        final Interceptor componentInstancePostConstructInterceptor = this.getPostConstruct().create(context);
+        // create the pre-destroy interceptors
+        final Interceptor componentInstancePreDestroyInterceptor = this.getPreDestroy().create(context);
+
+        final AtomicReference<ManagedReference> instanceReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
+
+        final Map<Method, InterceptorFactory> interceptorFactoryMap = this.getInterceptorFactoryMap();
+        // This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
+        // match - specifically, they must equal the objects provided to the proxy.
+        final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
+        for (Method method : interceptorFactoryMap.keySet()) {
+            interceptorMap.put(method, interceptorFactoryMap.get(method).create(context));
+        }
+
+        // create the component instance
+        BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance(instanceReference, componentInstancePreDestroyInterceptor, interceptorMap);
+
+        // now invoke the postconstruct interceptors
+        final InterceptorContext interceptorContext = new InterceptorContext();
+        interceptorContext.putPrivateData(Component.class, this);
+        interceptorContext.putPrivateData(ComponentInstance.class, basicComponentInstance);
+        try {
+            componentInstancePostConstructInterceptor.processInvocation(interceptorContext);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to construct component instance", e);
+        }
         // return the component instance
         return basicComponentInstance;
     }
@@ -132,9 +164,9 @@ public class BasicComponent implements Component {
      *
      * @return
      */
-    protected BasicComponentInstance instantiateComponentInstance() {
+    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
         // create and return the component instance
-        return new BasicComponentInstance(this);
+        return new BasicComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     /**

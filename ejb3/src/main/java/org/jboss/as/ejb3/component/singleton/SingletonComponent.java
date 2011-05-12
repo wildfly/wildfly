@@ -27,7 +27,9 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
@@ -39,6 +41,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
@@ -75,11 +78,11 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    protected synchronized BasicComponentInstance instantiateComponentInstance() {
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }
-        this.singletonComponentInstance = new SingletonComponentInstance(this);
+        this.singletonComponentInstance = new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
         return this.singletonComponentInstance;
     }
 

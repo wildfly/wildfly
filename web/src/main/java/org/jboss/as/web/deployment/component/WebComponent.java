@@ -25,6 +25,12 @@ package org.jboss.as.web.deployment.component;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
+
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implementation of {@link org.jboss.as.ee.component.Component} for web components
@@ -43,8 +49,8 @@ public class WebComponent extends BasicComponent {
     }
 
     @Override
-    public BasicComponentInstance instantiateComponentInstance() {
-        return new WebComponentInstance(this);
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+        return new WebComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     //    /** {@inheritDoc} */

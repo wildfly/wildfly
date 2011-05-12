@@ -22,29 +22,28 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.context.spi.MessageDrivenBeanComponent;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.service.StopContext;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
-import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.jboss.msc.service.StopContext;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
@@ -117,8 +116,8 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance() {
-        return new MessageDrivenComponentInstance(this);
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+        return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
 //    @Override

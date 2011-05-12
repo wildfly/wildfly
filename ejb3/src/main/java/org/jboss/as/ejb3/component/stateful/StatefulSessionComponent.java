@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
@@ -33,6 +34,7 @@ import org.jboss.invocation.InterceptorContext;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Stateful Session Bean
@@ -117,8 +119,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance() {
-        return new StatefulSessionComponentInstance(this);
+    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+        return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
 

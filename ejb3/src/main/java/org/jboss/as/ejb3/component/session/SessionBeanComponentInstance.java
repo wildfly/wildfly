@@ -21,17 +21,32 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.context.base.BaseSessionContext;
 import org.jboss.ejb3.context.spi.SessionContext;
+import org.jboss.invocation.Interceptor;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponentInstance extends BasicComponentInstance {
     private volatile SessionBeanComponentInstanceContext sessionContext;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param component the component
+     */
+    protected SessionBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    }
 
     protected class SessionBeanComponentInstanceContext extends BaseSessionContext {
         protected SessionBeanComponentInstanceContext() {
@@ -47,15 +62,6 @@ public abstract class SessionBeanComponentInstance extends BasicComponentInstanc
         }
     }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param component the component
-     */
-    protected SessionBeanComponentInstance(final SessionBeanComponent component) {
-        super(component);
-
-    }
 
     protected abstract Serializable getId();
 

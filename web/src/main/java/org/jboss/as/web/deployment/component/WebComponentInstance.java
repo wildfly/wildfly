@@ -22,7 +22,14 @@
 
 package org.jboss.as.web.deployment.component;
 
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
+
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A managed bean component instance.
@@ -37,9 +44,8 @@ public final class WebComponentInstance extends BasicComponentInstance {
      * Construct a new instance.
      *
      * @param component the component
-     *
      */
-    protected WebComponentInstance(final WebComponent component) {
-        super(component);
+    protected WebComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 }

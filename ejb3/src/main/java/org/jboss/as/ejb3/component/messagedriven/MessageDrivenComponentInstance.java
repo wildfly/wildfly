@@ -21,14 +21,31 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.context.base.BaseMessageDrivenContext;
 import org.jboss.ejb3.context.spi.MessageDrivenContext;
+import org.jboss.invocation.Interceptor;
+
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponentInstance extends BasicComponentInstance {
+
+    /**
+     * Construct a new instance.
+     *
+     * @param component the component
+     */
+    public MessageDrivenComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    }
+
     protected class MessageDrivenComponentInstanceContext extends BaseMessageDrivenContext {
         protected MessageDrivenComponentInstanceContext() {
             super(MessageDrivenComponentInstance.this.getComponent(), getInstance());
@@ -37,14 +54,6 @@ public class MessageDrivenComponentInstance extends BasicComponentInstance {
 
     private final MessageDrivenContext messageDrivenContext = new MessageDrivenComponentInstanceContext();
 
-    /**
-     * Construct a new instance.
-     *
-     * @param component the component
-     */
-    protected MessageDrivenComponentInstance(final MessageDrivenComponent component) {
-        super(component);
-    }
 
     @Override
     public MessageDrivenComponent getComponent() {
