@@ -227,7 +227,11 @@ final class ViewService implements Service<ComponentView> {
 
             public void destroy() {
                 try {
-                    preDestroyInterceptor.processInvocation(new InterceptorContext());
+                    InterceptorContext interceptorContext = new InterceptorContext();
+                    interceptorContext.putPrivateData(ComponentView.class, View.this);
+                    interceptorContext.putPrivateData(ComponentViewInstance.class, this);
+                    interceptorContext.putPrivateData(Component.class, component);
+                    preDestroyInterceptor.processInvocation(interceptorContext);
                 } catch (Exception e) {
                     logger.warn("Exception while invoking pre-destroy interceptor for component class: " + this.getComponent().getComponentClass(), e);
                 }

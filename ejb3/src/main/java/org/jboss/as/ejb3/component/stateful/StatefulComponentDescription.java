@@ -94,6 +94,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 InterceptorFactory sessionIdGeneratingInterceptorFactory = new StatefulComponentSessionIdGeneratingInterceptorFactory(sessionIdContextKey);
                 // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
                 viewConfiguration.getViewPostConstructInterceptors().addFirst(sessionIdGeneratingInterceptorFactory);
+                viewConfiguration.getViewPreDestroyInterceptors().addFirst(new StatefulComponentInstanceDestroyInterceptorFactory(sessionIdContextKey));
             }
         });
 

@@ -28,10 +28,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.Interceptors;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -64,8 +61,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
             @Override
             public void destroyInstance(StatefulSessionComponentInstance instance) {
-                //StatefulSessionComponent.this.destroyInstance(instance);
-                throw new RuntimeException("NYI");
+                instance.destroy();
             }
         });
     }

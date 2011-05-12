@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.managedbean.component.ManagedBeanAssociatingInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptorFactory;
+import org.jboss.as.ee.managedbean.component.ManagedBeanDestroyInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -101,7 +102,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     for (Method method : configuration.getProxyFactory().getCachedMethods()) {
                         configuration.getViewInterceptorDeque(method).addFirst(associatingInterceptorFactory);
                     }
-                    configuration.getViewPreDestroyInterceptors().addFirst(new ManagedBeanCreateInterceptorFactory(contextKey));
+                    configuration.getViewPreDestroyInterceptors().addFirst(new ManagedBeanDestroyInterceptorFactory(contextKey));
                 }
             });
             viewDescription.getBindingNames().addAll(Arrays.asList("java:module/" + beanName, "java:app/" + moduleDescription.getModuleName() + "/" + beanName));

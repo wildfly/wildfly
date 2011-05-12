@@ -22,10 +22,11 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An interceptor which releases a managed reference.
@@ -47,12 +48,14 @@ class ManagedReferenceReleaseInterceptor implements Interceptor {
         this.referenceReference = referenceReference;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        final ManagedReference managedReference = referenceReference.getAndSet(null);
         try {
             return context.proceed();
         } finally {
+            final ManagedReference managedReference = referenceReference.getAndSet(null);
             if (managedReference != null) {
                 managedReference.release();
             }

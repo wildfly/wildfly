@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -64,8 +63,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
             @Override
             public void destroy(StatelessSessionComponentInstance obj) {
-                throw new RuntimeException("NYI");
-                //destroyInstance(obj);
+                obj.destroy();
             }
         };
         this.pool = new StrictMaxPool<StatelessSessionComponentInstance>(factory, 20, 5, TimeUnit.MINUTES);
