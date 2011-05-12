@@ -50,7 +50,8 @@ public class StatefulComponentInstanceDestroyInterceptor extends AbstractEJBInte
         if (sessionId == null) {
             throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
         }
-        log.debug("Destroying stateful component instance with session id: " + sessionId);
+        log.debug("Looking for stateful component instance with session id: " + sessionId);
+        StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         component.getCache().remove(sessionId);
         return null;
     }
