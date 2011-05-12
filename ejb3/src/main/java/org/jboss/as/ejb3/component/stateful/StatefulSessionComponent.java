@@ -29,6 +29,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
+import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 import java.io.Serializable;
