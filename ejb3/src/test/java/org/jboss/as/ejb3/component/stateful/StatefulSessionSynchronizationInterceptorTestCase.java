@@ -118,7 +118,6 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
             interceptor.processInvocation(context);
             fail("Expected an Exception when invoking SFSB from 2 transactions concurrently");
         } catch (Exception e) {
-            e.printStackTrace();
             assertTrue(e.getMessage().contains("is already associated with tx TX1 (current tx TX2)"));
         }
     }
