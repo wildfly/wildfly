@@ -42,7 +42,7 @@ public class TransactionSynchronizationRegistryService extends AbstractService<T
     public static void addService(final ServiceTarget target) {
         TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
         ServiceBuilder<?> serviceBuilder = target.addService(SERVICE_NAME, service);
-        serviceBuilder.addAliases(ServiceName.of("jbosgi", TransactionSynchronizationRegistryService.class.getName()));
+        serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", TransactionSynchronizationRegistryService.class.getName()));
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         serviceBuilder.install();
     }

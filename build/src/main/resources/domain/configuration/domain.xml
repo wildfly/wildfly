@@ -213,6 +213,7 @@
                 </properties>
                 <modules>
                     <!-- modules registered with the OSGi layer on startup -->
+                    <module identifier="javaee.api"/>
                     <module identifier="org.jboss.as.arquillian.aggregate"/>
                     <module identifier="org.jboss.logging"/>
                     <!-- bundles installed on startup -->

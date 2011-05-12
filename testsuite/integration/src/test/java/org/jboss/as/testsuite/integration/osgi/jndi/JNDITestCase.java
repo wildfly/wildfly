@@ -21,7 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.osgi.jndi;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -71,8 +70,6 @@ public class JNDITestCase {
     @Test
     public void testJNDIAccess() throws Exception {
         bundle.start();
-        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-
         InitialContext iniCtx = getInitialContext(bundle.getBundleContext());
         Object lookup = iniCtx.lookup("topic/test");
         assertNotNull("Test topic not null", lookup);
