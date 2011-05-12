@@ -62,7 +62,11 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         for(ViewDescription view : descriptor.getComponentDescription().getViews()) {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
-
+        if(stateful && viewServices.size() == 1) {
+            final ServiceController<?> serviceController = serviceRegistry.getRequiredService(viewServices.values().iterator().next());
+            final ComponentView view = (ComponentView)serviceController.getValue();
+            instance = view.createInstance();
+        }
         this.viewServices = viewServices;
 
     }
@@ -71,6 +75,9 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
     @Override
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
+        if(removed) {
+            return null;
+        }
         if(instance != null && stateful) {
             if(businessInterfaceType.equals(instance.getViewClass())) {
                 return (S) instance.createProxy();
