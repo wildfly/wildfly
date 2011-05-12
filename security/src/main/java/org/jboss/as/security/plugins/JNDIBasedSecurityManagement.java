@@ -59,8 +59,6 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     protected static Logger log = Logger.getLogger("org.jboss.as.security");
 
-    private static JNDIBasedSecurityManagement INSTANCE = new JNDIBasedSecurityManagement();
-
     private transient ConcurrentHashMap<String, SecurityDomainContext> securityMgrMap = new ConcurrentHashMap<String, SecurityDomainContext>();
     private transient ConcurrentHashMap<String, AuthenticationManager> authMgrMap = new ConcurrentHashMap<String, AuthenticationManager>();
     private transient ConcurrentHashMap<String, AuthorizationManager> authzMgrMap = new ConcurrentHashMap<String, AuthorizationManager>();
@@ -78,11 +76,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private String mappingManagerClassName;
 
     // creating a singleton
-    private JNDIBasedSecurityManagement() {
-    }
-
-    public static JNDIBasedSecurityManagement getInstance() {
-        return INSTANCE;
+    public JNDIBasedSecurityManagement() {
     }
 
     public ConcurrentHashMap<String, SecurityDomainContext> getSecurityManagerMap() {

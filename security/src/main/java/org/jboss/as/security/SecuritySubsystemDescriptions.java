@@ -108,6 +108,7 @@ class SecuritySubsystemDescriptions {
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return Descriptions.getSubsystem(locale);
         }
@@ -115,6 +116,7 @@ class SecuritySubsystemDescriptions {
 
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return Descriptions.getSubsystemAdd(locale);
         }
@@ -122,6 +124,7 @@ class SecuritySubsystemDescriptions {
 
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
@@ -129,6 +132,7 @@ class SecuritySubsystemDescriptions {
 
     static final DescriptionProvider SECURITY_DOMAIN = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return Descriptions.getSecurityDomain(locale);
         }
@@ -136,6 +140,7 @@ class SecuritySubsystemDescriptions {
 
     static final DescriptionProvider SECURITY_DOMAIN_ADD = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return Descriptions.getSecurityDomainAdd(locale);
         }
@@ -143,8 +148,25 @@ class SecuritySubsystemDescriptions {
 
     static final DescriptionProvider SECURITY_DOMAIN_REMOVE = new DescriptionProvider() {
 
+        @Override
         public ModelNode getModelDescription(Locale locale) {
             return Descriptions.getSecurityDomainRemove(locale);
+        }
+    };
+
+    static final DescriptionProvider LIST_CACHED_PRINCIPALS = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return Descriptions.getListCachedPrincipals(locale);
+        }
+    };
+
+    static final DescriptionProvider FLUSH_CACHE = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return Descriptions.getFlushCache(locale);
         }
     };
 
@@ -842,6 +864,26 @@ class SecuritySubsystemDescriptions {
             node.get(REQUEST_PROPERTIES, ADDITIONAL_PROPERTIES, REQUIRED).set(false);
 
             return node;
+        }
+
+        static ModelNode getListCachedPrincipals(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(SecurityDomainOperations.LIST_CACHED_PRINCIPALS);
+            op.get(DESCRIPTION).set(bundle.getString("list-cached-principals"));
+
+            return op;
+        }
+
+        static ModelNode getFlushCache(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+            op.get(OPERATION_NAME).set(SecurityDomainOperations.FLUSH_CACHE);
+            op.get(DESCRIPTION).set(bundle.getString("flush-cache"));
+
+            return op;
         }
 
     }

@@ -77,7 +77,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
         if (log.isDebugEnabled())
             log.debug("Starting SecurityManagementService");
         // set properties of JNDIBasedSecurityManagement
-        JNDIBasedSecurityManagement securityManagement = JNDIBasedSecurityManagement.getInstance();
+        JNDIBasedSecurityManagement securityManagement = new JNDIBasedSecurityManagement();
         securityManagement.setAuthenticationManagerClassName(authenticationManagerClassName);
         securityManagement.setDeepCopySubjectMode(deepCopySubjectMode);
         securityManagement.setCallbackHandlerClassName(callbackHandlerClassName);

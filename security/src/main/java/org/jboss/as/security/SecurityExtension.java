@@ -85,6 +85,12 @@ public class SecurityExtension implements Extension {
         securityDomain.registerOperationHandler(SecurityDomainRemove.OPERATION_NAME, SecurityDomainRemove.INSTANCE,
                 SecuritySubsystemDescriptions.SECURITY_DOMAIN_REMOVE, false);
 
+        // add operations to the security domain
+        securityDomain.registerOperationHandler(SecurityDomainOperations.LIST_CACHED_PRINCIPALS,
+                SecurityDomainOperations.LIST_CACHED_PRINCIPALS_OP, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS);
+        securityDomain.registerOperationHandler(SecurityDomainOperations.FLUSH_CACHE, SecurityDomainOperations.FLUSH_CACHE_OP,
+                SecuritySubsystemDescriptions.FLUSH_CACHE);
+
         subsystem.registerXMLElementWriter(PARSER);
     }
 
