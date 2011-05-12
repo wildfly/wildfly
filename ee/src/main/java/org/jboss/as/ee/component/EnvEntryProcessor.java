@@ -75,7 +75,9 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
             classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
-
+            if (classType == null) {
+                throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
+            }
             BindingConfiguration bindingConfiguration = null;
             if (!isEmpty(envEntry.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
@@ -114,7 +116,9 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
-
+            if (classType == null) {
+                throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
+            }
             BindingConfiguration bindingConfiguration = null;
             if (!isEmpty(envEntry.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
@@ -154,7 +158,7 @@ public class EnvEntryProcessor extends AbstractDeploymentDescriptorBindingsProce
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
             if (classType == null) {
-                throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>. Component");
+                throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>.");
             }
 
             final String value = envEntry.getValue();

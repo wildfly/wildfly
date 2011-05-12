@@ -680,34 +680,4 @@ public class ComponentDescription {
         }
     }
 
-    /**
-     * throwaway utility class for traversing a class configuration from most general superclass down
-     */
-    private abstract static class ClassDescriptionTraversal {
-        final EEModuleClassConfiguration classConfiguration;
-        final EEModuleConfiguration moduleConfiguration;
-
-        ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEModuleConfiguration moduleConfiguration) {
-            this.classConfiguration = classConfiguration;
-            this.moduleConfiguration = moduleConfiguration;
-        }
-
-        public void run() throws DeploymentUnitProcessingException {
-            Class clazz = classConfiguration.getModuleClass();
-            final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
-            while (clazz != null && clazz != Object.class) {
-                EEModuleClassConfiguration configuration = moduleConfiguration.getClassConfiguration(clazz.getName());
-                if (configuration != null) {
-                    queue.addFirst(configuration);
-                }
-                clazz = clazz.getSuperclass();
-            }
-            for (EEModuleClassConfiguration configuration : queue) {
-                handle(configuration, configuration.getModuleClassDescription());
-            }
-        }
-
-        public abstract void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
-    }
-
 }
