@@ -120,7 +120,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
 
-        final InjectionTarget targetDescription = new FieldInjectionTarget( fieldInfo.declaringClass().name().toString(), fieldName,injectionType);
+        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, injectionType);
         process(classDescription, annotation, injectionType, localContextName, targetDescription);
     }
 
@@ -134,7 +134,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String localContextName = isEmpty(name) ? methodInfo.declaringClass().name().toString() + "/" + contextNameSuffix : name;
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
-        final InjectionTarget targetDescription = new MethodInjectionTarget(methodName, methodInfo.declaringClass().name().toString(), methodInfo.args()[0].name().toString());
+        final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
         process(classDescription, annotation, injectionType, localContextName, targetDescription);
     }
 
@@ -174,7 +174,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         classDescription.getConfigurators().add(new ClassConfigurator() {
             public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
                 configuration.getBindingConfigurations().add(bindingConfiguration);
-                if(injectionConfiguration != null) {
+                if (injectionConfiguration != null) {
                     configuration.getInjectionConfigurations().add(injectionConfiguration);
                 }
             }
