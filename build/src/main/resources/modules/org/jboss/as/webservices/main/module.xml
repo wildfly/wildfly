@@ -40,6 +40,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.web"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.modules"/>
@@ -50,5 +51,6 @@
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.common" />
         <module name="org.jboss.ws.spi" />
+        <module name="org.picketbox" />
     </dependencies>
 </module>

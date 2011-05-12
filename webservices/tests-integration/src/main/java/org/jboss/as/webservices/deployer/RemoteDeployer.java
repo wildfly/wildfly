@@ -21,18 +21,32 @@
  */
 package org.jboss.as.webservices.deployer;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTHENTICATION;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployer.Deployer;
 
@@ -44,6 +58,7 @@ import org.jboss.wsf.spi.deployer.Deployer;
 public final class RemoteDeployer implements Deployer {
 
     private static final Logger LOGGER = Logger.getLogger(RemoteDeployer.class);
+    private static final String JBOSSWS_SEC_DOMAIN = "JBossWS";
     private final Map<URL, String> url2Id = new HashMap<URL, String>();
 
     private ServerDeploymentManager deploymentManager;
@@ -51,6 +66,9 @@ public final class RemoteDeployer implements Deployer {
     public RemoteDeployer() throws IOException {
         final InetAddress address = InetAddress.getByName("127.0.0.1");
         deploymentManager = ServerDeploymentManager.Factory.create(address, 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(address, 9999);
+        removeJBossWSSecurityDomain(client);
+        createJBossWSSecurityDomain(client);
     }
 
     @Override
@@ -75,6 +93,51 @@ public final class RemoteDeployer implements Deployer {
             } finally {
                 url2Id.remove(archiveURL);
             }
+        }
+    }
+
+    private void createJBossWSSecurityDomain(ModelControllerClient client) throws IOException {
+        String usersPropFile = System.getProperty("org.jboss.ws.testsuite.securityDomain.users.propfile");
+        String rolesPropFile = System.getProperty("org.jboss.ws.testsuite.securityDomain.roles.propfile");
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, JBOSSWS_SEC_DOMAIN);
+        ModelNode loginModule = op.get(AUTHENTICATION).add();
+        loginModule.get(CODE).set("UsersRoles");
+        loginModule.get(FLAG).set("required");
+        ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+        if (usersPropFile != null) {
+            moduleOptions.add("usersProperties", usersPropFile);
+        }
+        if (rolesPropFile != null) {
+            moduleOptions.add("rolesProperties", rolesPropFile);
+        }
+        applyUpdate(op, client);
+    }
+
+    private void removeJBossWSSecurityDomain(ModelControllerClient client) {
+        try {
+            ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "security");
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, JBOSSWS_SEC_DOMAIN);
+            applyUpdate(op, client);
+        } catch (Throwable e) {
+            LOGGER.debug("Could not remove '" + JBOSSWS_SEC_DOMAIN + "' security domain from target container", e);
+        }
+    }
+
+    private static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
+        ModelNode result = client.execute(OperationBuilder.Factory.create(update).build());
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result")) {
+                System.out.println(result.get("result"));
+            }
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
     }
 

@@ -37,7 +37,6 @@ import org.junit.Test;
 
 /**
  * 
- * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
 public class JBWS3207TestCase {

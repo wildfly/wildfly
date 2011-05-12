@@ -74,7 +74,9 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
             }
             log.debug(this.aspect + " start: " + unit.getName());
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
+            dep.addAttachment(DeploymentPhaseContext.class, phaseContext);
             aspect.start(dep);
+            dep.removeAttachment(DeploymentPhaseContext.class);
         }
     }
 
