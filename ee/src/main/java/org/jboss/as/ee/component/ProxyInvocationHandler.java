@@ -27,6 +27,7 @@ import org.jboss.invocation.InterceptorContext;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -70,6 +71,8 @@ public final class ProxyInvocationHandler implements InvocationHandler {
         context.putPrivateData(ComponentViewInstance.class, componentViewInstance);
         context.setParameters(args);
         context.setMethod(method);
+        // setup the public context data
+        context.setContextData(new HashMap());
         return interceptor.processInvocation(context);
     }
 }
