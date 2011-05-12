@@ -42,7 +42,7 @@ public class InitialContextFactoryService extends AbstractService<InitialContext
 
     // The 'jbosgi' prefix followed by the FQN of the service interface allows the OSGi layer
     // to find the service using context.getServiceReference(InitialContext.class.getName())
-    public static final ServiceName SERVICE_NAME = ServiceName.of("jbosgi", InitialContext.class.getName());
+    public static final ServiceName SERVICE_NAME = ServiceName.of("jbosgi", "xservice", InitialContext.class.getName());
 
     private InjectedValue<NamingStore> injectedNamingStore = new InjectedValue<NamingStore>();
 
