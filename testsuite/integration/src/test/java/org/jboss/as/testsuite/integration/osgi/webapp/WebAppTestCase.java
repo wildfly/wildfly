@@ -50,14 +50,11 @@ import aQute.lib.osgi.Constants;
 /**
  * A test that deployes a WAR bundle
  *
- * Due to the nature of asynchronous event processing by the extender pattern, we cannot assume that the endpoint is available
- * immediately
- *
  * @author thomas.diesler@jboss.com
  * @since 06-Oct-2009
  */
 @RunWith(Arquillian.class)
-public class WebAppExtenderTestCase {
+public class WebAppTestCase {
 
     @Inject
     public BundleContext context;
