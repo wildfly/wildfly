@@ -25,7 +25,7 @@
     <import file="lib.xml"/>
 
     <property name="output.dir" value="target/jboss-${jboss.as.release.version}"/>
-    <target name="copy-files" depends="copy-files-welcome">
+    <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
                 <include name="bin/**"/>
@@ -36,16 +36,15 @@
             <fileset dir="src/main/resources">
                 <include name="standalone/**"/>
             </fileset>
+            <fileset dir="src/main/resources">
+                <include name="welcome-content/**"/>
+            </fileset>
         </copy>
         <chmod perm="+x">
             <fileset dir="${output.dir}/bin">
                 <include name="**/*.sh"/>
             </fileset>
         </chmod>
-    </target>
-
-    <target name="copy-files-welcome">
-        <unwar src="${org.jboss.as:jboss-as-welcome:war}" dest="${output.dir}/system-content/welcome.war"/>
     </target>
 
     <target name="make-dirs">

@@ -63,11 +63,17 @@ class WebVirtualHostRemove implements ModelRemoveOperationHandler, DescriptionPr
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry()
+                    ServiceController<?> service = context.getServiceRegistry()
                             .getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name));
                     if (service != null) {
                         service.setMode(ServiceController.Mode.REMOVE);
                     }
+
+                    service = context.getServiceRegistry().getService(WebSubsystemServices.JBOSS_WEB_HOST.append(name).append("welcome"));
+                    if (service != null) {
+                        service.setMode(ServiceController.Mode.REMOVE);
+                    }
+
                     resultHandler.handleResultComplete();
                 }
             });

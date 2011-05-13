@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.apache.catalina.Host;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -43,6 +44,7 @@ import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.Locale;
@@ -57,6 +59,7 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
     static final WebVirtualHostAdd INSTANCE = new WebVirtualHostAdd();
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
     private static final String TEMP_DIR = "jboss.server.temp.dir";
+    private static final String HOME_DIR = "jboss.home.dir";
     private static final String[] NO_ALIASES = new String[0];
 
     private WebVirtualHostAdd() {
@@ -78,6 +81,10 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
         subModel.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
         subModel.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
         subModel.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
+        subModel.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
+
+        boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
+        subModel.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -97,8 +104,26 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
                     if (operation.hasDefined(Constants.REWRITE)) {
                         service.setRewrite(operation.get(Constants.REWRITE).clone());
                     }
-                    if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
+
+                    boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
+
+                    if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
+                        if (welcome)
+                            throw new OperationFailedException(new ModelNode().set("A default module can not be specified when the welcome root is enabled."));
+                        service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
+                    }
+
                     serviceBuilder.install();
+
+                    if (welcome) {
+                         final WelcomeContextService welcomeService = new WelcomeContextService();
+                            context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB.append(name).append("welcome"), welcomeService)
+                                    .addDependency(AbstractPathService.pathNameOf(HOME_DIR), String.class, welcomeService.getPathInjector())
+                                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), Host.class, welcomeService.getHostInjector())
+                                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                                    .install();
+                    }
+
                     resultHandler.handleResultComplete();
                 }
             });

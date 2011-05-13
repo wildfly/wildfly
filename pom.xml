@@ -245,7 +245,6 @@
         <module>transactions</module>
         <module>web</module>
         <module>webservices</module>
-        <module>welcome</module>
         <module>weld</module>
     </modules>
 

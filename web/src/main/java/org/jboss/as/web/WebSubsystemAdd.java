@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.apache.catalina.Host;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;

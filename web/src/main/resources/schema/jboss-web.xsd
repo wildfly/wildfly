@@ -181,6 +181,11 @@
       </xs:complexType>
    </xs:element>
    <xs:attributeGroup name="virtual-server-attlist">
+      <xs:attribute name="enable-welcome-root" type="xs:string">
+         <xs:annotation>
+           <xs:documentation>Whether or not the bundled welcome directory is used as the root web context</xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="default-web-module" default="ROOT.war" />
       <xs:attribute name="name" use="required">
          <xs:annotation>

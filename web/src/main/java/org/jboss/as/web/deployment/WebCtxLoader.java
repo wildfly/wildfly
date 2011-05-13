@@ -32,7 +32,7 @@ import org.apache.catalina.Loader;
 /**
  * @author Emanuel Muckenhuber
  */
-class WebCtxLoader implements Lifecycle, Loader {
+public class WebCtxLoader implements Lifecycle, Loader {
 
     /** The container. */
     private Container container;

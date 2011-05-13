@@ -47,6 +47,7 @@ interface Constants {
     String DUMP_SMAP = "dump-smap";
     String ENABLED = "enabled";
     String ENABLE_LOOKUPS = "enable-lookups";
+    String ENABLE_WELCOME_ROOT = "enable-welcome-root";
     String ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE = "error-on-use-bean-invalid-class-attribute";
     String EXECUTOR = "executor";
     String EXTENDED = "extended";

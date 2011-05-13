@@ -48,6 +48,7 @@ import static org.jboss.as.web.Constants.DIRECTORY;
 import static org.jboss.as.web.Constants.DISABLED;
 import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
+import static org.jboss.as.web.Constants.ENABLE_WELCOME_ROOT;
 import static org.jboss.as.web.Constants.EXECUTOR;
 import static org.jboss.as.web.Constants.EXTENDED;
 import static org.jboss.as.web.Constants.FILE_ENCONDING;
@@ -182,6 +183,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writer.writeStartElement(Element.VIRTUAL_SERVER.getLocalName());
                 writer.writeAttribute(NAME, host.getName());
                 writeAttribute(writer, Attribute.DEFAULT_WEB_MODULE.getLocalName(), config);
+                if (config.hasDefined(ENABLE_WELCOME_ROOT) && config.get(ENABLE_WELCOME_ROOT).asBoolean())
+                    writer.writeAttribute(ENABLE_WELCOME_ROOT, "true");
+
                 if(config.hasDefined(ALIAS)) {
                     for(final ModelNode alias : config.get(ALIAS).asList()) {
                         writer.writeEmptyElement(ALIAS);
@@ -313,7 +317,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 subsystem.get(attribute.getLocalName()).set(value);
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         list.add(subsystem);
@@ -415,7 +419,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 jsp.get(attribute.getLocalName()).set(value);
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);
@@ -455,7 +459,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 resources.get(DISABLED).set(value);
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);
@@ -465,6 +469,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     static void parseHost(XMLExtendedStreamReader reader, final ModelNode address, List<ModelNode> list) throws XMLStreamException {
         String name = null;
         String defaultWebModule = null;
+        boolean welcome = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -475,10 +480,17 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     name = value;
                     break;
                 case DEFAULT_WEB_MODULE:
+                    if (welcome)
+                        throw new XMLStreamException("A default web module can not be specified when the welcome root has been enabled", reader.getLocation());
                     defaultWebModule = value;
                     break;
+                case ENABLE_WELCOME_ROOT:
+                    welcome = Boolean.parseBoolean(value);
+                    if (welcome && defaultWebModule != null)
+                        throw new XMLStreamException("The welcome root can not be enabled on a host that has a default web module", reader.getLocation());
+                    break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if(name == null) {
@@ -491,6 +503,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         if (defaultWebModule != null) {
             host.get(DEFAULT_WEB_MODULE).set(defaultWebModule);
         }
+        host.get(ENABLE_WELCOME_ROOT).set(welcome);
         list.add(host);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -539,7 +552,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 rewrite.get(REWRITE).set(value);
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -566,7 +579,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             condition.get(FLAGS).set(value);
                             break;
                         default:
-                            unexpectedAttribute(reader, i);
+                            throw unexpectedAttribute(reader, i);
                         }
                     }
                     rewrite.get(CONDITION).add(condition);
@@ -608,7 +621,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 log.get(ROTATE).set(value);
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -632,7 +645,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             directory.get(RELATIVE_TO).set(value);
                             break;
                         default:
-                            unexpectedAttribute(reader, i);
+                            throw unexpectedAttribute(reader, i);
                         }
                     }
                     break;
@@ -712,14 +725,14 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 maxConnections = value;
                 break;
             default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         if (name == null) {
-            missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (bindingRef == null) {
-            missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
+            throw missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
         }
         final ModelNode connector = new ModelNode();
         connector.get(OP).set(ADD);
@@ -810,7 +823,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 ssl.get(SESSION_TIMEOUT).set(value);
                 break;
            default:
-                unexpectedAttribute(reader, i);
+                throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);
