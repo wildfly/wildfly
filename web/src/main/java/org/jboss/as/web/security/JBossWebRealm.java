@@ -23,24 +23,27 @@
 package org.jboss.as.web.security;
 
 import java.security.Principal;
+import java.security.acl.Group;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.security.auth.Subject;
 
-import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
+import org.jboss.security.CacheableManager;
 import org.jboss.security.CertificatePrincipal;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.auth.certs.SubjectDNMapping;
+import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
@@ -119,7 +122,7 @@ public class JBossWebRealm extends RealmBase {
         if (authorizationManager == null)
             throw new IllegalStateException("Authorization Manager has not been set");
 
-        Principal userPrincipal = new SimplePrincipal(username);
+        Principal userPrincipal = getPrincipal(username);
         Subject subject = new Subject();
         boolean isValid = authenticationManager.isValid(userPrincipal, credentials, subject);
         if (isValid) {
@@ -127,6 +130,7 @@ public class JBossWebRealm extends RealmBase {
                 log.trace("User: " + userPrincipal + " is authenticated");
             }
             SecurityContext sc = SecurityActions.createSecurityContext(authenticationManager.getSecurityDomain());
+            userPrincipal = getPrincipal(subject);
             sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
             SecurityActions.setSecurityContextOnAssociation(sc);
             SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
@@ -149,10 +153,16 @@ public class JBossWebRealm extends RealmBase {
                 if (mc == null || !mc.hasModules()) {
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
                 }
-            }
-            else // if mapping manager is not set, handle role mapping here too
+            } else
+                // if mapping manager is not set, handle role mapping here too
                 rolesAsStringList = mapUserRoles(rolesAsStringList);
-            return new GenericPrincipal(this, username, credentials, rolesAsStringList);
+            if (authenticationManager instanceof CacheableManager) {
+                @SuppressWarnings("unchecked")
+                CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) authenticationManager;
+                return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
+                        cm);
+            } else
+                return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null);
         }
 
         return super.authenticate(username, credentials);
@@ -177,6 +187,7 @@ public class JBossWebRealm extends RealmBase {
                     log.trace("User: " + userPrincipal + " is authenticated");
                 }
                 SecurityContext sc = SecurityActions.createSecurityContext(authenticationManager.getSecurityDomain());
+                userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(userPrincipal, certs, subject);
                 SecurityActions.setSecurityContextOnAssociation(sc);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
@@ -199,10 +210,17 @@ public class JBossWebRealm extends RealmBase {
                     if (mc == null || !mc.hasModules()) {
                         rolesAsStringList = mapUserRoles(rolesAsStringList);
                     }
-                }
-                else // if mapping manager is not set, handle role mapping here too
+                } else
+                    // if mapping manager is not set, handle role mapping here too
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
-                userPrincipal = new GenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList);
+                if (authenticationManager instanceof CacheableManager) {
+                    @SuppressWarnings("unchecked")
+                    CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) authenticationManager;
+                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                            userPrincipal, null, cm);
+                } else
+                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                            userPrincipal, null);
             } else {
                 if (log.isTraceEnabled()) {
                     log.trace("User: " + userPrincipal + " is NOT authenticated");
@@ -249,8 +267,7 @@ public class JBossWebRealm extends RealmBase {
                         if (!mappedRoles.contains(r))
                             mappedRoles.add(r);
                     }
-                }
-                else {
+                } else {
                     if (!mappedRoles.contains(role))
                         mappedRoles.add(role);
                 }
@@ -259,5 +276,27 @@ public class JBossWebRealm extends RealmBase {
         }
 
         return rolesList;
+    }
+
+    /**
+     * Get the Principal given the authenticated Subject. Currently the first principal that is not of type {@code Group} is
+     * considered
+     *
+     * @param subject
+     * @return the authenticated principal
+     */
+    private Principal getPrincipal(Subject subject) {
+        Principal principal = null;
+        if (subject != null) {
+            Set<Principal> principals = subject.getPrincipals();
+            if (principals != null && !principals.isEmpty()) {
+                for (Principal p : principals) {
+                    principal = p;
+                    if (!(principal instanceof Group))
+                        break;
+                }
+            }
+        }
+        return principal;
     }
 }
