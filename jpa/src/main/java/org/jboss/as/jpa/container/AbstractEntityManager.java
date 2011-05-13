@@ -47,6 +47,7 @@ import java.util.Map;
 public abstract class AbstractEntityManager implements EntityManager {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.jpa");
+    private final boolean isTraceEnabled = log.isTraceEnabled();
     private final Map<Class, Object> extensions = new HashMap<Class, Object>();
 
     protected AbstractEntityManager(final String puScopedName, final boolean isExtendedPersistenceContext) {
@@ -104,12 +105,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createNamedQuery(name, resultClass);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createNamedQuery name '%s', resultClass '%s' took %dms", name, resultClass.getName(), elapsed);
             }
@@ -118,12 +119,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createQuery(criteriaQuery);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createQuery took %dms", elapsed);
             }
@@ -132,12 +133,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createQuery(qlString, resultClass);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createQuery resultClass '%s' took %dms", resultClass.getName(), elapsed);
             }
@@ -146,12 +147,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void detach(Object entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().detach(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("detach entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -160,7 +161,7 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
@@ -168,7 +169,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("find entityClass '%s' took %dms", entityClass.getName(), elapsed);
             }
@@ -177,7 +178,7 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
@@ -185,7 +186,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("find entityClass '%s', lockMode '%s' took %dms", entityClass.getName(), getLockModeAsString(lockMode), elapsed);
             }
@@ -194,7 +195,7 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode, Map<String, Object> properties) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
@@ -202,7 +203,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("find entityClass '%s', lockMode '%s' took %dms", entityClass.getName(), getLockModeAsString(lockMode), elapsed);
             }
@@ -211,12 +212,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public CriteriaBuilder getCriteriaBuilder() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getCriteriaBuilder();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getCriteriaBuilder took %dms", elapsed);
             }
@@ -225,12 +226,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public EntityManagerFactory getEntityManagerFactory() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getEntityManagerFactory();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getEntityManagerFactory took %dms", elapsed);
             }
@@ -239,13 +240,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public LockModeType getLockMode(Object entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         LockModeType result=null;
         try {
             result = getEntityManager().getLockMode(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getLockMode entityClass '%s', lockMode '%s'  took %dms", entity.getClass().getName(), getLockModeAsString(result), elapsed);
             }
@@ -255,12 +256,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Metamodel getMetamodel() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getMetamodel();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getMetamodel took %dms", elapsed);
             }
@@ -269,12 +270,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Map<String, Object> getProperties() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getProperties();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getProperties took %dms", elapsed);
             }
@@ -283,12 +284,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().lock(entity, lockMode, properties);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("lock entityClass '%s', lockMode '%s'  took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
             }
@@ -298,12 +299,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void setProperty(String propertyName, Object value) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().setProperty(propertyName, value);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("setProperty took %dms", elapsed);
             }
@@ -312,12 +313,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void clear() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().clear();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("clear took %dms", elapsed);
             }
@@ -326,12 +327,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void close() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().close();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("close took %dms", elapsed);
             }
@@ -340,12 +341,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public boolean contains(Object entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().contains(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("contains '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -354,12 +355,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Query createNamedQuery(String name) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createNamedQuery(name);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createNamedQuery name '%s' took %dms",name, elapsed);
             }
@@ -369,12 +370,12 @@ public abstract class AbstractEntityManager implements EntityManager {
     @SuppressWarnings("unchecked")
     public Query createNativeQuery(String sqlString, Class resultClass) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createNativeQuery(sqlString, resultClass);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createNativeQuery resultClass '%s' took %dms", resultClass.getName(), elapsed);
             }
@@ -383,12 +384,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Query createNativeQuery(String sqlString, String resultSetMapping) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createNativeQuery(sqlString, resultSetMapping);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createNativeQuery took %dms", elapsed);
             }
@@ -397,12 +398,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Query createNativeQuery(String sqlString) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createNativeQuery(sqlString);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createNativeQuery took %dms", elapsed);
             }
@@ -411,12 +412,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Query createQuery(String ejbqlString) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().createQuery(ejbqlString);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createQuery took %dms", elapsed);
             }
@@ -425,12 +426,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> T find(Class<T> entityClass, Object primaryKey) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().find(entityClass, primaryKey);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("find entityClass '%s' took %dms", entityClass.getName(), elapsed);
             }
@@ -439,12 +440,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void flush() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().flush();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("flush took %dms", elapsed);
             }
@@ -453,12 +454,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public Object getDelegate() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getDelegate();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getDelegate took %dms", elapsed);
             }
@@ -467,12 +468,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public FlushModeType getFlushMode() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getFlushMode();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getFlushMode took %dms", elapsed);
             }
@@ -481,7 +482,7 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
@@ -489,7 +490,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getReference entityClass '%s' took %dms", entityClass.getName(), elapsed);
             }
@@ -498,12 +499,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public EntityTransaction getTransaction() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             return getEntityManager().getTransaction();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("getTransaction took %dms", elapsed);
             }
@@ -512,19 +513,19 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public boolean isOpen() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         return getEntityManager().isOpen();
     }
 
     public void joinTransaction() {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().joinTransaction();
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("joinTransaction took %dms", elapsed);
             }
@@ -533,12 +534,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void lock(Object entity, LockModeType lockMode) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().lock(entity, lockMode);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("lock entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
             }
@@ -547,13 +548,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public <T> T merge(T entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             return getEntityManager().merge(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("merge entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -562,13 +563,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void persist(Object entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             getEntityManager().persist(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("persist entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -577,13 +578,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void refresh(Object entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             getEntityManager().refresh(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("refresh entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -592,13 +593,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void refresh(Object entity, Map<String, Object> properties) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             getEntityManager().refresh(entity, properties);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("refresh entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -607,13 +608,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void refresh(Object entity, LockModeType lockMode) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             getEntityManager().refresh(entity, lockMode);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("refresh entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
             }
@@ -622,13 +623,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             getEntityManager().refresh(entity, lockMode, properties);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("refresh entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
             }
@@ -637,13 +638,13 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void remove(Object entity) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             transactionIsRequired();
             getEntityManager().remove(entity);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("remove entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
             }
@@ -652,12 +653,12 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public void setFlushMode(FlushModeType flushMode) {
         long start = 0;
-        if (log.isTraceEnabled())
+        if (isTraceEnabled)
             start = System.currentTimeMillis();
         try {
             getEntityManager().setFlushMode(flushMode);
         } finally {
-            if (log.isTraceEnabled()) {
+            if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("setFlushMode took %dms", elapsed);
             }
