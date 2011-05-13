@@ -326,12 +326,27 @@
             <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.0">
-           <configuration>
-              <webServiceHost>localhost</webServiceHost>
-              <modifySOAPAddress>true</modifySOAPAddress>
-              <!-- <webServiceSecurePort>8443</webServiceSecurePort>
-                 <webServicePort>8080</webServicePort> -->
-           </configuration>
+            <configuration>
+                <webServiceHost>localhost</webServiceHost>
+                <modifySOAPAddress>true</modifySOAPAddress>
+                <!--webServiceSecurePort>8443</webServiceSecurePort-->
+                <!--webServicePort>8080</webServicePort> -->
+            </configuration>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
+            <cache-container name="hibernate" default-cache="local-query">
+                <local-cache name="entity">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="local-query">
+                    <eviction strategy="LRU" max-entries="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="timestamps">
+                    <eviction strategy="NONE"/>
+                </local-cache>
+            </cache-container>
         </subsystem>
     </profile>
 

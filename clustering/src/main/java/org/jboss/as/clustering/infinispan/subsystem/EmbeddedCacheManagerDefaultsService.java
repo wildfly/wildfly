@@ -107,7 +107,11 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
             Configuration configuration = defaultConfig.clone();
             FluentConfiguration.ClusteringConfig fluent = configuration.fluent().mode(mode);
             if (mode.isClustered()) {
-                fluent.storeAsBinary();
+                FluentConfiguration.StoreAsBinaryConfig binary = fluent.storeAsBinary();
+                if (mode.isInvalidation()) {
+                    // Don't serialize cache entry values
+                    binary.storeValuesAsBinary(false);
+                }
             }
             if (mode.isReplicated()) {
                 fluent.stateRetrieval().fetchInMemoryState(true).timeout(60000L);

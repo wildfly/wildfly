@@ -63,15 +63,15 @@
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_SYNC">
-        <storeAsBinary enabled="true"/>
-        <clustering mode="replication">
+        <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
+        <clustering mode="invalidation">
             <stateRetrieval fetchInMemoryState="false"/>
             <sync replTimeout="17500"/>
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_ASYNC">
-        <storeAsBinary enabled="true"/>
-        <clustering mode="replication">
+        <storeAsBinary enabled="true" storeValuesAsBinary="false"/>
+        <clustering mode="invalidation">
             <stateRetrieval fetchInMemoryState="false"/>
             <async/>
         </clustering>
