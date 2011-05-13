@@ -76,6 +76,8 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
     private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
+    private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
+    private final ParametersValidator managedContentValidator = new ParametersValidator();
 
     public DeploymentFullReplaceHandler(final ContentRepository contentRepository, final boolean isMaster) {
         this.contentRepository = contentRepository;
@@ -88,7 +90,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
         // existing unmanaged content
         contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        contentValidator.registerValidator(PATH, new ModelTypeValidator(ModelType.STRING, true));
+        contentValidator.registerValidator(PATH, new StringLengthValidator(1, true));
         contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
         // content additions
         contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
@@ -101,6 +103,9 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
                         validateOnePieceOfContent(value);
                     }
                 }));
+        this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
+        this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
+        this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
         this.isMaster = isMaster;
     }
 
@@ -125,6 +130,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
+            managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
             if (!contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
@@ -147,14 +153,10 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             }
             contentItemNode.get(HASH).set(hash);
         } else {
-            // TODO: handle unmanaged content, the user is responsible for replication
-//            final String path = contentItemNode.require(PATH).asString();
-//            final String relativeTo = asString(contentItemNode, RELATIVE_TO);
-//            final boolean archive = contentItemNode.require(ARCHIVE).asBoolean();
-//            contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
-            throw createFailureException("A domain controller cannot accept unmanaged content");
+            // Unmanaged content, the user is responsible for replication
+            // Just validate the required attributes are present
+            unmanagedContentValidator.validate(contentItemNode);
         }
-
 
         ModelNode rootModel = context.getSubModel();
         ModelNode deployments = rootModel.get(DEPLOYMENT);
@@ -177,7 +179,6 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
                 if (serverConfig.hasDefined(DEPLOYMENT) && serverConfig.get(DEPLOYMENT).hasDefined(name)) {
                     ModelNode groupDeployNode = serverConfig.get(DEPLOYMENT, name);
                     groupDeployNode.get(RUNTIME_NAME).set(runtimeName);
-                    groupDeployNode.get(HASH).set(hash);
                 }
             }
         }

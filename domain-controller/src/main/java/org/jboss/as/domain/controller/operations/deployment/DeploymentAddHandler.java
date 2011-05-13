@@ -85,6 +85,8 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     private final boolean isMaster;
 
     private final ParametersValidator validator = new ParametersValidator();
+    private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
+    private final ParametersValidator managedContentValidator = new ParametersValidator();
 
     public DeploymentAddHandler(final ContentRepository contentRepository, final boolean isMaster) {
         this.contentRepository = contentRepository;
@@ -94,7 +96,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
         // existing unmanaged content
         contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        contentValidator.registerValidator(PATH, new ModelTypeValidator(ModelType.STRING, true));
+        contentValidator.registerValidator(PATH, new StringLengthValidator(1, true));
         contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
         // content additions
         contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
@@ -107,6 +109,9 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
                         validateOnePieceOfContent(value);
                     }
                 }));
+        this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
+        this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
+        this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
         this.isMaster = isMaster;
     }
 
@@ -128,12 +133,13 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         String name = address.getLastElement().getValue();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
 
-        byte[] hash;
+        byte[] hash = null;
         // clone it, so we can modify it to our own content
         final ModelNode content = operation.require(CONTENT).clone();
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
+            managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
             if (!contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
@@ -156,23 +162,15 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
             }
             contentItemNode.get(HASH).set(hash);
         } else {
-            // TODO: handle unmanaged content, the user is responsible for replication
-//            final String path = contentItemNode.require(PATH).asString();
-//            final String relativeTo = asString(contentItemNode, RELATIVE_TO);
-//            final boolean archive = contentItemNode.require(ARCHIVE).asBoolean();
-//            contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
-            throw createFailureException("A domain controller cannot accept unmanaged content");
+            // Unmanaged content, the user is responsible for replication
+            // Just validate the required attributes are present
+            unmanagedContentValidator.validate(contentItemNode);
         }
 
-        if (!isMaster || contentRepository.hasContent(hash)) {
-            ModelNode subModel = context.getSubModel();
-            subModel.get(NAME).set(name);
-            subModel.get(RUNTIME_NAME).set(runtimeName);
-            subModel.get(CONTENT).set(content);
-        }
-        else {
-            throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
-        }
+        ModelNode subModel = context.getSubModel();
+        subModel.get(NAME).set(name);
+        subModel.get(RUNTIME_NAME).set(runtimeName);
+        subModel.get(CONTENT).set(content);
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(Util.getResourceRemoveOperation(operation.get(OP_ADDR)));

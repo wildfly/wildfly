@@ -441,20 +441,20 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
                 // Make sure we have a copy of the deployment in the local repo
 
-                final byte[] hash;
-                // clone it, so we can modify it to our own content
-                final ModelNode content = details.require(CONTENT).clone();
-                // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-                final ModelNode contentItemNode = content.require(0);
-                if (contentItemNode.hasDefined(HASH)) {
-                    hash = contentItemNode.require(HASH).asBytes();
-                    domainController.getFileRepository().getDeploymentFiles(hash);
+                ModelNode domainDeployment = domainModel.require(DEPLOYMENT).require(name);
+                ModelNode deploymentContent = domainDeployment.require(CONTENT).clone();
+                for (ModelNode content : deploymentContent.asList()) {
+                    if ((content.hasDefined(HASH))) {
+                        byte[] hash = content.require(HASH).asBytes();
+                        // Ensure the local repo has the files
+                        domainController.getFileRepository().getDeploymentFiles(hash);
+                    }
                 }
 
                 PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name));
                 ModelNode addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
                 addOp.get(RUNTIME_NAME).set(details.get(RUNTIME_NAME));
-                addOp.get(CONTENT).set(content);
+                addOp.get(CONTENT).set(deploymentContent);
                 addOp.get(ENABLED).set(!details.hasDefined(ENABLED) || details.get(ENABLED).asBoolean());
 
                 updates.add(addOp);

@@ -75,6 +75,8 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
     private final ContentRepository contentRepository;
 
     private final ParametersValidator validator = new ParametersValidator();
+    private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
+    private final ParametersValidator managedContentValidator = new ParametersValidator();
 
     public DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
@@ -87,7 +89,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
         // existing unmanaged content
         contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        contentValidator.registerValidator(PATH, new ModelTypeValidator(ModelType.STRING, true));
+        contentValidator.registerValidator(PATH, new StringLengthValidator(1, true));
         contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
         // content additions
         contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
@@ -100,6 +102,9 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
                         validateOnePieceOfContent(value);
                     }
                 }));
+        this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
+        this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
+        this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
 
     }
 
@@ -126,6 +131,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         final DeploymentHandlerUtil.ContentItem contentItem;
         final ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
+            managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
             if (!contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
@@ -146,6 +152,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             // TODO: remove the content addition stuff?
             contentItem = new DeploymentHandlerUtil.ContentItem(hash);
         } else {
+            unmanagedContentValidator.validate(contentItemNode);
             final String path = contentItemNode.require(PATH).asString();
             final String relativeTo = asString(contentItemNode, RELATIVE_TO);
             final boolean archive = contentItemNode.require(ARCHIVE).asBoolean();

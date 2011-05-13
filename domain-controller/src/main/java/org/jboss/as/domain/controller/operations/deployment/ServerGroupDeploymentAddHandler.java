@@ -83,9 +83,13 @@ public class ServerGroupDeploymentAddHandler implements ModelAddOperationHandler
 
         ModelNode deployment = context.getSubModel(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
 
-        byte[] hash = deployment.require(CONTENT).require(0).require(HASH).asBytes();
-        // Ensure the local repo has the files
-        fileRepository.getDeploymentFiles(hash);
+        for (ModelNode content : deployment.require(CONTENT).asList()) {
+            if ((content.hasDefined(HASH))) {
+                byte[] hash = content.require(HASH).asBytes();
+                // Ensure the local repo has the files
+                fileRepository.getDeploymentFiles(hash);
+            }
+        }
 
         final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : deployment.get(RUNTIME_NAME).asString();
 
