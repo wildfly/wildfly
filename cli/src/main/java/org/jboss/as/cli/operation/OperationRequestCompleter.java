@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.EscapeSelector;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 
@@ -39,6 +41,13 @@ import jline.Completor;
 public class OperationRequestCompleter implements CommandLineCompleter, Completor {
 
     public static final OperationRequestCompleter INSTANCE = new OperationRequestCompleter(null);
+
+    private static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
+        @Override
+        public boolean isEscape(char ch) {
+            return ch == ':' || ch == '/' || ch == '=' || ch == ' ' || ch == '"' || ch == '\\';
+        }
+    };
 
     private final CommandContext ctx;
 
@@ -55,29 +64,8 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
         return complete(ctx, buffer, cursor, candidates);
     }
 
-    private static String formatName(String name) {
-        for(int i = 0; i < name.length(); ++i) {
-            char ch = name.charAt(i);
-            if(ch == ':' || ch == '/' || ch == '=') {
-                // now escape the quotes
-                StringBuilder builder = new StringBuilder();
-                builder.append('"');
-                for(int j = 0; j < name.length(); ++j) {
-                    ch = name.charAt(j);
-                    if(ch == '"') {
-                        builder.append('\\');
-                    }
-                    builder.append(ch);
-                }
-                builder.append('"');
-                return builder.toString();
-            }
-        }
-        return name;
-    }
-
     @Override
-    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+    public int complete(CommandContext ctx, final String buffer, int cursor, List<String> candidates) {
         int firstCharIndex = 0;
         while(firstCharIndex < buffer.length()) {
             if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
@@ -240,25 +228,28 @@ public class OperationRequestCompleter implements CommandLineCompleter, Completo
 
         if(candidates.size() == 1) {
             if(address.endsOnType()) {
-                candidates.set(0, formatName((String) candidates.get(0)));
+                candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
             } else {
                 String onlyType = (String) candidates.get(0);
                 address.toNodeType(onlyType);
                 List<String> childNames = provider.getNodeNames(address);
                 if (!childNames.isEmpty()) {
+                    onlyType = Util.escapeString(onlyType, ESCAPE_SELECTOR);
                     candidates.clear();
                     if(childNames.size() == 1) {
-                        candidates.add(onlyType  + '=' + formatName(childNames.get(0)));
+                        candidates.add(onlyType  + '=' + Util.escapeString(childNames.get(0), ESCAPE_SELECTOR));
                     } else {
+                        Util.sortAndEscape(childNames, ESCAPE_SELECTOR);
                         for (String name : childNames) {
                             candidates.add(onlyType + '=' + name);
                         }
                     }
                 }
             }
+        } else {
+            Util.sortAndEscape(candidates, ESCAPE_SELECTOR);
         }
 
-        Collections.sort(candidates);
         return handler.getLastSeparatorIndex() + 1;
     }
 }

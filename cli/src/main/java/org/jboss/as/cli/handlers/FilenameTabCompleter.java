@@ -22,11 +22,12 @@
 package org.jboss.as.cli.handlers;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.EscapeSelector;
+import org.jboss.as.cli.Util;
 
 /**
  *
@@ -36,7 +37,14 @@ public class FilenameTabCompleter implements CommandLineCompleter {
 
    public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
 
-   private static final String SEPARATOR = "/";
+   private static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
+       @Override
+       public boolean isEscape(char ch) {
+           return ch == '\\' || ch == ' ' || ch == '"';
+       }
+   };
+
+   private static final char SEPARATOR = '/';
    private static final boolean replaceSeparator = !File.separator.equals(SEPARATOR);
 
    /* (non-Javadoc)
@@ -75,43 +83,26 @@ java.lang.String, int, java.util.List)
 
        final File[] entries = (dir == null) ? new File[0] : dir.listFiles();
        int result = matchFiles(buffer, translated, entries, candidates);
+       if(result == -1) {
+           return -1;
+       }
 
        int correction = 0;
        if(buffer.length() > 0) {
            final int lastSeparator = buffer.lastIndexOf(SEPARATOR);
            if(lastSeparator > 0) {
                final String path = buffer.substring(0, lastSeparator);
-               final String escaped = escapeName(path);
+               final String escaped = Util.escapeString(path, ESCAPE_SELECTOR);
                correction = escaped.length() - path.length();
            }
        }
 
        if(candidates.size() == 1) {
-           candidates.set(0, escapeName(candidates.get(0)));
+           candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
        } else {
-           Collections.sort(candidates);
+           Util.sortAndEscape(candidates, ESCAPE_SELECTOR);
        }
        return cursor + result + correction;
-   }
-
-   private static String escapeName(String name) {
-       for(int i = 0; i < name.length(); ++i) {
-           char ch = name.charAt(i);
-           if(ch == '\\' || ch == ' ' || ch == '"') {
-               StringBuilder builder = new StringBuilder();
-               builder.append(name, 0, i);
-               builder.append('\\').append(ch);
-               for(int j = i + 1; j < name.length(); ++j) {
-                   ch = name.charAt(j);
-                   if(ch == '\\' || ch == ' ' || ch == '"') {
-                       builder.append('\\');
-                   }
-                   builder.append(ch);
-               }
-               return builder.toString();
-           }
-       }
-       return name;
    }
 
    private static String unescapeName(String name) {
@@ -183,7 +174,7 @@ java.lang.String, int, java.util.List)
        }
 
        final int index = buffer.lastIndexOf(SEPARATOR);
-       return index + SEPARATOR.length();
+       return index + 1 /* - separator character */;
    }
 
    public static void main(String[] args) throws Exception {

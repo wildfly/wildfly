@@ -428,4 +428,61 @@ public class Util {
         op.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
         return op;
     }
+
+    public static String getCommonStart(List<String> list) {
+        final int size = list.size();
+        if(size == 0) {
+            return null;
+        }
+        if(size == 1) {
+            return list.get(0);
+        }
+        final String first = list.get(0);
+        final String last = list.get(size - 1);
+
+        int minSize = Math.min(first.length(), last.length());
+        for(int i = 0; i < minSize; ++i) {
+            if(first.charAt(i) != last.charAt(i)) {
+                if(i == 0) {
+                    return null;
+                } else {
+                    return first.substring(0, i);
+                }
+            }
+        }
+        return first.substring(0, minSize);
+    }
+
+    public static String escapeString(String name, EscapeSelector selector) {
+        for(int i = 0; i < name.length(); ++i) {
+            char ch = name.charAt(i);
+            if(selector.isEscape(ch)) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(name, 0, i);
+                builder.append('\\').append(ch);
+                for(int j = i + 1; j < name.length(); ++j) {
+                    ch = name.charAt(j);
+                    if(selector.isEscape(ch)) {
+                        builder.append('\\');
+                    }
+                    builder.append(ch);
+                }
+                return builder.toString();
+            }
+        }
+        return name;
+    }
+
+    public static void sortAndEscape(List<String> candidates, EscapeSelector selector) {
+        Collections.sort(candidates);
+        final String common = Util.getCommonStart(candidates);
+        if (common != null) {
+            final String escapedCommon = Util.escapeString(common, selector);
+            if (common.length() != escapedCommon.length()) {
+                for (int i = 0; i < candidates.size(); ++i) {
+                    candidates.set(i, escapedCommon + candidates.get(i).substring(common.length()));
+                }
+            }
+        }
+    }
 }

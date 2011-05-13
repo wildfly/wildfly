@@ -78,5 +78,6 @@ public class NodeState extends DefaultParsingState {
         putHandler(':', colonHandler);
 
         enterState('"', QuotesState.QUOTES_EXCLUDED);
+        enterState('\\', EscapeCharacterState.INSTANCE);
     }
 }

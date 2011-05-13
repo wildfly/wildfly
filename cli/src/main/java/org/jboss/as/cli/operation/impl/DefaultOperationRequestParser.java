@@ -97,6 +97,9 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                     propNameValueSep = ctx.getLocation();
                     propValueContent = true;
                     buffer.setLength(0);
+                } else if(stateId.equals(NodeState.ID)) {
+                    propValueContent = true;
+                    buffer.setLength(0);
                 }
 
                 if(!propValueContent) {
@@ -171,6 +174,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
                             }
                         }
                     }
+                    propValueContent = false;
                 }
             }
 

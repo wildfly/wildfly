@@ -107,7 +107,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                         return -1;
                     }
                 } else {
-                    if(results.endIndex < buffer.length() && Character.isWhitespace(buffer.charAt(results.endIndex))) {
+                    if(results.endIndex < buffer.length()) {
                         chunk = null;
                     } else {
                         chunk = results.argValue;
@@ -137,7 +137,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                     }
                 }
             } else {
-                if(results.endIndex < buffer.length() && Character.isWhitespace(buffer.charAt(results.endIndex))) {
+                if(results.endIndex < buffer.length()) {
                     chunk = null;
                 } else {
                     chunk = results.argName;

@@ -75,6 +75,7 @@ public class StateParser {
             ++i;
         }
 
+        ctx.location = i;
         ParsingState state = ctx.getState();
         while(state != ctx.initialState) {
             state.getEndContentHandler().handle(ctx);

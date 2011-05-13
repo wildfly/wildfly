@@ -582,4 +582,24 @@ public class AddressOnlyParsingTestCase extends TestCase {
         assertEquals("c", node.getName());
     }
 
+    @Test
+    public void testTest() throws Exception {
+
+        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+
+        parser.parse("/subsystem=datasources/data-source=java\\:\\/H2DS", handler);
+
+        OperationRequestAddress address = handler.getAddress();
+        assertNotNull(address);
+        Iterator<Node> nodes = address.iterator();
+        assertTrue(nodes.hasNext());
+        Node node = nodes.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("datasources", node.getName());
+
+        assertTrue(nodes.hasNext());
+        node = nodes.next();
+        assertEquals("data-source", node.getType());
+        assertEquals("java:/H2DS", node.getName());
+    }
 }
