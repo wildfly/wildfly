@@ -53,7 +53,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <skipExecUnitTests>false</skipExecUnitTests>
+        <skipTests>false</skipTests>
     </properties>
 
     <build>
@@ -76,8 +76,8 @@
                           <value>target/embedded</value>
                         </property>
                     </systemProperties>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                
-                    <skipExec>${skipExecUnitTests}</skipExec>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <skipTests>${skipTests}</skipTests>
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
@@ -85,13 +85,13 @@
             </plugin>
         </plugins>
     </build>
-    
-    <dependencies>  
+
+    <dependencies>
         <dependency>
            <groupId>org.jboss.arquillian</groupId>
            <artifactId>arquillian-api</artifactId>
         </dependency>
-        
+
         <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>

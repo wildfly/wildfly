@@ -18,23 +18,19 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.ServerController;
 import org.jboss.dmr.ModelNode;
-import org.jboss.threads.StoppedExecutorException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -50,15 +46,12 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class DomainStarterUtil {
+public class DomainLifecycleUtil {
 
     private static final ObjectName OBJECT_NAME;
     static {
@@ -69,7 +62,7 @@ public class DomainStarterUtil {
         }
     }
 
-    private final Logger log = Logger.getLogger(DomainStarterUtil.class.getName());
+    private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
 
     private final long timeout;
     private Process process;
@@ -82,11 +75,46 @@ public class DomainStarterUtil {
     private Map<ServerIdentity, MBeanServerConnectionProvider> jmxConnectionProviders = new HashMap<ServerIdentity, MBeanServerConnectionProvider>();
     private Map<ServerIdentity, MBeanServerConnection> jmxConnections = new HashMap<ServerIdentity, MBeanServerConnection>();
     private MBeanServerConnectionProvider[] providers;
+    private String domainConfigFile;
+    private String hostConfigFile;
 
-    public DomainStarterUtil(final long timeout, final InetAddress managementAddress, final int managementPort) {
+    private static InetAddress getDefaultHostAddress() {
+        String address = System.getProperty("jboss.test.domain.management.address", "127.0.0.1");
+        try {
+            return InetAddress.getByName(address);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public DomainLifecycleUtil() {
+        this(20000, getDefaultHostAddress(), 9999);
+    }
+
+    public DomainLifecycleUtil(final long timeout) {
+        this(timeout, getDefaultHostAddress(), 9999);
+    }
+
+    public DomainLifecycleUtil(final long timeout, final InetAddress managementAddress, final int managementPort) {
         this.timeout = timeout;
         this.managementAddress = managementAddress;
         this.managementPort = managementPort;
+    }
+
+    public String getDomainConfigFile() {
+        return domainConfigFile;
+    }
+
+    public void setDomainConfigFile(String domainConfigFile) {
+        this.domainConfigFile = domainConfigFile;
+    }
+
+    public String getHostConfigFile() {
+        return hostConfigFile;
+    }
+
+    public void setHostConfigFile(String hostConfigFile) {
+        this.hostConfigFile = hostConfigFile;
     }
 
     public void start() {
@@ -136,6 +164,12 @@ public class DomainStarterUtil {
             cmd.add("--");
             cmd.add("-default-jvm");
             cmd.add("java");
+            if (domainConfigFile != null) {
+                cmd.add("-domain-config " + domainConfigFile);
+            }
+            if (hostConfigFile != null) {
+                cmd.add("-host-config " + hostConfigFile);
+            }
 
             log.info("Starting container with: " + cmd.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
@@ -329,7 +363,7 @@ public class DomainStarterUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        DomainStarterUtil starterUtil = new DomainStarterUtil(20000, InetAddress.getByName("127.0.0.1"), 9999) ;
+        DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(20000, InetAddress.getByName("127.0.0.1"), 9999) ;
         starterUtil.start();
         System.out.println("--------- STARTED");
         starterUtil.stop();

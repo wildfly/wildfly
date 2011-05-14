@@ -39,11 +39,11 @@
     <name>JBoss Application Server: Arquillian Remote Container</name>
 
     <packaging>jar</packaging>
-    
+
     <properties>
-        <!-- Don't execute unit tests; the "remote" profile needs to be 
+        <!-- Don't execute unit tests; the "remote" profile needs to be
              enabled to execute them -->
-        <skipExecUnitTests>true</skipExecUnitTests>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
@@ -57,30 +57,52 @@
             <artifactId>arquillian-junit</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
     </dependencies>
-    
-        <profiles>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
         <profile>
             <id>remote</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <properties>
-                <skipExecUnitTests>false</skipExecUnitTests>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
-    </profiles>    
-    
+    </profiles>
+
 </project>

@@ -42,6 +42,7 @@
         <module>api</module>
         <module>spec</module>
         <module>internals</module>
+        <!-- <module>domain</module> -->
     </modules>
 
     <packaging>pom</packaging>
@@ -50,7 +51,15 @@
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
-        
+
+        <!-- By default don't run tests -->
+        <skipTests>true</skipTests>
+
+        <!-- By default don't fail the build for integration test failures -->
+        <ignore.test.failures>true</ignore.test.failures>
+
+        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
+
         <!-- Versioning -->
         <version.org.jboss.arquillian>1.0.0.Alpha5</version.org.jboss.arquillian>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-12</version.org.jboss.shrinkwrap.shrinkwrap>
@@ -58,16 +67,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>${surefire.system.args}</argLine>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
 
         <!-- Big complex hack just to get @Resource(lookup="foo") -->
             <plugin>
@@ -99,7 +98,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- Tests can be enabled via -DskipTests=false or via a profile -->
+                    <skipTests>${skipTests}</skipTests>
+                    <testFailureIgnore>${ignore.test.failures}</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <!-- Don't fail the build for integration test failures -->
+                    <testFailureIgnore>true</testFailureIgnore>
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -126,32 +130,23 @@
               </goals>
               <configuration>
                 <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                <resources>          
+                <resources>
                   <resource>
                     <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
                     <includes>
                       <include>**</include>
                     </includes>
                   </resource>
-                </resources>              
-              </configuration>            
+                </resources>
+              </configuration>
             </execution>
           </executions>
         </plugin>
-            
+
         </plugins>
     </build>
 
     <profiles>
-        <profile>
-            <id>all-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spec</module>
-            </modules>
-        </profile>
         <!--
             Name: jpda
             Descr: Enable JPDA remote debuging
@@ -261,8 +256,8 @@
            <groupId>org.jboss.spec.javax.annotation</groupId>
            <artifactId>jboss-annotations-api_1.1_spec</artifactId>
         </dependency>
-        
-        <!-- 
+
+        <!--
         Java EE APIs
          -->
         <dependency>
@@ -443,7 +438,7 @@
         <artifactId>arquillian-testenricher-cdi</artifactId>
         <version>${version.org.jboss.arquillian}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.jboss.arquillian.testenricher</groupId>
         <artifactId>arquillian-testenricher-ejb</artifactId>

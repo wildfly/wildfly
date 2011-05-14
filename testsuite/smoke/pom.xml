@@ -23,7 +23,7 @@
 
 <!--
   To run a single smoke test in the debugger, run surefire like this and connect your remote debugger to port 5005
-  
+
   mvn -Pmodular-embedded -DskipTests -Dtest=SimpleArchiveProviderTestCase -Dmaven.surefire.debug=true test
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -45,6 +45,11 @@
 
     <properties>
         <!-- This part of the testuite we want to execute by default. -->
+        <skipTests>false</skipTests>
+
+        <!-- Wa do fail the build for smoke test failures -->
+        <ignore.test.failures>false</ignore.test.failures>
+
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
@@ -82,9 +87,9 @@
                 <groupId>org.jboss.maven.surefire.modular</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>${skipTests}</skipTests>
                     <!--  standard surefire options -->
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
                         <property>
@@ -127,7 +132,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <skipTests>false</skipTests>
+                            <skipTests>${skipTests}</skipTests>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <enableAssertions>true</enableAssertions>
                             <includes>
@@ -156,6 +161,7 @@
                                    <goal>test</goal>
                                </goals>
                                <configuration>
+                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/xml-module-def.xml</moduleDefinitionFile>
                                    <includes>
                                        <include>org/jboss/as/test/surefire/xml/*TestCase.java</include>
@@ -185,6 +191,7 @@
                                     <goal>test</goal>
                                 </goals>
                                <configuration>
+                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/demos-arquillian-module-def.xml</moduleDefinitionFile>
                                    <includes>
                                       <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
@@ -217,6 +224,7 @@
                                    <goal>test</goal>
                                </goals>
                                <configuration>
+                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/server-module-def.xml</moduleDefinitionFile>
                                    <includes>
                                        <include>org/jboss/as/test/surefire/servermodule/*TestCase.java</include>
@@ -246,10 +254,8 @@
                                    <goal>test</goal>
                                </goals>
                                <configuration>
+                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/jsf-arquillian-module-def.xml</moduleDefinitionFile>
-                                   <includes>
-                                       <exclude>org/jboss/as/test/embedded/jsf/*TestCase.java</exclude>
-                                   </includes>
 			                          <systemProperties>
 			                              <property>
 			                                 <name>jboss.arquillian.executeWithServlet</name>

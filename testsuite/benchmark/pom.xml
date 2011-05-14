@@ -38,4 +38,33 @@
 
     <name>JBoss Application Server: Test Suite: Benchmark Tests</name>
 
+    <properties>
+        <skip.benchmark.tests>false</skip.benchmark.tests>
+    </properties>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skip.benchmark.tests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Enable the stress-tests profile to execute the tests -->
+        <profile>
+            <id>benchmark-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skip.benchmark.tests>true</skip.benchmark.tests>
+            </properties>
+        </profile>
+    </profiles>
 </project>

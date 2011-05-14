@@ -40,6 +40,9 @@
 
     <modules>
         <module>smoke</module>
+        <module>stress</module>
+        <module>benchmark</module>
+        <module>integration</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -48,6 +51,13 @@
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
+
+        <!-- This part of the testuite we do not want to execute by default. -->
+        <skipTests>true</skipTests>
+
+        <!-- By default don't fail the build for integration test failures -->
+        <ignore.test.failures>true</ignore.test.failures>
+
     </properties>
 
     <build>
@@ -56,6 +66,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                    <testFailureIgnore>${ignore.test.failures}</testFailureIgnore>
                     <argLine>${surefire.system.args}</argLine>
                     <includes>
                         <include>**/*TestCase.java</include>
@@ -71,39 +83,11 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <modules>
-                <module>stress</module>
-                <module>benchmark</module>
-                <module>integration</module>
-            </modules>
-        </profile>
-        <!-- Enable the integration-tests profile to execute this module's tests -->
-        <profile>
-            <id>integration-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>integration</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>stress-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>stress</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>benchmark-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>benchmark</module>
-            </modules>
+            <properties>
+                <skipTests>false</skipTests>
+                <skip.benchmark.tests>false</skip.benchmark.tests>
+                <skip.stress.tests>false</skip.stress.tests>
+            </properties>
         </profile>
         <!--
             Name: jpda

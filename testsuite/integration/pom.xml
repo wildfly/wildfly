@@ -137,6 +137,9 @@
                     <name>remote</name>
                 </property>
             </activation>
+            <properties>
+                <skipTests>false</skipTests>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.as</groupId>
