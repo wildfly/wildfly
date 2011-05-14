@@ -68,7 +68,6 @@ public class WebAppNegativeTestCase {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp-negative");
         archive.addClasses(EndpointServlet.class);
         archive.addResource("osgi/webapp/message.txt", "message.txt");
-        // archive.addResource("osgi/webapp/web.xml", "WEB-INF/web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {

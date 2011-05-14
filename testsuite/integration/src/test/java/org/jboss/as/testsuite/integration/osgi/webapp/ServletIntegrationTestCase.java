@@ -20,16 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.osgi.ejb3;
+package org.jboss.as.testsuite.integration.osgi.webapp;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.jar.JarFile;
 
 import javax.inject.Inject;
-import javax.naming.InitialContext;
 
 import org.jboss.arquillian.api.ArchiveDeployer;
 import org.jboss.arquillian.api.ArchiveProvider;
@@ -39,11 +39,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.osgi.xservice.api.Echo;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
+import org.jboss.osgi.http.HttpServiceCapability;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -52,13 +54,13 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Testcase for basic EJB3 / OSGi integration
+ * Testcase for basic Web / OSGi integration
  *
  * @author thomas.diesler@jboss.com
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-public class StatelessBeanIntegrationTestCase {
+public class ServletIntegrationTestCase {
 
     @Inject
     public Bundle bundle;
@@ -71,7 +73,7 @@ public class StatelessBeanIntegrationTestCase {
 
     @Deployment
     public static JavaArchive createDeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "ejb3-osgi-target");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "web-osgi-target");
         archive.addClasses(Echo.class, TargetBundleActivator.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -81,7 +83,7 @@ public class StatelessBeanIntegrationTestCase {
                 builder.addBundleActivator(TargetBundleActivator.class);
                 // [TODO] remove these explicit imports
                 builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
-                builder.addImportPackages(BundleActivator.class, Logger.class);
+                builder.addImportPackages(BundleActivator.class, Logger.class, HttpServiceCapability.class);
                 return builder.openStream();
             }
         });
@@ -99,30 +101,35 @@ public class StatelessBeanIntegrationTestCase {
 
     @Test
     public void testStatelessBean() throws Exception {
-        Archive<?> ejbArchive = provider.getClientDeployment("ejb3-osgi.jar");
-        String ejbName = deployer.deploy(ejbArchive);
+        Archive<?> webArchive = provider.getClientDeployment("web-osgi-client.war");
+        String webName = deployer.deploy(webArchive);
         try {
-            String jndiname = "java:global/ejb3-osgi/SimpleClientServlet!org.jboss.as.testsuite.integration.osgi.ejb3.SimpleStatelessSessionBean";
-            Echo service = (Echo) new InitialContext().lookup(jndiname);
-            assertNotNull("StatelessBean not null", service);
-            assertEquals("ejb3-osgi-target", service.echo(BUNDLE_SYMBOLICNAME));
-            assertEquals("foo", service.echo("foo"));
+            assertEquals("web-osgi-target", getHttpResponse(BUNDLE_SYMBOLICNAME));
+            assertEquals("foo", getHttpResponse("foo"));
         } finally {
-            deployer.undeploy(ejbName);
+            deployer.undeploy(webName);
         }
     }
 
     @ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
-        archive.addClass(SimpleStatelessSessionBean.class);
-        archive.setManifest(new Asset() {
+    public static WebArchive getTestArchive(String name) {
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, name);
+        archive.addClass(SimpleClientServlet.class);
+        archive.addResource("osgi/webapp/webB.xml", "WEB-INF/web.xml");
+        // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
+        archive.add(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.ejb3-osgi-target:0.0.0");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.web-osgi-target:0.0.0");
                 return builder.openStream();
             }
-        });
+        }, JarFile.MANIFEST_NAME);
         return archive;
     }
+
+    private String getHttpResponse(String message) throws IOException {
+        String reqPath = "/web-osgi-client/servlet?msg=" + message;
+        return HttpServiceCapability.getHttpResponse("localhost", 8080, reqPath, 2000);
+    }
+
 }
