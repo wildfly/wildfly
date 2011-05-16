@@ -42,7 +42,7 @@
         <module>api</module>
         <module>spec</module>
         <module>internals</module>
-        <!-- <module>domain</module> -->
+        <module>domain</module>
     </modules>
 
     <packaging>pom</packaging>

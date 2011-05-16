@@ -35,9 +35,18 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
@@ -47,9 +56,9 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 /**
+ * Utility for controlling the lifecycle of a domain.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class DomainLifecycleUtil {
 
@@ -62,67 +71,31 @@ public class DomainLifecycleUtil {
         }
     }
 
+    private static final ThreadFactory threadFactory = new AsyncThreadFactory();
+
     private final Logger log = Logger.getLogger(DomainLifecycleUtil.class.getName());
 
-    private final long timeout;
     private Process process;
     private Thread shutdownThread;
 
-    private final InetAddress managementAddress;
-    private final int managementPort;
+    private final JBossAsManagedConfiguration configuration;
     private DomainClient domainClient;
     private Map<ServerIdentity, ServerStatus> serverStatuses = new HashMap<ServerIdentity, ServerStatus>();
     private Map<ServerIdentity, MBeanServerConnectionProvider> jmxConnectionProviders = new HashMap<ServerIdentity, MBeanServerConnectionProvider>();
     private Map<ServerIdentity, MBeanServerConnection> jmxConnections = new HashMap<ServerIdentity, MBeanServerConnection>();
     private MBeanServerConnectionProvider[] providers;
-    private String domainConfigFile;
-    private String hostConfigFile;
+    private ExecutorService executor;
 
-    private static InetAddress getDefaultHostAddress() {
-        String address = System.getProperty("jboss.test.domain.management.address", "127.0.0.1");
-        try {
-            return InetAddress.getByName(address);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public DomainLifecycleUtil() {
-        this(20000, getDefaultHostAddress(), 9999);
-    }
-
-    public DomainLifecycleUtil(final long timeout) {
-        this(timeout, getDefaultHostAddress(), 9999);
-    }
-
-    public DomainLifecycleUtil(final long timeout, final InetAddress managementAddress, final int managementPort) {
-        this.timeout = timeout;
-        this.managementAddress = managementAddress;
-        this.managementPort = managementPort;
-    }
-
-    public String getDomainConfigFile() {
-        return domainConfigFile;
-    }
-
-    public void setDomainConfigFile(String domainConfigFile) {
-        this.domainConfigFile = domainConfigFile;
-    }
-
-    public String getHostConfigFile() {
-        return hostConfigFile;
-    }
-
-    public void setHostConfigFile(String hostConfigFile) {
-        this.hostConfigFile = hostConfigFile;
+    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) {
+        assert configuration != null : "configuration is null";
+        this.configuration = configuration;
     }
 
     public void start() {
         try {
-            String jbossHomeKey = "jboss.home";
-            String jbossHomeDir = System.getProperty(jbossHomeKey);
-            if (jbossHomeDir == null)
-                throw new IllegalStateException("Cannot find system property: " + jbossHomeKey);
+            configuration.validate();
+
+            String jbossHomeDir = configuration.getJbossHome();
 
             final String additionalJavaOpts = System.getProperty("jboss.options");
 
@@ -130,15 +103,21 @@ public class DomainLifecycleUtil {
             if (modulesJar.exists() == false)
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
+            String javaHome = configuration.getJavaHome();
+            String java = (javaHome != null) ?  javaHome + "/bin/java" : "java";
+
+            File domainDir = configuration.getDomainDirectory() != null ? new File(configuration.getDomainDirectory()) : new File(new File(jbossHomeDir), "domain");
+            String domainPath = domainDir.getAbsolutePath();
+
             List<String> cmd = new ArrayList<String>();
-            cmd.add("java");
+            cmd.add(java);
             if (additionalJavaOpts != null) {
                 for (String opt : additionalJavaOpts.split("\\s+")) {
                     cmd.add(opt);
                 }
             }
             cmd.add("-Djboss.home.dir=" + jbossHomeDir);
-            cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/domain/log/process-controller/boot.log");
+            cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/process-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
@@ -152,9 +131,9 @@ public class DomainLifecycleUtil {
             cmd.add("-jboss-home");
             cmd.add(jbossHomeDir);
             cmd.add("-jvm");
-            cmd.add("java");
+            cmd.add(java);
             cmd.add("--");
-            cmd.add("-Dorg.jboss.boot.log.file=" + jbossHomeDir + "/domain/log/host-controller/boot.log");
+            cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/host-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             if (additionalJavaOpts != null) {
                 for (String opt : additionalJavaOpts.split("\\s+")) {
@@ -163,17 +142,28 @@ public class DomainLifecycleUtil {
             }
             cmd.add("--");
             cmd.add("-default-jvm");
-            cmd.add("java");
-            if (domainConfigFile != null) {
-                cmd.add("-domain-config " + domainConfigFile);
+            cmd.add(java);
+            if (configuration.getDomainConfigFile() != null) {
+                cmd.add("-domain-config");
+                cmd.add(configuration.getDomainConfigFile());
             }
-            if (hostConfigFile != null) {
-                cmd.add("-host-config " + hostConfigFile);
+            if (configuration.getHostConfigFile() != null) {
+                cmd.add("-host-config");
+                cmd.add(configuration.getHostConfigFile());
+            }
+            if (configuration.getHostCommandLineProperties() != null) {
+                for (String opt : configuration.getHostCommandLineProperties().split("\\s+")) {
+                    cmd.add(opt);
+                }
+            }
+            if (configuration.getDomainDirectory() != null) {
+                cmd.add("-Djboss.domain.base.dir=" + configuration.getDomainDirectory());
             }
 
             log.info("Starting container with: " + cmd.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
             processBuilder.redirectErrorStream(true);
+            long start = System.currentTimeMillis();
             process = processBuilder.start();
             new Thread(new ConsoleConsumer()).start();
             final Process proc = process;
@@ -192,9 +182,7 @@ public class DomainLifecycleUtil {
             });
             Runtime.getRuntime().addShutdownHook(shutdownThread);
 
-            domainClient = DomainClient.Factory.create(managementAddress, managementPort);
-
-            long timeout = this.timeout;
+            long timeout = configuration.getStartupTimeoutInSeconds() * 1000;
 
             boolean serversAvailable = false;
             while (timeout > 0 && serversAvailable == false) {
@@ -208,8 +196,10 @@ public class DomainLifecycleUtil {
             }
 
             if (!serversAvailable) {
-                throw new TimeoutException(String.format("Managed servers were not started within [%d] ms", timeout));
+                throw new TimeoutException(String.format("Managed servers were not started within [%d] seconds", configuration.getStartupTimeoutInSeconds()));
             }
+
+            log.info("All servers started in " + (System.currentTimeMillis() - start) + " ms");
 
             Map<ServerIdentity, MBeanServerConnection> connections = new HashMap<ServerIdentity, MBeanServerConnection>();
             for (Map.Entry<ServerIdentity, ServerStatus> entry : serverStatuses.entrySet()) {
@@ -219,6 +209,7 @@ public class DomainLifecycleUtil {
                 }
             }
 
+            log.info("Awaiting mbeanServer connections for " + connections.keySet());
 
             int available = 0;
             int enabledCount = connections.size();
@@ -231,6 +222,7 @@ public class DomainLifecycleUtil {
                             boolean isAvailable = mbeanServer != null && mbeanServer.isRegistered(OBJECT_NAME);
                             if (isAvailable) {
                                 connections.put(entry.getKey(), mbeanServer);
+                                available++;
                             }
                         } catch (Exception ignore) {
                         }
@@ -251,14 +243,175 @@ public class DomainLifecycleUtil {
                         notStartedServers.add(entry.getKey());
                     }
                 }
-                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers with port offsets %s within [%d] ms", notStartedServers.toString(), this.timeout));
+                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer for servers with port offsets %s within [%d] seconds", notStartedServers.toString(), configuration.getStartupTimeoutInSeconds()));
             }
 
-            log.info("All containers started");
+            log.info("All containers available");
         } catch (Exception e) {
             throw new RuntimeException("Could not start container", e);
         }
 
+    }
+
+    public Future<Void> startAsync() {
+        Callable<Void> c = new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                start();
+                return null;
+            }
+        };
+
+        return getExecutorService().submit(c);
+    }
+
+    public void stop() {
+        if(shutdownThread != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownThread);
+            shutdownThread = null;
+        }
+        try {
+            if (process != null) {
+                process.destroy();
+                process.waitFor();
+                process = null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not stop container", e);
+        }
+        finally {
+            safeCloseDomainClient();
+            final ExecutorService exec = executor;
+            if (exec != null) {
+                exec.shutdownNow();
+                executor = null;
+            }
+        }
+    }
+
+    public Future<Void> stopAsync() {
+        Callable<Void> c = new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                stop();
+                return null;
+            }
+        };
+
+        return Executors.newSingleThreadExecutor(threadFactory).submit(c);
+    }
+
+    public synchronized DomainClient getDomainClient() {
+        if (domainClient == null) {
+            try {
+                InetAddress managementAddress = InetAddress.getByName(configuration.getHostControllerManagementAddress());
+
+                domainClient = DomainClient.Factory.create(managementAddress, configuration.getHostControllerManagementPort());
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return domainClient;
+    }
+
+    private synchronized ExecutorService getExecutorService() {
+        if (executor == null) {
+            executor = Executors.newSingleThreadExecutor(threadFactory);
+        }
+        return executor;
+    }
+
+    private boolean areServersStarted() {
+        try {
+            Map<ServerIdentity, ServerStatus> statuses = getServerStatuses();
+            for (Map.Entry<ServerIdentity, ServerStatus> entry : statuses.entrySet()) {
+                switch (entry.getValue()) {
+                    case DISABLED:
+                    case STARTED:
+                        continue;
+                    default:
+                        return false;
+                }
+            }
+            serverStatuses.putAll(statuses);
+            return true;
+        }
+        catch (Exception ignored) {
+            // ignore, as we will get exceptions until the management comm services start
+        }
+        return false;
+    }
+
+    private synchronized void safeCloseDomainClient()  {
+        if (domainClient != null) {
+            try {
+                domainClient.close();
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "Caught exception closing DomainClient", e);
+            }
+        }
+    }
+
+    private Map<ServerIdentity, ServerStatus> getServerStatuses() {
+
+        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-children-names");
+        op.get("child-type").set("server-config");
+        op.get("address").add("host", configuration.getHostName());
+        ModelNode opResult = executeForResult(OperationBuilder.Factory.create(op).build());
+        Set<String> servers = new HashSet<String>();
+        for (ModelNode server : opResult.asList()) {
+            servers.add(server.asString());
+        }
+        for (String server : servers) {
+            ModelNode address = new ModelNode();
+            address.add("host", configuration.getHostName());
+            address.add("server-config", server);
+            String group = readAttribute("group", address).asString();
+            ServerStatus status = Enum.valueOf(ServerStatus.class, readAttribute("status", address).asString());
+            ServerIdentity id = new ServerIdentity(configuration.getHostName(), group, server);
+            result.put(id, status);
+        }
+
+        return result;
+    }
+
+    private ModelNode readAttribute(String name, ModelNode address) {
+        ModelNode op = new ModelNode();
+        op.get("operation").set("read-attribute");
+        op.get("address").set(address);
+        op.get("name").set(name);
+        return executeForResult(OperationBuilder.Factory.create(op).build());
+    }
+
+    private ModelNode executeForResult(ModelNode op) {
+        return executeForResult(OperationBuilder.Factory.create(op).build());
+    }
+
+    private ModelNode executeForResult(Operation op) {
+        try {
+            ModelNode result = getDomainClient().execute(op);
+            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+                return result.get("result");
+            }
+            else if (result.hasDefined("failure-description")) {
+                throw new RuntimeException(result.get("failure-description").toString());
+            }
+            else if (result.hasDefined("domain-failure-description")) {
+                throw new RuntimeException(result.get("domain-failure-description").toString());
+            }
+            else if (result.hasDefined("host-failure-descriptions")) {
+                throw new RuntimeException(result.get("host-failure-descriptions").toString());
+            }
+            else {
+                throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private MBeanServerConnectionProvider getMBeanServerConnectionProvider(ServerIdentity server) throws IOException{
@@ -291,79 +444,8 @@ public class DomainLifecycleUtil {
         return null;
     }
 
-    public void stop() {
-        if(shutdownThread != null) {
-            Runtime.getRuntime().removeShutdownHook(shutdownThread);
-            shutdownThread = null;
-        }
-        try {
-            if (process != null) {
-                process.destroy();
-                process.waitFor();
-                process = null;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Could not stop container", e);
-        }
-        try {
-            if (domainClient != null) {
-                domainClient.close();
-            }
-        }  catch (Exception e) {
-            throw new RuntimeException("Could not stop DomainClient", e);
-        }
-    }
-
-    private boolean areServersStarted() {
-        try {
-            Map<ServerIdentity, ServerStatus> statuses = domainClient.getServerStatuses();
-            for (ServerStatus status : statuses.values()) {
-                switch (status) {
-                    case STOPPING:
-                    case STOPPED:
-                        return false;
-                    default:
-                        continue;
-                }
-            }
-            serverStatuses.putAll(statuses);
-            return true;
-        }
-        catch (Exception ignored) {
-            // ignore, as we will get exceptions until the management comm services start
-        }
-        return false;
-    }
-
-    private ModelNode executeForResult(ModelNode op) {
-        return executeForResult(OperationBuilder.Factory.create(op).build());
-    }
-
-    ModelNode executeForResult(Operation op) {
-        try {
-            ModelNode result = domainClient.execute(op);
-            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                return result.get("result");
-            }
-            else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            }
-            else if (result.hasDefined("domain-failure-description")) {
-                throw new RuntimeException(result.get("domain-failure-description").toString());
-            }
-            else if (result.hasDefined("host-failure-descriptions")) {
-                throw new RuntimeException(result.get("host-failure-descriptions").toString());
-            }
-            else {
-                throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static void main(String[] args) throws Exception {
-        DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(20000, InetAddress.getByName("127.0.0.1"), 9999) ;
+        DomainLifecycleUtil starterUtil = new DomainLifecycleUtil(new JBossAsManagedConfiguration()) ;
         starterUtil.start();
         System.out.println("--------- STARTED");
         starterUtil.stop();
@@ -429,6 +511,18 @@ public class DomainLifecycleUtil {
             } catch (IOException ex) {
                 throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
             }
+        }
+    }
+
+    private static final class AsyncThreadFactory implements ThreadFactory {
+
+        private int threadCount;
+        @Override
+        public Thread newThread(Runnable r) {
+
+            Thread t = new Thread(r, DomainLifecycleUtil.class.getSimpleName() + "-" + (++threadCount));
+            t.setDaemon(true);
+            return t;
         }
     }
 }

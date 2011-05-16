@@ -549,6 +549,24 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian2-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian2-container-managed</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian2-container-managed-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
@@ -4309,7 +4327,7 @@
                 <artifactId>picketbox</artifactId>
                 <version>${version.org.picketbox}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox-infinispan</artifactId>
