@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.as.server" export="true"/>
     </dependencies>
 </module>
