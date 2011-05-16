@@ -113,7 +113,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // add the binding to the view configuration
             this.addBindingConfiguration(viewDescription, globalBinding);
             // add to the log message
-            jndiBindingsLogMessage.append("\t\t");
+            jndiBindingsLogMessage.append("\t");
             jndiBindingsLogMessage.append(globalJNDIName);
             jndiBindingsLogMessage.append("\n");
 
@@ -124,7 +124,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, appBinding);
             // add to the log message
-            jndiBindingsLogMessage.append("\t\t");
+            jndiBindingsLogMessage.append("\t");
             jndiBindingsLogMessage.append(appJNDIName);
             jndiBindingsLogMessage.append("\n");
 
@@ -135,7 +135,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, moduleBinding);
             // add to the log message
-            jndiBindingsLogMessage.append("\t\t");
+            jndiBindingsLogMessage.append("\t");
             jndiBindingsLogMessage.append(moduleJNDIName);
             jndiBindingsLogMessage.append("\n");
 
@@ -160,7 +160,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, globalBinding);
             // add to the log message
-            jndiBindingsLogMessage.append("\t\t");
+            jndiBindingsLogMessage.append("\t");
             jndiBindingsLogMessage.append(globalJNDIBaseName);
             jndiBindingsLogMessage.append("\n");
 
@@ -171,7 +171,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, appBinding);
             // add to the log message
-            jndiBindingsLogMessage.append("\t\t");
+            jndiBindingsLogMessage.append("\t");
             jndiBindingsLogMessage.append(appJNDIBaseName);
             jndiBindingsLogMessage.append("\n");
 
@@ -181,7 +181,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // add the binding to the view description
             this.addBindingConfiguration(viewDescription, moduleBinding);
             // add to the log message
-            jndiBindingsLogMessage.append("\t\t");
+            jndiBindingsLogMessage.append("\t");
             jndiBindingsLogMessage.append(moduleJNDIBaseName);
             jndiBindingsLogMessage.append("\n");
         }
