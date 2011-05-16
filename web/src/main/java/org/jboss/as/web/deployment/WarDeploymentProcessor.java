@@ -192,7 +192,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
                     .install();
-            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext);
+            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer);
 
             if(moduleDescription != null ) {
                 webDeploymentService.getNamespaceSelector().setValue(new ImmediateValue<NamespaceContextSelector>(moduleDescription.getNamespaceContextSelector()));

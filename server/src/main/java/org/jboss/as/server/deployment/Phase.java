@@ -235,6 +235,7 @@ public enum Phase {
     public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x1D00;
     public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x1E00;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
+    public static final int PARSE_JSF_MANAGED_BEANS                     = 0x1F10;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;

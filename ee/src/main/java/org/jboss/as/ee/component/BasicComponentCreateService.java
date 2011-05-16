@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -49,7 +48,6 @@ public class BasicComponentCreateService implements Service<Component> {
     private final InterceptorFactory postConstruct;
     private final InterceptorFactory preDestroy;
     private final Map<Method, InterceptorFactory> componentInterceptors;
-    private final ManagedReferenceFactory componentInstantiator;
 
     // TODO resource injections
     private BasicComponent component;
@@ -68,7 +66,6 @@ public class BasicComponentCreateService implements Service<Component> {
             componentInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getComponentInterceptorDeque(method)));
         }
         componentClass = componentConfiguration.getComponentClass();
-        componentInstantiator = componentConfiguration.getInstanceFactory();
         this.componentInterceptors = componentInterceptors;
 
         // TODO resource injections
@@ -151,15 +148,6 @@ public class BasicComponentCreateService implements Service<Component> {
      */
     public Map<Method, InterceptorFactory> getComponentInterceptors() {
         return componentInterceptors;
-    }
-
-    /**
-     * Get the component instantiator.
-     *
-     * @return the component instantiator
-     */
-    public ManagedReferenceFactory getComponentInstantiator() {
-        return componentInstantiator;
     }
 
     /**

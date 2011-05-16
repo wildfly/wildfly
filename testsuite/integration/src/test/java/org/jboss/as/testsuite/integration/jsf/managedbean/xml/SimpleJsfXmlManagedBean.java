@@ -19,33 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.web.deployment.component;
+package org.jboss.as.testsuite.integration.jsf.managedbean.xml;
 
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.msc.service.ServiceName;
-
-import java.util.Set;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.inject.Inject;
+import javax.transaction.UserTransaction;
 
 /**
- * An instantiator for a specific component
- *
  * @author Stuart Douglas
  */
-public interface ComponentInstantiator extends ManagedReferenceFactory {
+public class SimpleJsfXmlManagedBean {
 
-    /**
-     * Gets the services that this component depends on
-     *
-     * @return The service names this component depends upon
-     */
-    Set<ServiceName> getServiceNames();
+    private static boolean postConstructCalled = false;
+    private static boolean userTransactionInjected = false;
+    private static boolean initializerCalled = false;
 
-    /**
-     * Initialize an existing instance that the container has created
-     *
-     * @param instance The instance to initialize
-     * @return A managed reference that can be used to destroy the instance
-     */
-    ManagedReference initializeInstance(Object instance);
+    @Resource
+    private UserTransaction userTransaction;
+
+    @Inject
+    public void initalizer() {
+        initializerCalled = true;
+    }
+
+
+    @PostConstruct
+    public void postConstruct() {
+        userTransactionInjected = userTransaction != null;
+        postConstructCalled = true;
+    }
+
+    public static boolean isPostConstructCalled() {
+        return postConstructCalled;
+    }
+
+    public static boolean isUserTransactionInjected() {
+        return userTransactionInjected;
+    }
+
+    public static boolean isInitializerCalled() {
+        return initializerCalled;
+    }
 }

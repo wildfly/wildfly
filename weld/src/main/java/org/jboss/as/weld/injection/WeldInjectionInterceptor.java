@@ -44,10 +44,12 @@ public class WeldInjectionInterceptor implements Interceptor {
 
     final AtomicReference<ManagedReference> targetReference;
     final Map<Class<?>, AtomicReference<ManagedReference>> interceptors;
+    final WeldManagedReferenceFactory managedReferenceFactory;
 
-    public WeldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final Map<Class<?>, AtomicReference<ManagedReference>> interceptors) {
+    public WeldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final Map<Class<?>, AtomicReference<ManagedReference>> interceptors, final WeldManagedReferenceFactory managedReferenceFactory) {
         this.targetReference = targetReference;
         this.interceptors = interceptors;
+        this.managedReferenceFactory = managedReferenceFactory;
     }
 
     @Override
@@ -56,7 +58,6 @@ public class WeldInjectionInterceptor implements Interceptor {
         if (managedReference instanceof WeldManagedReference) {
             final WeldManagedReference reference = (WeldManagedReference) managedReference;
             reference.getInjectionTarget().inject(targetReference.get().getInstance(), reference.getContext());
-
             //now inject the interceptors
             for (final Map.Entry<Class<?>, AtomicReference<ManagedReference>> entry : interceptors.entrySet()) {
                 final ManagedReference instance = entry.getValue().get();
@@ -64,7 +65,10 @@ public class WeldInjectionInterceptor implements Interceptor {
                     reference.injectInterceptor(entry.getKey(), instance.getInstance());
                 }
             }
-
+        } else if(managedReferenceFactory != null){
+            //this component was not created by the managed reference factory, this can happen in the case of JSF managed beans
+            final ManagedReference newReference = managedReferenceFactory.injectExistingReference(managedReference);
+            targetReference.set(newReference);
         }
         return context.proceed();
     }
@@ -90,8 +94,11 @@ public class WeldInjectionInterceptor implements Interceptor {
                 }
 
             }
-
-            return new WeldInjectionInterceptor(targetReference, interceptors);
+            WeldManagedReferenceFactory managedReferenceFactory = null;
+            if(configuration.getInstanceFactory() instanceof WeldManagedReferenceFactory) {
+                managedReferenceFactory = (WeldManagedReferenceFactory) configuration.getInstanceFactory();
+            }
+            return new WeldInjectionInterceptor(targetReference, interceptors, managedReferenceFactory);
         }
     }
 }

@@ -75,6 +75,35 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
         return new WeldManagedReference(ctx, instance, injectionTarget, interceptorInjections);
     }
 
+    public ManagedReference injectExistingReference(final ManagedReference existing) {
+        final BeanManagerImpl beanManager = this.beanManager.getValue();
+        final CreationalContext<?> ctx;
+        if (bean == null) {
+            ctx = beanManager.createCreationalContext(null);
+        } else {
+            ctx = beanManager.createCreationalContext(bean);
+        }
+        final Object instance = existing.getInstance();
+
+        injectionTarget.inject(instance, ctx);
+
+        return new ManagedReference() {
+            @Override
+            public void release() {
+                try {
+                    existing.release();
+                } finally {
+                    ctx.release();
+                }
+            }
+
+            @Override
+            public Object getInstance() {
+                return instance;
+            }
+        };
+    }
+
     @Override
     public void start(final StartContext context) throws StartException {
         final ClassLoader cl = SecurityActions.getContextClassLoader();

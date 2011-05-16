@@ -78,5 +78,10 @@ public class ManagedBeanComponentInstantiator implements ComponentInstantiator {
         return serviceNames;
     }
 
+    @Override
+    public ManagedReference initializeInstance(final Object instance) {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+
 
 }

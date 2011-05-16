@@ -51,13 +51,7 @@ public class WebComponentInstantiator implements ComponentInstantiator {
 
     @Override
     public ManagedReference getReference() {
-        if (component == null) {
-            synchronized (this) {
-                if (component == null) {
-                    component = ((ServiceController<BasicComponent>) serviceRegistry.getRequiredService(serviceName)).getValue();
-                }
-            }
-        }
+        setupComponent();
         return new ManagedReference() {
 
             private final ComponentInstance instance = component.createInstance();
@@ -78,10 +72,43 @@ public class WebComponentInstantiator implements ComponentInstantiator {
         };
     }
 
+    private void setupComponent() {
+        if (component == null) {
+            synchronized (this) {
+                if (component == null) {
+                    component = ((ServiceController<BasicComponent>) serviceRegistry.getRequiredService(serviceName)).getValue();
+                }
+            }
+        }
+    }
+
 
     @Override
     public Set<ServiceName> getServiceNames() {
         return Collections.singleton(serviceName);
+    }
+
+    @Override
+    public ManagedReference initializeInstance(final Object instance) {
+        setupComponent();
+        return new ManagedReference() {
+
+            private final ComponentInstance componentInstance = component.createInstance(instance);
+            private boolean destroyed;
+
+            @Override
+            public synchronized void release() {
+                if (!destroyed) {
+                    componentInstance.destroy();
+                    destroyed = true;
+                }
+            }
+
+            @Override
+            public Object getInstance() {
+                return componentInstance.getInstance();
+            }
+        };
     }
 
 

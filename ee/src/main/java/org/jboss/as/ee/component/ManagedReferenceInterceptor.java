@@ -43,18 +43,23 @@ class ManagedReferenceInterceptor implements Interceptor {
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        final ManagedReference reference = componentInstantiator.getReference();
-        boolean ok = false;
-        try {
-            referenceReference.set(reference);
-            Object result = context.proceed();
-            ok = true;
-            return result;
-        } finally {
-            if (!ok) {
-                reference.release();
-                referenceReference.set(null);
+        final ManagedReference existing = referenceReference.get();
+        if (existing == null) {
+            final ManagedReference reference = componentInstantiator.getReference();
+            boolean ok = false;
+            try {
+                referenceReference.set(reference);
+                Object result = context.proceed();
+                ok = true;
+                return result;
+            } finally {
+                if (!ok) {
+                    reference.release();
+                    referenceReference.set(null);
+                }
             }
+        } else {
+            return context.proceed();
         }
     }
 }

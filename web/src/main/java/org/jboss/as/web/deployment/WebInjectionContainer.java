@@ -81,8 +81,10 @@ public class WebInjectionContainer implements InstanceManager {
     }
 
     public void newInstance(Object arg0) throws IllegalAccessException, InvocationTargetException, NamingException {
-        // Not used for AS 7
-        throw new IllegalStateException();
+        final ComponentInstantiator instantiator = webComponentInstantiatorMap.get(arg0.getClass().getName());
+        if(instantiator != null) {
+            instantiator.initializeInstance(arg0);
+        }
     }
 
     public Object newInstance(String className, ClassLoader cl) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {

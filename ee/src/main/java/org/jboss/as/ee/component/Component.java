@@ -62,4 +62,5 @@ public interface Component {
      * @return the component instance
      */
     ComponentInstance createInstance();
+
 }

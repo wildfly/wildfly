@@ -24,7 +24,7 @@ package org.jboss.as.ee.component;
 
 
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -32,6 +32,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.InterceptorInstanceFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 
 import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
@@ -66,7 +67,6 @@ public class BasicComponent implements Component {
     private final Class<?> componentClass;
     private final InterceptorFactory postConstruct;
     private final InterceptorFactory preDestroy;
-    private final ManagedReferenceFactory componentInstantiator;
     private final Map<Method, InterceptorFactory> interceptorFactoryMap;
 
     private volatile boolean gate;
@@ -85,13 +85,31 @@ public class BasicComponent implements Component {
         postConstruct = createService.getPostConstruct();
         preDestroy = createService.getPreDestroy();
         interceptorFactoryMap = createService.getComponentInterceptors();
-        componentInstantiator = createService.getComponentInstantiator();
     }
 
     /**
      * {@inheritDoc}
      */
     public ComponentInstance createInstance() {
+        waitForComponentStart();
+        BasicComponentInstance instance = constructComponentInstance(null);
+        instanceCount.getAndIncrement();
+        return instance;
+    }
+
+    /**
+     * Wraps an existing object instance in a ComponentInstance, and run the post construct interceptor chain on it.
+     * @param instance The instance to wrap
+     * @return The new ComponentInstance
+     */
+    public ComponentInstance createInstance(Object instance) {
+        waitForComponentStart();
+        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)));
+        instanceCount.getAndIncrement();
+        return obj;
+    }
+
+    protected void waitForComponentStart() {
         if (!gate) {
             // Block until successful start
             synchronized (this) {
@@ -109,18 +127,16 @@ public class BasicComponent implements Component {
                 }
             }
         }
-        BasicComponentInstance instance = constructComponentInstance();
-        instanceCount.getAndIncrement();
-        return instance;
     }
 
     /**
      * Construct the component instance.  Upon return, the object instance should have injections and lifecycle
      * invocations completed already.
      *
+     * @param instance An instance to be wrapped, or null if a new instance should be created
      * @return the component instance
      */
-    protected final BasicComponentInstance constructComponentInstance() {
+    protected final BasicComponentInstance constructComponentInstance(ManagedReference instance) {
         // Interceptor factory context
         final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
         context.getContextData().put(Component.class, this);
@@ -131,6 +147,8 @@ public class BasicComponent implements Component {
         final Interceptor componentInstancePreDestroyInterceptor = this.getPreDestroy().create(context);
 
         final AtomicReference<ManagedReference> instanceReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
+
+        instanceReference.set(instance);
 
         final Map<Method, InterceptorFactory> interceptorFactoryMap = this.getInterceptorFactoryMap();
         // This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
@@ -159,7 +177,7 @@ public class BasicComponent implements Component {
     /**
      * Responsible for instantiating the {@link BasicComponentInstance}. This method is *not* responsible for
      * handling the post construct activities like injection and lifecycle invocation. That is handled by
-     * {@link #constructComponentInstance()}.
+     * {@link #constructComponentInstance(ManagedReference)}.
      * <p/>
      *
      * @return
@@ -226,10 +244,6 @@ public class BasicComponent implements Component {
 
     InterceptorFactory getPreDestroy() {
         return preDestroy;
-    }
-
-    ManagedReferenceFactory getComponentInstantiator() {
-        return componentInstantiator;
     }
 
     void finishDestroy() {

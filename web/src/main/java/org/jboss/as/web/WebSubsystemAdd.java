@@ -22,7 +22,6 @@
 
 package org.jboss.as.web;
 
-import org.apache.catalina.Host;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -50,6 +49,7 @@ import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.component.WebComponentProcessor;
 import org.jboss.as.web.deployment.jsf.JsfAnnotationProcessor;
+import org.jboss.as.web.deployment.jsf.JsfManagedBeanProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -116,6 +116,7 @@ class WebSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler,
                     ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JBOSS_WEB_DEPLOYMENT, new JBossWebParsingDeploymentProcessor());
                     ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TLD_DEPLOYMENT, new TldParsingDeploymentProcessor());
                     ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_WAR, new WarAnnotationDeploymentProcessor());
+                    ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
                     ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
                     ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
                     ctx.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());

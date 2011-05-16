@@ -27,6 +27,7 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.web.NamingListener;
+import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -45,29 +46,37 @@ class WebDeploymentService implements Service<Context> {
     private final StandardContext context;
     private final InjectedValue<NamespaceContextSelector> namespaceSelector = new InjectedValue<NamespaceContextSelector>();
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
+    private final WebInjectionContainer injectionContainer;
 
-    public WebDeploymentService(final StandardContext context) {
+    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer) {
         this.context = context;
+        this.injectionContainer = injectionContainer;
     }
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext startContext) throws StartException {
         context.setRealm(realm.getValue());
-        NamingListener.beginComponentStart(namespaceSelector.getOptionalValue());
+
+        JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
         try {
+            NamingListener.beginComponentStart(namespaceSelector.getOptionalValue());
             try {
-                context.create();
-            } catch (Exception e) {
-                throw new StartException("failed to create context", e);
+                try {
+                    context.create();
+                } catch (Exception e) {
+                    throw new StartException("failed to create context", e);
+                }
+                try {
+                    context.start();
+                } catch (LifecycleException e) {
+                    throw new StartException("failed to start context", e);
+                }
+                log.info("registering web context: " + context.getName());
+            } finally {
+                NamingListener.endComponentStart();
             }
-            try {
-                context.start();
-            } catch (LifecycleException e) {
-                throw new StartException("failed to start context", e);
-            }
-            log.info("registering web context: " + context.getName());
         } finally {
-            NamingListener.endComponentStart();
+            JsfInjectionProvider.getInjectionContainer().set(null);
         }
     }
 
