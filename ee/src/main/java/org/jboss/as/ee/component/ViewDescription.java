@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
@@ -58,7 +59,7 @@ public class ViewDescription {
      * Construct a new instance.
      *
      * @param componentDescription the associated component description
-     * @param viewClassName the view class name
+     * @param viewClassName        the view class name
      */
     public ViewDescription(final ComponentDescription componentDescription, final String viewClassName) {
         this.componentDescription = componentDescription;
@@ -101,7 +102,7 @@ public class ViewDescription {
      */
     public ServiceName getServiceName() {
         //TODO: need to set viewNameParts somewhere
-        if(!viewNameParts.isEmpty()) {
+        if (!viewNameParts.isEmpty()) {
             return componentDescription.getServiceName().append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
         } else {
             return componentDescription.getServiceName().append("VIEW").append(viewClassName);
@@ -141,7 +142,7 @@ public class ViewDescription {
             ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(componentConfiguration.getComponentClass());
             Method[] methods = configuration.getProxyFactory().getCachedMethods();
             for (Method method : methods) {
-                final Method componentMethod = index.getMethod(method);
+                final Method componentMethod = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, index, method);
                 configuration.getViewInterceptorDeque(method).addLast(new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)));
                 configuration.getClientInterceptorDeque(method).addLast(CLIENT_DISPATCHER_INTERCEPTOR_FACTORY);
             }
@@ -157,7 +158,7 @@ public class ViewDescription {
             List<String> viewNameParts = description.getViewNameParts();
             ///TODO: viewNameParts should be always populated
             final ServiceName serviceName;
-            if(!viewNameParts.isEmpty()) {
+            if (!viewNameParts.isEmpty()) {
                 serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
             } else {
                 serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(description.getViewClassName());

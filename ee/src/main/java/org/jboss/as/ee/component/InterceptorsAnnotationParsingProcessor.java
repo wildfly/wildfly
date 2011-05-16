@@ -39,7 +39,11 @@ import org.jboss.jandex.Type;
 import javax.interceptor.ExcludeClassInterceptors;
 import javax.interceptor.ExcludeDefaultInterceptors;
 import javax.interceptor.Interceptors;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Deployment processor responsible for analyzing the annotation index to find all @Interceptors, @ExcludeDefaultInterceptors and
@@ -58,91 +62,85 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
 
         final List<AnnotationInstance> interceptors = index.getAnnotations(INTERCEPTORS_ANNOTATION_NAME);
         for (AnnotationInstance annotation : interceptors) {
-            processInterceptors(eeModuleDescription, annotation);
+            processInterceptors(eeModuleDescription, annotation, index);
         }
 
         final List<AnnotationInstance> excludeDefaults = index.getAnnotations(EXCLUDE_DEFAULT_ANNOTATION_NAME);
         for (AnnotationInstance annotation : excludeDefaults) {
-            processExcludeDefault(eeModuleDescription, annotation);
+            processExcludeDefault(eeModuleDescription, annotation, index);
         }
 
         final List<AnnotationInstance> excludeClasses = index.getAnnotations(EXCLUDE_CLASS_ANNOTATION_NAME);
         for (AnnotationInstance annotation : excludeClasses) {
-            processExcludeClass(eeModuleDescription, annotation);
+            processExcludeClass(eeModuleDescription, annotation, index);
         }
     }
 
-    private void processInterceptors(final EEModuleDescription eeModuleDescription, final AnnotationInstance annotation) throws DeploymentUnitProcessingException {
+    private void processInterceptors(final EEModuleDescription eeModuleDescription, final AnnotationInstance annotation, final CompositeIndex index) throws DeploymentUnitProcessingException {
         final AnnotationTarget target = annotation.target();
         if (target instanceof MethodInfo) {
-            processMethodInterceptor(eeModuleDescription, MethodInfo.class.cast(target), annotation);
+            processMethodInterceptor(eeModuleDescription, MethodInfo.class.cast(target), annotation, index);
         } else if (target instanceof ClassInfo) {
-            processClassInterceptor(eeModuleDescription, ClassInfo.class.cast(target), annotation);
+            processClassInterceptor(eeModuleDescription, ClassInfo.class.cast(target), annotation, index);
         } else {
             throw new DeploymentUnitProcessingException("@Interceptors annotation is only allowed on methods and classes");
         }
     }
 
-    private void processMethodInterceptor(final EEModuleDescription eeModuleDescription, final MethodInfo methodInfo, final AnnotationInstance annotation) {
-        final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(methodInfo.declaringClass().name().toString());
-        if (componentDescription == null) {
-            return; // We ignore non-components
-        }
-
+    private void processMethodInterceptor(final EEModuleDescription eeModuleDescription, final MethodInfo methodInfo, final AnnotationInstance annotation, final CompositeIndex index) {
+        final Collection<ComponentDescription> components = this.getApplicableComponents(index, methodInfo.declaringClass(), eeModuleDescription);
         final AnnotationValue value = annotation.value();
         if (value != null) for (Type interceptorClass : value.asClassArray()) {
-            componentDescription.addMethodInterceptor(methodIdentifierFromMethodInfo(methodInfo), new InterceptorDescription(interceptorClass.name().toString()));
+            for (ComponentDescription component : components) {
+                component.addMethodInterceptor(methodIdentifierFromMethodInfo(methodInfo), new InterceptorDescription(interceptorClass.name().toString()));
+            }
         }
     }
 
-    private void processClassInterceptor(final EEModuleDescription eeModuleDescription, final ClassInfo classInfo, final AnnotationInstance annotation) {
-        final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(classInfo.name().toString());
-        if (componentDescription == null) {
-            return; // We ignore non-components
-        }
+    private void processClassInterceptor(final EEModuleDescription eeModuleDescription, final ClassInfo classInfo, final AnnotationInstance annotation, final CompositeIndex index) {
+        final Collection<ComponentDescription> components = this.getApplicableComponents(index, classInfo, eeModuleDescription);
 
         final AnnotationValue value = annotation.value();
         if (value != null) for (Type interceptorClass : value.asClassArray()) {
-            componentDescription.addClassInterceptor(new InterceptorDescription(interceptorClass.name().toString()));
+            for (ComponentDescription component : components) {
+                component.addClassInterceptor(new InterceptorDescription(interceptorClass.name().toString()));
+            }
         }
     }
 
-    private void processExcludeDefault(final EEModuleDescription eeModuleDescription, final AnnotationInstance annotation) throws DeploymentUnitProcessingException {
+    private void processExcludeDefault(final EEModuleDescription eeModuleDescription, final AnnotationInstance annotation, final CompositeIndex index) throws DeploymentUnitProcessingException {
         final AnnotationTarget target = annotation.target();
         if (target instanceof MethodInfo) {
-            processMethodExcludeDefault(eeModuleDescription, MethodInfo.class.cast(target));
+            processMethodExcludeDefault(eeModuleDescription, MethodInfo.class.cast(target), index);
         } else if (target instanceof ClassInfo) {
-            processClassExcludeDefault(eeModuleDescription, ClassInfo.class.cast(target));
+            processClassExcludeDefault(eeModuleDescription, ClassInfo.class.cast(target), index);
         } else {
             throw new DeploymentUnitProcessingException("@ExcludeDefaultInterceptors annotation is only allowed on methods and classes");
         }
     }
 
-    private void processClassExcludeDefault(EEModuleDescription eeModuleDescription, final ClassInfo classInfo) {
-        final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(classInfo.name().toString());
-        if (componentDescription == null) {
-            return; // We ignore non-components
+    private void processClassExcludeDefault(EEModuleDescription eeModuleDescription, final ClassInfo classInfo, final CompositeIndex index) {
+        final Collection<ComponentDescription> components = this.getApplicableComponents(index, classInfo, eeModuleDescription);
+        for (ComponentDescription component : components) {
+            component.setExcludeDefaultInterceptors(true);
         }
-        componentDescription.setExcludeDefaultInterceptors(true);
     }
 
-    private void processMethodExcludeDefault(EEModuleDescription eeModuleDescription, MethodInfo methodInfo) {
-        final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(methodInfo.declaringClass().name().toString());
-        if (componentDescription == null) {
-            return; // We ignore non-components
+    private void processMethodExcludeDefault(EEModuleDescription eeModuleDescription, MethodInfo methodInfo, final CompositeIndex index) {
+        final Collection<ComponentDescription> components = this.getApplicableComponents(index, methodInfo.declaringClass(), eeModuleDescription);
+        for (ComponentDescription component : components) {
+            component.excludeDefaultInterceptors(methodIdentifierFromMethodInfo(methodInfo));
         }
-        componentDescription.excludeDefaultInterceptors(methodIdentifierFromMethodInfo(methodInfo));
     }
 
-    private void processExcludeClass(final EEModuleDescription eeModuleDescription, final AnnotationInstance annotation) throws DeploymentUnitProcessingException {
+    private void processExcludeClass(final EEModuleDescription eeModuleDescription, final AnnotationInstance annotation, final CompositeIndex index) throws DeploymentUnitProcessingException {
         final AnnotationTarget target = annotation.target();
         if (target instanceof MethodInfo) {
             final MethodInfo methodInfo = MethodInfo.class.cast(target);
-            final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(methodInfo.declaringClass().name().toString());
-            if (componentDescription == null) {
-                return; // We ignore non-components
+            final Collection<ComponentDescription> components = this.getApplicableComponents(index, methodInfo.declaringClass(), eeModuleDescription);
+            for (ComponentDescription component : components) {
+                component.excludeClassInterceptors(methodIdentifierFromMethodInfo(methodInfo));
             }
-            componentDescription.excludeClassInterceptors(methodIdentifierFromMethodInfo(methodInfo));
         } else {
             throw new DeploymentUnitProcessingException("@ExcludeDefaultInterceptors annotation is only allowed on methods");
         }
@@ -159,4 +157,55 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
         }
         return MethodIdentifier.getIdentifier(methodInfo.returnType().name().toString(), methodInfo.name(), argTypes);
     }
+
+    /**
+     * Returns the applicable components for the passed {@link ClassInfo klass}. If the passed <code>klass</code> represents
+     * a component in the passed <code>eeModuleDescription</code>, then a collection containing only that {@link ComponentDescription component}
+     * is returned. Else the passed <code>index</code> is used to find any known subclasses of the <code>klass</code> and then return a collection
+     * of {@link ComponentDescription components} (if any), corresponding to those subclasses.
+     * If there are no {@link ComponentDescription components} found for the passed <code>klass</code>, then this method returns an empty
+     * collection.
+     *
+     * @param index               The {@link CompositeIndex}
+     * @param klass               The {@link ClassInfo} for which {@link ComponentDescription components} are being queried
+     * @param eeModuleDescription The {@link EEModuleDescription} to which the <code>klass</code> belongs
+     * @return
+     */
+    private Collection<ComponentDescription> getApplicableComponents(final CompositeIndex index, final ClassInfo klass, final EEModuleDescription eeModuleDescription) {
+        Set<ComponentDescription> componentDescriptions = new HashSet<ComponentDescription>();
+        final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(klass.name().toString());
+        if (componentDescription != null) {
+            componentDescriptions.add(componentDescription);
+        } else {
+            componentDescriptions.addAll(this.getKnownSubClassComponents(index, klass, eeModuleDescription));
+        }
+        return componentDescriptions;
+    }
+
+    /**
+     * Returns a collection of {@link ComponentDescription components} corresponding to each of the known subclasses of the
+     * passed <code>superClass</code>. If a particular subclass isn't a component, then it is not added to the collection. A
+     * subclass is considered as a component, if it is mapped as such in the passed <code>eeModuledescription</code>
+     *
+     * @param index               The {@link CompositeIndex}
+     * @param superClass          The {@link ClassInfo} whose subclasses will be checked for {@link ComponentDescription components}
+     * @param eeModuleDescription The {@link EEModuleDescription} to which the <code>superClass</code> belongs
+     * @return
+     */
+    private Collection<ComponentDescription> getKnownSubClassComponents(final CompositeIndex index, final ClassInfo superClass, final EEModuleDescription eeModuleDescription) {
+        Set<ClassInfo> subClasses = index.getAllKnownSubclasses(superClass.name());
+        if (subClasses == null || subClasses.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<ComponentDescription> components = new HashSet<ComponentDescription>();
+        for (ClassInfo subClass : subClasses) {
+            final ComponentDescription component = eeModuleDescription.getComponentByClassName(subClass.name().toString());
+            if (component == null) {
+                continue;
+            }
+            components.add(component);
+        }
+        return components;
+    }
+
 }
