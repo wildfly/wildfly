@@ -26,6 +26,7 @@ import java.security.Principal;
 import java.security.acl.Group;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -280,23 +281,32 @@ public class JBossWebRealm extends RealmBase {
 
     /**
      * Get the Principal given the authenticated Subject. Currently the first principal that is not of type {@code Group} is
-     * considered
+     * considered or the single principal inside the CallerPrincipal group.
      *
      * @param subject
      * @return the authenticated principal
      */
     private Principal getPrincipal(Subject subject) {
         Principal principal = null;
+        Principal callerPrincipal = null;
         if (subject != null) {
             Set<Principal> principals = subject.getPrincipals();
             if (principals != null && !principals.isEmpty()) {
                 for (Principal p : principals) {
-                    principal = p;
-                    if (!(principal instanceof Group))
-                        break;
+                    if (!(p instanceof Group) && principal == null) {
+                        principal = p;
+                    }
+                    if (p instanceof Group) {
+                        Group g = Group.class.cast(p);
+                        if (g.getName().equals("CallerPrincipal") && callerPrincipal == null) {
+                            Enumeration<? extends Principal> e = g.members();
+                            if (e.hasMoreElements())
+                                callerPrincipal = e.nextElement();
+                        }
+                    }
                 }
             }
         }
-        return principal;
+        return callerPrincipal == null ? principal : callerPrincipal;
     }
 }
