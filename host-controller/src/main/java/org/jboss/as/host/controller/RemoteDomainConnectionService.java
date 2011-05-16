@@ -113,7 +113,30 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     @Override
     public void register(final String hostName, final InetAddress ourAddress, final int ourPort, final DomainControllerSlave slave) {
-        connect(hostName, ourAddress, ourPort, slave);
+        // TODO egregious hack. Fix properly as part of AS7-794
+        IllegalStateException ise = null;
+        boolean connected = false;
+        long timeout = System.currentTimeMillis() + 5000;
+        while (!connected && System.currentTimeMillis() < timeout) {
+            try {
+               connect(hostName, ourAddress, ourPort, slave);
+               connected = true;
+            }
+            catch (IllegalStateException e) {
+                ise = e;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException inter) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while trying to connect to master", inter);
+                }
+            }
+        }
+
+        if (!connected) {
+            throw (ise != null) ? ise : new IllegalStateException("Could not connect to master within 5000 ms");
+        }
+
         reconnectInfo = new ReconnectInfo(hostName, ourAddress, ourPort, slave);
     }
 
