@@ -38,7 +38,7 @@
 
 
     <xs:complexType name="jpa-config">
-       <xs:attribute name="default-datasource" use="required" />
+        <xs:attribute name="default-datasource" use="optional"/>
     </xs:complexType>
 
 
