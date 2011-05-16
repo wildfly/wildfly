@@ -27,7 +27,6 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,7 +36,7 @@ import java.util.Map;
 
 /**
  * A short-lived index of all the declared fields and methods of a class.
- *
+ * <p/>
  * The ClassReflectionIndex is only available during the deployment.
  *
  * @param <T> the type being indexed
@@ -51,7 +50,7 @@ public final class ClassReflectionIndex<T> {
     private final Map<String, Map<ParamList, Map<Class<?>, Method>>> methods;
     private final Map<String, Map<ParamNameList, Map<String, Method>>> methodsByTypeName;
 
-    @SuppressWarnings( { "unchecked" })
+    @SuppressWarnings({"unchecked"})
     ClassReflectionIndex(final Class<T> indexedClass, final DeploymentReflectionIndex deploymentReflectionIndex) {
         this.indexedClass = indexedClass;
         // -- fields --
@@ -70,17 +69,6 @@ public final class ClassReflectionIndex<T> {
             method.setAccessible(true);
             addMethod(methods, method);
             addMethodByTypeName(methodsByTypeName, method);
-        }
-        // add all inherited public methods as well
-        Class<? super T> superClass = indexedClass.getSuperclass();
-        if (superClass != null) {
-            for (Method method : deploymentReflectionIndex.getClassIndex(superClass).getMethods()) {
-                int modifiers = method.getModifiers();
-                if (Modifier.isPublic(modifiers) && ! Modifier.isStatic(modifiers)) {
-                    addMethod(methods, method);
-                    addMethodByTypeName(methodsByTypeName, method);
-                }
-            }
         }
 
         this.methods = methods;
@@ -115,7 +103,7 @@ public final class ClassReflectionIndex<T> {
             nameMap.put(list, paramsMap = new HashMap<Class<?>, Method>());
         }
         //don't allow superclass / interface methods to overwrite existing methods
-        if(!paramsMap.containsKey(method.getReturnType())) {
+        if (!paramsMap.containsKey(method.getReturnType())) {
             paramsMap.put(method.getReturnType(), method);
         }
     }
@@ -134,7 +122,7 @@ public final class ClassReflectionIndex<T> {
         }
 
         //don't allow superclass / interface methods to overwrite existing methods
-        if(!paramsMap.containsKey(method.getReturnType().getName())) {
+        if (!paramsMap.containsKey(method.getReturnType().getName())) {
             paramsMap.put(method.getReturnType().getName(), method);
         }
     }
@@ -190,7 +178,7 @@ public final class ClassReflectionIndex<T> {
      * Get a method declared on this object.
      *
      * @param returnType the method return type
-     * @param name the name of the method
+     * @param name       the name of the method
      * @param paramTypes the parameter types of the method
      * @return the method, or {@code null} if no method of that description exists
      */
@@ -219,8 +207,8 @@ public final class ClassReflectionIndex<T> {
     /**
      * Get a method declared on this object.
      *
-     * @param returnType the method return type name
-     * @param name the name of the method
+     * @param returnType     the method return type name
+     * @param name           the name of the method
      * @param paramTypeNames the parameter type names of the method
      * @return the method, or {@code null} if no method of that description exists
      */
@@ -257,7 +245,7 @@ public final class ClassReflectionIndex<T> {
     /**
      * Get a collection of methods declared on this object.
      *
-     * @param name the name of the method
+     * @param name       the name of the method
      * @param paramTypes the parameter types of the method
      * @return the (possibly empty) collection of methods matching the description
      */
@@ -276,7 +264,7 @@ public final class ClassReflectionIndex<T> {
     /**
      * Get a collection of methods declared on this object.
      *
-     * @param name the name of the method
+     * @param name           the name of the method
      * @param paramTypeNames the parameter type names of the method
      * @return the (possibly empty) collection of methods matching the description
      */
@@ -313,7 +301,7 @@ public final class ClassReflectionIndex<T> {
     /**
      * Get a collection of methods declared on this object by method name and parameter count.
      *
-     * @param name the name of the method
+     * @param name       the name of the method
      * @param paramCount the number of parameters
      * @return the (possibly empty) collection of methods with the given name and parameter count
      */
@@ -392,7 +380,7 @@ public final class ClassReflectionIndex<T> {
         }
 
         public boolean equals(Object other) {
-            return other instanceof ParamList && equals((ParamList)other);
+            return other instanceof ParamList && equals((ParamList) other);
         }
 
         public boolean equals(ParamList other) {
@@ -418,7 +406,7 @@ public final class ClassReflectionIndex<T> {
         }
 
         public boolean equals(Object other) {
-            return other instanceof ParamNameList && equals((ParamNameList)other);
+            return other instanceof ParamNameList && equals((ParamNameList) other);
         }
 
         public boolean equals(ParamNameList other) {
