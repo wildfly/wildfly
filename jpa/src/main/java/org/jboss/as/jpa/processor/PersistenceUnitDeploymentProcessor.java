@@ -42,7 +42,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.TransactionSynchronizationRegistryService;
+import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.inject.CastingInjector;
@@ -129,6 +131,21 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     }
                 }
             }
+
+            // Add EM valve
+            final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+            if (warMetaData != null && warMetaData.getMergedJBossWebMetaData() != null) {
+                List<ValveMetaData> valves = warMetaData.getMergedJBossWebMetaData().getValves();
+                if (valves == null) {
+                    valves = new ArrayList<ValveMetaData>();
+                    warMetaData.getMergedJBossWebMetaData().setValves(valves);
+                }
+                ValveMetaData valve = new ValveMetaData();
+                valve.setModule("org.jboss.as.jpa");
+                valve.setValveClass("org.jboss.as.jpa.interceptor.WebNonTxEmCloserValve");
+                valves.add(valve);
+            }
+
             log.trace("install persistence unit definitions for war " + deploymentRoot.getRootName());
             addPuService(phaseContext, deploymentRoot, puList);
         }

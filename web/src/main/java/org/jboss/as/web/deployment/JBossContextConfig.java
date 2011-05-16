@@ -59,6 +59,7 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.annotation.javaee.Icon;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.logging.Logger;
@@ -108,6 +109,10 @@ import org.jboss.metadata.web.spec.VariableMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -173,7 +178,7 @@ public class JBossContextConfig extends ContextConfig {
         List<ValveMetaData> valves = metaData.getValves();
         if (valves != null) {
             for (ValveMetaData valve : valves) {
-                Valve valveInstance = (Valve) getInstance(valve.getValveClass(), valve.getParams());
+                Valve valveInstance = (Valve) getInstance(valve.getModule(), valve.getValveClass(), valve.getParams());
                 if (ok) {
                     context.getPipeline().addValve(valveInstance);
                 }
@@ -189,11 +194,11 @@ public class JBossContextConfig extends ContextConfig {
             for (ContainerListenerMetaData listener : listeners) {
                 switch (listener.getListenerType()) {
                     case CONTAINER:
-                        ContainerListener containerListener = (ContainerListener) getInstance(listener.getListenerClass(), listener.getParams());
+                        ContainerListener containerListener = (ContainerListener) getInstance(listener.getModule(), listener.getListenerClass(), listener.getParams());
                         context.addContainerListener(containerListener);
                         break;
                     case LIFECYCLE:
-                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(listener.getListenerClass(), listener.getParams());
+                        LifecycleListener lifecycleListener = (LifecycleListener) getInstance(listener.getModule(), listener.getListenerClass(), listener.getParams());
                         if (context instanceof Lifecycle) {
                             ((Lifecycle) context).addLifecycleListener(lifecycleListener);
                         }
@@ -212,9 +217,16 @@ public class JBossContextConfig extends ContextConfig {
         }
     }
 
-    protected Object getInstance(String className, List<ParamValueMetaData> params) {
+    protected Object getInstance(String moduleName, String className, List<ParamValueMetaData> params) {
         try {
-            Object instance = JBossContextConfig.class.getClassLoader().loadClass(className).newInstance();
+            final Module module = deploymentUnitContext.getAttachment(Attachments.MODULE);
+            ModuleClassLoader moduleClassLoader = null;
+            if (moduleName == null) {
+                moduleClassLoader = module.getClassLoader();
+            } else {
+                moduleClassLoader = module.getModule(ModuleIdentifier.create(moduleName)).getClassLoader();
+            }
+            Object instance = moduleClassLoader.loadClass(className).newInstance();
             if (params != null) {
                 for (ParamValueMetaData param : params) {
                     IntrospectionUtils.setProperty(instance, param.getParamName(), param.getParamValue());
