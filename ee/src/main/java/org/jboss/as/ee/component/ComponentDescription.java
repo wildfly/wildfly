@@ -241,6 +241,8 @@ public class ComponentDescription {
      */
     public boolean addClassInterceptor(InterceptorDescription description) {
         String name = description.getInterceptorClassName();
+        // add the interceptor class to the EEModuleDescription
+        this.moduleDescription.getOrAddClassByName(name);
         if (classInterceptorsSet.contains(name)) {
             return false;
         }
@@ -298,6 +300,8 @@ public class ComponentDescription {
             methodInterceptorsSet.put(method, interceptorClasses = new HashSet<String>());
         }
         final String name = description.getInterceptorClassName();
+        // add the interceptor class to the EEModuleDescription
+        this.moduleDescription.getOrAddClassByName(name);
         if (interceptorClasses.contains(name)) {
             return false;
         }
