@@ -97,6 +97,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -1129,9 +1130,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             case INET_ADDRESS: {
                 requireSingleAttribute(reader, Attribute.VALUE.getLocalName());
                 final String value = reader.getAttributeValue(0);
+                ModelNode valueNode = parsePossibleExpression(value);
                 requireNoContent(reader);
                 // todo: validate IP address
-                criteria.set(localName, value);
+                criteria.set(localName, valueNode);
                 break;
             }
             case LOOPBACK_ADDRESS: {
@@ -1217,7 +1219,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final ModelNode criteriaNode = interfaceAdd.get(CRITERIA);
             parseInterfaceCriteria(reader, criteriaNode);
 
-            if (criteriaNode.getType() != ModelType.STRING && criteriaNode.asInt() == 0 && checkSpecified) {
+            if (checkSpecified && criteriaNode.getType() != ModelType.STRING && criteriaNode.getType() != ModelType.EXPRESSION && criteriaNode.asInt() == 0) {
                 throw unexpectedEndElement(reader);
             }
             list.add(interfaceAdd);
@@ -1468,7 +1470,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 List<ModelNode> values = criteria.asList();
                 writeInterfaceCriteria(writer, values);
 
-            } else {
+            } else if (criteria.getType() != ModelType.UNDEFINED) {
                 throw new RuntimeException("Unkown type for criteria node " + criteria);
             }
             writer.writeEndElement();

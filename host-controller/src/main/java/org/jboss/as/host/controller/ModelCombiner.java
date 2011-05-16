@@ -193,7 +193,10 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 
-        for (Map.Entry<String, String> entry : getAllSystemProperties(true).entrySet()) {
+        Map<String, String> bootTimeProperties = getAllSystemProperties(true);
+        // Add in properties passed in to the ProcessController command line
+        bootTimeProperties.putAll(environment.getHostSystemProperties());
+        for (Map.Entry<String, String> entry : bootTimeProperties.entrySet()) {
             final StringBuilder sb = new StringBuilder("-D");
             sb.append(entry.getKey());
             sb.append('=');
@@ -201,9 +204,13 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             command.add(sb.toString());
         }
 
-        command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/log/boot.log");
+        command.add("-Dorg.jboss.boot.log.file=" + environment.getDomainBaseDir().getAbsolutePath() + "/servers/" + serverName + "/log/boot.log");
         // TODO: make this better
-        command.add("-Dlogging.configuration=file:" + new File("").getAbsolutePath() + "/domain/configuration/logging.properties");
+        String loggingConfiguration = System.getProperty("logging.configuration");
+        if (loggingConfiguration == null) {
+            loggingConfiguration = "file:" + environment.getDomainConfigurationDir().getAbsolutePath() + "/logging.properties";
+        }
+        command.add("-Dlogging.configuration=" + loggingConfiguration);
         command.add("-jar");
         command.add("jboss-modules.jar");
         command.add("-mp");

@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -62,9 +63,10 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-        final Properties properties = System.getProperties();
+        final Properties properties = new Properties(System.getProperties());
         properties.setProperty("jboss.server.name", serverName);
-        properties.setProperty("jboss.server.deploy.dir", properties.getProperty("jboss.home.dir") + "/domain/content");
+        properties.setProperty("jboss.server.deploy.dir", properties.getProperty("jboss.domain.deployment.dir"));
+        properties.setProperty("jboss.server.base.dir", properties.getProperty("jboss.domain.servers.dir") + File.separatorChar + serverName);
         providedEnvironment = new ServerEnvironment(properties, System.getenv(), null, false);
     }
 

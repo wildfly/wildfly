@@ -40,6 +40,9 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.domain.controller.DomainModelImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.DomainModelProxy;
@@ -65,6 +68,8 @@ public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHan
         return op;
     }
 
+    private final ParametersValidator parametersValidator = new ParametersValidator();
+
     private final DomainModelProxy domainModelProxy;
     private final HostControllerEnvironment environment;
 
@@ -78,6 +83,8 @@ public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHan
     RemoteDomainControllerAddHandler(DomainModelProxy domainModelProxy, HostControllerEnvironment environment) {
         this.domainModelProxy = domainModelProxy;
         this.environment = environment;
+        this.parametersValidator.registerValidator(PORT, new IntRangeValidator(1, 65535, false, true));
+        this.parametersValidator.registerValidator(HOST, new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
     }
 
     /**
@@ -85,15 +92,13 @@ public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHan
      */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            final ModelNode model = context.getSubModel();
-            model.get(DOMAIN_CONTROLLER, REMOTE, PORT).set(operation.require(PORT).asInt());
-            model.get(DOMAIN_CONTROLLER, REMOTE, HOST).set(operation.require(HOST).asString());
-            resultHandler.handleResultComplete();
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+
+        parametersValidator.validate(operation);
+
+        final ModelNode model = context.getSubModel();
+        model.get(DOMAIN_CONTROLLER, REMOTE, PORT).set(operation.require(PORT));
+        model.get(DOMAIN_CONTROLLER, REMOTE, HOST).set(operation.require(HOST));
+        resultHandler.handleResultComplete();
 
         if (context.getRuntimeContext() != null) {
             final DomainModelImpl domainModel = domainModelProxy.getDomainModel();

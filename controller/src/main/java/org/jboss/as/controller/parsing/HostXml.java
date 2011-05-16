@@ -45,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
+import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
@@ -376,7 +377,7 @@ public class HostXml extends CommonXml {
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
         update.get(OP).set("write-remote-domain-controller");
-        update.get(HOST).set(host);
+        update.get(HOST).set(parsePossibleExpression(host));
         update.get(PORT).set(port);
         list.add(update);
 

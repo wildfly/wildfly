@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.controller.persistence.ConfigurationFile;
@@ -104,7 +107,7 @@ public class HostControllerEnvironment {
      */
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
 
-    private final Properties props;
+    private final Map<String, String> hostSystemProperties;
     private final String processName;
     private final InetAddress processControllerAddress;
     private final Integer processControllerPort;
@@ -132,13 +135,13 @@ public class HostControllerEnvironment {
     private final PrintStream stderr;
 
 
-    public HostControllerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
+    public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
             Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig, boolean backupDomainFiles, boolean useCachedDc) {
-        if (props == null) {
-            throw new IllegalArgumentException("props is null");
+        if (hostSystemProperties == null) {
+            throw new IllegalArgumentException("hostSystemProperties is null");
         }
-        this.props = props;
+        this.hostSystemProperties = Collections.unmodifiableMap(hostSystemProperties);
 
         if (stdin == null) {
              throw new IllegalArgumentException("stdin is null");
@@ -423,13 +426,17 @@ public class HostControllerEnvironment {
         return domainConfigurationFile;
     }
 
+    public Map<String, String> getHostSystemProperties() {
+        return hostSystemProperties;
+    }
+
 
     /**
      * Get a File from configuration.
      * @return the CanonicalFile form for the given name.
      */
     private File getFileFromProperty(final String name) {
-       String value = props.getProperty(name, null);
+       String value = hostSystemProperties.get(name);
        if (value != null) {
           File f = new File(value);
           return f;

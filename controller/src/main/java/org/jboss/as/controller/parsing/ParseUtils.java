@@ -353,4 +353,18 @@ public final class ParseUtils {
                     + "' must be an integer", reader.getLocation(), nfe);
         }
     }
+
+
+
+    public static ModelNode parsePossibleExpression(String value) {
+        ModelNode result = new ModelNode();
+        int openIdx = value.indexOf("${");
+        if (openIdx > -1 && value.lastIndexOf('}') > openIdx) {
+            result.setExpression(value);
+        }
+        else {
+            result.set(value);
+        }
+        return result;
+    }
 }

@@ -13,6 +13,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
@@ -27,7 +28,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
 
     private static final long serialVersionUID = 149404752878332750L;
 
-    private String address;
+    private ModelNode address;
     private InetAddress resolved;
     private boolean unknownHostLogged;
     private boolean anyLocalLogged;
@@ -40,7 +41,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
      *
      * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
      */
-    public InetAddressMatchInterfaceCriteria(final String address) {
+    public InetAddressMatchInterfaceCriteria(final ModelNode address) {
         if (address == null)
             throw new IllegalArgumentException("address is null");
         this.address = address;
@@ -48,7 +49,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
 
     public synchronized InetAddress getAddress() throws UnknownHostException {
         if (resolved == null) {
-            resolved = InetAddress.getByName(address);
+            resolved = InetAddress.getByName(address.resolve().asString());
         }
         return this.resolved;
     }

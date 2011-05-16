@@ -190,12 +190,12 @@ public final class ParsedInterfaceCriteria {
                 return parseCompoundCriteria(prop.getValue(), true);
             }
             case INET_ADDRESS: {
-                checkStringType(prop.getValue(), element.getLocalName());
-                return new InetAddressMatchInterfaceCriteria(prop.getValue().asString());
+                checkStringType(prop.getValue(), element.getLocalName(), true);
+                return new InetAddressMatchInterfaceCriteria(prop.getValue());
             }
             case LOOPBACK_ADDRESS: {
-                checkStringType(prop.getValue(), element.getLocalName());
-                return new LoopbackAddressInterfaceCriteria(prop.getValue().asString());
+                checkStringType(prop.getValue(), element.getLocalName(), true);
+                return new LoopbackAddressInterfaceCriteria(prop.getValue());
             }
             case NIC: {
                 checkStringType(prop.getValue(), element.getLocalName());
@@ -263,10 +263,13 @@ public final class ParsedInterfaceCriteria {
     }
 
     private static void checkStringType(ModelNode node, String id) {
-        if (node.getType() != ModelType.STRING) {
+        checkStringType(node, id, false);
+    }
+
+    private static void checkStringType(ModelNode node, String id, boolean allowExpressions) {
+        if (node.getType() != ModelType.STRING  && (!allowExpressions || node.getType() != ModelType.EXPRESSION)) {
             throw new ParsingException(String.format("Illegal value %s for interface criteria %; must be %s", node.getType(), id, ModelType.STRING));
         }
-
     }
 
     private static class ParsingException extends RuntimeException {

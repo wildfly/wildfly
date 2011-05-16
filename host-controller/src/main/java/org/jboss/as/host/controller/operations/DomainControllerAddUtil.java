@@ -120,11 +120,11 @@ public class DomainControllerAddUtil {
         final ModelNode dc = host.require(DOMAIN_CONTROLLER).require(REMOTE);
         InetAddress addr;
         try {
-            addr = InetAddress.getByName(dc.require(HOST).asString());
+            addr = InetAddress.getByName(dc.require(HOST).resolve().asString());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        int port = dc.require(PORT).asInt();
+        int port = dc.require(PORT).resolve().asInt();
         final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port, repository);
         serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, service.getManagementCommunicationServiceInjector())

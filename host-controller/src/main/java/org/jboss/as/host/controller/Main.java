@@ -30,6 +30,9 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
@@ -59,8 +62,12 @@ public final class Main {
     private static void usage() {
         System.out.println("Usage: ./domain.sh [args...]\n");
         System.out.println("where args include:");
+        System.out.println("    -backup                            Keep a copy of the persistent domain configuration even if this host is not the Domain Controller");
+        System.out.println("    -cached-dc                         If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see -backup)");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
+        System.out.println("    -domain-config <config>            Name of the domain configuration file to use (default is \"domain.xml\")");
         System.out.println("    -help                              Display this message and exit");
+        System.out.println("    -host-config <config>              Name of the host configuration file to use (default is \"host.xml\")");
         System.out.println("    -pc-address <address>              Address of process controller socket");
         System.out.println("    -pc-port <port>                    Port of process controller socket");
         System.out.println("    -interprocess-name <proc>          Name of this process, used to register the socket with the server in the process controller");
@@ -109,8 +116,6 @@ public final class Main {
         System.exit(0);
     }
 
-    Properties props = new Properties(System.getProperties());
-
     private Main() {
     }
 
@@ -122,7 +127,7 @@ public final class Main {
     private HostControllerBootstrap boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         HostControllerBootstrap hc = null;
         try {
-            HostControllerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
+            HostControllerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
@@ -156,7 +161,7 @@ public final class Main {
         }
     }
 
-    public static HostControllerEnvironment determineEnvironment(String[] args, Properties systemProperties, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public static HostControllerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
         Integer smPort = Integer.valueOf(0);
@@ -173,6 +178,7 @@ public final class Main {
         boolean cachedDc = false;
         String domainConfig = null;
         String hostConfig = null;
+        Map<String, String> hostSystemProperties = new HashMap<String, String>();
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -190,8 +196,12 @@ public final class Main {
                     URL url = null;
                     try {
                         url = makeURL(args[++i]);
-                        Properties props = System.getProperties();
+                        Properties props = new Properties();
                         props.load(url.openConnection().getInputStream());
+                        System.getProperties().putAll(props);
+                        for (Map.Entry<Object, Object> entry : props.entrySet()) {
+                            hostSystemProperties.put(String.class.cast(entry.getKey()), String.class.cast(entry.getValue()));
+                        }
                     } catch (MalformedURLException e) {
                         System.err.printf("Malformed URL provided for option %s\n", arg);
                         usage();
@@ -260,6 +270,7 @@ public final class Main {
                         value = arg.substring(idx + 1, arg.length());
                     }
                     System.setProperty(name, value);
+                    hostSystemProperties.put(name, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     usage();
@@ -272,7 +283,7 @@ public final class Main {
             }
         }
 
-        return new HostControllerEnvironment(systemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM,
+        return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM,
                 domainConfig, hostConfig, backupDomainFiles, cachedDc);
     }
 

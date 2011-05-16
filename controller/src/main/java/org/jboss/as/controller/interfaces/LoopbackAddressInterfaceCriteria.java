@@ -18,6 +18,7 @@
  */
 package org.jboss.as.controller.interfaces;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 import java.net.InetAddress;
@@ -36,7 +37,7 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
 
     private static final long serialVersionUID = 1L;
 
-    private String address;
+    private ModelNode address;
     private InetAddress resolved;
     private boolean unknownHostLogged;
     private boolean anyLocalLogged;
@@ -49,7 +50,7 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
      *
      * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
      */
-    public LoopbackAddressInterfaceCriteria(final String address) {
+    public LoopbackAddressInterfaceCriteria(final ModelNode address) {
         if (address == null)
             throw new IllegalArgumentException("address is null");
         this.address = address;
@@ -57,7 +58,7 @@ public class LoopbackAddressInterfaceCriteria implements InterfaceCriteria {
 
     public synchronized InetAddress getAddress() throws UnknownHostException {
         if (resolved == null) {
-            resolved = InetAddress.getByName(address);
+            resolved = InetAddress.getByName(address.resolve().asString());
         }
         return this.resolved;
     }
