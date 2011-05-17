@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.session;
 
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.CancellationFlag;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
@@ -41,11 +42,13 @@ public class SessionInvocationContextInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        // TODO: fill in the proper invoked business interface
-        Class<?> invokedBusinessInterface = null;
-        Method method = context.getMethod();
+        final Method invokedMethod = context.getMethod();
+        final ComponentViewInstance componentViewInstance = context.getPrivateData(ComponentViewInstance.class);
+        // For a lifecycle interception, the ComponentViewInstance (and the invoked business interface) will be null.
+        // On a normal method invocation, the invoked business interface will be obtained from the ComponentViewInstance
+        final Class<?> invokedBusinessInterface = componentViewInstance == null ? null : componentViewInstance.getViewClass();
         Object[] parameters = context.getParameters();
-        SessionInvocationContext sessionInvocationContext = new CustomSessionInvocationContext(context, invokedBusinessInterface, method, parameters);
+        SessionInvocationContext sessionInvocationContext = new CustomSessionInvocationContext(context, invokedBusinessInterface, invokedMethod, parameters);
         context.putPrivateData(InvocationContext.class, sessionInvocationContext);
         CurrentInvocationContext.push(sessionInvocationContext);
         try {
