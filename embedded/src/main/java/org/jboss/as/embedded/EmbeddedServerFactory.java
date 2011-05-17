@@ -62,6 +62,30 @@ public class EmbeddedServerFactory {
     private EmbeddedServerFactory() {
     }
 
+    public static StandaloneServer create(final ModuleLoader moduleLoader, final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv) {
+        try {
+            // Load the server Module and get its ClassLoader
+            final ModuleIdentifier serverModuleId = ModuleIdentifier.create("org.jboss.as.server");
+            final Module serverModule = moduleLoader.loadModule(serverModuleId);
+            final ModuleClassLoader serverModuleClassLoader = serverModule.getClassLoader();
+
+            Class<?> embeddedStandAloneServerFactoryClass = serverModuleClassLoader.loadClass("org.jboss.as.server.EmbeddedStandAloneServerFactory");
+            Method createMethod = embeddedStandAloneServerFactoryClass.getMethod("create", File.class, ModuleLoader.class, Properties.class, Map.class);
+            final StandaloneServer standaloneServer = (StandaloneServer) createMethod.invoke(null, jbossHomeDir, moduleLoader, systemProps, systemEnv);
+            return standaloneServer;
+        } catch (ModuleLoadException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
         if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
             throw new IllegalStateException("Invalid jboss.home.dir: " + jbossHomeDir);
@@ -93,25 +117,9 @@ public class EmbeddedServerFactory {
 
             __redirected.__JAXPRedirected.changeAll(ModuleIdentifier.fromString("javax.xml.jaxp-provider"), moduleLoader);
 
-            // Load the server Module and get its ClassLoader
-            final ModuleIdentifier serverModuleId = ModuleIdentifier.create("org.jboss.as.server");
-            final Module serverModule = moduleLoader.loadModule(serverModuleId);
-            final ModuleClassLoader serverModuleClassLoader = serverModule.getClassLoader();
-
-            Class<?> embeddedStandAloneServerFactoryClass = serverModuleClassLoader.loadClass("org.jboss.as.server.EmbeddedStandAloneServerFactory");
-            Method createMethod = embeddedStandAloneServerFactoryClass.getMethod("create", File.class, ModuleLoader.class, Properties.class, Map.class);
-            final StandaloneServer standaloneServer = (StandaloneServer) createMethod.invoke(null, jbossHomeDir, moduleLoader, systemProps, systemEnv);
-            return standaloneServer;
+            return create(moduleLoader, jbossHomeDir, systemProps, systemEnv);
         }
         catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

@@ -23,6 +23,8 @@ package org.jboss.as.embedded.ejb3;
 
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 
 import javax.ejb.EJBException;
 import javax.ejb.embeddable.EJBContainer;
@@ -50,9 +52,12 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
         if (jbossHomeDir.isDirectory() == false)
             throw new EJBException("Invalid jboss home directory: " + jbossHomeDir);
 
-        // TODO: how are we going to determine which facilities are on which side of the fence? An user can do everything.
-        // TODO: normally we would not have org.jboss.logmanager on this side of the fence
-        final StandaloneServer server = EmbeddedServerFactory.create(jbossHomeDir, System.getProperties(), System.getenv(), "org.jboss.logmanager");
+        final ModuleLoader moduleLoader = Module.getContextModuleLoader();
+        final StandaloneServer server;
+        if (moduleLoader == null)
+            server = EmbeddedServerFactory.create(jbossHomeDir, System.getProperties(), System.getenv(), "org.jboss.logmanager");
+        else
+            server = EmbeddedServerFactory.create(moduleLoader, jbossHomeDir, System.getProperties(), System.getenv());
         try {
             server.start();
             final JBossStandaloneEJBContainer container = new JBossStandaloneEJBContainer(server);
