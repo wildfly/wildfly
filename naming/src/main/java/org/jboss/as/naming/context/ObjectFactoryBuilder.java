@@ -119,7 +119,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
     }
 
     private ObjectFactory factoryFromModularReference(ModularReference modularReference, final Hashtable<?, ?> environment) throws Exception {
-        final Module module = Module.getCurrentModuleLoader().loadModule(modularReference.getModuleIdentifier());
+        final Module module = Module.getCallerModuleLoader().loadModule(modularReference.getModuleIdentifier());
         final ClassLoader classLoader = module.getClassLoader();
         return factoryFromReference(modularReference, classLoader, environment);
     }

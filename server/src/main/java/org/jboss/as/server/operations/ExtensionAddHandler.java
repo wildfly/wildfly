@@ -51,7 +51,7 @@ public class ExtensionAddHandler extends AbstractExtensionAddHandler {
     @Override
     protected void installExtension(String module, OperationContext context) throws OperationFailedException {
         try {
-            for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(module), Extension.class)) {
+            for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 extension.initialize(extensionContext);
             }
         } catch (ModuleLoadException e) {
