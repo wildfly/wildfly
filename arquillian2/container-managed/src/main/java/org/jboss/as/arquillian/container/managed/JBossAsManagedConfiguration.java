@@ -34,7 +34,7 @@ public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
 
     private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
 
-    private int startupTimeoutInSeconds = 10;
+    private int startupTimeoutInSeconds = 30;
 
     private boolean outputToConsole = true;
 

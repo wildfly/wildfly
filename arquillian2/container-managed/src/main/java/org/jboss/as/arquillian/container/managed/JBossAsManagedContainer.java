@@ -16,6 +16,16 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import org.jboss.arquillian.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.AbstractDeployableContainer;
+import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.ServerController;
+import org.jboss.dmr.ModelNode;
+
+import javax.management.MBeanServerConnection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -26,19 +36,11 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import javax.management.MBeanServerConnection;
-
-import org.jboss.arquillian.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.AbstractDeployableContainer;
-import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.ServerController;
-import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * JBossASEmbeddedContainer
@@ -54,6 +56,17 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAs
     private Process process;
 
     private Thread shutdownThread;
+
+    private int destroyProcess() {
+        if (process == null)
+            return 0;
+        process.destroy();
+        try {
+            return process.waitFor();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public Class<JBossAsManagedConfiguration> getConfigurationClass() {
@@ -118,7 +131,8 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAs
             } while (timeout > 0 && serverAvailable == false);
 
             if (!serverAvailable) {
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", config.getStartupTimeoutInSeconds()*1000));
+                destroyProcess();
+                throw new TimeoutException(String.format("Managed server was not started within [%d] seconds", config.getStartupTimeoutInSeconds()));
             }
             boolean testRunnerMBeanAvaialble = false;
             MBeanServerConnection mbeanServer = null;
