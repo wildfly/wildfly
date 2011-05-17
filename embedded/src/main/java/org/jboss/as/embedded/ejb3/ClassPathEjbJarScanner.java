@@ -376,6 +376,12 @@ class ClassPathEjbJarScanner {
                     log.warnf(
                             "Dev Hack Alert: Ignoring class on ClassPath which can't be loaded due to %s while loading %s; "
                                     + "configure an exclusion filter so %s is not processed", ncdfe.toString(), className, root);
+                } catch (final LinkageError e) {
+                    // a work-around for jboss-modules bug
+                    // Ugly hack used to identify the stuff for which we need to configure an exclusion filter
+                    log.warnf(
+                            "Dev Hack Alert: Ignoring class on ClassPath which can't be loaded due to %s while loading %s; "
+                                    + "configure an exclusion filter so %s is not processed", e.toString(), className, root);
                 } catch (final SecurityException e) {
                     log.warnf("Can't load class %s (%s).", className, e.toString());
                 }
