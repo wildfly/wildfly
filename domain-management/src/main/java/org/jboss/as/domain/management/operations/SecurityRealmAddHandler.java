@@ -23,9 +23,12 @@ package org.jboss.as.domain.management.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 
 import java.util.Locale;
 
@@ -42,10 +45,12 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.security.LdapConnectionManagerService;
+import org.jboss.as.domain.management.security.SSLIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -58,13 +63,12 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
     public static final SecurityRealmAddHandler INSTANCE = new SecurityRealmAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
-    @Override
     public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         ModelNode operationAddress = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(operationAddress);
         final String securityRealm = address.getLastElement().getValue();
-        final ModelNode authentication = operation.get(AUTHENTICATION);
-        final ModelNode serverIdentities = operation.get(SERVER_IDENTITIES);
+        final ModelNode authentication = operation.has(AUTHENTICATION) ? operation.get(AUTHENTICATION) : null;
+        final ModelNode serverIdentities = operation.has(SERVER_IDENTITIES) ? operation.get(SERVER_IDENTITIES) : null;
 
         final ModelNode subModel = context.getSubModel();
         if (serverIdentities != null) {
@@ -81,16 +85,34 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                    final SecurityRealmService securityRealmService = new SecurityRealmService(securityRealm, authentication, serverIdentities);
-
-                    ServiceBuilder builder = serviceTarget.addService(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), securityRealmService);
+                    final SecurityRealmService securityRealmService = new SecurityRealmService(securityRealm, authentication);
+                    ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
+                    ServiceBuilder realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 
                     String connectionManager = requiredConnectionManager(authentication);
                     if (connectionManager != null) {
-                        builder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, securityRealmService.getConnectionManagerInjector());
+                        realmBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, securityRealmService.getConnectionManagerInjector());
                     }
 
-                    builder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    // TODO - The operation will also be split out into it's own handler when I make the operations more fine grained.
+                    if (serverIdentities != null && serverIdentities.has(SSL)) {
+                        ModelNode ssl = serverIdentities.require(SSL);
+                        ServiceName sslServiceName = realmServiceName.append("ssl");
+                        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl);
+
+                        ServiceBuilder sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
+
+                        if (ssl.has(KEYSTORE) && ssl.get(KEYSTORE).has(RELATIVE_TO)) {
+                            sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
+                        }
+
+                        sslBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                                .install();
+
+                        realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
+                    }
+
+                    realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
                             .install();
                 }
             });
@@ -100,9 +122,11 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
         return new BasicOperationResult(compensatingOperation);
     }
 
+    // TODO - These need to be split into more fine grained services so allow service specific checks.
+
     private static String requiredConnectionManager(ModelNode authentication) {
         String connectionManager = null;
-        if (authentication.has(LDAP)) {
+        if (authentication != null && authentication.has(LDAP)) {
             ModelNode userLdap = authentication.require(LDAP);
             connectionManager = userLdap.require(CONNECTION).asString();
         }
@@ -110,8 +134,10 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
         return connectionManager;
     }
 
+    private static ServiceName pathName(String relativeTo) {
+        return ServiceName.JBOSS.append("server", "path", relativeTo);
+    }
 
-    @Override
     public ModelNode getModelDescription(Locale locale) {
         // TODO - Complete getModelDescription()
         return new ModelNode();

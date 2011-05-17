@@ -248,10 +248,20 @@
                 The keystore configuration for the server.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="file" type="xs:string" use="required">
+        <xs:attribute name="relative-to" use="optional" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
-                    The file location of the keystore.
+                    The name of another previously named path, or of one of the
+                    standard paths provided by the system. If 'relative-to' is
+                    provided, the value of the 'path' attribute is treated as
+                    relative to the path specified by this attribute.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the keystore.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

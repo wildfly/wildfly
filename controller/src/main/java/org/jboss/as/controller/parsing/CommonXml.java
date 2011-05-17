@@ -629,8 +629,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseKeystore(final XMLExtendedStreamReader reader, final ModelNode securityRealmAdd) throws XMLStreamException {
         ModelNode keystore = securityRealmAdd.get(KEYSTORE);
 
-        String file = null;
         String password = null;
+        String path = null;
+        String relativeTo = null;
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -641,11 +642,19 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case FILE: {
-                        file = value;
+                        // TODO Remove 'case FILE'
+                        path = value;
                         break;
                     }
+                    case PATH:
+                        path = value;
+                        break;
                     case PASSWORD: {
                         password = value;
+                        break;
+                    }
+                    case RELATIVE_TO: {
+                        relativeTo = value;
                         break;
                     }
                     default: {
@@ -656,16 +665,19 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         Set<Attribute> missingAttributes = new HashSet<Attribute>();
-        if (file == null)
-            missingAttributes.add(Attribute.FILE);
+        if (path == null)
+            missingAttributes.add(Attribute.PATH);
         if (password == null)
             missingAttributes.add(Attribute.PASSWORD);
         if (missingAttributes.size() > 0)
             throw missingRequired(reader, missingAttributes);
         requireNoContent(reader);
 
-        keystore.get(FILE).set(file);
         keystore.get(PASSWORD).set(password);
+        keystore.get(PATH).set(path);
+        if (relativeTo != null) {
+            keystore.get(RELATIVE_TO).set(relativeTo);
+        }
     }
 
     protected void parseAuthentication(final XMLExtendedStreamReader reader, final ModelNode securityRealmAdd) throws XMLStreamException {
@@ -2228,7 +2240,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (ssl.has(KEYSTORE)) {
                             writer.writeStartElement(Element.KEYSTORE.getLocalName());
                             ModelNode keystore = ssl.get(KEYSTORE);
-                            writer.writeAttribute(Attribute.FILE.getLocalName(), keystore.require(FILE).asString());
+                            writer.writeAttribute(Attribute.PATH.getLocalName(), keystore.require(PATH).asString());
+                            if (keystore.has(RELATIVE_TO)) {
+                                writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), keystore.require(RELATIVE_TO).asString());
+                            }
                             writer.writeAttribute(Attribute.PASSWORD.getLocalName(), keystore.require(PASSWORD).asString());
                             writer.writeEndElement();
                         }
