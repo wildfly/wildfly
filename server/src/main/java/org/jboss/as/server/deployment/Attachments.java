@@ -99,6 +99,11 @@ public final class Attachments {
      * The MANIFEST.MF of the deployment unit.
      */
     public static final AttachmentKey<Manifest> MANIFEST = AttachmentKey.create(Manifest.class);
+
+    /**
+     *  A flag indicating whether the presence of a bundle manifest attributes should be ignored and a bundle not created
+     */
+    public static final AttachmentKey<Boolean> IGNORE_OSGI = AttachmentKey.create(Boolean.class);
     /**
      * Available when the deployment contains a valid OSGi manifest
      */

@@ -30,6 +30,7 @@ import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.RaStructureProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarDependencyProcessor;
+import org.jboss.as.connector.deployers.processors.StructureDriverProcessor;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.rarepository.RaRepositoryService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
@@ -76,6 +77,7 @@ public class RaDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(
                 mdrService.getValue()));
         updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_RAR, new RaStructureProcessor());
+        updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JDBC_DRIVER, new StructureDriverProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JDBC_DRIVER, new DriverProcessor());
     }
 }

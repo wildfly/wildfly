@@ -52,6 +52,11 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
         if (manifest != null)
             return;
 
+        // Skip ignored deployments
+        Boolean ignore = deploymentUnit.getAttachment(Attachments.IGNORE_OSGI);
+        if (ignore != null && ignore.booleanValue())
+            return;
+
         // Check whether this is an OSGi manifest
         manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
         if (BundleInfo.isValidateBundleManifest(manifest)) {
