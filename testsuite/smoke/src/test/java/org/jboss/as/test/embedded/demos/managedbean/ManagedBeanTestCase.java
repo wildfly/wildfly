@@ -30,10 +30,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
 import org.jboss.as.demos.managedbean.archive.LookupService;
 import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
-import org.jboss.as.demos.managedbean.mbean.TestMBean;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Ignore;
@@ -46,8 +46,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.IN_CONTAINER)
-@Ignore // JBAS-9352
+@Ignore("JBAS-9352")
 public class ManagedBeanTestCase {
 
     @Deployment
@@ -63,7 +62,7 @@ public class ManagedBeanTestCase {
         jar.addPackage(ManagedBeanTestCase.class.getPackage());
         jar.addPackage(BeanWithSimpleInjected.class.getPackage());
         jar.addClass(PollingUtils.class);
-        ear.add(jar,"/");
+        ear.add(jar, "/");
 
         return ear;
     }

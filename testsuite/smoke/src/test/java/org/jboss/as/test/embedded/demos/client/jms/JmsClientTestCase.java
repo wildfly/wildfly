@@ -25,7 +25,6 @@ package org.jboss.as.test.embedded.demos.client.jms;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +50,9 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -178,7 +178,8 @@ public class JmsClientTestCase {
 
     private static <T> T lookup(String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
-        MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
+        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnection mbeanServer = provider.getConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});

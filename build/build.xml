@@ -455,9 +455,7 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-protocol-servlet"/>
         </module-def>
 
-        <module-def name="org.jboss.as.arquillian.service">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
-        </module-def>
+        <module-def name="org.jboss.as.arquillian.service"/>
 
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>

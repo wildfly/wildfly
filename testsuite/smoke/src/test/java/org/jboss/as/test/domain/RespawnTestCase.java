@@ -51,7 +51,7 @@ import java.util.List;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-//@Ignore
+@Ignore("Test migrated to managed container")
 public class RespawnTestCase {
 
     private static final int TIMEOUT = 15000;

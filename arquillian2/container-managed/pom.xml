@@ -49,10 +49,6 @@
       <exclusions>
         <exclusion>
           <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-service</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.as</groupId>
           <artifactId>jboss-as-arquillian-common</artifactId>
         </exclusion>
         <exclusion>

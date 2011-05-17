@@ -59,7 +59,7 @@ public class JBossASEmbeddedInContainerTestCase {
         //FIXME should have some notification happening when the deployment has been installed for client
         waitForMbean(mbeanServer, objectName);
 
-        Object o = mbeanServer.getAttribute(objectName, "IntervalSeconds");
+        mbeanServer.getAttribute(objectName, "IntervalSeconds");
         mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
     }
 

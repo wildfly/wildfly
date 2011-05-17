@@ -22,41 +22,32 @@
 package org.jboss.as.arquillian.service;
 
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
-public class ArquillianDependencyProcessor implements DeploymentUnitProcessor {
+public class ArquillianDependencyProcessor {
 
     private static ModuleIdentifier ARQUILLIAN_JUNIT_ID = ModuleIdentifier.create("org.jboss.arquillian.junit");
     private static ModuleIdentifier SHRINKWRAP_ID = ModuleIdentifier.create("org.jboss.shrinkwrap.api");
     private static ModuleIdentifier JUNIT_ID = ModuleIdentifier.create("org.junit");
-    @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        if (deploymentUnit.getAttachment(ArquillianConfig.KEY) != null) {
-            addDepdenency(moduleSpecification, moduleLoader, ARQUILLIAN_JUNIT_ID);
-            addDepdenency(moduleSpecification, moduleLoader, SHRINKWRAP_ID);
-            addDepdenency(moduleSpecification, moduleLoader, JUNIT_ID);
+
+    private final DeploymentUnit deploymentUnit;
+
+    ArquillianDependencyProcessor(DeploymentUnit deploymentUnit) {
+        this.deploymentUnit = deploymentUnit;
+    }
+
+    void deploy() {
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (moduleSpec != null) {
+            ModuleLoader moduleLoader = Module.getBootModuleLoader();
+            moduleSpec.addDependency(new ModuleDependency(moduleLoader, ARQUILLIAN_JUNIT_ID, false, false, false));
+            moduleSpec.addDependency(new ModuleDependency(moduleLoader, SHRINKWRAP_ID, false, false, false));
+            moduleSpec.addDependency(new ModuleDependency(moduleLoader, JUNIT_ID, false, false, false));
         }
     }
-
-    private void addDepdenency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-            ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false));
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
 }

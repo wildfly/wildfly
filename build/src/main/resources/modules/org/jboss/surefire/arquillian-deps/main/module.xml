@@ -44,6 +44,9 @@
        <module name="org.jboss.osgi.spi" export="true"/>
        <module name="org.jboss.shrinkwrap.api" export="true"/>
        <module name="org.jboss.shrinkwrap.impl" services="export" export="true"/>
+       <module name="org.jboss.shrinkwrap.resolver.api" export="true"/>
+       <module name="org.jboss.shrinkwrap.resolver.api.maven" services="export" export="true"/>
+       <module name="org.jboss.shrinkwrap.resolver.impl.maven" export="true"/>
        <module name="org.osgi.core" export="true"/>
     </dependencies>
 </module>

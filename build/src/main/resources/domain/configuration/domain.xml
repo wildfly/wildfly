@@ -23,7 +23,6 @@
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
-                            urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
                             urn:jboss:domain:jca:1.0 jboss-jca.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
                             urn:jboss:domain:ejb3:1.0 jboss-ejb3.xsd
@@ -45,7 +44,6 @@
                             urn:jboss:domain:weld:1.0 jboss-weld.xsd">
 
     <extensions>
-        <extension module="org.jboss.as.arquillian.service"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
@@ -119,7 +117,6 @@
                     <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
             <subsystem xmlns="urn:jboss:domain:ejb3:1.0" />
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>

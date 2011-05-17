@@ -29,34 +29,32 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="org.junit"/>
-        <module name="org.jboss.arquillian.api"/>
-        <module name="org.jboss.arquillian.junit"/>
-        <module name="org.jboss.arquillian.spi"/>
-        <module name="org.jboss.arquillian.protocol.jmx" />
-        <module name="org.jboss.arquillian.testenricher.cdi" services="import"/>
-        <module name="org.jboss.arquillian.testenricher.jmx" services="import"/>
-        <module name="org.jboss.arquillian.testenricher.msc" services="import"/>
-        <module name="org.jboss.arquillian.testenricher.osgi" services="import"/>
-        <module name="org.jboss.arquillian.testenricher.resource" services="import"/>
-        <module name="org.jboss.as.arquillian.common"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.server" />
-        <module name="org.jboss.as.ee" />
-        <module name="org.jboss.as.jmx" />
-        <module name="org.jboss.as.naming" />
-        <module name="org.jboss.as.osgi" />
-        <module name="org.jboss.as.server" />
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.logging" />
-        <module name="org.jboss.modules" />
-        <module name="org.jboss.msc" />
-        <module name="org.jboss.osgi.deployment"/>
-        <module name="org.jboss.osgi.framework"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.osgi.core"/>
+        <module name="javax.inject.api" export="true"/>
+        <module name="org.jboss.as.arquillian.common" export="true"/>
+        <module name="org.jboss.as.controller" export="true"/>
+        <module name="org.jboss.as.controller-client" export="true"/>
+        <module name="org.jboss.as.jmx" export="true"/>
+        <module name="org.jboss.as.osgi" export="true"/>
+        <module name="org.jboss.as.server" export="true"/>
+        <module name="org.jboss.arquillian.api" export="true"/>
+        <module name="org.jboss.arquillian.junit" export="true"/>
+        <module name="org.jboss.arquillian.protocol.jmx" export="true"/>
+        <module name="org.jboss.arquillian.protocol.osgi" export="true"/>
+        <module name="org.jboss.arquillian.spi" export="true"/>
+        <module name="org.jboss.arquillian.testenricher.cdi" services="export" export="true"/>
+        <module name="org.jboss.arquillian.testenricher.jmx" services="export" export="true"/>
+        <module name="org.jboss.arquillian.testenricher.msc" services="export" export="true"/>
+        <module name="org.jboss.arquillian.testenricher.osgi" services="export" export="true"/>
+        <module name="org.jboss.arquillian.testenricher.resource" services="export" export="true"/>
+        <module name="org.jboss.jandex" export="true"/>
+        <module name="org.jboss.logging" export="true"/>
+        <module name="org.jboss.modules" export="true"/>
+        <module name="org.jboss.osgi.deployment" export="true"/>
+        <module name="org.jboss.osgi.framework" export="true"/>
+        <module name="org.jboss.shrinkwrap.api" export="true"/>
+        <module name="org.jboss.shrinkwrap.impl" export="true"/>
+        <module name="org.osgi.core" export="true"/>
+        <module name="org.junit" export="true"/>
     </dependencies>
 
 </module>

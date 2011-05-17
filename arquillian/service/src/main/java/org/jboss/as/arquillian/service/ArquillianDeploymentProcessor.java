@@ -22,86 +22,73 @@
 
 package org.jboss.as.arquillian.service;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.deployment.BundleInstallService;
-import org.jboss.msc.service.Service;
+import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 
 /**
- * [TODO]
- *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
  */
-public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
+public class ArquillianDeploymentProcessor {
 
     private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("arquillian", "deployment", "tracker");
 
-    @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private final DeploymentUnit deploymentUnit;
 
-        ArquillianConfig arqConfig = phaseContext.getDeploymentUnit().getAttachment(ArquillianConfig.KEY);
+    ArquillianDeploymentProcessor(DeploymentUnit deploymentUnit) {
+        this.deploymentUnit = deploymentUnit;
+    }
+
+    void deploy(ServiceTarget serviceTarget) {
+
+        ArquillianConfig arqConfig = deploymentUnit.getAttachment(ArquillianConfig.KEY);
         if (arqConfig == null)
             return;
 
-        ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         DeploymentTrackerService tracker = new DeploymentTrackerService(arqConfig);
-        ServiceBuilder<Object> serviceBuilder = serviceTarget.addService(SERVICE_NAME_BASE.append(phaseContext.getDeploymentUnit().getName()), tracker);
-        serviceBuilder.addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService);
+        ServiceName serviceName = DeploymentTrackerService.getServiceName(deploymentUnit);
+        ServiceBuilder<ArquillianConfig> serviceBuilder = serviceTarget.addService(serviceName, tracker);
+        serviceBuilder.addDependency(ArquillianService.SERVICE_NAME);
 
         // If this is an OSGi deployment, add a dependency on the associated service
-        Deployment osgiDeployment = OSGiDeploymentAttachment.getDeployment(phaseContext.getDeploymentUnit());
+        Deployment osgiDeployment = OSGiDeploymentAttachment.getDeployment(deploymentUnit);
         if (osgiDeployment != null) {
-            ServiceName serviceName = BundleInstallService.getServiceName(phaseContext.getDeploymentUnit().getName());
-            serviceBuilder.addDependency(serviceName);
+            ServiceName dependencyName = BundleInstallService.getServiceName(deploymentUnit.getName());
+            serviceBuilder.addDependency(dependencyName);
             osgiDeployment.setAutoStart(false);
         }
         serviceBuilder.install();
     }
 
-    public void undeploy(final DeploymentUnit context) {
-        final ServiceName serviceName = SERVICE_NAME_BASE.append(context.getName());
-        final ServiceController<?> controller = context.getServiceRegistry().getService(serviceName);
+    void undeploy() {
+        ServiceName serviceName = DeploymentTrackerService.getServiceName(deploymentUnit);
+        ServiceController<?> controller = deploymentUnit.getServiceRegistry().getService(serviceName);
         if(controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
         }
     }
 
-    private class DeploymentTrackerService implements Service<Object>{
+    private static class DeploymentTrackerService extends AbstractService<ArquillianConfig>{
         private final ArquillianConfig arqConfig;
-        private final InjectedValue<ArquillianService> injectedArquillianService = new InjectedValue<ArquillianService>();
 
-        public DeploymentTrackerService(ArquillianConfig arqConfig) {
+        DeploymentTrackerService(ArquillianConfig arqConfig) {
             this.arqConfig = arqConfig;
         }
 
-        @Override
-        public void start(StartContext context) throws StartException {
-            ArquillianService service = injectedArquillianService.getValue();
-            service.registerDeployment(arqConfig);
+        static ServiceName getServiceName(DeploymentUnit deploymentUnit) {
+            return SERVICE_NAME_BASE.append(deploymentUnit.getName());
         }
 
         @Override
-        public void stop(StopContext context) {
-            ArquillianService service = injectedArquillianService.getValue();
-            service.unregisterDeployment(arqConfig);
-        }
-
-        @Override
-        public Object getValue() throws IllegalStateException {
-            return null;
+        public ArquillianConfig getValue() throws IllegalStateException {
+            return arqConfig;
         }
     }
 }

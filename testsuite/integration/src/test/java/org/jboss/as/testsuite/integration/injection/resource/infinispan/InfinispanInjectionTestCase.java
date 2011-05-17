@@ -54,7 +54,7 @@ public class InfinispanInjectionTestCase {
         Object result = context.lookup("java:module/infinispan");
         Assert.assertTrue(result instanceof InfinispanManagedBean);
         InfinispanManagedBean bean = (InfinispanManagedBean) result;
-        
+
         bean.test();
     }
 }

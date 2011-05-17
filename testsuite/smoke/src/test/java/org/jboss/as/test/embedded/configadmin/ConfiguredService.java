@@ -27,7 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
+import org.jboss.as.osgi.service.ConfigAdminService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,7 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * A simple service that reads its configuration from the {@link ConfigAdminServiceImpl}
+ * A simple service that reads its configuration from the {@link ConfigAdminService}
  *
  * @author Thomas.Diesler@jboss.org
  * @since 12-Dec-2010
@@ -51,13 +51,13 @@ public class ConfiguredService extends AbstractService<ConfiguredService> {
     public static ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "smoke", "configadmin");
     public static String SERVICE_PID = "org.jboss.as.test.embedded.configadmin";
 
-    private final InjectedValue<ConfigAdminServiceImpl> injectedConfigAdmin = new InjectedValue<ConfigAdminServiceImpl>();
+    private final InjectedValue<ConfigAdminService> injectedConfigAdmin = new InjectedValue<ConfigAdminService>();
     private Dictionary<String, String> config;
 
     public static void addService(ServiceTarget serviceTarget) {
         ConfiguredService service = new ConfiguredService();
         ServiceBuilder<ConfiguredService> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);
-        serviceBuilder.addDependency(ConfigAdminServiceImpl.SERVICE_NAME, ConfigAdminServiceImpl.class, service.injectedConfigAdmin);
+        serviceBuilder.addDependency(ConfigAdminService.SERVICE_NAME, ConfigAdminService.class, service.injectedConfigAdmin);
         serviceBuilder.install();
     }
 

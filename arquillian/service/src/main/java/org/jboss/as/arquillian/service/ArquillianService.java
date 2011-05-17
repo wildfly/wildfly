@@ -22,12 +22,13 @@
 
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -50,9 +51,11 @@ import org.jboss.as.server.ServerController;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -86,8 +89,8 @@ public class ArquillianService implements Service<ArquillianService> {
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
-    private final Map<String, ArquillianConfig> deployedTests = new HashMap<String, ArquillianConfig>();
-    private final Map<String, CountDownLatch> waitingTests = new HashMap<String, CountDownLatch>();
+    private final Map<ServiceName, ArquillianConfig> deployedTests = new ConcurrentHashMap<ServiceName, ArquillianConfig>();
+    private final Map<String, CountDownLatch> waitingTests = new ConcurrentHashMap<String, CountDownLatch>();
     private JMXTestRunner jmxTestRunner;
 
     public static void addService(final ServiceTarget serviceTarget) {
@@ -106,6 +109,7 @@ public class ArquillianService implements Service<ArquillianService> {
         final MBeanServer mbeanServer = injectedMBeanServer.getValue();
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
         final TestClassLoader testClassLoader = new TestClassLoaderImpl(serviceContainer);
+        final ServiceTarget serviceTarget = context.getChildTarget();
 
         try {
             jmxTestRunner = new JMXTestRunner() {
@@ -141,9 +145,9 @@ public class ArquillianService implements Service<ArquillianService> {
 
                 private ContextManager initializeContextManager(String className, Map<String, Object> properties) {
                     final ContextManagerBuilder builder = new ContextManagerBuilder();
-                    ArquillianConfig config = getConfig(className);
+                    ArquillianConfig config = getConfig(className, 5000);
                     if (config != null) {
-                        final DeploymentUnit deployment = config.getDeploymentUnitContext();
+                        final DeploymentUnit deployment = config.getDeploymentUnit();
                         final Module module = deployment.getAttachment(Attachments.MODULE);
                         if (module != null) {
                             builder.add(new TCCLSetup(module.getClassLoader()));
@@ -161,6 +165,35 @@ public class ArquillianService implements Service<ArquillianService> {
             throw new StartException("Failed to start Arquillian Test Runner", t);
         }
 
+        serviceContainer.addListener(new AbstractServiceListener<Object>() {
+
+            @Override
+            public void serviceStarted(ServiceController<? extends Object> controller) {
+                ServiceName serviceName = controller.getName();
+                String simpleName = serviceName.getSimpleName();
+                if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
+                    ServiceName parentName = serviceName.getParent();
+                    ServiceController<?> parentController = serviceContainer.getService(parentName);
+                    DeploymentUnit deploymentUnit = (DeploymentUnit) parentController.getValue();
+                    ArquillianConfig arqConfig = new ArquillianRunWithProcessor(deploymentUnit).getArquillianConfig();
+                    if (arqConfig != null) {
+                        new ArquillianDeploymentProcessor(deploymentUnit).deploy(serviceTarget);
+                        new ArquillianDependencyProcessor(deploymentUnit).deploy();
+                        registerDeployment(parentName, arqConfig);
+                    }
+                }
+            }
+
+            @Override
+            public void serviceStopped(ServiceController<? extends Object> controller) {
+                ServiceName serviceName = controller.getName();
+                ArquillianConfig arqConfig = deployedTests.remove(serviceName);
+                if (arqConfig != null) {
+                    DeploymentUnit deploymentUnit = arqConfig.getDeploymentUnit();
+                    new ArquillianDeploymentProcessor(deploymentUnit).undeploy();
+                }
+            }
+        });
     }
 
     public synchronized void stop(StopContext context) {
@@ -179,10 +212,11 @@ public class ArquillianService implements Service<ArquillianService> {
         return this;
     }
 
-    void registerDeployment(ArquillianConfig arqConfig) {
+    private void registerDeployment(ServiceName serviceName, ArquillianConfig arqConfig) {
         synchronized (deployedTests) {
+            log.infof("Register Arquillian deployment: %s", serviceName);
+            deployedTests.put(serviceName, arqConfig);
             for (String className : arqConfig.getTestClasses()) {
-                deployedTests.put(className, arqConfig);
                 CountDownLatch latch = waitingTests.remove(className);
                 if (latch != null) {
                     latch.countDown();
@@ -191,38 +225,30 @@ public class ArquillianService implements Service<ArquillianService> {
         }
     }
 
-    void unregisterDeployment(ArquillianConfig arqConfig) {
-        synchronized (deployedTests) {
-            for (String className : arqConfig.getTestClasses()) {
-                deployedTests.remove(className);
-            }
-        }
-    }
-
-    private ArquillianConfig getConfig(String className) {
+    private ArquillianConfig getConfig(String className, int timeout) {
         CountDownLatch latch = null;
         synchronized (deployedTests) {
-            ArquillianConfig config = deployedTests.get(className);
-            if (config != null) {
-                return config;
+            for (ArquillianConfig aux : deployedTests.values()) {
+                if (aux.getTestClasses().contains(className)) {
+                    waitingTests.remove(className);
+                    return aux;
+                }
             }
             latch = new CountDownLatch(1);
             waitingTests.put(className, latch);
         }
 
-        long end = System.currentTimeMillis() + 10000;
-        while (true) {
+        if (latch != null && timeout > 0) {
             try {
-                latch.await(end - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-                break;
-            } catch (InterruptedException e) {
+                log.debugf("Await Arquillian config for: %s", className);
+                latch.await(timeout, TimeUnit.MILLISECONDS);
+                return getConfig(className, 0);
+            } catch (InterruptedException ex) {
+                // ignore
             }
         }
 
-        synchronized (deployedTests) {
-            waitingTests.remove(className);
-            return deployedTests.get(className);
-        }
+        return null;
     }
 
     class TestClassLoaderImpl implements JMXTestRunner.TestClassLoader {
@@ -238,14 +264,14 @@ public class ArquillianService implements Service<ArquillianService> {
         @Override
         public Class<?> loadTestClass(String className) throws ClassNotFoundException {
 
-            ArquillianConfig arqConfig = getConfig(className);
+            ArquillianConfig arqConfig = getConfig(className, 5000);
             if (arqConfig == null)
                 throw new ClassNotFoundException(className);
 
             if (arqConfig.getTestClasses().contains(className) == false)
                 throw new ClassNotFoundException(className);
 
-            DeploymentUnit depunit = arqConfig.getDeploymentUnitContext();
+            DeploymentUnit depunit = arqConfig.getDeploymentUnit();
             Module module = depunit.getAttachment(Attachments.MODULE);
             Deployment osgidep = OSGiDeploymentAttachment.getDeployment(depunit);
             if (module != null && osgidep != null)

@@ -16,22 +16,22 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Properties;
+
+import javax.management.MBeanServerConnection;
+
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
-import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.AbstractDeployableContainer;
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
-
-import javax.management.MBeanServerConnection;
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Properties;
 
 /**
  * JBossASEmbeddedContainer
@@ -40,11 +40,11 @@ import java.util.Properties;
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
+public final class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
     private StandaloneServer server;
 
     @Override
-    public void start(Context context) throws LifecycleException {
+    protected void startInternal(Context context) throws LifecycleException {
         try {
             String jbossHomeKey = "jboss.home";
             String jbossHomeProp = System.getProperty(jbossHomeKey);
@@ -70,8 +70,6 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
             server = EmbeddedServerFactory.create(jbossHomeDir, sysprops, System.getenv(), getSystemPackages(sysprops, "org.jboss.logmanager"));
             server.start();
 
-            waitForMBean(JMXTestRunnerMBean.OBJECT_NAME, 5000);
-
         } catch (Throwable th) {
             throw handleStartThrowable(th);
         }
@@ -86,7 +84,7 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
     }
 
     @Override
-    public void stop(Context context) throws LifecycleException {
+    protected void stopInternal(Context context) throws LifecycleException {
         try {
             if (server != null)
                 server.stop();

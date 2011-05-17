@@ -124,7 +124,7 @@ public class DomainDeploymentUtils implements Closeable {
         }
         if (execute) {
             op.get(ClientConstants.OPERATION_HEADERS, ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE).set(getRolloutPlan());
-            ModelNode result = client.execute(op);
+            client.execute(op);
         }
     }
 
@@ -209,13 +209,11 @@ public class DomainDeploymentUtils implements Closeable {
 
     private class Deployment {
         final String archiveName;
-        final Package pkg;
         final JavaArchive archive;
         final File realArchive;
 
         public Deployment(String archiveName, Package pkg, boolean show) {
             this.archiveName = archiveName;
-            this.pkg = pkg;
 
             ArchivePath metaInf = ArchivePaths.create("META-INF");
 

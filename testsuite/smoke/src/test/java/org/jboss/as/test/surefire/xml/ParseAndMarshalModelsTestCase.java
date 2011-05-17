@@ -47,6 +47,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.xml.namespace.QName;
@@ -72,6 +73,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
+@Ignore("Test migrated to managed container")
 public class ParseAndMarshalModelsTestCase {
 
     @Test

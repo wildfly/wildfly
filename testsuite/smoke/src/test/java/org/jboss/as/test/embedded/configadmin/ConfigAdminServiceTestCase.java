@@ -41,7 +41,6 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.osgi.service.ConfigAdminListener;
 import org.jboss.as.osgi.service.ConfigAdminService;
-import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -175,10 +174,10 @@ public class ConfigAdminServiceTestCase {
 
     // [TODO] Move this to @Before when Arquillian supports injected values there
     private ConfigAdminService getConfigAdminService() {
-        ServiceController<?> controller = serviceContainer.getService(ConfigAdminServiceImpl.SERVICE_NAME);
-        assertNotNull("ServiceController available: " + ConfigAdminServiceImpl.SERVICE_NAME, controller);
+        ServiceController<?> controller = serviceContainer.getService(ConfigAdminService.SERVICE_NAME);
+        assertNotNull("ServiceController available: " + ConfigAdminService.SERVICE_NAME, controller);
         ConfigAdminService configAdmin = (ConfigAdminService) controller.getValue();
-        assertNotNull("Service available: " + ConfigAdminServiceImpl.SERVICE_NAME, configAdmin);
+        assertNotNull("Service available: " + ConfigAdminService.SERVICE_NAME, configAdmin);
         return configAdmin;
     }
 }

@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface ConfigAdminListener {
 
-    ServiceName SERVICE_NAME_BASE = ConfigAdminServiceImpl.SERVICE_NAME.append("listener");
+    ServiceName SERVICE_NAME_BASE = ConfigAdminService.SERVICE_NAME.append("listener");
 
     /**
      * Called when the {@code ConfigAdminService} receives an update for

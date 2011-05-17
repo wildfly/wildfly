@@ -21,16 +21,17 @@
  */
 package org.jboss.as.test.embedded.demos.sar;
 
-import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 
 import javax.management.Attribute;
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.demos.sar.archive.ConfigService;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -54,12 +55,11 @@ public class SarTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnection mbeanServer = provider.getConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
-
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
-
-        Object o = mbeanServer.getAttribute(objectName, "IntervalSeconds");
+        mbeanServer.getAttribute(objectName, "IntervalSeconds");
         mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
     }
 

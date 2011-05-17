@@ -25,15 +25,13 @@ package org.jboss.as.arquillian.service;
 import java.util.List;
 
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.logging.Logger;
 import org.junit.runner.RunWith;
 
 /**
@@ -43,25 +41,35 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
  */
-public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProcessor {
+public class ArquillianRunWithProcessor {
 
-    @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
-        final CompositeIndex compositeIndex = phaseContext.getDeploymentUnit().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+    private final DeploymentUnit deploymentUnit;
+
+    ArquillianRunWithProcessor(DeploymentUnit deploymentUnit) {
+        this.deploymentUnit = deploymentUnit;
+    }
+
+    ArquillianConfig getArquillianConfig() {
+
+        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
-            return;
+            log.infof("Cannot find composite annotation index in: %s", deploymentUnit);
+            return null;
         }
 
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
 
         final List<AnnotationInstance> instances = compositeIndex.getAnnotations(runWithName);
-        if (instances.isEmpty())
-            return; // Skip if there are no @RunWith annotations
+        if (instances.isEmpty()) {
+            log.infof("Cannot find @RunWith annotation in: %s", deploymentUnit);
+            return null;
+        }
 
-        final DeploymentUnit deploymentUnitContext = phaseContext.getDeploymentUnit();
-        ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnitContext);
-        deploymentUnitContext.putAttachment(ArquillianConfig.KEY, arqConfig);
+        log.infof("Arquillian test deployment detected: %s", deploymentUnit);
+        ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnit);
+        deploymentUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
 
         for (AnnotationInstance instance : instances) {
             final AnnotationTarget target = instance.target();
@@ -71,9 +79,7 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
                 arqConfig.addTestClass(testClassName);
             }
         }
-    }
 
-    public void undeploy(final DeploymentUnit context) {
-        context.removeAttachment(ArquillianConfig.KEY);
+        return arqConfig;
     }
 }

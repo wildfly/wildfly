@@ -34,7 +34,7 @@ import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public class JBossAsRemoteContainer extends AbstractDeployableContainer {
+public final class JBossAsRemoteContainer extends AbstractDeployableContainer {
 
     private MBeanServerConnectionProvider provider;
 
@@ -46,12 +46,12 @@ public class JBossAsRemoteContainer extends AbstractDeployableContainer {
     }
 
     @Override
-    public void start(Context context) throws LifecycleException {
+    protected void startInternal(Context context) throws LifecycleException {
         // nothing to do
     }
 
     @Override
-    public void stop(Context context) throws LifecycleException {
+    protected void stopInternal(Context context) throws LifecycleException {
         // nothing to do
     }
 

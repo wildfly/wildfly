@@ -108,7 +108,7 @@ public class DeploymentUtils implements Closeable {
     }
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException, TimeoutException  {
-        DeploymentPlanBuilder builder = manager.newDeploymentPlan().withRollback();
+        DeploymentPlanBuilder builder = manager.newDeploymentPlan();
         for (AbstractDeployment deployment : deployments) {
             builder = deployment.addDeployment(manager, builder);
         }

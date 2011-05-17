@@ -31,7 +31,6 @@ import java.util.Vector;
 
 import org.apache.felix.cm.PersistenceManager;
 import org.jboss.as.osgi.service.ConfigAdminService;
-import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.osgi.framework.BundleActivator;
@@ -41,7 +40,7 @@ import org.osgi.framework.ServiceReference;
 
 /**
  * An implementation of the Apache Felix ConfigAdmin {@link PersistenceManager} that delegates
- * to the {@link ConfigAdminServiceImpl}
+ * to the {@link ConfigAdminService}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 01-Dec-2010
@@ -58,7 +57,7 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
         // Get the ConfigAdminService
         ServiceReference sref = context.getServiceReference(ServiceContainer.class.getName());
         ServiceContainer serviceContainer = (ServiceContainer) context.getService(sref);
-        ServiceController<?> controller = serviceContainer.getRequiredService(ConfigAdminServiceImpl.SERVICE_NAME);
+        ServiceController<?> controller = serviceContainer.getRequiredService(ConfigAdminService.SERVICE_NAME);
         configadminService = (ConfigAdminService) controller.getValue();
 
         // Register the PersistenceManager

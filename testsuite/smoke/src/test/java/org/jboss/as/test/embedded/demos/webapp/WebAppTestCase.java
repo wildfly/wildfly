@@ -25,7 +25,7 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -45,6 +45,7 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.demos.webapp.archive.SimpleServlet;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -135,7 +136,8 @@ public class WebAppTestCase {
     }
 
     private static <T> T lookup(String name, Class<T> expected) throws Exception {
-        MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
+        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnection mbeanServer = provider.getConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});
         return expected.cast(o);

@@ -92,12 +92,12 @@
             <artifactId>shrinkwrap-api</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.osgi</groupId>
-          <artifactId>org.osgi.core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.osgi.spi</groupId>
             <artifactId>jbosgi-spi</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.osgi</groupId>
+          <artifactId>org.osgi.core</artifactId>
         </dependency>
     </dependencies>
 </project>

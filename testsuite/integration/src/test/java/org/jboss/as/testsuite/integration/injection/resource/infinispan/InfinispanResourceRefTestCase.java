@@ -55,7 +55,7 @@ public class InfinispanResourceRefTestCase {
         Object result = context.lookup("java:module/infinispan");
         Assert.assertTrue(result instanceof InfinispanBean);
         InfinispanBean bean = (InfinispanBean) result;
-        
+
         bean.test();
     }
 

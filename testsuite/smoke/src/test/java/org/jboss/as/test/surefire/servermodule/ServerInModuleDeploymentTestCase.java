@@ -33,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -42,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerDelegate;
 import javax.management.MBeanServerNotification;
 import javax.management.Notification;
@@ -51,6 +50,7 @@ import javax.management.ObjectName;
 
 import junit.framework.Assert;
 
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -61,6 +61,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -68,6 +69,7 @@ import org.junit.Test;
  * filesystem scanner.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@Ignore("Test migrated to managed container")
 public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTestCase {
 
     @Test
@@ -373,7 +375,8 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
     }
 
     private void testDeployments(DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+        final MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        final MBeanServerConnection mbeanServer = provider.getConnection();
         final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
         final TestNotificationListener listener = new TestNotificationListener(name);
         mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);

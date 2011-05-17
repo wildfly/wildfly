@@ -42,7 +42,6 @@ import javax.naming.InitialContext;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.IN_CONTAINER)
 public class StandaloneModuleEjbJndiBindingTestCase {
 
     /**

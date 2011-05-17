@@ -19,40 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.arquillian.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * [TODO]
+ * An activator for the {@link ArquillianService}
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Thomas.Diesler@jboss.com
+ * @since 16-May-2011
  */
-class ArquillianConfig {
+public class ArquillianServiceActivator implements ServiceActivator {
 
-    static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
-
-    private DeploymentUnit deploymentUnit;
-    private List<String> testClasses = new ArrayList<String>();
-
-    ArquillianConfig(DeploymentUnit deploymentUnit){
-        this.deploymentUnit = deploymentUnit;
-    }
-
-    DeploymentUnit getDeploymentUnit() {
-        return deploymentUnit;
-    }
-
-
-    List<String> getTestClasses(){
-        return testClasses;
-    }
-
-    void addTestClass(String testClass) {
-        testClasses.add(testClass);
+    @Override
+    public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
+        ServiceTarget serviceTarget = context.getServiceTarget();
+        ArquillianService.addService(serviceTarget);
     }
 }

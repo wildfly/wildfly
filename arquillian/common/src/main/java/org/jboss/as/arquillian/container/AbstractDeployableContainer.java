@@ -16,7 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,11 +28,14 @@ import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
+import org.jboss.arquillian.protocol.jmx.RepositoryArchiveLocator;
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
+import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.protocol.servlet.ServletMethodExecutor;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
@@ -48,10 +50,12 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.management.ServiceContainerMXBean;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
- * A JBossAS server connector
+ * A JBossAS deployable container
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
@@ -62,7 +66,8 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
 
     static {
         try {
-            OBJECT_NAME = new ObjectName("jboss.msc", ObjectProperties.properties(ObjectProperties.property("type", "container"), ObjectProperties.property("name", "jbossas")));
+            OBJECT_NAME = new ObjectName("jboss.msc", ObjectProperties.properties(ObjectProperties.property("type", "container"),
+                    ObjectProperties.property("name", "jbossas")));
         } catch (MalformedObjectNameException e) {
             throw new IllegalStateException(e);
         }
@@ -79,10 +84,37 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     @Override
     public void setup(Context context, Configuration configuration) {
         containerConfig = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
-        modelControllerClient = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
-                containerConfig.getManagementPort());
+        modelControllerClient = ModelControllerClient.Factory.create(containerConfig.getBindAddress(), containerConfig.getManagementPort());
         deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
     }
+
+    @Override
+    public final void start(Context context) throws LifecycleException {
+        startInternal(context);
+        try {
+            MBeanServerConnection mbeanServer = getMBeanServerConnection(10000);
+            boolean mbeanAvailable = mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME);
+            if (mbeanAvailable == false) {
+                String asVersion = AbstractDeployableContainer.class.getPackage().getImplementationVersion();
+                deployMavenArtifact("org.jboss.as", "jboss-as-arquillian-service", asVersion);
+                waitForMBean(JMXTestRunnerMBean.OBJECT_NAME, 5000);
+            }
+        } catch (Exception ex) {
+            throw new LifecycleException("Cannot deploy arquilllian service", ex);
+        }
+    }
+
+    protected abstract void startInternal(Context context) throws LifecycleException;
+
+    @Override
+    public final void stop(Context context) throws LifecycleException {
+        if (registry.containsValue("jboss-as-arquillian-service")) {
+            undeployMavenArtifact("jboss-as-arquillian-service");
+        }
+        stopInternal(context);
+    }
+
+    protected abstract void stopInternal(Context context) throws LifecycleException;
 
     protected JBossAsContainerConfiguration getContainerConfiguration() {
         return containerConfig;
@@ -96,11 +128,11 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException {
         try {
             InputStream input = archive.as(ZipExporter.class).exportZip();
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().withRollback();
+            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
             builder = builder.add(archive.getName(), input).andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction deployAction = builder.getLastAction();
-            executeDeploymentPlan(plan, deployAction,archive);
+            executeDeploymentPlan(plan, deployAction, archive);
 
             return getContainerMethodExecutor(context);
         } catch (Exception e) {
@@ -113,7 +145,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         String runtimeName = registry.remove(archive);
         if (runtimeName != null) {
             try {
-                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan().withRollback();
+                DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
                 DeploymentPlan plan = builder.undeploy(runtimeName).remove(runtimeName).build();
                 Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
                 future.get();
@@ -123,27 +155,46 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         }
     }
 
-    protected void waitForMBean(ObjectName objectName, long timeout) throws IOException, InterruptedException {
+    protected MBeanServerConnection getMBeanServerConnection(long timeout) {
+        while (timeout > 0) {
+            try {
+                return getMBeanServerConnection();
+            } catch (Exception ex) {
+                // ignore
+            }
+            try {
+                Thread.sleep(100);
+                timeout -= 100;
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+        }
+        throw new IllegalStateException("MBeanServerConnection not available");
+    }
+
+    protected void waitForMBean(ObjectName objectName, long timeout) {
         boolean mbeanAvailable = false;
-        MBeanServerConnection mbeanServer = null;
+        MBeanServerConnection mbeanServer = getMBeanServerConnection(timeout);
         while (timeout > 0 && mbeanAvailable == false) {
-            if (mbeanServer == null) {
+            try {
+                mbeanAvailable = mbeanServer.isRegistered(objectName);
+            } catch (Exception ex) {
+                // ignore
+            }
+            if (mbeanAvailable == false) {
                 try {
-                    mbeanServer = getMBeanServerConnection();
-                } catch (Exception ex) {
+                    Thread.sleep(100);
+                    timeout -= 100;
+                } catch (InterruptedException ex) {
                     // ignore
                 }
             }
-            mbeanAvailable = (mbeanServer != null && mbeanServer.isRegistered(objectName));
-            Thread.sleep(100);
-            timeout -= 100;
         }
         if (mbeanAvailable == false)
             throw new IllegalStateException("MBean not available: " + objectName);
     }
 
-    protected void waitForServiceState(ServiceName serviceName, State expectedState, long timeout) throws IOException,
-            InterruptedException {
+    protected void waitForServiceState(ServiceName serviceName, State expectedState, long timeout) {
 
         ObjectName objectName = OBJECT_NAME;
         MBeanServerConnection mbeanServer = getMBeanServerConnection();
@@ -151,8 +202,12 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
 
         State currentState = State.valueOf(proxy.getServiceStatus(serviceName.getCanonicalName()).getStateName());
         while (timeout > 0 && currentState != expectedState) {
-            // TODO: Change this to use mbean notifications
-            Thread.sleep(100);
+            try {
+                // TODO: Change this to use mbean notifications
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // ignore
+            }
             timeout -= 100;
             currentState = State.valueOf(proxy.getServiceStatus(serviceName.getCanonicalName()).getStateName());
         }
@@ -178,7 +233,6 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
 
     protected abstract ContainerMethodExecutor getContainerMethodExecutor();
 
-
     private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Archive<?> archive) throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         registry.put(archive, deployAction.getDeploymentUnitUniqueName());
@@ -192,5 +246,33 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         }
 
         return deployAction.getDeploymentUnitUniqueName();
+    }
+
+    private void deployMavenArtifact(String groupId, String artifactId, String version) throws DeploymentException {
+        String filespec = groupId + ":" + artifactId + ":jar:" + version;
+        URL artifactURL = RepositoryArchiveLocator.getArtifactURL(groupId, artifactId, version);
+        if (artifactURL == null)
+            throw new DeploymentException("Cannot obtain maven artifact: " + filespec);
+
+        try {
+            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+            builder = builder.add(artifactId, artifactURL).andDeploy();
+            DeploymentPlan plan = builder.build();
+            DeploymentAction deployAction = builder.getLastAction();
+            executeDeploymentPlan(plan, deployAction, ShrinkWrap.create(JavaArchive.class, artifactId));
+        } catch (Exception e) {
+            throw new DeploymentException("Could not deploy to container", e);
+        }
+    }
+
+    private void undeployMavenArtifact(String artifactId) {
+        try {
+            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+            DeploymentPlan plan = builder.undeploy(artifactId).remove(artifactId).build();
+            Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
+            future.get();
+        } catch (Exception ex) {
+            log.warning("Cannot undeploy: " + artifactId + ":" + ex.getMessage());
+        }
     }
 }
