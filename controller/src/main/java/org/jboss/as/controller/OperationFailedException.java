@@ -88,4 +88,9 @@ public class OperationFailedException extends Exception {
     public ModelNode getFailureDescription() {
         return failureDescription;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + " [ " + failureDescription + " ]";
+    }
 }
