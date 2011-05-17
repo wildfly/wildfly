@@ -45,6 +45,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
+import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.ExecutorProvider;
@@ -108,6 +109,7 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
         TransportConfiguration transport = this.configuration.getTransportConfiguration();
         FluentGlobalConfiguration.TransportConfig fluentTransport = fluentGlobal.transport();
         if (transport != null) {
+            fluentTransport.transportClass(JGroupsTransport.class);
             Long timeout = transport.getLockTimeout();
             if (timeout != null) {
                 fluentTransport.distributedSyncTimeout(timeout.longValue());
