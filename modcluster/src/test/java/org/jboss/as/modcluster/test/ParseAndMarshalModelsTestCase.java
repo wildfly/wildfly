@@ -9,30 +9,34 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.persistence.XmlConfigurationPersister;
+import org.jboss.as.modcluster.ModClusterSubsystemElementParser;
+import org.jboss.as.modcluster.Namespace;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
+import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
 
 // Test mod_cluster parser
 
 public class ParseAndMarshalModelsTestCase {
+
+    private ModClusterSubsystemElementParser parser = new ModClusterSubsystemElementParser();
 
     @Test
     public void testStandaloneXml() throws Exception {
@@ -91,6 +95,26 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(File file) throws Exception {
+        final List<ModelNode> operations = new ArrayList<ModelNode>();
+
+        XMLMapper mapper = XMLMapper.Factory.create();
+        mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), "subsystem"), this.parser);
+
+        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(file));
+        mapper.parseDocument(operations, reader);
+
+        final ModelNode ret = operations.get(0);
+
+        /*
+        BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+        XMLExtendedStreamWriter streamWriter = XMLExtendedStreamWriterFactory.newInstance().createXMLStreamWriter(output);
+        // (XMLElementWriter<?> writer = rootDeparser
+        SubsystemMarshallingContext context = new SubsystemMarshallingContext(ret, streamWriter);
+
+        mapper.deparseDocument((XMLElementWriter<?>) this.parser, context, streamWriter);
+         */
+        return ret;
+        /*
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
@@ -102,6 +126,7 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode model = controller.getModel().clone();
         persister.store(model);
         return model;
+        */
 
     }
     private void executeOperations(TestServerController controller, List<ModelNode> ops) {
