@@ -137,9 +137,14 @@ class NewModelControllerImpl implements NewModelController {
         persister.store(newModel);
     }
 
-    void acquireLock() throws InterruptedException {
-        //noinspection LockAcquiredButNotSafelyReleased
-        writeLock.lockInterruptibly();
+    void acquireLock(final boolean interruptibly) throws InterruptedException {
+        if (interruptibly) {
+            //noinspection LockAcquiredButNotSafelyReleased
+            writeLock.lockInterruptibly();
+        } else {
+            //noinspection LockAcquiredButNotSafelyReleased
+            writeLock.lock();
+        }
     }
 
     void releaseLock() {
