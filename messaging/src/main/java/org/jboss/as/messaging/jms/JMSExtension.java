@@ -38,6 +38,7 @@ import org.jboss.as.controller.registry.OperationEntry;
  * The JMS extension.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 public class JMSExtension implements Extension {
 
@@ -46,11 +47,11 @@ public class JMSExtension implements Extension {
     private static final PathElement CFS_PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
     private static final PathElement QUEUE_PATH = PathElement.pathElement(CommonAttributes.QUEUE);
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.TOPIC);
+    private static final PathElement RA_PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
 
     private static final JMSSubsystemParser parsers = JMSSubsystemParser.getInstance();
 
-    /** {@inheritDoc} */
-    @Override
+
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ModelNodeRegistration registration = subsystem.registerSubsystemModel(JMSSubsystemProviders.SUBSYSTEM);
@@ -69,10 +70,13 @@ public class JMSExtension implements Extension {
         final ModelNodeRegistration topics = registration.registerSubModel(TOPIC_PATH, JMSSubsystemProviders.JMS_TOPIC);
         topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, JMSSubsystemProviders.JMS_TOPIC_ADD, false);
         topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSSubsystemProviders.JMS_TOPIC_REMOVE, false);
+        // Resource Adapters
+        final ModelNodeRegistration resourceAdapters = registration.registerSubModel(RA_PATH, JMSSubsystemProviders.RA);
+        resourceAdapters.registerOperationHandler(ADD, PooledConnectionFactoryAdd.INSTANCE, JMSSubsystemProviders.RA_ADD, false);
+        resourceAdapters.registerOperationHandler(REMOVE, PooledConnectionFactoryRemove.INSTANCE, JMSSubsystemProviders.RA_REMOVE);
     }
 
-    /** {@inheritDoc} */
-    @Override
+
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parsers);
     }

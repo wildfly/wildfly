@@ -389,6 +389,10 @@
             <maven-resource group="org.hornetq" artifact="hornetq-jms"/>
         </module-def>
 
+        <module-def name="org.hornetq.ra">
+            <maven-resource group="org.hornetq" artifact="hornetq-ra"/>
+        </module-def>
+
         <module-def name="org.infinispan">
             <maven-resource group="org.infinispan" artifact="infinispan-core"/>
         </module-def>

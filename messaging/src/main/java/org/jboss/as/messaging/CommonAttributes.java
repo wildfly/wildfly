@@ -25,7 +25,7 @@ package org.jboss.as.messaging;
 /**
  * @author Emanuel Muckenhuber
  */
-interface CommonAttributes {
+public interface CommonAttributes {
 
     String ACCEPTOR ="acceptor";
     String ACCEPTORS ="acceptors";

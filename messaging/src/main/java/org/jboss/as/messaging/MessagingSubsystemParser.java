@@ -592,7 +592,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static ModelNode processConnectors(XMLExtendedStreamReader reader) throws XMLStreamException {
+    public static ModelNode processConnectors(XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode connectors = new ModelNode();
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;

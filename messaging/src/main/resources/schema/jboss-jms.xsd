@@ -31,6 +31,7 @@
    <xs:complexType name="subsystemType">
       <xs:sequence>
          <xs:element name="connection-factory" maxOccurs="unbounded" minOccurs="0" type="connection-factoryType" />
+         <xs:element name="pooled-connection-factory" maxOccurs="unbounded" minOccurs="0" type="pooled-connection-factoryType" />
          <xs:choice maxOccurs="unbounded" minOccurs="0">
             <xs:element name="queue" maxOccurs="1" minOccurs="1" type="queueType" />
             <xs:element name="topic" maxOccurs="1" minOccurs="1" type="topicType" />
@@ -58,6 +59,75 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
+         <xs:element name="resource-adapter" type="xs:string" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="producer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="producer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="cache-large-message-client" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="min-large-message-size" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="client-id" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="dups-ok-batch-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="transaction-batch-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="block-on-acknowledge" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="block-on-non-durable-send" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="block-on-durable-send" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="auto-group" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="pre-acknowledge" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="retry-interval-multiplier" type="xs:float" maxOccurs="1" minOccurs="0" />
+         <xs:element name="max-retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="reconnect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-initial-connection" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="connection-load-balancing-policy-class-name" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="use-global-pools" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="group-id" type="xs:string" maxOccurs="1" minOccurs="0" />
+      </xs:all>
+      <xs:attribute name="name" type="xs:string" />
+   </xs:complexType>
+
+      <xs:complexType name="pooled-connection-factoryType">
+      <xs:all>
+         <xs:element name="inbound-config" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:sequence>
+                    <xs:element name="use-jndi" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="jndi-params" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="use-local-tx" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="setup-attempts" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="setup-interval" type="xs:long" minOccurs="0" maxOccurs="1"/>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+
+         <xs:element name="transaction" type="transactionType" minOccurs="0" maxOccurs="1"/>
+
+         <xs:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0" />
+         <xs:element name="discovery-initial-wait-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+
+         <xs:element name="connectors" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="connector-ref" type="connector-refType" maxOccurs="unbounded" minOccurs="1"></xs:element>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+         <xs:element name="entries" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1">
+                  </xs:element>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+         <xs:element name="resource-adapter" type="xs:string" minOccurs="0" maxOccurs="1"/>
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
@@ -123,5 +193,29 @@
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required" />
    </xs:complexType>
-   
+
+    <xs:complexType name="transactionType">
+        <xs:attribute name="mode" use="required" type="modeType"/>
+    </xs:complexType>
+
+    <xs:simpleType name="modeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="xa">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="local">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="none">
+                <xs:annotation>
+                    <xs:documentation></xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>

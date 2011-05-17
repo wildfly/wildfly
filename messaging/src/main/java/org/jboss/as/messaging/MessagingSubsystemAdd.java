@@ -147,8 +147,7 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
 
     static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
-    /** {@inheritDoc} */
-    @Override
+
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
@@ -165,7 +164,6 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     // Create the HornetQ Service

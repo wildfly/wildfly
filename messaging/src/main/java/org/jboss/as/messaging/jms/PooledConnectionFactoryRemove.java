@@ -23,42 +23,41 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
- * Update handler removing a connection factory from the JMS subsystem. The
- * runtime action will remove the corresponding {@link ConnectionFactoryService}.
- *
- * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ *         Date: 5/13/11
+ *         Time: 3:30 PM
  */
-class ConnectionFactoryRemove implements ModelRemoveOperationHandler {
+public class PooledConnectionFactoryRemove implements ModelRemoveOperationHandler {
 
-    static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
+    public static final PooledConnectionFactoryRemove INSTANCE = new PooledConnectionFactoryRemove();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode operationAddress = operation.require(OP_ADDR);
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+       final ModelNode operationAddress = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(operationAddress);
         final String name = address.getLastElement().getValue();
 
         final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = ConnectionFactoryAdd.getAddOperation(operationAddress, subModel);
+        final ModelNode compensatingOperation = PooledConnectionFactoryAdd.getAddOperation(operationAddress, subModel);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry().getService(JMSServices.JMS_CF_BASE.append(name));
+                    final ServiceController<?> service = context.getServiceRegistry().getService(MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name));
                     if (service != null) {
                         service.setMode(ServiceController.Mode.REMOVE);
                     }
@@ -70,5 +69,4 @@ class ConnectionFactoryRemove implements ModelRemoveOperationHandler {
         }
         return new BasicOperationResult(compensatingOperation);
     }
-
 }

@@ -64,14 +64,35 @@
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms</artifactId>
         </dependency>
 
         <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-ra</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-naming</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-connector</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-common-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-common-impl</artifactId>
         </dependency>
 
         <dependency>

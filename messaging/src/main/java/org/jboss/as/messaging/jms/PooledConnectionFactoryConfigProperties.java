@@ -20,25 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
-
-import org.jboss.msc.service.ServiceName;
+package org.jboss.as.messaging.jms;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
+ *         Date: 5/16/11
+ *         Time: 5:09 PM
  */
-public class MessagingServices {
+public class PooledConnectionFactoryConfigProperties {
+    private final String name;
 
-    /** The service name "jboss.messaging". */
-    public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
+    private final String value;
 
-    /** The core queue name base. */
-    public static final ServiceName CORE_QUEUE_BASE = JBOSS_MESSAGING.append("queue");
+    private String type;
 
-    public static final ServiceName POOLED_CONNECTION_FACTORY_BASE = JBOSS_MESSAGING.append("pooled-connection-factory");
+    public PooledConnectionFactoryConfigProperties(String name, String value, String type) {
+        this.name = name;
+        this.value = value;
+        this.type = type;
+    }
 
-    public static enum TransportConfigType {
-        Remote, InVM, Generic
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public String getType() {
+        return type;
     }
 
 }

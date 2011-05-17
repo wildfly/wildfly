@@ -43,8 +43,7 @@ class JMSSubsystemDescribeHandler implements ModelQueryOperationHandler {
 
     static final JMSSubsystemDescribeHandler INSTANCE = new JMSSubsystemDescribeHandler();
 
-    /** {@inheritDoc} */
-    @Override
+
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
@@ -75,6 +74,13 @@ class JMSSubsystemDescribeHandler implements ModelQueryOperationHandler {
                 final ModelNode address = rootAddress.toModelNode();
                 address.add(CommonAttributes.TOPIC, property.getName());
                 result.add(JMSTopicAdd.getOperation(address, property.getValue()));
+            }
+        }
+        if(subModel.hasDefined(CommonAttributes.POOLED_CONNECTION_FACTORY)) {
+            for(final Property property : subModel.get(CommonAttributes.POOLED_CONNECTION_FACTORY).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.POOLED_CONNECTION_FACTORY, property.getName());
+                result.add(PooledConnectionFactoryAdd.getAddOperation(address, property.getValue()));
             }
         }
 

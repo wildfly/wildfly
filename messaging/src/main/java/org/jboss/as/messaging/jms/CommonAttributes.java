@@ -73,5 +73,19 @@ public interface CommonAttributes {
     String TOPIC ="topic";
     String TRANSACTION_BATCH_SIZE ="transaction-batch-size";
     String USE_GLOBAL_POOLS ="use-global-pools";
-
+    String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
+    String INBOUND_CONFIG = "inbound-config";
+    String USE_JNDI = "use-jndi";
+    String JNDI_PARAMS = "jndi-params";
+    String USE_LOCAL_TX = "use-local-tx";
+    String SETUP_ATTEMPTS = "setup-attempts";
+    String SETUP_INTERVAL = "setup-interval";
+    String TRANSACTION = "transaction";
+    String LOCAL = "local";
+    String XA = "xa";
+    String NONE = "none";
+    String MODE = "mode";
+    String LOCAL_TX = "LocalTransaction";
+    String XA_TX = "XATransaction";
+    String NO_TX = "NoTransaction";
 }

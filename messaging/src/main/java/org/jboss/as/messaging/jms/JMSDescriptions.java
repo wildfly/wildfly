@@ -80,6 +80,7 @@ class JMSDescriptions {
         subsystem.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("jms.connection-factories"));
         subsystem.get(CHILDREN, CommonAttributes.QUEUE, DESCRIPTION).set(bundle.getString("jms.queues"));
         subsystem.get(CHILDREN, CommonAttributes.TOPIC, DESCRIPTION).set(bundle.getString("jms.topics"));
+        subsystem.get(CHILDREN, CommonAttributes.POOLED_CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("jms.pooled-connection-factories"));
 
 
         return subsystem;
@@ -213,6 +214,55 @@ class JMSDescriptions {
         return node;
     }
 
+    static ModelNode getRA(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
+        addRAProperties(bundle, node, ATTRIBUTES);
+
+        return node;
+    }
+
+    static ModelNode getRAAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.add"));
+        addRAProperties(bundle, node, REQUEST_PROPERTIES);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return node;
+    }
+
+    private static void addRAProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
+
+        for (NodeAttribute attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+            node.get(propType, attr.getName(), DESCRIPTION).set(bundle.getString("pooled-connection-factory." + attr.getName()));
+            node.get(propType, attr.getName(), TYPE).set(attr.getType());
+            node.get(propType, attr.getName(), REQUIRED).set(attr.isRequired());
+
+            if (attr.getName().equals(CONNECTOR)) {
+                node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
+            } else if (attr.getValueType() != null) {
+                node.get(propType, attr.getName(), VALUE_TYPE).set(attr.getValueType());
+            }
+        }
+    }
+
+    static ModelNode getRARemove(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.remove"));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return op;
+    }
+
     private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final String propType) {
 
         for (NodeAttribute attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
@@ -244,6 +294,7 @@ class JMSDescriptions {
 
         return op;
     }
+
 
 
 }

@@ -26,15 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTION_FACTORY;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR_BACKUP_NAME;
-import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_GROUP_REF;
-import static org.jboss.as.messaging.jms.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.jms.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.jms.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.jms.CommonAttributes.TOPIC;
+import static org.jboss.as.messaging.jms.CommonAttributes.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +46,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
 public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
@@ -67,8 +60,6 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> updates) throws XMLStreamException {
 
         final ModelNode address = new ModelNode();
@@ -92,7 +83,10 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
                 } case TOPIC: {
                     processJMSTopic(reader, address, updates);
                     break;
-                } default: {
+                } case POOLED_CONNECTION_FACTORY: {
+                    processPooledConnectionFactory(reader, address, updates);
+                    break;
+                }default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
@@ -176,6 +170,61 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
         connectionFactory.get(OP).set(ADD);
         connectionFactory.get(OP_ADDR).set(address).add(CONNECTION_FACTORY, name);
 
+        createConnectionFactory(reader, updates, connectionFactory);
+    }
+
+    static void processPooledConnectionFactory(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        final String name = reader.getAttributeValue(0);
+        if(name == null) {
+            ParseUtils.missingRequired(reader, Collections.singleton("name"));
+        }
+
+        final ModelNode connectionFactory = new ModelNode();
+        connectionFactory.get(OP).set(ADD);
+        connectionFactory.get(OP_ADDR).set(address).add(POOLED_CONNECTION_FACTORY, name);
+
+        createConnectionFactory(reader, updates, connectionFactory);
+    }
+
+    static ModelNode processConnectors(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode connectors = new ModelNode();
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+            String backup = null;
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case CONNECTOR_NAME: {
+                        name = value.trim();
+                        break;
+                    } case CONNECTOR_BACKUP_NAME: {
+                        backup = value.trim();
+                        break;
+                    } default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if(name == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.CONNECTOR_NAME));
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            if(element != Element.CONNECTOR_REF) {
+                throw ParseUtils.unexpectedElement(reader);
+            }
+            ParseUtils.requireNoContent(reader);
+            final ModelNode connector = connectors.get(name).setEmptyObject();
+            if(backup != null) {
+                connector.get(CONNECTOR_BACKUP_NAME).set(backup);
+            }
+        }
+        return connectors;
+    }
+
+    private static void createConnectionFactory(XMLExtendedStreamReader reader, List<ModelNode> updates, ModelNode connectionFactory) throws XMLStreamException
+    {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch(element) {
@@ -199,6 +248,29 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
                         connectionFactory.get(ENTRIES).add(entry.trim());
                         ParseUtils.requireNoContent(reader);
                     }
+                    break;
+                } case INBOUND_CONFIG: {
+                    while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                        final Element local = Element.forName(reader.getLocalName());
+                        switch (local) {
+                            case USE_JNDI:
+                            case JNDI_PARAMS:
+                            case USE_LOCAL_TX:
+                            case SETUP_ATTEMPTS:
+                            case SETUP_INTERVAL:
+                                parseElementText(reader, local, connectionFactory);
+                                break;
+                            default:
+                                throw ParseUtils.unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } case TRANSACTION: {
+                    final String txType = reader.getAttributeValue(0);
+                    if( txType != null) {
+                        connectionFactory.get(TRANSACTION).set(txType);
+                    }
+                    ParseUtils.requireNoContent(reader);
                     break;
                 }
                 case DISCOVERY_INITIAL_WAIT_TIMEOUT:
@@ -242,52 +314,14 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
         updates.add(connectionFactory);
     }
 
-    static ModelNode processConnectors(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode connectors = new ModelNode();
-        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            String name = null;
-            String backup = null;
-            int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i++) {
-                final String value = reader.getAttributeValue(i);
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case CONNECTOR_NAME: {
-                        name = value.trim();
-                        break;
-                    } case CONNECTOR_BACKUP_NAME: {
-                        backup = value.trim();
-                        break;
-                    } default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            if(name == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.CONNECTOR_NAME));
-            }
-            final Element element = Element.forName(reader.getLocalName());
-            if(element != Element.CONNECTOR_REF) {
-                throw ParseUtils.unexpectedElement(reader);
-            }
-            ParseUtils.requireNoContent(reader);
-            final ModelNode connector = connectors.get(name).setEmptyObject();
-            if(backup != null) {
-                connector.get(CONNECTOR_BACKUP_NAME).set(backup);
-            }
-        }
-        return connectors;
-    }
 
-    static void parseElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
+    private static void parseElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
         final String value = reader.getElementText();
         if(value != null && value.length() > 0) {
             node.get(element.getLocalName()).set(value.trim());
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         final ModelNode node = context.getModelNode();
@@ -300,6 +334,9 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
         if (node.has(TOPIC)) {
             writeTopics(writer, node.get(TOPIC));
         }
+        if (node.has(POOLED_CONNECTION_FACTORY)) {
+            writePooledConnectionFactories(writer, node.get(POOLED_CONNECTION_FACTORY));
+        }
         writer.writeEndElement();
     }
 
@@ -308,136 +345,183 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
             final String name = prop.getName();
             final ModelNode factory = prop.getValue();
             if (factory.isDefined()) {
-                writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+               writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
+               writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+               writeConnectionFactory(writer, node, name, factory);
+            }
+        }
+    }
 
-                if (has(factory, CommonAttributes.DISCOVERY_GROUP_REF)) {
-                    writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
-                    writeAttribute(writer, Attribute.DISCOVERY_GROUP_NAME, factory.get(DISCOVERY_GROUP_REF));
-                    writer.writeEndElement();
-                }
-                if (has(factory, CONNECTOR)) {
-                    writer.writeStartElement(Element.CONNECTORS.getLocalName());
-                    for (Property connProp : factory.get(CONNECTOR).asPropertyList()) {
-                        final ModelNode conn = connProp.getValue();
-                        if (conn.isDefined()) {
-                            writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
-                            writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
-                            if (has(conn, CONNECTOR_BACKUP_NAME)) {
-                                writeAttribute(writer, Attribute.CONNECTOR_BACKUP_NAME, conn.get(CONNECTOR_BACKUP_NAME));
-                            }
-                            writer.writeEndElement();
-                        }
+    private void writePooledConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        for (Property prop : node.asPropertyList()) {
+            final String name = prop.getName();
+            final ModelNode factory = prop.getValue();
+            if (factory.isDefined()) {
+               writer.writeStartElement(Element.POOLED_CONNECTION_FACTORY.getLocalName());
+               writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+               writeConnectionFactory(writer, node, name, factory);
+            }
+        }
+    }
+
+    private void writeConnectionFactory(XMLExtendedStreamWriter writer, ModelNode node, String name, ModelNode factory) throws XMLStreamException
+    {
+        if (has(factory, CommonAttributes.DISCOVERY_GROUP_REF)) {
+            writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
+            writeAttribute(writer, Attribute.DISCOVERY_GROUP_NAME, factory.get(DISCOVERY_GROUP_REF));
+            writer.writeEndElement();
+        }
+        if (has(factory, CONNECTOR)) {
+            writer.writeStartElement(Element.CONNECTORS.getLocalName());
+            for (Property connProp : factory.get(CONNECTOR).asPropertyList()) {
+                final ModelNode conn = connProp.getValue();
+                if (conn.isDefined()) {
+                    writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
+                    writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
+                    if (has(conn, CONNECTOR_BACKUP_NAME)) {
+                        writeAttribute(writer, Attribute.CONNECTOR_BACKUP_NAME, conn.get(CONNECTOR_BACKUP_NAME));
                     }
                     writer.writeEndElement();
                 }
-                if (has(factory, ENTRIES)) {
-                    final ModelNode entries = factory.get(ENTRIES);
-                    if (entries.getType() == ModelType.LIST) {
-                        writer.writeStartElement(Element.ENTRIES.getLocalName());
-                        for (ModelNode entry : entries.asList()) {
-                            if (entry.isDefined()) {
-                                writer.writeStartElement(Element.ENTRY.getLocalName());
-                                writeAttribute(writer, Attribute.NAME, entry);
-                                writer.writeEndElement();
-                            }
-                        }
+            }
+            writer.writeEndElement();
+        }
+        if (has(factory, ENTRIES)) {
+            final ModelNode entries = factory.get(ENTRIES);
+            if (entries.getType() == ModelType.LIST) {
+                writer.writeStartElement(Element.ENTRIES.getLocalName());
+                for (ModelNode entry : entries.asList()) {
+                    if (entry.isDefined()) {
+                        writer.writeStartElement(Element.ENTRY.getLocalName());
+                        writeAttribute(writer, Attribute.NAME, entry);
                         writer.writeEndElement();
                     }
                 }
-                //ENTRIES
-
-                if (has(factory, CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT)){
-                    writeSimpleElement(writer, Element.DISCOVERY_INITIAL_WAIT_TIMEOUT, node);
-                }
-                if (has(factory, CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD)){
-                    writeSimpleElement(writer, Element.DISCOVERY_INITIAL_WAIT_TIMEOUT, node);
-                }
-                if (has(factory, CommonAttributes.CONNECTION_TTL)){
-                    writeSimpleElement(writer, Element.CONNECTION_TTL, node);
-                }
-                if (has(factory, CommonAttributes.CALL_TIMEOUT)){
-                    writeSimpleElement(writer, Element.CALL_TIMEOUT, node);
-                }
-                if (has(factory, CommonAttributes.CONSUMER_WINDOW_SIZE)){
-                    writeSimpleElement(writer, Element.CONSUMER_WINDOW_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.CONSUMER_MAX_RATE)){
-                    writeSimpleElement(writer, Element.CONSUMER_MAX_RATE, node);
-                }
-                if (has(factory, CommonAttributes.CONFIRMATION_WINDOW_SIZE)){
-                    writeSimpleElement(writer, Element.CONFIRMATION_WINDOW_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.PRODUCER_WINDOW_SIZE)){
-                    writeSimpleElement(writer, Element.PRODUCER_WINDOW_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.PRODUCER_MAX_RATE)){
-                    writeSimpleElement(writer, Element.PRODUCER_MAX_RATE, node);
-                }
-                if (has(factory, CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT)){
-                    writeSimpleElement(writer, Element.CACHE_LARGE_MESSAGE_CLIENT, node);
-                }
-                if (has(factory, CommonAttributes.MIN_LARGE_MESSAGE_SIZE)){
-                    writeSimpleElement(writer, Element.MIN_LARGE_MESSAGE_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.CLIENT_ID)){
-                    writeSimpleElement(writer, Element.CLIENT_ID, node);
-                }
-                if (has(factory, CommonAttributes.DUPS_OK_BATCH_SIZE)){
-                    writeSimpleElement(writer, Element.DUPS_OK_BATCH_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.TRANSACTION_BATCH_SIZE)){
-                    writeSimpleElement(writer, Element.TRANSACTION_BATH_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.BLOCK_ON_ACK)){
-                    writeSimpleElement(writer, Element.BLOCK_ON_ACK, node);
-                }
-                if (has(factory, CommonAttributes.BLOCK_ON_NON_DURABLE_SEND)){
-                    writeSimpleElement(writer, Element.BLOCK_ON_NON_DURABLE_SEND, node);
-                }
-                if (has(factory, CommonAttributes.BLOCK_ON_DURABLE_SEND)){
-                    writeSimpleElement(writer, Element.BLOCK_ON_DURABLE_SEND, node);
-                }
-                if (has(factory, CommonAttributes.AUTO_GROUP)){
-                    writeSimpleElement(writer, Element.AUTO_GROUP, node);
-                }
-                if (has(factory, CommonAttributes.PRE_ACK)){
-                    writeSimpleElement(writer, Element.PRE_ACK, node);
-                }
-                if (has(factory, CommonAttributes.RETRY_INTERVAL_MULTIPLIER)){
-                    writeSimpleElement(writer, Element.RETRY_INTERVAL_MULTIPLIER, node);
-                }
-                if (has(factory, CommonAttributes.MAX_RETRY_INTERVAL)){
-                    writeSimpleElement(writer, Element.MAX_RETRY_INTERVAL, node);
-                }
-                if (has(factory, CommonAttributes.RECONNECT_ATTEMPTS)){
-                    writeSimpleElement(writer, Element.RECONNECT_ATTEMPTS, node);
-                }
-                if (has(factory, CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION)){
-                    writeSimpleElement(writer, Element.FAILOVER_ON_INITIAL_CONNECTION, node);
-                }
-                if (has(factory, CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN)){
-                    writeSimpleElement(writer, Element.FAILOVER_ON_SERVER_SHUTDOWN, node);
-                }
-                if (has(factory, CommonAttributes.LOAD_BALANCING_CLASS_NAME)){
-                    writeSimpleElement(writer, Element.LOAD_BALANCING_CLASS_NAME, node);
-                }
-                if (has(factory, CommonAttributes.USE_GLOBAL_POOLS)){
-                    writeSimpleElement(writer, Element.USE_GLOBAL_POOLS, node);
-                }
-                if (has(factory, CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE)){
-                    writeSimpleElement(writer, Element.SCHEDULED_THREAD_POOL_MAX_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.THREAD_POOL_MAX_SIZE)){
-                    writeSimpleElement(writer, Element.THREAD_POOL_MAX_SIZE, node);
-                }
-                if (has(factory, CommonAttributes.GROUP_ID)){
-                    writeSimpleElement(writer, Element.GROUP_ID, node);
-                }
-
                 writer.writeEndElement();
             }
         }
+        if(has(node, TRANSACTION)) {
+            writer.writeStartElement(Element.TRANSACTION.getLocalName());
+            writeTransactionTypeAttribute(writer, Element.MODE, node.get(TRANSACTION));
+            writer.writeEndElement();
+        }
+        if(has(factory, INBOUND_CONFIG)) {
+            final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
+            if (inboundConfigs.getType() == ModelType.LIST) {
+                writer.writeStartElement(Element.INBOUND_CONFIG.getLocalName());
+                for (ModelNode config : inboundConfigs.asList()) {
+                    if (config.isDefined()) {
+                        if(has(config, CommonAttributes.USE_JNDI)) {
+                            writeSimpleElement(writer, Element.USE_JNDI, config);
+                        }
+                        if(has(config, CommonAttributes.JNDI_PARAMS)) {
+                            writeSimpleElement(writer, Element.JNDI_PARAMS, config);
+                        }
+                        if(has(config, CommonAttributes.SETUP_ATTEMPTS)) {
+                            writeSimpleElement(writer, Element.SETUP_ATTEMPTS, config);
+                        }
+                        if(has(config, CommonAttributes.SETUP_INTERVAL)) {
+                            writeSimpleElement(writer, Element.SETUP_INTERVAL, config);
+                        }
+                        if(has(config, CommonAttributes.USE_LOCAL_TX)) {
+                            writeSimpleElement(writer, Element.USE_LOCAL_TX, config);
+                        }
+                    }
+                }
+                writer.writeEndElement();
+            }
+        }
+        //ENTRIES
+
+        if (has(factory, CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT)){
+            writeSimpleElement(writer, Element.DISCOVERY_INITIAL_WAIT_TIMEOUT, node);
+        }
+        if (has(factory, CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD)){
+            writeSimpleElement(writer, Element.DISCOVERY_INITIAL_WAIT_TIMEOUT, node);
+        }
+        if (has(factory, CommonAttributes.CONNECTION_TTL)){
+            writeSimpleElement(writer, Element.CONNECTION_TTL, node);
+        }
+        if (has(factory, CommonAttributes.CALL_TIMEOUT)){
+            writeSimpleElement(writer, Element.CALL_TIMEOUT, node);
+        }
+        if (has(factory, CommonAttributes.CONSUMER_WINDOW_SIZE)){
+            writeSimpleElement(writer, Element.CONSUMER_WINDOW_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.CONSUMER_MAX_RATE)){
+            writeSimpleElement(writer, Element.CONSUMER_MAX_RATE, node);
+        }
+        if (has(factory, CommonAttributes.CONFIRMATION_WINDOW_SIZE)){
+            writeSimpleElement(writer, Element.CONFIRMATION_WINDOW_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.PRODUCER_WINDOW_SIZE)){
+            writeSimpleElement(writer, Element.PRODUCER_WINDOW_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.PRODUCER_MAX_RATE)){
+            writeSimpleElement(writer, Element.PRODUCER_MAX_RATE, node);
+        }
+        if (has(factory, CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT)){
+            writeSimpleElement(writer, Element.CACHE_LARGE_MESSAGE_CLIENT, node);
+        }
+        if (has(factory, CommonAttributes.MIN_LARGE_MESSAGE_SIZE)){
+            writeSimpleElement(writer, Element.MIN_LARGE_MESSAGE_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.CLIENT_ID)){
+            writeSimpleElement(writer, Element.CLIENT_ID, node);
+        }
+        if (has(factory, CommonAttributes.DUPS_OK_BATCH_SIZE)){
+            writeSimpleElement(writer, Element.DUPS_OK_BATCH_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.TRANSACTION_BATCH_SIZE)){
+            writeSimpleElement(writer, Element.TRANSACTION_BATH_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.BLOCK_ON_ACK)){
+            writeSimpleElement(writer, Element.BLOCK_ON_ACK, node);
+        }
+        if (has(factory, CommonAttributes.BLOCK_ON_NON_DURABLE_SEND)){
+            writeSimpleElement(writer, Element.BLOCK_ON_NON_DURABLE_SEND, node);
+        }
+        if (has(factory, CommonAttributes.BLOCK_ON_DURABLE_SEND)){
+            writeSimpleElement(writer, Element.BLOCK_ON_DURABLE_SEND, node);
+        }
+        if (has(factory, CommonAttributes.AUTO_GROUP)){
+            writeSimpleElement(writer, Element.AUTO_GROUP, node);
+        }
+        if (has(factory, CommonAttributes.PRE_ACK)){
+            writeSimpleElement(writer, Element.PRE_ACK, node);
+        }
+        if (has(factory, CommonAttributes.RETRY_INTERVAL_MULTIPLIER)){
+            writeSimpleElement(writer, Element.RETRY_INTERVAL_MULTIPLIER, node);
+        }
+        if (has(factory, CommonAttributes.MAX_RETRY_INTERVAL)){
+            writeSimpleElement(writer, Element.MAX_RETRY_INTERVAL, node);
+        }
+        if (has(factory, CommonAttributes.RECONNECT_ATTEMPTS)){
+            writeSimpleElement(writer, Element.RECONNECT_ATTEMPTS, node);
+        }
+        if (has(factory, CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION)){
+            writeSimpleElement(writer, Element.FAILOVER_ON_INITIAL_CONNECTION, node);
+        }
+        if (has(factory, CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN)){
+            writeSimpleElement(writer, Element.FAILOVER_ON_SERVER_SHUTDOWN, node);
+        }
+        if (has(factory, CommonAttributes.LOAD_BALANCING_CLASS_NAME)){
+            writeSimpleElement(writer, Element.LOAD_BALANCING_CLASS_NAME, node);
+        }
+        if (has(factory, CommonAttributes.USE_GLOBAL_POOLS)){
+            writeSimpleElement(writer, Element.USE_GLOBAL_POOLS, node);
+        }
+        if (has(factory, CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE)){
+            writeSimpleElement(writer, Element.SCHEDULED_THREAD_POOL_MAX_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.THREAD_POOL_MAX_SIZE)){
+            writeSimpleElement(writer, Element.THREAD_POOL_MAX_SIZE, node);
+        }
+        if (has(factory, CommonAttributes.GROUP_ID)){
+            writeSimpleElement(writer, Element.GROUP_ID, node);
+        }
+
+        writer.writeEndElement();
     }
 
     private void writeQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
@@ -512,6 +596,19 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
         writer.writeAttribute(attr.getLocalName(), value.asString());
+    }
+
+    private void writeTransactionTypeAttribute(final XMLExtendedStreamWriter writer, final Element attr, final ModelNode value) throws XMLStreamException {
+        String xaType = value.asString();
+        final String txSupport;
+        if(LOCAL_TX.equals(xaType)) {
+            txSupport = LOCAL_TX;
+        } else if (NONE.equals(xaType)) {
+             txSupport = NO_TX;
+        } else {
+            txSupport = XA_TX;
+        }
+        writer.writeAttribute(attr.getLocalName(), txSupport);
     }
 
 }

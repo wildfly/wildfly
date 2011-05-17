@@ -117,4 +117,26 @@ public class JMSSubsystemProviders {
             return JMSDescriptions.getTopicRemove(locale);
         }
     };
+
+
+    static final DescriptionProvider RA = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return JMSDescriptions.getRA(locale);
+        }
+    };
+
+    static final DescriptionProvider RA_ADD = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return JMSDescriptions.getRAAdd(locale);
+        }
+    };
+
+    static final DescriptionProvider RA_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return JMSDescriptions.getRARemove(locale);
+        }
+    };
 }

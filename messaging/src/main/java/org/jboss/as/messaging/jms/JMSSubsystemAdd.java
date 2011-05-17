@@ -45,7 +45,7 @@ class JMSSubsystemAdd implements ModelAddOperationHandler {
     static final JMSSubsystemAdd INSTANCE = new JMSSubsystemAdd();
 
     /** {@inheritDoc} */
-    @Override
+
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
@@ -70,6 +70,7 @@ class JMSSubsystemAdd implements ModelAddOperationHandler {
         node.get(CommonAttributes.CONNECTION_FACTORY).setEmptyObject();
         node.get(CommonAttributes.QUEUE).setEmptyObject();
         node.get(CommonAttributes.TOPIC).setEmptyObject();
+        node.get(CommonAttributes.POOLED_CONNECTION_FACTORY).setEmptyObject();
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);
     }

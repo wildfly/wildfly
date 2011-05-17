@@ -71,7 +71,15 @@ enum Element {
     TOPIC(CommonAttributes.TOPIC),
     TRANSACTION_BATH_SIZE(CommonAttributes.TRANSACTION_BATCH_SIZE),
     USE_GLOBAL_POOLS(CommonAttributes.USE_GLOBAL_POOLS),
-
+    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
+    TRANSACTION(CommonAttributes.TRANSACTION),
+    MODE(CommonAttributes.MODE),
+    INBOUND_CONFIG(CommonAttributes.INBOUND_CONFIG),
+    USE_JNDI(CommonAttributes.USE_JNDI),
+    JNDI_PARAMS(CommonAttributes.JNDI_PARAMS),
+    USE_LOCAL_TX(CommonAttributes.USE_LOCAL_TX),
+    SETUP_ATTEMPTS(CommonAttributes.SETUP_ATTEMPTS),
+    SETUP_INTERVAL(CommonAttributes.SETUP_INTERVAL),
     ;
 
     private final String name;

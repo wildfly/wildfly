@@ -340,6 +340,15 @@
                   <entry name="RemoteConnectionFactory" />
                </entries>
             </connection-factory>
+            <pooled-connection-factory name="hornetq-ra">
+               <transaction mode="xa"/>
+               <connectors>
+                  <connector-ref connector-name="in-vm"/>
+               </connectors>
+               <entries>
+                  <entry name="java:/JmsXA" />
+               </entries>
+            </pooled-connection-factory>
             <queue name="testQueue">
                <entry name="queue/test" />
             </queue>
