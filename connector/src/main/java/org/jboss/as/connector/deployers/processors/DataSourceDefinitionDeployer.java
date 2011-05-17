@@ -41,7 +41,6 @@ import org.jboss.jandex.DotName;
 
 import javax.annotation.sql.DataSourceDefinition;
 import javax.annotation.sql.DataSourceDefinitions;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -80,42 +79,56 @@ public class DataSourceDefinitionDeployer implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+
         // @DataSourceDefinitions
         List<AnnotationInstance> datasourceDefinitions = index.getAnnotations(DATASOURCE_DEFINITIONS);
-        // get the nested @DataSourceDefinition out of the outer @DataSourceDefinitions
-        List<AnnotationInstance> nestedDataSources = this.getNestedDataSourceAnnotations(datasourceDefinitions);
-        // create binding configurations out of it
-        this.processDataSourceDefinitions(eeModuleDescription, nestedDataSources);
+        if (datasourceDefinitions != null) {
+            for (AnnotationInstance annotation : datasourceDefinitions) {
+                final AnnotationTarget target = annotation.target();
+                if (target instanceof ClassInfo == false) {
+                    throw new DeploymentUnitProcessingException("@DataSourceDefinitions can only be applied " +
+                            "on class. " + target + " is not a class");
+                }
+                // get the nested @DataSourceDefinition out of the outer @DataSourceDefinitions
+                List<AnnotationInstance> datasources = this.getNestedDataSourceAnnotations(annotation);
+                // process the nested @DataSourceDefinition
+                for (AnnotationInstance datasource : datasources) {
+                    // create binding configurations out of it
+                    this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target);
+                }
+            }
+        }
 
         // @DataSourceDefinition
         List<AnnotationInstance> datasources = index.getAnnotations(DATASOURCE_DEFINITION);
-        // create binding configurations out of it
-        this.processDataSourceDefinitions(eeModuleDescription, datasources);
+        if (datasources != null) {
+            for (AnnotationInstance datasource : datasources) {
+                final AnnotationTarget target = datasource.target();
+                if (target instanceof ClassInfo == false) {
+                    throw new DeploymentUnitProcessingException("@DataSourceDefinition can only be applied " +
+                            "on class. " + target + " is not a class");
+                }
+                // create binding configurations out of it
+                this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target);
+            }
+        }
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processDataSourceDefinitions(final EEModuleDescription eeModuleDescription, final List<AnnotationInstance> datasourceDefinitions) throws DeploymentUnitProcessingException {
-        for (AnnotationInstance annotation : datasourceDefinitions) {
-            final AnnotationTarget annotationTarget = annotation.target();
-            if (annotationTarget instanceof ClassInfo == false) {
-                throw new DeploymentUnitProcessingException("@DataSourceDefinition can only be applied " +
-                        "on class. " + annotationTarget + " is not a class");
+    private void processDataSourceDefinition(final EEModuleDescription eeModuleDescription, final AnnotationInstance datasourceDefinition, final ClassInfo targetClass) throws DeploymentUnitProcessingException {
+        // create BindingConfiguration out of the @DataSource annotation
+        final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(datasourceDefinition);
+        EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(targetClass.name().toString());
+        // add the binding configuration via a class configurator
+        classDescription.getConfigurators().add(new ClassConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.getBindingConfigurations().add(bindingConfiguration);
             }
-            // create BindingConfiguration out of the @DataSource annotation
-            final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(annotation);
-            ClassInfo targetClass = (ClassInfo) annotationTarget;
-            EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(targetClass.name().toString());
-            // add the binding configuration via a class configurator
-            classDescription.getConfigurators().add(new ClassConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.getBindingConfigurations().add(bindingConfiguration);
-                }
-            });
-        }
+        });
     }
 
     private BindingConfiguration getBindingConfiguration(final AnnotationInstance datasourceAnnotation) {
@@ -181,22 +194,17 @@ public class DataSourceDefinitionDeployer implements DeploymentUnitProcessor {
     }
 
     /**
-     * Returns the nested {@link DataSourceDefinition} annotations out of the outer {@link DataSourceDefinitions} annotations
+     * Returns the nested {@link DataSourceDefinition} annotations out of the outer {@link DataSourceDefinitions} annotation
      *
-     * @param datasourceDefinitions The outer {@link DataSourceDefinitions} annotations
+     * @param datasourceDefinitions The outer {@link DataSourceDefinitions} annotation
      * @return
      */
-    private List<AnnotationInstance> getNestedDataSourceAnnotations(List<AnnotationInstance> datasourceDefinitions) {
-        if (datasourceDefinitions == null || datasourceDefinitions.isEmpty()) {
+    private List<AnnotationInstance> getNestedDataSourceAnnotations(AnnotationInstance datasourceDefinitions) {
+        if (datasourceDefinitions == null) {
             return Collections.emptyList();
         }
-
-        List<AnnotationInstance> nestedDataSources = new ArrayList<AnnotationInstance>();
-        for (AnnotationInstance datasources : datasourceDefinitions) {
-            AnnotationInstance[] nested = datasources.value().asNestedArray();
-            nestedDataSources.addAll(Arrays.asList(nested));
-        }
-        return nestedDataSources;
+        AnnotationInstance[] nested = datasourceDefinitions.value().asNestedArray();
+        return Arrays.asList(nested);
     }
 
 }
