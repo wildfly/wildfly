@@ -21,16 +21,19 @@
  */
 package org.jboss.as.web;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+
+import javax.naming.NamingException;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Loader;
-import org.apache.catalina.Realm;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.web.deployment.WebCtxLoader;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -38,11 +41,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.naming.NamingException;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URLClassLoader;
 
 /**
  * A service starting a welcome web context driven by simple static content.

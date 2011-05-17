@@ -21,7 +21,6 @@
  */
 package org.jboss.as.web;
 
-import org.jboss.metadata.web.spec.ListenerMetaData;
 import static org.jboss.as.web.Constants.*;
 
 import java.util.ArrayList;

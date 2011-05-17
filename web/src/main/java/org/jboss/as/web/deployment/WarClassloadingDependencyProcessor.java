@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
@@ -51,6 +52,13 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
+    static {
+        try {
+            Module.registerURLStreamHandlerFactoryModule(Module.getContextModuleLoader().loadModule(JBOSS_WEB));
+        } catch (ModuleLoadException e) {
+            throw new IllegalArgumentException("Web URL stream handler registration failed", e);
+        }
+    }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
