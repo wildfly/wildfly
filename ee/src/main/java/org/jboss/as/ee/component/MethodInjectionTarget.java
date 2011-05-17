@@ -26,6 +26,7 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.modules.Module;
@@ -44,14 +45,14 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  */
 public final class MethodInjectionTarget extends InjectionTarget {
 
-    public MethodInjectionTarget(final String className, final String name, final String declaredValueClassName) {
-        super(className, name, declaredValueClassName);
+    public MethodInjectionTarget(final String className, final String name, final String paramType) {
+        super(className, name, paramType);
     }
 
     public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
-        final String declaredValueClassName = getDeclaredValueClassName();
+        final String paramType = getDeclaredValueClassName();
         final Module module = deploymentUnit.getAttachment(MODULE);
         final ModuleClassLoader classLoader = module.getClassLoader();
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
@@ -62,18 +63,20 @@ public final class MethodInjectionTarget extends InjectionTarget {
             throw new DeploymentUnitProcessingException(e);
         }
         Collection<Method> methods;
-        if (declaredValueClassName != null) {
-            methods = classIndex.getMethods(name, declaredValueClassName);
+        if (paramType != null) {
+            // find the methods with the specific name and the param types
+            methods = ClassReflectionIndexUtil.findMethods(reflectionIndex, classIndex, name, paramType);
         } else {
-            methods = classIndex.getAllMethods(name, 1);
+            // find all the methods with the specific name and which accept just 1 parameter.
+            methods = ClassReflectionIndexUtil.findAllMethods(reflectionIndex, classIndex, name, 1);
         }
         Iterator<Method> iterator = methods.iterator();
-        if (! iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("No matching method found for method '"+ name +"' on '" + className + "'");
+        if (!iterator.hasNext()) {
+            throw new DeploymentUnitProcessingException("No matching method found for method '" + name + "' on '" + className + "'");
         }
         Method method = iterator.next();
         if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("More than one matching method found for method '"+ name +"' on '" + className + "'");
+            throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name + "' on '" + className + "'");
         }
         return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method);
     }

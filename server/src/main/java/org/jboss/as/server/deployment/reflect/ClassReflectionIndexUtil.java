@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.MethodIdentifier;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
  * Utility methods for finding methods within a {@link ClassReflectionIndex} hierarchy.
@@ -104,5 +105,63 @@ public class ClassReflectionIndexUtil {
         }
         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
         return findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
+    }
+
+    /**
+     * Finds and returns methods corresponding to the passed method <code>name</code> and method <code>paramTypes</code>.
+     * The passed <code>classReflectionIndex</code> will be used to traverse the class hierarchy while finding the method.
+     * <p/>
+     * Returns empty collection if no such method is found
+     *
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param methodName                The name of the method
+     * @param paramTypes                The param types accepted by the method
+     * @return
+     */
+    public static Collection<Method> findMethods(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final String methodName, final String... paramTypes) {
+        Collection<Method> methods = classReflectionIndex.getMethods(methodName, paramTypes);
+        if (!methods.isEmpty()) {
+            return methods;
+        }
+        // find on super class
+        Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
+        if (superClass != null) {
+            ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
+            if (superClassIndex != null) {
+                return findMethods(deploymentReflectionIndex, superClassIndex, methodName, paramTypes);
+            }
+
+        }
+        return methods;
+    }
+
+    /**
+     * Finds and returns all methods corresponding to the passed method <code>name</code> and method <code>paramCount</code>.
+     * The passed <code>classReflectionIndex</code> will be used to traverse the class hierarchy while finding the method.
+     * <p/>
+     * Returns empty collection if no such method is found
+     *
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param methodName                The name of the method
+     * @param paramCount                The number of params accepted by the method
+     * @return
+     */
+    public static Collection<Method> findAllMethods(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final String methodName, int paramCount) {
+        Collection<Method> methods = classReflectionIndex.getAllMethods(methodName, paramCount);
+        if (!methods.isEmpty()) {
+            return methods;
+        }
+        // find on super class
+        Class<?> superClass = classReflectionIndex.getIndexedClass().getSuperclass();
+        if (superClass != null) {
+            ClassReflectionIndex<?> superClassIndex = deploymentReflectionIndex.getClassIndex(superClass);
+            if (superClassIndex != null) {
+                return findAllMethods(deploymentReflectionIndex, superClassIndex, methodName, paramCount);
+            }
+
+        }
+        return methods;
     }
 }

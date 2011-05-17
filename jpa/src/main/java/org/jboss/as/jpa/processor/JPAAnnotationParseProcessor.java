@@ -206,9 +206,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             localContextName = declaredName;
         }
 
-        final DotName declaredTypeDotName = methodInfo.returnType().name();
-        final DotName injectionTypeDotName = declaredTypeDotName == null || declaredTypeDotName.toString().equals(Object.class.getName()) ? methodInfo.returnType().name() : declaredTypeDotName;
-        final String injectionType = injectionTypeDotName.toString();
+        final String injectionType = methodInfo.args()[0].name().toString();
         final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType);
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
         // setup the binding configuration in the class description
@@ -220,7 +218,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         });
 
         // setup the injection configuration
-        final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.returnType().name().toString());
+        final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
         // source is always local ENC jndi name
         final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
         final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
