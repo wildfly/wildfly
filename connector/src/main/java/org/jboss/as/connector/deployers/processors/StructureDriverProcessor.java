@@ -72,7 +72,7 @@ public final class StructureDriverProcessor implements DeploymentUnitProcessor {
         for (ResourceRoot resourceRoot : resourceRoots) {
             final VirtualFile deploymentRoot = resourceRoot.getRoot();
 
-            if (deploymentRoot.getChild("META-INF/services/java.sql.Driver") != null)  {
+            if (deploymentRoot.getChild("META-INF/services/java.sql.Driver").exists())  {
                 deploymentUnit.putAttachment(Attachments.IGNORE_OSGI, Boolean.TRUE);
                 break;
             }
