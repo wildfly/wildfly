@@ -22,10 +22,10 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.ee.naming.RootContextService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,7 +36,9 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 import static org.jboss.as.server.deployment.Attachments.MODULE;
@@ -170,7 +172,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
     private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
-        for (BindingConfiguration bindingConfiguration : bindings) {
+        // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
+        // handle these duplicates?
+        final Set<BindingConfiguration> uniqueBindings = new HashSet(bindings);
+        for (BindingConfiguration bindingConfiguration : uniqueBindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName();
                 final BinderService service = new BinderService(bindingName);

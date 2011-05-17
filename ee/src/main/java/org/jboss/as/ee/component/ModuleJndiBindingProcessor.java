@@ -79,7 +79,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         // these are bindings that have been added via a deployment descriptor
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
 
-            for (BindingConfiguration binding : componentConfiguration.getBindingConfigurations()) {
+            // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
+            // handle these duplicates?
+            final Set<BindingConfiguration> componentLevelBindings = new HashSet(componentConfiguration.getBindingConfigurations());
+            for (BindingConfiguration binding : componentLevelBindings) {
                 final String bindingName = binding.getName();
                 final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
                 if (componentConfiguration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE && compBinding) {
@@ -116,11 +119,14 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     @Override
                     protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         //only process classes once
-                        if(handledClasses.contains(classDescription.getClassName())) {
+                        if (handledClasses.contains(classDescription.getClassName())) {
                             return;
                         }
                         handledClasses.add(classDescription.getClassName());
-                        for (BindingConfiguration binding : configuration.getBindingConfigurations()) {
+                        // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
+                        // handle these duplicates?
+                        final Set<BindingConfiguration> classLevelBindings = new HashSet(configuration.getBindingConfigurations());
+                        for (BindingConfiguration binding : classLevelBindings) {
                             final String bindingName = binding.getName();
                             final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
                             if (componentConfiguration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE && compBinding) {
@@ -128,7 +134,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                                 continue;
                             }
                             final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
-                            if(deploymentDescriptorBindings.containsKey(serviceName)) {
+                            if (deploymentDescriptorBindings.containsKey(serviceName)) {
                                 continue; //this has been overridden by a DD binding
                             }
                             final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
