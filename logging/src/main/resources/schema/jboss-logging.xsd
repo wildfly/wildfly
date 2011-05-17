@@ -246,7 +246,7 @@
     </xs:complexType>
 
     <xs:complexType name="pathType">
-        <xs:attribute name="relative-to" use="optional" default="jboss.server.log.dir" type="xs:string"/>
+        <xs:attribute name="relative-to" use="optional" type="xs:string"/>
         <xs:attribute name="path" use="required" type="xs:string"/>
     </xs:complexType>
 
