@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
 import java.util.Collection;
@@ -37,14 +38,17 @@ import java.util.Collection;
  * @author John Bailey
  */
 public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger logger = Logger.getLogger(EEModuleConfigurationProcessor.class);
+
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        if(moduleDescription == null) {
+        if (moduleDescription == null) {
             return;
         }
-        if(module == null) {
+        if (module == null) {
             return;
         }
 
@@ -52,30 +56,33 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
 
         final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
-        if(classDescriptions != null) for(EEModuleClassDescription classDescription : classDescriptions) {
-            Class<?> clazz = null;
-            try {
-                clazz = Class.forName(classDescription.getClassName(), false, module.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
+        if (classDescriptions != null) {
+            for (EEModuleClassDescription classDescription : classDescriptions) {
+                Class<?> clazz = null;
+                try {
+                    clazz = Class.forName(classDescription.getClassName(), false, module.getClassLoader());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
+                }
+                final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, moduleConfiguration, classDescription);
+                logger.debug("Configuring EE module class: " + clazz);
+                for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
+                    classConfigurator.configure(phaseContext, classDescription, classConfiguration);
+                }
+                moduleConfiguration.addClassConfiguration(classConfiguration);
             }
-            final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz,moduleConfiguration, classDescription);
-            for(ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
-                classConfigurator.configure(phaseContext, classDescription, classConfiguration);
-            }
-            moduleConfiguration.addClassConfiguration(classConfiguration);
         }
-
         final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
-        if(componentDescriptions != null) for(ComponentDescription componentDescription : componentDescriptions) {
-            final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(moduleConfiguration);
-            for(ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
-                componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+        if (componentDescriptions != null) {
+            for (ComponentDescription componentDescription : componentDescriptions) {
+                logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
+                final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(moduleConfiguration);
+                for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
+                    componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+                }
+                moduleConfiguration.addComponentConfiguration(componentConfiguration);
             }
-            moduleConfiguration.addComponentConfiguration(componentConfiguration);
         }
-
-
     }
 
     public void undeploy(DeploymentUnit context) {
