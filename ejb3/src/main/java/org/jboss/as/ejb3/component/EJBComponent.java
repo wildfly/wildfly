@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
@@ -33,6 +34,9 @@ import javax.ejb.EJBLocalHome;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -181,7 +185,47 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     @Override
     public Object lookup(String name) throws IllegalArgumentException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.lookup");
+        if (name == null) {
+            throw new IllegalArgumentException("jndi name cannot be null during lookup");
+        }
+        final NamespaceContextSelector namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
+        if (namespaceContextSelector == null) {
+            throw new IllegalStateException("No NamespaceContextSelector available, cannot lookup " + name);
+        }
+        Context jndiContext = null;
+        String namespaceStrippedJndiName = name;
+        // get the appropriate JNDI context and strip the lookup jndi name of the component namespace prefix
+        if (name.startsWith("java:app/")) {
+            jndiContext = namespaceContextSelector.getContext("app");
+            namespaceStrippedJndiName = name.substring("java:app/".length());
+        } else if (name.startsWith("java:module/")) {
+            jndiContext = namespaceContextSelector.getContext("module");
+            namespaceStrippedJndiName = name.substring("java:module/".length());
+        } else if (name.startsWith("java:comp/") || !name.startsWith("java:")) {
+            jndiContext = namespaceContextSelector.getContext("comp");
+            namespaceStrippedJndiName = name.substring("java:comp/".length());
+        } else if (!name.startsWith("java:")) { // if it *doesn't* start with java: prefix, then default it to java:comp
+            jndiContext = namespaceContextSelector.getContext("comp");
+            // no need to strip the name since it doesn't start with java: prefix
+        } else if (name.startsWith("java:global/")) {
+            // Do *not* strip the jndi name of the prefix because java:global is a global context and doesn't specifically
+            // belong to the component's ENC, and hence *isn't* a component ENC relative name and has to be looked up
+            // with the absolute name (including the java:global prefix)
+            try {
+                jndiContext = new InitialContext();
+            } catch (NamingException ne) {
+                throw new RuntimeException("Could not lookup jndi name: " + name, ne);
+            }
+        } else {
+            throw new IllegalArgumentException("Cannot lookup jndi name: " + name + " since it" +
+                    " doesn't belong to java:app, java:module, java:comp or java:global namespace");
+        }
+        log.debug("Looking up " + namespaceStrippedJndiName + " in jndi context: " + jndiContext);
+        try {
+            return jndiContext.lookup(namespaceStrippedJndiName);
+        } catch (NamingException ne) {
+            throw new RuntimeException("Could not lookup jndi name: " + namespaceStrippedJndiName + " in context: " + jndiContext, ne);
+        }
     }
 
     @Override
