@@ -79,7 +79,7 @@ public interface NewOperationContext {
 
     /**
      * Complete a step, returning the overall operation result.  The step handler calling this operation should append
-     * its result status to the operation result before returning the same object.  The return value should be checked
+     * its result status to the operation result before calling this method.  The return value should be checked
      * to determine whether the operation step should be rolled back.
      *
      * @return the operation result action to take
@@ -95,7 +95,7 @@ public interface NewOperationContext {
 
     /**
      * Get the operation context type.  This can be used to determine whether an operation is executing on a
-     * server or on a host controller.
+     * server or on a host controller, etc.
      *
      * @return the operation context type
      */
@@ -103,7 +103,7 @@ public interface NewOperationContext {
 
     /**
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
-     * returned registry may not be used to remove services.
+     * returned registry must not be used to remove services.
      *
      * @param modify {@code true} if the operation may be modifying a service, {@code false} otherwise
      * @return the service registry
@@ -133,7 +133,8 @@ public interface NewOperationContext {
 
     /**
      * Get the service target.  If the step is not a runtime operation handler step, an exception will be thrown.  The
-     * returned service target is limited such that only the service add methods are supported.
+     * returned service target is limited such that only the service add methods are supported.  If a service added
+     * to this target was removed by a prior operation step, the install will wait until the removal completes.
      *
      * @return the service target
      * @throws UnsupportedOperationException if the calling step is not a runtime operation step

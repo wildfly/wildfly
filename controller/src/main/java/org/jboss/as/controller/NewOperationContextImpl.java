@@ -71,6 +71,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     private final NewModelController.OperationTransactionControl transactionControl;
     private final ServiceTarget serviceTarget;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
+    private boolean respectInterruption = true;
     private PathAddress modelAddress;
     private Stage currentStage = Stage.MODEL;
     private EnumSet<Flag> flags = EnumSet.noneOf(Flag.class);
@@ -293,6 +294,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                 ref.set(ResultAction.ROLLBACK);
             }
         }, response);
+        respectInterruption = false;
         return resultAction = ref.get();
     }
 
@@ -312,11 +314,23 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (modify && flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            boolean intr = false;
             try {
-                modelController.awaitContainerMonitor();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
+                for (;;) try {
+                    modelController.awaitContainerMonitor();
+                    break;
+                } catch (InterruptedException e) {
+                    if (respectInterruption) {
+                        Thread.currentThread().interrupt();
+                        throw new CancellationException("Operation cancelled asynchronously");
+                    } else {
+                        intr = true;
+                    }
+                }
+            } finally {
+                if (intr) {
+                    Thread.currentThread().interrupt();
+                }
             }
             modelController.acquireContainerMonitor();
         }
@@ -334,11 +348,23 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            boolean intr = false;
             try {
-                modelController.awaitContainerMonitor();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
+                for (;;) try {
+                    modelController.awaitContainerMonitor();
+                    break;
+                } catch (InterruptedException e) {
+                    if (respectInterruption) {
+                        Thread.currentThread().interrupt();
+                        throw new CancellationException("Operation cancelled asynchronously");
+                    } else {
+                        intr = true;
+                    }
+                }
+            } finally {
+                if (intr) {
+                    Thread.currentThread().interrupt();
+                }
             }
             modelController.acquireContainerMonitor();
         }
@@ -360,11 +386,23 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            boolean intr = false;
             try {
-                modelController.awaitContainerMonitor();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
+                for (;;) try {
+                    modelController.awaitContainerMonitor();
+                    break;
+                } catch (InterruptedException e) {
+                    if (respectInterruption) {
+                        Thread.currentThread().interrupt();
+                        throw new CancellationException("Operation cancelled asynchronously");
+                    } else {
+                        intr = true;
+                    }
+                }
+            } finally {
+                if (intr) {
+                    Thread.currentThread().interrupt();
+                }
             }
             modelController.acquireContainerMonitor();
         }
@@ -412,11 +450,23 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            boolean intr = false;
             try {
-                modelController.awaitContainerMonitor();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
+                for (;;) try {
+                    modelController.awaitContainerMonitor();
+                    break;
+                } catch (InterruptedException e) {
+                    if (respectInterruption) {
+                        Thread.currentThread().interrupt();
+                        throw new CancellationException("Operation cancelled asynchronously");
+                    } else {
+                        intr = true;
+                    }
+                }
+            } finally {
+                if (intr) {
+                    Thread.currentThread().interrupt();
+                }
             }
             modelController.acquireContainerMonitor();
         }
@@ -426,18 +476,29 @@ final class NewOperationContextImpl implements NewOperationContext {
     private void takeWriteLock() {
         if (flags.add(Flag.WRITE_LOCK_TAKEN)) {
             try {
-                //noinspection LockAcquiredButNotSafelyReleased
-                modelController.acquireLock();
+                modelController.acquireLock(respectInterruption);
             } catch (InterruptedException e) {
                 flags.remove(Flag.WRITE_LOCK_TAKEN);
                 Thread.currentThread().interrupt();
                 throw new CancellationException("Operation cancelled asynchronously");
             }
+            boolean intr = false;
             try {
-                modelController.awaitContainerMonitor();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
+                for (;;) try {
+                    modelController.awaitContainerMonitor();
+                    break;
+                } catch (InterruptedException e) {
+                    if (respectInterruption) {
+                        Thread.currentThread().interrupt();
+                        throw new CancellationException("Operation cancelled asynchronously");
+                    } else {
+                        intr = true;
+                    }
+                }
+            } finally {
+                if (intr) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }
@@ -746,6 +807,24 @@ final class NewOperationContextImpl implements NewOperationContext {
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                     throw new CancellationException("Service install was cancelled");
+                }
+                boolean intr = false;
+                try {
+                    while (map.containsKey(name)) try {
+                        map.wait();
+                        return realBuilder.install();
+                    } catch (InterruptedException e) {
+                        if (respectInterruption) {
+                            Thread.currentThread().interrupt();
+                            throw new CancellationException("Service install was cancelled");
+                        } else {
+                            intr = true;
+                        }
+                    }
+                } finally {
+                    if (intr) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
                 return realBuilder.install();
             }
