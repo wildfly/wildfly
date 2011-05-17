@@ -25,7 +25,10 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ee.component.NamespaceConfigurator;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
@@ -33,11 +36,17 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -180,7 +189,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName, String... methodParams) {
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
-        if (methodIntf != null)
+        if (methodIntf == null)
             txStyle3.pick(methodName).put(methodParamsKey, transactionAttribute);
         else
             txPerViewStyle3.pick(methodIntf).pick(methodName).put(methodParamsKey, transactionAttribute);
@@ -220,7 +229,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {
-
+        // add a client side interceptor which handles the toString() method invocation on the bean's views
+        this.addToStringMethodInterceptor(view);
     }
 
     /**
@@ -235,6 +245,28 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param view The view for which the interceptor has to be setup
      */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
+
+    private void addToStringMethodInterceptor(final ViewDescription view) {
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                final Method TO_STRING_METHOD;
+                try {
+                    TO_STRING_METHOD = Object.class.getMethod("toString", new Class<?>[0]);
+                } catch (NoSuchMethodException nsme) {
+                    throw new DeploymentUnitProcessingException(nsme);
+                }
+                Method[] methods = configuration.getProxyFactory().getCachedMethods();
+                for (Method method : methods) {
+                    if (TO_STRING_METHOD.equals(method)) {
+                        final Deque<InterceptorFactory> clientInterceptorsForMethod = configuration.getClientInterceptorDeque(method);
+                        clientInterceptorsForMethod.addFirst(new ImmediateInterceptorFactory(new ToStringMethodInterceptor()));
+                        return;
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * A {@link ComponentConfigurator} which picks up {@link EjbJarConfiguration} from the attachment of the deployment
@@ -257,5 +289,24 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             ejbComponentCreateServiceFactory.setEjbJarConfiguration(ejbJarConfiguration);
         }
     }
+
+    /**
+     * {@link Interceptor} which returns the string representation for the view instance on which the {@link Object#toString()}
+     * invocation happened. This interceptor (for performance reasons) does *not* check whether the invoked method is <code>toString()</code>
+     * method, so it's the responsibility of the component to setup this interceptor *only* on <code>toString()</code> method on the component
+     * views.
+     */
+    private class ToStringMethodInterceptor implements Interceptor {
+
+        @Override
+        public Object processInvocation(InterceptorContext context) throws Exception {
+            final ComponentViewInstance componentViewInstance = context.getPrivateData(ComponentViewInstance.class);
+            if (componentViewInstance == null) {
+                throw new IllegalStateException("ComponentViewInstance not available in interceptor context: " + context);
+            }
+            return "Proxy for view class: " + componentViewInstance.getViewClass().getName() + " of EJB: " + EJBComponentDescription.this.getComponentName();
+        }
+    }
+
 
 }
