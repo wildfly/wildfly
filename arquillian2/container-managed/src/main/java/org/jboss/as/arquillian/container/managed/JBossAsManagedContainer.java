@@ -118,7 +118,7 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAs
             } while (timeout > 0 && serverAvailable == false);
 
             if (!serverAvailable) {
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", config.getStartupTimeoutInSeconds()*1000));
             }
             boolean testRunnerMBeanAvaialble = false;
             MBeanServerConnection mbeanServer = null;
