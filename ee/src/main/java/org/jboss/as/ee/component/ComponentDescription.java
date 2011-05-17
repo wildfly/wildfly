@@ -634,22 +634,6 @@ public class ComponentDescription {
                 clazz = clazz.getSuperclass();
             }
 
-//            //now handle method level interceptors
-//            final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = description.getMethodInterceptors();
-//            for (MethodIdentifier identifier : methodInterceptors.keySet()) {
-//                final List<InterceptorDescription> descriptions = methodInterceptors.get(identifier);
-//                final Method componentMethod = findRequiredMethod(deploymentReflectionIndex, componentClassIndex, identifier);
-//                final Deque<InterceptorFactory> interceptorDeque = configuration.getComponentInterceptorDeque(componentMethod);
-//                // TODO - ordering...?
-//                for (InterceptorDescription interceptorDescription : descriptions) {
-//                    String interceptorClassName = interceptorDescription.getInterceptorClassName();
-//                    List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-//                    if (aroundInvokes != null) {
-//                        interceptorDeque.addAll(aroundInvokes);
-//                    }
-//                }
-//            }
-
             //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
             // and also add the tccl interceptor
             for (Method method : configuration.getDefinedComponentMethods()) {
