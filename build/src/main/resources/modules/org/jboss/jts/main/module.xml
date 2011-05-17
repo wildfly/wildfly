@@ -31,6 +31,7 @@
         <module name="org.apache.commons.logging"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.integration.jboss-transaction-spi"/>
+        <module name="org.jboss.jts.integration"/>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>

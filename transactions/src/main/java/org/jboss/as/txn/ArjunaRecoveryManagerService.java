@@ -87,8 +87,8 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
             if (orb == null) {
                 recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule.class.getName());
-                recoveryEnvironmentBean.setRecoveryExtensions(recoveryExtensions);
-                recoveryEnvironmentBean.setExpiryScanners(expiryScanners);
+                recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
+                recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
                 recoveryEnvironmentBean.setRecoveryActivators(null);
 
                 final RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
@@ -108,9 +108,10 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
                 expiryScanners.add(ExpiredContactScanner.class.getName());
                 expiryScanners.add(ExpiredToplevelScanner.class.getName());
                 expiryScanners.add(ExpiredServerScanner.class.getName());
-                recoveryEnvironmentBean.setRecoveryExtensions(recoveryExtensions);
-                recoveryEnvironmentBean.setExpiryScanners(expiryScanners);
-                recoveryEnvironmentBean.setRecoveryActivators(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
+                recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
+                recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
+                recoveryEnvironmentBean.setRecoveryActivatorClassNames(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
+
 
                 try {
                     final RecoveryManagerService recoveryManagerService = new com.arjuna.ats.jbossatx.jts.RecoveryManagerService(orb);

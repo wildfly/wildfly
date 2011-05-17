@@ -93,7 +93,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             coreEnvironmentBean.setSocketProcessIdMaxPorts(coreSocketProcessIdMaxPorts);
 
             final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
-            jtaEnvironmentBean.setLastResourceOptimisationInterface(LastResource.class.getName());
+            jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
             jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList("1"));
             jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
 
