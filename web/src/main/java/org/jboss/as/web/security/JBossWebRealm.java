@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.security.auth.Subject;
 
@@ -44,7 +43,6 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.auth.certs.SubjectDNMapping;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
@@ -159,7 +157,7 @@ public class JBossWebRealm extends RealmBase {
                 rolesAsStringList = mapUserRoles(rolesAsStringList);
             if (authenticationManager instanceof CacheableManager) {
                 @SuppressWarnings("unchecked")
-                CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) authenticationManager;
+                CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
                 return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
                         cm);
             } else
@@ -216,7 +214,7 @@ public class JBossWebRealm extends RealmBase {
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
                 if (authenticationManager instanceof CacheableManager) {
                     @SuppressWarnings("unchecked")
-                    CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) authenticationManager;
+                    CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, cm);
                 } else

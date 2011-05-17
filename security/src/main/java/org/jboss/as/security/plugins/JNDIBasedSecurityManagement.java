@@ -25,8 +25,8 @@ package org.jboss.as.security.plugins;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -43,7 +43,6 @@ import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.audit.AuditManager;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 import org.jboss.security.identitytrust.IdentityTrustManager;
 import org.jboss.security.mapping.MappingManager;
 
@@ -279,23 +278,25 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
         // create authentication cache
         if (cacheFactory instanceof EmbeddedCacheManager) {
             EmbeddedCacheManager cacheManager = EmbeddedCacheManager.class.cast(cacheFactory);
-            Cache<Principal, DomainInfo> cache = null;
+            @SuppressWarnings("rawtypes")
+            Cache cache = null;
             if (cacheManager != null) {
                 // TODO override global settings with security domain specific
                 cacheManager.defineConfiguration(securityDomain, "auth-cache", new Configuration());
                 cache = cacheManager.getCache(securityDomain);
             }
             if (cache != null && am instanceof CacheableManager) {
-                @SuppressWarnings("unchecked")
-                CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) am;
+                @SuppressWarnings({ "unchecked", "rawtypes" })
+                CacheableManager<Map, Principal> cm = (CacheableManager<Map, Principal>) am;
                 cm.setCache(cache);
             }
         } else if (cacheFactory instanceof DefaultAuthenticationCacheFactory) {
             DefaultAuthenticationCacheFactory cacheManager = DefaultAuthenticationCacheFactory.class.cast(cacheFactory);
-            ConcurrentMap<Principal, DomainInfo> cache = cacheManager.getCache();
+            @SuppressWarnings("rawtypes")
+            Map cache = cacheManager.getCache();
             if (cache != null && am instanceof CacheableManager) {
-                @SuppressWarnings("unchecked")
-                CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) am;
+                @SuppressWarnings({ "unchecked", "rawtypes" })
+                CacheableManager<Map, Principal> cm = (CacheableManager<Map, Principal>) am;
                 cm.setCache(cache);
             }
         }

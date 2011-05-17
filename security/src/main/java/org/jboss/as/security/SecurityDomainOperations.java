@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.security.Principal;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
@@ -43,7 +42,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
  * Group of operations that can be invoked for a security domain.
@@ -78,7 +76,7 @@ class SecurityDomainOperations {
                                         SecurityDomainService.SERVICE_NAME.append(securityDomain));
                         if (controller != null) {
                             SecurityDomainContext sdc = controller.getValue();
-                            CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> manager = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) sdc
+                            CacheableManager<?, Principal> manager = (CacheableManager<?, Principal>) sdc
                                     .getAuthenticationManager();
                             Set<Principal> cachedPrincipals = manager.getCachedKeys();
                             ModelNode result = new ModelNode();
@@ -131,7 +129,7 @@ class SecurityDomainOperations {
                                         SecurityDomainService.SERVICE_NAME.append(securityDomain));
                         if (controller != null) {
                             SecurityDomainContext sdc = controller.getValue();
-                            CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> manager = (CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal>) sdc
+                            CacheableManager<?, Principal> manager = (CacheableManager<?, Principal>) sdc
                                     .getAuthenticationManager();
                             if (principalName != null)
                                 manager.flushCache(new SimplePrincipal(principalName));

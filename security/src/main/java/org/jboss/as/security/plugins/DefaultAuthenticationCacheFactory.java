@@ -23,6 +23,7 @@
 package org.jboss.as.security.plugins;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
@@ -58,6 +59,15 @@ public class DefaultAuthenticationCacheFactory {
                 return removed;
             }
 
+            /** {@inheritDoc} */
+            @Override
+            public void clear() {
+                Collection<DomainInfo> values = values();
+                for (DomainInfo domainInfo : values) {
+                    domainInfo.logout();
+                }
+                super.clear();
+            }
         };
         return map;
     }

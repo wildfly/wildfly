@@ -24,14 +24,12 @@ package org.jboss.as.web.security;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.security.auth.login.LoginContext;
 
 import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.jboss.security.CacheableManager;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
  *
@@ -40,7 +38,7 @@ import org.jboss.security.authentication.JBossCachedAuthenticationManager.Domain
  */
 public class JBossGenericPrincipal extends GenericPrincipal {
 
-    private CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm;
+    private CacheableManager<?, Principal> cm;
 
     /** {@inheritDoc} */
     public JBossGenericPrincipal(Realm realm, String name, String password) {
@@ -64,7 +62,7 @@ public class JBossGenericPrincipal extends GenericPrincipal {
     }
 
     public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
-            LoginContext loginContext, CacheableManager<ConcurrentMap<Principal, DomainInfo>, Principal> cm) {
+            LoginContext loginContext, CacheableManager<?, Principal> cm) {
         super(realm, name, password, roles, userPrincipal, loginContext);
         this.cm = cm;
     }
