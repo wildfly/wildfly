@@ -21,7 +21,9 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.EjbLookup;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.service.ServiceController;
@@ -32,6 +34,8 @@ import org.jboss.weld.injection.spi.EjbInjectionServices;
 import javax.ejb.EJB;
 import javax.enterprise.inject.spi.InjectionPoint;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * Implementation of EjbInjectionServices.
@@ -45,10 +49,13 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
 
     private final EEModuleDescription moduleDescription;
 
+    private final EjbLookup ejbLookup;
 
-    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription) {
+
+    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EjbLookup ejbLookup) {
         this.serviceRegistry = serviceRegistry;
         this.moduleDescription = moduleDescription;
+        this.ejbLookup = ejbLookup;
     }
 
     @Override
@@ -67,14 +74,41 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
             ServiceController<?> controller =  serviceRegistry.getRequiredService(ejbServiceName);
             ManagedReferenceFactory factory = (ManagedReferenceFactory) controller.getValue();
             return factory.getReference().getInstance();
+        } else if(ejbLookup != null) {
+            final ServiceName viewService;
+            if(ejb.beanName().isEmpty()) {
+                if(ejb.beanInterface() != Object.class) {
+                    viewService = ejbLookup.getViewService(ejb.beanInterface());
+                } else {
+                    viewService = ejbLookup.getViewService(getType(injectionPoint.getType()));
+                }
+            } else {
+                if(ejb.beanInterface() != Object.class) {
+                    viewService = ejbLookup.getViewService(ejb.beanName(), ejb.beanInterface());
+                } else {
+                    viewService = ejbLookup.getViewService(ejb.beanName(), getType(injectionPoint.getType()));
+                }
+            }
+            final ServiceController<?> controller =  serviceRegistry.getRequiredService(viewService);
+            final ComponentView view = (ComponentView) controller.getValue();
+            return view.createInstance().createProxy();
         } else {
-            //TODO: hook in the ejb resolver, when it exists
-            throw new RuntimeException("Currently only the lookup attribute is supported on CDI @EJB injection " + injectionPoint);
+            throw new RuntimeException("No EjbLookup registry has been provided CDI @EJB injection " + injectionPoint);
         }
     }
 
     @Override
     public void cleanup() {
 
+    }
+
+    private static Class<?> getType(Type type) {
+        if(type instanceof Class) {
+            return (Class<?>) type;
+        } else if(type instanceof ParameterizedType) {
+            return getType(((ParameterizedType) type).getRawType());
+        } else {
+            throw new RuntimeException("Could not determine bean class from injection point type of " + type);
+        }
     }
 }

@@ -333,7 +333,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         StringBuilder builder = new StringBuilder();
         builder.append("Sub deployment ");
         builder.append(path);
-        builder.append(" in jboss-structure.xml was not found. Availible sub deployments: ");
+        builder.append(" in jboss-structure.xml was not found. Available sub deployments: ");
         for (String dep : subDeployments) {
             builder.append(dep);
             builder.append(", ");

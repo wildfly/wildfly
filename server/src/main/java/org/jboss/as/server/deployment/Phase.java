@@ -289,6 +289,7 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
 
     // POST_MODULE
+    public static final int POST_MODULE_EJB_LOOKUP                      = 0x0100;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0400;
@@ -298,7 +299,6 @@ public enum Phase {
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x0700;
     public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x0800;
     public static final int POST_MODULE_EJB_MODULE_CONFIGURATION        = 0x0801;
-
     public static final int POST_INITIALIZE_IN_ORDER                    = 0x0900;
 
 

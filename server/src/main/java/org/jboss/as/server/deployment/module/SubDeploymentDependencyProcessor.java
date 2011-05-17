@@ -37,48 +37,47 @@ import java.util.List;
  * Processor that set up a module dependency on the parent module
  *
  * @author Stuart Douglas
- *
  */
 public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit parent = deploymentUnit.getParent();
-        //only run for sub deployments
-        if (parent == null) {
-            return;
-        }
+        final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+
 
         final ModuleSpecification parentModuleSpec = parent.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        final ModuleSpecification moduleSpec=deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
-        final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
-        if (parentModule != null) {
-            // access to ear classes
-            ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true);
-            moduleDependency.addImportFilter(PathFilters.acceptAll(),true);
-            moduleSpec.addDependency(moduleDependency);
+
+        if (deploymentUnit.getParent() != null) {
+            final ModuleIdentifier parentModule = parent.getAttachment(Attachments.MODULE_IDENTIFIER);
+            if (parentModule != null) {
+                // access to ear classes
+                ModuleDependency moduleDependency = new ModuleDependency(moduleLoader, parentModule, false, false, true);
+                moduleDependency.addImportFilter(PathFilters.acceptAll(), true);
+                moduleSpec.addDependency(moduleDependency);
+            }
         }
 
         //If the extended class visibility flag is set up we need to set
         //up dependencies on other sub deployments
-        if(parentModuleSpec.isExtendedClassVisibility()) {
+        if (parentModuleSpec.isExtendedClassVisibility()) {
             final List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
             final List<ModuleDependency> accessibleModules = new ArrayList<ModuleDependency>();
-            for(DeploymentUnit subDeployment : subDeployments) {
+            for (DeploymentUnit subDeployment : subDeployments) {
                 final ModuleSpecification subModule = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
-                if(!subModule.isPrivateModule()) {
+                if (!subModule.isPrivateModule()) {
                     ModuleIdentifier identifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
-                    ModuleDependency dependency =new  ModuleDependency(moduleLoader,identifier,false, false, true);
-                    dependency.addImportFilter(PathFilters.acceptAll(),true);
+                    ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, false, false, true);
+                    dependency.addImportFilter(PathFilters.acceptAll(), true);
                     accessibleModules.add(dependency);
                 }
             }
-            for(ModuleDependency identifier : accessibleModules) {
-                if(!identifier.equals(moduleIdentifier)) {
+            for (ModuleDependency identifier : accessibleModules) {
+                if (!identifier.equals(moduleIdentifier)) {
                     moduleSpec.addDependencies(accessibleModules);
                 }
             }
