@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
@@ -69,7 +70,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_PERSISTENCE_XML = "WEB-INF/classes/META-INF/persistence.xml";
     private static final String META_INF_PERSISTENCE_XML = "META-INF/persistence.xml";
+    private static final String JAR_FILE_EXTENSION = ".jar";
+    private static final String LIB_FOLDER = "lib";
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
+
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -136,7 +140,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
             assert resourceRoots != null;
             for (ResourceRoot resourceRoot : resourceRoots) {
-                if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
+                if (resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
                     persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
                     parse(persistence_xml, listPUHolders, deploymentUnit, resourceRoot);
@@ -162,9 +166,24 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
 
-            // persistence.xml in jar/war files are handled as subdeployments, so no need to
-            // handle here.
-
+            // Parsing persistence.xml in EJB jar/war files is handled as subdeployments.
+            // We need to handle jars in the EAR/lib folder here
+            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+            assert resourceRoots != null;
+            for (ResourceRoot resourceRoot : resourceRoots) {
+                // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
+                // to deploy(DeploymentPhaseContext)).
+                if (! SubDeploymentMarker.isSubDeployment(resourceRoot) &&
+                    resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
+                    resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
+                    listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
+                    persistence_xml = resourceRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
+                    parse(persistence_xml, listPUHolders, deploymentUnit, resourceRoot);
+                    holder = normalize(listPUHolders);
+                    resourceRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
+                    markDU(holder, deploymentUnit);
+                }
+            }
             log.trace("parsed persistence unit definitions for ear " + deploymentRoot.getRootName());
         }
     }
