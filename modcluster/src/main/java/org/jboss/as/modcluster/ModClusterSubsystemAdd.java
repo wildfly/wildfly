@@ -22,9 +22,6 @@
 
 package org.jboss.as.modcluster;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -64,16 +61,6 @@ class ModClusterSubsystemAdd implements ModelAddOperationHandler, DescriptionPro
         final ModelNode config = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
 
         context.getSubModel().set(config);
-        PrintStream out = null;
-        try {
-            out = new PrintStream(new FileOutputStream("/tmp/myfile.txt", true));
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        out.println("Error: MERDE!!!!");
-        out.close();
-        log.error("Error: MERDE!!!!");
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
