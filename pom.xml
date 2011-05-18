@@ -30,7 +30,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>6-beta-1</version>
+      <version>6-beta-2</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
@@ -252,29 +252,17 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
 
-                <!-- Compiler plugin -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.1</version>
-                    <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
-                        <showDeprecation>true</showDeprecation>
-                        <showWarnings>true</showWarnings>
-                    </configuration>
-                </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>${version.jar.plugin}</version>
                     <configuration>
                         <archive>
                             <manifest>
@@ -309,7 +297,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>2.1.1</version>
+                    <version>${version.source.plugin}</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -323,8 +311,9 @@
 
                 <!-- Checkstyle -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.5</version>
+                    <version>${version.checkstyle.plugin}</version>
                     <configuration>
                         <configLocation>jboss-as-checkstyle/checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
@@ -351,7 +340,9 @@
 
                 <!-- Ban bad dependencies -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${version.enforcer.plugin}</version>
                     <executions>
                         <execution>
                             <id>ban-bad-dependencies</id>

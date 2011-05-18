@@ -36,17 +36,6 @@
     <artifactId>jboss-as-protocol</artifactId>
     <name>JBoss Application Server: Protocol Utilities</name>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>org.jboss.logging</groupId>

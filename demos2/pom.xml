@@ -71,6 +71,7 @@
 
         <!-- Big complex hack just to get @Resource(lookup="foo") -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -115,8 +116,8 @@
             </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>2.5</version>
           <executions>
             <execution>
               <id>copy-resources</id>

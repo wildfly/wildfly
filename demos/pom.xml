@@ -204,6 +204,7 @@
         <!-- Big complex hack just to get @Resource(lookup="foo") -->
 
         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
                 <execution>
@@ -233,29 +234,28 @@
                 <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
             </configuration>
         </plugin>
+        
         <plugin>
-
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.4</version>
-        <inherited>false</inherited>
-        <executions>
-          <execution>
-            <id>build-dist</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <tasks>
-                <ant antfile="build.xml"  inheritRefs="true">
-                  <target name="example"/>
-                </ant>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+                <execution>
+                    <id>build-dist</id>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                    <phase>package</phase>
+                    <configuration>
+                        <tasks>
+                            <ant antfile="build.xml"  inheritRefs="true">
+                                <target name="example"/>
+                            </ant>
+                        </tasks>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
   </build>
 

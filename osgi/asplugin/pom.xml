@@ -60,10 +60,4 @@
     </dependency>
   </dependencies>
 
-  <!-- Build -->
-  <build>
-    <plugins>
-    </plugins>
-  </build>
-
 </project>
