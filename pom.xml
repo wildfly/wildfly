@@ -222,6 +222,7 @@
         <module>deployment-scanner</module>
         <module>domain-controller</module>
         <module>domain-http-api</module>
+        <module>domain-management</module>
         <module>ee</module>
         <module>ejb3</module>
         <module>embedded</module>
@@ -607,6 +608,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-domain-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-domain-management</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
