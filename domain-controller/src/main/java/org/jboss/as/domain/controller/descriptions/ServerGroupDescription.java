@@ -148,7 +148,7 @@ public class ServerGroupDescription {
 
     public static ModelNode getSystemPropertiesDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server-group.system-property"), false);
+        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server-group.system-property"), true);
     }
 
 
