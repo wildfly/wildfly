@@ -250,7 +250,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                         }
                         response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
                         // It failed after!  Just return, ignore the failure
-                        // todo log a warning
+                        report(MessageSeverity.WARN, "Step handler " + step.handler + " failed after completion");
                         return resultAction;
                     }
                 } finally {
