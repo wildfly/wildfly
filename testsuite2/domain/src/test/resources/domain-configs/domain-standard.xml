@@ -271,12 +271,8 @@
                </virtual-server>
              </subsystem>
            <subsystem xmlns="urn:jboss:domain:webservices:1.0">
-                <configuration>
-                 <webServiceHost>localhost</webServiceHost>
-                 <modifySOAPAddress>true</modifySOAPAddress>
-                 <!-- <webServiceSecurePort>8443</webServiceSecurePort>
-                    <webServicePort>8080</webServicePort> -->
-              </configuration>
+                <wsdl-host>localhost</wsdl-host>
+                <modify-wsdl-address>true</modify-wsdl-address>
           </subsystem>
         </profile>
     </profiles>
