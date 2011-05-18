@@ -61,7 +61,7 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Bundle-SymbolicName>${artifactId}</Bundle-SymbolicName>
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Activator>org.jboss.as.osgi.configadmin.DomainModelPersistenceManager</Bundle-Activator>
             <Import-Package>
               org.apache.felix.cm;version="[1.0,2.0)",
