@@ -35,21 +35,24 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
@@ -297,8 +300,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(HANDLER, name);
-        node.get(HANDLER_TYPE).set(LoggerHandlerType.ASYNC_HANDLER.toString());
+        node.get(OP_ADDR).set(address).add(ASYNC_HANDLER, name);
         node.get(LEVEL).set(levelName);
         if(subhandlers != null) node.get(SUBHANDLERS).set(subhandlers);
         node.get(AUTOFLUSH).set(Boolean.valueOf(autoflush));
@@ -421,8 +423,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(HANDLER, name);
-        node.get(HANDLER_TYPE).set(LoggerHandlerType.CONSOLE_HANDLER.toString());
+        node.get(OP_ADDR).set(address).add(CONSOLE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
         if(formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
@@ -506,8 +507,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(HANDLER, name);
-        node.get(HANDLER_TYPE).set(LoggerHandlerType.FILE_HANDLER.toString());
+        node.get(OP_ADDR).set(address).add(FILE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
@@ -598,8 +598,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(HANDLER, name);
-        node.get(HANDLER_TYPE).set(LoggerHandlerType.PERIODIC_ROTATING_FILE_HANDLER.toString());
+        node.get(OP_ADDR).set(address).add(PERIODIC_ROTATING_FILE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
@@ -700,8 +699,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(HANDLER, name);
-        node.get(HANDLER_TYPE).set(LoggerHandlerType.SIZE_ROTATING_FILE_HANDLER.toString());
+        node.get(OP_ADDR).set(address).add(SIZE_ROTATING_FILE_HANDLER, name);
         node.get(AUTOFLUSH).set(autoflush);
         node.get(LEVEL).set(levelName);
         if(encoding != null) node.get(ENCODING).set(encoding);
@@ -879,8 +877,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
-        if (node.hasDefined(HANDLER)) {
-            final ModelNode handlers = node.get(HANDLER);
+        if (node.hasDefined(ASYNC_HANDLER)) {
+            final ModelNode handlers = node.get(ASYNC_HANDLER);
 
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
@@ -888,30 +886,55 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 if (!handler.isDefined()) {
                     continue;
                 }
-                final LoggerHandlerType type;
-                try {
-                    type = Enum.valueOf(LoggerHandlerType.class, handler.get(HANDLER_TYPE).asString());
-                } catch (IllegalArgumentException e) {
+                writeAsynchHandler(writer, handler, name);
+            }
+        }
+        if (node.hasDefined(CONSOLE_HANDLER)) {
+            final ModelNode handlers = node.get(CONSOLE_HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
                     continue;
                 }
+                writeConsoleHandler(writer, handler, name);
+            }
+        }
+        if (node.hasDefined(FILE_HANDLER)) {
+            final ModelNode handlers = node.get(FILE_HANDLER);
 
-                switch (type) {
-                    case ASYNC_HANDLER:
-                        writeAsynchHandler(writer, handler, name);
-                        break;
-                    case CONSOLE_HANDLER:
-                        writeConsoleHandler(writer, handler, name);
-                        break;
-                    case FILE_HANDLER:
-                        writeFileHandler(writer, handler, name);
-                        break;
-                    case PERIODIC_ROTATING_FILE_HANDLER:
-                        writePeriodicRotatingFileHandler(writer, handler, name);
-                        break;
-                    case SIZE_ROTATING_FILE_HANDLER:
-                        writeSizeRotatingFileHandler(writer, handler, name);
-                        break;
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
+                    continue;
                 }
+                writeFileHandler(writer, handler, name);
+            }
+        }
+        if (node.hasDefined(PERIODIC_ROTATING_FILE_HANDLER)) {
+            final ModelNode handlers = node.get(PERIODIC_ROTATING_FILE_HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
+                    continue;
+                }
+                writePeriodicRotatingFileHandler(writer, handler, name);
+            }
+        }
+        if (node.hasDefined(SIZE_ROTATING_FILE_HANDLER)) {
+            final ModelNode handlers = node.get(SIZE_ROTATING_FILE_HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (!handler.isDefined()) {
+                    continue;
+                }
+                writeSizeRotatingFileHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(LOGGER)) {

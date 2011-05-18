@@ -40,7 +40,7 @@ import java.util.logging.Level;
  */
 public final class SizeRotatingFileHandlerService implements Service<Handler> {
 
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<String> fileName = new InjectedValue<String>();
 
     private AbstractFormatterSpec formatterSpec;
 
@@ -51,8 +51,6 @@ public final class SizeRotatingFileHandlerService implements Service<Handler> {
     private String encoding;
 
     private boolean append;
-
-    private String path;
 
     private int maxBackupIndex;
 
@@ -73,7 +71,7 @@ public final class SizeRotatingFileHandlerService implements Service<Handler> {
         }
         handler.setAppend(append);
         try {
-            setFileName();
+            handler.setFileName(fileName.getValue());
         } catch (FileNotFoundException e) {
             throw new StartException(e);
         }
@@ -141,21 +139,6 @@ public final class SizeRotatingFileHandlerService implements Service<Handler> {
         if (handler != null) handler.setAppend(append);
     }
 
-    private void setFileName() throws FileNotFoundException {
-        final SizeRotatingFileHandler handler = value;
-        if (handler == null) {
-            return;
-        }
-        final String value = relativeTo.getOptionalValue();
-        final String fileName = value != null ? value + "/" + path : path;
-        handler.setFileName(fileName);
-    }
-
-    public synchronized void setPath(final String path) throws FileNotFoundException {
-        this.path = path;
-        setFileName();
-    }
-
     public synchronized int getMaxBackupIndex() {
         return maxBackupIndex;
     }
@@ -176,7 +159,7 @@ public final class SizeRotatingFileHandlerService implements Service<Handler> {
         if (handler != null) handler.setRotateSize(rotateSize);
     }
 
-    public Injector<String> getRelativeToInjector() {
-        return relativeTo;
+    public Injector<String> getFileNameInjector() {
+        return fileName;
     }
 }

@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 
@@ -57,8 +56,6 @@ class ConsoleHandlerAdd implements ModelAddOperationHandler {
 
     static final ConsoleHandlerAdd INSTANCE = new ConsoleHandlerAdd();
 
-    static final String OPERATION_NAME = "add-console-handler";
-
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
@@ -70,17 +67,10 @@ class ConsoleHandlerAdd implements ModelAddOperationHandler {
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(OP).set(REMOVE);
 
-        final String handlerType = operation.require(HANDLER_TYPE).asString();
-        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
-        if(type != LoggerHandlerType.CONSOLE_HANDLER) {
-            throw new OperationFailedException(new ModelNode().set("invalid operation for handler-type: " + type));
-        }
-
         final ModelNode subModel = context.getSubModel();
         subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         subModel.get(ENCODING).set(operation.get(ENCODING));
         subModel.get(FORMATTER).set(operation.get(FORMATTER));
-        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
 

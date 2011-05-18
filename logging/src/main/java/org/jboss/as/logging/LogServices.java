@@ -48,6 +48,8 @@ public final class LogServices {
 
     public static final ServiceName HANDLER = JBOSS_LOGGING.append("handler");
 
+    public static final ServiceName HANDLER_FILE = JBOSS_LOGGING.append("handler-file");
+
     private LogServices() {
     }
 
@@ -61,6 +63,10 @@ public final class LogServices {
 
     public static ServiceName handlerName(final String name) {
         return HANDLER.append(name);
+    }
+
+    public static ServiceName handlerFileName(final String handlerName) {
+        return HANDLER_FILE.append(handlerName);
     }
 
     static void installLoggerHandlers(final ServiceTarget serviceTarget, final String loggerName, final ModelNode handlers) {

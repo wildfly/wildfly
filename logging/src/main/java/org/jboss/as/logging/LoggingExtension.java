@@ -26,6 +26,8 @@ import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -49,7 +51,12 @@ public class LoggingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "logging";
     private static final PathElement loggersPath = PathElement.pathElement(CommonAttributes.LOGGER);
-    private static final PathElement handlersPath = PathElement.pathElement(CommonAttributes.HANDLER);
+    private static final PathElement asyncHandlersPath = PathElement.pathElement(CommonAttributes.ASYNC_HANDLER);
+    private static final PathElement consoleHandlersPath = PathElement.pathElement(CommonAttributes.CONSOLE_HANDLER);
+    private static final PathElement fileHandlersPath = PathElement.pathElement(CommonAttributes.FILE_HANDLER);
+    private static final PathElement periodicHandlersPath = PathElement.pathElement(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER);
+    private static final PathElement sizePeriodicHandlersPath = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
+
 
     /** {@inheritDoc} */
     @Override
@@ -60,20 +67,59 @@ public class LoggingExtension implements Extension {
         registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.SET_ROOT_LOGGER, false);
         registration.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
+        registration.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
+
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.getInstance());
         // loggers
         final ModelNodeRegistration loggers = registration.registerSubModel(loggersPath, LoggingSubsystemProviders.LOGGER);
         loggers.registerOperationHandler(ADD, LoggerAdd.INSTANCE, LoggingSubsystemProviders.LOGGER_ADD, false);
         loggers.registerOperationHandler(REMOVE, LoggerRemove.INSTANCE, LoggingSubsystemProviders.LOGGER_REMOVE, false);
-        // handlers
-        final ModelNodeRegistration handlers = registration.registerSubModel(handlersPath, LoggingSubsystemProviders.HANDLERS);
-        handlers.registerOperationHandler(ADD, LoggerHandlerAdd.INSTANCE, LoggingSubsystemProviders.HANDLER_ADD, false);
-        handlers.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
-        handlers.registerOperationHandler(AsyncHandlerAdd.OPERATION_NAME, AsyncHandlerAdd.INSTANCE, AsyncHandlerAdd.INSTANCE, false);
-        handlers.registerOperationHandler(ConsoleHandlerAdd.OPERATION_NAME, ConsoleHandlerAdd.INSTANCE, LoggingSubsystemProviders.CONSOLE_HANDLER_ADD, false);
-        handlers.registerOperationHandler(FileHandlerAdd.OPERATION_NAME, FileHandlerAdd.INSTANCE, LoggingSubsystemProviders.FILE_HANDLER_ADD, false);
-        handlers.registerOperationHandler(PeriodicRotatingFileHandlerAdd.OPERATION_NAME, PeriodicRotatingFileHandlerAdd.INSTANCE, LoggingSubsystemProviders.PERIODIC_HANDLER_ADD, false);
-        handlers.registerOperationHandler(SizeRotatingFileHandlerAdd.OPERATION_NAME, SizeRotatingFileHandlerAdd.INSTANCE, LoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_ADD, false);
+        loggers.registerOperationHandler(LoggerLevelChange.OPERATION_NAME, LoggerLevelChange.INSTANCE, LoggingSubsystemProviders.LOGGER_CHANGE_LEVEL, false);
+
+        //  Async handlers
+        final ModelNodeRegistration asyncHandler = registration.registerSubModel(asyncHandlersPath, LoggingSubsystemProviders.ASYNC_HANDLER);
+        asyncHandler.registerOperationHandler(ADD, AsyncHandlerAdd.INSTANCE, LoggingSubsystemProviders.ASYNC_HANDLER_ADD, false);
+        asyncHandler.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
+        asyncHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
+        asyncHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
+        asyncHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
+        asyncHandler.registerOperationHandler(AsyncHandlerUpdateProperties.OPERATION_NAME, AsyncHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.ASYNC_HANDLER_UPDATE, false);
+
+        //  Console handlers
+        final ModelNodeRegistration consoleHandler = registration.registerSubModel(consoleHandlersPath, LoggingSubsystemProviders.CONSOLE_HANDLER);
+        consoleHandler.registerOperationHandler(ADD, ConsoleHandlerAdd.INSTANCE, LoggingSubsystemProviders.CONSOLE_HANDLER_ADD, false);
+        consoleHandler.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
+        consoleHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
+        consoleHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
+        consoleHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
+        consoleHandler.registerOperationHandler(ConsoleHandlerUpdateProperties.OPERATION_NAME, ConsoleHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.CONSOLE_HANDLER_UPDATE, false);
+
+        final ModelNodeRegistration fileHandler = registration.registerSubModel(fileHandlersPath, LoggingSubsystemProviders.FILE_HANDLER);
+        fileHandler.registerOperationHandler(ADD, FileHandlerAdd.INSTANCE, LoggingSubsystemProviders.FILE_HANDLER_ADD, false);
+        fileHandler.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
+        fileHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
+        fileHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
+        fileHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
+        fileHandler.registerOperationHandler(HandlerFileChange.OPERATION_NAME, HandlerFileChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_FILE, false);
+        fileHandler.registerOperationHandler(FileHandlerUpdateProperties.OPERATION_NAME, FileHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.FILE_HANDLER_UPDATE, false);
+
+        final ModelNodeRegistration periodicHandler = registration.registerSubModel(periodicHandlersPath, LoggingSubsystemProviders.PERIODIC_HANDLER);
+        periodicHandler.registerOperationHandler(ADD, PeriodicRotatingFileHandlerAdd.INSTANCE, LoggingSubsystemProviders.PERIODIC_HANDLER_ADD, false);
+        periodicHandler.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
+        periodicHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
+        periodicHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
+        periodicHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
+        periodicHandler.registerOperationHandler(HandlerFileChange.OPERATION_NAME, HandlerFileChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_FILE, false);
+        periodicHandler.registerOperationHandler(PeriodicHandlerUpdateProperties.OPERATION_NAME, PeriodicHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.PERIODIC_HANDLER_UPDATE, false);
+
+        final ModelNodeRegistration sizePeriodicHandler = registration.registerSubModel(sizePeriodicHandlersPath, LoggingSubsystemProviders.SIZE_PERIODIC_HANDLER);
+        sizePeriodicHandler.registerOperationHandler(ADD, SizeRotatingFileHandlerAdd.INSTANCE, LoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_ADD, false);
+        sizePeriodicHandler.registerOperationHandler(REMOVE, LoggerHandlerRemove.INSTANCE, LoggingSubsystemProviders.HANDLER_REMOVE, false);
+        sizePeriodicHandler.registerOperationHandler(ENABLE, HandlerEnable.INSTANCE, LoggingSubsystemProviders.HANDLER_ENABLE, false);
+        sizePeriodicHandler.registerOperationHandler(DISABLE, HandlerDisable.INSTANCE, LoggingSubsystemProviders.HANDLER_DISABLE, false);
+        sizePeriodicHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
+        sizePeriodicHandler.registerOperationHandler(HandlerFileChange.OPERATION_NAME, HandlerFileChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_FILE, false);
+        sizePeriodicHandler.registerOperationHandler(SizeRotatingHandlerUpdateProperties.OPERATION_NAME, SizeRotatingHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.SIZE_PERIODIC_HANDLER_UPDATE, false);
     }
 
     /** {@inheritDoc} */
@@ -97,7 +143,11 @@ public class LoggingExtension implements Extension {
 
             final ModelNode subModel = context.getSubModel();
             subModel.get(CommonAttributes.LOGGER).setEmptyObject();
-            subModel.get(CommonAttributes.HANDLER).setEmptyObject();
+            subModel.get(CommonAttributes.ASYNC_HANDLER).setEmptyObject();
+            subModel.get(CommonAttributes.CONSOLE_HANDLER).setEmptyObject();
+            subModel.get(CommonAttributes.FILE_HANDLER).setEmptyObject();
+            subModel.get(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER).setEmptyObject();
+            subModel.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();
 
             resultHandler.handleResultComplete();
             return new BasicOperationResult(compensatingOperation);

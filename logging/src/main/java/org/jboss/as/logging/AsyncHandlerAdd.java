@@ -30,7 +30,6 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
@@ -46,7 +45,6 @@ import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -57,11 +55,9 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class AsyncHandlerAdd implements ModelAddOperationHandler, DescriptionProvider {
+class AsyncHandlerAdd implements ModelAddOperationHandler {
 
     static final AsyncHandlerAdd INSTANCE = new AsyncHandlerAdd();
-
-    static final String OPERATION_NAME = "add-async-handler";
 
     /** {@inheritDoc} */
     @Override
@@ -74,14 +70,7 @@ class AsyncHandlerAdd implements ModelAddOperationHandler, DescriptionProvider {
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(OP).set(REMOVE);
 
-        final String handlerType = operation.require(HANDLER_TYPE).asString();
-        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
-        if(type != LoggerHandlerType.ASYNC_HANDLER) {
-            throw new OperationFailedException(new ModelNode().set("invalid operation for handler-type: " + type));
-        }
-
         final ModelNode subModel = context.getSubModel();
-        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         subModel.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
         subModel.get(LEVEL).set(operation.get(LEVEL));
@@ -118,11 +107,4 @@ class AsyncHandlerAdd implements ModelAddOperationHandler, DescriptionProvider {
         }
         return new BasicOperationResult(compensatingOperation);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return LoggingSubsystemProviders.getAsyncModelDescription(locale);
-    }
-
 }

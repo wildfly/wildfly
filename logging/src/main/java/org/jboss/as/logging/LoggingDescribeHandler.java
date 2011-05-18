@@ -22,20 +22,24 @@ import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
@@ -82,31 +86,29 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
                 result.add(add);
             }
         }
-        if (model.hasDefined(HANDLER)) {
-            for (Property prop : model.get(HANDLER).asPropertyList()) {
-                final String name = prop.getName();
-                final ModelNode handler = prop.getValue();
-                final LoggerHandlerType type = Enum.valueOf(LoggerHandlerType.class, handler.get(HANDLER_TYPE).asString());
-                switch (type) {
-                case ASYNC_HANDLER:
-                    result.add(defineAsynchHandler(name, handler, rootAddress));
-                    break;
-                case CONSOLE_HANDLER:
-                    result.add(defineConsoleHandler(name, handler, rootAddress));
-                    break;
-                case FILE_HANDLER:
-                    result.add(defineFileHandler(name, handler, rootAddress));
-                    break;
-                case PERIODIC_ROTATING_FILE_HANDLER:
-                    result.add(definePeriodicRotatingFileHandler(name, handler, rootAddress));
-                    break;
-                case SIZE_ROTATING_FILE_HANDLER:
-                    result.add(defineSizeRotatingFileHandler(name, handler, rootAddress));
-                    break;
-                default:
-                    break;
-                }
-
+        if (model.hasDefined(ASYNC_HANDLER)) {
+            for (Property prop : model.get(ASYNC_HANDLER).asPropertyList()) {
+                result.add(defineAsynchHandler(prop.getName(), prop.getValue(), rootAddress));
+            }
+        }
+        if (model.hasDefined(CONSOLE_HANDLER)) {
+            for (Property prop : model.get(CONSOLE_HANDLER).asPropertyList()) {
+                result.add(defineConsoleHandler(prop.getName(), prop.getValue(), rootAddress));
+            }
+        }
+        if (model.hasDefined(FILE_HANDLER)) {
+            for (Property prop : model.get(FILE_HANDLER).asPropertyList()) {
+                result.add(defineFileHandler(prop.getName(), prop.getValue(), rootAddress));
+            }
+        }
+        if (model.hasDefined(PERIODIC_ROTATING_FILE_HANDLER)) {
+            for (Property prop : model.get(PERIODIC_ROTATING_FILE_HANDLER).asPropertyList()) {
+                result.add(definePeriodicRotatingFileHandler(prop.getName(), prop.getValue(), rootAddress));
+            }
+        }
+        if (model.hasDefined(SIZE_ROTATING_FILE_HANDLER)) {
+            for (Property prop : model.get(SIZE_ROTATING_FILE_HANDLER).asPropertyList()) {
+                result.add(defineSizeRotatingFileHandler(prop.getName(), prop.getValue(), rootAddress));
             }
         }
 
@@ -116,9 +118,8 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
     }
 
     private ModelNode defineAsynchHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
-        ModelNode add = Util.getEmptyOperation(AsyncHandlerAdd.OPERATION_NAME, rootAddress.append(PathElement.pathElement(HANDLER, name)).toModelNode());
+        ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(ASYNC_HANDLER, name)).toModelNode());
 
-        add.get(HANDLER_TYPE).set(handler.get(HANDLER_TYPE));
         add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
         add.get(SUBHANDLERS).set(handler.get(SUBHANDLERS));
         add.get(LEVEL).set(handler.get(LEVEL));
@@ -129,7 +130,7 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
 
 
     private ModelNode defineConsoleHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
-        ModelNode add = Util.getEmptyOperation(ConsoleHandlerAdd.OPERATION_NAME, rootAddress.append(PathElement.pathElement(HANDLER, name)).toModelNode());
+        ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(CONSOLE_HANDLER, name)).toModelNode());
 
         if (handler.hasDefined(AUTOFLUSH)) {
             add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
@@ -139,9 +140,6 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
         }
         if (handler.hasDefined(FORMATTER)) {
             add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(HANDLER_TYPE)) {
-            add.get(HANDLER_TYPE).set(handler.get(HANDLER_TYPE));
         }
         if (handler.hasDefined(LEVEL)) {
             add.get(LEVEL).set(handler.get(LEVEL));
@@ -154,7 +152,7 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
     }
 
     private ModelNode defineFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
-        ModelNode add = Util.getEmptyOperation(FileHandlerAdd.OPERATION_NAME, rootAddress.append(PathElement.pathElement(HANDLER, name)).toModelNode());
+        ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(FILE_HANDLER, name)).toModelNode());
 
         if (handler.hasDefined(AUTOFLUSH)) {
             add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
@@ -171,9 +169,6 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
         if (handler.hasDefined(FILE)) {
             add.get(FILE).set(handler.get(FILE));
         }
-        if (handler.hasDefined(HANDLER_TYPE)) {
-            add.get(HANDLER_TYPE).set(handler.get(HANDLER_TYPE));
-        }
         if (handler.hasDefined(QUEUE_LENGTH)) {
             add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
         }
@@ -182,7 +177,7 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
     }
 
     private ModelNode definePeriodicRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
-        ModelNode add = Util.getEmptyOperation(PeriodicRotatingFileHandlerAdd.OPERATION_NAME, rootAddress.append(PathElement.pathElement(HANDLER, name)).toModelNode());
+        ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(PERIODIC_ROTATING_FILE_HANDLER, name)).toModelNode());
 
         if (handler.hasDefined(AUTOFLUSH)) {
             add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
@@ -192,9 +187,6 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
         }
         if (handler.hasDefined(FORMATTER)) {
             add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(HANDLER_TYPE)) {
-            add.get(HANDLER_TYPE).set(handler.get(HANDLER_TYPE));
         }
         if (handler.hasDefined(LEVEL)) {
             add.get(LEVEL).set(handler.get(LEVEL));
@@ -212,7 +204,7 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
     }
 
     private ModelNode defineSizeRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
-        ModelNode add = Util.getEmptyOperation(SizeRotatingFileHandlerAdd.OPERATION_NAME, rootAddress.append(PathElement.pathElement(HANDLER, name)).toModelNode());
+        ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(SIZE_ROTATING_FILE_HANDLER, name)).toModelNode());
 
         if (handler.hasDefined(AUTOFLUSH)) {
             add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
@@ -222,9 +214,6 @@ public class LoggingDescribeHandler implements ModelQueryOperationHandler, Descr
         }
         if (handler.hasDefined(FORMATTER)) {
             add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(HANDLER_TYPE)) {
-            add.get(HANDLER_TYPE).set(handler.get(HANDLER_TYPE));
         }
         if (handler.hasDefined(LEVEL)) {
             add.get(LEVEL).set(handler.get(LEVEL));

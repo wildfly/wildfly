@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,58 +23,56 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- * @author Emanuel Muckenhuber
+ * Operation responsible for changing a logger's level.
+ *
+ * @author John Bailey
  */
-class LoggerHandlerRemove implements ModelRemoveOperationHandler {
-    static final String OPERATION_NAME = "remove-logger-handler";
-    static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
+public class LoggerLevelChange implements ModelUpdateOperationHandler {
+    static final String OPERATION_NAME = "change-log-level";
+    static final LoggerLevelChange INSTANCE = new LoggerLevelChange();
 
-    /** {@inheritDoc} */
-    @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        final ModelNode opAddr = operation.require(OP_ADDR);
+
+        final ModelNode model = context.getSubModel();
+
+        final ModelNode compensatingOperation = new ModelNode();
+        compensatingOperation.get(OP).set(OPERATION_NAME);
+        compensatingOperation.get(OP_ADDR).set(opAddr);
+        compensatingOperation.get(CommonAttributes.LEVEL).set(model.get(CommonAttributes.LEVEL));
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        final String level = operation.get(CommonAttributes.LEVEL).asString();
 
-        final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set("set-root-logger");
-        for(final Property property : subModel.asPropertyList()) {
-            compensatingOperation.get(property.getName()).set(property.getValue());
-        }
+        model.get(CommonAttributes.LEVEL).set(level);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-                    try {
-                        final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
-                        if (controller != null) {
-                            controller.setMode(ServiceController.Mode.REMOVE);
-                        }
-                        resultHandler.handleResultComplete();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                    final ServiceController<Logger> controller = (ServiceController<Logger>)serviceRegistry.getService(LogServices.loggerName(name));
+                    if (controller != null) {
+                        controller.getValue().setLevel(Level.parse(level));
                     }
+                    resultHandler.handleResultComplete();
                 }
             });
         } else {
@@ -82,5 +80,4 @@ class LoggerHandlerRemove implements ModelRemoveOperationHandler {
         }
         return new BasicOperationResult(compensatingOperation);
     }
-
 }

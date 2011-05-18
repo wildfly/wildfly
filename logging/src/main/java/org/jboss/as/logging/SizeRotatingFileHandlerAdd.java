@@ -34,7 +34,6 @@ import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.PATH;
@@ -62,8 +61,6 @@ class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler {
 
     static final SizeRotatingFileHandlerAdd INSTANCE = new SizeRotatingFileHandlerAdd();
 
-    static final String OPERATION_NAME = "add-size-periodic-handler";
-
     static long DEFAULT_ROTATE_SIZE = 2L * 1024L * 1024L;
 
     /** {@inheritDoc} */
@@ -77,17 +74,10 @@ class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler {
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(OP).set(REMOVE);
 
-        final String handlerType = operation.require(HANDLER_TYPE).asString();
-        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
-        if(type != LoggerHandlerType.SIZE_ROTATING_FILE_HANDLER) {
-            throw new OperationFailedException(new ModelNode().set("invalid operation for handler-type: " + type));
-        }
-
         final ModelNode subModel = context.getSubModel();
         subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         subModel.get(ENCODING).set(operation.get(ENCODING));
         subModel.get(FORMATTER).set(operation.get(FORMATTER));
-        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(FILE).set(operation.get(FILE));
         subModel.get(MAX_BACKUP_INDEX).set(operation.get(MAX_BACKUP_INDEX));
@@ -100,11 +90,14 @@ class SizeRotatingFileHandlerAdd implements ModelAddOperationHandler {
                     try {
                         final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
                         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                        if (operation.has(FILE)) {
-                            if (operation.get(FILE).has(RELATIVE_TO)) {
-                                serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
+                        if (operation.hasDefined(FILE)) {
+                            final HandlerFileService fileService = new HandlerFileService(operation.get(FILE, PATH).asString());
+                            final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
+                            if (operation.hasDefined(CommonAttributes.RELATIVE_TO)) {
+                                fileBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, fileService.getRelativeToInjector());
                             }
-                            service.setPath(operation.get(FILE, PATH).asString());
+                            fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                            serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
                         }
                         service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                         final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();

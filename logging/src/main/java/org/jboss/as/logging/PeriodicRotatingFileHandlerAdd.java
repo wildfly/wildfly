@@ -34,10 +34,8 @@ import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_TYPE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
@@ -62,8 +60,6 @@ class PeriodicRotatingFileHandlerAdd implements ModelAddOperationHandler {
 
     static final PeriodicRotatingFileHandlerAdd INSTANCE = new PeriodicRotatingFileHandlerAdd();
 
-    static final String OPERATION_NAME = "add-periodic-handler";
-
     /** {@inheritDoc} */
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
@@ -75,20 +71,12 @@ class PeriodicRotatingFileHandlerAdd implements ModelAddOperationHandler {
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
         compensatingOperation.get(OP).set(REMOVE);
 
-        final String handlerType = operation.require(HANDLER_TYPE).asString();
-        final LoggerHandlerType type = LoggerHandlerType.valueOf(handlerType);
-        if(type != LoggerHandlerType.PERIODIC_ROTATING_FILE_HANDLER) {
-            throw new OperationFailedException(new ModelNode().set("invalid operation for handler-type: " + type));
-        }
-
         final ModelNode subModel = context.getSubModel();
         subModel.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
         subModel.get(ENCODING).set(operation.get(ENCODING));
         subModel.get(FORMATTER).set(operation.get(FORMATTER));
-        subModel.get(HANDLER_TYPE).set(handlerType);
         subModel.get(LEVEL).set(operation.get(LEVEL));
         subModel.get(FILE).set(operation.get(FILE));
-        subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         subModel.get(SUFFIX).set(operation.get(SUFFIX));
 
         if (context.getRuntimeContext() != null) {
@@ -99,10 +87,13 @@ class PeriodicRotatingFileHandlerAdd implements ModelAddOperationHandler {
                         final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
                         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
                         if (operation.hasDefined(FILE)) {
-                            if (operation.get(FILE).hasDefined(RELATIVE_TO)) {
-                                serviceBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
+                            final HandlerFileService fileService = new HandlerFileService(operation.get(FILE, PATH).asString());
+                            final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
+                            if (operation.hasDefined(CommonAttributes.RELATIVE_TO)) {
+                                fileBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, fileService.getRelativeToInjector());
                             }
-                            service.setPath(operation.get(FILE, PATH).asString());
+                            fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                            serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
                         }
                         service.setLevel(Level.parse(operation.get(LEVEL).asString()));
                         final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();

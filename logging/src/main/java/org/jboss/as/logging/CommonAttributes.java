@@ -43,7 +43,6 @@ interface CommonAttributes {
     String FILE_NAME ="file-name";
     String FILTER ="filter";
     String FORMATTER ="formatter";
-    String HANDLER_TYPE = "handler-type";
     String HANDLER ="handler";
     String HANDLERS ="handlers";
     String LEVEL ="level";
