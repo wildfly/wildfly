@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.ejb.AccessTimeout;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -235,4 +236,25 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         return true;
     }
 
+    @Override
+    protected boolean isSetRollbackOnlyAllowed(TransactionAttributeType txAttrType) {
+        // EJB3.1 Spec, section 13.6.2.8
+        // setRollbackOnly on session beans is not allowed for NEVER, SUPPORTS and NOT_SUPPORTED tx attribute types.
+        if (txAttrType == TransactionAttributeType.NEVER || txAttrType == TransactionAttributeType.SUPPORTS ||
+                txAttrType == TransactionAttributeType.NOT_SUPPORTED) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean isGetRollbackOnlyAllowed(TransactionAttributeType txAttrType) {
+        // EJB3.1 Spec, section 13.6.2.9
+        // getRollbackOnly on session beans is not allowed for NEVER, SUPPORTS and NOT_SUPPORTED tx attribute types.
+        if (txAttrType == TransactionAttributeType.NEVER || txAttrType == TransactionAttributeType.SUPPORTS ||
+                txAttrType == TransactionAttributeType.NOT_SUPPORTED) {
+            return false;
+        }
+        return true;
+    }
 }
