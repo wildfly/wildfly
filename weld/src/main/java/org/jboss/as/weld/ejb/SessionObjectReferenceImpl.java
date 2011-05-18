@@ -19,44 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.deployment;
+package org.jboss.as.weld.ejb;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.weld.CurrentServiceRegistry;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 
-import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implementation for SFSB's
+ * Implementation for non-stateful beans, a new view instance is looked up each time
  *
  * @author Stuart Douglas
  */
-public class StatefulSessionObjectReferenceImpl implements SessionObjectReference , Serializable {
+public class SessionObjectReferenceImpl implements SessionObjectReference {
 
     private volatile boolean removed = false;
     private final Map<String, ServiceName> viewServices;
-    private transient StatefulSessionComponent ejbComponent;
-    private final ServiceName createServiceName;
-    private final Serializable id;
 
 
-    public StatefulSessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
-        createServiceName = descriptor.getCreateServiceName();
+    public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
+        final ServiceName createServiceName = descriptor.getCreateServiceName();
+        final ServiceController<?> controller = serviceRegistry.getRequiredService(createServiceName);
 
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        for (ViewDescription view : descriptor.getComponentDescription().getViews()) {
+
+        for(ViewDescription view : descriptor.getComponentDescription().getViews()) {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
-        id = getComponent().createSession();
         this.viewServices = viewServices;
 
     }
@@ -65,39 +61,26 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @Override
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
-
-        if (viewServices.containsKey(businessInterfaceType.getName())) {
+        if(removed) {
+            return null;
+        }
+        if(viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceRegistry.getServiceRegistry().getRequiredService(viewServices.get(businessInterfaceType.getName()));
-            final ComponentView view = (ComponentView) serviceController.getValue();
-            final ComponentViewInstance instance = view.createInstance(Collections.<Object, Object>singletonMap(StatefulSessionComponent.SESSION_ATTACH_KEY, id));
+            final ComponentView view = (ComponentView)serviceController.getValue();
+            final ComponentViewInstance instance = view.createInstance();
             return (S) instance.createProxy();
         } else {
-            throw new IllegalArgumentException("View of type " + businessInterfaceType + " not found on bean " + getComponent());
+            throw new IllegalArgumentException("View of type " + businessInterfaceType + " not found on bean ");
         }
     }
 
     @Override
     public void remove() {
-        if (!isRemoved()) {
-            getComponent().getCache().remove(id);
-            removed = true;
-        }
+        //nop
     }
 
     @Override
     public boolean isRemoved() {
-        if(!removed) {
-            return getComponent().getCache().get(id) == null;
-        }
-        return true;
+        return false;
     }
-
-    private StatefulSessionComponent getComponent() {
-        if(ejbComponent == null) {
-            final ServiceController<?> controller = CurrentServiceRegistry.getServiceRegistry().getRequiredService(createServiceName);
-            ejbComponent = (StatefulSessionComponent) controller.getValue();
-        }
-        return ejbComponent;
-    }
-
 }

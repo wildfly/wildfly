@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.deployment;
+package org.jboss.as.weld.ejb;
 
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -29,6 +29,7 @@ import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 import org.jboss.weld.ejb.spi.EjbDescriptor;

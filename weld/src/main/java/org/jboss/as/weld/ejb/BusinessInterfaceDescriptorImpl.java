@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.deployment;
+package org.jboss.as.weld.ejb;
 
+import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
 

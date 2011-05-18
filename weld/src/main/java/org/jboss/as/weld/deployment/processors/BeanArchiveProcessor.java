@@ -36,7 +36,7 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.BeanArchiveMetadata;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
-import org.jboss.as.weld.deployment.EjbDescriptorImpl;
+import org.jboss.as.weld.ejb.EjbDescriptorImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;

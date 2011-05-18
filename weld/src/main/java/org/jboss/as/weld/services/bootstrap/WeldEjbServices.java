@@ -21,9 +21,9 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.as.weld.deployment.EjbDescriptorImpl;
-import org.jboss.as.weld.deployment.SessionObjectReferenceImpl;
-import org.jboss.as.weld.deployment.StatefulSessionObjectReferenceImpl;
+import org.jboss.as.weld.ejb.EjbDescriptorImpl;
+import org.jboss.as.weld.ejb.SessionObjectReferenceImpl;
+import org.jboss.as.weld.ejb.StatefulSessionObjectReferenceImpl;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
