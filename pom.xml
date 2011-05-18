@@ -110,7 +110,7 @@
         <version.org.infinispan>5.0.0.CR2</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP9</version.org.jboss.arquillian>
-        <version.org.jboss.classfilewriter>1.0.0.Alpha6</version.org.jboss.classfilewriter>
+        <version.org.jboss.classfilewriter>1.0.0.Alpha7</version.org.jboss.classfilewriter>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta1</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb3>2.0.0-alpha-3</version.org.jboss.ejb3>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
