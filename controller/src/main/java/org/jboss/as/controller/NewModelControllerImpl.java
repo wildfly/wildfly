@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -86,7 +87,43 @@ class NewModelControllerImpl implements NewModelController {
 
     public NewModelControllerClient createClient(final Executor executor) {
         return new NewModelControllerClient() {
-            public AsyncFuture<ModelNode> executeOperationAsync(final ModelNode operation, final OperationMessageHandler messageHandler) {
+
+            @Override
+            public void close() throws IOException {
+                // whatever
+            }
+
+            @Override
+            public ModelNode execute(ModelNode operation) throws IOException {
+                return execute(operation, null);
+            }
+
+            @Override
+            public ModelNode execute(NewOperation operation) throws IOException {
+                return execute(operation, null);
+            }
+
+            @Override
+            public ModelNode execute(final ModelNode operation, final OperationMessageHandler messageHandler) {
+                return NewModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, null);
+            }
+
+            @Override
+            public ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException {
+                return NewModelControllerImpl.this.execute(operation.getOperation(), messageHandler, OperationTransactionControl.COMMIT, operation);
+            }
+
+            @Override
+            public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
+                return executeAsync(operation, messageHandler, null);
+            }
+
+            @Override
+            public AsyncFuture<ModelNode> executeAsync(final NewOperation operation, final OperationMessageHandler messageHandler) {
+                return executeAsync(operation.getOperation(), messageHandler, operation);
+            }
+
+            private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
                 if (executor == null) {
                     throw new IllegalStateException("Cannot execute asynchronous operation without an executor");
                 }
@@ -112,21 +149,13 @@ class NewModelControllerImpl implements NewModelController {
                     public void run() {
                         opThread.set(Thread.currentThread());
                         try {
-                            opTask.handleResult(execute(operation, messageHandler, OperationTransactionControl.COMMIT, null));
+                            opTask.handleResult(NewModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments));
                         } finally {
                             opThread.set(null);
                         }
                     }
                 });
                 return opTask;
-            }
-
-            public ModelNode executeOperation(final ModelNode operation, final OperationMessageHandler messageHandler) {
-                return execute(operation, messageHandler, OperationTransactionControl.COMMIT, null);
-            }
-
-            public void close() throws IOException {
-                // whatever
             }
         };
     }
