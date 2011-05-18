@@ -31,8 +31,47 @@ import org.jboss.threads.AsyncFuture;
  * A client for an application server management model controller.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface NewModelControllerClient extends Closeable {
+
+    /**
+     * Execute an operation synchronously.
+     *
+     * @param operation the operation to execute
+     * @return the result of the operation
+     * @throws IOException if an I/O error occurs while executing the operation
+     */
+    ModelNode execute(ModelNode operation) throws IOException;
+    /**
+     * Execute an operation synchronously.
+     *
+     * @param operation the operation to execute
+     * @return the result of the operation
+     * @throws IOException if an I/O error occurs while executing the operation
+     */
+    ModelNode execute(NewOperation operation) throws IOException;
+
+    /**
+     * Execute an operation synchronously, optionally receiving progress reports.
+     *
+     * @param operation the operation to execute
+     * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
+     * @return the result of the operation
+     * @throws IOException if an I/O error occurs while executing the operation
+     */
+    ModelNode execute(ModelNode operation, OperationMessageHandler messageHandler) throws IOException;
+
+    /**
+     * Execute an operation synchronously, optionally receiving progress reports.
+     *
+     * @param operation the operation to execute
+     * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
+     * @return the result of the operation
+     * @throws IOException if an I/O error occurs while executing the operation
+     */
+    ModelNode execute(NewOperation operation, OperationMessageHandler messageHandler) throws IOException;
 
     /**
      * Execute an operation.
@@ -41,15 +80,15 @@ public interface NewModelControllerClient extends Closeable {
      * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
      * @return the future result of the operation
      */
-    AsyncFuture<ModelNode> executeOperationAsync(ModelNode operation, OperationMessageHandler messageHandler);
+    // TODO consider copying AsyncFuture and AsyncFutureTask into controller-client to eliminate the jboss-threads dependency
+    AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler);
 
     /**
-     * Execute an operation synchronously.
+     * Execute an operation.
      *
      * @param operation the operation to execute
      * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
-     * @return the result of the operation
-     * @throws IOException if an I/O error occurs while executing the operation
+     * @return the future result of the operation
      */
-    ModelNode executeOperation(ModelNode operation, OperationMessageHandler messageHandler) throws IOException;
+    AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler);
 }
