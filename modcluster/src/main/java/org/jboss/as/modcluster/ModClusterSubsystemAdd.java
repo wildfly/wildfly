@@ -22,6 +22,9 @@
 
 package org.jboss.as.modcluster;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -37,6 +40,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
@@ -47,6 +51,8 @@ import org.jboss.msc.service.ServiceController.Mode;
 class ModClusterSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
+    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
+
 
     @Override
     public  OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
@@ -58,17 +64,32 @@ class ModClusterSubsystemAdd implements ModelAddOperationHandler, DescriptionPro
         final ModelNode config = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
 
         context.getSubModel().set(config);
+        PrintStream out = null;
+        try {
+            out = new PrintStream(new FileOutputStream("/tmp/myfile.txt", true));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        out.println("Error: MERDE!!!!");
+        out.close();
+        log.error("Error: MERDE!!!!");
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
+                    try {
                     // Add mod_cluster service
                     final ModClusterService service = new ModClusterService(config.clone());
                     context.getServiceTarget().addService(ModClusterService.NAME, service)
-                        .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                        // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
                         .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
                         .setInitialMode(Mode.ACTIVE)
                         .install();
+                    } catch(Throwable t) {
+                        log.error("Error: " + t);
+                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+                    }
                 }
             });
         } else {

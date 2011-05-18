@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -19,15 +18,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 
-import org.jboss.as.controller.BasicModelController;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.modcluster.ModClusterSubsystemElementParser;
 import org.jboss.as.modcluster.Namespace;
-import org.jboss.as.server.ServerControllerModelUtil;
-import org.jboss.as.server.deployment.api.DeploymentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Test;
@@ -128,68 +120,5 @@ public class ParseAndMarshalModelsTestCase {
         return model;
         */
 
-    }
-    private void executeOperations(TestServerController controller, List<ModelNode> ops) {
-        for (final ModelNode op : ops) {
-            controller.execute(OperationBuilder.Factory.create(op).build(),
-                    new org.jboss.as.controller.ResultHandler() {
-
-                @Override
-                public void handleResultFragment(String[] location, ModelNode result) {
-                }
-
-                @Override
-                public void handleResultComplete() {
-                }
-
-                @Override
-                public void handleFailed(ModelNode failureDescription) {
-                    throw new IllegalArgumentException(op + " " + failureDescription.toString());
-                }
-
-                @Override
-                public void handleCancellation() {
-                }
-            });
-        }
-    }
-    private static class TestServerController extends BasicModelController {
-
-        protected TestServerController(ExtensibleConfigurationPersister configurationPersister) {
-            super(ServerControllerModelUtil.createCoreModel(), configurationPersister, new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return new ModelNode();
-                }
-            });
-
-            ServerControllerModelUtil.initOperations(
-                    getRegistry(),
-                    new DeploymentRepository() {
-
-                        @Override
-                        public boolean hasDeploymentContent(byte[] hash) {
-                            return false;
-                        }
-
-                        @Override
-                        public byte[] addDeploymentContent(InputStream stream) throws IOException {
-                            return null;
-                        }
-                    },
-                    configurationPersister, null);
-        }
-
-        @Override
-        protected ModelNode getModel() {
-            return super.getModel();
-        }
-
-        @Override
-        protected void persistConfiguration(ModelNode model,
-                ConfigurationPersisterProvider configurationPersisterFactory) {
-            // ignore
-        }
     }
 }
