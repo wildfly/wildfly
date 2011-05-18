@@ -24,7 +24,6 @@ import org.apache.catalina.core.JasperListener;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
-import org.apache.catalina.startup.Catalina;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -45,7 +44,7 @@ class WebServerService implements WebServer, Service<WebServer> {
     private final boolean useNative;
 
     private Engine engine;
-    private Catalina catalina;
+    private StandardServer server;
     private StandardService service;
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
@@ -57,21 +56,17 @@ class WebServerService implements WebServer, Service<WebServer> {
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized void start(StartContext context) throws StartException {
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             // Set the MBeanServer
-            MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
+            final MBeanServer mbeanServer = this.mbeanServer.getOptionalValue();
             if(mbeanServer != null) {
                 Registry.getRegistry(null, null).setMBeanServer(mbeanServer);
             }
         }
 
-        final Catalina catalina = new Catalina();
-        catalina.setCatalinaHome(pathInjector.getValue());
-
+        System.setProperty("catalina.home", pathInjector.getValue());
         final StandardServer server = new StandardServer();
-        catalina.setServer(server);
 
         final StandardService service = new StandardService();
         service.setName(JBOSS_WEB);
@@ -93,14 +88,12 @@ class WebServerService implements WebServer, Service<WebServer> {
         server.addLifecycleListener(new JasperListener());
 
         try {
-            catalina.create();
-            server.initialize();
-            catalina.start();
-            // Register here ?
+            server.init();
+            server.start();
         } catch (Exception e) {
             throw new StartException(e);
         }
-        this.catalina = catalina;
+        this.server = server;
         this.service = service;
         this.engine = engine;
     }
@@ -108,42 +101,39 @@ class WebServerService implements WebServer, Service<WebServer> {
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
-        catalina.stop();
-        catalina.destroy();
+        try {
+            server.stop();
+        } catch (Exception e) {
+        }
         engine = null;
         service = null;
-        catalina = null;
+        server = null;
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized WebServer getValue() throws IllegalStateException {
         return this;
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized void addConnector(Connector connector) {
         final StandardService service = this.service;
         service.addConnector(connector);
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized void removeConnector(Connector connector) {
         final StandardService service = this.service;
         service.removeConnector(connector);
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized void addHost(Host host) {
         final Engine engine = this.engine;
         engine.addChild(host);
     }
 
     /** {@inheritDoc} */
-    @Override
     public synchronized void removeHost(Host host) {
         final Engine engine = this.engine;
         engine.removeChild(host);
@@ -158,7 +148,7 @@ class WebServerService implements WebServer, Service<WebServer> {
     }
 
     public StandardServer getServer() {
-        return (StandardServer) catalina.getServer();
+        return server;
     }
 
     public StandardService getService() {
