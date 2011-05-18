@@ -257,7 +257,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         } else if (!name.startsWith("java:")) { // if it *doesn't* start with java: prefix, then default it to java:comp
             jndiContext = namespaceContextSelector.getContext("comp");
             // no need to strip the name since it doesn't start with java: prefix.
-            // Also prefix the "env/" to the jndi name, since a lookup with a java: namespace prefix is effectively
+            // Also prefix the "env/" to the jndi name, since a lookup without a java: namespace prefix is effectively
             // a lookup under java:comp/env/<jndi-name>
             namespaceStrippedJndiName = "env/" + name;
         } else if (name.startsWith("java:global/")) {
