@@ -289,6 +289,7 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
 
     // POST_MODULE
+    public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0100;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0400;
@@ -302,7 +303,6 @@ public enum Phase {
 
 
     // INSTALL
-    public static final int INSTALL_EAR_AGGREGATE_COMPONENT_INDEX       = 0x0000;
     public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
     public static final int INSTALL_JAXRS_SCANNING                      = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
