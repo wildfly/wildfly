@@ -22,17 +22,6 @@
 
 package org.jboss.as.ee.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.List;
-import java.util.Locale;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -56,6 +45,16 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.parsing.ParseUtils.*;
+
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
  *
@@ -68,7 +67,9 @@ public class EeExtension implements Extension {
     private static final String SUBSYSTEM_NAME = "ee";
     private static final EESubsystemParser parser = new EESubsystemParser();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
@@ -78,7 +79,9 @@ public class EeExtension implements Extension {
         subsystem.registerXMLElementWriter(parser);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(NAMESPACE, parser);
@@ -91,30 +94,131 @@ public class EeExtension implements Extension {
         return subsystem;
     }
 
+
     static class EESubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
             //context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
             context.startSubsystemElement(EeExtension.NAMESPACE, false);
+            ModelNode node = context.getModelNode();
+            if (node.hasDefined(CommonAttributes.GLOBAL_MODULES)) {
+                writer.writeStartElement(Element.GLOBAL_MODULES.getLocalName());
+                final ModelNode globalModules = node.get(CommonAttributes.GLOBAL_MODULES);
+                for(ModelNode module : globalModules.asList()) {
+                    writer.writeStartElement(Element.MODULE.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), module.get(CommonAttributes.NAME).asString());
+                    writer.writeAttribute(Attribute.SLOT.getLocalName(), module.get(CommonAttributes.SLOT).asString());
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+
             writer.writeEndElement();
 
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
 
-            list.add(createAddOperation());
+            final ModelNode subsystem = createAddOperation();
+            list.add(subsystem);
+
+            // elements
+            final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case EE_1_0: {
+                        final Element element = Element.forName(reader.getLocalName());
+                        if (!encountered.add(element)) {
+                            throw unexpectedElement(reader);
+                        }
+                        switch (element) {
+                            case GLOBAL_MODULES: {
+                                final ModelNode model = parseGlobalModules(reader);
+                                subsystem.get(CommonAttributes.GLOBAL_MODULES).set(model);
+                                break;
+                            }
+                            default: {
+                                throw unexpectedElement(reader);
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        throw unexpectedElement(reader);
+                    }
+                }
+            }
         }
+
+        static ModelNode parseGlobalModules(XMLExtendedStreamReader reader) throws XMLStreamException {
+
+            ModelNode globalModules = new ModelNode();
+
+            requireNoAttributes(reader);
+
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                switch (Element.forName(reader.getLocalName())) {
+                    case MODULE: {
+                        final int count = reader.getAttributeCount();
+                        String name = null;
+                        String slot = null;
+                        for (int i = 0; i < count; i++) {
+                            requireNoNamespaceAttribute(reader, i);
+                            final String value = reader.getAttributeValue(i);
+                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                            switch (attribute) {
+                                case NAME:
+                                    if (name != null) {
+                                        throw unexpectedAttribute(reader, i);
+                                    }
+                                    name = value;
+                                    break;
+                                case SLOT:
+                                    if (slot != null) {
+                                        throw unexpectedAttribute(reader, i);
+                                    }
+                                    slot = value;
+                                    break;
+                                default:
+                                    unexpectedAttribute(reader, i);
+                            }
+                        }
+                        if (name == null) {
+                            missingRequired(reader, Collections.singleton(NAME));
+                        }
+                        if (slot == null) {
+                            slot = "main";
+                        }
+                        final ModelNode module = new ModelNode();
+                        module.get(CommonAttributes.NAME).set(name);
+                        module.get(CommonAttributes.SLOT).set(slot);
+                        globalModules.add(module);
+                        requireNoContent(reader);
+                        break;
+                    }
+                    default: {
+                        unexpectedElement(reader);
+                    }
+                }
+            }
+            return globalModules;
+        }
+
     }
 
     private static class EESubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
         static final EESubsystemDescribeHandler INSTANCE = new EESubsystemDescribeHandler();
+
         @Override
         public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
             ModelNode node = new ModelNode();

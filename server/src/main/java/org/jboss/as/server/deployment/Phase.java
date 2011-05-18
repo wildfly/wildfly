@@ -284,6 +284,7 @@ public enum Phase {
     // Sets up appropriate module dependencies for EJB deployments
     public static final int DEPENDENCIES_EJB                            = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
+    public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;

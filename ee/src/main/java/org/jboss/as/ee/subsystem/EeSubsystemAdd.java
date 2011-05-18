@@ -50,6 +50,7 @@ import org.jboss.as.ee.structure.EarLibManifestClassPathProcessor;
 import org.jboss.as.ee.structure.EarMetaDataParsingProcessor;
 import org.jboss.as.ee.structure.EarStructureProcessor;
 import org.jboss.as.ee.structure.EjbJarDeploymentProcessor;
+import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.as.ee.structure.InitalizeInOrderProcessor;
 import org.jboss.as.ee.structure.JBossAppMetaDataParsingProcessor;
 import org.jboss.as.server.BootOperationContext;
@@ -81,6 +82,12 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
      */
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+
+        final ModelNode globalModules = operation.get(CommonAttributes.GLOBAL_MODULES);
+        if(globalModules.isDefined()) {
+            context.getSubModel().get(CommonAttributes.GLOBAL_MODULES).set(globalModules.clone());
+        }
+
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
             logger.info("Activating EE subsystem");
@@ -101,11 +108,13 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_INJECTION_ANNOTATION, new ResourceInjectionAnnotationParsingProcessor());
 
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());
+            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_GLOBAL_MODULES, new GlobalModuleDependencyProcessor(globalModules));
 
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_AGGREGATE_COMPONENT_INDEX, new ComponentAggregationProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_VALIDATOR_FACTORY, new BeanValidationFactoryDeployer());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_INITIALIZE_IN_ORDER, new InitalizeInOrderProcessor());
+
 
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_ENV_ENTRY, new ResourceReferenceProcessor());
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
@@ -118,8 +127,6 @@ public class EeSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(REMOVE);
         compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        context.getSubModel().setEmptyObject();
 
         resultHandler.handleResultComplete();
         return new BasicOperationResult(compensatingOperation);

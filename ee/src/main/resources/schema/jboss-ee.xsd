@@ -30,6 +30,22 @@
     <!-- The naming subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
 
-    <xs:complexType name="subsystem"/>
+    <xs:complexType name="subsystem">
+        <xs:all>
+            <xs:element name="global-modules" type="modulesType" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="modulesType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="module" type="moduleType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="moduleType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="slot" type="xs:string"/>
+    </xs:complexType>
+
 
 </xs:schema>
