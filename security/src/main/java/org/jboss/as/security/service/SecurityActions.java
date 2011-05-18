@@ -23,8 +23,10 @@
 package org.jboss.as.security.service;
 
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.security.Security;
 
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -36,6 +38,7 @@ import org.jboss.modules.ModuleLoader;
  * Privileged blocks for this package
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * @author Anil Saldhana
  */
 class SecurityActions {
 
@@ -53,4 +56,14 @@ class SecurityActions {
         }
     }
 
+    static void setSecurityProperty(final String key, final String value) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            @Override
+            public Void run() {
+                Security.setProperty(key, value);
+                return null;
+            }
+        });
+    }
 }

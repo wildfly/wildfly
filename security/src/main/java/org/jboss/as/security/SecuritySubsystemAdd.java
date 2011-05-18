@@ -22,6 +22,22 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.DEEP_COPY_SUBJECT_MODE;
+import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAME;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
+import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
+
+import java.util.List;
+import java.util.Properties;
+
+import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
@@ -45,6 +61,7 @@ import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -57,11 +74,6 @@ import org.jboss.security.plugins.JBossSecuritySubjectFactory;
 import org.jboss.security.plugins.audit.JBossAuditManager;
 import org.jboss.security.plugins.identitytrust.JBossIdentityTrustManager;
 import org.jboss.security.plugins.mapping.JBossMappingManager;
-
-import javax.security.auth.login.Configuration;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.security.Constants.*;
 
 /**
  * Add Security Subsystem Operation.
@@ -114,6 +126,19 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         String mappingManagerClassName = "default";
 
         final ModelNode subModel = context.getSubModel();
+
+        Properties securityProperties = null;
+        final List<ModelNode> securityPropertiesList;
+        if (operation.hasDefined(SECURITY_PROPERTIES)) {
+            securityPropertiesList = operation.get(SECURITY_PROPERTIES).asList();
+            subModel.get(SECURITY_PROPERTIES).set(securityPropertiesList);
+            // parse the List of security properties
+            securityProperties = new Properties();
+            for (ModelNode node : securityPropertiesList) {
+                Property prop = node.asProperty();
+                securityProperties.setProperty(prop.getName(), prop.getValue().asString());
+            }
+        }
         if (operation.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
             authenticationManagerClassName = operation.get(AUTHENTICATION_MANAGER_CLASS_NAME).asString();
             subModel.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(authenticationManagerClassName);
@@ -195,6 +220,8 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
             resolvedSubjectFactoryClassName = subjectFactoryClassName;
         }
 
+        final Properties securityPropertiesStr = securityProperties;
+
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -207,6 +234,9 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
                     // add bootstrap service
                     final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
+                    if (securityPropertiesStr != null && !securityPropertiesStr.isEmpty())
+                        bootstrapService.setSecurityProperties(securityPropertiesStr);
+
                     target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
                             .setInitialMode(ServiceController.Mode.ACTIVE).install();
 

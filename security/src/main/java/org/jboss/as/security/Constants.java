@@ -67,6 +67,7 @@ public interface Constants {
     String PROTOCOLS = "protocols";
     String SECURITY_MANAGEMENT = "security-management";
     String SECURITY_DOMAIN = "security-domain";
+    String SECURITY_PROPERTIES = "security-properties";
     String SERVER_ALIAS = "server-alias";
     String SERVICE_AUTH_TOKEN = "service-auth-token";
     String SUBJECT_FACTORY = "subject-factory";

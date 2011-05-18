@@ -70,6 +70,7 @@ import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.NAME;
 import static org.jboss.as.security.Constants.PROTOCOLS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
 import static org.jboss.as.security.Constants.SERVER_ALIAS;
 import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
@@ -151,6 +152,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                             securityDomainsUpdates = parseSecurityDomains(reader, address);
                             break;
                         }
+                        case SECURITY_PROPERTIES: {
+                            parseSecurityProperties(reader, subsystem);
+                            break;
+                        }
                         default: {
                             throw unexpectedElement(reader);
                         }
@@ -228,6 +233,18 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             }
             writer.writeEndElement();
         }
+
+        if (node.hasDefined(SECURITY_PROPERTIES)) {
+            writer.writeStartElement(Element.SECURITY_PROPERTIES.getLocalName());
+            ModelNode properties = node.get(SECURITY_PROPERTIES);
+            for (Property prop : properties.asPropertyList()) {
+                writer.writeEmptyElement(Element.PROPERTY.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+            }
+            writer.writeEndElement();
+        }
+
         writer.writeEndElement();
     }
 
@@ -563,6 +580,24 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
         if (subjectFactoryClassName != null) {
             operation.get(SUBJECT_FACTORY_CLASS_NAME).set(subjectFactoryClassName);
+        }
+    }
+
+    private void parseSecurityProperties(final XMLExtendedStreamReader reader, final ModelNode operation)
+            throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case SECURITY_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case PROPERTY: {
+                            parseModuleOption(reader, operation.get(SECURITY_PROPERTIES));
+                            break;
+                        }
+
+                    }
+                }
+            }
         }
     }
 

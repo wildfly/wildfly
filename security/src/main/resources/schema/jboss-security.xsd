@@ -44,6 +44,7 @@
          <xs:element name="security-management" type="securityManagementType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="subject-factory" type="subjectFactoryType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="security-properties" type="properties" minOccurs="0" maxOccurs="1"/>
       </xs:all>
    </xs:complexType>
    
@@ -443,5 +444,16 @@
          <xs:restriction base="xs:string"></xs:restriction>
       </xs:simpleContent>
    </xs:complexType>
+   
+   <xs:complexType name="properties">
+        <xs:sequence>
+            <xs:element name="property" type="propertyType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="propertyType">
+        <xs:attribute name="name" use="required"/>
+        <xs:attribute name="value" use="optional"/>
+    </xs:complexType>
    
 </xs:schema>

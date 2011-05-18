@@ -75,6 +75,7 @@ import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.NAME;
 import static org.jboss.as.security.Constants.PROTOCOLS;
+import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
 import static org.jboss.as.security.Constants.SERVER_ALIAS;
 import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
@@ -233,6 +234,10 @@ class SecuritySubsystemDescriptions {
             subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
+            subsystem.get(ATTRIBUTES, SECURITY_PROPERTIES, DESCRIPTION).set(bundle.getString("security-properties"));
+            subsystem.get(ATTRIBUTES, SECURITY_PROPERTIES, TYPE).set(ModelType.PROPERTY);
+            subsystem.get(ATTRIBUTES, SECURITY_PROPERTIES, REQUIRED).set(false);
+
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, DESCRIPTION).set(bundle.getString("security-domain-children"));
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, REQUIRED).set(false);
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, MIN_OCCURS).set(0);
@@ -294,6 +299,10 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
+
+            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, DESCRIPTION).set(bundle.getString("security-properties"));
+            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, TYPE).set(ModelType.PROPERTY);
+            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, REQUIRED).set(false);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 

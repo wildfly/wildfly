@@ -22,6 +22,8 @@
 
 package org.jboss.as.security.service;
 
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.security.jacc.PolicyContext;
@@ -42,6 +44,7 @@ import org.jboss.security.jacc.SubjectPolicyContextHandler;
  * Bootstrap service for the security container
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * @author Anil Saldhana
  */
 public class SecurityBootstrapService implements Service<Void> {
 
@@ -49,7 +52,13 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
+    protected Properties securityProperty;
+
     public SecurityBootstrapService() {
+    }
+
+    public void setSecurityProperties(Properties securityProperty) {
+        this.securityProperty = securityProperty;
     }
 
     /** {@inheritDoc} */
@@ -65,12 +74,23 @@ public class SecurityBootstrapService implements Service<Void> {
             // Register the JAAS CallbackHandler JACC PolicyContextHandlers
             CallbackHandlerPolicyContextHandler chandler = new CallbackHandlerPolicyContextHandler();
             PolicyContext.registerHandler(CallbackHandlerPolicyContextHandler.CALLBACK_HANDLER_KEY, chandler, true);
+
+            // Handle the Security Properties
+            if (securityProperty != null) {
+                Enumeration<Object> keys = securityProperty.keys();
+                while (keys.hasMoreElements()) {
+                    String key = (String) keys.nextElement();
+                    String value = securityProperty.getProperty(key);
+                    SecurityActions.setSecurityProperty(key, value);
+                }
+            }
         } catch (PolicyContextException pce) {
             throw new StartException(pce);
         }
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("rawtypes")
     @Override
     public void stop(StopContext context) {
         // remove handlers

@@ -35,6 +35,7 @@ import static org.jboss.as.security.Constants.DEFAULT_CALLBACK_HANDLER_CLASS_NAM
 import static org.jboss.as.security.Constants.IDENTITY_TRUST_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
 
 import org.jboss.as.controller.BasicOperationResult;
@@ -134,6 +135,9 @@ public class SecurityExtension implements Extension {
             }
             if (model.hasDefined(MAPPING_MANAGER_CLASS_NAME)) {
                 subsystem.get(MAPPING_MANAGER_CLASS_NAME).set(model.get(MAPPING_MANAGER_CLASS_NAME));
+            }
+            if (model.hasDefined(SECURITY_PROPERTIES)) {
+                subsystem.get(SECURITY_PROPERTIES).set(model.get(SECURITY_PROPERTIES));
             }
 
             ModelNode result = new ModelNode();

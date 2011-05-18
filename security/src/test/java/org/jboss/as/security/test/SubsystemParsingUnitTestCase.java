@@ -58,6 +58,19 @@ public class SubsystemParsingUnitTestCase {
 
         List<ModelNode> operations = parse("subsystem.xml");
         assertNotNull(operations);
+        ModelNode props = operations.get(0);
+        assertNotNull(props);
+
+        List<ModelNode> secProps = props.get("security-properties").asList();
+        assertEquals(2, secProps.size());
+        for (ModelNode secProp : secProps) {
+            Property prop = secProp.asProperty();
+            String name = prop.getName();
+            boolean present = "a".equals(name) || "c".equals(name);
+            if (!present)
+                fail("wrong props");
+        }
+
         ModelNode node = operations.get(1);
         assertNotNull(node);
         ModelNode address = node.get(OP_ADDR);

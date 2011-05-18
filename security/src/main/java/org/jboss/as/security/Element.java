@@ -51,9 +51,11 @@ enum Element {
     MODULE_OPTION("module-option"),
     POLICY_MODULE("policy-module"),
     PROVIDER_MODULE("provider-module"),
+    PROPERTY("property"),
     SECURITY_DOMAIN("security-domain"),
     SECURITY_DOMAINS("security-domains"),
     SECURITY_MANAGEMENT("security-management"),
+    SECURITY_PROPERTIES("security-properties"),
     SUBJECT_FACTORY("subject-factory"),
     TRUST_MODULE("trust-module");
 
