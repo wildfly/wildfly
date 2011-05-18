@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.web.deployment.WebAttachments;
 import org.jboss.as.web.deployment.component.WebComponentDescription;
 import org.jboss.as.web.deployment.component.WebComponentInstantiator;
@@ -41,7 +42,9 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
+import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 
 import javax.xml.stream.XMLInputFactory;
@@ -62,13 +65,15 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
 
     public static final DotName MANAGED_BEAN_ANNOTATION = DotName.createSimple("javax.faces.bean.ManagedBean");
 
-    private static final String[] FACES_CONFIG = {"WEB-INF/faces-config.xml", "META-INF/faces-config.xml"};
+    private static final String WEB_INF_FACES_CONFIG = "WEB-INF/faces-config.xml";
 
 
     private static final Logger log = Logger.getLogger("org.jboss.as.web.jsf");
 
     private static final String MANAGED_BEAN = "managed-bean";
     private static final String MANAGED_BEAN_CLASS = "managed-bean-class";
+
+    private static final String CONFIG_FILES = "javax.faces.CONFIG_FILES";
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -93,67 +98,108 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
     /**
      * Parse the faces config files looking for managed bean classes. The parser is quite
      * simplistic as the only information we need is the managed-bean-class element
-     *
      */
     private void processXmlManagedBeans(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
-        final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
-        for (final ResourceRoot resourceRoot : resourceRoots) {
-            for (final String file : FACES_CONFIG) {
-                final VirtualFile root = resourceRoot.getRoot();
-                final VirtualFile facesConfig = root.getChild(file);
-                if (facesConfig.exists()) {
-                    InputStream is = null;
-                    try {
-                        is = facesConfig.openStream();
-                        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                        inputFactory.setXMLResolver(NoopXmlResolver.create());
-                        XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
-                        int indent = 0;
-                        boolean managedBean = false;
-                        boolean managedBeanClass = false;
-                        while (true) {
-                            int event = parser.next();
-                            if (event == XMLStreamConstants.END_DOCUMENT) {
-                                parser.close();
-                                break;
+        for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
+            InputStream is = null;
+            try {
+                is = facesConfig.openStream();
+                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                inputFactory.setXMLResolver(NoopXmlResolver.create());
+                XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
+                int indent = 0;
+                boolean managedBean = false;
+                boolean managedBeanClass = false;
+                while (true) {
+                    int event = parser.next();
+                    if (event == XMLStreamConstants.END_DOCUMENT) {
+                        parser.close();
+                        break;
+                    }
+                    if (event == XMLStreamConstants.START_ELEMENT) {
+                        indent++;
+                        if (indent == 2) {
+                            if (parser.getLocalName().equals(MANAGED_BEAN)) {
+                                managedBean = true;
                             }
-                            if (event == XMLStreamConstants.START_ELEMENT) {
-                                indent++;
-                                if (indent == 2) {
-                                    if (parser.getLocalName().equals(MANAGED_BEAN)) {
-                                        managedBean = true;
-                                    }
-                                } else if (indent == 3 && managedBean) {
-                                    if (parser.getLocalName().equals(MANAGED_BEAN_CLASS)) {
-                                        managedBeanClass = true;
-                                    }
-                                }
-
-                            } else if (event == XMLStreamConstants.END_ELEMENT) {
-                                indent--;
-                                managedBeanClass = false;
-                                if (indent == 1) {
-                                    managedBean = false;
-                                }
-                            } else if (managedBeanClass && event == XMLStreamConstants.CHARACTERS) {
-                                managedBeanClasses.add(parser.getText());
+                        } else if (indent == 3 && managedBean) {
+                            if (parser.getLocalName().equals(MANAGED_BEAN_CLASS)) {
+                                managedBeanClass = true;
                             }
                         }
-                    } catch (Exception e) {
-                        log.error("Failed to parse " + facesConfig + " injection into manage beans defined in this file will not be available");
-                    } finally {
-                        try {
-                            if (is != null) {
-                                is.close();
-                            }
-                        } catch (IOException e) {
-                            // Ignore
+
+                    } else if (event == XMLStreamConstants.END_ELEMENT) {
+                        indent--;
+                        managedBeanClass = false;
+                        if (indent == 1) {
+                            managedBean = false;
+                        }
+                    } else if (managedBeanClass && event == XMLStreamConstants.CHARACTERS) {
+                        managedBeanClasses.add(parser.getText());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to parse " + facesConfig + " injection into manage beans defined in this file will not be available");
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
+    }
+
+    public Set<VirtualFile> getConfigurationFiles(DeploymentUnit deploymentUnit) {
+        final Set<VirtualFile> ret = new HashSet<VirtualFile>();
+        final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
+        for (final ResourceRoot resourceRoot : resourceRoots) {
+            final VirtualFile webInfFacesConfig = resourceRoot.getRoot().getChild(WEB_INF_FACES_CONFIG);
+            if (webInfFacesConfig.exists()) {
+                ret.add(webInfFacesConfig);
+            }
+            //look for files that end in .faces-config.xml
+            final VirtualFile metaInf = resourceRoot.getRoot().getChild("META-INF");
+            if (metaInf.exists() && metaInf.isDirectory()) {
+                for (final VirtualFile file : metaInf.getChildren()) {
+                    if (file.getName().equals("faces-config.xml") || file.getName().endsWith(".faces-config.xml")) {
+                        ret.add(file);
+                    }
+                }
+            }
+        }
+        String configFiles = null;
+        //now look for files in the javax.faces.CONFIG_FILES context param
+        final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        if (warMetaData != null) {
+            final WebMetaData webMetaData = warMetaData.getWebMetaData();
+            if (webMetaData != null) {
+                final List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
+                if (contextParams != null) {
+                    for (final ParamValueMetaData param : contextParams) {
+                        if (param.getParamName().equals(CONFIG_FILES)) {
+                            configFiles = param.getParamValue();
+                            break;
                         }
                     }
                 }
-
             }
         }
+        if (configFiles != null) {
+            final String[] files = configFiles.split(",");
+            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            if (deploymentRoot != null) {
+                for (final String file : files) {
+                    final VirtualFile configFile = deploymentRoot.getRoot().getChild(file);
+                    if (configFile.exists()) {
+                        ret.add(configFile);
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     private void handleAnnotations(final CompositeIndex index, final Set<String> managedBeanClasses) throws DeploymentUnitProcessingException {
