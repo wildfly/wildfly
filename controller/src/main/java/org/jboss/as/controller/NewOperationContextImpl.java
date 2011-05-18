@@ -163,6 +163,19 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     public ResultAction completeStep() {
+        try {
+            ResultAction action = doCompleteStep();
+            if (action == ResultAction.KEEP) {
+                report(MessageSeverity.INFO, "Operation succeeded, committing");
+            } else {
+                report(MessageSeverity.INFO, "Operation rolling back");
+            }
+            return action;
+        } finally {
+            respectInterruption = false;
+        }
+    }
+    private ResultAction doCompleteStep() {
         assert Thread.currentThread() == initiatingThread;
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
@@ -179,13 +192,11 @@ final class NewOperationContextImpl implements NewOperationContext {
             response.get(OUTCOME).set(CANCELLED);
             response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
             response.set(ROLLED_BACK).set(true);
-            respectInterruption = false;
             return ResultAction.ROLLBACK;
         }
         if (response.hasDefined(FAILURE_DESCRIPTION) && (contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL) || currentStage == Stage.MODEL)) {
             response.get(OUTCOME).set(FAILED);
             response.set(ROLLED_BACK).set(true);
-            respectInterruption = false;
             return ResultAction.ROLLBACK;
         }
         do {
@@ -206,7 +217,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                         response.get(OUTCOME).set(CANCELLED);
                         response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
                         response.set(ROLLED_BACK).set(true);
-                        respectInterruption = false;
                         return ResultAction.ROLLBACK;
                     }
                 }
@@ -221,7 +231,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                     ModelNode newOperation = operation = step.operation;
                     modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
                     step.handler.execute(this, newOperation);
-                    respectInterruption = false;
                     return resultAction;
                 } catch (Throwable t) {
                     // If this block is entered, then the next step failed
@@ -242,7 +251,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                         response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
                         // It failed after!  Just return, ignore the failure
                         // todo log a warning
-                        respectInterruption = false;
                         return resultAction;
                     }
                 } finally {
@@ -269,7 +277,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                             response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
                         }
                     } finally {
-                        respectInterruption = false;
                         modelAddress = oldModelAddress;
                         flags = oldFlags;
                         operation = oldOperation;
@@ -300,7 +307,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                 ref.set(ResultAction.ROLLBACK);
             }
         }, response);
-        respectInterruption = false;
         return resultAction = ref.get();
     }
 
