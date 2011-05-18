@@ -155,7 +155,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final String declaredName = declaredNameValue != null ? declaredNameValue.asString() : null;
         final String localContextName;
         if (declaredName == null || declaredName.isEmpty()) {
-            localContextName = fieldName;
+            localContextName = fieldInfo.declaringClass().name().toString() + "/" + fieldName;
         } else {
             localContextName = declaredName;
         }
