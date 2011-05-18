@@ -46,6 +46,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -100,7 +101,8 @@ public class ServletIntegrationTestCase {
     }
 
     @Test
-    public void testStatelessBean() throws Exception {
+    @Ignore("[AS7-837] Web parsing may fail due to XMLInputFactory could not be instantiated")
+    public void testServiceAccess() throws Exception {
         Archive<?> webArchive = provider.getClientDeployment("web-osgi-client.war");
         String webName = deployer.deploy(webArchive);
         try {
