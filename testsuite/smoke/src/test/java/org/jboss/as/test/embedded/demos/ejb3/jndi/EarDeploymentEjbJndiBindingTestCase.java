@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -144,7 +143,6 @@ public class EarDeploymentEjbJndiBindingTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("Disabled till remote views for EJBs is supported in JBoss AS7")
     public void testRemoteBindingsOnSLSB() throws Exception {
         Context ctx = new InitialContext();
         String ejbName = SampleSLSB.class.getSimpleName();
@@ -207,7 +205,6 @@ public class EarDeploymentEjbJndiBindingTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("Disabled till remote views for EJBs is supported in JBoss AS7")
     public void testRemoteBindingsOnSFSB() throws Exception {
         Context ctx = new InitialContext();
         String ejbName = SampleSFSB.class.getSimpleName();

@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.ejb3.context.CurrentInvocationContext;
+import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -37,6 +39,8 @@ import javax.ejb.TransactionManagementType;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -121,9 +125,55 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     @Override
     public boolean getRollbackOnly() throws IllegalStateException {
-        if (isBeanManagedTransaction())
-            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation can use this method.");
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getRollbackOnly");
+        if (isBeanManagedTransaction()) {
+            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation " +
+                    "can use this method.");
+        }
+        final InvocationContext currentInvocationContext = CurrentInvocationContext.get();
+        if (currentInvocationContext == null) {
+            throw new IllegalStateException("getRollbackOnly() not allowed during construction and injection");
+        }
+        final Method invokedMethod = currentInvocationContext.getMethod();
+        // if method is null, then it's a lifecycle invocation
+        if (invokedMethod == null) {
+            throw new IllegalStateException("getRollbackOnly() not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
+        }
+        // get the tx attribute of the invoked method
+        final TransactionAttributeType txAttr = this.getTransactionAttributeType(invokedMethod);
+        // make sure EJBContext.getRollbackOnly() method invocation is allowed for this transaction attribute type
+        if (!this.isGetRollbackOnlyAllowed(txAttr)) {
+            throw new IllegalStateException("getRollbackOnly() not allowed for method: " + invokedMethod + " with transaction " +
+                    "attribute: " + txAttr);
+        }
+
+        try {
+            TransactionManager tm = this.getTransactionManager();
+
+            // The getRollbackOnly method should be used only in the context of a transaction.
+            if (tm.getTransaction() == null) {
+                throw new IllegalStateException("getRollbackOnly() not allowed without a transaction.");
+            }
+
+            // EJBTHREE-805, consider an asynchronous rollback due to timeout
+            // This is counter to EJB 3.1 where an asynchronous call does not inherit the transaction context!
+
+            int status = tm.getStatus();
+            if (log.isTraceEnabled()) {
+                log.trace("Current transaction status is " + status);
+            }
+            switch (status) {
+                case Status.STATUS_COMMITTED:
+                case Status.STATUS_ROLLEDBACK:
+                    throw new IllegalStateException("getRollbackOnly() not allowed after transaction is completed (EJBTHREE-1445)");
+                case Status.STATUS_MARKED_ROLLBACK:
+                case Status.STATUS_ROLLING_BACK:
+                    return true;
+            }
+            return false;
+        } catch (SystemException se) {
+            log.warn("failed to get tx manager status; ignoring", se);
+            return true;
+        }
     }
 
     @Override
@@ -233,8 +283,58 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     @Override
     public void setRollbackOnly() throws IllegalStateException {
-        if (isBeanManagedTransaction())
-            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation can use this method.");
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.setRollbackOnly");
+        if (isBeanManagedTransaction()) {
+            throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with container-managed transaction demarcation " +
+                    "can use this method.");
+        }
+        final InvocationContext currentInvocationContext = CurrentInvocationContext.get();
+        if (currentInvocationContext == null) {
+            throw new IllegalStateException("setRollbackOnly() not allowed during construction and injection");
+        }
+        final Method invokedMethod = currentInvocationContext.getMethod();
+        // if method is null, then it's a lifecycle invocation
+        if (invokedMethod == null) {
+            throw new IllegalStateException("setRollbackOnly() not allowed during lifecycle callbacks (EJB3 4.4.1 & 4.5.2)");
+        }
+        // get the tx attribute of the invoked method
+        final TransactionAttributeType txAttr = this.getTransactionAttributeType(invokedMethod);
+        // make sure EJBContext.setRollbackOnly() method invocation is allowed for this transaction attribute type
+        if (!this.isSetRollbackOnlyAllowed(txAttr)) {
+            throw new IllegalStateException("setRollbackOnly() not allowed for method: " + invokedMethod + " with transaction attribute: " + txAttr);
+        }
+
+        try {
+            // get the transaction manager
+            TransactionManager tm = getTransactionManager();
+            // check if there's a tx in progress. If not, then it's an error to call setRollbackOnly()
+            if (tm.getTransaction() == null) {
+                throw new IllegalStateException("setRollbackOnly() not allowed without a transaction.");
+            }
+            // set rollback
+            tm.setRollbackOnly();
+        } catch (SystemException se) {
+            log.warn("failed to set rollback only; ignoring", se);
+        }
     }
+
+    /**
+     * Returns true if the EJB component allows {@link javax.ejb.EJBContext#setRollbackOnly()} invocation from a EJB business
+     * method with the passed <code>txAttrType</code>. Else returns false.
+     *
+     * @param txAttrType The {@link TransactionAttributeType} of the EJB method from which the {@link javax.ejb.EJBContext#setRollbackOnly()}
+     *                   was invoked.
+     * @return
+     */
+    protected abstract boolean isSetRollbackOnlyAllowed(final TransactionAttributeType txAttrType);
+
+    /**
+     * Returns true if the EJB component allows {@link javax.ejb.EJBContext#getRollbackOnly()} invocation from a EJB business
+     * method with the passed <code>txAttrType</code>. Else returns false.
+     *
+     * @param txAttrType The {@link TransactionAttributeType} of the EJB method from which the {@link javax.ejb.EJBContext#getRollbackOnly()}
+     *                   was invoked.
+     * @return
+     */
+    protected abstract boolean isGetRollbackOnlyAllowed(final TransactionAttributeType txAttrType);
+
 }

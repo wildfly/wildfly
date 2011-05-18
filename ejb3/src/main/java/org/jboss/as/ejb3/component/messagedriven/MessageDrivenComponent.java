@@ -35,6 +35,7 @@ import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
 import org.jboss.invocation.Interceptor;
 import org.jboss.msc.service.StopContext;
 
+import javax.ejb.TransactionAttributeType;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
@@ -168,5 +169,25 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
         resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
 
         super.stop(stopContext);
+    }
+
+    @Override
+    protected boolean isSetRollbackOnlyAllowed(TransactionAttributeType txAttrType) {
+        // EJB3.1 Spec, section 13.6.3.3
+        // setRollbackOnly on message drivens beans is not allowed for NOT_SUPPORTED tx attribute type.
+        if (txAttrType == TransactionAttributeType.NOT_SUPPORTED) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean isGetRollbackOnlyAllowed(TransactionAttributeType txAttrType) {
+        // EJB3.1 Spec, section 13.6.3.4
+        // getRollbackOnly on message drivens beans is not allowed for NOT_SUPPORTED tx attribute type.
+        if (txAttrType == TransactionAttributeType.NOT_SUPPORTED) {
+            return false;
+        }
+        return true;
     }
 }
