@@ -186,19 +186,21 @@ final class ContainerStateMonitor extends AbstractServiceListener<Object> {
         }
     }
 
-    ModelNode awaitUninterruptibly() {
+    void awaitUninterruptibly() {
+        awaitUninterruptibly(0);
+    }
+
+    void awaitUninterruptibly(int count) {
         boolean intr = false;
         try {
             synchronized (this) {
-                while (busyServiceCount.get() > 0) {
+                while (busyServiceCount.get() > count) {
                     try {
                         wait();
                     } catch (InterruptedException e) {
                         intr = true;
                     }
                 }
-
-                return getServerStateChangeReport();
             }
         } finally {
             if (intr) {
@@ -207,13 +209,15 @@ final class ContainerStateMonitor extends AbstractServiceListener<Object> {
         }
     }
 
-    ModelNode await() throws InterruptedException {
+    void await() throws InterruptedException {
+        await(0);
+    }
+
+    void await(int count) throws InterruptedException {
         synchronized (this) {
-            while (busyServiceCount.get() > 0) {
+            while (busyServiceCount.get() > count) {
                 wait();
             }
-
-            return getServerStateChangeReport();
         }
     }
 
@@ -301,7 +305,7 @@ final class ContainerStateMonitor extends AbstractServiceListener<Object> {
         busyServiceCount.incrementAndGet();
     }
 
-    private synchronized ModelNode getServerStateChangeReport() {
+    synchronized ModelNode getServerStateChangeReport() {
 
         // Determine the newly failed controllers
         final Map<ServiceController<?>, String> newFailedControllers = new IdentityHashMap<ServiceController<?>, String>(latestSettledFailedControllers);

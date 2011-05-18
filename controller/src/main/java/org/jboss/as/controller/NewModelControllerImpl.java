@@ -159,8 +159,12 @@ class NewModelControllerImpl implements NewModelController {
         stateMonitor.release();
     }
 
-    void awaitContainerMonitor() throws InterruptedException {
-        stateMonitor.await();
+    void awaitContainerMonitor(final boolean interruptibly, final int count) throws InterruptedException {
+        if (interruptibly) {
+            stateMonitor.await(count);
+        } else {
+            stateMonitor.awaitUninterruptibly(count);
+        }
     }
 
     ServiceRegistry getServiceRegistry() {
