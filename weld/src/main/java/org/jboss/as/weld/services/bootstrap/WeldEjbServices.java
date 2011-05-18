@@ -57,7 +57,7 @@ public class WeldEjbServices implements EjbServices {
     @Override
     public SessionObjectReference resolveEjb(EjbDescriptor<?> ejbDescriptor) {
         if (ejbDescriptor.isStateful()) {
-            return new StatefulSessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor, serviceRegistry);
+            return new StatefulSessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor);
         } else {
             return new SessionObjectReferenceImpl((EjbDescriptorImpl<?>) ejbDescriptor, serviceRegistry);
         }

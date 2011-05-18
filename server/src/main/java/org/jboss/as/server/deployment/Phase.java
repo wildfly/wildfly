@@ -289,7 +289,6 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
 
     // POST_MODULE
-    public static final int POST_MODULE_EJB_LOOKUP                      = 0x0100;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
     public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0400;

@@ -87,6 +87,7 @@ class WeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     resultHandler.handleResultComplete();
                 }
             });
+            CurrentServiceRegistry.setServiceRegistry(bootContext.getController().getServiceRegistry());
         } else {
             resultHandler.handleResultComplete();
         }

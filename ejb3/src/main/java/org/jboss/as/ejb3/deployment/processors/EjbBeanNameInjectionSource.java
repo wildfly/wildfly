@@ -28,9 +28,11 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
@@ -55,17 +57,17 @@ public class EjbBeanNameInjectionSource extends InjectionSource {
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
-        final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final Set<ViewDescription> componentsForViewName = applicationDescription.getComponents(beanName, typeName, deploymentRoot.getRoot());
         if (componentsForViewName.isEmpty()) {
-            throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "'");
+            throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "' with name " + beanName);
         }
-        for(ViewDescription description : componentsForViewName) {
-            if(beanName.equals(description.getComponentDescription().getComponentName())) {
-                serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
-                return;
-            }
+        if (componentsForViewName.size() > 1) {
+            throw new DeploymentUnitProcessingException("More than 1 component found for type '" + typeName + "' and bean name " + beanName);
         }
-        throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "' and bean name '" + beanName + "'");
+        ViewDescription description = componentsForViewName.iterator().next();
+        serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
+
     }
 
     public boolean equals(final Object injectionSource) {

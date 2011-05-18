@@ -22,13 +22,15 @@
 package org.jboss.as.weld.services.bootstrap;
 
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.EjbLookup;
-import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 
 import javax.ejb.EJB;
@@ -36,6 +38,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Set;
 
 /**
  * Implementation of EjbInjectionServices.
@@ -49,13 +52,16 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
 
     private final EEModuleDescription moduleDescription;
 
-    private final EjbLookup ejbLookup;
+    private final EEApplicationDescription applicationDescription;
+
+    private final VirtualFile deploymentRoot;
 
 
-    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EjbLookup ejbLookup) {
+    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot) {
         this.serviceRegistry = serviceRegistry;
         this.moduleDescription = moduleDescription;
-        this.ejbLookup = ejbLookup;
+        this.applicationDescription = applicationDescription;
+        this.deploymentRoot = deploymentRoot;
     }
 
     @Override
@@ -74,22 +80,28 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
             ServiceController<?> controller =  serviceRegistry.getRequiredService(ejbServiceName);
             ManagedReferenceFactory factory = (ManagedReferenceFactory) controller.getValue();
             return factory.getReference().getInstance();
-        } else if(ejbLookup != null) {
-            final ServiceName viewService;
+        } else if(applicationDescription != null) {
+            final Set<ViewDescription> viewService;
             if(ejb.beanName().isEmpty()) {
                 if(ejb.beanInterface() != Object.class) {
-                    viewService = ejbLookup.getViewService(ejb.beanInterface());
+                    viewService = applicationDescription.getComponentsForViewName(ejb.beanInterface().getName());
                 } else {
-                    viewService = ejbLookup.getViewService(getType(injectionPoint.getType()));
+                    viewService = applicationDescription.getComponentsForViewName(getType(injectionPoint.getType()).getName());
                 }
             } else {
                 if(ejb.beanInterface() != Object.class) {
-                    viewService = ejbLookup.getViewService(ejb.beanName(), ejb.beanInterface());
+                    viewService = applicationDescription.getComponents(ejb.beanName(), ejb.beanInterface().getName(), deploymentRoot);
                 } else {
-                    viewService = ejbLookup.getViewService(ejb.beanName(), getType(injectionPoint.getType()));
+                    viewService = applicationDescription.getComponents(ejb.beanName(), getType(injectionPoint.getType()).getName(), deploymentRoot);
                 }
             }
-            final ServiceController<?> controller =  serviceRegistry.getRequiredService(viewService);
+            if(viewService.isEmpty()) {
+                throw new RuntimeException("Could not resolve @Ejb reference " + ejb);
+            } else if(viewService.size() > 1) {
+                throw new RuntimeException("More than 1 ejb found for @Ejb reference " + ejb);
+            }
+            final ViewDescription viewDescription = viewService.iterator().next();
+            final ServiceController<?> controller =  serviceRegistry.getRequiredService(viewDescription.getServiceName());
             final ComponentView view = (ComponentView) controller.getValue();
             return view.createInstance().createProxy();
         } else {

@@ -22,9 +22,8 @@
 package org.jboss.as.weld.deployment.processors;
 
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
+import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.EjbLookup;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -32,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.UserTransactionService;
 import org.jboss.as.weld.WeldContainer;
@@ -87,7 +87,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
@@ -118,6 +118,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final BeanDeploymentModule rootBeanDeploymentModule = deploymentUnit.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationDescription eeApplicationDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION);
 
         bdmsByIdentifier.put(module.getIdentifier(), rootBeanDeploymentModule);
         moduleSpecByIdentifier.put(module.getIdentifier(), moduleSpecification);
@@ -169,8 +170,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ValidatorFactory factory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
         weldContainer.addWeldService(ValidationServices.class, new WeldValidationServices(factory));
 
-        final EjbLookup ejbLookup = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_LOOKUP);
-        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, ejbLookup);
+        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
         weldContainer.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
 
         weldContainer.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));

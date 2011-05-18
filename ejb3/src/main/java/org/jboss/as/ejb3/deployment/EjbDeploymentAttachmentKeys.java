@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ejb3.component.EjbLookup;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
@@ -43,8 +42,6 @@ public class EjbDeploymentAttachmentKeys {
     public static final AttachmentKey<EjbJarDescription> EJB_JAR_DESCRIPTION = AttachmentKey.create(EjbJarDescription.class);
 
     public static final AttachmentKey<EjbJarConfiguration> EJB_JAR_CONFIGURATION = AttachmentKey.create(EjbJarConfiguration.class);
-
-    public static final AttachmentKey<EjbLookup> EJB_LOOKUP = AttachmentKey.create(EjbLookup.class);
 
 }
 

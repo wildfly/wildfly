@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import java.util.List;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -30,10 +29,13 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 
-import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import java.util.List;
+
 import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -43,22 +45,23 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationDescription applicationDescription = new EEApplicationDescription();
+
         if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
             /*
              * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
              * into a single index, so that inter-module resolution will work.
              */
-
             // Add the application description
             final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
             for (DeploymentUnit subdeployment : subdeployments) {
                 final EEModuleDescription moduleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
+                final ResourceRoot deploymentRoot = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
                 if (moduleDescription == null) {
                     // Not an EE deployment.
                     continue;
                 }
                 for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
-                    applicationDescription.addComponent(componentDescription);
+                    applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
                 }
                 subdeployment.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);
             }
@@ -67,13 +70,14 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
              * We are a top-level EE deployment, or a non-EE deployment.  Our "aggregate" index is just a copy of
              * our local EE module index.
              */
+            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
             if (moduleDescription == null) {
                 // Not an EE deployment.
                 return;
             }
             for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
-                applicationDescription.addComponent(componentDescription);
+                applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
             }
             deploymentUnit.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);
         }

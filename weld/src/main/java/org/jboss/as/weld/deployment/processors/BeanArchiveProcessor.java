@@ -22,10 +22,9 @@
 package org.jboss.as.weld.deployment.processors;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.EjbLookup;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -74,13 +73,15 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final WeldDeploymentMetadata cdiDeploymentMetadata = deploymentUnit
                 .getAttachment(WeldDeploymentMetadata.ATTACHMENT_KEY);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
 
         //create a CDI injection factory
-        EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final EEApplicationDescription eeApplicationDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION);
         final String beanArchiveIdPrefix;
         if (deploymentUnit.getParent() == null) {
             beanArchiveIdPrefix = deploymentUnit.getName();
@@ -119,8 +120,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
         processEjbComponents(deploymentUnit, bdaMap, rootBda, indexes);
 
-        final EjbLookup ejbLookup = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_LOOKUP);
-        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, ejbLookup);
+        final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
         final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
 
         final BeanDeploymentModule bdm = new BeanDeploymentModule(beanDeploymentArchives);
