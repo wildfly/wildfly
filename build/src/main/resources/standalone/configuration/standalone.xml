@@ -343,10 +343,9 @@
              <wsdl-secure-port>8443</wsdl-secure-port>
              -->
         </subsystem>
-       </subsystem>
-       <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-           <mod-cluster-config advertise-socket="mod_cluster" />
-       </subsystem>
+        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config advertise-socket="mod_cluster" />
+        </subsystem>
     </profile>
 
     <interfaces>
