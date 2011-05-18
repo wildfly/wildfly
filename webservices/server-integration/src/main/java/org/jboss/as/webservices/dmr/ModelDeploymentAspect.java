@@ -19,26 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.webservices.service.ModelUpdateService;
+import org.jboss.ws.common.integration.AbstractDeploymentAspect;
+import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
+
 /**
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * Deployment aspect that modifies DMR WS endpoint model.
+ *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class Constants {
+public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
 
-    private Constants() {
-        // forbidden inheritance
+    public ModelDeploymentAspect() {
+        super();
     }
 
-    public static final String MODIFY_WSDL_ADDRESS = "modify-wsdl-address";
-    public static final String WSDL_HOST = "wsdl-host";
-    public static final String WSDL_PORT = "wsdl-port";
-    public static final String WSDL_SECURE_PORT = "wsdl-secure-port";
-    public static final String ENDPOINT = "endpoint";
-    public static final String ENDPOINT_NAME = "name";
-    public static final String ENDPOINT_CONTEXT = "context";
-    public static final String ENDPOINT_CLASS = "class";
-    public static final String ENDPOINT_TYPE = "type";
-    public static final String ENDPOINT_WSDL = "wsdl-url";
+    @Override
+    public void start(final Deployment dep) {
+        for (final Endpoint ep : dep.getService().getEndpoints()) {
+            ModelUpdateService.getInstance().add(ep);
+        }
+    }
+
+    @Override
+    public void stop(final Deployment dep) {
+        for (final Endpoint ep : dep.getService().getEndpoints()) {
+            ModelUpdateService.getInstance().remove(ep);
+        }
+    }
+
 }

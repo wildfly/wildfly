@@ -21,6 +21,15 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
+
+import java.net.UnknownHostException;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -38,6 +47,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
+import org.jboss.as.webservices.service.ModelUpdateService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
@@ -45,11 +55,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.net.UnknownHostException;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.Constants.*;
 
 /**
  * @author alessio.soldano@jboss.com
@@ -61,27 +66,23 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
-    private final ParametersValidator operationValidator = new ParametersValidator();
     private final ParametersValidator configValidator = new ParametersValidator();
 
     // Private to ensure a singleton.
     private WSSubsystemAdd() {
-        operationValidator.registerValidator(CONFIGURATION, new ModelTypeValidator(ModelType.OBJECT));
-        configValidator.registerValidator(WEBSERVICE_HOST, new ModelTypeValidator(ModelType.STRING));
-        configValidator.registerValidator(MODIFY_SOAP_ADDRESS, new ModelTypeValidator(ModelType.BOOLEAN));
-        configValidator.registerValidator(WEBSERVICE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
-        configValidator.registerValidator(WEBSERVICE_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
+        configValidator.registerValidator(WSDL_HOST, new ModelTypeValidator(ModelType.STRING));
+        configValidator.registerValidator(MODIFY_WSDL_ADDRESS, new ModelTypeValidator(ModelType.BOOLEAN));
+        configValidator.registerValidator(WSDL_PORT, new ModelTypeValidator(ModelType.INT, true, true));
+        configValidator.registerValidator(WSDL_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
     }
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation,
             final ResultHandler resultHandler) throws OperationFailedException {
-        operationValidator.validate(operation);
-        final ModelNode config = operation.require(CONFIGURATION);
-        configValidator.validate(config);
+        configValidator.validate(operation);
 
         final ModelNode subModel = context.getSubModel();
-        subModel.get(CONFIGURATION).set(config);
+        populateSubModel(operation, subModel);
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext updateContext = (BootOperationContext) context;
@@ -93,8 +94,9 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                     WSServices.saveContainerRegistry(context.getServiceRegistry());
 
                     ServiceTarget serviceTarget = context.getServiceTarget();
-                    ServerConfigImpl serverConfig = createServerConfig(config);
+                    ServerConfigImpl serverConfig = createServerConfig(operation);
                     ServerConfigService.install(serviceTarget, serverConfig);
+                    ModelUpdateService.install(serviceTarget);
                     EndpointRegistryService.install(serviceTarget);
 
                     // add the DUP for dealing with WS deployments
@@ -112,19 +114,31 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         return new BasicOperationResult(compensatingOperation);
     }
 
+    private static void populateSubModel(final ModelNode operation, final ModelNode submodel) {
+        submodel.get(MODIFY_WSDL_ADDRESS).set(operation.require(MODIFY_WSDL_ADDRESS));
+        submodel.get(WSDL_HOST).set(operation.require(WSDL_HOST));
+        if (operation.has(WSDL_PORT)) {
+            submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
+        }
+        if (operation.has(WSDL_SECURE_PORT)) {
+            submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
+        }
+        submodel.get(ENDPOINT).setEmptyObject();
+    }
+
     private static ServerConfigImpl createServerConfig(ModelNode configuration) {
         final ServerConfigImpl config = ServerConfigImpl.getInstance();
         try {
-            config.setWebServiceHost(configuration.require(WEBSERVICE_HOST).asString());
+            config.setWebServiceHost(configuration.require(WSDL_HOST).asString());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        config.setModifySOAPAddress(configuration.require(MODIFY_SOAP_ADDRESS).asBoolean());
-        if (configuration.hasDefined(WEBSERVICE_PORT)) {
-            config.setWebServicePort(configuration.require(WEBSERVICE_PORT).asInt());
+        config.setModifySOAPAddress(configuration.require(MODIFY_WSDL_ADDRESS).asBoolean());
+        if (configuration.hasDefined(WSDL_PORT)) {
+            config.setWebServicePort(configuration.require(WSDL_PORT).asInt());
         }
-        if (configuration.hasDefined(WEBSERVICE_SECURE_PORT)) {
-            config.setWebServiceSecurePort(configuration.require(WEBSERVICE_SECURE_PORT).asInt());
+        if (configuration.hasDefined(WSDL_SECURE_PORT)) {
+            config.setWebServiceSecurePort(configuration.require(WSDL_SECURE_PORT).asInt());
         }
         return config;
     }

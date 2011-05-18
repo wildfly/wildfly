@@ -35,11 +35,10 @@ enum Element {
     /** always the first **/
     UNKNOWN(null),
     SUBSYSTEM("subsystem"),
-    CONFIGURATION("configuration"),
-    WEBSERVICE_HOST("webServiceHost"),
-    MODIFY_SOAP_ADDRESS("modifySOAPAddress"),
-    WEBSERVICE_SECURE_PORT("webServiceSecurePort"),
-    WEBSERVICE_PORT("webServicePort");
+    MODIFY_WSDL_ADDRESS("modify-wsdl-address"),
+    WSDL_HOST("wsdl-host"),
+    WSDL_PORT("wsdl-port"),
+    WSDL_SECURE_PORT("wsdl-secure-port");
 
     private final String name;
 

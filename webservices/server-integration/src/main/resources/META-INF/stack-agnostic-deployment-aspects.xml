@@ -73,6 +73,11 @@
     <property name="provides" class="java.lang.String">WebMetaData</property>
   </deploymentAspect>
 
+  <deploymentAspect class="org.jboss.as.webservices.dmr.ModelDeploymentAspect">
+    <property name="requires" class="java.lang.String">EndpointName, EndpointAddress</property>
+    <property name="provides" class="java.lang.String">ModelMetaData</property>
+  </deploymentAspect>
+
   <!--
 
   <deploymentAspect class="org.jboss.ws.common.deployment.VirtualHostDeploymentAspect">

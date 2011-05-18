@@ -41,21 +41,15 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-         <xs:element minOccurs="1" maxOccurs="1" name="configuration" type="serverConfigType" />
-      </xs:sequence>
-   </xs:complexType>
-
-
-   <xs:complexType name="serverConfigType">
-      <xs:sequence>
-         <xs:element name="webServiceHost" minOccurs="1" maxOccurs="1" type="xs:string">
+         <xs:element name="modify-wsdl-address" minOccurs="1" maxOccurs="1" type="xs:boolean"/>
+         <xs:element name="wsdl-host" minOccurs="1" maxOccurs="1" type="xs:string">
             <xs:annotation>
                <xs:documentation>
                <![CDATA[
                   The WSDL, that is a required deployment artifact for an endpoint, has a <soap:address>
                   element which points to the location of the endpoint. JBoss supports rewriting of that SOAP address.
 
-                  If the content of <soap:address> is a valid URL, JBossWS will not rewrite it unless 'modifySOAPAddress' is true.
+                  If the content of <soap:address> is a valid URL, JBossWS will not rewrite it unless 'modify-soap-address' is true.
                   If the content of <soap:address> is not a valid URL, JBossWS will rewrite it using the attribute values given below.
 
                   If 'webServiceHost' is set to 'jbossws.undefined.host', JBossWS uses requesters host when rewriting the <soap:address>
@@ -63,8 +57,8 @@
              </xs:documentation>
             </xs:annotation>
          </xs:element>
-         <xs:element name="modifySOAPAddress" minOccurs="1" maxOccurs="1" type="xs:boolean"" />
-         <xs:element name="webServiceSecurePort" minOccurs="0" maxOccurs="1" type="xs:int">
+         <xs:element name="wsdl-port" minOccurs="0" maxOccurs="1" type="xs:int"/>
+         <xs:element name="wsdl-secure-port" minOccurs="0" maxOccurs="1" type="xs:int">
             <xs:annotation>
                <xs:documentation>
                <![CDATA[
@@ -74,7 +68,6 @@
              </xs:documentation>
             </xs:annotation>
          </xs:element>
-         <xs:element name="webServicePort" minOccurs="0" maxOccurs="1" type="xs:int"" />
       </xs:sequence>
    </xs:complexType>
 

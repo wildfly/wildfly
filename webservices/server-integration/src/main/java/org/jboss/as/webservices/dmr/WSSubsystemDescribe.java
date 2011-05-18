@@ -27,7 +27,10 @@ import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.Constants.CONFIGURATION;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -61,8 +64,20 @@ final class WSSubsystemDescribe implements ModelQueryOperationHandler {
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
 
-        if (subModel.hasDefined(CONFIGURATION)) {
-            subsystemAdd.get(CONFIGURATION).set(subModel.get(CONFIGURATION));
+        if (subModel.hasDefined(MODIFY_WSDL_ADDRESS)) {
+            subsystemAdd.get(MODIFY_WSDL_ADDRESS).set(subModel.get(MODIFY_WSDL_ADDRESS));
+        }
+
+        if (subModel.hasDefined(WSDL_HOST)) {
+            subsystemAdd.get(WSDL_HOST).set(subModel.get(WSDL_HOST));
+        }
+
+        if (subModel.hasDefined(WSDL_PORT)) {
+            subsystemAdd.get(WSDL_PORT).set(subModel.get(WSDL_PORT));
+        }
+
+        if (subModel.hasDefined(WSDL_SECURE_PORT)) {
+            subsystemAdd.get(WSDL_SECURE_PORT).set(subModel.get(WSDL_SECURE_PORT));
         }
 
         result.add(subsystemAdd);

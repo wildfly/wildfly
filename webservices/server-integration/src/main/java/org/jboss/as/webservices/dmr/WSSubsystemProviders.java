@@ -23,21 +23,35 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.webservices.dmr.Constants.CONFIGURATION;
-import static org.jboss.as.webservices.dmr.Constants.MODIFY_SOAP_ADDRESS;
-import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_HOST;
-import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_PORT;
-import static org.jboss.as.webservices.dmr.Constants.WEBSERVICE_SECURE_PORT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
+import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.AVERAGE_PROCESSING_TIME;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.FAULT_COUNT;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.MAX_PROCESSING_TIME;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.MIN_PROCESSING_TIME;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.REQUEST_COUNT;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.RESPONSE_COUNT;
+import static org.jboss.as.webservices.dmr.WSEndpointMetrics.TOTAL_PROCESSING_TIME;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -48,48 +62,61 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
+ * Deployment model providers.
+ *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class WSSubsystemProviders {
+final class WSSubsystemProviders {
+
     static final String RESOURCE_NAME = WSSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
+    private WSSubsystemProviders() {
+        super();
+    }
 
+    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getSubsystem(locale);
         }
     };
 
     static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
         public ModelNode getModelDescription(final Locale locale) {
             return Descriptions.getSubsystemAdd(locale);
         }
     };
 
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
-
         public ModelNode getModelDescription(final Locale locale) {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     };
 
-    static final DescriptionProvider ENDPOINTS_LIST = new DescriptionProvider() {
-
+    static final DescriptionProvider ENDPOINT_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getEndointsList(locale);
+            return Descriptions.getEndpointDescription(locale);
         }
     };
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
+    static final DescriptionProvider ENDPOINT_ADD_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointAddDescription(locale);
         }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+    };
+
+    static final DescriptionProvider ENDPOINT_REMOVE_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getEndpointRemoveDescription(locale);
+        }
+    };
+
+    private static ResourceBundle getResourceBundle(final Locale locale) {
+        return ResourceBundle.getBundle(RESOURCE_NAME, locale == null ? Locale.getDefault() : locale);
     }
 
     private static class Descriptions {
-        static ModelNode getSubsystem(Locale locale) {
+        static ModelNode getSubsystem(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode subsystem = new ModelNode();
@@ -99,64 +126,163 @@ class WSSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.WEBSERVICES_1_0.getUriString());
 
-            subsystem.get(ATTRIBUTES, CONFIGURATION, DESCRIPTION).set(bundle.getString("configuration"));
-            subsystem.get(ATTRIBUTES, CONFIGURATION, TYPE).set(ModelType.OBJECT);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, MODIFY_SOAP_ADDRESS, DESCRIPTION).set(bundle.getString("modify-soap-address"));
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, MODIFY_SOAP_ADDRESS, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, MODIFY_SOAP_ADDRESS, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_HOST, DESCRIPTION).set(bundle.getString("web-service-host"));
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_HOST, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_HOST, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_PORT, DESCRIPTION).set(bundle.getString("web-service-port"));
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_PORT, TYPE).set(ModelType.INT);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_PORT, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_SECURE_PORT, DESCRIPTION).set(bundle.getString("web-service-secure-port"));
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_SECURE_PORT, TYPE).set(ModelType.INT);
-            subsystem.get(ATTRIBUTES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_SECURE_PORT, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, DESCRIPTION).set(bundle.getString("modify.wsdl.address"));
+            subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, TYPE).set(ModelType.BOOLEAN);
+            subsystem.get(ATTRIBUTES, MODIFY_WSDL_ADDRESS, REQUIRED).set(true);
+
+            subsystem.get(ATTRIBUTES, WSDL_HOST, DESCRIPTION).set(bundle.getString("wsdl.host"));
+            subsystem.get(ATTRIBUTES, WSDL_HOST, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, WSDL_HOST, REQUIRED).set(true);
+
+            subsystem.get(ATTRIBUTES, WSDL_PORT, DESCRIPTION).set(bundle.getString("wsdl.port"));
+            subsystem.get(ATTRIBUTES, WSDL_PORT, TYPE).set(ModelType.INT);
+            subsystem.get(ATTRIBUTES, WSDL_PORT, REQUIRED).set(false);
+
+            subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, DESCRIPTION).set(bundle.getString("wsdl.secure.port"));
+            subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, TYPE).set(ModelType.INT);
+            subsystem.get(ATTRIBUTES, WSDL_SECURE_PORT, REQUIRED).set(false);
+
+            subsystem.get(CHILDREN, ENDPOINT, DESCRIPTION).set(bundle.getString("endpoint"));
+            subsystem.get(CHILDREN, ENDPOINT, REQUIRED).set(false);
 
             return subsystem;
         }
 
-        static ModelNode getSubsystemAdd(Locale locale) {
+        static ModelNode getEndpointAddDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
 
+            operation.get(OPERATION_NAME).set(ADD);
+            operation.get(DESCRIPTION).set(bundle.getString("endpoint.add"));
+
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, DESCRIPTION).set(bundle.getString("endpoint.name"));
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_NAME, REQUIRED).set(true);
+
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, DESCRIPTION).set(bundle.getString("endpoint.context"));
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CONTEXT, REQUIRED).set(true);
+
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, DESCRIPTION).set(bundle.getString("endpoint.class"));
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_CLASS, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, DESCRIPTION).set(bundle.getString("endpoint.type"));
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_TYPE, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, DESCRIPTION).set(bundle.getString("endpoint.wsdl"));
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ENDPOINT_WSDL, REQUIRED).set(false);
+
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return operation;
+        }
+
+        static ModelNode getEndpointRemoveDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("endpoint.remove"));
+
+            operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("endpoint.name"));
+            operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+
+            operation.get(REPLY_PROPERTIES).setEmptyObject();
+
+            return operation;
+        }
+
+        static ModelNode getEndpointDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+
+            node.get(DESCRIPTION).set(bundle.getString("endpoint"));
+            node.get(HEAD_COMMENT_ALLOWED).set(true);
+            node.get(TAIL_COMMENT_ALLOWED).set(true);
+
+            node.get(ATTRIBUTES, ENDPOINT_NAME, DESCRIPTION).set(bundle.getString("endpoint.name"));
+            node.get(ATTRIBUTES, ENDPOINT_NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ENDPOINT_NAME, REQUIRED).set(true);
+
+            node.get(ATTRIBUTES, ENDPOINT_CONTEXT, DESCRIPTION).set(bundle.getString("endpoint.context"));
+            node.get(ATTRIBUTES, ENDPOINT_CONTEXT, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ENDPOINT_CONTEXT, REQUIRED).set(true);
+
+            node.get(ATTRIBUTES, ENDPOINT_CLASS, DESCRIPTION).set(bundle.getString("endpoint.class"));
+            node.get(ATTRIBUTES, ENDPOINT_CLASS, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ENDPOINT_CLASS, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, ENDPOINT_TYPE, DESCRIPTION).set(bundle.getString("endpoint.type"));
+            node.get(ATTRIBUTES, ENDPOINT_TYPE, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ENDPOINT_TYPE, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, ENDPOINT_WSDL, DESCRIPTION).set(bundle.getString("endpoint.wsdl"));
+            node.get(ATTRIBUTES, ENDPOINT_WSDL, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ENDPOINT_WSDL, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("average.processing.time"));
+            node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, AVERAGE_PROCESSING_TIME, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, MIN_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("min.processing.time"));
+            node.get(ATTRIBUTES, MIN_PROCESSING_TIME, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, MIN_PROCESSING_TIME, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, MAX_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("max.processing.time"));
+            node.get(ATTRIBUTES, MAX_PROCESSING_TIME, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, MAX_PROCESSING_TIME, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, DESCRIPTION).set(bundle.getString("total.processing.time"));
+            node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, TOTAL_PROCESSING_TIME, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, REQUEST_COUNT, DESCRIPTION).set(bundle.getString("request.count"));
+            node.get(ATTRIBUTES, REQUEST_COUNT, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, REQUEST_COUNT, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, RESPONSE_COUNT, DESCRIPTION).set(bundle.getString("response.count"));
+            node.get(ATTRIBUTES, RESPONSE_COUNT, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, RESPONSE_COUNT, REQUIRED).set(false);
+
+            node.get(ATTRIBUTES, FAULT_COUNT, DESCRIPTION).set(bundle.getString("fault.count"));
+            node.get(ATTRIBUTES, FAULT_COUNT, TYPE).set(ModelType.INT);
+            node.get(ATTRIBUTES, FAULT_COUNT, REQUIRED).set(false);
+
+            return node;
+        }
+
+        static ModelNode getSubsystemAdd(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode op = new ModelNode();
 
             op.get(OPERATION_NAME).set(ADD);
             op.get(DESCRIPTION).set(bundle.getString("ws.add"));
 
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, DESCRIPTION).set(bundle.getString("configuration"));
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, TYPE).set(ModelType.OBJECT);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, MODIFY_SOAP_ADDRESS, DESCRIPTION).set(bundle.getString("modify-soap-address"));
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, MODIFY_SOAP_ADDRESS, TYPE).set(ModelType.BOOLEAN);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, MODIFY_SOAP_ADDRESS, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_HOST, DESCRIPTION).set(bundle.getString("web-service-host"));
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_HOST, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_HOST, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_PORT, DESCRIPTION).set(bundle.getString("web-service-port"));
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_PORT, TYPE).set(ModelType.INT);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_PORT, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_SECURE_PORT, DESCRIPTION).set(bundle.getString("web-service-secure-port"));
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_SECURE_PORT, TYPE).set(ModelType.INT);
-            op.get(REQUEST_PROPERTIES, CONFIGURATION, VALUE_TYPE, WEBSERVICE_SECURE_PORT, REQUIRED).set(false);
+            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, DESCRIPTION).set(bundle.getString("modify.wsdl.address"));
+            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, TYPE).set(ModelType.BOOLEAN);
+            op.get(REQUEST_PROPERTIES, MODIFY_WSDL_ADDRESS, REQUIRED).set(true);
+
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, DESCRIPTION).set(bundle.getString("wsdl.host"));
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, WSDL_HOST, REQUIRED).set(true);
+
+            op.get(REQUEST_PROPERTIES, WSDL_PORT, DESCRIPTION).set(bundle.getString("wsdl.port"));
+            op.get(REQUEST_PROPERTIES, WSDL_PORT, TYPE).set(ModelType.INT);
+            op.get(REQUEST_PROPERTIES, WSDL_PORT, REQUIRED).set(false);
+
+            op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, DESCRIPTION).set(bundle.getString("wsdl.secure.port"));
+            op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, TYPE).set(ModelType.INT);
+            op.get(REQUEST_PROPERTIES, WSDL_SECURE_PORT, REQUIRED).set(false);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
             return op;
         }
 
-        static ModelNode getEndointsList(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode op = new ModelNode();
-
-            op.get(OPERATION_NAME).set("list-endpoints");
-            op.get(DESCRIPTION).set(bundle.getString("endpoints.list"));
-            // request and response properties
-            return op;
-        }
     }
 
 }
