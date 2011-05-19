@@ -113,6 +113,7 @@ public final class RemoteDeployer implements Deployer {
         if (rolesPropFile != null) {
             moduleOptions.add("rolesProperties", rolesPropFile);
         }
+        moduleOptions.add("unauthenticatedIdentity", "anonymous");
         applyUpdate(op, client);
     }
 
