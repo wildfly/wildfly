@@ -58,17 +58,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>${surefire.system.args}</argLine>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-
         <!-- Big complex hack just to get @Resource(lookup="foo") -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -102,6 +91,7 @@
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
+                    <argLine>${surefire.system.args}</argLine>
                     <systemProperties>
                         <property>
                           <name>jboss.home</name>
