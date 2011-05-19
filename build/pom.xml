@@ -1203,9 +1203,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.maven.plugins</groupId>
-                        <artifactId>maven-jboss-license-plugin</artifactId>
-                        <version>1.0.3</version>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
@@ -1214,14 +1213,14 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/jboss-${jboss.as.release.version}/docs/licenses</outputDirectory>
-                                    <licenseSummaryFile>${project.build.directory}/jboss-${jboss.as.release.version}/docs/licenses/licenses.xml</licenseSummaryFile>
+                                    <licensesOutputDirectory>${project.build.directory}/jboss-${jboss.as.release.version}/docs/licenses</licensesOutputDirectory>
+                                    <licensesOutputFile>${project.build.directory}/jboss-${jboss.as.release.version}/docs/licenses/licenses.xml</licensesOutputFile>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugin</groupId>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
                             <execution>
