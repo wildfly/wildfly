@@ -50,6 +50,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBs;
 import java.util.List;
 
 /**
@@ -60,6 +61,7 @@ import java.util.List;
  */
 public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitProcessor {
     private static final DotName EJB_ANNOTATION_NAME = DotName.createSimple(EJB.class.getName());
+    private static final DotName EJBS_ANNOTATION_NAME = DotName.createSimple(EJBs.class.getName());
 
     private static final Logger logger = Logger.getLogger(EjbResourceInjectionAnnotationProcessor.class);
 
@@ -77,6 +79,20 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                 processMethod(eeModuleDescription, annotationWrapper, (MethodInfo) annotationTarget);
             } else if (annotationTarget instanceof ClassInfo) {
                 processClass(eeModuleDescription, annotationWrapper, (ClassInfo) annotationTarget);
+            }
+        }
+        final List<AnnotationInstance> ejbsAnnotations = index.getAnnotations(EJBS_ANNOTATION_NAME);
+        for (AnnotationInstance annotation : ejbsAnnotations) {
+            final AnnotationTarget annotationTarget = annotation.target();
+            if (annotationTarget instanceof ClassInfo) {
+                final AnnotationValue annotationValue = annotation.value();
+                final AnnotationInstance[] ejbAnnotations = annotationValue.asNestedArray();
+                for (AnnotationInstance ejbAnnotation : ejbAnnotations) {
+                    final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(ejbAnnotation);
+                    processClass(eeModuleDescription, annotationWrapper, (ClassInfo) annotationTarget);
+                }
+            } else {
+                throw new DeploymentUnitProcessingException("EJBs annotation can only be placed on classes " + annotation.target());
             }
         }
     }
@@ -108,10 +124,10 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
     private void processClass(final EEModuleDescription eeModuleDescription, final EJBResourceWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
-            throw new DeploymentUnitProcessingException("@EJB attribute 'name' is required fo class level annotations.");
+            throw new DeploymentUnitProcessingException("@EJB attribute 'name' is required fo class level annotations. Class: " + classInfo.name());
         }
         if (isEmpty(annotation.beanInterface())) {
-            throw new DeploymentUnitProcessingException("@EJB attribute 'beanInterface' is required fo class level annotations.");
+            throw new DeploymentUnitProcessingException("@EJB attribute 'beanInterface' is required fo class level annotations. Class: " + classInfo.name());
         }
         process(eeModuleDescription, annotation.beanInterface(), annotation.beanName(), annotation.lookup(), classInfo, null, annotation.name());
     }
@@ -120,7 +136,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
         if (!isEmpty(lookup) && !isEmpty(beanName)) {
             logger.debug("Both beanName = " + beanName + " and lookup = " + lookup + " have been specified in @EJB annotation." +
-                    " lookup will be given preference");
+                    " lookup will be given preference. Class: " + classInfo.name());
         }
 
         final EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());

@@ -19,17 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.injection;
+package org.jboss.as.testsuite.integration.ejb.injection.ejb;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless(name="bean")
-public class Bean1 implements BeanInterface {
-    @Override
-    public String name() {
-        return "Bean1";
+@Stateless
+public class InjectingBean {
+
+    @EJB(beanName = "../b1.jar#bean")
+    public BeanInterface bean1;
+
+    @EJB(beanName = "../b2.jar#bean")
+    public BeanInterface bean2;
+
+    public String getBean1Name() {
+        return bean1.name();
     }
+
+    public String getBean2Name() {
+        return bean2.name();
+    }
+
 }

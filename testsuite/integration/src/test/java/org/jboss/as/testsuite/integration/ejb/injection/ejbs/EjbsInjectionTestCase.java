@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.injection;
+package org.jboss.as.testsuite.integration.ejb.injection.ejbs;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,12 +36,12 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that @Ejb injection works when two beans have the same name in different modules.
+ * Tests that @EJBs() injection works as expected
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class EjbInjectionSameEjbNameTestCase {
+public class EjbsInjectionTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
@@ -57,7 +57,7 @@ public class EjbInjectionSameEjbNameTestCase {
         b2.addClass(Bean2.class);
         ear.addModule(b2);
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
-        main.addClasses(EjbInjectionSameEjbNameTestCase.class, InjectingBean.class);
+        main.addClasses(EjbsInjectionTestCase.class, InjectingBean.class);
         ear.addModule(main);
         return ear;
 
