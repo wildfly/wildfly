@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.Driver;
 
 /**
  * Local data-source service implementation.

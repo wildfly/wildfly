@@ -29,10 +29,10 @@ import org.jboss.dmr.ModelType;
  * @author John Bailey
  */
 public enum AttributeDefinition {
-    CONNECTION_URL(Constants.CONNECTION_URL, ModelType.STRING, true), DRIVER_CLASS(Constants.DRIVER_CLASS, ModelType.STRING,
-            true), JNDINAME(Constants.JNDINAME, ModelType.STRING, true), DRIVER(Constants.DRIVER, ModelType.STRING, true), NEW_CONNECTION_SQL(
-            Constants.NEW_CONNECTION_SQL, ModelType.STRING, false), POOLNAME(Constants.POOLNAME, ModelType.STRING, false), URL_DELIMITER(
-            Constants.URL_DELIMITER, ModelType.STRING, false), URL_SELECTOR_STRATEGY_CLASS_NAME(
+    CONNECTION_URL(Constants.CONNECTION_URL, ModelType.STRING, true), DRIVER_CLASS(Constants.DATASOURCE_DRIVER_CLASS,
+            ModelType.STRING, true), JNDINAME(Constants.JNDINAME, ModelType.STRING, true), DRIVER(Constants.DATASOURCE_DRIVER,
+            ModelType.STRING, true), NEW_CONNECTION_SQL(Constants.NEW_CONNECTION_SQL, ModelType.STRING, false), POOLNAME(
+            Constants.POOLNAME, ModelType.STRING, false), URL_DELIMITER(Constants.URL_DELIMITER, ModelType.STRING, false), URL_SELECTOR_STRATEGY_CLASS_NAME(
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, ModelType.STRING, false), USE_JAVA_CONTEXT(Constants.USE_JAVA_CONTEXT,
             ModelType.BOOLEAN, false), ENABLED(Constants.ENABLED, ModelType.STRING, false), MAX_POOL_SIZE(
             org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, ModelType.INT, false), MIN_POOL_SIZE(

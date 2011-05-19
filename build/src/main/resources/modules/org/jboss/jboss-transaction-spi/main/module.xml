@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.integration.jboss-transaction-spi">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.jboss-transaction-spi">
     <resources>
         <!-- Insert resources here -->
     </resources>

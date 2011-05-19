@@ -22,31 +22,32 @@
 package org.jboss.as.connector.registry;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
 
 /**
  * Standard {@link DriverRegistry} implementation.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DriverRegistryImpl implements DriverRegistry {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector.registry");
 
-    private Set<InstalledDriver> drivers = new HashSet<InstalledDriver>();
+    private Map<String, InstalledDriver> drivers = new HashMap<String, InstalledDriver>();
 
     @Override
-    public void registerInstalledDriver(InstalledDriver driver) {
+    public void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException {
         if (driver == null)
             throw new IllegalArgumentException("driver is null");
 
         log.tracef("Adding driver: %s", driver);
 
         synchronized (drivers) {
-            drivers.add(driver);
+            drivers.put(driver.getDriverName(), driver);
         }
 
     }
@@ -59,14 +60,18 @@ public class DriverRegistryImpl implements DriverRegistry {
         log.tracef("Removing deployment: %s", driver);
 
         synchronized (drivers) {
-            drivers.add(driver);
+            drivers.put(driver.getDriverName(), driver);
         }
 
     }
 
     @Override
     public Set<InstalledDriver> getInstalledDrivers() {
-        return Collections.unmodifiableSet(Collections.synchronizedSet(drivers));
+        return Collections.unmodifiableSet(Collections.synchronizedSet(new HashSet<InstalledDriver>(drivers.values())));
     }
 
+    @Override
+    public InstalledDriver getInstalledDriver(String name) {
+        return drivers.get(name);
+    }
 }

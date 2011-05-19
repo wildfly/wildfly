@@ -41,9 +41,21 @@ class Constants {
 
     static final String JDBC_DRIVER = "jdbc-driver";
 
-    static final String DRIVER_CLASS = "driver-class";
+    static final String DATASOURCE_DRIVER_CLASS = "driver-class";
 
-    static final String DRIVER = "driver";
+    static final String DATASOURCE_DRIVER = "driver-name";
+
+    static final String DRIVER_NAME = "driver-name";
+
+    static final String DRIVER_MODULE_NAME = "driver-module-name";
+
+    static final String DRIVER_MAJOR_VERSION = "driver-major-version";
+
+    static final String DRIVER_MINOR_VERSION = "driver-minor-version";
+
+    static final String DRIVER_CLASS_NAME = "driver-class-name";
+
+    static final String DRIVER_XA_DATASOURCE_CLASS_NAME = "driver-xa-datasource-class-name";
 
     static final String CONNECTION_PROPERTIES = "connection-properties";
 
@@ -159,13 +171,7 @@ class Constants {
 
     static final String DEPLOYMENT_NAME = "deployment-name";
 
-    static final String MODULE_NAME = "module-name";
-
     static final String MODULE_SLOT = "module-slot";
-
-    static final String MAJOR_VERSION = "major-version";
-
-    static final String MINOR_VERSION = "minor-version";
 
     static final String JDBC_COMPLIANT = "jdbc-compliant";
 

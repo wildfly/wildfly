@@ -34,7 +34,7 @@
         <!-- org.jboss.util.deadlock.ApplicationDeadlockException -->
         <module name="org.jboss.common-core"/>
         <!-- TX services -->
-        <module name="org.jboss.integration.jboss-transaction-spi"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
         <!-- Logging -->
         <module name="org.jboss.logging"/>
         <!-- the EE metadata -->

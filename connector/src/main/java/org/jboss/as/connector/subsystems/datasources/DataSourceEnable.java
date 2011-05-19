@@ -22,6 +22,11 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -42,7 +47,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Operation handler responsible for enabling an existing data-source.
- *
  * @author John Bailey
  */
 public class DataSourceEnable implements ModelUpdateOperationHandler {
@@ -50,7 +54,8 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
+            throws OperationFailedException {
         final ModelNode opAddr = operation.require(OP_ADDR);
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set(DISABLE);
@@ -72,13 +77,16 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
                         if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.ACTIVE);
                         } else {
-                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is already started"));
+                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName
+                                    + "] is already started"));
                         }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not available"));
+                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName
+                                + "] is not available"));
                     }
 
-                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
+                            .append(jndiName);
                     final ServiceController<?> referenceController = registry.getService(referenceServiceName);
                     if (referenceController != null && !ServiceController.State.UP.equals(referenceController.getState())) {
                         referenceController.setMode(ServiceController.Mode.ACTIVE);

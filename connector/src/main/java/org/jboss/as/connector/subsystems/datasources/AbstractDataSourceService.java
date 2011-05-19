@@ -28,6 +28,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.sql.Driver;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +37,8 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 
+import org.jboss.as.connector.registry.DriverRegistry;
+import org.jboss.as.connector.registry.InstalledDriver;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
@@ -52,6 +55,7 @@ import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
+import org.jboss.jca.common.metadata.ds.DriverImpl;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -83,6 +87,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
     private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
+    private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
 
     private final String jndiName;
 
@@ -128,6 +133,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public Injector<ManagementRepository> getmanagementRepositoryInjector() {
         return managementRepositoryValue;
+    }
+
+    public Injector<DriverRegistry> getDriverRegistryInjector() {
+        return driverRegistry;
     }
 
     public Injector<SubjectFactory> getSubjectFactoryInjector() {
@@ -181,12 +190,14 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             super(log);
             this.xaDataSourceConfig = xaDataSourceConfig;
             this.dataSourceConfig = null;
+
         }
 
         public AS7DataSourceDeployer(Logger log, org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig) {
             super(log);
             this.dataSourceConfig = dataSourceConfig;
             this.xaDataSourceConfig = null;
+
         }
 
         public CommonDeployment deploy(ServiceContainer serviceContainer) throws DeployException {
@@ -196,9 +207,29 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 }
                 this.serviceContainer = serviceContainer;
 
-                DataSources dataSources = new DatasourcesImpl(
-                        dataSourceConfig != null ? Arrays.asList(dataSourceConfig) : null,
-                        xaDataSourceConfig != null ? Arrays.asList(xaDataSourceConfig) : null);
+                HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver> drivers = new HashMap<String, org.jboss.jca.common.api.metadata.ds.Driver>(
+                        1);
+
+                DataSources dataSources = null;
+                if (dataSourceConfig != null) {
+                    InstalledDriver installedDriver = driverRegistry.getValue()
+                            .getInstalledDriver(dataSourceConfig.getDriver());
+                    org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
+                            installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), installedDriver
+                                    .getModuleName().getName(), installedDriver.getDriverClassName(),
+                            installedDriver.getXaDataSourceClassName());
+                    drivers.put(driver.getName(), driver);
+                    dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
+                } else if (xaDataSourceConfig != null) {
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(
+                            xaDataSourceConfig.getDriver());
+                    org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
+                            installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), installedDriver
+                                    .getModuleName().getName(), installedDriver.getDriverClassName(),
+                            installedDriver.getXaDataSourceClassName());
+                    drivers.put(driver.getName(), driver);
+                    dataSources = new DatasourcesImpl(null, Arrays.asList(xaDataSourceConfig), drivers);
+                }
 
                 CommonDeployment c = createObjectsAndInjectValue(new URL("file://DataSourceDeployment"), jndiName,
                         "uniqueJdbcLocalId", "uniqueJdbcXAId", dataSources, AbstractDataSourceService.class.getClassLoader());

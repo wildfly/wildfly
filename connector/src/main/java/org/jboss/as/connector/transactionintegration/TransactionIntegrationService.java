@@ -58,8 +58,6 @@ public final class TransactionIntegrationService implements Service<TransactionI
 
     private final InjectedValue<XAResourceRecoveryRegistry> rr = new InjectedValue<XAResourceRecoveryRegistry>();
 
-    private final InjectedValue<TransactionLocalDelegate> tld = new InjectedValue<TransactionLocalDelegate>();
-
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     /** create an instance **/
@@ -75,7 +73,7 @@ public final class TransactionIntegrationService implements Service<TransactionI
     @Override
     public void start(StartContext context) throws StartException {
         this.value = new TransactionIntegrationImpl(tm.getValue(), tsr.getValue(), utr.getValue(), terminator.getValue(),
-                rr.getValue(), (TransactionLocalDelegate) tld.getValue());
+                rr.getValue());
         log.debugf("Starting JCA TransactionIntegrationService");
     }
 
@@ -102,10 +100,6 @@ public final class TransactionIntegrationService implements Service<TransactionI
 
     public Injector<XAResourceRecoveryRegistry> getRrInjector() {
         return rr;
-    }
-
-    public Injector<TransactionLocalDelegate> getTldInjector() {
-        return tld;
     }
 
 }

@@ -36,8 +36,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
@@ -125,9 +125,9 @@ class DataSourceModelNodeUtil {
             dataSourceModel.get(CONNECTION_PROPERTIES, entry.getKey()).set(entry.getValue());
         }
         setStringIfNotNull(dataSourceModel, CONNECTION_URL, dataSource.getConnectionUrl());
-        setStringIfNotNull(dataSourceModel, DRIVER_CLASS, dataSource.getDriverClass());
+        setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER_CLASS, dataSource.getDriverClass());
         setStringIfNotNull(dataSourceModel, JNDINAME, dataSource.getJndiName());
-        setStringIfNotNull(dataSourceModel, DRIVER, dataSource.getDriver());
+        setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER, dataSource.getDriver());
         setStringIfNotNull(dataSourceModel, NEW_CONNECTION_SQL, dataSource.getNewConnectionSql());
         setStringIfNotNull(dataSourceModel, POOLNAME, dataSource.getPoolName());
         setStringIfNotNull(dataSourceModel, URL_DELIMITER, dataSource.getUrlDelimiter());
@@ -155,7 +155,7 @@ class DataSourceModelNodeUtil {
         Statement statement = dataSource.getStatement();
         if (statement != null) {
             setLongIfNotNull(dataSourceModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-            setBooleanIfNotNull(dataSourceModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
+            setBooleanIfTrue(dataSourceModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
             if (statement.getTrackStatements() != null) {
                 setStringIfNotNull(dataSourceModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
             }
@@ -168,7 +168,7 @@ class DataSourceModelNodeUtil {
             setLongIfNotNull(dataSourceModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
             setLongIfNotNull(dataSourceModel, QUERYTIMEOUT, timeout.getQueryTimeout());
             setLongIfNotNull(dataSourceModel, USETRYLOCK, timeout.getUseTryLock());
-            setBooleanIfNotNull(dataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
+            setBooleanIfTrue(dataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
         }
         if (dataSource.getTransactionIsolation() != null) {
             setStringIfNotNull(dataSourceModel, TRANSACTION_ISOLOATION, dataSource.getTransactionIsolation().name());
@@ -204,7 +204,7 @@ class DataSourceModelNodeUtil {
         }
         setStringIfNotNull(xaDataSourceModel, XADATASOURCECLASS, xaDataSource.getXaDataSourceClass());
         setStringIfNotNull(xaDataSourceModel, JNDINAME, xaDataSource.getJndiName());
-        setStringIfNotNull(xaDataSourceModel, DRIVER, xaDataSource.getDriver());
+        setStringIfNotNull(xaDataSourceModel, DATASOURCE_DRIVER, xaDataSource.getDriver());
         setStringIfNotNull(xaDataSourceModel, NEW_CONNECTION_SQL, xaDataSource.getNewConnectionSql());
         setStringIfNotNull(xaDataSourceModel, POOLNAME, xaDataSource.getPoolName());
         setStringIfNotNull(xaDataSourceModel, URL_DELIMITER, xaDataSource.getUrlDelimiter());
@@ -250,7 +250,7 @@ class DataSourceModelNodeUtil {
             setLongIfNotNull(xaDataSourceModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
             setLongIfNotNull(xaDataSourceModel, QUERYTIMEOUT, timeout.getQueryTimeout());
             setLongIfNotNull(xaDataSourceModel, USETRYLOCK, timeout.getUseTryLock());
-            setBooleanIfNotNull(xaDataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
+            setBooleanIfTrue(xaDataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
             setIntegerIfNotNull(xaDataSourceModel, XA_RESOURCE_TIMEOUT, timeout.getXaResourceTimeout());
         }
         if (xaDataSource.getTransactionIsolation() != null) {
@@ -305,9 +305,9 @@ class DataSourceModelNodeUtil {
             connectionProperties = Collections.emptyMap();
         }
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
-        final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
+        final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER_CLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, DRIVER, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
@@ -381,7 +381,7 @@ class DataSourceModelNodeUtil {
         }
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
-        final String module = getStringIfSetOrGetDefault(dataSourceNode, DRIVER, null);
+        final String module = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
         final String newConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, NEW_CONNECTION_SQL, null);
         final String poolName = getStringIfSetOrGetDefault(dataSourceNode, POOLNAME, null);
         final String urlDelimiter = getStringIfSetOrGetDefault(dataSourceNode, URL_DELIMITER, null);
@@ -464,6 +464,12 @@ class DataSourceModelNodeUtil {
 
     private static void setBooleanIfNotNull(final ModelNode node, final String identifier, final Boolean value) {
         if (value != null) {
+            node.get(identifier).set(value);
+        }
+    }
+
+    private static void setBooleanIfTrue(final ModelNode node, final String identifier, final Boolean value) {
+        if (value != null && value.booleanValue() == true) {
             node.get(identifier).set(value);
         }
     }

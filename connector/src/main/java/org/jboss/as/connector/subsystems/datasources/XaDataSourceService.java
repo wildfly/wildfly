@@ -22,28 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.sql.Driver;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.TransactionSupport;
-
-import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
-import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
-import org.jboss.jca.adapters.jdbc.xa.XAManagedConnectionFactory;
-import org.jboss.jca.common.api.metadata.common.Extension;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.Statement;
-import org.jboss.jca.common.api.metadata.ds.TimeOut;
-import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
-import org.jboss.jca.core.connectionmanager.ConnectionManager;
-import org.jboss.jca.core.connectionmanager.ConnectionManagerFactory;
-import org.jboss.jca.core.connectionmanager.pool.api.Pool;
-import org.jboss.jca.core.connectionmanager.pool.api.PoolFactory;
-import org.jboss.jca.core.connectionmanager.pool.api.PoolStrategy;
-import org.jboss.msc.service.StartException;
 
 /**
  * XA data-source service implementation.

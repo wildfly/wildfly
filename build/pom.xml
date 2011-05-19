@@ -666,13 +666,13 @@
             <artifactId>jboss-as-jpa</artifactId>
         </dependency>
 
-        <dependency>
+		<dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-jca-spi</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.integration</groupId>
+            <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
 

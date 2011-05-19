@@ -35,8 +35,7 @@
     <module name="org.jboss.as.naming"/>      
     <module name="org.jboss.as.transactions"/>      
     <module name="org.jboss.common-core"/>
-    <module name="org.jboss.integration.jboss-jca-spi"/>
-    <module name="org.jboss.integration.jboss-transaction-spi"/>    
+    <module name="org.jboss.jboss-transaction-spi"/>    
     <module name="org.jboss.ironjacamar.api"/>
     <module name="org.jboss.logging"/>
     <module name="org.jboss.threads"/>

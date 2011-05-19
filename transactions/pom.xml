@@ -47,7 +47,7 @@
             <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.integration</groupId>
+            <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
         <dependency>
@@ -78,5 +78,7 @@
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.1_spec</artifactId>
         </dependency>
+
+        
     </dependencies>
 </project>

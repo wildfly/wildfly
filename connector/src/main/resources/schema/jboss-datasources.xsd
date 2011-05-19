@@ -26,22 +26,7 @@
         <xs:all>
             <xs:element name="ds:datasources" type="ds:datasources"
                         minOccurs="1" maxOccurs="1"/>
-
-            <xs:element name="ds:drivers" type="driversType"
-                        minOccurs="0" maxOccurs="1"/>
         </xs:all>
-    </xs:complexType>
-
-    <xs:complexType name="driversType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="driver" type="driverType">
-            </xs:element>
-        </xs:choice>
-    </xs:complexType>
-
-    <xs:complexType name="driverType">
-        <xs:attribute name="module" type="xs:string" use="required">
-        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>

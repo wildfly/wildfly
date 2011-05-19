@@ -55,6 +55,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-connector</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-spec-api</artifactId>
+               </exclusion>
+            </exclusions>
         </dependency>
         <!--
         <dependency>
@@ -73,6 +79,17 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-transactions</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId> org.jboss.spec.javax.resource</groupId>
+                    <artifactId>jboss-connector-api_1.5_spec</artifactId>
+               </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.integration</groupId>
+            <artifactId>jboss-jca-spi</artifactId>
         </dependency>
 
         <dependency>
@@ -122,7 +139,7 @@
             <artifactId>jboss-ejb3-tx2-impl</artifactId>
         </dependency>
 
-        <dependency>
+       <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>

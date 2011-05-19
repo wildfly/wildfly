@@ -75,17 +75,16 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                                 Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
                     }
 
-                    InstalledDriver driverMetadata = new InstalledDriver(deploymentUnit.getName(), driverName, majorVersion, minorVersion, compliant);
+                    InstalledDriver driverMetadata = new InstalledDriver(deploymentUnit.getName(), driverClass.getName(), null,
+                            majorVersion, minorVersion, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
                     phaseContext
                             .getServiceTarget()
                             .addService(
                                     ServiceName.JBOSS.append("jdbc-driver", driverName, Integer.toString(majorVersion),
-                                            Integer.toString(minorVersion)),
-                                            driverService)
-                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class, driverService.getDriverRegistryServiceInjector())
-                             .setInitialMode(Mode.ACTIVE)
-                            .install();
+                                            Integer.toString(minorVersion)), driverService)
+                            .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
+                                    driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
                 } catch (Exception e) {
                     log.warnf("Unable to instantiate driver class \"%s\": %s", driverName, e);

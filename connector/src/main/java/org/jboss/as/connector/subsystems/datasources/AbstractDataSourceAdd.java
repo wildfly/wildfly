@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
@@ -33,6 +33,7 @@ import java.sql.Driver;
 import javax.sql.DataSource;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -51,7 +52,6 @@ import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -60,7 +60,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
-import org.jboss.util.Strings;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.
@@ -106,10 +105,12 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                             .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
                                     dataSourceService.getmanagementRepositoryInjector())
                             .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                                    dataSourceService.getSubjectFactoryInjector()).addDependency(NamingService.SERVICE_NAME);
+                                    dataSourceService.getSubjectFactoryInjector())
+                            .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
+                                    dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-                    final String driverName = operation.require(DRIVER).asString();
-                    final ServiceName driverServiceName = getDriverDependency(driverName);
+                    final String driverName = operation.require(DATASOURCE_DRIVER).asString();
+                    final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName);
                     if (driverServiceName != null) {
                         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                                 dataSourceService.getDriverInjector());
@@ -122,7 +123,11 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                             referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
                             referenceFactoryService.getDataSourceInjector());
 
-                    final BinderService binderService = new BinderService(jndiName.substring(6));
+                    String bindName = jndiName;
+                    if (jndiName.startsWith("java:/")) {
+                        bindName = jndiName.substring(6);
+                    }
+                    final BinderService binderService = new BinderService(bindName);
                     final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
                     final ServiceBuilder<?> binderBuilder = serviceTarget
                             .addService(binderServiceName, binderService)
@@ -169,36 +174,6 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
 
     protected abstract AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation)
             throws OperationFailedException;
-
-    private ServiceName getDriverDependency(final String driver) {
-        String[] strings = Strings.split(driver, "#");
-        if (strings.length != 2) {
-            throw new IllegalArgumentException(
-                    "module should define jdbc driver with this format: <driver-name>#<major-version>.<minor-version>");
-        }
-        final String driverName = strings[0];
-        strings = Strings.split(strings[1], ".", 2);
-        if (strings.length != 2) {
-            throw new IllegalArgumentException(
-                    "module should define jdbc driver with this format: <driver-name>#<major-version>.<minor-version>");
-        }
-        final Integer majorVersion;
-        final Integer minorVersion;
-        try {
-            majorVersion = Integer.valueOf(strings[0]);
-            minorVersion = Integer.valueOf(strings[1]);
-        } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException(
-                    "module should define jdbc driver with this format: <driver-name>#<major-version>.<minor-version> "
-                            + "version number should be valid Integer");
-        }
-
-        if (driverName != null & majorVersion != null && minorVersion != null) {
-            return ServiceName.JBOSS.append("jdbc-driver", driverName, Integer.toString(majorVersion),
-                    Integer.toString(minorVersion));
-        }
-        return null;
-    }
 
     static void populateAddModel(final ModelNode existingModel, final ModelNode newModel,
             final String connectionPropertiesProp, final AttributeDefinition[] attributes) {

@@ -64,35 +64,40 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 
 /**
- * Tests deployment to a standalone server, both via the client API and by the filesystem scanner.
- *
+ * Tests deployment to a standalone server, both via the client API and by the
+ * filesystem scanner.
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTestCase {
 
-
     @Test
     public void testDeploymentStreamApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
+                Simple.class.getPackage());
+        final ServerDeploymentManager manager = ServerDeploymentManager.Factory
+                .create(InetAddress.getByName("localhost"), 9999);
 
         testDeployments(new DeploymentExecutor() {
 
             @Override
             public void initialDeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan()
+                        .add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar")
+                        .build());
                 awaitDeploymentExecution(future);
             }
 
             @Override
             public void fullReplace() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan()
+                        .replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
                 awaitDeploymentExecution(future);
             }
 
             @Override
             public void undeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
+                        .remove("test-deployment.sar").build());
                 awaitDeploymentExecution(future);
             }
         });
@@ -100,8 +105,10 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
 
     @Test
     public void testDeploymentFileApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
-        final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(InetAddress.getByName("localhost"), 9999);
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
+                Simple.class.getPackage());
+        final ServerDeploymentManager manager = ServerDeploymentManager.Factory
+                .create(InetAddress.getByName("localhost"), 9999);
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
@@ -110,8 +117,9 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
         testDeployments(new DeploymentExecutor() {
 
             @Override
-            public void initialDeploy() throws IOException{
-                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file).deploy("test-deployment.sar").build());
+            public void initialDeploy() throws IOException {
+                Future<?> future = manager.execute(manager.newDeploymentPlan().add("test-deployment.sar", file)
+                        .deploy("test-deployment.sar").build());
                 awaitDeploymentExecution(future);
             }
 
@@ -123,7 +131,8 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
 
             @Override
             public void undeploy() {
-                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar").remove("test-deployment.sar").build());
+                Future<?> future = manager.execute(manager.newDeploymentPlan().undeploy("test-deployment.sar")
+                        .remove("test-deployment.sar").build());
                 awaitDeploymentExecution(future);
             }
         });
@@ -131,12 +140,12 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
 
     @Test
     public void testFilesystemDeployment() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
+                Simple.class.getPackage());
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
         archive.as(ZipExporter.class).exportZip(file, true);
-
 
         final File deployDir = createDeploymentDir("deployments");
 
@@ -151,7 +160,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
             testDeployments(new DeploymentExecutor() {
                 @Override
                 public void initialDeploy() throws IOException {
-                    //Copy file to deploy directory
+                    // Copy file to deploy directory
                     final InputStream in = new BufferedInputStream(new FileInputStream(file));
                     try {
                         final OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
@@ -180,9 +189,12 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
 
                 @Override
                 public void fullReplace() throws IOException {
-                    // The test is going to call this as soon as the deployment sends a notification
-                    // but often before the scanner has completed the process and deleted the
-                    // .dodpeloy put down by initialDeploy(). So pause a bit to let that complete
+                    // The test is going to call this as soon as the deployment
+                    // sends a notification
+                    // but often before the scanner has completed the process
+                    // and deleted the
+                    // .dodpeloy put down by initialDeploy(). So pause a bit to
+                    // let that complete
                     // so we don't end up having our own file deleted
                     final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
                     for (int i = 0; i < 500; i++) {
@@ -202,7 +214,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
                         Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
                     }
 
-                    //Copy file to deploy directory again
+                    // Copy file to deploy directory again
                     initialDeploy();
                 }
 
@@ -225,7 +237,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
                         Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
                     }
 
-                    //Delete file from deploy directory
+                    // Delete file from deploy directory
                     deployed.delete();
                 }
             });
@@ -241,13 +253,13 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
     @Test
     public void testExplodedFilesystemDeployment() throws Exception {
 
-
         final File deployDir = createDeploymentDir("exploded-deployments");
 
         ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         ModelNode result = addDeploymentScanner(deployDir, client, "exploded");
 
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
+                Simple.class.getPackage());
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
@@ -274,9 +286,12 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
 
                 @Override
                 public void fullReplace() throws IOException {
-                    // The test is going to call this as soon as the deployment sends a notification
-                    // but often before the scanner has completed the process and deleted the
-                    // .dodpeloy put down by initialDeploy(). So pause a bit to let that complete
+                    // The test is going to call this as soon as the deployment
+                    // sends a notification
+                    // but often before the scanner has completed the process
+                    // and deleted the
+                    // .dodpeloy put down by initialDeploy(). So pause a bit to
+                    // let that complete
                     // so we don't end up having our own file deleted
                     final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
                     for (int i = 0; i < 500; i++) {
@@ -296,7 +311,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
                         Assert.fail("initialDeploy step did not complete in a reasonably timely fashion");
                     }
 
-                    //Copy file to deploy directory again
+                    // Copy file to deploy directory again
                     initialDeploy();
                 }
 
@@ -319,7 +334,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
                         Assert.fail("fullReplace step did not complete in a reasonably timely fashion");
                     }
 
-                    //Delete file from deploy directory
+                    // Delete file from deploy directory
                     deployed.delete();
                 }
             });
@@ -332,7 +347,8 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
         }
     }
 
-    private ModelNode addDeploymentScanner(final File deployDir, final ModelControllerClient client, final String scannerName) throws IOException {
+    private ModelNode addDeploymentScanner(final File deployDir, final ModelControllerClient client, final String scannerName)
+            throws IOException {
         ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
         ModelNode addr = new ModelNode();
@@ -362,18 +378,18 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
         final TestNotificationListener listener = new TestNotificationListener(name);
         mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
         try {
-            //Initial deploy
+            // Initial deploy
             deploymentExecutor.initialDeploy();
             listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
 
-            //Full replace
+            // Full replace
             listener.reset(2);
             deploymentExecutor.fullReplace();
             listener.await();
             Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
 
-            //Undeploy
+            // Undeploy
             listener.reset(1);
             deploymentExecutor.undeploy();
             listener.await();
@@ -412,7 +428,9 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
 
     private interface DeploymentExecutor {
         void initialDeploy() throws IOException;
+
         void fullReplace() throws IOException;
+
         void undeploy() throws IOException;
     }
 
@@ -430,14 +448,14 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
                 return;
             }
 
-            MBeanServerNotification mBeanServerNotification = (MBeanServerNotification)notification;
+            MBeanServerNotification mBeanServerNotification = (MBeanServerNotification) notification;
             if (!name.equals(mBeanServerNotification.getMBeanName())) {
                 return;
             }
 
-            if (MBeanServerNotification.REGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())){
+            if (MBeanServerNotification.REGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())) {
                 latch.countDown();
-            } else if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())){
+            } else if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION.equals(mBeanServerNotification.getType())) {
                 latch.countDown();
             }
         }
@@ -445,6 +463,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
         void reset(int i) {
             latch = new CountDownLatch(i);
         }
+
         void await() throws Exception {
             if (!latch.await(20, TimeUnit.SECONDS)) {
                 Assert.fail("Timed out waiting for registration/unregistration");

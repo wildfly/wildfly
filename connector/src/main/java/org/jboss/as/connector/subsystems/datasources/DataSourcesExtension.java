@@ -37,9 +37,15 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALID
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
@@ -85,15 +91,17 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.GET_INSTALLED_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.INSTALLED_DRIVERS_LIST_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
@@ -101,21 +109,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.sql.XADataSource;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
 import org.jboss.as.connector.pool.PoolMetrics;
 import org.jboss.as.connector.pool.PoolOperations;
 import org.jboss.as.controller.BasicOperationResult;
@@ -143,6 +150,7 @@ import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.jca.common.api.metadata.ds.Driver;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
@@ -178,8 +186,11 @@ public class DataSourcesExtension implements Extension {
         subsystem.registerOperationHandler(ADD, DataSourcesSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
                 DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem
-                .registerReadOnlyAttribute("installed-drivers", InstalledDriversReadAttributeHandler.INSTANCE, Storage.RUNTIME);
+
+        subsystem.registerOperationHandler("installed-drivers-list", InstalledDriversListOperationHandler.INSTANCE,
+                INSTALLED_DRIVERS_LIST_DESC);
+        subsystem.registerOperationHandler("get-installed-driver", GetInstalledDriverOperationHandler.INSTANCE,
+                GET_INSTALLED_DRIVER_DESC);
 
         final ModelNodeRegistration jdbcDrivers = subsystem.registerSubModel(PathElement.pathElement(JDBC_DRIVER),
                 JDBC_DRIVER_DESC);
@@ -262,8 +273,14 @@ public class DataSourcesExtension implements Extension {
             ModelNode node = context.getModelNode();
 
             writer.writeStartElement(DATASOURCES);
-            if (node.hasDefined(DATA_SOURCE)) {
-                for (Property property : node.get(DATA_SOURCE).asPropertyList()) {
+
+            if (node.hasDefined(DATA_SOURCE) || node.hasDefined(XA_DATA_SOURCE)) {
+                List<Property> propertyList = node.hasDefined(DATA_SOURCE) ? node.get(DATA_SOURCE).asPropertyList()
+                        : new LinkedList<Property>();
+                if (node.hasDefined(XA_DATA_SOURCE)) {
+                    propertyList.addAll(node.get(XA_DATA_SOURCE).asPropertyList());
+                }
+                for (Property property : propertyList) {
                     final ModelNode dataSourceNode = property.getValue();
                     boolean isXADataSource = hasAnyOf(dataSourceNode, XA_RESOURCE_TIMEOUT, XADATASOURCECLASS,
                             XADATASOURCEPROPERTIES);
@@ -271,8 +288,6 @@ public class DataSourcesExtension implements Extension {
                             : DataSources.Tag.DATASOURCE.getLocalName());
 
                     if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
-                        // connectionProperties = new HashMap<String,
-                        // String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList().size());
                         for (Property prop : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
                             writer.writeStartElement(DataSource.Tag.CONNECTIONPROPERTY.getLocalName());
                             writer.writeAttribute("name", prop.getName());
@@ -291,7 +306,7 @@ public class DataSourcesExtension implements Extension {
 
                     if (!isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
-                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVERCLASS, DRIVER_CLASS);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVERCLASS, DATASOURCE_DRIVER_CLASS);
                         if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
                             for (Property connectionProperty : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
                                 writeConnectionProperty(writer, dataSourceNode, connectionProperty.getName(),
@@ -300,14 +315,20 @@ public class DataSourcesExtension implements Extension {
                         }
                     }
                     if (isXADataSource) {
-                        // TODO - Write XA properties.
+                        if (dataSourceNode.hasDefined(XADATASOURCEPROPERTIES)) {
+                            for (Property prop : dataSourceNode.get(XADATASOURCEPROPERTIES).asPropertyList()) {
+                                writer.writeStartElement(XaDataSource.Tag.XADATASOURCEPROPERTY.getLocalName());
+                                writer.writeAttribute("name", prop.getName());
+                                writer.writeCharacters(prop.getValue().asString());
+                                writer.writeEndElement();
+                            }
+
+                        }
                         writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.XADATASOURCECLASS, XADATASOURCECLASS);
-                    }
-                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVER, DRIVER);
-                    if (!isXADataSource) {
-                        // TODO - Write Properties
 
                     }
+                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVER, DATASOURCE_DRIVER);
+
                     if (isXADataSource) {
                         writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URLDELIMITER, URL_DELIMITER);
                         writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URLSELECTORSTRATEGYCLASSNAME,
@@ -407,18 +428,33 @@ public class DataSourcesExtension implements Extension {
                     writer.writeEndElement();
                 }
             }
-            writer.writeEndElement();
-
             if (node.hasDefined(JDBC_DRIVER)) {
-                writer.writeStartElement(Element.DRIVERS.getLocalName());
+                writer.writeStartElement(DataSources.Tag.DRIVERS.getLocalName());
                 for (Property driverProperty : node.get(JDBC_DRIVER).asPropertyList()) {
-                    writer.writeStartElement(Element.DRIVER.getLocalName());
-                    writer.writeAttribute(Attribute.MODULE.getLocalName(), driverProperty.getValue().require(DRIVER).asString());
+                    writer.writeStartElement(DataSources.Tag.DRIVER.getLocalName());
+                    writer.writeAttribute(Driver.Attribute.NAME.getLocalName(), driverProperty.getValue().require(DRIVER_NAME)
+                            .asString());
+                    writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MODULE, DRIVER_MODULE_NAME);
+                    writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MAJOR_VERSION, DRIVER_MAJOR_VERSION);
+                    writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MINOR_VERSION, DRIVER_MINOR_VERSION);
+                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DRIVERCLASS.getLocalName(),
+                            DRIVER_CLASS_NAME);
+                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.XADATASOURCECLASS.getLocalName(),
+                            DRIVER_XA_DATASOURCE_CLASS_NAME);
+
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+            writer.writeEndElement();
+        }
+
+        private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node,
+                final Driver.Attribute attr, final String identifier) throws XMLStreamException {
+            if (has(node, identifier)) {
+                writer.writeAttribute(attr.getLocalName(), node.get(identifier).asString());
+            }
         }
 
         private void writeAttributeIfHas(final XMLExtendedStreamWriter writer, final ModelNode node,
@@ -549,10 +585,7 @@ public class DataSourcesExtension implements Extension {
 
                                 final DsParser parser = new DsParser();
                                 dataSources = parser.parse(reader);
-
-                                // Parse what is left after the datasources
-                                // element
-                                parseForDrivers(reader, address, list);
+                                requireNoContent(reader);
                                 break;
                             }
                         }
@@ -588,83 +621,29 @@ public class DataSourcesExtension implements Extension {
                     fillFrom(operation, xaDataSource);
                     list.add(operation);
                 }
-            }
-        }
 
-        private void parseForDrivers(XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list)
-                throws XMLStreamException {
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case DATASOURCES_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        switch (element) {
-                            case DRIVERS: {
-                                parseDrivers(reader, parentAddress, list);
-                                break;
-                            }
-                            default: {
-                                throw unexpectedElement(reader);
-                            }
-                        }
-                        break;
-                    }
-                    default: {
-                        throw unexpectedElement(reader);
-                    }
+                for (Driver driver : dataSources.getDrivers()) {
+                    final ModelNode driverAddress = address.clone();
+                    driverAddress.add(JDBC_DRIVER, driver.getName());
+                    driverAddress.protect();
+                    final ModelNode op = Util.getEmptyOperation(ADD, driverAddress);
+
+                    op.get(DRIVER_NAME).set(driver.getName());
+                    op.get(DRIVER_MODULE_NAME).set(driver.getModule());
+                    if (driver.getMajorVersion() != null)
+                        op.get(DRIVER_MAJOR_VERSION).set(driver.getMajorVersion());
+                    if (driver.getMinorVersion() != null)
+                        op.get(DRIVER_MINOR_VERSION).set(driver.getMinorVersion());
+                    if (driver.getDriverClass() != null)
+                        op.get(DRIVER_CLASS_NAME).set(driver.getDriverClass());
+                    if (driver.getXaDataSourceClass() != null)
+                        op.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(driver.getXaDataSourceClass());
+
+                    list.add(op);
                 }
             }
         }
 
-        private void parseDrivers(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
-                final List<ModelNode> list) throws XMLStreamException {
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case DATASOURCES_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        switch (element) {
-                            case DRIVER: {
-
-                                String moduleName = null;
-
-                                for (int i = 0; i < reader.getAttributeCount(); i++) {
-                                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                    switch (attribute) {
-                                        case MODULE: {
-                                            moduleName = reader.getAttributeValue(i);
-                                            break;
-                                        }
-                                        default: {
-                                            throw unexpectedAttribute(reader, i);
-                                        }
-                                    }
-                                }
-
-                                if (moduleName == null) {
-                                    throw missingRequired(reader, Collections.singleton("module"));
-                                }
-
-                                final ModelNode address = parentAddress.clone();
-                                address.add(JDBC_DRIVER, moduleName);
-                                address.protect();
-                                final ModelNode op = Util.getEmptyOperation(ADD, address);
-                                op.get(DRIVER).set(moduleName);
-                                list.add(op);
-
-                                requireNoContent(reader);
-                                break;
-                            }
-                            default: {
-                                throw unexpectedElement(reader);
-                            }
-                        }
-                        break;
-                    }
-                    default: {
-                        throw unexpectedElement(reader);
-                    }
-                }
-            }
-        }
     }
 
     private static class DataSourcesSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
@@ -689,7 +668,13 @@ public class DataSourcesExtension implements Extension {
                     final ModelNode address = rootAddress.toModelNode();
                     address.add(Constants.JDBC_DRIVER, jdbcDriver.getName());
                     final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
-                    addOperation.get(DRIVER).set(jdbcDriver.getValue().get(DRIVER));
+                    addOperation.get(DRIVER_NAME).set(jdbcDriver.getValue().get(DRIVER_NAME));
+                    addOperation.get(DRIVER_MODULE_NAME).set(jdbcDriver.getValue().get(DRIVER_MODULE_NAME));
+                    addOperation.get(DRIVER_MAJOR_VERSION).set(jdbcDriver.getValue().get(DRIVER_MAJOR_VERSION));
+                    addOperation.get(DRIVER_MINOR_VERSION).set(jdbcDriver.getValue().get(DRIVER_MINOR_VERSION));
+                    addOperation.get(DRIVER_CLASS_NAME).set(jdbcDriver.getValue().get(DRIVER_CLASS_NAME));
+                    addOperation.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(
+                            jdbcDriver.getValue().get(DRIVER_XA_DATASOURCE_CLASS_NAME));
                     result.add(addOperation);
                 }
             }
@@ -703,7 +688,7 @@ public class DataSourcesExtension implements Extension {
 
                     populateAddModel(dataSource, addOperation, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);
 
-                    addOperation.get(DRIVER).set(dataSourceProp.getValue().get(DRIVER));
+                    addOperation.get(DATASOURCE_DRIVER).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER));
                     result.add(addOperation);
                 }
             }
@@ -717,7 +702,7 @@ public class DataSourcesExtension implements Extension {
 
                     populateAddModel(dataSource, addOperation, XADATASOURCEPROPERTIES, XA_DATASOURCE_ATTRIBUTE);
 
-                    addOperation.get(DRIVER).set(dataSourceProp.getValue().get(DRIVER));
+                    addOperation.get(DATASOURCE_DRIVER).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER));
                     result.add(addOperation);
                 }
             }

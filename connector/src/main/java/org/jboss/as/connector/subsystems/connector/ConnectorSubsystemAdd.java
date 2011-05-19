@@ -22,10 +22,12 @@
 
 package org.jboss.as.connector.subsystems.connector;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.*;
+import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
 import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.connector.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
+import static org.jboss.as.connector.subsystems.connector.Constants.CACHED_CONNECTION_MANAGER_ERROR;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
 import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
@@ -42,9 +44,7 @@ import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeployer;
 import org.jboss.as.connector.registry.DriverRegistryService;
-import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.services.CcmService;
-import org.jboss.as.connector.services.ManagementRepositoryService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
 import org.jboss.as.connector.workmanager.WorkManagerService;
 import org.jboss.as.controller.BasicOperationResult;
@@ -70,7 +70,6 @@ import org.jboss.jca.core.workmanager.WorkManagerImpl;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
-import org.jboss.tm.TransactionLocalDelegate;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
@@ -128,9 +127,12 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
 
         if (context instanceof BootOperationContext) {
             final BootOperationContext bootContext = BootOperationContext.class.cast(context);
-            // Add the deployer which processes EE @DataSourceDefinition and @DataSourceDefinitions
-            // TODO: The DataSourceDefinitionDeployer should perhaps belong to EE subsystem
-            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION, new DataSourceDefinitionDeployer());
+            // Add the deployer which processes EE @DataSourceDefinition and
+            // @DataSourceDefinitions
+            // TODO: The DataSourceDefinitionDeployer should perhaps belong to
+            // EE subsystem
+            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION,
+                    new DataSourceDefinitionDeployer());
 
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
@@ -150,10 +152,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                             .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
                                     tiService.getTerminatorInjector())
                             .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class,
-                                    tiService.getRrInjector())
-
-                            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionLocalDelegate.class,
-                                    tiService.getTldInjector()).setInitialMode(Mode.ACTIVE).install();
+                                    tiService.getRrInjector()).setInitialMode(Mode.ACTIVE).install();
 
                     CcmService ccmService = new CcmService(ccmDebug, ccmError);
                     serviceTarget

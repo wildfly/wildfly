@@ -25,7 +25,6 @@ import java.util.Set;
 
 /**
  * A registry for JDBC drivers installed in the system.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface DriverRegistry {
@@ -34,7 +33,7 @@ public interface DriverRegistry {
      * Register an installed JDBC driver
      * @param driver the driver
      */
-    void registerInstalledDriver(InstalledDriver driver);
+    void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException;
 
     /**
      * Unregister an installed JDBC driver
@@ -47,4 +46,6 @@ public interface DriverRegistry {
      * @return The set of drivers
      */
     Set<InstalledDriver> getInstalledDrivers();
+
+    InstalledDriver getInstalledDriver(String name);
 }
