@@ -76,7 +76,7 @@
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.jaxbintros>1.0.2.GA</version.jaxbintros>
         <version.jline>0.9.94</version.jline>
-        <version.junit>4.8.1</version.junit>
+        <version.junit>4.8.2</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.net.sourceforge.cssparser.cssparser>0.9.5</version.net.sourceforge.cssparser.cssparser>
         <version.net.sourceforge.htmlunit.htmlunit>2.8</version.net.sourceforge.htmlunit.htmlunit>
