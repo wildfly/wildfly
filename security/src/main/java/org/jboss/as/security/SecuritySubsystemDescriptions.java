@@ -234,9 +234,7 @@ class SecuritySubsystemDescriptions {
             subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
             subsystem.get(ATTRIBUTES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            subsystem.get(ATTRIBUTES, SECURITY_PROPERTIES, DESCRIPTION).set(bundle.getString("security-properties"));
-            subsystem.get(ATTRIBUTES, SECURITY_PROPERTIES, TYPE).set(ModelType.PROPERTY);
-            subsystem.get(ATTRIBUTES, SECURITY_PROPERTIES, REQUIRED).set(false);
+            subsystem.get(SECURITY_PROPERTIES).set(getProperties(locale));
 
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, DESCRIPTION).set(bundle.getString("security-domain-children"));
             subsystem.get(CHILDREN, Constants.SECURITY_DOMAIN, REQUIRED).set(false);
@@ -300,9 +298,7 @@ class SecuritySubsystemDescriptions {
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, REQUIRED).set(false);
             op.get(REQUEST_PROPERTIES, MAPPING_MANAGER_CLASS_NAME, DEFAULT).set("default");
 
-            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, DESCRIPTION).set(bundle.getString("security-properties"));
-            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, TYPE).set(ModelType.PROPERTY);
-            op.get(REQUEST_PROPERTIES, SECURITY_PROPERTIES, REQUIRED).set(false);
+            op.get(SECURITY_PROPERTIES).set(getPropertiesAdd(locale));
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
@@ -395,6 +391,40 @@ class SecuritySubsystemDescriptions {
             node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
             node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("module-options.value"));
+            node.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(true);
+
+            return node;
+        }
+
+        static ModelNode getProperties(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(TYPE).set(ModelType.LIST);
+            node.get(DESCRIPTION).set(bundle.getString("security-properties"));
+            node.get(REQUIRED).set(false);
+            node.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("security-properties.name"));
+            node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+            node.get(ATTRIBUTES, VALUE, DESCRIPTION).set(bundle.getString("security-properties.value"));
+            node.get(ATTRIBUTES, VALUE, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, VALUE, REQUIRED).set(true);
+
+            return node;
+        }
+
+        static ModelNode getPropertiesAdd(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(TYPE).set(ModelType.LIST);
+            node.get(DESCRIPTION).set(bundle.getString("security-properties"));
+            node.get(REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("security-properties.name"));
+            node.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("security-properties.value"));
             node.get(REQUEST_PROPERTIES, VALUE, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(true);
 
