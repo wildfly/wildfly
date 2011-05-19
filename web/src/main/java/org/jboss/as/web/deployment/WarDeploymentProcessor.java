@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.NamingListener;
+import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
@@ -199,7 +200,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             }
             builder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB.append(deploymentName), webDeploymentService);
 
-            builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), Host.class,
+            builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
                     new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames());
             builder.addDependency(WebSubsystemServices.JBOSS_WEB_REALM.append(deploymentName), Realm.class,
                     webDeploymentService.getRealm());

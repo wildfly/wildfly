@@ -40,11 +40,12 @@ import org.jboss.web.rewrite.RewriteValve;
  *
  * @author Emanuel Muckenhuber
  */
-class WebVirtualHostService implements Service<Host> {
+class WebVirtualHostService implements Service<VirtualHost> {
 
     private final String name;
     private final String[] aliases;
     private String defaultWebModule;
+    private boolean hasWelcomeRoot;
     private ModelNode accessLog;
     private ModelNode rewrite;
 
@@ -52,11 +53,12 @@ class WebVirtualHostService implements Service<Host> {
     private final InjectedValue<String> accessLogPathInjector = new InjectedValue<String>();
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
 
-    private Host host;
+    private VirtualHost host;
 
-    public WebVirtualHostService(String name, String[] aliases) {
+    public WebVirtualHostService(String name, String[] aliases, boolean hasWelcomeRoot) {
         this.name = name;
         this.aliases = aliases;
+        this.hasWelcomeRoot = hasWelcomeRoot;
     }
 
     /** {@inheritDoc} */
@@ -82,20 +84,21 @@ class WebVirtualHostService implements Service<Host> {
         } catch(Exception e) {
             throw new StartException(e);
         }
-        this.host = host;
+        this.host = new VirtualHost(host, hasWelcomeRoot);
+
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        final Host host = this.host;
+        final VirtualHost host = this.host;
         this.host = null;
         final WebServer server = webServer.getValue();
-        server.removeHost(host);
+        server.removeHost(host.getHost());
     }
 
     /** {@inheritDoc} */
-    public synchronized Host getValue() throws IllegalStateException {
-        final Host host = this.host;
+    public synchronized VirtualHost getValue() throws IllegalStateException {
+        final VirtualHost host = this.host;
         if(host == null) {
             throw new IllegalStateException();
         }

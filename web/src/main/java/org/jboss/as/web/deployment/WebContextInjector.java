@@ -23,6 +23,7 @@ package org.jboss.as.web.deployment;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
+import org.jboss.as.web.VirtualHost;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.Value;
@@ -33,9 +34,9 @@ import org.jboss.msc.value.Values;
  *
  * @author Emanuel Muckenhuber
  */
-class WebContextInjector implements Injector<Host> {
+class WebContextInjector implements Injector<VirtualHost> {
 
-    private Host host;
+    private volatile VirtualHost host;
     private final Value<Context> context;
 
     public WebContextInjector(Value<Context> context) {
@@ -46,22 +47,25 @@ class WebContextInjector implements Injector<Host> {
         this.context = Values.immediateValue(context);
     }
 
-    public void inject(final Host host) throws InjectionException {
+    public void inject(final VirtualHost host) throws InjectionException {
+        this.host = host;
         final Context context = this.context.getValue();
         // Check if this is the default webapp for the host
-        if (("/" + host.getDefaultWebapp()).equals(context.getPath())) {
+        if (("/" + host.getHost().getDefaultWebapp()).equals(context.getPath())) {
+            if (host.hasWelcomeRoot())
+                throw new IllegalStateException("Root contexts can not be deployed when the virtual host configuration has the welcome root enabled, disable it and redeploy");
             context.setPath("");
         }
         // Add the context to host
-        context.getLoader().setContainer(host);
-        host.addChild(context);
+        context.getLoader().setContainer(host.getHost());
+        host.getHost().addChild(context);
     }
 
     public void uninject() {
-        final Host host = this.host;
+        final VirtualHost host = this.host;
         if (host != null) {
             final Context context = this.context.getValue();
-            host.removeChild(context);
+            host.getHost().removeChild(context);
             this.host = null;
         }
     }

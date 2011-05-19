@@ -83,14 +83,14 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
         subModel.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
         subModel.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
 
-        boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
+        final boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
         subModel.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
-                    final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation));
+                    final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation), welcome);
                     final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
                             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
                             .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
@@ -119,7 +119,7 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
                          final WelcomeContextService welcomeService = new WelcomeContextService();
                             context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB.append(name).append("welcome"), welcomeService)
                                     .addDependency(AbstractPathService.pathNameOf(HOME_DIR), String.class, welcomeService.getPathInjector())
-                                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), Host.class, welcomeService.getHostInjector())
+                                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), VirtualHost.class, welcomeService.getHostInjector())
                                     .setInitialMode(ServiceController.Mode.ACTIVE)
                                     .install();
                     }

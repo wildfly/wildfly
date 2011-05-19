@@ -52,7 +52,7 @@ class WelcomeContextService implements Service<Context> {
     private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
-    private final InjectedValue<Host> hostInjector = new InjectedValue<Host>();
+    private final InjectedValue<VirtualHost> hostInjector = new InjectedValue<VirtualHost>();
 
 
     public WelcomeContextService() {
@@ -67,7 +67,8 @@ class WelcomeContextService implements Service<Context> {
                 context.setDocBase(pathInjector.getValue() + File.separatorChar + "welcome-content");
 
                 final Loader loader = new WebCtxLoader(this.getClass().getClassLoader());
-                loader.setContainer(hostInjector.getValue());
+                Host host = hostInjector.getValue().getHost();
+                loader.setContainer(host);
                 context.setLoader(loader);
                 context.setInstanceManager(new LocalInstanceManager());
 
@@ -83,7 +84,7 @@ class WelcomeContextService implements Service<Context> {
                 context.addMimeMapping("html", "text/html");
                 context.addMimeMapping("jpg", "image/jpeg");
 
-                hostInjector.getValue().addChild(context);
+                host.addChild(context);
                 context.create();
             } catch (Exception e) {
                 throw new StartException("failed to create context", e);
@@ -98,7 +99,7 @@ class WelcomeContextService implements Service<Context> {
     /** {@inheritDoc} */
     public synchronized void stop(StopContext stopContext) {
         try {
-            hostInjector.getValue().removeChild(context);
+            hostInjector.getValue().getHost().removeChild(context);
             context.stop();
         } catch (LifecycleException e) {
             log.error("exception while stopping context", e);
@@ -123,7 +124,7 @@ class WelcomeContextService implements Service<Context> {
         return pathInjector;
     }
 
-     public InjectedValue<Host> getHostInjector() {
+     public InjectedValue<VirtualHost> getHostInjector() {
         return hostInjector;
     }
 
