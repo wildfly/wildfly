@@ -54,7 +54,7 @@
 
         <!-- Dependency versions. Please keep alphabetical -->
 
-        <version.antlr>2.7.6-brew</version.antlr>
+        <version.antlr>2.7.7</version.antlr>
         <version.asm>2.2.3</version.asm>
         <version.cglib>2.1_3</version.cglib>
         <version.ch.qos.cal10n.cal10n-api>0.7.2</version.ch.qos.cal10n.cal10n-api>
