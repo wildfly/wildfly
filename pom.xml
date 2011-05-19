@@ -385,6 +385,7 @@
                                             <exclude>jboss.web:el-api</exclude>
                                             <exclude>jboss.web:jsp-api</exclude>
                                             <exclude>jboss.web:servlet-api</exclude>
+                                            <exclude>sun-jaxb:jaxb-api</exclude>
 
                                             <!-- JBAS-9000 more duplicate crap -->
                                             <exclude>xalan:xalan</exclude>
@@ -3691,6 +3692,10 @@
                     <exclusion>
                         <groupId>org.jboss</groupId>
                         <artifactId>jboss-reflect</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>sun-jaxb</groupId>
+                        <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
