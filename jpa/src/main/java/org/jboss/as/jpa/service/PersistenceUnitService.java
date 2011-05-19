@@ -154,8 +154,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
 
     /**
-     * Attempt Hack around JBTM-828 by setting the TCCL to include arjuna.
-     *
+     * Create EE container entity manager factory
      * @param provider
      * @return EntityManagerFactory
      */
@@ -163,40 +162,16 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
         PersistenceProviderAdaptor adaptor = PersistenceProviderAdapterRegistry.getPersistenceProviderAdaptor(pu.getPersistenceProviderClassName());
         adaptor.beforeCreateContainerEntityManagerFactory(pu);
-        AccessController.doPrivileged(new SetContextLoaderAction(com.arjuna.ats.jbossatx.jta.TransactionManagerService.class
-            .getClassLoader()));
         try {
             return provider.createContainerEntityManagerFactory(pu, properties.getValue());
         } finally {
             try {
-                AccessController.doPrivileged(CLEAR_ACTION);
+                adaptor.afterCreateContainerEntityManagerFactory(pu);
             } finally {
-                try {
-                    adaptor.afterCreateContainerEntityManagerFactory(pu);
-                } finally {
-                    pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-                    pu.setTempClassloader(null);    // close reference to temp classloader (only needed during call to createEntityManagerFactory)
-
-                }
+                pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
+                pu.setTempClassloader(null);    // close reference to temp classloader (only needed during call to createEntityManagerFactory)
             }
         }
     }
-
-    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
-
-    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
-
-        private final ClassLoader classLoader;
-
-        public SetContextLoaderAction(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        public Void run() {
-            Thread.currentThread().setContextClassLoader(classLoader);
-            return null;
-        }
-    }
-
 
 }
