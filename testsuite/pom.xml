@@ -55,9 +55,6 @@
         <!-- This part of the testuite we do not want to execute by default. -->
         <skipTests>true</skipTests>
 
-        <!-- By default don't fail the build for integration test failures -->
-        <ignore.test.failures>true</ignore.test.failures>
-
     </properties>
 
     <build>
@@ -67,7 +64,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
-                    <testFailureIgnore>${ignore.test.failures}</testFailureIgnore>
                     <argLine>${surefire.system.args}</argLine>
                     <includes>
                         <include>**/*TestCase.java</include>

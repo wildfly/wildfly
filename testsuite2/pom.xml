@@ -55,9 +55,6 @@
         <!-- By default don't run tests -->
         <skipTests>true</skipTests>
 
-        <!-- By default don't fail the build for integration test failures -->
-        <ignore.test.failures>true</ignore.test.failures>
-
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
 
         <!-- Versioning -->
@@ -102,7 +99,6 @@
                 <configuration>
                     <!-- Tests can be enabled via -DskipTests=false or via a profile -->
                     <skipTests>${skipTests}</skipTests>
-                    <testFailureIgnore>${ignore.test.failures}</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <!-- Don't fail the build for integration test failures -->
                     <testFailureIgnore>true</testFailureIgnore>

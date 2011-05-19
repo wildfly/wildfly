@@ -47,9 +47,6 @@
         <!-- This part of the testuite we want to execute by default. -->
         <skipTests>false</skipTests>
 
-        <!-- Wa do fail the build for smoke test failures -->
-        <ignore.test.failures>false</ignore.test.failures>
-
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
