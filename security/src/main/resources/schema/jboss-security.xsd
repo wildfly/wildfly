@@ -285,20 +285,13 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-         <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
    </xs:complexType>
    
-   <xs:complexType name="moduleOptionType">
-      <xs:annotation>
-         <xs:documentation>
-               <![CDATA[
-                    A login module option.
-                ]]>
-         </xs:documentation>
-      </xs:annotation>
+   <xs:complexType name="propertyType">
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="value" type="xs:string" use="required"/>
    </xs:complexType>
@@ -326,7 +319,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-         <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="login-module-stack-ref" type="xs:string" use="optional"/>
@@ -341,7 +334,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-         <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
@@ -356,7 +349,7 @@
          </xs:documentation>
       </xs:annotation>   
       <xs:sequence>
-         <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
@@ -371,7 +364,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-          <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="type" type="xs:string" use="optional"/>
       <xs:attribute name="code" type="xs:string" use="required"/>
@@ -386,7 +379,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-          <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
    </xs:complexType>
@@ -400,7 +393,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-          <xs:element name="module-option" type="moduleOptionType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="module-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="required"/>
       <xs:attribute name="flag" type="module-option-flag" use="required"/>
@@ -446,14 +439,9 @@
    </xs:complexType>
    
    <xs:complexType name="properties">
-        <xs:sequence>
-            <xs:element name="property" type="propertyType" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
+      <xs:sequence>
+         <xs:element name="property" type="propertyType" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
     
-    <xs:complexType name="propertyType">
-        <xs:attribute name="name" use="required"/>
-        <xs:attribute name="value" use="optional"/>
-    </xs:complexType>
-   
 </xs:schema>
