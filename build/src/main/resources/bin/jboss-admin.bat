@@ -48,6 +48,15 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   goto END
 )
 
+set quiet=false
+:loop
+  if "%~1"=="--quiet" (
+    set quiet=true
+  )
+shift
+if not "%~1"=="" goto loop
+
+if "%quiet%" == "false" (
 echo ===============================================================================
 echo.
 echo   JBoss Admin Command-line Interface
@@ -60,6 +69,7 @@ echo   JAVA_OPTS: %JAVA_OPTS%
 echo.
 echo ===============================================================================
 echo.
+)
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
