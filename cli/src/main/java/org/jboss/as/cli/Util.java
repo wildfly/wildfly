@@ -42,6 +42,10 @@ import org.jboss.dmr.Property;
  */
 public class Util {
 
+    public static boolean isWindows() {
+        return SecurityActions.getSystemProperty("os.name").toLowerCase().indexOf("windows") >= 0;
+    }
+
     public static boolean isSuccess(ModelNode operationResult) {
         if(operationResult != null) {
             ModelNode outcome = operationResult.get("outcome");

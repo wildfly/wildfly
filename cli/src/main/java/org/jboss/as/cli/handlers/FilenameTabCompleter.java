@@ -24,86 +24,41 @@ package org.jboss.as.cli.handlers;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.EscapeSelector;
-import org.jboss.as.cli.Util;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class FilenameTabCompleter implements CommandLineCompleter {
+public abstract class FilenameTabCompleter implements CommandLineCompleter {
 
-   public static final FilenameTabCompleter INSTANCE = new FilenameTabCompleter();
+    protected int getCandidates(String buffer, List<String> candidates) {
 
-   private static final EscapeSelector ESCAPE_SELECTOR = new EscapeSelector() {
-       @Override
-       public boolean isEscape(char ch) {
-           return ch == '\\' || ch == ' ' || ch == '"';
-       }
-   };
+        final String translated;
+        // special character: ~ maps to the user's home directory
+        if (buffer.startsWith("~" + File.separator)) {
+            translated = System.getProperty("user.home") + buffer.substring(1);
+        } else if (buffer.startsWith("~")) {
+            translated = new File(System.getProperty("user.home"))
+                    .getParentFile().getAbsolutePath();
+        } else if (!(buffer.startsWith(File.separator))) {
+            translated = new File("").getAbsolutePath() + File.separator
+                    + buffer;
+        } else {
+            translated = buffer;
+        }
 
-   private static final char SEPARATOR = '/';
-   private static final boolean replaceSeparator = !File.separator.equals(SEPARATOR);
+        final File f = new File(translated);
+        final File dir;
+        if (translated.endsWith(File.separator)) {
+            dir = f;
+        } else {
+            dir = f.getParentFile();
+        }
 
-   /* (non-Javadoc)
-    * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext,
-java.lang.String, int, java.util.List)
-    */
-   @Override
-   public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-       if(cursor > 0 && cursor <= buffer.length()) {
-           buffer = buffer.substring(cursor);
-       }
-
-       String translated;
-       if(replaceSeparator) {
-           translated = buffer.replace('/', File.separatorChar);
-       } else {
-           translated = buffer;
-       }
-
-       // special character: ~ maps to the user's home directory
-       if (translated.startsWith("~" + File.separator)) {
-           translated = System.getProperty("user.home") + translated.substring(1);
-       } else if (translated.startsWith("~")) {
-           translated = new File(System.getProperty("user.home")).getParentFile().getAbsolutePath();
-       } else if (!(translated.startsWith(File.separator))) {
-           translated = new File("").getAbsolutePath() + File.separator + translated;
-       }
-
-       final File f = new File(translated);
-       final File dir;
-       if (translated.endsWith(File.separator)) {
-           dir = f;
-       } else {
-           dir = f.getParentFile();
-       }
-
-       final File[] entries = (dir == null) ? new File[0] : dir.listFiles();
-       int result = matchFiles(buffer, translated, entries, candidates);
-       if(result == -1) {
-           return -1;
-       }
-
-       int correction = 0;
-       if(buffer.length() > 0) {
-           final int lastSeparator = buffer.lastIndexOf(SEPARATOR);
-           if(lastSeparator > 0) {
-               final String path = buffer.substring(0, lastSeparator);
-               final String escaped = Util.escapeString(path, ESCAPE_SELECTOR);
-               correction = escaped.length() - path.length();
-           }
-       }
-
-       if(candidates.size() == 1) {
-           candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
-       } else {
-           Util.sortAndEscape(candidates, ESCAPE_SELECTOR);
-       }
-       return cursor + result + correction;
-   }
+        final File[] entries = (dir == null) ? new File[0] : dir.listFiles();
+        return matchFiles(buffer, translated, entries, candidates);
+    }
 
    private static String unescapeName(String name) {
        for(int i = 0; i < name.length(); ++i) {
@@ -146,7 +101,7 @@ java.lang.String, int, java.util.List)
     *
     * @return the offset of the match
     */
-   public int matchFiles(String buffer, String translated, File[] entries, List<String> candidates) {
+   protected int matchFiles(String buffer, String translated, File[] entries, List<String> candidates) {
        if (entries == null) {
            return -1;
        }
@@ -165,7 +120,7 @@ java.lang.String, int, java.util.List)
 
                final String name;
                if(matches == 1 && entries[i].isDirectory()) {
-                   name = entries[i].getName() + SEPARATOR;
+                   name = entries[i].getName() + File.separatorChar;
                } else {
                    name = entries[i].getName();
                }
@@ -173,7 +128,7 @@ java.lang.String, int, java.util.List)
            }
        }
 
-       final int index = buffer.lastIndexOf(SEPARATOR);
+       final int index = buffer.lastIndexOf(File.separatorChar);
        return index + 1 /* - separator character */;
    }
 

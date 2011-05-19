@@ -99,7 +99,7 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
                     }
 
                     String cmdBuffer = buffer.substring(nextCharIndex);
-                    int result = argsCompleter.complete(ctx, cmdBuffer, cursor, candidates);
+                    int result = argsCompleter.complete(ctx, cmdBuffer, cursor - nextCharIndex, candidates);
                     if (result >= 0) {
                         return nextCharIndex + result;
                     } else {

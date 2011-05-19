@@ -45,7 +45,7 @@ public class ArgumentValueState extends DefaultParsingState {
             @Override
             public void handle(ParsingContext ctx) throws OperationFormatException {
                 if(ctx.getCharacter() != '=') {
-                    ArgumentValueState.this.getDefaultHandler().handle(ctx);
+                    getHandler(ctx.getCharacter()).handle(ctx);
                 }
             }});
         putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);

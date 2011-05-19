@@ -65,13 +65,14 @@ public class DeployHandler extends BatchModeCommandHandler {
         l.setExclusive(true);
         argsCompleter.addArgument(l);
 
-        path = new ArgumentWithValue(false, FilenameTabCompleter.INSTANCE, 0, "--path") {
+        FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
+        path = new ArgumentWithValue(false, pathCompleter, 0, "--path") {
             @Override
             public String getValue(ParsedArguments args) {
                 String value = super.getValue(args);
                 if(value != null) {
-                    if('/' != File.separatorChar) {
-                        value = value.replace('/', File.separatorChar);
+                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+                        value = value.substring(1, value.length() - 1);
                     }
                 }
                 return value;

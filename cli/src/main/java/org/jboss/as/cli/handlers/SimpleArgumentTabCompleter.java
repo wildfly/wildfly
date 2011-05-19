@@ -50,7 +50,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
      * @see org.jboss.as.cli.CommandLineCompleter#complete(org.jboss.as.cli.CommandContext, java.lang.String, int, java.util.List)
      */
     @Override
-    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+    public int complete(CommandContext ctx, final String buffer, int cursor, List<String> candidates) {
 
         int firstCharIndex = 0;
         while(firstCharIndex < buffer.length()) {
@@ -149,7 +149,7 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
         }
 
         if(valueCompleter != null) {
-            int valueResult = valueCompleter.complete(ctx, chunk == null ? "" : chunk, 0, candidates);
+            int valueResult = valueCompleter.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
             if(valueResult < 0) {
                 return valueResult;
             } else {
@@ -160,10 +160,8 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
         int charLength = buffer.length() - firstCharIndex;
         if(charLength == 1 && buffer.charAt(firstCharIndex) == '-' ||
                 charLength == 2 && '-' == buffer.charAt(firstCharIndex) && '-' == buffer.charAt(firstCharIndex + 1)) {
-            //parsedArgs.parse("");
             ctx.setArgumentsString("");
         } else {
-            //parsedArgs.parse(buffer.substring(firstCharIndex, result));
             ctx.setArgumentsString(buffer.substring(firstCharIndex, result));
         }
 
