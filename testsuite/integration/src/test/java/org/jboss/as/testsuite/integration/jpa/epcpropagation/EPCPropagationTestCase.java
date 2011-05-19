@@ -147,6 +147,12 @@ public class EPCPropagationTestCase {
         assertFalse("Name changes should not propagate", equal);
     }
 
+    /**
+     * 7.6.2.1 ensure that  NoTxEPCStatefulBean.em (extended persistence context entity manager) is inherited by
+     * StatelessBean.em (transactional scoped entity manager).  The test ensures that the modified entity (in XPC)
+     * is visible to the transactional scoped entity manager (modified entity is returned from em.find call).
+     * @throws Exception
+     */
     @Test
     public void testNoTxEPCPropagation() throws Exception {
         StatelessInterface stateless = lookup("StatelessBean", StatelessInterface.class);

@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Close the non tx invocations on transaction entity manager
+ * Close the non tx invocations on transaction scoped entity manager
  *
  * @author Scott Marlow
  */
