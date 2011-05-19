@@ -66,7 +66,7 @@
         <version.com.google.guava>r06</version.com.google.guava>
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.dom4j>1.6.1</version.dom4j>
-        <version.gnu.getopt>1.0.12-brew</version.gnu.getopt>
+        <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-impl>2.0.4-b09</version.javax.faces.jsf-impl>
