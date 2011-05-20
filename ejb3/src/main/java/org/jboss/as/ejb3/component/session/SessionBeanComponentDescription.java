@@ -66,6 +66,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Jaikiran Pai
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
 
@@ -135,10 +136,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public SessionBeanComponentDescription(final String componentName, final String componentClassName,
                                            final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
-
-        // Add a dependency on the asyc-executor
         addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
-
     }
 
     /**
@@ -150,26 +148,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      */
     public abstract boolean allowsConcurrentAccess();
 
-    public void addLocalBusinessInterfaceViews(Collection<String> classNames) {
-        for (String viewClassName : classNames) {
-            // EJB 3.1 spec, section 4.9.7:
-            // The same business interface cannot be both a local and a remote business interface of the bean.
-
-            // if the view class is already marked as Remote, then throw an error
-            if (this.viewTypes.get(viewClassName) == MethodIntf.REMOTE) {
-                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
-                        + " as local view since it's already marked as remote view for bean: " + this.getEJBName());
-            }
-            // add it to our map
-            viewTypes.put(viewClassName, MethodIntf.LOCAL);
-            // setup the ViewDescription
-            ViewDescription viewDescription = new ViewDescription(this, viewClassName);
-            this.getViews().add(viewDescription);
-
-            // setup server side view interceptors
-            this.setupViewInterceptors(viewDescription);
-            // setup client side view interceptors
-            this.setupClientViewInterceptors(viewDescription);
+    public void addLocalBusinessInterfaceViews(final Collection<String> classNames) {
+        for (final String viewClassName : classNames) {
+            assertNoRemoteView(viewClassName);
+            registerView(viewClassName, MethodIntf.LOCAL);
         }
     }
 
@@ -178,17 +160,8 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     public void addNoInterfaceView() {
-        this.noInterfaceViewPresent = true;
-        // add it to our map
-        viewTypes.put(getEJBClassName(), MethodIntf.LOCAL);
-        // setup the ViewDescription
-        ViewDescription viewDescription = new ViewDescription(this, this.getEJBClassName());
-        this.getViews().add(viewDescription);
-        // setup server side view interceptors
-        this.setupViewInterceptors(viewDescription);
-        // setup client side view interceptors
-        this.setupClientViewInterceptors(viewDescription);
-
+        noInterfaceViewPresent = true;
+        registerView(getEJBClassName(), MethodIntf.LOCAL);
         //set up interceptor for non-business methods
         viewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
@@ -200,29 +173,39 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 }
             }
         });
-
     }
 
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
-        for (String viewClassName : classNames) {
-            // EJB 3.1 spec, section 4.9.7:
-            // The same business interface cannot be both a local and a remote business interface of the bean.
-
-            // if the view class is already marked as Local, then throw an error
-            if (this.viewTypes.get(viewClassName) == MethodIntf.LOCAL) {
-                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
-                        + " as remote view since it's already marked as local view for bean: " + this.getEJBName());
-            }
-            // add it to our map
-            viewTypes.put(viewClassName, MethodIntf.REMOTE);
-            // setup the ViewDescription
-            ViewDescription viewDescription = new ViewDescription(this, viewClassName);
-            this.getViews().add(viewDescription);
-            // setup server side view interceptors
-            this.setupViewInterceptors(viewDescription);
-            // setup client side view interceptors
-            this.setupClientViewInterceptors(viewDescription);
+        for (final String viewClassName : classNames) {
+            assertNoLocalView(viewClassName);
+            registerView(viewClassName, MethodIntf.REMOTE);
         }
+    }
+
+    private void assertNoRemoteView(final String viewClassName) {
+        if (viewTypes.get(viewClassName) == MethodIntf.REMOTE) {
+            throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
+                    + " as local view since it's already marked as remote view for bean: " + getEJBName());
+        }
+    }
+
+    private void assertNoLocalView(final String viewClassName) {
+        if (viewTypes.get(viewClassName) == MethodIntf.LOCAL) {
+            throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
+                    + " as remote view since it's already marked as local view for bean: " + getEJBName());
+        }
+    }
+
+    private void registerView(final String viewClassName, final MethodIntf viewType) {
+        // add it to our map
+        viewTypes.put(viewClassName, viewType);
+        // setup the ViewDescription
+        final ViewDescription viewDescription = new ViewDescription(this, viewClassName);
+        getViews().add(viewDescription);
+        // setup server side view interceptors
+        setupViewInterceptors(viewDescription);
+        // setup client side view interceptors
+        setupClientViewInterceptors(viewDescription);
     }
 
     @Override
