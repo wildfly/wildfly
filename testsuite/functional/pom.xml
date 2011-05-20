@@ -38,10 +38,10 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-integration</artifactId>
+    <artifactId>jboss-as-testsuite-functional</artifactId>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Integration Tests</name>
+    <name>JBoss Application Server: Test Suite: Functional Tests</name>
 
     <properties>
     </properties>
