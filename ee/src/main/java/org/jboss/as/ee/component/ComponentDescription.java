@@ -449,12 +449,18 @@ public class ComponentDescription {
                 }
             }.run();
 
-            // Interceptor instances
-            final List<InterceptorDescription> interceptors = new ArrayList<InterceptorDescription>();
-            //TODO: add default interceptor
-            //interceptors.addAll(description.getClassInterceptors());
+
+            final Set<InterceptorDescription> interceptors = new HashSet<InterceptorDescription>();
+            final Set<InterceptorDescription> interceptorWithLifecycleCallbacks = new HashSet<InterceptorDescription>();
+            final List<InterceptorDescription> defaultInterceptors = description.getModuleDescription().getDefaultInterceptors();
+            if(!description.isExcludeDefaultInterceptors()) {
+                interceptors.addAll(defaultInterceptors);
+                interceptorWithLifecycleCallbacks.addAll(defaultInterceptors);
+            }
+            interceptorWithLifecycleCallbacks.addAll(description.getClassInterceptors());
+
             interceptors.addAll(description.getAllInterceptors().values());
-            for (InterceptorDescription interceptorDescription : interceptors) {
+            for (final InterceptorDescription interceptorDescription : interceptors) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
                 final EEModuleClassConfiguration interceptorConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
 
@@ -466,7 +472,7 @@ public class ComponentDescription {
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(interceptorConfiguration.getInstantiator(), contextKey));
                 destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
 
-                final boolean isClassLevelInterceptor = description.getClassInterceptors().contains(interceptorDescription);
+                final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
                 new ClassDescriptionTraversal(interceptorConfiguration, moduleConfiguration) {
                     @Override
                     public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
@@ -482,7 +488,7 @@ public class ComponentDescription {
                         // Only class level interceptors are processed for postconstruct/predestroy methods.
                         // Method level interceptors aren't supposed to be processed for postconstruct/predestroy lifecycle
                         // methods, as per interceptors spec
-                        if (isClassLevelInterceptor) {
+                        if (interceptorHasLifecycleCallbacks) {
                             final MethodIdentifier postConstructMethodIdentifier = classDescription.getPostConstructMethod();
                             if (postConstructMethodIdentifier != null) {
                                 final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, postConstructMethodIdentifier);
@@ -521,8 +527,13 @@ public class ComponentDescription {
             final Deque<InterceptorFactory> userPreDestroy = new ArrayDeque<InterceptorFactory>();
 
             //now add the lifecycle interceptors in the correct order
-            //TODO: default interceptors
-            for (final InterceptorDescription interceptorClass : description.getClassInterceptors()) {
+            final ArrayList<InterceptorDescription> interceptorOrder = new ArrayList<InterceptorDescription>();
+            if(!description.isExcludeDefaultInterceptors()) {
+                interceptorOrder.addAll(defaultInterceptors);
+            }
+            interceptorOrder.addAll(description.getClassInterceptors());
+
+            for (final InterceptorDescription interceptorClass : interceptorOrder) {
                 if (userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                     userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
                 }
@@ -598,7 +609,13 @@ public class ComponentDescription {
 
                     // first add the default interceptors (if not excluded) to the deque
                     if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
-                        // todo: default interceptors here
+                        for (InterceptorDescription interceptorDescription : defaultInterceptors) {
+                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                            if (aroundInvokes != null) {
+                                interceptorDeque.addAll(aroundInvokes);
+                            }
+                        }
                     }
 
                     // now add class level interceptors (if not excluded) to the deque

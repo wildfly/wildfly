@@ -38,4 +38,22 @@ public final class InterceptorDescription {
     public String getInterceptorClassName() {
         return interceptorClassName;
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final InterceptorDescription that = (InterceptorDescription) o;
+
+        if (interceptorClassName != null ? !interceptorClassName.equals(that.interceptorClassName) : that.interceptorClassName != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return interceptorClassName != null ? interceptorClassName.hashCode() : 0;
+    }
 }

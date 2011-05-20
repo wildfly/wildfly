@@ -33,6 +33,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -50,6 +51,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         if (moduleConfiguration == null) {
             return;
         }
@@ -75,6 +77,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
         }
 
+        //if a component has default interceptors and does not have it's own java:module context then
+        //we also need to bind the default interceptors bindings to the module context
+        boolean bindDefaultInterceptorsToModuleContext = false;
+
         //now we process all component level bindings, for components that do not have their own java:comp namespace.
         // these are bindings that have been added via a deployment descriptor
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
@@ -88,6 +94,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 if (componentConfiguration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE && compBinding) {
                     //components with there own comp context do their own binding
                     continue;
+                }
+                if (!componentConfiguration.getComponentDescription().isExcludeDefaultInterceptors()) {
+                    bindDefaultInterceptorsToModuleContext = true;
                 }
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
@@ -103,6 +112,15 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
         //now add all class level bindings
         final Set<String> handledClasses = new HashSet<String>();
+
+        //first default interceptors
+        if (bindDefaultInterceptorsToModuleContext) {
+            for (final InterceptorDescription defaultInterceptor : moduleDescription.getDefaultInterceptors()) {
+                final EEModuleClassConfiguration classConfig = moduleConfiguration.getClassConfiguration(defaultInterceptor.getInterceptorClassName());
+                processClassConfigurations(phaseContext, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, ComponentNamingMode.USE_MODULE, Collections.singleton(classConfig));
+            }
+        }
+
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
 
             final Set<EEModuleClassConfiguration> classConfigurations = new HashSet<EEModuleClassConfiguration>();
@@ -113,43 +131,47 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     classConfigurations.add(interceptorClass);
                 }
             }
-            for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
-                new ClassDescriptionTraversal(classConfiguration, moduleConfiguration) {
-
-                    @Override
-                    protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                        //only process classes once
-                        if (handledClasses.contains(classDescription.getClassName())) {
-                            return;
-                        }
-                        handledClasses.add(classDescription.getClassName());
-                        // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
-                        // handle these duplicates?
-                        final Set<BindingConfiguration> classLevelBindings = new HashSet(configuration.getBindingConfigurations());
-                        for (BindingConfiguration binding : classLevelBindings) {
-                            final String bindingName = binding.getName();
-                            final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
-                            if (componentConfiguration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE && compBinding) {
-                                //components with their own comp context do their own binding
-                                continue;
-                            }
-                            final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
-                            if (deploymentDescriptorBindings.containsKey(serviceName)) {
-                                continue; //this has been overridden by a DD binding
-                            }
-                            final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-                            if (existingConfiguration != null && !existingConfiguration.equals(binding)) {
-                                throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
-                            }
-                            existingBindings.put(serviceName, binding);
-                            addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
-                        }
-                    }
-                }.run();
-            }
+            processClassConfigurations(phaseContext, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations);
 
         }
 
+    }
+
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> existingBindings, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations) throws DeploymentUnitProcessingException {
+        for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
+            new ClassDescriptionTraversal(classConfiguration, moduleConfiguration) {
+
+                @Override
+                protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    //only process classes once
+                    if (handledClasses.contains(classDescription.getClassName())) {
+                        return;
+                    }
+                    handledClasses.add(classDescription.getClassName());
+                    // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
+                    // handle these duplicates?
+                    final Set<BindingConfiguration> classLevelBindings = new HashSet(configuration.getBindingConfigurations());
+                    for (BindingConfiguration binding : classLevelBindings) {
+                        final String bindingName = binding.getName();
+                        final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
+                        if (namingMode == ComponentNamingMode.CREATE && compBinding) {
+                            //components with their own comp context do their own binding
+                            continue;
+                        }
+                        final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
+                        if (deploymentDescriptorBindings.containsKey(serviceName)) {
+                            continue; //this has been overridden by a DD binding
+                        }
+                        final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
+                        if (existingConfiguration != null && !existingConfiguration.equals(binding)) {
+                            throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+                        }
+                        existingBindings.put(serviceName, binding);
+                        addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
+                    }
+                }
+            }.run();
+        }
     }
 
 
