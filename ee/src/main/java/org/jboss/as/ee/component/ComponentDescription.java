@@ -80,6 +80,7 @@ public class ComponentDescription {
     private final EEModuleClassDescription classDescription;
 
     private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
+    private List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
 
     private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
     private final Map<MethodIdentifier, Set<String>> methodInterceptorsSet = new HashMap<MethodIdentifier, Set<String>>();
@@ -182,7 +183,7 @@ public class ComponentDescription {
     }
 
     /**
-     * Get the map of interceptor classes applied directly to class. These interceptors will have lifecycle methods invoked
+     * Get the list of interceptor classes applied directly to class. These interceptors will have lifecycle methods invoked
      *
      * @return the interceptor classes
      */
@@ -203,6 +204,19 @@ public class ComponentDescription {
         this.allInterceptors = null;
     }
 
+
+    /**
+     * @return the components default interceptors
+     */
+    public List<InterceptorDescription> getDefaultInterceptors() {
+        return defaultInterceptors;
+    }
+
+    public void setDefaultInterceptors(final List<InterceptorDescription> defaultInterceptors) {
+        allInterceptors = null;
+        this.defaultInterceptors = defaultInterceptors;
+    }
+
     /**
      * Returns a combined map of class and method level interceptors
      *
@@ -212,6 +226,9 @@ public class ComponentDescription {
         if (allInterceptors == null) {
             allInterceptors = new HashSet<InterceptorDescription>();
             allInterceptors.addAll(classInterceptors);
+            if (!excludeDefaultInterceptors) {
+                allInterceptors.addAll(defaultInterceptors);
+            }
             for (List<InterceptorDescription> interceptors : methodInterceptors.values()) {
                 allInterceptors.addAll(interceptors);
             }
@@ -227,6 +244,7 @@ public class ComponentDescription {
     }
 
     public void setExcludeDefaultInterceptors(boolean excludeDefaultInterceptors) {
+        allInterceptors = null;
         this.excludeDefaultInterceptors = excludeDefaultInterceptors;
     }
 
@@ -639,7 +657,13 @@ public class ComponentDescription {
 
                     // first add the default interceptors (if not excluded) to the deque
                     if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
-                        //TODO default interceptors
+                        for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
+                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                            if (aroundInvokes != null) {
+                                interceptorDeque.addAll(aroundInvokes);
+                            }
+                        }
                     }
 
                     // now add class level interceptors (if not excluded) to the deque

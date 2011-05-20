@@ -217,7 +217,9 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             //TODO: this should only run once
             final Set<String> defaultInterceptorNames = new HashSet<String>();
             final List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
-            if (!componentDescription.isExcludeDefaultInterceptors() && classLevelExcludeDefaultInterceptors != null && !classLevelExcludeDefaultInterceptors) {
+
+            boolean classLevelExclude = classLevelExcludeDefaultInterceptors == null ? false : classLevelExcludeDefaultInterceptors;
+            if (!componentDescription.isExcludeDefaultInterceptors() && !classLevelExclude) {
                 for (InterceptorBindingMetaData binding : defaultInterceptorBindings) {
                     if (binding.getInterceptorClasses() != null) {
                         for (final String clazz : binding.getInterceptorClasses()) {
@@ -230,6 +232,9 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     }
                 }
             }
+
+            componentDescription.setDefaultInterceptors(defaultInterceptors);
+
             final List<InterceptorDescription> classLevelInterceptors = new ArrayList<InterceptorDescription>();
             if (classLevelAbsoluteOrder) {
                 //we have an absolute ordering for the class level interceptors
@@ -240,11 +245,12 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                         }
                     }
                 }
+                //we have merged the default interceptors into the class interceptors
+                componentDescription.setExcludeDefaultInterceptors(true);
             } else {
                 //the order we want is default interceptors (this will be empty if they are excluded)
                 //the annotation interceptors
                 //then dd interceptors
-                classLevelInterceptors.addAll(defaultInterceptors);
                 classLevelInterceptors.addAll(componentDescription.getClassInterceptors());
                 for (InterceptorBindingMetaData binding : classLevelBindings) {
                     if (binding.getInterceptorClasses() != null) {
@@ -288,15 +294,12 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 } else {
                     //add class level and default interceptors, if not excluded
                     //class level interceptors also includes default interceptors
-                    if (excludeClassInterceptors) {
-                        if (!excludeDefaultInterceptors) {
-                            methodLevelInterceptors.addAll(defaultInterceptors);
-                        }
-                    } else {
+                    if (!excludeDefaultInterceptors) {
+                        methodLevelInterceptors.addAll(defaultInterceptors);
+                    }
+                    if (!excludeClassInterceptors) {
                         for (InterceptorDescription interceptor : classLevelInterceptors) {
-                            if (!excludeDefaultInterceptors || !defaultInterceptorNames.contains(interceptor.getInterceptorClassName())) {
-                                methodLevelInterceptors.add(interceptor);
-                            }
+                            methodLevelInterceptors.add(interceptor);
                         }
                     }
                     List<InterceptorDescription> annotationMethodLevel = componentDescription.getMethodInterceptors().get(methodIdentifier);
@@ -311,7 +314,11 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                             }
                         }
                     }
+
                 }
+                //we have already taken component and default interceptors into account
+                componentDescription.excludeClassInterceptors(methodIdentifier);
+                componentDescription.excludeDefaultInterceptors(methodIdentifier);
                 componentDescription.setMethodInterceptors(methodIdentifier, methodLevelInterceptors);
 
             }
