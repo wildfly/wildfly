@@ -210,6 +210,24 @@ public abstract class AbstractEntityManager implements EntityManager {
         }
     }
 
+    public <T> T find(Class<T> entityClass, Object primaryKey) {
+        long start = 0;
+        if (isTraceEnabled)
+            start = System.currentTimeMillis();
+        try {
+            final EntityManager underlyingEntityManager = getEntityManager();
+            T result = getEntityManager().find(entityClass, primaryKey);
+            detachNonTxInvocation(underlyingEntityManager);
+            return result;
+        } finally {
+            if (isTraceEnabled) {
+                long elapsed = System.currentTimeMillis() - start;
+                log.tracef("find entityClass '%s' took %dms", entityClass.getName(), elapsed);
+            }
+        }
+    }
+
+
     public CriteriaBuilder getCriteriaBuilder() {
         long start = 0;
         if (isTraceEnabled)
@@ -420,20 +438,6 @@ public abstract class AbstractEntityManager implements EntityManager {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
                 log.tracef("createQuery took %dms", elapsed);
-            }
-        }
-    }
-
-    public <T> T find(Class<T> entityClass, Object primaryKey) {
-        long start = 0;
-        if (isTraceEnabled)
-            start = System.currentTimeMillis();
-        try {
-            return getEntityManager().find(entityClass, primaryKey);
-        } finally {
-            if (isTraceEnabled) {
-                long elapsed = System.currentTimeMillis() - start;
-                log.tracef("find entityClass '%s' took %dms", entityClass.getName(), elapsed);
             }
         }
     }
