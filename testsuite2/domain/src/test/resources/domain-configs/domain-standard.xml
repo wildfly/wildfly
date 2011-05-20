@@ -132,20 +132,24 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
                 <datasources>
-                    <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
-                        <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
-                        <driver-class>org.h2.Driver</driver-class>
-                        <driver>org.h2.Driver#1.2</driver>
-                        <pool></pool>
-                        <security>
-                            <user-name>sa</user-name>
-                            <password>sa</password>
-                        </security>
-                    </datasource>
-                </datasources>
-                <drivers>
-                    <driver module="com.h2database.h2"/>
-                </drivers>
+	                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
+	                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+	                    <driver>h2</driver>
+	                    <pool></pool>
+	                    <security>
+	                        <user-name>sa</user-name>
+	                        <password>sa</password>
+	                    </security>
+	                    <validation></validation>
+	                    <timeout></timeout>
+	                    <statement></statement>
+	                </datasource>
+		            <drivers>
+		                <driver name="h2" module="com.h2database.h2">
+		                	<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+		                </driver>
+		            </drivers>
+	            </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
             <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
