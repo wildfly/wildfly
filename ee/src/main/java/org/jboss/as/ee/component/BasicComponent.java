@@ -28,8 +28,6 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.InterceptorInstanceFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
@@ -48,20 +46,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class BasicComponent implements Component {
-
-    public static final Object INSTANCE_KEY = new Object();
-    public static final Object COMPONENT_INSTANCE_KEY = new Object();
-    public static final Object INJECTION_HANDLE_KEY = new Object();
-
-    /**
-     * An interceptor instance factory which will get an instance attached to the interceptor factory
-     * context.
-     */
-    public static final InterceptorInstanceFactory INSTANCE_FACTORY = new InterceptorInstanceFactory() {
-        public Object createInstance(final InterceptorFactoryContext context) {
-            return context.getContextData().get(INSTANCE_KEY);
-        }
-    };
 
     private final String componentName;
     private final Class<?> componentClass;
@@ -165,6 +149,9 @@ public class BasicComponent implements Component {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.putPrivateData(Component.class, this);
         interceptorContext.putPrivateData(ComponentInstance.class, basicComponentInstance);
+
+
+
         try {
             componentInstancePostConstructInterceptor.processInvocation(interceptorContext);
         } catch (Exception e) {

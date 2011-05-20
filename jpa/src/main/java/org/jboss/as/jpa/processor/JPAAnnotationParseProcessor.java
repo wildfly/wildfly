@@ -329,11 +329,11 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         // if it's a SFSB and extended persistence context then setup appropriate interceptors
         if (componentDescription instanceof StatefulComponentDescription && isExtendedPersistenceContext(annotation)) {
             // first setup the post construct and pre destroy component interceptors
-            componentDescription.getConfigurators().add(new ComponentConfigurator() {
+            componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.getPostConstructInterceptors().add(new SFSBCreateInterceptorFactory());
-                    configuration.getPreDestroyInterceptors().add(new SFSBDestroyInterceptorFactory());
+                    configuration.getPostConstructInterceptors().addFirst(new SFSBCreateInterceptorFactory());
+                    configuration.getPreDestroyInterceptors().addFirst(new SFSBDestroyInterceptorFactory());
                 }
             });
 

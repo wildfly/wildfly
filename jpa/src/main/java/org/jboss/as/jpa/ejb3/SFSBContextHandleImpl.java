@@ -22,7 +22,6 @@
 
 package org.jboss.as.jpa.ejb3;
 
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.spi.SFSBContextHandle;
 
 import java.io.Serializable;
@@ -36,8 +35,8 @@ public class SFSBContextHandleImpl implements SFSBContextHandle {
 
     private Serializable idSFSB;
 
-    public SFSBContextHandleImpl(StatefulSessionComponentInstance sfsb) {
-        this.idSFSB = sfsb.getId();
+    public SFSBContextHandleImpl(Serializable id) {
+        this.idSFSB = id;
     }
     @Override
     public Object getBeanContextHandle() {

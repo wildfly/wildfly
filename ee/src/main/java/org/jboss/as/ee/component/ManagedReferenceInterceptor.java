@@ -49,10 +49,12 @@ class ManagedReferenceInterceptor implements Interceptor {
             boolean ok = false;
             try {
                 referenceReference.set(reference);
+                context.setTarget(reference.getInstance());
                 Object result = context.proceed();
                 ok = true;
                 return result;
             } finally {
+                context.setTarget(null);
                 if (!ok) {
                     reference.release();
                     referenceReference.set(null);

@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.interceptor;
 
-import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
@@ -41,11 +41,11 @@ public class SFSBCreateInterceptorFactory implements InterceptorFactory {
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
+
         return new Interceptor() {
             @Override
             public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-                Object target = context.getContextData().get(BasicComponent.COMPONENT_INSTANCE_KEY);
-                StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance)target;
+                StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance)interceptorContext.getPrivateData(ComponentInstance.class);
                 SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
                 SFSBXPCMap.getINSTANCE().finishRegistrationOfPersistenceContext(sfsbContextHandle);
                 return interceptorContext.proceed();
