@@ -505,16 +505,16 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     @Override
     public boolean isSingleton() {
-        return false;
+        return getSessionBeanType() == SessionBeanType.SINGLETON;
     }
 
     @Override
     public boolean isStateful() {
-        return false;
+        return getSessionBeanType() == SessionBeanType.STATEFUL;
     }
 
     @Override
     public boolean isStateless() {
-        return false;
+        return getSessionBeanType() == SessionBeanType.STATELESS;
     }
 }

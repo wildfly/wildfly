@@ -53,6 +53,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -493,7 +494,11 @@ public class ComponentDescription {
             }.run();
 
 
-            final Set<InterceptorDescription> interceptorWithLifecycleCallbacks = new HashSet<InterceptorDescription>();
+            //all interceptors with lifecycle callbacks, in the correct order
+            final LinkedHashSet<InterceptorDescription> interceptorWithLifecycleCallbacks = new LinkedHashSet<InterceptorDescription>();
+            if (!description.isExcludeDefaultInterceptors()) {
+                interceptorWithLifecycleCallbacks.addAll(description.getDefaultInterceptors());
+            }
             interceptorWithLifecycleCallbacks.addAll(description.getClassInterceptors());
 
             for (final InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
@@ -573,7 +578,8 @@ public class ComponentDescription {
 
             //now add the lifecycle interceptors in the correct order
 
-            for (final InterceptorDescription interceptorClass : description.getClassInterceptors()) {
+
+            for (final InterceptorDescription interceptorClass : interceptorWithLifecycleCallbacks) {
                 if (userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                     userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
                 }

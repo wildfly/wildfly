@@ -261,7 +261,6 @@ public enum Phase {
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x3400;
-    public static final int PARSE_WELD_EJB_INTERCEPTORS_INTEGRATION     = 0x3500;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3600;
 
     // should be after all components are known
@@ -293,6 +292,9 @@ public enum Phase {
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
 
     // POST_MODULE
+    public static final int POST_MODULE_REFLECTION_INDEX                = 0x0000;
+    public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0001;
+    public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0002;
     public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0100;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
@@ -307,8 +309,6 @@ public enum Phase {
 
 
     // INSTALL
-    public static final int INSTALL_REFLECTION_INDEX                    = 0x0100;
-    public static final int INSTALL_EJB_DD_INTERCEPTORS                 = 0x0101;
     public static final int INSTALL_JAXRS_SCANNING                      = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0400;

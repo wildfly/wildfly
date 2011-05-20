@@ -73,9 +73,9 @@ class WeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     bootContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WELD, new WeldDependencyProcessor());
                     bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());
-                    bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_EJB_INTERCEPTORS_INTEGRATION, new WeldEjbInterceptorIntegrationProcessor());
                     bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_COMPONENT_INTEGRATION, new WeldComponentIntegrationProcessor());
                     bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WELD_WEB_INTEGRATION, new WebIntegrationProcessor());
+                    bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION, new WeldEjbInterceptorIntegrationProcessor());
                     bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
                     bootContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new WeldPortableExtensionProcessor());
                     bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor());
