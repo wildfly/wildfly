@@ -22,20 +22,13 @@
 
 package org.jboss.as.test.embedded.jsf;
 
-import java.io.IOException;
-import java.net.URL;
-
-import javax.faces.component.UIComponent;
-
 import junit.framework.Assert;
-
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.JUnitTestRunner;
 import org.jboss.arquillian.spi.TestRunner;
 import org.jboss.as.arquillian.protocol.servlet.WebContext;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.jsfunit.cdi.InitialPage;
 import org.jboss.jsfunit.context.JSFUnitFacesContext;
 import org.jboss.jsfunit.jsfsession.JSFClientSession;
 import org.jboss.jsfunit.jsfsession.JSFServerSession;
@@ -43,14 +36,22 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.faces.component.UIComponent;
+import java.io.IOException;
+import java.net.URL;
+
+//import org.jboss.jsfunit.cdi.InitialPage;
 
 /**
  * Version of the HelloJSFTest that uses Arquillian
  *
  * @author Stan Silvert
  */
+@Ignore("AS7-485")
 @RunWith(Arquillian.class)
 @WebContext("jsf-example")
 public class JSFTestCase {
@@ -70,7 +71,7 @@ public class JSFTestCase {
     }
 
     @Test
-    @InitialPage("/index.faces")
+    //@InitialPage("/index.faces")
     public void testInitialPage(JSFServerSession server, JSFClientSession client) throws IOException {
 
         // Test navigation to initial viewID

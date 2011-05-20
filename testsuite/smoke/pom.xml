@@ -68,11 +68,13 @@
             <artifactId>jboss-as-server</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--
         <dependency>
            <groupId>org.jboss.jsfunit</groupId>
            <artifactId>jsfunit-arquillian</artifactId>
            <scope>test</scope>
         </dependency>
+        -->
     </dependencies>
 
     <build>
