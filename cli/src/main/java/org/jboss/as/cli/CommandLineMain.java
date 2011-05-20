@@ -21,22 +21,6 @@
  */
 package org.jboss.as.cli;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
@@ -51,13 +35,13 @@ import org.jboss.as.cli.handlers.DeleteJmsCFHandler;
 import org.jboss.as.cli.handlers.DeleteJmsQueueHandler;
 import org.jboss.as.cli.handlers.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.DeleteJmsTopicHandler;
-import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
 import org.jboss.as.cli.handlers.LsHandler;
 import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
+import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
@@ -83,6 +67,22 @@ import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -175,6 +175,8 @@ public class CommandLineMain {
                 commands = arg.substring(9).split(",+");
             } else if(arg.startsWith("command=")) {
                 commands = new String[]{arg.substring(8)};
+            } else if(arg.startsWith("--quiet")) {
+                cmdCtx.setQuiet(true);
             }
         }
 
@@ -345,6 +347,8 @@ public class CommandLineMain {
 
         /** whether the session should be terminated*/
         private boolean terminate;
+        /** quiet mode flag indicating suppression of connect/disconnect msgs */
+        private boolean quiet;
 
         /** current command */
         private String cmd;
@@ -489,9 +493,11 @@ public class CommandLineMain {
                 List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
                 if (!nodeTypes.isEmpty()) {
                     domainMode = nodeTypes.contains("server-group");
-                    printLine("Connected to "
-                            + (domainMode ? "domain controller at " : "standalone controller at ")
-                            + host + ":" + port);
+                    if(quiet == false) {
+                        printLine("Connected to "
+                                + (domainMode ? "domain controller at " : "standalone controller at ")
+                                + host + ":" + port);
+                    }
                     client = newClient;
                     this.controllerHost = host;
                     this.controllerPort = port;
@@ -507,7 +513,9 @@ public class CommandLineMain {
         public void disconnectController() {
             if(this.client != null) {
                 StreamUtils.safeClose(client);
-                printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+                if(quiet == false) {
+                    printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+                }
                 client = null;
                 this.controllerHost = null;
                 this.controllerPort = -1;
@@ -663,6 +671,14 @@ public class CommandLineMain {
         @Override
         public boolean isDomainMode() {
             return domainMode;
+        }
+
+        public boolean isQuiet() {
+            return quiet;
+        }
+
+        public void setQuiet(boolean quiet) {
+            this.quiet = quiet;
         }
 
         private class HistoryImpl implements CommandHistory {
