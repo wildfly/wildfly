@@ -40,8 +40,7 @@ import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
@@ -140,8 +139,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 // added to the EEModuleDescription?
                 ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(declaringClass.name().toString());
                 // if it's a component then setup the interceptors
-                if (componentDescription != null) {
-                    this.registerInterceptorsForExtendedPersistenceContext(componentDescription, annotation);
+                if (componentDescription != null && componentDescription instanceof SessionBeanComponentDescription) {
+                    this.registerInterceptorsForExtendedPersistenceContext((SessionBeanComponentDescription) componentDescription, annotation);
                 }
             }
         }
@@ -325,9 +324,9 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     // Register our listeners on SFSB that will be created
-    private void registerInterceptorsForExtendedPersistenceContext(ComponentDescription componentDescription, AnnotationInstance annotation) {
+    private void registerInterceptorsForExtendedPersistenceContext(SessionBeanComponentDescription componentDescription, AnnotationInstance annotation) {
         // if it's a SFSB and extended persistence context then setup appropriate interceptors
-        if (componentDescription instanceof StatefulComponentDescription && isExtendedPersistenceContext(annotation)) {
+        if (componentDescription.isStateful() && isExtendedPersistenceContext(annotation)) {
             // first setup the post construct and pre destroy component interceptors
             componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
@@ -356,8 +355,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         // register interceptor on stateful/stateless SB with transactional entity manager.
         if (!isExtendedPersistenceContext(annotation) &&
-                (componentDescription instanceof StatefulComponentDescription ||
-                        componentDescription instanceof StatelessComponentDescription)) {
+                (componentDescription.isStateful() || componentDescription.isStateless())) {
             //TODO: this probably adds the interceptor in the wrong order
             componentDescription.getConfigurators().add(new ComponentConfigurator() {
                 @Override

@@ -268,6 +268,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         });
     }
 
+    public boolean isMessageDriven() {
+        return false;
+    }
+
+    public boolean isSingleton() {
+        return false;
+    }
+
+    public boolean isStateful() {
+        return false;
+    }
+
+    public boolean isStateless() {
+        return false;
+    }
+
     /**
      * A {@link ComponentConfigurator} which picks up {@link EjbJarConfiguration} from the attachment of the deployment
      * unit and sets it to the {@link EJBComponentCreateServiceFactory component create service factory} of the component
@@ -308,5 +324,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     }
 
-
+    @Override
+    public String toString() {
+        return getClass().getName() + "{" +
+                "serviceName=" + getServiceName() +
+                '}' + "@" + Integer.toHexString(hashCode());
+    }
 }

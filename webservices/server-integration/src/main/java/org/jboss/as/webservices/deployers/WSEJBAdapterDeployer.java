@@ -24,8 +24,6 @@ package org.jboss.as.webservices.deployers;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.server.deployment.DeploymentException;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
@@ -86,7 +84,10 @@ public final class WSEJBAdapterDeployer {
 
                final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1);
                final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: hacky, hacky, hacky :(
-               if (absCD instanceof StatelessComponentDescription || absCD instanceof SingletonComponentDescription) {
+               if (!(absCD instanceof SessionBeanComponentDescription))
+                   continue;
+               final SessionBeanComponentDescription beanComponentDescription = (SessionBeanComponentDescription) absCD;
+               if (beanComponentDescription.isStateless() || beanComponentDescription.isSingleton()) {
                    final String ejbContainerName = newEJBContainerName(unit, absCD);
                    endpoints.add(new WebServiceDeclarationAdapter((SessionBeanComponentDescription)absCD, webServiceClassInfo, ejbContainerName));
                }

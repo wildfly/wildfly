@@ -157,4 +157,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             }
         });
     }
+
+    @Override
+    public boolean isMessageDriven() {
+        return true;
+    }
 }

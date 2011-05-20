@@ -85,6 +85,10 @@ public class EjbJarDescription {
         this.applicationExceptions.put(exceptionClassName, appException);
     }
 
+    public boolean hasComponent(String componentName) {
+        return eeModuleDescription.hasComponent(componentName);
+    }
+
     public EEModuleDescription getEEModuleDescription() {
         return this.eeModuleDescription;
     }

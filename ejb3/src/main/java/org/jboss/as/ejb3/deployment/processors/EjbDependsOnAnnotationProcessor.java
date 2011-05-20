@@ -22,15 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
-
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -43,6 +37,11 @@ import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
+
+import javax.ejb.DependsOn;
+import javax.ejb.Singleton;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -62,7 +61,7 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
         if (beanClass == null) {
             return; // We can't continue without the annotation index info.
         }
-        Class<SingletonComponentDescription> componentDescriptionType = SingletonComponentDescription.class;
+        Class<SessionBeanComponentDescription> componentDescriptionType = SessionBeanComponentDescription.class;
         // Only process EJB deployments and components that are applicable
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit) || !(componentDescriptionType.isAssignableFrom(componentDescription.getClass()))) {
             return;
@@ -72,7 +71,7 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
             return;
         }
 
-        final SingletonComponentDescription singletonComponentDescription = componentDescriptionType.cast(componentDescription);
+        final SessionBeanComponentDescription singletonComponentDescription = componentDescriptionType.cast(componentDescription);
         final List<AnnotationInstance> dependsOnAnnotations = annotationsOnBean.get(DotName.createSimple(DependsOn.class
                 .getName()));
         if (dependsOnAnnotations == null || dependsOnAnnotations.isEmpty()) {

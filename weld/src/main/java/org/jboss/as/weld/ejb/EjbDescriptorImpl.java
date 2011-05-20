@@ -25,9 +25,6 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.msc.service.ServiceName;
@@ -99,23 +96,22 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
 
     @Override
     public boolean isStateless() {
-        return componentDescription instanceof StatelessComponentDescription;
+        return componentDescription.isStateless();
     }
 
     @Override
     public boolean isSingleton() {
-        return componentDescription instanceof SingletonComponentDescription;
+        return componentDescription.isSingleton();
     }
 
     @Override
     public boolean isStateful() {
-        return componentDescription instanceof StatefulComponentDescription;
+        return componentDescription.isStateful();
     }
 
     @Override
     public boolean isMessageDriven() {
-        //TODO: message driven beans
-        return false;
+        return componentDescription.isMessageDriven();
     }
 
     public EJBComponentDescription getComponentDescription() {

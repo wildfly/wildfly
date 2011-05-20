@@ -458,7 +458,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      *
      * @param view The EJB bean view
      */
-    protected void addTxManagementInterceptorForView(ViewDescription view) {
+    protected static void addTxManagementInterceptorForView(ViewDescription view) {
         // add a Tx configurator
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
@@ -501,5 +501,20 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             }
         });
 
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return false;
+    }
+
+    @Override
+    public boolean isStateful() {
+        return false;
+    }
+
+    @Override
+    public boolean isStateless() {
+        return false;
     }
 }

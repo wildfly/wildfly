@@ -98,6 +98,10 @@ public final class EEModuleDescription {
         return moduleName;
     }
 
+    public boolean hasComponent(final String name) {
+        return componentsByName.containsKey(name);
+    }
+
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
     }
