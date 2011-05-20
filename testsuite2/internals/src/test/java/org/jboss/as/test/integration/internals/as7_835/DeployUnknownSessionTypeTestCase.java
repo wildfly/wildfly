@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.internals.as7_835;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -30,9 +31,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import static org.jboss.as.test.integration.common.Naming.lookup;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -47,21 +48,10 @@ public class DeployUnknownSessionTypeTestCase {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         WebArchive deployment = ShrinkWrap.create(WebArchive.class, "as7_835.war")
                 .addPackage(SimpleStatelessBean.class.getPackage())
+                .addPackage(Naming.class.getPackage())
                 .addAsWebInfResource("as7_835.jar/META-INF/ejb-jar.xml", "ejb-jar.xml");
         System.out.println(deployment.toString(true));
         return deployment;
-    }
-
-    private static <T> T lookup(final String name, final Class<T> cls) throws NamingException {
-        InitialContext ctx = new InitialContext();
-        try
-        {
-           return cls.cast(ctx.lookup(name));
-        }
-        finally
-        {
-           ctx.close();
-        }
     }
 
     /**
