@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
@@ -47,7 +46,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
@@ -1071,7 +1070,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         mgmtSocket.get(OP).set(ADD);
         ModelNode operationAddress = address.clone();
-        operationAddress.add(MANAGEMENT_INTERFACES, HTTP_INTERFACE);
+        operationAddress.add(MANAGEMENT_INTERFACE, HTTP_INTERFACE);
         mgmtSocket.get(OP_ADDR).set(operationAddress);
 
         list.add(mgmtSocket);
@@ -1128,7 +1127,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(PORT).set(port);
         mgmtSocket.get(OP).set(ADD);
         ModelNode operationAddress = address.clone();
-        operationAddress.add(MANAGEMENT_INTERFACES, NATIVE_INTERFACE);
+        operationAddress.add(MANAGEMENT_INTERFACE, NATIVE_INTERFACE);
         mgmtSocket.get(OP_ADDR).set(operationAddress);
         list.add(mgmtSocket);
 

@@ -23,7 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -37,7 +37,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.OperationBuilder;
 
@@ -158,8 +157,8 @@ public class HostControllerBootstrap {
         final String hostName = domainModel.getLocalHostName();
         final ModelNode hostModelNode = domainModel.getHostModel();
 
-        final String mgmtNetwork = hostModelNode.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, INTERFACE).asString();
-        final int mgmtPort = hostModelNode.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, PORT).asInt();
+        final String mgmtNetwork = hostModelNode.get(MANAGEMENT_INTERFACE, NATIVE_INTERFACE, INTERFACE).asString();
+        final int mgmtPort = hostModelNode.get(MANAGEMENT_INTERFACE, NATIVE_INTERFACE, PORT).asInt();
         final ServerInventoryService inventory = new ServerInventoryService(environment, mgmtPort);
         serviceTarget.addService(ServerInventoryService.SERVICE_NAME, inventory)
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())

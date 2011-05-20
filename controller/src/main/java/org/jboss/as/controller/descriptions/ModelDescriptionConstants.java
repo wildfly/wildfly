@@ -103,7 +103,7 @@ public class ModelDescriptionConstants {
     public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT = "management";
-    public static final String MANAGEMENT_INTERFACES = "management-interfaces";
+    public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MASK = "mask";
     public static final String MAX = "max";
     public static final String MAX_FAILED_SERVERS = "max-failed-servers";

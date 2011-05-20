@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -67,28 +67,28 @@ public class ManagementInterfaceDescription {
 
     public static void getManagementInterfaceDescription(final ModelNode root, final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface"));
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, TYPE).set(ModelType.OBJECT);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface.interface"));
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("server.management.native-interface.port"));
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, PORT, REQUIRED).set(false);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, REQUIRED).set(false);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, HEAD_COMMENT_ALLOWED).set(true);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, NATIVE_INTERFACE, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface"));
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, TYPE).set(ModelType.OBJECT);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.native-interface.interface"));
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("server.management.native-interface.port"));
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, VALUE_TYPE, PORT, REQUIRED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, REQUIRED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, HEAD_COMMENT_ALLOWED).set(true);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, NATIVE_INTERFACE, TAIL_COMMENT_ALLOWED).set(false);
 
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, DESCRIPTION).set(bundle.getString("server.management.http-interface"));
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, TYPE).set(ModelType.OBJECT);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.http-interface.interface"));
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("server.management.http-interface.port"));
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, PORT, REQUIRED).set(false);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, REQUIRED).set(false);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, HEAD_COMMENT_ALLOWED).set(true);
-        root.get(MANAGEMENT_INTERFACES, ATTRIBUTES, HTTP_INTERFACE, TAIL_COMMENT_ALLOWED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, DESCRIPTION).set(bundle.getString("server.management.http-interface"));
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, TYPE).set(ModelType.OBJECT);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, INTERFACE, TYPE).set(ModelType.STRING);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, INTERFACE, DESCRIPTION).set(bundle.getString("server.management.http-interface.interface"));
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, INTERFACE, REQUIRED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("server.management.http-interface.port"));
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, VALUE_TYPE, PORT, REQUIRED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, REQUIRED).set(false);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, HEAD_COMMENT_ALLOWED).set(true);
+        root.get(MANAGEMENT_INTERFACE, ATTRIBUTES, HTTP_INTERFACE, TAIL_COMMENT_ALLOWED).set(false);
     }
 }

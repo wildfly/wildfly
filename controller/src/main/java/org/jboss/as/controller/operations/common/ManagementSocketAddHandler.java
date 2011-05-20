@@ -61,8 +61,8 @@ public class ManagementSocketAddHandler implements ModelUpdateOperationHandler, 
         final int port = operation.require(ModelDescriptionConstants.PORT).asInt();
 
         final ModelNode subModel = context.getSubModel();
-        subModel.get(ModelDescriptionConstants.MANAGEMENT_INTERFACES, ModelDescriptionConstants.INTERFACE).set(interfaceName);
-        subModel.get(ModelDescriptionConstants.MANAGEMENT_INTERFACES, ModelDescriptionConstants.PORT).set(port);
+        subModel.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.INTERFACE).set(interfaceName);
+        subModel.get(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.PORT).set(port);
 
         return installManagementSocket(interfaceName, port, context, resultHandler, compensatingOperation);
     }

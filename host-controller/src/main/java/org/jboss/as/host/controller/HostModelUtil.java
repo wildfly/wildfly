@@ -30,7 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
@@ -120,7 +120,7 @@ public class HostModelUtil {
         root.get(PATH);
         root.get(MANAGEMENT).get(SECURITY_REALMS).get(SECURITY_REALM);
         root.get(MANAGEMENT).get(CONNECTIONS).get(CONNECTION);
-        root.get(MANAGEMENT_INTERFACES);
+        root.get(MANAGEMENT_INTERFACE);
         root.get(SERVER_CONFIG);
         root.get(DOMAIN_CONTROLLER);
         root.get(INTERFACE);
@@ -182,15 +182,15 @@ public class HostModelUtil {
         ModelNodeRegistration connection = connections.registerSubModel(PathElement.pathElement(CONNECTION), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
         connection.registerOperationHandler(ConnectionAddHandler.OPERATION_NAME, ConnectionAddHandler.INSTANCE, ConnectionAddHandler.INSTANCE, false);
         // Management API protocols
-        ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACES, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
+        ModelNodeRegistration managementNative = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
         managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
 
-        ModelNodeRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACES, HTTP_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
+        ModelNodeRegistration managementHttp = root.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.MANAGEMENT_INTERFACE_PROVIDER);
 
         HttpManagementAddHandler httpAddHandler = HttpManagementAddHandler.getInstance(environment);
         managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, httpAddHandler, httpAddHandler, false);
 
-        // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACES, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
+        // root.registerReadWriteAttribute(ModelDescriptionConstants.MANAGEMENT_INTERFACE, GlobalOperationHandlers.READ_ATTRIBUTE, ManagementSocketAddHandler.INSTANCE);
         //root.registerOperationHandler(ManagementSocketRemoveHandler.OPERATION_NAME, ManagementSocketRemoveHandler.INSTANCE, ManagementSocketRemoveHandler.INSTANCE, false);
 
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(domainModelProxy, environment);

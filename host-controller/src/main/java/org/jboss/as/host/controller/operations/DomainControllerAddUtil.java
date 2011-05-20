@@ -57,7 +57,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -77,8 +77,8 @@ public class DomainControllerAddUtil {
                                              final ServiceTarget serviceTarget, final boolean isSlave,
                                              final FileRepository fileRepository, final DomainModelImpl domainModel) {
         final String hostName = host.get(NAME).asString();
-        final String mgmtNetwork = host.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, INTERFACE).asString();
-        final int mgmtPort = host.get(MANAGEMENT_INTERFACES, NATIVE_INTERFACE, PORT).asInt();
+        final String mgmtNetwork = host.get(MANAGEMENT_INTERFACE, NATIVE_INTERFACE, INTERFACE).asString();
+        final int mgmtPort = host.get(MANAGEMENT_INTERFACE, NATIVE_INTERFACE, PORT).asInt();
         final boolean backupDomainFiles = environment.isBackupDomainFiles();
         final boolean useCachedDc = environment.isUseCachedDc();
 

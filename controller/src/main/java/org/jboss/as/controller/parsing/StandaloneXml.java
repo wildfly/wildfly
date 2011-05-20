@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.parsing;
 
-import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -37,7 +36,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -359,8 +357,8 @@ public class StandaloneXml extends CommonXml {
 
         writeManagement(writer, modelNode.get(MANAGEMENT));
 
-        if (modelNode.hasDefined(MANAGEMENT_INTERFACES)) {
-            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACES));
+        if (modelNode.hasDefined(MANAGEMENT_INTERFACE)) {
+            writeManagementInterfaces(writer, modelNode.get(MANAGEMENT_INTERFACE));
         }
         writeServerProfile(writer, context);
         if (modelNode.hasDefined(INTERFACE)) {
