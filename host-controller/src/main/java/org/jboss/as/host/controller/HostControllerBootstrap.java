@@ -76,7 +76,7 @@ public class HostControllerBootstrap {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
     static final int DEFAULT_POOL_SIZE = 20;
-    private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
+    private final ServiceContainer serviceContainer = ServiceContainer.Factory.create("host-controller");
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
 
