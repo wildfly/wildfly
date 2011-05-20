@@ -89,7 +89,7 @@ class PeriodicRotatingFileHandlerAdd implements ModelAddOperationHandler {
                         if (operation.hasDefined(FILE)) {
                             final HandlerFileService fileService = new HandlerFileService(operation.get(FILE, PATH).asString());
                             final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-                            if (operation.hasDefined(CommonAttributes.RELATIVE_TO)) {
+                            if (operation.get(FILE).hasDefined(CommonAttributes.RELATIVE_TO)) {
                                 fileBuilder.addDependency(AbstractPathService.pathNameOf(operation.get(FILE, RELATIVE_TO).asString()), String.class, fileService.getRelativeToInjector());
                             }
                             fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
