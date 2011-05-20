@@ -25,6 +25,7 @@ import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
+import javax.ejb.NoSuchEJBException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,7 +52,14 @@ public class StatefulComponentInstanceDestroyInterceptor extends AbstractEJBInte
             throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
         }
         log.debug("Looking for stateful component instance with session id: " + sessionId);
-        StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
+        try {
+            StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
+        } catch (NoSuchEJBException nsee) {
+            // probably already destroyed (for example if some method had a @Remove on it)
+            log.info("Could not find stateful session bean instance with id: " + sessionId + " for bean: " +
+                    component.getComponentName() + " during destruction. Probably already removed");
+            return null;
+        }
         component.getCache().remove(sessionId);
         return null;
     }

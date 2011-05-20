@@ -58,8 +58,11 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             context.putPrivateData(ComponentInstance.class, instance);
             return context.proceed();
         } catch (Exception ex) {
-            // TODO: detect app exception
-            //if (StatefulRemoveInterceptor.isApplicationException(ex, (MethodInvocation)invocation)) throw ex;
+            // Detect app exception
+            if (component.getApplicationException(ex.getClass()) != null) {
+                // it's an application exception, just throw it back.
+                throw ex;
+            }
             if (ex instanceof RuntimeException || ex instanceof RemoteException) {
                 if (log.isTraceEnabled())
                     log.trace("Removing bean " + sessionId + " because of exception", ex);

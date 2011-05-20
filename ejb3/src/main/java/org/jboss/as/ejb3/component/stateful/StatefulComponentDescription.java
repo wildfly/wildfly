@@ -34,13 +34,20 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: jpai
@@ -48,6 +55,38 @@ import javax.ejb.TransactionManagementType;
 public class StatefulComponentDescription extends SessionBeanComponentDescription {
 
     private static final Logger logger = Logger.getLogger(StatefulComponentDescription.class);
+
+    private Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
+
+    private class StatefulRemoveMethod {
+        private final MethodIdentifier methodIdentifier;
+        private final boolean retainIfException;
+
+        StatefulRemoveMethod(final MethodIdentifier method, final boolean retainIfException) {
+            if (method == null) {
+                throw new IllegalArgumentException("@Remove method cannot be null");
+            }
+            this.methodIdentifier = method;
+            this.retainIfException = retainIfException;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            StatefulRemoveMethod that = (StatefulRemoveMethod) o;
+
+            if (!methodIdentifier.equals(that.methodIdentifier)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return methodIdentifier.hashCode();
+        }
+    }
 
     /**
      * Construct a new instance.
@@ -84,10 +123,30 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     protected void setupViewInterceptors(ViewDescription view) {
         // let super do its job
         super.setupViewInterceptors(view);
+        // add the @Remove method interceptor
+        this.addRemoveMethodInterceptor(view);
+        // setup the instance associating interceptors
+        this.addStatefulInstanceAssociatingInterceptor(view);
+        // setup tx management interceptors
+        this.addTransactionManagementInterceptor(view);
 
+
+    }
+
+    public void addRemoveMethod(final MethodIdentifier removeMethod, final boolean retainIfException) {
+        if (removeMethod == null) {
+            throw new IllegalArgumentException("@Remove method identifier cannot be null");
+        }
+        this.removeMethods.add(new StatefulRemoveMethod(removeMethod, retainIfException));
+    }
+
+    public Set<StatefulRemoveMethod> getRemoveMethods() {
+        return Collections.unmodifiableSet(this.removeMethods);
+    }
+
+    private void addStatefulInstanceAssociatingInterceptor(final ViewDescription view) {
         final Object sessionIdContextKey = new Object();
-        // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
-        view.getConfigurators().addFirst(new ViewConfigurator() {
+        view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
                 // interceptor factory return an interceptor which sets up the session id on component view instance creation
@@ -98,21 +157,50 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             }
         });
 
-        // add the instance associating interceptor to the *start of the invocation interceptor chain*
-        view.getConfigurators().addFirst(new ViewConfigurator() {
+        view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                // add the stateful component instance associator
+                // add the instance associating interceptor to the *start of the invocation interceptor chain*
                 configuration.addViewInterceptorToFront(new StatefulComponentInstanceInterceptorFactory(sessionIdContextKey));
             }
         });
 
+    }
+
+    private void addRemoveMethodInterceptor(final ViewDescription view) {
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                final StatefulComponentDescription statefulComponentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
+                final Set<StatefulRemoveMethod> removeMethods = statefulComponentDescription.getRemoveMethods();
+                if (removeMethods.isEmpty()) {
+                    return;
+                }
+                for (final Method viewMethod : configuration.getProxyFactory().getCachedMethods()) {
+                    final MethodIdentifier viewMethodIdentifier = MethodIdentifier.getIdentifierForMethod(viewMethod);
+                    for (final StatefulRemoveMethod removeMethod : removeMethods) {
+                        if (removeMethod.methodIdentifier.equals(viewMethodIdentifier)) {
+                            final Deque<InterceptorFactory> methodInterceptors = configuration.getViewInterceptorDeque(viewMethod);
+                            // TODO: This need *not* really be placed first. But given the current interceptor framework setup,
+                            // we have to add this first to avoid the mess. Once https://issues.jboss.org/browse/AS7-834 is implemented,
+                            // this needs to be added at the right place in the interceptor chain.
+                            methodInterceptors.addFirst(new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(removeMethod.retainIfException)));
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void addTransactionManagementInterceptor(final ViewDescription view) {
         // for CMT, setup the session sychronization tx interceptor
         if (TransactionManagementType.CONTAINER.equals(this.getTransactionManagementType())) {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                    logger.warn("Interceptors at ComponentInstance level aren't supported yet - SessionSynchronization semantics for Stateful beans with CMT won't work!");
+                    logger.warn("Interceptors at ComponentInstance level aren't supported yet - SessionSynchronization semantics for " +
+                            "Stateful beans with CMT won't work!");
                 }
             });
         } else { // setup BMT interceptor
@@ -134,6 +222,5 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 }
             });
         }
-
     }
 }

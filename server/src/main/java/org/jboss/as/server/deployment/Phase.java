@@ -226,6 +226,7 @@ public enum Phase {
     public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
     public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
+    public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_LOCK_ANNOTATION                   = 0x1A00;
     // should be after ConcurrencyManagement annotation processor
