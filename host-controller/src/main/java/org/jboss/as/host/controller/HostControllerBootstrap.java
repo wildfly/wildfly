@@ -51,6 +51,7 @@ import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -197,6 +198,10 @@ public class HostControllerBootstrap {
         serviceTarget.addService(executorServiceName, executorService)
                 .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.threadFactoryValue)
                 .install();
+
+        // Install required path services. (Only install those identified as required)
+        AbsolutePathService.addService(HostControllerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath(), serviceTarget);
+        AbsolutePathService.addService(HostControllerEnvironment.DOMAIN_CONFIG_DIR, environment.getDomainConfigurationDir().getAbsolutePath(), serviceTarget);
     }
 
     /**
