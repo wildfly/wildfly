@@ -26,3 +26,5 @@ atlassian-ide-plugin.xml
 pom.xml.versionsBackup
 # hprof dumps
 /*.hprof
+# ignore 'randomly' strewn around logs
+server.log
