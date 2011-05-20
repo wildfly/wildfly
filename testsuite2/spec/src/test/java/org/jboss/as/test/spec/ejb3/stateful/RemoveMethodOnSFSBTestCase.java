@@ -35,7 +35,9 @@ import javax.ejb.NoSuchEJBException;
 import java.util.logging.Logger;
 
 /**
- * User: jpai
+ * Tests the {@link javax.ejb.Remove @Remove} methods on Stateful session beans.
+ * <p/>
+ * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
 public class RemoveMethodOnSFSBTestCase {
