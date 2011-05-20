@@ -38,10 +38,6 @@
 
     <name>JBoss Application Server: Process Controller</name>
 
-    <!--properties>
-        <skipTests>true</skipTests>
-    </properties-->
-
     <build>
       <plugins>
         <plugin>
