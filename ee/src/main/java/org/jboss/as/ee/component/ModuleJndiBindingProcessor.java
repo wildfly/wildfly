@@ -33,7 +33,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,7 +50,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         if (moduleConfiguration == null) {
             return;
         }
@@ -77,10 +75,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
         }
 
-        //if a component has default interceptors and does not have it's own java:module context then
-        //we also need to bind the default interceptors bindings to the module context
-        boolean bindDefaultInterceptorsToModuleContext = false;
-
         //now we process all component level bindings, for components that do not have their own java:comp namespace.
         // these are bindings that have been added via a deployment descriptor
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
@@ -95,9 +89,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     //components with there own comp context do their own binding
                     continue;
                 }
-                if (!componentConfiguration.getComponentDescription().isExcludeDefaultInterceptors()) {
-                    bindDefaultInterceptorsToModuleContext = true;
-                }
+
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
                 final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
@@ -113,19 +105,11 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         //now add all class level bindings
         final Set<String> handledClasses = new HashSet<String>();
 
-        //first default interceptors
-        if (bindDefaultInterceptorsToModuleContext) {
-            for (final InterceptorDescription defaultInterceptor : moduleDescription.getDefaultInterceptors()) {
-                final EEModuleClassConfiguration classConfig = moduleConfiguration.getClassConfiguration(defaultInterceptor.getInterceptorClassName());
-                processClassConfigurations(phaseContext, moduleConfiguration, existingBindings, deploymentDescriptorBindings, handledClasses, ComponentNamingMode.USE_MODULE, Collections.singleton(classConfig));
-            }
-        }
-
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
 
             final Set<EEModuleClassConfiguration> classConfigurations = new HashSet<EEModuleClassConfiguration>();
             classConfigurations.add(componentConfiguration.getModuleClassConfiguration());
-            for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors().values()) {
+            for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
                 final EEModuleClassConfiguration interceptorClass = moduleConfiguration.getClassConfiguration(interceptor.getInterceptorClassName());
                 if (interceptorClass != null) {
                     classConfigurations.add(interceptorClass);

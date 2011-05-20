@@ -22,7 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -32,8 +34,10 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
+import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
 import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
@@ -47,11 +51,14 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
+import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
+
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.util.concurrent.TimeUnit;
 
@@ -138,6 +145,34 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
     }
 
+    protected void processInterceptors(SessionBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription) {
+
+        if (enterpriseBean.getAroundInvokes() != null) {
+            for (AroundInvokeMetaData interceptor : enterpriseBean.getAroundInvokes()) {
+                EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
+                interceptorModuleClassDescription.setAroundInvokeMethod(identifier);
+            }
+        }
+        if (enterpriseBean.getPreDestroys() != null) {
+            for (LifecycleCallbackMetaData interceptor : enterpriseBean.getPreDestroys()) {
+                EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(void.class, interceptor.getMethodName(), InvocationContext.class);
+                interceptorModuleClassDescription.setPreDestroyMethod(identifier);
+            }
+        }
+
+        if (enterpriseBean.getPostConstructs() != null) {
+            for (LifecycleCallbackMetaData interceptor : enterpriseBean.getPostConstructs()) {
+                EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
+                interceptorModuleClassDescription.setPostConstructMethod(identifier);
+            }
+        }
+
+    }
+
+
     private void processSessionBean31(SessionBean31MetaData sessionBean31MetaData, SessionBeanComponentDescription sessionBeanComponentDescription) {
         // no-interface view
         if (sessionBean31MetaData.isNoInterfaceBean()) {
@@ -157,7 +192,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         // bean level lock-type
         LockType lockType = singletonBeanMetaData.getLockType();
         singletonComponentDescription.setBeanLevelLockType(lockType);
-        // add method level lock type to the description
+// add method level lock type to the description
         ConcurrentMethodsMetaData concurrentMethods = singletonBeanMetaData.getConcurrentMethods();
         if (concurrentMethods != null) {
             for (ConcurrentMethodMetaData concurrentMethod : concurrentMethods) {

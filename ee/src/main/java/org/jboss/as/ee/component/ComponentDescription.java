@@ -78,8 +78,7 @@ public class ComponentDescription {
     private final EEModuleDescription moduleDescription;
     private final EEModuleClassDescription classDescription;
 
-    private final List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
-    private final Set<String> classInterceptorsSet = new HashSet<String>();
+    private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
 
     private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
     private final Map<MethodIdentifier, Set<String>> methodInterceptorsSet = new HashMap<MethodIdentifier, Set<String>>();
@@ -87,10 +86,9 @@ public class ComponentDescription {
     private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
     private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
 
-    private final Map<String, InterceptorDescription> allInterceptors = new HashMap<String, InterceptorDescription>();
-
     private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
 
+    private Set<InterceptorDescription> allInterceptors;
 
     private ComponentNamingMode namingMode = ComponentNamingMode.USE_MODULE;
     private boolean excludeDefaultInterceptors = false;
@@ -192,11 +190,30 @@ public class ComponentDescription {
     }
 
     /**
+     * Override the class interceptors with a new set of interceptors
+     * @param classInterceptors
+     */
+    public void setClassInterceptors(List<InterceptorDescription> classInterceptors) {
+        for(InterceptorDescription clazz : classInterceptors) {
+            moduleDescription.getOrAddClassByName(clazz.getInterceptorClassName());
+        }
+        this.classInterceptors = classInterceptors;
+        this.allInterceptors = null;
+    }
+
+    /**
      * Returns a combined map of class and method level interceptors
      *
      * @return all interceptors on the class
      */
-    public Map<String, InterceptorDescription> getAllInterceptors() {
+    public Set<InterceptorDescription> getAllInterceptors() {
+        if(allInterceptors == null) {
+            allInterceptors = new HashSet<InterceptorDescription>();
+            allInterceptors.addAll(classInterceptors);
+            for(List<InterceptorDescription> interceptors : methodInterceptors.values()) {
+                allInterceptors.addAll(interceptors);
+            }
+        }
         return allInterceptors;
     }
 
@@ -243,14 +260,11 @@ public class ComponentDescription {
         String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
         this.moduleDescription.getOrAddClassByName(name);
-        if (classInterceptorsSet.contains(name)) {
+        if (classInterceptors.contains(description)) {
             return false;
         }
-        if (!allInterceptors.containsKey(name)) {
-            allInterceptors.put(name, description);
-        }
         classInterceptors.add(description);
-        classInterceptorsSet.add(name);
+        this.allInterceptors = null;
         return true;
     }
 
@@ -262,9 +276,6 @@ public class ComponentDescription {
      * @return
      */
     public InterceptorDescription getClassInterceptor(String interceptorClassName) {
-        if (!classInterceptorsSet.contains(interceptorClassName)) {
-            return null;
-        }
         for (InterceptorDescription interceptor : classInterceptors) {
             if (interceptor.getInterceptorClassName().equals(interceptorClassName)) {
                 return interceptor;
@@ -305,12 +316,24 @@ public class ComponentDescription {
         if (interceptorClasses.contains(name)) {
             return false;
         }
-        if (!allInterceptors.containsKey(name)) {
-            allInterceptors.put(name, description);
-        }
         interceptors.add(description);
         interceptorClasses.add(name);
+        this.allInterceptors = null;
         return true;
+    }
+
+    /**
+     * Sets the method level interceptors for a method, and marks it as exclude class and default level interceptors.
+     *
+     * This is used to set the final interceptor order after it has been modifier by the deployment descriptor
+     *
+     * @param identifier
+     * @param interceptorDescriptions
+     */
+    public void setMethodInterceptors(MethodIdentifier identifier, List<InterceptorDescription> interceptorDescriptions) {
+        methodInterceptors.put(identifier, interceptorDescriptions);
+        methodExcludeClassInterceptors.add(identifier);
+        methodExcludeDefaultInterceptors.add(identifier);
     }
 
     /**
@@ -450,17 +473,10 @@ public class ComponentDescription {
             }.run();
 
 
-            final Set<InterceptorDescription> interceptors = new HashSet<InterceptorDescription>();
             final Set<InterceptorDescription> interceptorWithLifecycleCallbacks = new HashSet<InterceptorDescription>();
-            final List<InterceptorDescription> defaultInterceptors = description.getModuleDescription().getDefaultInterceptors();
-            if(!description.isExcludeDefaultInterceptors()) {
-                interceptors.addAll(defaultInterceptors);
-                interceptorWithLifecycleCallbacks.addAll(defaultInterceptors);
-            }
             interceptorWithLifecycleCallbacks.addAll(description.getClassInterceptors());
 
-            interceptors.addAll(description.getAllInterceptors().values());
-            for (final InterceptorDescription interceptorDescription : interceptors) {
+            for (final InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
                 final EEModuleClassConfiguration interceptorConfiguration = moduleConfiguration.getClassConfiguration(interceptorClassName);
 
@@ -527,13 +543,8 @@ public class ComponentDescription {
             final Deque<InterceptorFactory> userPreDestroy = new ArrayDeque<InterceptorFactory>();
 
             //now add the lifecycle interceptors in the correct order
-            final ArrayList<InterceptorDescription> interceptorOrder = new ArrayList<InterceptorDescription>();
-            if(!description.isExcludeDefaultInterceptors()) {
-                interceptorOrder.addAll(defaultInterceptors);
-            }
-            interceptorOrder.addAll(description.getClassInterceptors());
 
-            for (final InterceptorDescription interceptorClass : interceptorOrder) {
+            for (final InterceptorDescription interceptorClass : description.getClassInterceptors()) {
                 if (userPostConstructByInterceptorClass.containsKey(interceptorClass.getInterceptorClassName())) {
                     userPostConstruct.addAll(userPostConstructByInterceptorClass.get(interceptorClass.getInterceptorClassName()));
                 }
@@ -547,20 +558,21 @@ public class ComponentDescription {
                 @Override
                 public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     final MethodIdentifier componentPostConstructMethodIdentifier = classDescription.getPostConstructMethod();
+                    final ClassReflectionIndex<?> classIndex = deploymentReflectionIndex.getClassIndex(componentClassConfiguration.getModuleClass());
                     if (componentPostConstructMethodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, componentClassIndex, componentPostConstructMethodIdentifier);
+                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classIndex, componentPostConstructMethodIdentifier);
                         InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
                         userPostConstruct.addLast(interceptorFactory);
                     }
                     final MethodIdentifier componentPreDestroyMethodIdentifier = classDescription.getPreDestroyMethod();
                     if (componentPreDestroyMethodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, componentClassIndex, componentPreDestroyMethodIdentifier);
+                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classIndex, componentPreDestroyMethodIdentifier);
                         InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
                         userPreDestroy.addLast(interceptorFactory);
                     }
                     final MethodIdentifier componentAroundInvokeMethodIdentifier = classDescription.getAroundInvokeMethod();
                     if (componentAroundInvokeMethodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, componentClassIndex, componentAroundInvokeMethodIdentifier);
+                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classIndex, componentAroundInvokeMethodIdentifier);
                         componentUserAroundInvoke.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
                     }
                 }
@@ -609,13 +621,7 @@ public class ComponentDescription {
 
                     // first add the default interceptors (if not excluded) to the deque
                     if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
-                        for (InterceptorDescription interceptorDescription : defaultInterceptors) {
-                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                interceptorDeque.addAll(aroundInvokes);
-                            }
-                        }
+                        //TODO default interceptors
                     }
 
                     // now add class level interceptors (if not excluded) to the deque

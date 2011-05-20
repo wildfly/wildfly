@@ -25,11 +25,9 @@ package org.jboss.as.ee.component;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,8 +39,6 @@ public final class EEModuleDescription {
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, ComponentDescription> componentsByClassName = new HashMap<String, ComponentDescription>();
     private final Map<String, EEModuleClassDescription> classesByName = new HashMap<String, EEModuleClassDescription>();
-
-    private final List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
@@ -149,9 +145,4 @@ public final class EEModuleDescription {
     public void setNamespaceContextSelector(InjectedEENamespaceContextSelector namespaceContextSelector) {
         this.namespaceContextSelector = namespaceContextSelector;
     }
-
-    public List<InterceptorDescription> getDefaultInterceptors() {
-        return defaultInterceptors;
-    }
-
 }
