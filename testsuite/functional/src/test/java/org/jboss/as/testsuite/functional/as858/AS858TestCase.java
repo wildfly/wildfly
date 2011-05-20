@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.embedded.osgi;
+package org.jboss.as.testsuite.functional.as858;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.InputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -31,8 +28,6 @@ import org.jboss.arquillian.api.ArchiveProvider;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.DeploymentProvider;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.Archive;
@@ -42,21 +37,20 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
- * Test the arquillian callback to a client provided archive and its deployment through the deployer API.
+// * [AS7-858] Cannot load module when applying resolver results
+ *
+ * https://issues.jboss.org/browse/AS7-858
  *
  * @author thomas.diesler@jboss.com
- * @since 09-Sep-2010
+ * @since 20-May-2011
  */
 @RunWith(Arquillian.class)
-public class SimpleArchiveDeployerTestCase {
+public class AS858TestCase {
 
     @Inject
     public DeploymentProvider provider;
@@ -69,14 +63,13 @@ public class SimpleArchiveDeployerTestCase {
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-deployment-provider");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "as858-test");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                // [TODO] remove these explicit imports
                 builder.addImportPackages("org.jboss.shrinkwrap.impl.base.path");
                 builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
@@ -86,39 +79,19 @@ public class SimpleArchiveDeployerTestCase {
     }
 
     @Test
-    public void testClientDeploymentAsArchive() throws Exception {
+    public void testBundleDeployment() throws Exception {
 
-        String symbolicName = "archive-deployer-test-bundle";
-        Archive<?> archive = provider.getClientDeployment(symbolicName);
+        Archive<?> archive = provider.getClientDeployment("as858-bundle");
         String depname = archiveDeployer.deploy(archive);
-
-        final Bundle bundle = getDeployedBundle(symbolicName);
-        assertNotNull("Bundle found", bundle);
-
-        // Start the bundle
-        bundle.start();
-        OSGiTestHelper.assertBundleState(Bundle.ACTIVE, bundle.getState());
-
-        // Stop the bundle
-        bundle.stop();
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-
-        final CountDownLatch uninstallLatch = new CountDownLatch(1);
-        context.addBundleListener(new BundleListener() {
-            @Override
-            public void bundleChanged(BundleEvent event) {
-                Bundle eventSource = event.getBundle();
-                if (eventSource.equals(bundle) && event.getType() == BundleEvent.UNINSTALLED)
-                    uninstallLatch.countDown();
-            }
-        });
-
-        archiveDeployer.undeploy(depname);
-
-        if (uninstallLatch.await(1000, TimeUnit.MILLISECONDS) == false)
-            fail("UNINSTALLED event not received");
-
-        OSGiTestHelper.assertBundleState(Bundle.UNINSTALLED, bundle.getState());
+        try
+        {
+            Bundle bundle = getDeployedBundle("as858-bundle");
+            OSGiTestHelper.assertBundleState(Bundle.INSTALLED, bundle.getState());
+        }
+        finally
+        {
+            archiveDeployer.undeploy(depname);
+        }
     }
 
     private Bundle getDeployedBundle(String symbolicName) {
@@ -133,15 +106,12 @@ public class SimpleArchiveDeployerTestCase {
     @ArchiveProvider
     public static JavaArchive getTestArchive(String name) {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
-        archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(SimpleActivator.class);
-                builder.addImportPackages(BundleActivator.class);
                 return builder.openStream();
             }
         });
