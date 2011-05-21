@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.injectors;
 
 
-
 import org.hibernate.ejb.EntityManagerFactoryImpl;
 
 import org.jboss.as.ee.component.InjectionSource;
@@ -57,12 +56,21 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
     public PersistenceUnitInjectionSource(final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPUName, final String injectionTypeName) {
 
         injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, scopedPUName, injectionTypeName);
-        this.puServiceName=puServiceName;
+        this.puServiceName = puServiceName;
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         serviceBuilder.addDependencies(puServiceName);
         injector.inject(injectable);
+    }
+
+    @Override
+    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+        if (other instanceof PersistenceUnitInjectionSource) {
+            PersistenceUnitInjectionSource source = (PersistenceUnitInjectionSource) other;
+            return (source.puServiceName.equals(puServiceName));
+        }
+        return false;
     }
 
     private static final class PersistenceUnitJndiInjectable implements ManagedReferenceFactory {
@@ -73,10 +81,10 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
-            final ServiceName puServiceName,
-            final DeploymentUnit deploymentUnit,
-            final String scopedPUName,
-            final String injectionTypeName) {
+                final ServiceName puServiceName,
+                final DeploymentUnit deploymentUnit,
+                final String scopedPUName,
+                final String injectionTypeName) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
@@ -85,10 +93,10 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
 
         @Override
         public ManagedReference getReference() {
-            PersistenceUnitService service = (PersistenceUnitService)deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
+            PersistenceUnitService service = (PersistenceUnitService) deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
 
-            if (! ENTITY_MANAGER_FACTORY_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.SessionFactory)
+            if (!ENTITY_MANAGER_FACTORY_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.SessionFactory)
                 Class extensionClass;
                 try {
                     // make sure we can access the target class type
@@ -99,7 +107,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 // TODO:  when/if jpa supports unwrap, change to
                 //   Object targetValueToInject = emf.unwrap(extensionClass);
                 // Until jpa supports unwrap on sessionfactory, only support hibernate
-                if (! (emf instanceof EntityManagerFactoryImpl)) {
+                if (!(emf instanceof EntityManagerFactoryImpl)) {
                     throw new RuntimeException("Can only inject from a Hibernate EntityManagerFactoryImpl");
                 }
                 Object targetValueToInject = ((EntityManagerFactoryImpl) emf).getSessionFactory();
@@ -110,13 +118,4 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         }
     }
 
-    public int hashCode() {
-        // For now, cannot be shared.
-        return System.identityHashCode(this);
-    }
-
-    public boolean equals(final Object obj) {
-        // For now, cannot be shared.
-        return obj == this;
-    }
 }

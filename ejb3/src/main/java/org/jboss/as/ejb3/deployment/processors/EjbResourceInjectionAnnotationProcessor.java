@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
-import org.jboss.as.ee.component.ComponentTypeInjectionSource;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -146,9 +145,9 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         if (!isEmpty(lookup)) {
             valueSource = new LookupInjectionSource(lookup);
         } else if (!isEmpty(beanName)) {
-            valueSource = new EjbBeanNameInjectionSource(beanName, beanInterface);
+            valueSource = new EjbInjectionSource(beanName, beanInterface);
         } else {
-            valueSource = new ComponentTypeInjectionSource(beanInterface);
+            valueSource = new EjbInjectionSource(beanInterface);
         }
 
         // our injection comes from the local lookup, no matter what.

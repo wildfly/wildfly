@@ -49,14 +49,16 @@ public final class LookupInjectionSource extends InjectionSource {
         this.lookupName = lookupName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
         final String applicationName = resolutionContext.getApplicationName();
         final String moduleName = resolutionContext.getModuleName();
         final String componentName = resolutionContext.getComponentName();
         final boolean compUsesModule = resolutionContext.isCompUsesModule();
         final String lookupName;
-        if(! this.lookupName.startsWith("java:")) {
+        if (!this.lookupName.startsWith("java:")) {
             if (componentName != null && !compUsesModule) {
                 lookupName = "java:comp/env/" + this.lookupName;
             } else if (compUsesModule) {
@@ -73,15 +75,13 @@ public final class LookupInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 
-    public boolean equals(final Object obj) {
-        return obj instanceof LookupInjectionSource && equals((LookupInjectionSource) obj);
+
+    public boolean equalTo(InjectionSource configuration, DeploymentPhaseContext context) {
+        if (configuration instanceof LookupInjectionSource) {
+            LookupInjectionSource lookup = (LookupInjectionSource) configuration;
+            return lookupName.equals(lookup.lookupName);
+        }
+        return false;
     }
 
-    private boolean equals(LookupInjectionSource configuration) {
-        return configuration != null && lookupName.equals(configuration.lookupName);
-    }
-
-    public int hashCode() {
-        return LookupInjectionSource.class.hashCode() * 127 + lookupName.hashCode();
-    }
 }

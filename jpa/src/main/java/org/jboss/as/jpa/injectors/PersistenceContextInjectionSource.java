@@ -66,6 +66,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
     // manager won't be closed, even if no transaction is active on the calling thread.
     // TODO:  move this list to PersistenceProviderAdaptor
     private static final HashSet<String> skipEntityManagerCloseFor = new HashSet<String>();
+
     static {
         skipEntityManagerCloseFor.add("org.hibernate.Session"); // Hibernate session will take ownership of the session
     }
@@ -73,14 +74,15 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
     /**
      * Constructor for the PersistenceContextInjectorService
-     * @param type The persistence context type
-     * @param properties The persistence context properties
-     * @param puServiceName represents the deployed persistence.xml that we are going to use.
-     * @param deploymentUnit represents the deployment that we are injecting into
-     * @param scopedPuName the fully scoped reference to the persistence.xml
+     *
+     * @param type              The persistence context type
+     * @param properties        The persistence context properties
+     * @param puServiceName     represents the deployed persistence.xml that we are going to use.
+     * @param deploymentUnit    represents the deployment that we are injecting into
+     * @param scopedPuName      the fully scoped reference to the persistence.xml
      * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
-     * for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
-     * the unwrap return value is injected (instead of the EntityManager instance)
+     *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
+     *                          the unwrap return value is injected (instead of the EntityManager instance)
      */
     public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName) {
 
@@ -89,12 +91,21 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
 
         injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, properties, scopedPuName, injectionTypeName);
-        this.puServiceName=puServiceName;
+        this.puServiceName = puServiceName;
     }
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         serviceBuilder.addDependencies(puServiceName);
         injector.inject(injectable);
+    }
+
+    @Override
+    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+        if (other instanceof PersistenceContextInjectionSource) {
+            PersistenceContextInjectionSource source = (PersistenceContextInjectionSource) other;
+            return (source.puServiceName.equals(puServiceName));
+        }
+        return false;
     }
 
     private static final class PersistenceContextJndiInjectable implements ManagedReferenceFactory {
@@ -108,13 +119,14 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
         private static final Logger log = Logger.getLogger("org.jboss.jpa");
+
         public PersistenceContextJndiInjectable(
-            final ServiceName puServiceName,
-            final DeploymentUnit deploymentUnit,
-            final PersistenceContextType type,
-            final Map properties,
-            final String unitName,
-            final String injectionTypeName) {
+                final ServiceName puServiceName,
+                final DeploymentUnit deploymentUnit,
+                final PersistenceContextType type,
+                final Map properties,
+                final String unitName,
+                final String injectionTypeName) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;
@@ -126,7 +138,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
         @Override
         public ManagedReference getReference() {
-            PersistenceUnitService service = (PersistenceUnitService)deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
+            PersistenceUnitService service = (PersistenceUnitService) deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
             EntityManager entityManager;
             boolean isExtended;
@@ -135,8 +147,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
                 if (log.isDebugEnabled())
                     log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
-            }
-            else {
+            } else {
                 // handle PersistenceContextType.EXTENDED
                 isExtended = true;
                 EntityManager entityManager1 = SFSBCallStack.findPersistenceContext(unitName);
@@ -146,8 +157,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                     if (log.isDebugEnabled())
                         log.debug("created new ExtendedEntityManager for unit name=" + unitName);
 
-                }
-                else {
+                } else {
                     entityManager = entityManager1;
                     if (log.isDebugEnabled())
                         log.debug("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=" + unitName);
@@ -159,7 +169,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
             }
 
-            if (! ENTITY_MANAGER_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.Session)
+            if (!ENTITY_MANAGER_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.Session)
                 Class extensionClass;
                 try {
                     extensionClass = this.getClass().getClassLoader().loadClass(injectionTypeName);
@@ -183,13 +193,4 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
     }
 
-    public int hashCode() {
-        // For now, cannot be shared.
-        return System.identityHashCode(this);
-    }
-
-    public boolean equals(final Object obj) {
-        // For now, cannot be shared.
-        return obj == this;
-    }
 }

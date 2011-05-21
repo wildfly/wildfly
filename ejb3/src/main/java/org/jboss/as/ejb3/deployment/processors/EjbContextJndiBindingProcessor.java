@@ -103,14 +103,9 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
             injector.inject(ejbContextManagedReferenceFactory);
         }
 
-        public int hashCode() {
-            // singleton
-            return System.identityHashCode(this);
-        }
-
-        public boolean equals(final Object obj) {
-            // singleton
-            return obj == this;
+        @Override
+        public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+            return other == this;
         }
     };
 }

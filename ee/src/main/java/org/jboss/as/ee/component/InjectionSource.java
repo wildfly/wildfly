@@ -48,19 +48,12 @@ public abstract class InjectionSource {
     public abstract void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException;
 
     /**
-     * Get the hash code of this injection source.  The hash code should include an adjustment for the class.
+     * Return true if this binding is logically equivalent to the InjectionSource specified by other.
      *
-     * @return the hash code
+     * @param other The other injection source to check equality against
+     * @throws DeploymentUnitProcessingException if an error occurs
      */
-    public abstract int hashCode();
-
-    /**
-     * Compare this injection source to another for equality.
-     *
-     * @param obj the other injection source
-     * @return {@code true} if the other object refers to the same injection source
-     */
-    public abstract boolean equals(final Object obj);
+    public abstract boolean equalTo(InjectionSource other, DeploymentPhaseContext phaseContext);
 
     /**
      * A resolution context for the injection source.

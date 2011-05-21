@@ -53,8 +53,13 @@ public class EEApplicationDescription {
         }
     }
 
-    public Set<ViewDescription> getComponentsForViewName(final String name) {
-        final Set<ViewInformation> info = componentsByViewName.get(name);
+    /**
+     * Get all views that have the given type in the application
+     * @param viewType The view type
+     * @return All views of the given type
+     */
+    public Set<ViewDescription> getComponentsForViewName(final String viewType) {
+        final Set<ViewInformation> info = componentsByViewName.get(viewType);
 
         if (info == null) {
             return Collections.<ViewDescription>emptySet();
@@ -66,6 +71,13 @@ public class EEApplicationDescription {
         return ret;
     }
 
+    /**
+     * Get all views in the application that have the given name and view type
+     * @param componentName The name of the component
+     * @param viewName The view type
+     * @param deploymentRoot The deployment root of the component doing the lookup
+     * @return A set of all views for the given component name and type
+     */
     public Set<ViewDescription> getComponents(final String componentName, final String viewName, final VirtualFile deploymentRoot) {
         final Set<ViewInformation> info = componentsByViewName.get(viewName);
         if (info == null) {

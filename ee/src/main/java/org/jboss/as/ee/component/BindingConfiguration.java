@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+
 /**
  * A binding into JNDI.  This class contains the mechanism to construct the binding service.  In particular
  * it represents <b>only</b> the description of the binding; it does not represent injection or any other parameters
@@ -70,23 +72,17 @@ public final class BindingConfiguration {
         return source;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BindingConfiguration that = (BindingConfiguration) o;
-
-        if (!name.equals(that.name)) return false;
-        if (!source.equals(that.source)) return false;
-
-        return true;
+    /**
+     * Return true if this binding is logically equivalent to the InjectionSource specified by other.
+     *
+     * @param other The other injection source to check equality against
+     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException if an error occurs
+     */
+    public boolean equalTo(BindingConfiguration other, DeploymentPhaseContext phaseContext) {
+        if(!name.equals(other.getName())) {
+            return false;
+        }
+        return source.equalTo(other.getSource(), phaseContext);
     }
 
-    @Override
-    public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + source.hashCode();
-        return result;
-    }
 }

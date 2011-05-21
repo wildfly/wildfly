@@ -52,16 +52,11 @@ public final class EnvEntryInjectionSource extends InjectionSource {
     }
 
     @Override
-    public boolean equals(final Object injectionSource) {
-        return injectionSource instanceof EnvEntryInjectionSource && equals((EnvEntryInjectionSource) injectionSource);
+    public boolean equalTo(final InjectionSource injectionSource, final DeploymentPhaseContext phaseContext) {
+        return injectionSource instanceof EnvEntryInjectionSource && equalTo((EnvEntryInjectionSource) injectionSource);
     }
 
-    private boolean equals(final EnvEntryInjectionSource injectionSource) {
+    private boolean equalTo(final EnvEntryInjectionSource injectionSource) {
         return injectionSource != null && value.equals(injectionSource.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return EnvEntryInjectionSource.class.hashCode() * 127 + value.hashCode();
     }
 }

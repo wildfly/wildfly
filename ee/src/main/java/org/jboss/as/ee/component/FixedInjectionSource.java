@@ -50,21 +50,15 @@ public final class FixedInjectionSource extends InjectionSource {
         this.value = value;
     }
 
-    private boolean equals(final InjectionSource injectionSource) {
-        return injectionSource instanceof FixedInjectionSource && equals((FixedInjectionSource) injectionSource);
-    }
-
-    public boolean equals(final FixedInjectionSource configuration) {
-        return configuration != null && value.equals(configuration.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return FixedInjectionSource.class.hashCode() * 127 + value.hashCode();
+    /**
+     * {@inheritDoc}
+     */
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
+        injector.inject(managedReferenceFactory);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equalTo(final InjectionSource obj, final DeploymentPhaseContext phaseContext) {
         if (this == obj) {
             return true;
         }
@@ -72,13 +66,10 @@ public final class FixedInjectionSource extends InjectionSource {
             return false;
         }
         FixedInjectionSource other = (FixedInjectionSource) obj;
-        return this.equals(other);
+        return this.equalTo(other);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
-        injector.inject(managedReferenceFactory);
+    private boolean equalTo(final FixedInjectionSource configuration) {
+        return configuration != null && value.equals(configuration.value);
     }
 }

@@ -123,6 +123,9 @@ public final class EEModuleDescription {
     }
 
     public EEModuleClassDescription getOrAddClassByName(String name) {
+        if(name == null) {
+            throw new IllegalArgumentException("Name cannot be null");
+        }
         EEModuleClassDescription description = classesByName.get(name);
         if (description == null) {
             classesByName.put(name, description = new EEModuleClassDescription(name));

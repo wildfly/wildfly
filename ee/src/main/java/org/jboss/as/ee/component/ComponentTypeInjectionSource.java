@@ -51,7 +51,7 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
         final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
         final Iterator<ViewDescription> iterator = componentsForViewName.iterator();
-        if (! iterator.hasNext()) {
+        if (!iterator.hasNext()) {
             throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "'");
         }
         final ViewDescription description = iterator.next();
@@ -63,15 +63,11 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(description.getServiceName(), ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
     }
 
-    public boolean equals(final Object injectionSource) {
-        return injectionSource instanceof ComponentTypeInjectionSource && equals((ComponentTypeInjectionSource) injectionSource);
-    }
-
-    private boolean equals(final ComponentTypeInjectionSource configuration) {
-        return configuration != null && typeName.equals(configuration.typeName);
-    }
-
-    public int hashCode() {
-        return typeName.hashCode();
+    @Override
+    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+        if (other instanceof ComponentTypeInjectionSource) {
+            return ((ComponentTypeInjectionSource) other).typeName.equals(typeName);
+        }
+        return false;
     }
 }

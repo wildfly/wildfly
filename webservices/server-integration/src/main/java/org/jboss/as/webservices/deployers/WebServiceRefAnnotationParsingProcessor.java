@@ -212,14 +212,9 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
             serviceBuilder.addInjection(injector, factory);
         }
 
-        public int hashCode() {
-            // For now, cannot be shared.
-            return System.identityHashCode(this);
-        }
-
-        public boolean equals(final Object obj) {
-            // For now, cannot be shared.
-            return obj == this;
+        @Override
+        public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+            return other == this;
         }
 
         public Object getValue() throws IllegalStateException, IllegalArgumentException {

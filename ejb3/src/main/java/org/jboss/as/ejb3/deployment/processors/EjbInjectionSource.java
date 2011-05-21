@@ -45,20 +45,22 @@ import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
  *
  * @author John Bailey
  */
-public class EjbBeanNameInjectionSource extends InjectionSource {
+public class EjbInjectionSource extends InjectionSource {
     private final String beanName;
     private final String typeName;
 
-    public EjbBeanNameInjectionSource(final String beanName, final String typeName) {
+    public EjbInjectionSource(final String beanName, final String typeName) {
         this.beanName = beanName;
         this.typeName = typeName;
     }
 
+    public EjbInjectionSource(final String typeName) {
+        this.beanName = null;
+        this.typeName = typeName;
+    }
+
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final Set<ViewDescription> componentsForViewName = applicationDescription.getComponents(beanName, typeName, deploymentRoot.getRoot());
+        final Set<ViewDescription> componentsForViewName = getViews(phaseContext);
         if (componentsForViewName.isEmpty()) {
             throw new DeploymentUnitProcessingException("No component found for type '" + typeName + "' with name " + beanName);
         }
@@ -70,17 +72,34 @@ public class EjbBeanNameInjectionSource extends InjectionSource {
 
     }
 
-    public boolean equals(final Object injectionSource) {
-        return injectionSource instanceof EjbBeanNameInjectionSource && equals((EjbBeanNameInjectionSource) injectionSource);
+    private Set<ViewDescription> getViews(final DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(EE_APPLICATION_DESCRIPTION);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final Set<ViewDescription> componentsForViewName;
+        if (beanName != null) {
+            componentsForViewName = applicationDescription.getComponents(beanName, typeName, deploymentRoot.getRoot());
+        } else {
+            componentsForViewName = applicationDescription.getComponentsForViewName(typeName);
+        }
+        return componentsForViewName;
     }
 
-    private boolean equals(final EjbBeanNameInjectionSource configuration) {
-        return configuration != null && typeName.equals(configuration.typeName) && beanName.equals(configuration.beanName);
+    @Override
+    public boolean equalTo(final InjectionSource injectionSource, final DeploymentPhaseContext phaseContext) {
+        return injectionSource instanceof EjbInjectionSource && equals((EjbInjectionSource) injectionSource, phaseContext);
     }
 
-    public int hashCode() {
-        int result = beanName != null ? beanName.hashCode() : 0;
-        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
-        return result;
+    private boolean equals(final EjbInjectionSource configuration, final DeploymentPhaseContext phaseContext) {
+        if(this == configuration) {
+            return true;
+        }
+        final Set<ViewDescription> theseViews = getViews(phaseContext);
+        final Set<ViewDescription> otherViews = configuration.getViews(phaseContext);
+        //return true if they resolve to the same set of views
+        //it does not matter if the resolution is correct at this point
+        //as an error will occur later
+        return otherViews.equals(theseViews);
     }
+
 }

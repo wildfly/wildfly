@@ -45,24 +45,20 @@ public final class ServiceInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
     }
 
-    private boolean equals(final ServiceInjectionSource configuration) {
+    @Override
+    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+        if (this == other) {
+            return true;
+        }
+        if (other instanceof ServiceInjectionSource == false) {
+            return false;
+        }
+        ServiceInjectionSource obj = (ServiceInjectionSource) other;
+        return this.equalTo(obj);
+    }
+
+    private boolean equalTo(final ServiceInjectionSource configuration) {
         return configuration != null && serviceName.equals(configuration.serviceName);
     }
 
-    @Override
-    public int hashCode() {
-        return ServiceInjectionSource.class.hashCode() * 127 + serviceName.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof ServiceInjectionSource == false) {
-            return false;
-        }
-        ServiceInjectionSource other = (ServiceInjectionSource) obj;
-        return this.equals(other);
-    }
 }

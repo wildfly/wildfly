@@ -33,8 +33,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public final class ViewBindingInjectionSource extends InjectionSource {
 
-    private static final int HASH_BASE = ViewBindingInjectionSource.class.hashCode() * 127;
-
     private final ServiceName serviceName;
 
     public ViewBindingInjectionSource(final ServiceName serviceName) {
@@ -46,16 +44,13 @@ public final class ViewBindingInjectionSource extends InjectionSource {
         serviceBuilder.addDependency(serviceName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
     }
 
-    /** {@inheritDoc} */
-    public boolean equals(final Object injectionSource) {
-        return injectionSource instanceof ViewBindingInjectionSource && equals((ViewBindingInjectionSource) injectionSource);
+    @Override
+    public boolean equalTo(final InjectionSource injectionSource, final DeploymentPhaseContext phaseContext) {
+         return injectionSource instanceof ViewBindingInjectionSource && equalTo((ViewBindingInjectionSource) injectionSource);
     }
 
-    private boolean equals(final ViewBindingInjectionSource configuration) {
+    private boolean equalTo(final ViewBindingInjectionSource configuration) {
         return configuration != null && serviceName.equals(configuration.serviceName);
     }
 
-    public int hashCode() {
-        return HASH_BASE + serviceName.hashCode();
-    }
 }

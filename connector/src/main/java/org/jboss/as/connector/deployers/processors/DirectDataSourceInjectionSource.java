@@ -104,6 +104,12 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
     }
 
+    @Override
+    public boolean equalTo(final InjectionSource other, final DeploymentPhaseContext phaseContext) {
+        //cannot be shared
+        return other == this;
+    }
+
     private void setProperties(ClassReflectionIndex<?> clazz, Object object) {
         setProperty(clazz, object, DESCRIPTION_PROP, description);
         setProperty(clazz, object, URL_PROP, url);
@@ -311,13 +317,4 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         this.properties = properties;
     }
 
-    public int hashCode() {
-        // Can never be shared
-        return System.identityHashCode(this);
-    }
-
-    public boolean equals(final Object obj) {
-        // Can never be shared
-        return this == obj;
-    }
 }

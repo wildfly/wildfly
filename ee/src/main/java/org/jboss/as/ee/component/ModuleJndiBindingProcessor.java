@@ -67,8 +67,12 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
             final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-            if (existingConfiguration != null && !existingConfiguration.equals(binding)) {
-                throw new DeploymentUnitProcessingException("Multiple module level bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+            if (existingConfiguration != null) {
+                if (!existingConfiguration.equalTo(binding, phaseContext)) {
+                    throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+                } else {
+                    continue;
+                }
             }
             existingBindings.put(serviceName, binding);
             deploymentDescriptorBindings.put(serviceName, binding);
@@ -93,8 +97,12 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
                 final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-                if (existingConfiguration != null && !existingConfiguration.equals(binding)) {
-                    throw new DeploymentUnitProcessingException("Multiple module level bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+                if (existingConfiguration != null) {
+                    if (!existingConfiguration.equalTo(binding, phaseContext)) {
+                        throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+                    } else {
+                        continue;
+                    }
                 }
                 existingBindings.put(serviceName, binding);
                 deploymentDescriptorBindings.put(serviceName, binding);
@@ -147,8 +155,12 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                             continue; //this has been overridden by a DD binding
                         }
                         final BindingConfiguration existingConfiguration = existingBindings.get(serviceName);
-                        if (existingConfiguration != null && !existingConfiguration.equals(binding)) {
-                            throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+                        if (existingConfiguration != null) {
+                            if (!existingConfiguration.equalTo(binding, phaseContext)) {
+                                throw new DeploymentUnitProcessingException("Bindings with the same name at " + binding.getName() + " " + binding + " and " + existingConfiguration);
+                            } else {
+                                continue;
+                            }
                         }
                         existingBindings.put(serviceName, binding);
                         addJndiBinding(moduleConfiguration, binding, phaseContext, serviceName);
