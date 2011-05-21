@@ -147,26 +147,42 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
 
     protected void processInterceptors(SessionBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription) {
 
+        //for interceptor methods that specify a null class we cannot deal with them here
+        //instead we stick them on the component configuration, and deal with them once we have a module
+
         if (enterpriseBean.getAroundInvokes() != null) {
             for (AroundInvokeMetaData interceptor : enterpriseBean.getAroundInvokes()) {
-                EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
-                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
-                interceptorModuleClassDescription.setAroundInvokeMethod(identifier);
+
+                if (interceptor.getClassName() == null) {
+                    ejbComponentDescription.getAroundInvokeDDMethods().add(interceptor.getMethodName());
+                } else {
+                    EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
+                    interceptorModuleClassDescription.setAroundInvokeMethod(identifier);
+                }
             }
         }
         if (enterpriseBean.getPreDestroys() != null) {
             for (LifecycleCallbackMetaData interceptor : enterpriseBean.getPreDestroys()) {
-                EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
-                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(void.class, interceptor.getMethodName(), InvocationContext.class);
-                interceptorModuleClassDescription.setPreDestroyMethod(identifier);
+                if (interceptor.getClassName() == null) {
+                    ejbComponentDescription.getPreDestroyDDMethods().add(interceptor.getMethodName());
+                } else {
+                    final EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
+                    interceptorModuleClassDescription.setPreDestroyMethod(identifier);
+                }
             }
         }
 
         if (enterpriseBean.getPostConstructs() != null) {
             for (LifecycleCallbackMetaData interceptor : enterpriseBean.getPostConstructs()) {
-                EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
-                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
-                interceptorModuleClassDescription.setPostConstructMethod(identifier);
+                if (interceptor.getClassName() == null) {
+                    ejbComponentDescription.getPostConstructDDMethods().add(interceptor.getMethodName());
+                } else {
+                    final EEModuleClassDescription interceptorModuleClassDescription = ejbComponentDescription.getModuleDescription().getOrAddClassByName(interceptor.getClassName());
+                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
+                    interceptorModuleClassDescription.setPostConstructMethod(identifier);
+                }
             }
         }
 

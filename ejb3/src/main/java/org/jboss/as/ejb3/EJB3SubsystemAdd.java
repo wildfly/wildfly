@@ -55,6 +55,7 @@ import org.jboss.as.ejb3.deployment.processors.TransactionAttributeAnnotationPro
 import org.jboss.as.ejb3.deployment.processors.TransactionManagementAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.AssemblyDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.DeploymentDescriptorInterceptorBindingsProcessor;
+import org.jboss.as.ejb3.deployment.processors.dd.DeploymentDescriptorMethodProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.InterceptorClassDeploymentDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.MessageDrivenBeanXmlDescriptorProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.SessionBeanXmlDescriptorProcessor;
@@ -141,6 +142,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_JNDI_BINDINGS, new EjbJndiBindingsDeploymentUnitProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_MODULE_CONFIGURATION, new EjbJarConfigurationProcessor());
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_INTERCEPTORS, new DeploymentDescriptorInterceptorBindingsProcessor());
+            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_METHOD_RESOLUTION, new DeploymentDescriptorMethodProcessor());
 
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_REF, new EjbRefProcessor());
 

@@ -46,8 +46,10 @@ import org.jboss.msc.service.ServiceName;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,6 +66,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
 
     private final Map<MethodIntf, TransactionAttributeType> txPerViewStyle1 = new HashMap<MethodIntf, TransactionAttributeType>();
+
+    /**
+     * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
+     */
+    private final List<String> aroundInvokeDDMethods = new ArrayList<String>(0);
+    private final List<String> preDestroyDDMethods = new ArrayList<String>(0);
+    private final List<String> postConstructDDMethods = new ArrayList<String>(0);
+
+
     private final PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>> txPerViewStyle2 = new PopulatingMap<MethodIntf, Map<String, TransactionAttributeType>>() {
         @Override
         Map<String, TransactionAttributeType> populate() {
@@ -322,6 +333,18 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
             return "Proxy for view class: " + componentViewInstance.getViewClass().getName() + " of EJB: " + EJBComponentDescription.this.getComponentName();
         }
+    }
+
+    public List<String> getAroundInvokeDDMethods() {
+        return aroundInvokeDDMethods;
+    }
+
+    public List<String> getPostConstructDDMethods() {
+        return postConstructDDMethods;
+    }
+
+    public List<String> getPreDestroyDDMethods() {
+        return preDestroyDDMethods;
     }
 
     @Override
