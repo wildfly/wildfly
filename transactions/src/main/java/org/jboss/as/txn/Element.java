@@ -38,6 +38,9 @@ enum Element {
     CORE_ENVIRONMENT("core-environment"),
     COORDINATOR_ENVIRONMENT("coordinator-environment"),
     OBJECT_STORE("object-store"),
+    PROCESS_ID("process-id"),
+    SOCKET("socket"),
+    UUID("uuid"),
     ;
 
     private final String name;

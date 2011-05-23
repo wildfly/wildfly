@@ -115,7 +115,9 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-                <core-environment socket-binding="txn-socket-process-id"/>
+                <core-environment>
+                    <process-id><uuid /></process-id>
+                </core-environment>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
@@ -309,7 +311,6 @@
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="txn-socket-process-id" interface="loopback" port="4714"/>
          </socket-binding-group>
          <socket-binding-group name="messaging-sockets" default-interface="external">
             <socket-binding name="messaging" port="5445" />
