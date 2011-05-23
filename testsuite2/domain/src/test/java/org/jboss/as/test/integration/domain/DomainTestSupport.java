@@ -25,8 +25,10 @@ package org.jboss.as.test.integration.domain;
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 
+import java.io.Closeable;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,6 +47,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DomainTestSupport {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.test.integration.domain");
 
     public static final String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
     public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
@@ -112,16 +116,37 @@ public class DomainTestSupport {
         processFutures(futures, timeout);
     }
 
-
-
     public static ModelNode validateResponse(ModelNode response) {
 
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
+            System.out.println("Failed response:");
+            System.out.println(response);
             Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
         }
 
         Assert.assertTrue("result exists", response.has(RESULT));
         return response.get(RESULT);
+    }
+
+    public static void cleanFile(File file) {
+        if (file != null && file.exists()) {
+            if (file.isDirectory()) {
+                for (File child : file.listFiles()) {
+                    cleanFile(child);
+                }
+            }
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
+        }
+    }
+
+    public static void safeClose(final Closeable closeable) {
+        if (closeable != null) try {
+            closeable.close();
+        } catch (Throwable t) {
+            log.errorf(t, "Failed to close resource %s", closeable);
+        }
     }
 
     private static void processFutures(Future<?>[] futures, long timeout) throws Exception {
@@ -143,6 +168,51 @@ public class DomainTestSupport {
         }
     }
 
-    /** Prevent instantiation */
-    private DomainTestSupport() {}
+    private final String domainConfig;
+    private final String masterConfig;
+    private final String slaveConfig;
+    private final DomainLifecycleUtil domainMasterLifecycleUtil;
+    private final DomainLifecycleUtil domainSlaveLifecycleUtil;
+
+    public DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig) throws Exception {
+        this.domainConfig = domainConfig;
+        this.masterConfig = masterConfig;
+        this.slaveConfig = slaveConfig;
+
+        final JBossAsManagedConfiguration master = getMasterConfiguration(domainConfig, masterConfig, testClass);
+        domainMasterLifecycleUtil = new DomainLifecycleUtil(master);
+
+        if (slaveConfig != null) {
+            final JBossAsManagedConfiguration slave = getSlaveConfiguration(slaveConfig, testClass);
+            domainSlaveLifecycleUtil = new DomainLifecycleUtil(slave);
+        } else {
+            domainSlaveLifecycleUtil = null;
+        }
+    }
+
+    public DomainLifecycleUtil getDomainMasterLifecycleUtil() {
+        return domainMasterLifecycleUtil;
+    }
+
+    public DomainLifecycleUtil getDomainSlaveLifecycleUtil() {
+        return domainSlaveLifecycleUtil;
+    }
+
+    public void start() {
+        domainMasterLifecycleUtil.start();
+        if (domainSlaveLifecycleUtil != null) {
+            domainSlaveLifecycleUtil.start();
+        }
+    }
+
+    public void stop() {
+        try {
+            if (domainSlaveLifecycleUtil != null) {
+                domainSlaveLifecycleUtil.stop();
+            }
+
+        }   finally {
+            domainMasterLifecycleUtil.stop();
+        }
+    }
 }

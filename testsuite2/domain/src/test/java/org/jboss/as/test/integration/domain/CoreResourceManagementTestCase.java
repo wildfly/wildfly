@@ -37,20 +37,17 @@ import java.io.IOException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 /**
  * Test of various management operations involving core resources like system properties, paths, interfaces, socket bindings.
@@ -59,6 +56,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
  */
 public class CoreResourceManagementTestCase {
 
+    private static DomainTestSupport testSupport;
     private static DomainLifecycleUtil domainMasterLifecycleUtil;
     private static DomainLifecycleUtil domainSlaveLifecycleUtil;
 
@@ -104,38 +102,15 @@ public class CoreResourceManagementTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-
-        final JBossAsManagedConfiguration masterConfig = DomainTestUtil.getMasterConfiguration("domain-configs/domain-standard.xml", "host-configs/host-master.xml", CoreResourceManagementTestCase.class.getSimpleName());
-        domainMasterLifecycleUtil = new DomainLifecycleUtil(masterConfig);
-
-        domainMasterLifecycleUtil.start();
-
-        final JBossAsManagedConfiguration slaveConfig = DomainTestUtil.getSlaveConfiguration("host-configs/host-slave.xml", CoreResourceManagementTestCase.class.getSimpleName());
-        domainSlaveLifecycleUtil = new DomainLifecycleUtil(slaveConfig);
-
-        // TODO replace synchronous start with async calls
-//        DomainTestUtil.startHosts(DomainTestUtil.domainBootTimeout, domainMasterLifecycleUtil, domainSlaveLifecycleUtil);
-
-        domainSlaveLifecycleUtil.start();
+        testSupport = new DomainTestSupport(CoreResourceManagementTestCase.class.getSimpleName(), "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
+        testSupport.start();
+        domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
+        domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-
-        // TODO replace synchronous stop with async calls
-//        if (domainMasterLifecycleUtil != null && domainSlaveLifecycleUtil != null) {
-//            DomainTestUtil.stopHosts(DomainTestUtil.domainShutdownTimeout, domainMasterLifecycleUtil, domainSlaveLifecycleUtil);
-//        }
-
-        try {
-            if (domainSlaveLifecycleUtil != null) {
-                domainSlaveLifecycleUtil.stop();
-            }
-        }   finally {
-            if (domainMasterLifecycleUtil != null) {
-                domainMasterLifecycleUtil.stop();
-            }
-        }
+        testSupport.stop();
     }
 
     @Test
@@ -317,18 +292,6 @@ public class CoreResourceManagementTestCase {
         response = slaveClient.execute(getReadChildrenNamesOperation(OTHER_RUNNING_SERVER_ADDRESS, SYSTEM_PROPERTY));
         returnVal = validateResponse(response);
         Assert.assertEquals(1, returnVal.asList().size());
-    }
-
-
-
-    private ModelNode validateResponse(ModelNode response) {
-
-        if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
-            Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
-        }
-
-        Assert.assertTrue("result exists", response.has(RESULT));
-        return response.get(RESULT);
     }
 
     private static ModelNode getSystemPropertyAddOperation(ModelNode address, String value, Boolean boottime) {

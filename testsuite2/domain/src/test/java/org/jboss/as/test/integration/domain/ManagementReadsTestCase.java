@@ -27,25 +27,21 @@ import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfigurat
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 
 /**
  * Test of various read operations against the domain controller.
@@ -54,43 +50,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  */
 public class ManagementReadsTestCase {
 
+    private static DomainTestSupport testSupport;
     private static DomainLifecycleUtil domainMasterLifecycleUtil;
     private static DomainLifecycleUtil domainSlaveLifecycleUtil;
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-
-        final JBossAsManagedConfiguration masterConfig = DomainTestUtil.getMasterConfiguration("domain-configs/domain-standard.xml", "host-configs/host-master.xml", ManagementReadsTestCase.class.getSimpleName());
-        domainMasterLifecycleUtil = new DomainLifecycleUtil(masterConfig);
-
-        domainMasterLifecycleUtil.start();
-
-        final JBossAsManagedConfiguration slaveConfig = DomainTestUtil.getSlaveConfiguration("host-configs/host-slave.xml", ManagementReadsTestCase.class.getSimpleName());
-        domainSlaveLifecycleUtil = new DomainLifecycleUtil(slaveConfig);
-
-        // TODO replace synchronous start with async calls
-//        DomainTestUtil.startHosts(DomainTestUtil.domainBootTimeout, domainMasterLifecycleUtil, domainSlaveLifecycleUtil);
-
-        domainSlaveLifecycleUtil.start();
+        testSupport = new DomainTestSupport(CoreResourceManagementTestCase.class.getSimpleName(), "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
+        testSupport.start();
+        domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
+        domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-
-        // TODO replace synchronous stop with async calls
-//        if (domainMasterLifecycleUtil != null && domainSlaveLifecycleUtil != null) {
-//            DomainTestUtil.stopHosts(DomainTestUtil.domainShutdownTimeout, domainMasterLifecycleUtil, domainSlaveLifecycleUtil);
-//        }
-
-        try {
-            if (domainSlaveLifecycleUtil != null) {
-                domainSlaveLifecycleUtil.stop();
-            }
-        }   finally {
-            if (domainMasterLifecycleUtil != null) {
-                domainMasterLifecycleUtil.stop();
-            }
-        }
+        testSupport.stop();
     }
 
     @Test
@@ -307,17 +281,5 @@ public class ManagementReadsTestCase {
         response = domainClient.execute(request);
         validateResponse(response);
         // TODO make some more assertions about result content
-    }
-
-
-
-    private ModelNode validateResponse(ModelNode response) {
-
-        if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
-            Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
-        }
-
-        Assert.assertTrue("result is defined", response.hasDefined(RESULT));
-        return response.get(RESULT);
     }
 }
