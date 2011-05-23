@@ -117,6 +117,7 @@
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
+            <socket-binding name="txn-socket-process-id" interface="loopback" port="4714"/>
             <socket-binding name="netty" port="5445" />
             <socket-binding name="netty-throughput" port="5455"/>
          </socket-binding-group>
