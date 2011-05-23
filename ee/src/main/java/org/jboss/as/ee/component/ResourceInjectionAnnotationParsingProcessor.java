@@ -52,7 +52,7 @@ import java.util.Map;
 public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUnitProcessor {
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
-    private static final Map<String, String> FIXED_LOCATIONS;
+    public static final Map<String, String> FIXED_LOCATIONS;
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();

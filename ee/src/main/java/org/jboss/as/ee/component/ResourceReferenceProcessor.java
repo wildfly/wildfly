@@ -82,8 +82,14 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             if (!isEmpty(envEntry.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
             } else {
-                //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
-                throw new RuntimeException("res-env-ref without a lookup-name isn't yet supported");
+                //check if it is a well known type
+                final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
+                if (lookup != null) {
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                } else {
+                    //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
+                    throw new RuntimeException("res-env-ref without a lookup-name isn't yet supported");
+                }
             }
             bindings.add(bindingConfiguration);
         }
