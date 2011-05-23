@@ -606,10 +606,10 @@ public class ComponentDescription {
             new ClassDescriptionTraversal(componentClassConfiguration, moduleConfiguration) {
                 @Override
                 public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(configuration.getModuleClass());
                     final MethodIdentifier componentPostConstructMethodIdentifier = classDescription.getPostConstructMethod();
-                    final ClassReflectionIndex<?> classIndex = deploymentReflectionIndex.getClassIndex(componentClassConfiguration.getModuleClass());
                     if (componentPostConstructMethodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classIndex, componentPostConstructMethodIdentifier);
+                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentPostConstructMethodIdentifier);
                         if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
                             InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
                             userPostConstruct.addLast(interceptorFactory);
@@ -617,7 +617,7 @@ public class ComponentDescription {
                     }
                     final MethodIdentifier componentPreDestroyMethodIdentifier = classDescription.getPreDestroyMethod();
                     if (componentPreDestroyMethodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classIndex, componentPreDestroyMethodIdentifier);
+                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentPreDestroyMethodIdentifier);
                         if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
                             InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true);
                             userPreDestroy.addLast(interceptorFactory);
@@ -625,7 +625,7 @@ public class ComponentDescription {
                     }
                     final MethodIdentifier componentAroundInvokeMethodIdentifier = classDescription.getAroundInvokeMethod();
                     if (componentAroundInvokeMethodIdentifier != null) {
-                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classIndex, componentAroundInvokeMethodIdentifier);
+                        final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentAroundInvokeMethodIdentifier);
 
                         if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
                             componentUserAroundInvoke.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
