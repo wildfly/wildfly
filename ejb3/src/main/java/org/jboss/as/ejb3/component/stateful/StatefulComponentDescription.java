@@ -25,7 +25,12 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -33,7 +38,10 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
@@ -44,10 +52,13 @@ import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * User: jpai
@@ -98,6 +109,38 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                         final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+
+        addStatefulSessionSynchronizationInterceptor();
+    }
+
+    private void addStatefulSessionSynchronizationInterceptor() {
+        // we must run before the DefaultFirstConfigurator
+        getConfigurators().addFirst(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                final InterceptorFactory interceptorFactory = new ComponentInstanceInterceptorFactory() {
+                    @Override
+                    protected Interceptor create(ComponentInstance instance, InterceptorFactoryContext context) {
+                        return new StatefulSessionSynchronizationInterceptor();
+                    }
+                };
+                // do not use configuration.getDefinedComponentMethods!!
+//                for (final Method method : configuration.getDefinedComponentMethods()) {
+//                    configuration.getComponentInterceptorDeque(method).add(interceptorFactory);
+//                }
+                final EEModuleClassConfiguration componentClassConfiguration = configuration.getModuleClassConfiguration();
+                final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
+                Class clazz = componentClassConfiguration.getModuleClass();
+                while (clazz != null) {
+                    final ClassReflectionIndex classIndex = deploymentReflectionIndex.getClassIndex(clazz);
+                    for (final Method method : (Collection<Method>) classIndex.getMethods()) {
+                        configuration.getComponentInterceptorDeque(method).add(interceptorFactory);
+                    }
+                    clazz = clazz.getSuperclass();
+                }
+            }
+        });
     }
 
     @Override

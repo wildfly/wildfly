@@ -119,5 +119,4 @@ public class BasicComponentInstance implements ComponentInstance {
     protected void finalize() {
         destroy();
     }
-
 }
