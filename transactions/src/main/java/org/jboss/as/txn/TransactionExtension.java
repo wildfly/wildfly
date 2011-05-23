@@ -23,43 +23,11 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.txn.CommonAttributes.BINDING;
-import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
-import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
-import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
-import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
-import static org.jboss.as.txn.CommonAttributes.PATH;
-import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.RELATIVE_TO;
-import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
-import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -75,6 +43,17 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.parsing.ParseUtils.*;
+import static org.jboss.as.txn.CommonAttributes.*;
 
 /**
  * The transaction managment extension.
@@ -221,8 +200,94 @@ public class TransactionExtension implements Extension {
             return coordinator;
         }
 
+        /**
+         * Handle the core-environment element and children
+         * @param reader
+         * @return ModelNode for the core-environment
+         * @throws XMLStreamException
+         */
         static ModelNode parseCoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+
             final ModelNode env = new ModelNode();
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i ++) {
+                requireNoNamespaceAttribute(reader, i);
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NODE_IDENTIFIER:
+                        env.get(NODE_IDENTIFIER).set(value);
+                        break;
+                    default:
+                        unexpectedAttribute(reader, i);
+                }
+            }
+            // elements
+            final EnumSet<Element> required = EnumSet.of(Element.PROCESS_ID);
+            final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                  case PROCESS_ID : {
+                      if (!encountered.add(element)) {
+                          throw duplicateNamedElement(reader, reader.getLocalName());
+                      }
+                    ModelNode processId = parseProcessIdEnvironmentElement(reader);
+                    env.get(CommonAttributes.PROCESS_ID).set(processId);
+
+                    break;
+                  }
+                  default:
+                     throw unexpectedElement(reader);
+               }
+            }
+            if (! required.isEmpty()) {
+                missingRequired(reader, required);
+            }
+            return env;
+        }
+
+        /**
+         * Handle the process-id child elements
+         * @param reader
+         * @return
+         * @throws XMLStreamException
+         */
+        static ModelNode parseProcessIdEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+
+            final ModelNode processId = new ModelNode();
+
+            // elements
+            final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                  case UUID:
+                      if (!encountered.add(element)) {
+                          throw duplicateNamedElement(reader, reader.getLocalName());
+                      }
+                      processId.get(CommonAttributes.UUID).set(element.getLocalName());
+                      requireNoContent(reader);
+                      break;
+                  case SOCKET: {
+                      if (!encountered.add(element)) {
+                          throw duplicateNamedElement(reader, reader.getLocalName());
+                      }
+                    ModelNode socketId = parseSocketProcessIdElement(reader);
+                    processId.get(CommonAttributes.SOCKET).set(socketId);
+                    break;
+                  }
+                  default:
+                     throw unexpectedElement(reader);
+               }
+            }
+
+            return processId;
+        }
+
+        static ModelNode parseSocketProcessIdElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+
+            final ModelNode socketId = new ModelNode();
             final int count = reader.getAttributeCount();
             final EnumSet<Attribute> required = EnumSet.of(Attribute.BINDING);
             for (int i = 0; i < count; i ++) {
@@ -232,13 +297,10 @@ public class TransactionExtension implements Extension {
                 required.remove(attribute);
                 switch (attribute) {
                     case BINDING:
-                        env.get(BINDING).set(value);
-                        break;
-                    case NODE_IDENTIFIER:
-                        env.get(NODE_IDENTIFIER).set(value);
+                        socketId.get(BINDING).set(value);
                         break;
                     case SOCKET_PROCESS_ID_MAX_PORTS:
-                        env.get(SOCKET_PROCESS_ID_MAX_PORTS).set(value);
+                        socketId.get(SOCKET_PROCESS_ID_MAX_PORTS).set(value);
                         break;
                     default:
                         unexpectedAttribute(reader, i);
@@ -249,7 +311,7 @@ public class TransactionExtension implements Extension {
             }
             // Handle elements
             requireNoContent(reader);
-            return env;
+            return socketId;
         }
 
         static ModelNode parseRecoveryEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -289,14 +351,11 @@ public class TransactionExtension implements Extension {
             if (has(node, CORE_ENVIRONMENT)) {
                 writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
                 final ModelNode core = node.get(CORE_ENVIRONMENT);
-                if (has(core, BINDING)) {
-                    writeAttribute(writer, Attribute.BINDING, core.get(BINDING));
+                if (has(core, PROCESS_ID)) {
+                    writeProcessId(writer, core.get(PROCESS_ID));
                 }
                 if (has(core, NODE_IDENTIFIER)) {
                     writeAttribute(writer, Attribute.NODE_IDENTIFIER, core.get(NODE_IDENTIFIER));
-                }
-                if (has(core, SOCKET_PROCESS_ID_MAX_PORTS)) {
-                    writeAttribute(writer, Attribute.SOCKET_PROCESS_ID_MAX_PORTS, core.get(SOCKET_PROCESS_ID_MAX_PORTS));
                 }
                 writer.writeEndElement();
             }
@@ -343,6 +402,23 @@ public class TransactionExtension implements Extension {
 
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
             writer.writeAttribute(attr.getLocalName(), value.asString());
+        }
+        private void writeProcessId(final XMLExtendedStreamWriter writer, final ModelNode value) throws XMLStreamException {
+            writer.writeStartElement(Element.PROCESS_ID.getLocalName());
+            if(has(value, Element.UUID.getLocalName())) {
+                writer.writeEmptyElement(Element.UUID.getLocalName());
+            }
+            else if(has(value, Element.SOCKET.getLocalName())) {
+                writer.writeStartElement(Element.SOCKET.getLocalName());
+                if (has(value, BINDING)) {
+                    writeAttribute(writer, Attribute.BINDING, value.get(BINDING));
+                }
+                if (has(value, SOCKET_PROCESS_ID_MAX_PORTS)) {
+                    writeAttribute(writer, Attribute.SOCKET_PROCESS_ID_MAX_PORTS, value.get(SOCKET_PROCESS_ID_MAX_PORTS));
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
         }
     }
 

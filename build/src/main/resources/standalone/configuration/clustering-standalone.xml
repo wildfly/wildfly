@@ -166,7 +166,9 @@
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-            <core-environment socket-binding="txn-socket-process-id"/>
+            <core-environment>
+                <process-id><uuid /></process-id>
+            </core-environment>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:connector:1.0">
             <archive-validation enabled="false" />
@@ -448,7 +450,6 @@
            <socket-binding name="remoting" port="4447"/>
            <socket-binding name="txn-recovery-environment" port="4712"/>
            <socket-binding name="txn-status-manager" port="4713"/>
-           <socket-binding name="txn-socket-process-id" port="4714"/>
            <socket-binding name="messaging" port="5445" />
            <socket-binding name="messaging-throughput" port="5455"/>
            <socket-binding name="jgroups-udp" port="55200" multicast-address="230.0.0.4" multicast-port="45688"/>

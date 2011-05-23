@@ -22,36 +22,15 @@
 
 package org.jboss.as.txn;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.txn.CommonAttributes.BINDING;
-import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
-import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
-import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
-import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
-import static org.jboss.as.txn.CommonAttributes.PATH;
-import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
-import static org.jboss.as.txn.CommonAttributes.RELATIVE_TO;
-import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.txn.CommonAttributes.*;
 
 /**
  * @author Emanuel Muckenhuber
@@ -92,18 +71,25 @@ class TransactionSubsystemProviders {
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.TRANSACTIONS_1_0.getUriString());
-
+            // core-environment
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, DESCRIPTION).set(bundle.getString("core-environment"));
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, REQUIRED).set(true);
+            // core-environment.node-identifier
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DESCRIPTION).set(bundle.getString("core-environment.node-identifier"));
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DEFAULT).set(1);
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, DESCRIPTION).set(bundle.getString("core-environment.socket-binding"));
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, MIN_LENGTH).set(1);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, REQUIRED).set(true);
+            // core-environment/process-id
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, DESCRIPTION).set(bundle.getString("core-environment.process-id"));
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, TYPE).set(ModelType.OBJECT);
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, MIN_LENGTH).set(1);
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, REQUIRED).set(true);
+            // core-environment/process-id/uuid
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, DESCRIPTION).set(bundle.getString("core-environment.process-id.uuid"));
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, MIN_LENGTH).set(0);
+            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, REQUIRED).set(false);
 
             /* Not currently used
             subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DESCRIPTION).set(bundle.getString("core-environment.socket-process-id-max-ports"));
@@ -166,10 +152,16 @@ class TransactionSubsystemProviders {
             op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DEFAULT).set(1);
             op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, DESCRIPTION).set(bundle.getString("core-environment.socket-binding"));
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, MIN_LENGTH).set(1);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, BINDING, REQUIRED).set(true);
+            // core-environment/process-id
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, DESCRIPTION).set(bundle.getString("core-environment.process-id"));
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, TYPE).set(ModelType.OBJECT);
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, MIN_LENGTH).set(1);
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, REQUIRED).set(true);
+            // core-environment/process-id/uuid
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, DESCRIPTION).set(bundle.getString("core-environment.process-id.uuid"));
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, TYPE).set(ModelType.STRING);
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, MIN_LENGTH).set(0);
+            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, REQUIRED).set(false);
 
             /* Not currently used
             subsystem.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DESCRIPTION).set(bundle.getString("core-environment.socket-process-id-max-ports"));
