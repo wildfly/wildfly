@@ -21,16 +21,20 @@
  */
 package org.jboss.as.web;
 
-import org.apache.catalina.InstanceEvent;
-import org.apache.catalina.InstanceListener;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.valves.ValveBase;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 /**
  * An InstanceListener used to push/pop the application naming context.
  *
  * @author Stuart Douglas
  */
-public class NamingListener implements InstanceListener {
+public class NamingValve extends ValveBase {
 
     private final NamespaceContextSelector selector;
 
@@ -41,31 +45,18 @@ public class NamingListener implements InstanceListener {
      */
     private static final ThreadLocal<NamespaceContextSelector> localSelector = new ThreadLocal<NamespaceContextSelector>();
 
-    public NamingListener() {
+    public NamingValve() {
         selector = localSelector.get();
         assert selector != null : "selector is null";
     }
 
-    public void instanceEvent(InstanceEvent event) {
-        String type = event.getType();
-        // Push the identity on the before init/destroy
-        if (type.equals(InstanceEvent.BEFORE_DISPATCH_EVENT)
-                || type.equals(InstanceEvent.BEFORE_REQUEST_EVENT)
-                || type.equals(InstanceEvent.BEFORE_DESTROY_EVENT)
-                || type.equals(InstanceEvent.BEFORE_INIT_EVENT)) {
-            // Push naming id
+    @Override
+    public void invoke(final Request request, final Response response) throws IOException, ServletException {
+        try {
             NamespaceContextSelector.pushCurrentSelector(selector);
-        }
-        // Pop the identity on the after init/destroy
-        else if (type.equals(InstanceEvent.AFTER_DISPATCH_EVENT)
-                || type.equals(InstanceEvent.AFTER_REQUEST_EVENT)
-                || type.equals(InstanceEvent.AFTER_DESTROY_EVENT)
-                || type.equals(InstanceEvent.AFTER_INIT_EVENT)) {
-            // Pop naming id
-            //TODO: This is statement should not be here, but afterDestroy is coming up twice
-            if(NamespaceContextSelector.getCurrentSelector() == selector) {
-                NamespaceContextSelector.popCurrentSelector();
-            }
+            getNext().invoke(request, response);
+        } finally {
+            NamespaceContextSelector.popCurrentSelector();
         }
     }
 

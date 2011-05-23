@@ -26,7 +26,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.web.NamingListener;
+import org.jboss.as.web.NamingValve;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -59,7 +59,7 @@ class WebDeploymentService implements Service<Context> {
 
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
         try {
-            NamingListener.beginComponentStart(namespaceSelector.getOptionalValue());
+            NamingValve.beginComponentStart(namespaceSelector.getOptionalValue());
             try {
                 try {
                     context.create();
@@ -73,7 +73,7 @@ class WebDeploymentService implements Service<Context> {
                 }
                 log.info("registering web context: " + context.getName());
             } finally {
-                NamingListener.endComponentStart();
+                NamingValve.endComponentStart();
             }
         } finally {
             JsfInjectionProvider.getInjectionContainer().set(null);

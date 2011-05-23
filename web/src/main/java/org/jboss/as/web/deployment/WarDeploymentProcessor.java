@@ -22,7 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
@@ -36,12 +35,13 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.web.NamingListener;
+import org.jboss.as.web.NamingValve;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -55,6 +55,7 @@ import org.jboss.vfs.VirtualFile;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -117,7 +118,16 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final StandardContext webContext = new StandardContext();
         final ContextConfig config = new JBossContextConfig(deploymentUnit);
 
-        webContext.addInstanceListener(NamingListener.class.getName());
+        List<ValveMetaData> valves = metaData.getValves();
+        if(valves == null) {
+            metaData.setValves(valves = new ArrayList<ValveMetaData>());
+        }
+        final ValveMetaData valve= new ValveMetaData();
+        valve.setModule("org.jboss.as.web");
+        valve.setValveClass(NamingValve.class.getName());
+        valve.setId(NamingValve.class.getName());
+        valves.add(valve);
+        //webContext.addInstanceListener(NamingValve.class.getName());
 
         // Set the deployment root
         try {
