@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -73,14 +74,16 @@ public class LsHandler extends CommandHandlerWithHelp {
                 ctx.printLine(e.getLocalizedMessage());
             }
         } else {
-            address = ctx.getPrefix();
+            address = new DefaultOperationRequestAddress(ctx.getPrefix());
         }
 
         final List<String> names;
         if(address.endsOnType()) {
-            names = ctx.getOperationCandidatesProvider().getNodeNames(address);
+            final String type = address.getNodeType();
+            address.toParentNode();
+            names = Util.getNodeNames(ctx.getModelControllerClient(), address, type);
         } else {
-            names = ctx.getOperationCandidatesProvider().getNodeTypes(address);
+            names = Util.getNodeTypes(ctx.getModelControllerClient(), address);
         }
 
         printList(ctx, names, l.isPresent(ctx.getParsedArguments()));

@@ -124,8 +124,105 @@ public class CommandLineMain {
 
     public static void main(String[] args) throws Exception {
 
-        final jline.ConsoleReader console = initConsoleReader();
+        String argError = null;
+        String[] commands = null;
+        File file = null;
+        boolean connect = false;
+        String defaultControllerHost = null;
+        int defaultControllerPort = -1;
+        for(String arg : args) {
+            if(arg.startsWith("controller=")) {
+                String value = arg.substring(11);
+                String portStr = null;
+                int colonIndex = value.indexOf(':');
+                if(colonIndex < 0) {
+                    // default port
+                    defaultControllerHost = value;
+                } else if(colonIndex == 0) {
+                    // default host
+                    portStr = value.substring(1);
+                } else {
+                    defaultControllerHost = value.substring(0, colonIndex);
+                    portStr = value.substring(colonIndex + 1);
+                }
 
+                if(portStr != null) {
+                    int port = -1;
+                    try {
+                        port = Integer.parseInt(portStr);
+                        if(port < 0) {
+                            argError = "The port must be a valid non-negative integer: '" + args + "'";
+                        } else {
+                            defaultControllerPort = port;
+                        }
+                    } catch(NumberFormatException e) {
+                        argError = "The port must be a valid non-negative integer: '" + arg + "'";
+                    }
+                }
+            } else if("--connect".equals(arg)) {
+                connect = true;
+            } else if(arg.startsWith("file=")) {
+                if(file != null) {
+                    argError = "Duplicate argument 'file'.";
+                    break;
+                }
+                if(commands != null) {
+                    argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                    break;
+                }
+
+                final String fileName = arg.substring(5);
+                if(!fileName.isEmpty()) {
+                    file = new File(fileName);
+                    if(!file.exists()) {
+                        argError = "File " + file.getAbsolutePath() + " doesn't exist.";
+                        break;
+                    }
+                } else {
+                    argError = "Argument 'file' is missing value.";
+                    break;
+                }
+            } else if(arg.startsWith("commands=")) {
+                if(file != null) {
+                    argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                    break;
+                }
+                if(commands != null) {
+                    argError = "Duplicate argument 'command'/'commands'.";
+                    break;
+                }
+                commands = arg.substring(9).split(",+");
+            } else if(arg.startsWith("command=")) {
+                if(file != null) {
+                    argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
+                    break;
+                }
+                if(commands != null) {
+                    argError = "Duplicate argument 'command'/'commands'.";
+                    break;
+                }
+                commands = new String[]{arg.substring(8)};
+            }
+        }
+
+        if(argError != null) {
+            System.err.println(argError);
+            return;
+        }
+
+        if(file != null) {
+            processFile(file, defaultControllerHost, defaultControllerPort, connect);
+            return;
+        }
+
+        if(commands != null) {
+            processCommands(commands, defaultControllerHost, defaultControllerPort, connect);
+            return;
+        }
+
+        // Interactive mode
+
+        final jline.ConsoleReader console = initConsoleReader();
         final CommandContextImpl cmdCtx = new CommandContextImpl(console);
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -135,47 +232,11 @@ public class CommandLineMain {
         }));
         console.addCompletor(cmdCtx.cmdCompleter);
 
-        String[] commands = null;
-        String fileName = null;
-        boolean connect = false;
-        for(String arg : args) {
-            if(arg.startsWith("controller=")) {
-                String value = arg.substring(11);
-                String portStr = null;
-                int colonIndex = value.indexOf(':');
-                if(colonIndex < 0) {
-                    // default port
-                    cmdCtx.defaultControllerHost = value;
-                } else if(colonIndex == 0) {
-                    // default host
-                    portStr = value.substring(1);
-                } else {
-                    cmdCtx.defaultControllerHost = value.substring(0, colonIndex);
-                    portStr = value.substring(colonIndex + 1);
-                }
-
-                if(portStr != null) {
-                    int port = -1;
-                    try {
-                        port = Integer.parseInt(portStr);
-                        if(port < 0) {
-                            cmdCtx.printLine("The port must be a valid non-negative integer: '" + args + "'");
-                        } else {
-                            cmdCtx.defaultControllerPort = port;
-                        }
-                    } catch(NumberFormatException e) {
-                        cmdCtx.printLine("The port must be a valid non-negative integer: '" + arg + "'");
-                    }
-                }
-            } else if("--connect".equals(arg)) {
-                connect = true;
-            } else if(arg.startsWith("file=")) {
-                fileName = arg.substring(5);
-            } else if(arg.startsWith("commands=")) {
-                commands = arg.substring(9).split(",+");
-            } else if(arg.startsWith("command=")) {
-                commands = new String[]{arg.substring(8)};
-            }
+        if(defaultControllerHost != null) {
+            cmdCtx.defaultControllerHost = defaultControllerHost;
+        }
+        if(defaultControllerPort != -1) {
+            cmdCtx.defaultControllerPort = defaultControllerPort;
         }
 
         if(connect) {
@@ -186,40 +247,6 @@ public class CommandLineMain {
                 " 'help' for the list of supported commands.");
         }
 
-        if(fileName != null && !fileName.isEmpty()) {
-            File f = new File(fileName);
-            if(!f.exists()) {
-                cmdCtx.printLine("File " + f.getAbsolutePath() + " doesn't exist.");
-            } else {
-                BufferedReader reader = new BufferedReader(new FileReader(f));
-                try {
-                    String line = reader.readLine();
-                    while(!cmdCtx.terminate && line != null) {
-                        processLine(cmdCtx, line.trim());
-                        line = reader.readLine();
-                    }
-                } finally {
-                    StreamUtils.safeClose(reader);
-                    if(!cmdCtx.terminate) {
-                        cmdCtx.terminateSession();
-                    }
-                    cmdCtx.disconnectController();
-                }
-                return;
-            }
-        }
-
-        if(commands != null) {
-            for(int i = 0; i < commands.length && !cmdCtx.terminate; ++i) {
-                processLine(cmdCtx, commands[i]);
-            }
-            if(!cmdCtx.terminate) {
-                cmdCtx.terminateSession();
-            }
-            cmdCtx.disconnectController();
-            return;
-        }
-
         try {
             while (!cmdCtx.terminate) {
                 String line = console.readLine(cmdCtx.getPrompt()).trim();
@@ -227,6 +254,80 @@ public class CommandLineMain {
             }
         } finally {
             cmdCtx.disconnectController();
+        }
+    }
+
+    private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect) {
+
+        final CommandContextImpl cmdCtx = new CommandContextImpl();
+        SecurityActions.addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                cmdCtx.disconnectController(!connect);
+            }
+        }));
+
+        if(defaultControllerHost != null) {
+            cmdCtx.defaultControllerHost = defaultControllerHost;
+        }
+        if(defaultControllerPort != -1) {
+            cmdCtx.defaultControllerPort = defaultControllerPort;
+        }
+
+        if(connect) {
+            cmdCtx.connectController(null, -1, false);
+        }
+
+        try {
+            for (int i = 0; i < commands.length && !cmdCtx.terminate; ++i) {
+                processLine(cmdCtx, commands[i]);
+            }
+        } finally {
+            if (!cmdCtx.terminate) {
+                cmdCtx.terminateSession();
+            }
+            cmdCtx.disconnectController(!connect);
+        }
+    }
+
+    private static void processFile(File file, String defaultControllerHost, int defaultControllerPort, final boolean connect) {
+
+        final CommandContextImpl cmdCtx = new CommandContextImpl();
+        SecurityActions.addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                cmdCtx.disconnectController(!connect);
+            }
+        }));
+
+        if(defaultControllerHost != null) {
+            cmdCtx.defaultControllerHost = defaultControllerHost;
+        }
+        if(defaultControllerPort != -1) {
+            cmdCtx.defaultControllerPort = defaultControllerPort;
+        }
+
+        if(connect) {
+            cmdCtx.connectController(null, -1, false);
+        }
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            String line = reader.readLine();
+            while (!cmdCtx.terminate && line != null) {
+                processLine(cmdCtx, line.trim());
+                line = reader.readLine();
+            }
+        } catch (Exception e) {
+            cmdCtx.printLine("Failed to process file '" + file.getAbsolutePath() + "'");
+            e.printStackTrace();
+        } finally {
+            StreamUtils.safeClose(reader);
+            if (!cmdCtx.terminate) {
+                cmdCtx.terminateSession();
+            }
+            cmdCtx.disconnectController(!connect);
         }
     }
 
@@ -380,6 +481,20 @@ public class CommandLineMain {
         /** the default command completer */
         private final CommandCompleter cmdCompleter;
 
+        /**
+         * Non-interactive mode
+         */
+        private CommandContextImpl() {
+            this.console = null;
+            this.history = null;
+            this.operationCandidatesProvider = null;
+            this.cmdCompleter = null;
+            operationHandler = new OperationRequestHandler();
+        }
+
+        /**
+         * Interactive mode
+         */
         private CommandContextImpl(jline.ConsoleReader console) {
             this.console = console;
 
@@ -417,20 +532,30 @@ public class CommandLineMain {
 
         @Override
         public void printLine(String message) {
-            try {
-                console.printString(message);
-                console.printNewline();
-            } catch (IOException e) {
-                System.err.println("Failed to print '" + message + "' to the console: " + e.getLocalizedMessage());
+            if (console != null) {
+                try {
+                    console.printString(message);
+                    console.printNewline();
+                } catch (IOException e) {
+                    System.err.println("Failed to print '" + message + "' to the console: " + e.getLocalizedMessage());
+                }
+            } else { // non-interactive mode
+                System.out.println(message);
             }
         }
 
         @Override
         public void printColumns(Collection<String> col) {
-            try {
-                console.printColumns(col);
-            } catch (IOException e) {
-                System.err.println("Failed to print columns '" + col + "' to the console: " + e.getLocalizedMessage());
+            if (console != null) {
+                try {
+                    console.printColumns(col);
+                } catch (IOException e) {
+                    System.err.println("Failed to print columns '" + col + "' to the console: " + e.getLocalizedMessage());
+                }
+            } else { // non interactive mode
+                for(String item : col) {
+                    System.out.println(item);
+                }
             }
         }
 
@@ -470,8 +595,7 @@ public class CommandLineMain {
             return operationCandidatesProvider;
         }
 
-        @Override
-        public void connectController(String host, int port) {
+        private void connectController(String host, int port, boolean loggingEnabled) {
             if(host == null) {
                 host = defaultControllerHost;
             }
@@ -483,15 +607,17 @@ public class CommandLineMain {
             try {
                 ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
                 if(this.client != null) {
-                    disconnectController();
+                    disconnectController(loggingEnabled);
                 }
 
                 List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
                 if (!nodeTypes.isEmpty()) {
                     domainMode = nodeTypes.contains("server-group");
-                    printLine("Connected to "
+                    if(loggingEnabled) {
+                        printLine("Connected to "
                             + (domainMode ? "domain controller at " : "standalone controller at ")
                             + host + ":" + port);
+                    }
                     client = newClient;
                     this.controllerHost = host;
                     this.controllerPort = port;
@@ -504,16 +630,27 @@ public class CommandLineMain {
         }
 
         @Override
-        public void disconnectController() {
+        public void connectController(String host, int port) {
+            connectController(host, port, true);
+        }
+
+        private void disconnectController(boolean loggingEnabled) {
             if(this.client != null) {
                 StreamUtils.safeClose(client);
-                printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+                if(loggingEnabled) {
+                    printLine("Closed connection to " + this.controllerHost + ':' + this.controllerPort);
+                }
                 client = null;
                 this.controllerHost = null;
                 this.controllerPort = -1;
                 domainMode = false;
             }
             promptConnectPart = null;
+        }
+
+        @Override
+        public void disconnectController() {
+            disconnectController(true);
         }
 
         @Override
