@@ -70,9 +70,11 @@ public class ServerReloadHandler implements ServerOperationHandler, DescriptionP
                             controller.setMode(ServiceController.Mode.NEVER);
                         }
 
-                        public void serviceStopped(final ServiceController<?> controller) {
-                            controller.removeListener(this);
-                            controller.setMode(ServiceController.Mode.ACTIVE);
+                        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                            if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
+                                controller.removeListener(this);
+                                controller.setMode(ServiceController.Mode.ACTIVE);
+                            }
                         }
                     });
                 }

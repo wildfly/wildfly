@@ -185,7 +185,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final FutureServiceContainer futureContainer;
         final Configuration configuration;
 
-        public BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer, Configuration configuration) {
+        BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer, Configuration configuration) {
             super(serviceContainer, startTime, serviceTarget);
             this.futureContainer = futureContainer;
             this.configuration = configuration;

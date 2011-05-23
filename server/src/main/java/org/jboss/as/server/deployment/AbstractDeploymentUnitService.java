@@ -173,21 +173,22 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
             servicesMissingDependencies.add(controller);
         }
 
-        public synchronized void failedServiceStarting(final ServiceController<? extends Object> controller) {
-            startFailedServices.remove(controller);
-        }
-
-        public synchronized void serviceStarting(final ServiceController<?> controller) {
-            startFailedServices.remove(controller);
-        }
-
-        public synchronized void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-            startFailedServices.add(controller);
-        }
-
-        public synchronized void serviceRemoved(final ServiceController<?> controller) {
-            startFailedServices.remove(controller);
-            servicesMissingDependencies.remove(controller);
+        public synchronized void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+            switch (transition) {
+                case REMOVING_to_REMOVED: {
+                    servicesMissingDependencies.remove(controller);
+                    // fall through
+                }
+                case START_FAILED_to_DOWN:
+                case START_FAILED_to_STARTING: {
+                    startFailedServices.remove(controller);
+                    break;
+                }
+                case STARTING_to_START_FAILED: {
+                    startFailedServices.add(controller);
+                    break;
+                }
+            }
         }
     }
 }

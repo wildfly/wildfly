@@ -113,9 +113,10 @@ public class DeploymentHandlerUtil {
                     .install();
             contentService.addListener(new AbstractServiceListener<Object>() {
                 @Override
-                public void serviceRemoved(ServiceController<? extends Object> controller) {
-                    controller.removeListener(this);
-                    deploymentUnitController.setMode(REMOVE);
+                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                    if (transition == ServiceController.Transition.REMOVING_to_REMOVED) {
+                        deploymentUnitController.setMode(REMOVE);
+                    }
                 }
             });
         }
@@ -130,11 +131,14 @@ public class DeploymentHandlerUtil {
             if (controller != null) {
                 controller.addListener(new AbstractServiceListener<Object>() {
                     @Override
-                    public void serviceRemoved(ServiceController<? extends Object> serviceController) {
-                        controller.removeListener(this);
-                        latch.countDown();
-                        if(ticket.decrementAndGet() == 0)
-                            action.run();
+                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                        if (transition == ServiceController.Transition.REMOVING_to_REMOVED) {
+                            controller.removeListener(this);
+                            latch.countDown();
+                            if (ticket.decrementAndGet() == 0) {
+                                action.run();
+                            }
+                        }
                     }
                 });
             }

@@ -109,16 +109,18 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
             }
 
             @Override
-            public void serviceStarted(ServiceController<? extends Bundle> controller) {
-                ServiceName key = controller.getName();
-                Tuple value = pendingServices.get(key);
-                startedServices.put(key, value);
-                processService(controller);
-            }
-
-            @Override
-            public void serviceFailed(ServiceController<? extends Bundle> controller, StartException reason) {
-                processService(controller);
+            public void transition(final ServiceController<? extends Bundle> controller, final ServiceController.Transition transition) {
+                if (transition.getBefore() == ServiceController.Substate.STARTING) {
+                    switch (transition.getAfter()) {
+                        case UP:
+                            ServiceName key = controller.getName();
+                            Tuple value = pendingServices.get(key);
+                            startedServices.put(key, value);
+                            // fall thru
+                        case START_FAILED:
+                            processService(controller);
+                    }
+                }
             }
 
             private void processService(ServiceController<? extends Bundle> controller) {

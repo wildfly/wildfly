@@ -95,15 +95,17 @@ public class HostControllerBootstrap {
         final ExtensibleConfigurationPersister configurationPersister = createHostConfigurationPersister(configDir, configurationFile);
 
         // The first step is to load the host model, this also ensures there are no parsing errors before we
-        // spend time initialising enything else.
+        // spend time initialising anything else.
         final List<ModelNode> operations = configurationPersister.load();
 
         // The first default services are registered before the bootstrap operations are executed.
         final ServiceTarget serviceTarget = serviceContainer;
         serviceTarget.addListener(new AbstractServiceListener<Object>() {
             @Override
-            public void serviceFailed(final ServiceController<?> serviceController, final StartException reason) {
-                log.errorf(reason, "Service [%s] failed.", serviceController.getName());
+            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                if (transition == ServiceController.Transition.STARTING_to_START_FAILED) {
+                    log.errorf(controller.getStartException(), "Service [%s] failed.", controller.getName());
+                }
             }
         });
 

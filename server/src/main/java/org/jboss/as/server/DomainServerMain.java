@@ -212,9 +212,11 @@ public final class DomainServerMain {
             this.name = name;
         }
 
-        public void serviceRemoved(ServiceController<?> controller) {
-            if (controller.getName().equals(name)){
-                latch.countDown();
+        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+            if (transition == ServiceController.Transition.REMOVING_to_REMOVED) {
+                if (controller.getName().equals(name)){
+                    latch.countDown();
+                }
             }
         }
     }

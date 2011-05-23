@@ -35,7 +35,6 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.StartException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -85,91 +84,36 @@ final class ContainerStateMonitor extends AbstractServiceListener<Object> {
     }
 
     @Override
-    public void serviceWaiting(final ServiceController<?> controller) {
-        tick();
-    }
-
-    @Override
-    public void serviceWaitingCleared(final ServiceController<?> controller) {
-        untick();
-    }
-
-    @Override
-    public void serviceWontStart(final ServiceController<?> controller) {
-        tick();
-    }
-
-    @Override
-    public void serviceWontStartCleared(final ServiceController<?> controller) {
-        untick();
-    }
-
-    @Override
-    public void dependencyProblem(final ServiceController<?> controller) {
-        tick();
-    }
-
-    @Override
-    public void dependencyProblemCleared(final ServiceController<?> controller) {
-        untick();
-    }
-
-    @Override
-    public void serviceStarting(final ServiceController<?> controller) {
-        // no tick
-    }
-
-    @Override
-    public void serviceStarted(final ServiceController<?> controller) {
-        tick();
-    }
-
-    @Override
-    public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-        synchronized (this) {
-            failedControllers.put(controller, reason.toString());
+    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+        switch (transition) {
+            case STARTING_to_START_FAILED: {
+                synchronized (this) {
+                    failedControllers.put(controller, controller.getStartException().toString());
+                }
+                break;
+            }
+            case REMOVING_to_REMOVED: {
+                synchronized (this) {
+                    failedControllers.remove(controller);
+                    servicesWithMissingDeps.remove(controller);
+                }
+                break;
+            }
+            case START_FAILED_to_DOWN:
+            case START_FAILED_to_STARTING: {
+                synchronized (this) {
+                    failedControllers.remove(controller);
+                }
+                break;
+            }
         }
-        tick();
-    }
-
-    @Override
-    public void serviceRemoved(final ServiceController<?> controller) {
-        synchronized (this) {
-            failedControllers.remove(controller);
-            servicesWithMissingDeps.remove(controller);
+        final ServiceController.Substate before = transition.getBefore();
+        final ServiceController.Substate after = transition.getAfter();
+        if (before.isRestState() && ! after.isRestState()) {
+            untick();
+        } else if (! before.isRestState() && after.isRestState()) {
+            tick();
         }
-        tick();
-    }
-
-    @Override
-    public void serviceStopRequested(final ServiceController<?> controller) {
-        untick();
-    }
-
-    @Override
-    public void serviceStopRequestCleared(final ServiceController<?> controller) {
-        tick();
-    }
-
-    @Override
-    public void serviceStopping(final ServiceController<?> controller) {
-        // no tick
-    }
-
-    @Override
-    public void failedServiceStarting(final ServiceController<?> controller) {
-        synchronized (this) {
-            failedControllers.remove(controller);
-        }
-        untick();
-    }
-
-    @Override
-    public void failedServiceStopped(final ServiceController<?> controller) {
-        synchronized (this) {
-            failedControllers.remove(controller);
-        }
-        untick();
     }
 
     @Override
