@@ -23,14 +23,12 @@
 package org.jboss.as.txn;
 
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
-import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
-import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -63,19 +61,14 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
-    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private ObjStoreBrowser objStoreBrowser;
 
-    private String coreNodeIdentifier;
-    private int coreSocketProcessIdMaxPorts;
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
 
-    ArjunaTransactionManagerService(final String coreNodeIdentifier, final int coreSocketProcessIdMaxPorts, final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout) {
-        this.coreNodeIdentifier = coreNodeIdentifier;
-        this.coreSocketProcessIdMaxPorts = coreSocketProcessIdMaxPorts;
+    ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
     }
@@ -87,14 +80,6 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         setContextLoader(ArjunaTransactionManagerService.class.getClassLoader());
 
         try {
-            // Global configuration.
-            final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
-            if(coreEnvironmentBean.getProcessImplementationClassName() == null) {
-                UuidProcessId id = new UuidProcessId();
-                coreEnvironmentBean.setProcessImplementation(id);
-            }
-            coreEnvironmentBean.setNodeIdentifier(coreNodeIdentifier);
-            coreEnvironmentBean.setSocketProcessIdMaxPorts(coreSocketProcessIdMaxPorts);
 
             final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
             jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
@@ -193,7 +178,4 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         return orbInjector;
     }
 
-    Injector<SocketBinding> getSocketProcessBindingInjector() {
-        return socketProcessBindingInjector;
-    }
 }

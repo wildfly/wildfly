@@ -32,6 +32,10 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN = ServiceName.JBOSS.append("txn");
 
+    public static final ServiceName JBOSS_TXN_PATHS = JBOSS_TXN.append("paths");
+
+    public static final ServiceName JBOSS_TXN_CORE_ENVIRONMENT = JBOSS_TXN.append("CoreEnvironment");
+
     public static final ServiceName JBOSS_TXN_XA_TERMINATOR = JBOSS_TXN.append("XATerminator");
 
     public static final ServiceName JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT = JBOSS_TXN.append("ArjunaObjectStoreEnvironment");
