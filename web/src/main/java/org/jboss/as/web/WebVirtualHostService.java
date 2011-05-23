@@ -40,7 +40,7 @@ import org.jboss.web.rewrite.RewriteValve;
  *
  * @author Emanuel Muckenhuber
  */
-class WebVirtualHostService implements Service<VirtualHost> {
+public class WebVirtualHostService implements Service<VirtualHost> {
 
     private final String name;
     private final String[] aliases;
@@ -121,15 +121,15 @@ class WebVirtualHostService implements Service<VirtualHost> {
         this.defaultWebModule = defaultWebModule;
     }
 
-    InjectedValue<String> getAccessLogPathInjector() {
+    public InjectedValue<String> getAccessLogPathInjector() {
         return accessLogPathInjector;
     }
 
-    InjectedValue<String> getTempPathInjector() {
+    public InjectedValue<String> getTempPathInjector() {
         return tempPathInjector;
     }
 
-    InjectedValue<WebServer> getWebServer() {
+    public InjectedValue<WebServer> getWebServer() {
         return webServer;
     }
 
