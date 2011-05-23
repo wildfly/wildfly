@@ -52,6 +52,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
+import javax.ejb.SessionBean;
 import javax.ejb.TransactionManagementType;
 import java.util.Arrays;
 import java.util.Collection;
@@ -446,15 +447,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // let super do it's job first
         super.setupViewInterceptors(view);
 
-        //equals/hashCode
-        view.getConfigurators().addLast(new ViewConfigurator() {
-            @Override
-            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptorToFront(ComponentTypeIdentityInterceptorFactory.INSTANCE);
-            }
-        });
         // current invocation
-
 
         // tx management interceptor(s)
         this.addTxManagementInterceptorForView(view);
@@ -495,6 +488,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                if(SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
+                    configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(SessionBeanSessionContextInjectionInterceptor.INSTANCE));
+                }
                 configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()));
             }
         });
