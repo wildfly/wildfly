@@ -52,6 +52,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final Map<String, ServiceName> viewServices;
 
+    private final ComponentConfiguration componentConfiguration;
+
     /**
      * Construct a new instance.
      *
@@ -59,6 +61,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
      */
     public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
         super(componentConfiguration);
+
+        this.componentConfiguration = componentConfiguration;
 
         this.ejbJarConfiguration = ejbJarConfiguration;
 
@@ -95,6 +99,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
         this.viewServices = viewServices;
+    }
+
+    public ComponentConfiguration getComponentConfiguration() {
+        return componentConfiguration;
     }
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {

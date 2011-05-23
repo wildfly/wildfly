@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.session;
 
 
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
@@ -42,6 +43,7 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -49,6 +51,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -73,27 +78,29 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         super(ejbComponentCreateService);
         viewServices = ejbComponentCreateService.getViewServices();
 
-//        AccessTimeout accessTimeout = ejbComponentCreateService.getBeanLevelAccessTimeout();
-//        // TODO: the configuration should always have an access timeout
-//        if (accessTimeout == null) {
-//            accessTimeout = new AccessTimeout() {
-//                @Override
-//                public long value() {
-//                    return 5;
-//                }
-//
-//                @Override
-//                public TimeUnit unit() {
-//                    return MINUTES;
-//                }
-//
-//                @Override
-//                public Class<? extends Annotation> annotationType() {
-//                    return AccessTimeout.class;
-//                }
-//            };
-//        }
-//        this.beanLevelAccessTimeout = accessTimeout;
+        ComponentConfiguration configuration = ejbComponentCreateService.getComponentConfiguration();
+        SessionBeanComponentDescription description = (SessionBeanComponentDescription) configuration.getComponentDescription();
+        AccessTimeout accessTimeout = description.getBeanLevelAccessTimeout();
+        // TODO: the configuration should always have an access timeout
+        if (accessTimeout == null) {
+            accessTimeout = new AccessTimeout() {
+                @Override
+                public long value() {
+                    return 5;
+                }
+
+                @Override
+                public TimeUnit unit() {
+                    return MINUTES;
+                }
+
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return AccessTimeout.class;
+                }
+            };
+        }
+        this.beanLevelAccessTimeout = accessTimeout;
         this.asynchronousMethods = null; //ejbComponentCreateService.getAsynchronousMethods();
 //        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
     }
