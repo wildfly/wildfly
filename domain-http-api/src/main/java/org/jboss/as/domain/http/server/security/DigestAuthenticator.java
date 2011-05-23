@@ -35,7 +35,6 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -53,8 +52,6 @@ import org.jboss.com.sun.net.httpserver.HttpPrincipal;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class DigestAuthenticator extends Authenticator {
-
-    private Map<InetSocketAddress, DigestContext> authentications = new HashMap<InetSocketAddress, DigestContext>();
 
     private final NonceFactory nonceFactory = new NonceFactory();
 
@@ -79,7 +76,7 @@ public class DigestAuthenticator extends Authenticator {
     @Override
     public Result authenticate(HttpExchange httpExchange) {
         // If authentication has already completed for this connection re-use it.
-        DigestContext context = getOrCreateNegotiationContext(httpExchange.getRemoteAddress());
+        DigestContext context = getOrCreateNegotiationContext(httpExchange);
         if (context.isAuthenticated()) {
             return new Authenticator.Success(context.getPrincipal());
         }
@@ -328,20 +325,20 @@ public class DigestAuthenticator extends Authenticator {
     }
 
 
-    private DigestContext getOrCreateNegotiationContext(InetSocketAddress remoteAddress) {
-        DigestContext context = null;
-        synchronized (authentications) {
-            context = authentications.get(remoteAddress);
-            if (context == null) {
-                context = new DigestContext();
-                authentications.put(remoteAddress, context);
-            }
+    private DigestContext getOrCreateNegotiationContext(HttpExchange httpExchange) {
+        DigestContext context = (DigestContext) httpExchange.getAttribute(DigestContext.KEY, HttpExchange.AttributeScope.CONNECTION);
+        if (context == null) {
+            context = new DigestContext();
+            httpExchange.setAttribute(DigestContext.KEY, context, HttpExchange.AttributeScope.CONNECTION);
         }
+
         return context;
     }
 
 
     private class DigestContext {
+
+        private static final String KEY = "DIGEST_CONTEXT";
 
         private HttpPrincipal principal = null;
 
