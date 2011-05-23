@@ -113,7 +113,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
             }
             return (T) instance.createProxy();
         } else {
-            throw new IllegalArgumentException("View of type " + businessInterface + " not found on bean " + this);
+            throw new IllegalStateException("View of type " + businessInterface + " not found on bean " + this);
         }
 
     }
