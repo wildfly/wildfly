@@ -62,7 +62,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Emanuel Muckenhuber
  */
-class JMSServices {
+public class JMSServices {
 
     public static final ServiceName JMS = MessagingServices.JBOSS_MESSAGING.append("jms");
     public static final ServiceName JMS_MANAGER = JMS.append("manager");

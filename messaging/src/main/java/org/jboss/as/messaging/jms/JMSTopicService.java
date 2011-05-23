@@ -96,7 +96,7 @@ public class JMSTopicService implements Service<Void> {
         return null;
     }
 
-    InjectedValue<JMSServerManager> getJmsServer() {
+    public InjectedValue<JMSServerManager> getJmsServer() {
         return jmsServer;
     }
 

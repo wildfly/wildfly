@@ -45,7 +45,7 @@ import java.util.Map;
  *
  * @author Emanuel Muckenhuber
  */
-class JMSQueueService implements Service<Void> {
+public class JMSQueueService implements Service<Void> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
 
@@ -100,7 +100,7 @@ class JMSQueueService implements Service<Void> {
         return null;
     }
 
-    InjectedValue<JMSServerManager> getJmsServer() {
+    public InjectedValue<JMSServerManager> getJmsServer() {
         return jmsServer;
     }
 
