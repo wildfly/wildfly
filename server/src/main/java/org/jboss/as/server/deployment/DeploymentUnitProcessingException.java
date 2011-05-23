@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.msc.service.Location;
-
 /**
  * An exception which is thrown when deployment unit processing fails.  This can occur as a result of a failure
  * to parse a descriptor, an error transforming a descriptor, an error preparing a deployment item, or other causes.
@@ -31,18 +29,6 @@ import org.jboss.msc.service.Location;
 public class DeploymentUnitProcessingException extends DeploymentException {
 
     private static final long serialVersionUID = -3242784227234412566L;
-
-    private final Location location;
-
-    /**
-     * Constructs a {@code DeploymentUnitProcessingException} with no detail message. The cause is not initialized, and may
-     * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
-     *
-     * @param location the location at which the processing error occurred
-     */
-    public DeploymentUnitProcessingException(final Location location) {
-        this.location = location;
-    }
 
     /**
      * Constructs a {@code DeploymentUnitProcessingException} with the specified detail message. The cause is not
@@ -52,19 +38,6 @@ public class DeploymentUnitProcessingException extends DeploymentException {
      */
     public DeploymentUnitProcessingException(final String msg) {
         super(msg);
-        this.location = new Location(this.getStackTrace()[0].getFileName(), this.getStackTrace()[0].getLineNumber(), -1, null);
-    }
-
-    /**
-     * Constructs a {@code DeploymentUnitProcessingException} with the specified detail message. The cause is not
-     * initialized, and may subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
-     *
-     * @param msg the detail message
-     * @param location the location at which the processing error occurred
-     */
-    public DeploymentUnitProcessingException(final String msg, final Location location) {
-        super(msg);
-        this.location = location;
     }
 
     /**
@@ -76,21 +49,6 @@ public class DeploymentUnitProcessingException extends DeploymentException {
      */
     public DeploymentUnitProcessingException(final Throwable cause) {
         super(cause);
-        this.location = new Location(cause.getStackTrace()[0].getFileName(), cause.getStackTrace()[0].getLineNumber(), -1, null);
-    }
-
-
-    /**
-     * Constructs a {@code DeploymentUnitProcessingException} with the specified cause. The detail message is set to:
-     * <pre>(cause == null ? null : cause.toString())</pre>
-     * (which typically contains the class and detail message of {@code cause}).
-     *
-     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
-     * @param location the location at which the processing error occurred
-     */
-    public DeploymentUnitProcessingException(final Throwable cause, final Location location) {
-        super(cause);
-        this.location = location;
     }
 
     /**
@@ -101,27 +59,5 @@ public class DeploymentUnitProcessingException extends DeploymentException {
      */
     public DeploymentUnitProcessingException(final String msg, final Throwable cause) {
         super(msg, cause);
-        this.location = new Location(cause.getStackTrace()[0].getFileName(), cause.getStackTrace()[0].getLineNumber(), -1, null);
-    }
-
-    /**
-     * Constructs a {@code DeploymentUnitProcessingException} with the specified detail message and cause.
-     *
-     * @param msg the detail message
-     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
-     * @param location the location at which the processing error occurred
-     */
-    public DeploymentUnitProcessingException(final String msg, final Throwable cause, final Location location) {
-        super(msg, cause);
-        this.location = location;
-    }
-
-    /**
-     * Get the location at which this exception occurred, or {@code null} if it is unknown.
-     *
-     * @return the location
-     */
-    public Location getLocation() {
-        return location;
     }
 }

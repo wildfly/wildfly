@@ -141,20 +141,21 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
                                     binderService.getManagedObjectInjector())
                             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
                                     binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                                @Override
-                                public void serviceStarted(ServiceController<?> controller) {
-                                    log.infof("Bound data source [%s]", jndiName);
-                                }
-
-                                @Override
-                                public void serviceStopped(ServiceController<?> serviceController) {
-                                    log.infof("Unbound data source [%s]", jndiName);
-                                }
-
-                                @Override
-                                public void serviceRemoved(ServiceController<?> serviceController) {
-                                    log.debugf("Removed JDBC Data-source [%s]", jndiName);
-                                    serviceController.removeListener(this);
+                                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                                    switch (transition) {
+                                        case STARTING_to_UP: {
+                                            log.infof("Bound data source [%s]", jndiName);
+                                            break;
+                                        }
+                                        case START_REQUESTED_to_DOWN: {
+                                            log.infof("Unbound data source [%s]", jndiName);
+                                            break;
+                                        }
+                                        case REMOVING_to_REMOVED: {
+                                            log.debugf("Removed JDBC Data-source [%s]", jndiName);
+                                            break;
+                                        }
+                                    }
                                 }
                             });
 

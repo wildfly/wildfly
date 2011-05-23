@@ -79,9 +79,12 @@ public class DataSourceDisable implements ModelUpdateOperationHandler {
                         if (ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.NEVER);
                             dataSourceController.addListener(new AbstractServiceListener<Object>() {
-                                public void serviceStopped(ServiceController<?> serviceController) {
-                                    resultHandler.handleResultComplete();
-                                    serviceController.removeListener(this);
+                                @Override
+                                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                                    if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
+                                        resultHandler.handleResultComplete();
+                                        controller.removeListener(this);
+                                    }
                                 }
                             });
                         } else {

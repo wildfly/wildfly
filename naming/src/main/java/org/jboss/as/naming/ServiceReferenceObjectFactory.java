@@ -137,18 +137,15 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
         }
 
         @Override
-        public synchronized void serviceFailed(ServiceController controller, StartException reason) {
-            handleStateChange(controller);
-        }
-
-        @Override
-        public synchronized void serviceStarted(ServiceController controller) {
-            handleStateChange(controller);
-        }
-
-        @Override
-        public synchronized void serviceRemoved(ServiceController controller) {
-            handleStateChange(controller);
+        public synchronized void transition(final ServiceController controller, final ServiceController.Transition transition) {
+            switch (transition) {
+                case STARTING_to_START_FAILED:
+                case STARTING_to_UP:
+                case REMOVING_to_REMOVED: {
+                    handleStateChange(controller);
+                    break;
+                }
+            }
         }
 
         private void handleStateChange(ServiceController controller) {

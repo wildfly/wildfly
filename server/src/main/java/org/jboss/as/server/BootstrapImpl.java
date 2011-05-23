@@ -36,7 +36,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartException;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossExecutors;
@@ -83,40 +82,45 @@ final class BootstrapImpl implements Bootstrap {
         final ServiceController<?> rootService = container.getRequiredService(Services.JBOSS_AS);
         rootService.addListener(new AbstractServiceListener<Object>() {
             @Override
-            public void serviceStarted(final ServiceController<?> controller) {
-                controller.removeListener(this);
-                final ServiceController<?> controllerServiceController = controller.getServiceContainer().getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
-                controllerServiceController.addListener(new AbstractServiceListener<Object>() {
-                    @Override
-                    public void serviceStarted(final ServiceController<?> controller) {
-                        future.done((ServerController) controller.getValue());
+            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                switch (transition) {
+                    case STARTING_to_UP: {
                         controller.removeListener(this);
+                        final ServiceController<?> controllerServiceController = controller.getServiceContainer().getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+                        controllerServiceController.addListener(new AbstractServiceListener<Object>() {
+                            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                                switch (transition) {
+                                    case STARTING_to_UP: {
+                                        future.done();
+                                        controller.removeListener(this);
+                                        break;
+                                    }
+                                    case STARTING_to_START_FAILED: {
+                                        future.failed(controller.getStartException());
+                                        controller.removeListener(this);
+                                        break;
+                                    }
+                                    case REMOVING_to_REMOVED: {
+                                        future.failed(new ServiceNotFoundException("Server controller service was removed"));
+                                        controller.removeListener(this);
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        break;
                     }
-
-                    @Override
-                    public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-                        future.failed(reason);
+                    case STARTING_to_START_FAILED: {
                         controller.removeListener(this);
+                        future.failed(controller.getStartException());
+                        break;
                     }
-
-                    @Override
-                    public void serviceRemoved(final ServiceController<?> controller) {
-                        future.failed(new ServiceNotFoundException("Server controller service was removed"));
+                    case REMOVING_to_REMOVED: {
                         controller.removeListener(this);
+                        future.failed(new ServiceNotFoundException("Root service was removed"));
+                        break;
                     }
-                });
-            }
-
-            @Override
-            public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-                controller.removeListener(this);
-                future.failed(reason);
-            }
-
-            @Override
-            public void serviceRemoved(final ServiceController<?> controller) {
-                controller.removeListener(this);
-                future.failed(new ServiceNotFoundException("Root service was removed"));
+                }
             }
         });
         return future;
@@ -135,10 +139,10 @@ final class BootstrapImpl implements Bootstrap {
         }
     }
 
-    private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
+    static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
         private final ServiceContainer container;
 
-        public FutureServiceContainer(final ServiceContainer container) {
+        FutureServiceContainer(final ServiceContainer container) {
             super(JBossExecutors.directExecutor());
             this.container = container;
         }
@@ -154,7 +158,7 @@ final class BootstrapImpl implements Bootstrap {
             });
         }
 
-        void done(ServerController controller) {
+        void done() {
             setResult(container);
         }
 

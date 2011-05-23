@@ -33,7 +33,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartException;
 
 /**
  *
@@ -54,7 +53,7 @@ public abstract class BootstrapListener extends AbstractServiceListener<Object> 
     private final long startTime;
     private volatile boolean cancelLikely;
 
-    public BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget) {
+    protected BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget) {
         this.serviceContainer = serviceContainer;
         this.startTime = startTime;
         this.serviceTarget = serviceTarget;
@@ -77,52 +76,36 @@ public abstract class BootstrapListener extends AbstractServiceListener<Object> 
     }
 
     @Override
-    public void serviceStarted(final ServiceController<?> controller) {
-        started.incrementAndGet();
-        controller.removeListener(this);
-        tick();
-    }
-
-    @Override
-    public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
-        failed.incrementAndGet();
-        controller.removeListener(this);
-        tick();
-    }
-
-    @Override
-    public void dependencyFailed(final ServiceController<? extends Object> controller) {
-        controller.removeListener(this);
-        tick();
-    }
-
-    @Override
-    public void immediateDependencyAvailable(final ServiceController<? extends Object> controller) {
-        missingDepsSet.remove(controller.getName());
-    }
-
-    @Override
-    public void immediateDependencyUnavailable(final ServiceController<? extends Object> controller) {
-        missingDepsSet.add(controller.getName());
-    }
-
-    @Override
-    public void dependencyProblem(final ServiceController<? extends Object> controller) {
-        missingDeps.incrementAndGet();
-        check();
-    }
-
-    @Override
-    public void dependencyProblemCleared(final ServiceController<? extends Object> controller) {
-        missingDeps.decrementAndGet();
-        check();
-    }
-
-    @Override
-    public void serviceRemoved(final ServiceController<?> controller) {
-        cancelLikely = true;
-        controller.removeListener(this);
-        tick();
+    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+        switch (transition) {
+            case STARTING_to_UP: {
+                started.incrementAndGet();
+                controller.removeListener(this);
+                tick();
+                break;
+            }
+            case STARTING_to_START_FAILED: {
+                failed.incrementAndGet();
+                controller.removeListener(this);
+                tick();
+                break;
+            }
+            case START_REQUESTED_to_PROBLEM: {
+                missingDeps.incrementAndGet();
+                check();
+                break;
+            }
+            case PROBLEM_to_START_REQUESTED: {
+                missingDeps.decrementAndGet();
+                check();
+                break;
+            }
+            case REMOVING_to_REMOVED: {
+                cancelLikely = true;
+                tick();
+                break;
+            }
+        }
     }
 
     private void check() {

@@ -395,20 +395,18 @@ final class NewOperationContextImpl implements NewOperationContext {
                 }
             }
 
-            public void serviceRemoveRequestCleared(final ServiceController<?> controller) {
-                clear(controller);
-            }
-
-            public void serviceRemoved(final ServiceController<? extends Object> controller) {
-                clear(controller);
-            }
-
-            private void clear(final ServiceController<?> controller) {
-                final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-                synchronized (map) {
-                    if (map.get(controller.getName()) == controller) {
-                        map.remove(controller.getName());
-                        map.notifyAll();
+            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                switch (transition) {
+                    case REMOVING_to_REMOVED:
+                    case REMOVING_to_DOWN: {
+                        final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
+                        synchronized (map) {
+                            if (map.get(controller.getName()) == controller) {
+                                map.remove(controller.getName());
+                                map.notifyAll();
+                            }
+                        }
+                        break;
                     }
                 }
             }

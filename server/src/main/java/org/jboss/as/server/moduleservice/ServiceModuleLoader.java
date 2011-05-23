@@ -86,29 +86,31 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
         }
 
         @Override
-        public void serviceStarted(ServiceController<? extends ModuleSpec> controller) {
-            log.tracef("serviceStarted: %s", controller);
-            done(controller, null);
-        }
-
-        @Override
-        public void serviceFailed(ServiceController<? extends ModuleSpec> controller, StartException reason) {
-            log.tracef(reason, "serviceFailed: %s", controller);
-            done(controller, reason);
-        }
-
-        @Override
-        public void serviceStopping(ServiceController<? extends ModuleSpec> controller) {
-            log.tracef("serviceStopping: %s", controller);
-            ModuleSpec moduleSpec = this.moduleSpec;
-            try {
-                Module module = loadModule(moduleSpec.getModuleIdentifier());
-                unloadModuleLocal(module);
-            } catch (ModuleLoadException e) {
-                // ignore, the module should always be already loaded by this point,
-                // and if not we will only mask the true problem
+        public void transition(final ServiceController<? extends ModuleSpec> controller, final ServiceController.Transition transition) {
+            switch (transition) {
+                case STARTING_to_UP:
+                    log.tracef("serviceStarted: %s", controller);
+                    done(controller, null);
+                    break;
+                case STARTING_to_START_FAILED:
+                    log.tracef(controller.getStartException(), "serviceFailed: %s", controller);
+                    done(controller, controller.getStartException());
+                    break;
+                case STOP_REQUESTED_to_STOPPING: {
+                    log.tracef("serviceStopping: %s", controller);
+                    ModuleSpec moduleSpec = this.moduleSpec;
+                    try {
+                        Module module = loadModule(moduleSpec.getModuleIdentifier());
+                        unloadModuleLocal(module);
+                    } catch (ModuleLoadException e) {
+                        // ignore, the module should always be already loaded by this point,
+                        // and if not we will only mask the true problem
+                    }
+                    // TODO: what if the service is restarted?
+                    controller.removeListener(this);
+                    break;
+                }
             }
-            controller.removeListener(this);
         }
 
         private void done(ServiceController<? extends ModuleSpec> controller, StartException reason) {
