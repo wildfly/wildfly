@@ -810,11 +810,6 @@
         </dependency>
             
         <dependency>
-            <groupId>org.jboss.osgi.common</groupId>
-            <artifactId>jboss-osgi-common</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.osgi.framework</groupId>
             <artifactId>jbosgi-framework-core</artifactId>
         </dependency>
@@ -827,6 +822,11 @@
         <dependency>
             <groupId>org.jboss.osgi.jmx</groupId>
             <artifactId>jboss-osgi-jmx</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.osgi.logging</groupId>
+            <artifactId>jboss-osgi-logging</artifactId>
         </dependency>
 
         <dependency>

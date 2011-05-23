@@ -978,16 +978,16 @@
             <maven-bundle group="org.jboss.osgi.blueprint" artifact="jbosgi-blueprint"/>
         </bundle-def>
 
-        <bundle-def name="org.jboss.osgi.common">
-            <maven-bundle group="org.jboss.osgi.common" artifact="jboss-osgi-common"/>
-        </bundle-def>
-
         <bundle-def name="org.jboss.osgi.http">
             <maven-bundle group="org.jboss.osgi.http" artifact="jboss-osgi-http"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.jmx">
             <maven-bundle group="org.jboss.osgi.jmx" artifact="jboss-osgi-jmx"/>
+        </bundle-def>
+
+        <bundle-def name="org.jboss.osgi.logging">
+            <maven-bundle group="org.jboss.osgi.logging" artifact="jboss-osgi-logging"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.webapp">

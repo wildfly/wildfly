@@ -230,19 +230,23 @@
                     http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
                 -->
                 <property name="org.jboss.osgi.system.modules">
+                org.apache.commons.logging,
                 org.apache.log4j,
                 org.jboss.as.osgi,
+                org.slf4j,
                 </property>
                 <!--
                     Framework environment property identifying extra packages which the system bundle
                     must export from the current execution environment
                 -->
                 <property name="org.osgi.framework.system.packages.extra">
+                org.apache.commons.logging;version=1.1.1,
                 org.apache.log4j;version=1.2,
                 org.jboss.as.osgi.service;version=7.0,
                 org.jboss.osgi.spi.capability;version=1.0,
                 org.jboss.osgi.spi.util;version=1.0,
                 org.jboss.osgi.testing;version=1.0,
+                org.slf4j;version=1.5.10,
                 </property>
             </properties>
             <modules>
@@ -253,9 +257,10 @@
                 <module identifier="org.apache.aries.jmx" start="true"/>
                 <module identifier="org.apache.aries.util"/>
                 <module identifier="org.apache.felix.configadmin" start="true"/>
+                <module identifier="org.apache.felix.log" start="true"/>
                 <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
-                <module identifier="org.jboss.osgi.common" start="true"/>
                 <module identifier="org.jboss.osgi.jmx" start="true"/>
+                <module identifier="org.jboss.osgi.logging" start="true"/>
                 <module identifier="org.osgi.compendium"/>
             </modules>
         </subsystem>

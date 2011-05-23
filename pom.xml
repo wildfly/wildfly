@@ -140,11 +140,11 @@
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta8</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
-        <version.org.jboss.osgi.common>1.0.6</version.org.jboss.osgi.common>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>1.0.0.Alpha25</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.http>1.0.1</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.jmx>1.0.9</version.org.jboss.osgi.jmx>
+        <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.resolver>1.0.9</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>1.0.26</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
@@ -3512,22 +3512,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.osgi.common</groupId>
-                <artifactId>jboss-osgi-common</artifactId>
-                <version>${version.org.jboss.osgi.common}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.osgi</groupId>
-                        <artifactId>jboss-osgi-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.osgi.deployment</groupId>
                 <artifactId>jbosgi-deployment</artifactId>
                 <version>${version.org.jboss.osgi.deployment}</version>
@@ -3559,6 +3543,12 @@
                         <artifactId>jboss-osgi-spi</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.logging</groupId>
+                <artifactId>jboss-osgi-logging</artifactId>
+                <version>${version.org.jboss.osgi.logging}</version>
             </dependency>
 
             <dependency>
