@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.description;
 
 
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
@@ -217,7 +218,7 @@ public class EjbJarDescriptionMergingUtil {
         if (overrideViews != null && !overrideViews.isEmpty()) {
             for (ViewDescription view : overrideViews) {
                 String viewClassName = view.getViewClassName();
-                MethodIntf viewType = override.getMethodIntf(viewClassName);
+                MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
                 addView(mergedBean, viewClassName, viewType);
             }
         } else {
@@ -225,10 +226,9 @@ public class EjbJarDescriptionMergingUtil {
             if (originalViews != null) {
                 for (ViewDescription view : originalViews) {
                     String viewClassName = view.getViewClassName();
-                    MethodIntf viewType = original.getMethodIntf(viewClassName);
+                    MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
                     addView(mergedBean, viewClassName, viewType);
                 }
-
             }
         }
     }

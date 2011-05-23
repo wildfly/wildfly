@@ -32,6 +32,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
 
 import java.lang.reflect.Method;
@@ -108,6 +109,17 @@ public class ViewDescription {
         } else {
             return componentDescription.getServiceName().append("VIEW").append(viewClassName);
         }
+    }
+
+    /**
+     * Creates view configuration. Allows for extensibility in EE sub components.
+     * @param viewClass view class
+     * @param componentConfiguration component config
+     * @param proxyFactory proxy factory
+     * @return new view configuration
+     */
+    public ViewConfiguration createViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ProxyFactory<?> proxyFactory) {
+        return new ViewConfiguration(viewClass, componentConfiguration, getServiceName(), proxyFactory);
     }
 
     /**

@@ -79,7 +79,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         List<ViewConfiguration> views = componentConfiguration.getViews();
         if (views != null) {
             for (ViewConfiguration view : views) {
-                final MethodIntf viewType = ejbComponentDescription.getMethodIntf(view.getViewClass().getName());
+                final EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
+                final MethodIntf viewType = ejbView.getMethodIntf();
                 for (Method method : view.getProxyFactory().getCachedMethods()) {
                     this.processTxAttr(ejbComponentDescription, viewType, method);
                 }

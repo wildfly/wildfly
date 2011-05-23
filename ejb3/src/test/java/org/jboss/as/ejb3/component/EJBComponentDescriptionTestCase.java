@@ -59,11 +59,6 @@ public class EJBComponentDescriptionTestCase {
         final EJBComponentDescription description = new EJBComponentDescription("Test", "TestBean", ejbJarDescription, duServiceName) {
 
             @Override
-            public MethodIntf getMethodIntf(String viewClassName) {
-                return MethodIntf.LOCAL;
-            }
-
-            @Override
             protected void addCurrentInvocationContextFactory(ViewDescription view) {
                 // no-op
             }

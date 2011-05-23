@@ -160,8 +160,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return transactionManagementType;
     }
 
-    public abstract MethodIntf getMethodIntf(String viewClassName);
-
     /**
      * Style 1 (13.3.7.2.1 @1)
      *

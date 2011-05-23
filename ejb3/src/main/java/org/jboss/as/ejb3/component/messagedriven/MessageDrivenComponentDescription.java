@@ -31,6 +31,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -66,12 +67,6 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return mdbComponentConfiguration;
     }
 
-    @Override
-    public MethodIntf getMethodIntf(String viewClassName) {
-        // an MDB doesn't expose a real view
-        return MethodIntf.BEAN;
-    }
-
     String getMessageListenerInterfaceName() {
         return messageListenerInterfaceName;
     }
@@ -102,7 +97,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         }
         this.messageListenerInterfaceName = messageListenerInterfaceName;
         // add it to the view description
-        ViewDescription viewDescription = new ViewDescription(this, messageListenerInterfaceName);
+        ViewDescription viewDescription = new EJBViewDescription(this, messageListenerInterfaceName, MethodIntf.SERVICE_ENDPOINT);
         this.getViews().add(viewDescription);
     }
 

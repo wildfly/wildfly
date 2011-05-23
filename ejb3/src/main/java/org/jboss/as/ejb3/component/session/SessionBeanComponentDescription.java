@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
@@ -76,8 +77,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * Flag marking the presence/absence of a no-interface view on the session bean
      */
     private boolean noInterfaceViewPresent;
-
-    private Map<String, MethodIntf> viewTypes = new HashMap<String, MethodIntf>();
 
     /**
      * The {@link javax.ejb.ConcurrencyManagementType} for this bean
@@ -183,36 +182,35 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     private void assertNoRemoteView(final String viewClassName) {
-        if (viewTypes.get(viewClassName) == MethodIntf.REMOTE) {
-            throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
-                    + " as local view since it's already marked as remote view for bean: " + getEJBName());
+        EJBViewDescription ejbView = null;
+        for (final ViewDescription view: getViews()) {
+            ejbView = (EJBViewDescription) view;
+            if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.REMOTE) {
+                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
+                        + " as local view since it's already marked as remote view for bean: " + getEJBName());
+            }
         }
     }
 
     private void assertNoLocalView(final String viewClassName) {
-        if (viewTypes.get(viewClassName) == MethodIntf.LOCAL) {
-            throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
-                    + " as remote view since it's already marked as local view for bean: " + getEJBName());
+        EJBViewDescription ejbView = null;
+        for (final ViewDescription view: getViews()) {
+            ejbView = (EJBViewDescription) view;
+            if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.LOCAL) {
+                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
+                        + " as remote view since it's already marked as local view for bean: " + getEJBName());
+            }
         }
     }
 
     private void registerView(final String viewClassName, final MethodIntf viewType) {
-        // add it to our map
-        viewTypes.put(viewClassName, viewType);
         // setup the ViewDescription
-        final ViewDescription viewDescription = new ViewDescription(this, viewClassName);
+        final ViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType);
         getViews().add(viewDescription);
         // setup server side view interceptors
         setupViewInterceptors(viewDescription);
         // setup client side view interceptors
         setupClientViewInterceptors(viewDescription);
-    }
-
-    @Override
-    public MethodIntf getMethodIntf(String viewClassName) {
-        MethodIntf methodIntf = viewTypes.get(viewClassName);
-        assert methodIntf != null : "no view type known for " + viewClassName;
-        return methodIntf;
     }
 
     public boolean hasNoInterfaceView() {

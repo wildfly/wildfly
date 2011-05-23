@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
@@ -102,8 +103,9 @@ public class BusinessViewAnnotationProcessorTestCase {
         List<ViewDescription> views = componentDescription.getViews();
         assertNotNull("No views found", views);
         assertEquals("Unexpected number of views", 1, views.size());
-        assertEquals(MyInterface.class.getName(), views.get(0).getViewClassName());
-        assertEquals(MethodIntf.LOCAL, componentDescription.getMethodIntf(MyInterface.class.getName()));
+        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.get(0);
+        assertEquals(MyInterface.class.getName(), ejbViewDescription.getViewClassName());
+        assertEquals(MethodIntf.LOCAL, ejbViewDescription.getMethodIntf());
     }
 
     @Test
@@ -130,8 +132,9 @@ public class BusinessViewAnnotationProcessorTestCase {
         List<ViewDescription> views = componentDescription.getViews();
         assertNotNull("No views found", views);
         assertEquals("Unexpected number of views", 1, views.size());
-        assertEquals(MyInterface.class.getName(), views.get(0).getViewClassName());
-        assertEquals(MethodIntf.LOCAL, componentDescription.getMethodIntf(MyInterface.class.getName()));
+        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.get(0);
+        assertEquals(MyInterface.class.getName(), ejbViewDescription.getViewClassName());
+        assertEquals(MethodIntf.LOCAL, ejbViewDescription.getMethodIntf());
     }
 
     @Test
@@ -158,7 +161,8 @@ public class BusinessViewAnnotationProcessorTestCase {
         List<ViewDescription> views = componentDescription.getViews();
         assertNotNull("No views found", views);
         assertEquals("Unexpected number of views", 1, views.size());
-        assertEquals(ImplicitNoInterfaceBean.class.getName(), views.get(0).getViewClassName());
-        assertEquals(MethodIntf.LOCAL, componentDescription.getMethodIntf(ImplicitNoInterfaceBean.class.getName()));
+        EJBViewDescription ejbViewDescription = (EJBViewDescription) views.get(0);
+        assertEquals(ImplicitNoInterfaceBean.class.getName(), ejbViewDescription.getViewClassName());
+        assertEquals(MethodIntf.LOCAL, ejbViewDescription.getMethodIntf());
     }
 }
