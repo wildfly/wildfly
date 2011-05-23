@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
@@ -31,15 +33,72 @@ import org.jboss.msc.service.ServiceListener;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServiceVerificationHandler extends AbstractServiceListener<Object> implements ServiceListener<Object>, NewStepHandler {
-    private long startTime;
-    private long duration;
-    private ServiceController.State state;
+    private final Set<ServiceController<?>> set = new HashSet<ServiceController<?>>();
+    private final Set<ServiceController<?>> failed = new HashSet<ServiceController<?>>();
+    private final Set<ServiceController<?>> problem = new HashSet<ServiceController<?>>();
+    private int outstanding;
 
     public synchronized void execute(final NewOperationContext context, final ModelNode operation) {
-
+        while (outstanding > 0) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                context.getFailureDescription().set("Operation cancelled");
+                context.completeStep();
+                return;
+            }
+        }
+        if (! failed.isEmpty() || ! problem.isEmpty()) {
+            final ModelNode failureDescription = context.getFailureDescription();
+            final ModelNode failedList = failureDescription.get("failed");
+            for (ServiceController<?> controller : failed) {
+                failedList.get(controller.getName().getCanonicalName()).set(controller.getStartException().toString());
+            }
+            final ModelNode problemList = failureDescription.get("transitive-problem");
+            for (ServiceController<?> controller : problem) {
+                problemList.add(controller.getName().getCanonicalName());
+            }
+        }
+        for (ServiceController<?> controller : set) {
+            controller.removeListener(this);
+        }
+        context.completeStep();
     }
 
     public synchronized void listenerAdded(final ServiceController<?> controller) {
-        startTime = System.nanoTime();
+        set.add(controller);
+    }
+
+    public synchronized void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
+        switch (transition) {
+            case STARTING_to_START_FAILED: {
+                failed.add(controller);
+                break;
+            }
+            case START_FAILED_to_STARTING: {
+                failed.remove(controller);
+                break;
+            }
+            case START_REQUESTED_to_PROBLEM: {
+                problem.add(controller);
+                break;
+            }
+            case PROBLEM_to_START_REQUESTED: {
+                problem.remove(controller);
+                break;
+            }
+        }
+        final ServiceController.Substate before = transition.getBefore();
+        final ServiceController.Substate after = transition.getAfter();
+        final boolean beforeIsRestState = before.isRestState();
+        final boolean afterIsRestState = after.isRestState();
+        if (beforeIsRestState && ! afterIsRestState) {
+            outstanding ++;
+        } else if (! beforeIsRestState && afterIsRestState) {
+            if (outstanding -- == 1) {
+                notifyAll();
+            }
+        }
     }
 }
