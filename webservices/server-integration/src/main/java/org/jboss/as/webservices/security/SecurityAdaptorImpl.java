@@ -23,7 +23,7 @@ package org.jboss.as.webservices.security;
 
 import java.security.Principal;
 
-import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SecurityContextAssociation;
 import org.jboss.wsf.spi.invocation.SecurityAdaptor;
 
 /**
@@ -45,7 +45,7 @@ final class SecurityAdaptorImpl implements SecurityAdaptor {
      * @return principal
      */
     public Principal getPrincipal() {
-        return SecurityAssociation.getPrincipal();
+        return SecurityContextAssociation.getPrincipal();
     }
 
     /**
@@ -54,7 +54,7 @@ final class SecurityAdaptorImpl implements SecurityAdaptor {
      * @param principal principal
      */
     public void setPrincipal(final Principal principal) {
-        SecurityAssociation.setPrincipal(principal);
+        SecurityContextAssociation.setPrincipal(principal);
     }
 
     /**
@@ -63,7 +63,7 @@ final class SecurityAdaptorImpl implements SecurityAdaptor {
      * @return credential
      */
     public Object getCredential() {
-        return SecurityAssociation.getCredential();
+        return SecurityContextAssociation.getCredential();
     }
 
     /**
@@ -72,6 +72,6 @@ final class SecurityAdaptorImpl implements SecurityAdaptor {
      * @param credential credential
      */
     public void setCredential(final Object credential) {
-        SecurityAssociation.setCredential(credential);
+        SecurityContextAssociation.setCredential(credential);
     }
 }
