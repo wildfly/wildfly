@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.http.server.security;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -35,13 +35,13 @@ import org.jboss.as.domain.management.security.VerifyPasswordCallback;
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAuthenticator {
+public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAuthenticator {
 
     private final CallbackHandler callbackHandler;
 
     private final boolean verifyPasswordCallback;
 
-    BasicAuthenticator(DomainCallbackHandler callbackHandler, String realm) {
+    public BasicAuthenticator(DomainCallbackHandler callbackHandler, String realm) {
         super(realm);
         this.callbackHandler = callbackHandler;
         verifyPasswordCallback = contains(VerifyPasswordCallback.class, callbackHandler.getSupportedCallbacks());
@@ -76,7 +76,7 @@ class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAuthentic
     }
 
     // TODO - Will do something cleaner with collections.
-    static boolean requiredCallbacksSupported(Class[] callbacks) {
+    public static boolean requiredCallbacksSupported(Class[] callbacks) {
         if (contains(NameCallback.class,callbacks) == false) {
             return false;
         }

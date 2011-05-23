@@ -64,7 +64,6 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     *  Service Lifecycle Methods
     */
 
-    @Override
     public void start(StartContext context) throws StartException {
         connectionOnlyProperties = new Properties();
 
@@ -88,13 +87,11 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         fullProperties.put(Context.SECURITY_CREDENTIALS,searchCredential);
     }
 
-    @Override
     public void stop(StopContext context) {
         connectionOnlyProperties = null;
         fullProperties = null;
     }
 
-    @Override
     public LdapConnectionManagerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
@@ -103,12 +100,10 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
      *  Connection Manager Methods
      */
 
-    @Override
     public Object getConnection() throws Exception {
         return new InitialDirContext(fullProperties);
     }
 
-    @Override
     public Object getConnection(String principal, String credential) throws Exception {
         Properties connectionProperties = (Properties) connectionOnlyProperties.clone();
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);

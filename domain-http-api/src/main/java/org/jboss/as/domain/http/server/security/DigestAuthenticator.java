@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
 import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
@@ -52,7 +52,7 @@ import org.jboss.com.sun.net.httpserver.HttpPrincipal;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class DigestAuthenticator extends Authenticator {
+public class DigestAuthenticator extends Authenticator {
 
     private Map<InetSocketAddress, DigestContext> authentications = new HashMap<InetSocketAddress, DigestContext>();
 
@@ -356,7 +356,7 @@ class DigestAuthenticator extends Authenticator {
     }
 
     // TODO - Will do something cleaner with collections.
-    static boolean requiredCallbacksSupported(Class[] callbacks) {
+    public static boolean requiredCallbacksSupported(Class[] callbacks) {
         if (contains(NameCallback.class, callbacks) == false) {
             return false;
         }

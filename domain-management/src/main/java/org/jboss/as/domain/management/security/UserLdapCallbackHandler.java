@@ -78,14 +78,12 @@ public class UserLdapCallbackHandler implements DomainCallbackHandler {
         }
     }
 
-    @Override
     public Class[] getSupportedCallbacks() {
         // TODO - For safety this Array should be cloned or should use an unmodifiable collection to ensure
         // TODO - caller can not modify.
         return supportedCallbacks;
     }
 
-    @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         String username = null;
         VerifyPasswordCallback verifyPasswordCallback = null;

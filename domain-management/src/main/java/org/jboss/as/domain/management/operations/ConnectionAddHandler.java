@@ -58,7 +58,6 @@ public class ConnectionAddHandler implements ModelAddOperationHandler, Descripti
     public static final ConnectionAddHandler INSTANCE = new ConnectionAddHandler();
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
-    @Override
     public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         ModelNode operationAddress = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(operationAddress);
@@ -94,7 +93,6 @@ public class ConnectionAddHandler implements ModelAddOperationHandler, Descripti
         return new BasicOperationResult(compensatingOperation);
     }
 
-    @Override
     public ModelNode getModelDescription(Locale locale) {
         // TODO - Complete getModelDescription()
         return new ModelNode();

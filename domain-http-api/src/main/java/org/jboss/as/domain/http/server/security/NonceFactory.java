@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server;
+package org.jboss.as.domain.http.server.security;
 
 import java.security.SecureRandom;
 import java.util.HashSet;
@@ -39,7 +39,7 @@ import org.jboss.as.domain.management.util.HexUtil;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class NonceFactory {
+public class NonceFactory {
 
     private static final int NONCE_BYTES = 16;
 

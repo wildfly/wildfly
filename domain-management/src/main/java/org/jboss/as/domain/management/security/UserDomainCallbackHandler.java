@@ -55,12 +55,10 @@ public class UserDomainCallbackHandler implements DomainCallbackHandler {
         this.userDomain = userDomain;
     }
 
-    @Override
     public Class[] getSupportedCallbacks() {
         return supportedCallbacks;
     }
 
-    @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         List<Callback> toRespondTo = new LinkedList<Callback>();
 

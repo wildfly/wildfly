@@ -60,6 +60,8 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
+import org.jboss.as.domain.http.server.security.BasicAuthenticator;
+import org.jboss.as.domain.http.server.security.DigestAuthenticator;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.com.sun.net.httpserver.Headers;
@@ -108,7 +110,6 @@ class DomainApiHandler implements ManagementHttpHandler {
         this.modelController = modelController;
     }
 
-    @Override
     public void handle(HttpExchange http) throws IOException {
         final URI request = http.getRequestURI();
         final String requestMethod = http.getRequestMethod();

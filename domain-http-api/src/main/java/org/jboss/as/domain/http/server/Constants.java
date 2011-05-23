@@ -27,7 +27,7 @@ package org.jboss.as.domain.http.server;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface Constants {
+public interface Constants {
 
     /*
      * Request Methods
