@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn;
 
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -39,6 +41,7 @@ import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -46,7 +49,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.txn.CommonAttributes.*;
 
 /**
@@ -54,6 +57,7 @@ import static org.jboss.as.txn.CommonAttributes.*;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
+ * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
@@ -73,10 +77,9 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         if(context instanceof BootOperationContext) {
             ((BootOperationContext) context).addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_TRANSACTION_BINDINGS, new TransactionJndiBindingProcessor());
         }
-
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
-        final String bindingName = operation.get(CORE_ENVIRONMENT).require(BINDING).asString();
+        final ModelNode processId = operation.get(CORE_ENVIRONMENT).require(PROCESS_ID);
         final String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
         final String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
         final String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
@@ -88,7 +91,7 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         final int coordinatorDefaultTimeout = operation.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).asInt(300);
 
         final ModelNode subModel = context.getSubModel();
-        subModel.get(CORE_ENVIRONMENT, BINDING).set(operation.get(CORE_ENVIRONMENT).require(BINDING));
+        subModel.get(CORE_ENVIRONMENT, PROCESS_ID).set(operation.get(CORE_ENVIRONMENT).require(PROCESS_ID));
         subModel.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).set(operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER));
         subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(RECOVERY_ENVIRONMENT).require(BINDING));
         subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
@@ -103,6 +106,20 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
 
+                    // Global configuration.
+                    String socketBindingName = null;
+                    final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
+                    if (processId.hasDefined(ProcessIdType.UUID.getName())) {
+                        UuidProcessId id = new UuidProcessId();
+                        coreEnvironmentBean.setProcessImplementation(id);
+                    }
+                    else if(processId.hasDefined(ProcessIdType.SOCKET.getName())) {
+                        socketBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
+                    } else {
+                        // Default to UUID implementation
+                        UuidProcessId id = new UuidProcessId();
+                        coreEnvironmentBean.setProcessImplementation(id);
+                    }
                     // XATerminator has no deps, so just add it in there
                     final XATerminatorService xaTerminatorService = new XATerminatorService();
                     target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install();
@@ -119,18 +136,23 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
+                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER)
                         .setInitialMode(Mode.ACTIVE)
                         .install();
 
                     final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
-                    target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
-                            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
-                            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
-                            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector())
-                            .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                            .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
-                            .setInitialMode(Mode.ACTIVE)
-                            .install();
+                    ServiceBuilder<?> atmsBuilder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
+                    if(socketBindingName != null) {
+                        // Add a dependency on the socket id binding
+                        ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
+                        atmsBuilder.addDependency(bindingName, SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
+                    }
+                    atmsBuilder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
+                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
+                        .setInitialMode(Mode.ACTIVE)
+                        .install();
 
                     TransactionManagerService.addService(target);
                     UserTransactionService.addService(target);
