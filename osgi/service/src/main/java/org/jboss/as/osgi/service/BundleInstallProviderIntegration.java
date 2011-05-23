@@ -64,14 +64,14 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
     private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private ServerDeploymentManager deploymentManager;
 
-    public static void addService(final ServiceTarget target) {
+    public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();
         ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
-        builder.install();
+        return builder.install();
     }
 
     private BundleInstallProviderIntegration() {

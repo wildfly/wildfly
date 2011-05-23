@@ -19,23 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.PathDescription;
+import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PathRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class PathRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -62,30 +54,8 @@ public class PathRemoveHandler implements ModelRemoveOperationHandler, Descripti
     protected PathRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String name = address.getLastElement().getValue();
-        ModelNode model = context.getSubModel();
-        ModelNode pathNode = model.get(PATH);
-        String path = pathNode.isDefined() ? pathNode.asString() : null;
-        ModelNode relNode = model.get(RELATIVE_TO);
-        String relativeTo = relNode.isDefined() ? pathNode.asString() : null;
-        ModelNode compensating = PathAddHandler.getAddPathOperation(operation.get(OP_ADDR), pathNode, relNode);
-        return uninstallPath(name, path, relativeTo, context, resultHandler, compensating);
-    }
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return PathDescription.getPathRemoveOperation(locale);
     }
-
-    protected OperationResult uninstallPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
-    }
-
 }

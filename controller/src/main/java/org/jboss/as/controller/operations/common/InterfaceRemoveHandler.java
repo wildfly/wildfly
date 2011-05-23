@@ -19,20 +19,12 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -41,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class InterfaceRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class InterfaceRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -53,27 +45,8 @@ public class InterfaceRemoveHandler implements ModelRemoveOperationHandler, Desc
     protected InterfaceRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String name = address.getLastElement().getValue();
-        ModelNode model = context.getSubModel();
-        ModelNode criteriaNode = model.get(CRITERIA);
-        ModelNode compensating = InterfaceAddHandler.getAddInterfaceOperation(operation.get(OP_ADDR), criteriaNode);
-        return uninstallInterface(name, criteriaNode, context, resultHandler, compensating);
-    }
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return InterfaceDescription.getInterfaceRemoveOperation(locale);
     }
-
-    protected OperationResult uninstallInterface(String name, ModelNode criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
-    }
-
 }

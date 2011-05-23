@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
@@ -29,14 +31,6 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSEndpointAdd implements ModelAddOperationHandler {
+final class WSEndpointAdd extends AbstractAddStepHandler {
 
     static final WSEndpointAdd INSTANCE = new WSEndpointAdd();
 
@@ -52,9 +46,7 @@ final class WSEndpointAdd implements ModelAddOperationHandler {
         // forbidden instantiation
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
+    protected void populateModel(ModelNode operation, ModelNode model) {
         final ModelNode opAddr = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
@@ -65,17 +57,16 @@ final class WSEndpointAdd implements ModelAddOperationHandler {
         final String endpointClass = operation.require(ENDPOINT_CLASS).asString();
         final String endpointType = operation.require(ENDPOINT_TYPE).asString();
         final String endpointWSDL = operation.require(ENDPOINT_WSDL).asString();
-        // Apply parameters to the model
-        final ModelNode model = context.getSubModel();
+
         model.get(NAME).set(name);
         model.get(ENDPOINT_NAME).set(endpointName);
         model.get(ENDPOINT_CONTEXT).set(endpointContext);
         model.get(ENDPOINT_CLASS).set(endpointClass);
         model.get(ENDPOINT_TYPE).set(endpointType);
         model.get(ENDPOINT_WSDL).set(endpointWSDL);
-
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
     }
 
+    protected boolean requiresRuntime() {
+        return false;
+    }
 }

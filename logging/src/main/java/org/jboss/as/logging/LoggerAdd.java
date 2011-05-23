@@ -22,21 +22,14 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
+import java.util.List;
 import java.util.logging.Level;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -45,57 +38,44 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class LoggerAdd implements ModelAddOperationHandler {
+class LoggerAdd extends AbstractAddStepHandler {
 
     static final LoggerAdd INSTANCE = new LoggerAdd();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set(REMOVE);
-
+    protected void populateModel(ModelNode operation, ModelNode model) {
         final String level = operation.require(CommonAttributes.LEVEL).asString();
         final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
 
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(CommonAttributes.LEVEL).set(level);
-        subModel.get(CommonAttributes.HANDLERS).set(handlers);
+        model.get(CommonAttributes.LEVEL).set(level);
+        model.get(CommonAttributes.HANDLERS).set(handlers);
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    final String loggerName = name;
-                    try {
-                        // Install logger service
-                        final LoggerService service = new LoggerService(loggerName);
-                        service.setLevel(Level.parse(level));
-                        target.addService(LogServices.loggerName(loggerName), service)
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    try {
-                        // install logger handler services
-                        if (handlers.isDefined()) {
-                            LogServices.installLoggerHandlers(target, loggerName, handlers);
-                        }
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        final String level = operation.require(CommonAttributes.LEVEL).asString();
+        final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
+
+        final ServiceTarget target = context.getServiceTarget();
+        final String loggerName = name;
+        try {
+            // Install logger service
+            final LoggerService service = new LoggerService(loggerName);
+            service.setLevel(Level.parse(level));
+            newControllers.add(target.addService(LogServices.loggerName(loggerName), service)
+                    .addListener(verificationHandler)
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install());
+        } catch (Throwable t) {
+            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
-        return new BasicOperationResult(compensatingOperation);
+        try {
+            // install logger handler services
+            if (handlers.isDefined()) {
+                newControllers.addAll(LogServices.installLoggerHandlers(target, loggerName, handlers, verificationHandler));
+            }
+        } catch (Throwable t) {
+            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+        }
     }
 }

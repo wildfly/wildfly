@@ -21,63 +21,30 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.webservices.util.WSServices;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
 /**
  * OperationHandler to remove the endpoint configuration
  *
  * @author <a href="ema@redhat.com">Jim Ma</a>
  */
-public class EndpointConfigRemove implements ModelRemoveOperationHandler {
+public class EndpointConfigRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final EndpointConfigRemove INSTANCE = new EndpointConfigRemove();
 
-    /** {@inheritDoc} */
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ModelNode subModel = context.getSubModel();
-        subModel.clear();
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> configService = context.getServiceRegistry().getService(WSServices.CONFIG_SERVICE);
-                    if (configService != null) {
-                        ServerConfig config = (ServerConfig) configService.getValue();
-                        EndpointConfig target = null;
-                        for (EndpointConfig epConfig : config.getEndpointConfigs()) {
-                            if (epConfig.getConfigName().equals(name)) {
-                                target = epConfig;
-                            }
-                        }
-                        if (target != null) {
-                            config.getEndpointConfigs().remove(target);
-                        }
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult();
+        context.removeService(EmbeddedCacheManagerService.getServiceName(name));
     }
+
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
+    }
+
 }

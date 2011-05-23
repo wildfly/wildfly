@@ -20,7 +20,7 @@ package org.jboss.as.host.controller.operations;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +49,7 @@ public class ExtensionAddHandler extends AbstractExtensionAddHandler {
      * {@inheritDoc}
      */
     @Override
-    protected void installExtension(String module, OperationContext context) throws OperationFailedException {
+    protected void installExtension(String module, ModelNode model) throws OperationFailedException {
         try {
             for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 extension.initialize(extensionContext);

@@ -76,7 +76,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
     private InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     private SubsystemState subsystemState;
 
-    static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
+    static ServiceController<?> addService(final ServiceTarget target, final SubsystemState subsystemState) {
         AutoInstallIntegration service = new AutoInstallIntegration(subsystemState);
         ServiceBuilder<?> builder = target.addService(Services.AUTOINSTALL_PROVIDER, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
@@ -85,7 +85,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
         builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
         builder.addDependency(Services.FRAMEWORK_INIT);
         builder.setInitialMode(Mode.ON_DEMAND);
-        builder.install();
+        return builder.install();
     }
 
     private AutoInstallIntegration(SubsystemState subsystemState) {

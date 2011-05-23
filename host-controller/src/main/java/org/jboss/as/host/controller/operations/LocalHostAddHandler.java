@@ -21,20 +21,18 @@
  */
 package org.jboss.as.host.controller.operations;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.host.controller.DomainModelProxy;
@@ -46,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LocalHostAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class LocalHostAddHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-host";
 
@@ -69,27 +67,26 @@ public class LocalHostAddHandler implements ModelAddOperationHandler, Descriptio
         return new ModelNode();
     }
 
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            final ModelNode model = context.getSubModel();
-            HostModelUtil.initCoreModel(model);
+    /**
+     * {@inheritDoc}
+     */
+    public void execute(NewOperationContext context, ModelNode operation) {
+        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+        HostModelUtil.initCoreModel(model);
 
-            String hostName = operation.require(NAME).asString();
-            model.get(NAME).set(hostName);
+        final String hostName = operation.require(NAME).asString();
+        model.get(NAME).set(hostName);
 
-            // If this is not in an environment where a RuntimeContext is supplied then the actual DomainModel does not need
-            // to be updated as that is runtime state.
-            if (context.getRuntimeContext() != null) {
-                domainModelProxy.getDomainModel().setLocalHostName(hostName);
-            }
-            context.getRegistry().registerSubModel(PathElement.pathElement(HOST, hostName), registration);
+        context.getModelNodeRegistration().registerSubModel(PathElement.pathElement(HOST, hostName), registration);
 
-            ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensating);
-        } catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    domainModelProxy.getDomainModel().setLocalHostName(hostName);
+                }
+            }, NewOperationContext.Stage.RUNTIME);
         }
+
+        context.completeStep();
     }
 }

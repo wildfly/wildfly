@@ -23,7 +23,7 @@
 package org.jboss.as.webservices.dmr;
 
 import org.jboss.as.ee.component.EEResourceReferenceProcessorRegistry;
-import org.jboss.as.server.BootOperationContext;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
@@ -54,16 +54,17 @@ final class WSDeploymentActivator {
 
     private static final Logger LOGGER = Logger.getLogger(WSDeploymentActivator.class);
 
-    static void activate(final BootOperationContext updateContext) {
-        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
-        updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
-        updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
-        //updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR, new WSTypeDeploymentProcessor());
-        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
+    static void activate(final DeploymentProcessorTarget processorTarget) {
 
-        addDeploymentProcessors(updateContext, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);
+        processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
+        processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
+        processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
+        //processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR, new WSTypeDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
+
+        addDeploymentProcessors(processorTarget, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);
 
         // Add a EEResourceReferenceProcessor which handles @Resource references of type WebServiceContext.
         // Note that we do it here instead of a DUP because the @Resource reference processor for WebServiceContext *isn't*
@@ -99,11 +100,11 @@ final class WSDeploymentActivator {
         }
     }
 
-    private static void addDeploymentProcessors(final BootOperationContext updateContext, final Phase phase, final int priority) {
+    private static void addDeploymentProcessors(final DeploymentProcessorTarget processorTarget, final Phase phase, final int priority) {
         int index = 1;
         for (final DeploymentAspect da : getSortedDeploymentAspects()) {
             LOGGER.tracef("Installing aspect %s", da.getClass().getName());
-            updateContext.addDeploymentProcessor(phase, priority + index++, new AspectDeploymentProcessor(da));
+            processorTarget.addDeploymentProcessor(phase, priority + index++, new AspectDeploymentProcessor(da));
         }
     }
 

@@ -22,6 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import javax.management.MBeanServer;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.Configuration.CacheMode;
@@ -34,18 +48,11 @@ import org.infinispan.manager.CacheContainer;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.NamingStore;
@@ -66,24 +73,13 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.management.MBeanServer;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-
 /**
  * @author Paul Ferraro
  */
-public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class CacheContainerAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
-        ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
+        ModelNode operation = Util.getEmptyOperation(ADD, address);
         populate(existing, operation);
         return operation;
     }
@@ -104,7 +100,7 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
         }
         if (source.hasDefined(ModelKeys.ALIAS)) {
             ModelNode aliases = target.get(ModelKeys.ALIAS);
-            for (ModelNode alias: source.get(ModelKeys.ALIAS).asList()) {
+            for (ModelNode alias : source.get(ModelKeys.ALIAS).asList()) {
                 aliases.add(alias);
             }
         }
@@ -112,13 +108,249 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
             target.get(ModelKeys.TRANSPORT).set(source.get(ModelKeys.TRANSPORT));
         }
         ModelNode caches = target.get(ModelKeys.CACHE);
-        for (ModelNode cache: source.require(ModelKeys.CACHE).asList()) {
+        for (ModelNode cache : source.require(ModelKeys.CACHE).asList()) {
             caches.add(cache);
         }
     }
 
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        populate(operation, model);
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+
+        String defaultCache = operation.require(ModelKeys.DEFAULT_CACHE).asString();
+
+        EmbeddedCacheManager config = new EmbeddedCacheManager(name, defaultCache);
+
+        ServiceName[] aliases = null;
+        if (operation.hasDefined(ModelKeys.ALIAS)) {
+            List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
+            aliases = new ServiceName[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
+            }
+        }
+
+        ServiceTarget target = context.getServiceTarget();
+        ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
+        ServiceBuilder<CacheContainer> builder = target.addService(serviceName, new EmbeddedCacheManagerService(config))
+                .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, config.getTransactionManagerInjector())
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionSynchronizationRegistry"), TransactionSynchronizationRegistry.class, config.getTransactionSynchronizationRegistryInjector())
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())
+                .addAliases(aliases)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+
+        String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
+        int index = jndiName.indexOf("/");
+        String namespace = (index > 5) ? jndiName.substring(5, index) : null;
+        String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
+        ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
+        ServiceName bindingName = naming.append(binding);
+        BinderService binder = new BinderService(binding);
+        newControllers.add(target.addService(bindingName, binder)
+                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
+                .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
+                .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install());
+        boolean requiresTransport = false;
+        Map<String, Configuration> configurations = config.getConfigurations();
+        for (ModelNode cache : operation.require(ModelKeys.CACHE).asList()) {
+            String cacheName = cache.require(ModelKeys.NAME).asString();
+            Configuration configuration = new Configuration();
+            FluentConfiguration fluent = configuration.fluent();
+            Configuration.CacheMode mode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
+            requiresTransport |= mode.isClustered();
+            fluent.mode(mode);
+            if (cache.hasDefined(ModelKeys.BATCHING)) {
+                if (cache.get(ModelKeys.BATCHING).asBoolean()) {
+                    fluent.invocationBatching();
+                }
+            }
+            if (cache.hasDefined(ModelKeys.INDEXING)) {
+                Indexing indexing = Indexing.valueOf(cache.get(ModelKeys.INDEXING).asString());
+                if (indexing.isEnabled()) {
+                    fluent.indexing().indexLocalOnly(indexing.isLocalOnly());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
+                fluent.async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
+            }
+            if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
+                fluent.async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
+            }
+            if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
+                fluent.sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
+            }
+            if (cache.hasDefined(ModelKeys.OWNERS)) {
+                fluent.hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
+            }
+            if (cache.hasDefined(ModelKeys.L1_LIFESPAN)) {
+                long lifespan = cache.get(ModelKeys.L1_LIFESPAN).asLong();
+                if (lifespan > 0) {
+                    fluent.l1().lifespan(lifespan);
+                } else {
+                    fluent.l1().disable();
+                }
+            }
+            if (cache.hasDefined(ModelKeys.LOCKING)) {
+                ModelNode locking = cache.get(ModelKeys.LOCKING);
+                FluentConfiguration.LockingConfig fluentLocking = fluent.locking();
+                if (locking.hasDefined(ModelKeys.ISOLATION)) {
+                    fluentLocking.isolationLevel(IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString()));
+                }
+                if (locking.hasDefined(ModelKeys.STRIPING)) {
+                    fluentLocking.useLockStriping(locking.get(ModelKeys.STRIPING).asBoolean());
+                }
+                if (locking.hasDefined(ModelKeys.ACQUIRE_TIMEOUT)) {
+                    fluentLocking.lockAcquisitionTimeout(locking.get(ModelKeys.ACQUIRE_TIMEOUT).asLong());
+                }
+                if (locking.hasDefined(ModelKeys.CONCURRENCY_LEVEL)) {
+                    fluentLocking.concurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.TRANSACTION)) {
+                ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
+                FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
+                if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
+                    fluentTx.cacheStopTimeout(transaction.get(ModelKeys.TIMEOUT).asInt());
+                }
+                if (transaction.hasDefined(ModelKeys.MODE)) {
+                    TransactionMode txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
+                    FluentConfiguration.RecoveryConfig recovery = fluentTx.useSynchronization(!txMode.isXAEnabled()).recovery();
+                    if (txMode.isRecoveryEnabled()) {
+                        recovery.syncCommitPhase(true).syncRollbackPhase(true);
+                    } else {
+                        recovery.disable();
+                    }
+                }
+                if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
+                    EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
+                    fluentTx.useEagerLocking(eager.isEnabled()).eagerLockSingleNode(eager.isSingleOwner());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.EVICTION)) {
+                ModelNode eviction = cache.get(ModelKeys.EVICTION);
+                FluentConfiguration.EvictionConfig fluentEviction = fluent.eviction();
+                if (eviction.hasDefined(ModelKeys.STRATEGY)) {
+                    fluentEviction.strategy(EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString()));
+                }
+                if (eviction.hasDefined(ModelKeys.MAX_ENTRIES)) {
+                    fluentEviction.maxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
+                }
+                if (eviction.hasDefined(ModelKeys.INTERVAL)) {
+                    fluentEviction.wakeUpInterval(eviction.get(ModelKeys.INTERVAL).asLong());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.EXPIRATION)) {
+                ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
+                FluentConfiguration.ExpirationConfig fluentExpiration = fluent.expiration();
+                if (expiration.hasDefined(ModelKeys.MAX_IDLE)) {
+                    fluentExpiration.maxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
+                }
+                if (expiration.hasDefined(ModelKeys.LIFESPAN)) {
+                    fluentExpiration.lifespan(expiration.get(ModelKeys.LIFESPAN).asLong());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
+                ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER);
+                FluentConfiguration.StateRetrievalConfig fluentStateTransfer = fluent.stateRetrieval();
+                if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
+                    fluentStateTransfer.fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
+                }
+                if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
+                    fluentStateTransfer.timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
+                }
+                if (stateTransfer.hasDefined(ModelKeys.FLUSH_TIMEOUT)) {
+                    fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.REHASHING)) {
+                ModelNode rehashing = cache.get(ModelKeys.REHASHING);
+                FluentConfiguration.HashConfig fluentHash = fluent.hash();
+                if (rehashing.hasDefined(ModelKeys.ENABLED)) {
+                    fluentHash.rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
+                }
+                if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
+                    fluentHash.rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
+                }
+            }
+            if (cache.hasDefined(ModelKeys.STORE)) {
+                ModelNode store = cache.get(ModelKeys.STORE);
+                FluentConfiguration.LoadersConfig fluentStores = fluent.loaders();
+                fluentStores.shared(store.hasDefined(ModelKeys.SHARED) ? store.get(ModelKeys.SHARED).asBoolean() : false);
+                fluentStores.preload(store.hasDefined(ModelKeys.PRELOAD) ? store.get(ModelKeys.PRELOAD).asBoolean() : false);
+                fluentStores.passivation(store.hasDefined(ModelKeys.PASSIVATION) ? store.get(ModelKeys.PASSIVATION).asBoolean() : true);
+                CacheStoreConfig storeConfig = buildCacheStore(name, builder, store);
+                storeConfig.singletonStore().enabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
+                storeConfig.fetchPersistentState(store.hasDefined(ModelKeys.FETCH_STATE) ? store.get(ModelKeys.FETCH_STATE).asBoolean() : true);
+                storeConfig.purgeOnStartup(store.hasDefined(ModelKeys.PURGE) ? store.get(ModelKeys.PURGE).asBoolean() : true);
+                if (store.hasDefined(ModelKeys.PROPERTY) && (storeConfig instanceof AbstractCacheStoreConfig)) {
+                    Properties properties = new Properties();
+                    for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
+                        properties.setProperty(property.getName(), property.getValue().asString());
+                    }
+                    ((AbstractCacheStoreConfig) storeConfig).setProperties(properties);
+                }
+                fluentStores.addCacheLoader(storeConfig);
+            }
+            configurations.put(cacheName, configuration);
+
+            StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;
+            ServiceBuilder<Cache<Object, Object>> cacheBuilder = new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindingName).setInitialMode(startMode.getMode());
+            if (cacheName.equals(defaultCache)) {
+                cacheBuilder.addAliases(CacheService.getServiceName(name, null));
+            }
+            if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
+                cacheBuilder.addListener(verificationHandler);
+            }
+            newControllers.add(cacheBuilder.install());
+        }
+        if (!configurations.containsKey(defaultCache)) {
+            throw new IllegalArgumentException(String.format("%s is not a valid default cache. The %s cache container does not contain a cache with that name", defaultCache, name));
+        }
+
+        if (requiresTransport) {
+            Transport transportConfig = new Transport();
+            String stack = null;
+            if (operation.hasDefined(ModelKeys.TRANSPORT)) {
+                ModelNode transport = operation.get(ModelKeys.TRANSPORT);
+                if (transport.hasDefined(ModelKeys.STACK)) {
+                    stack = transport.get(ModelKeys.STACK).asString();
+                }
+                addExecutorDependency(builder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
+                if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
+                    transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
+                }
+                if (transport.hasDefined(ModelKeys.SITE)) {
+                    transportConfig.setSite(transport.get(ModelKeys.SITE).asString());
+                }
+                if (transport.hasDefined(ModelKeys.RACK)) {
+                    transportConfig.setRack(transport.get(ModelKeys.RACK).asString());
+                }
+                if (transport.hasDefined(ModelKeys.MACHINE)) {
+                    transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
+                }
+            }
+            builder.addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
+            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, transportConfig.getEnvironmentInjector());
+            config.setTransport(transportConfig);
+        }
+
+        addExecutorDependency(builder, operation, ModelKeys.LISTENER_EXECUTOR, config.getListenerExecutorInjector());
+        addScheduledExecutorDependency(builder, operation, ModelKeys.EVICTION_EXECUTOR, config.getEvictionExecutorInjector());
+        addScheduledExecutorDependency(builder, operation, ModelKeys.REPLICATION_QUEUE_EXECUTOR, config.getReplicationQueueExecutorInjector());
+
+        newControllers.add(builder.install());
+    }
+
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
      */
     @Override
@@ -126,292 +358,34 @@ public class CacheContainerAdd implements ModelAddOperationHandler, DescriptionP
         return LocalDescriptions.getCacheContainerAddDescription(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.ModelAddOperationHandler#execute(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.as.controller.ResultHandler)
-     */
-    @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        ModelNode opAddr = operation.require(ModelDescriptionConstants.OP_ADDR);
-
-        final ModelNode removeOperation = Util.getResourceRemoveOperation(opAddr);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-
-        populate(operation, context.getSubModel());
-
-        RuntimeOperationContext runtime = context.getRuntimeContext();
-        if (runtime != null) {
-            RuntimeTask task = new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    try {
-                    String defaultCache = operation.require(ModelKeys.DEFAULT_CACHE).asString();
-
-                    EmbeddedCacheManager config = new EmbeddedCacheManager(name, defaultCache);
-
-                    ServiceName[] aliases = null;
-                    if (operation.hasDefined(ModelKeys.ALIAS)) {
-                        List<ModelNode> list = operation.get(ModelKeys.ALIAS).asList();
-                        aliases = new ServiceName[list.size()];
-                        for (int i = 0; i < list.size(); i++) {
-                            aliases[i] = EmbeddedCacheManagerService.getServiceName(list.get(i).asString());
-                        }
-                    }
-
-                    ServiceTarget target = context.getServiceTarget();
-                    ServiceName serviceName = EmbeddedCacheManagerService.getServiceName(name);
-                    ServiceBuilder<CacheContainer> builder = target.addService(serviceName, new EmbeddedCacheManagerService(config))
-                        .addDependency(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, EmbeddedCacheManagerDefaults.class, config.getDefaultsInjector())
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, config.getTransactionManagerInjector())
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionSynchronizationRegistry"), TransactionSynchronizationRegistry.class, config.getTransactionSynchronizationRegistryInjector())
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, config.getMBeanServerInjector())
-                        .addAliases(aliases)
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        ;
-                    String jndiName = (operation.hasDefined(ModelKeys.JNDI_NAME) ? toJndiName(operation.get(ModelKeys.JNDI_NAME).asString()) : JndiName.of("java:jboss").append(InfinispanExtension.SUBSYSTEM_NAME).append(name)).getAbsoluteName();
-                    int index = jndiName.indexOf("/");
-                    String namespace = (index > 5) ? jndiName.substring(5, index) : null;
-                    String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
-                    ServiceName naming = (namespace != null) ? ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(namespace) : ContextNames.JAVA_CONTEXT_SERVICE_NAME;
-                    ServiceName bindingName = naming.append(binding);
-                    BinderService binder = new BinderService(binding);
-                    target.addService(bindingName, binder)
-                        .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName))
-                        .addDependency(serviceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                        .addDependency(naming, NamingStore.class, binder.getNamingStoreInjector())
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                        .install()
-                        ;
-                    boolean requiresTransport = false;
-                    Map<String, Configuration> configurations = config.getConfigurations();
-                    for (ModelNode cache: operation.require(ModelKeys.CACHE).asList()) {
-                        String cacheName = cache.require(ModelKeys.NAME).asString();
-                        Configuration configuration = new Configuration();
-                        FluentConfiguration fluent = configuration.fluent();
-                        Configuration.CacheMode mode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
-                        requiresTransport |= mode.isClustered();
-                        fluent.mode(mode);
-                        if (cache.hasDefined(ModelKeys.BATCHING)) {
-                            if (cache.get(ModelKeys.BATCHING).asBoolean()) {
-                                fluent.invocationBatching();
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.INDEXING)) {
-                            Indexing indexing = Indexing.valueOf(cache.get(ModelKeys.INDEXING).asString());
-                            if (indexing.isEnabled()) {
-                                fluent.indexing().indexLocalOnly(indexing.isLocalOnly());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.QUEUE_SIZE)) {
-                            fluent.async().replQueueMaxElements(cache.get(ModelKeys.QUEUE_SIZE).asInt());
-                        }
-                        if (cache.hasDefined(ModelKeys.QUEUE_FLUSH_INTERVAL)) {
-                            fluent.async().replQueueInterval(cache.get(ModelKeys.QUEUE_FLUSH_INTERVAL).asLong());
-                        }
-                        if (cache.hasDefined(ModelKeys.REMOTE_TIMEOUT)) {
-                            fluent.sync().replTimeout(cache.get(ModelKeys.REMOTE_TIMEOUT).asLong());
-                        }
-                        if (cache.hasDefined(ModelKeys.OWNERS)) {
-                            fluent.hash().numOwners(cache.get(ModelKeys.OWNERS).asInt());
-                        }
-                        if (cache.hasDefined(ModelKeys.L1_LIFESPAN)) {
-                            long lifespan = cache.get(ModelKeys.L1_LIFESPAN).asLong();
-                            if (lifespan > 0) {
-                                fluent.l1().lifespan(lifespan);
-                            } else {
-                                fluent.l1().disable();
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.LOCKING)) {
-                            ModelNode locking = cache.get(ModelKeys.LOCKING);
-                            FluentConfiguration.LockingConfig fluentLocking = fluent.locking();
-                            if (locking.hasDefined(ModelKeys.ISOLATION)) {
-                                fluentLocking.isolationLevel(IsolationLevel.valueOf(locking.get(ModelKeys.ISOLATION).asString()));
-                            }
-                            if (locking.hasDefined(ModelKeys.STRIPING)) {
-                                fluentLocking.useLockStriping(locking.get(ModelKeys.STRIPING).asBoolean());
-                            }
-                            if (locking.hasDefined(ModelKeys.ACQUIRE_TIMEOUT)) {
-                                fluentLocking.lockAcquisitionTimeout(locking.get(ModelKeys.ACQUIRE_TIMEOUT).asLong());
-                            }
-                            if (locking.hasDefined(ModelKeys.CONCURRENCY_LEVEL)) {
-                                fluentLocking.concurrencyLevel(locking.get(ModelKeys.CONCURRENCY_LEVEL).asInt());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.TRANSACTION)) {
-                            ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
-                            FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
-                            if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
-                                fluentTx.cacheStopTimeout(transaction.get(ModelKeys.TIMEOUT).asInt());
-                            }
-                            if (transaction.hasDefined(ModelKeys.MODE)) {
-                                TransactionMode txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
-                                FluentConfiguration.RecoveryConfig recovery = fluentTx.useSynchronization(!txMode.isXAEnabled()).recovery();
-                                if (txMode.isRecoveryEnabled()) {
-                                    recovery.syncCommitPhase(true).syncRollbackPhase(true);
-                                } else {
-                                    recovery.disable();
-                                }
-                            }
-                            if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
-                                EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
-                                fluentTx.useEagerLocking(eager.isEnabled()).eagerLockSingleNode(eager.isSingleOwner());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.EVICTION)) {
-                            ModelNode eviction = cache.get(ModelKeys.EVICTION);
-                            FluentConfiguration.EvictionConfig fluentEviction = fluent.eviction();
-                            if (eviction.hasDefined(ModelKeys.STRATEGY)) {
-                                fluentEviction.strategy(EvictionStrategy.valueOf(eviction.get(ModelKeys.STRATEGY).asString()));
-                            }
-                            if (eviction.hasDefined(ModelKeys.MAX_ENTRIES)) {
-                                fluentEviction.maxEntries(eviction.get(ModelKeys.MAX_ENTRIES).asInt());
-                            }
-                            if (eviction.hasDefined(ModelKeys.INTERVAL)) {
-                                fluentEviction.wakeUpInterval(eviction.get(ModelKeys.INTERVAL).asLong());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.EXPIRATION)) {
-                            ModelNode expiration = cache.get(ModelKeys.EXPIRATION);
-                            FluentConfiguration.ExpirationConfig fluentExpiration = fluent.expiration();
-                            if (expiration.hasDefined(ModelKeys.MAX_IDLE)) {
-                                fluentExpiration.maxIdle(expiration.get(ModelKeys.MAX_IDLE).asLong());
-                            }
-                            if (expiration.hasDefined(ModelKeys.LIFESPAN)) {
-                                fluentExpiration.lifespan(expiration.get(ModelKeys.LIFESPAN).asLong());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.STATE_TRANSFER)) {
-                            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER);
-                            FluentConfiguration.StateRetrievalConfig fluentStateTransfer = fluent.stateRetrieval();
-                            if (stateTransfer.hasDefined(ModelKeys.ENABLED)) {
-                                fluentStateTransfer.fetchInMemoryState(stateTransfer.get(ModelKeys.ENABLED).asBoolean());
-                            }
-                            if (stateTransfer.hasDefined(ModelKeys.TIMEOUT)) {
-                                fluentStateTransfer.timeout(stateTransfer.get(ModelKeys.TIMEOUT).asLong());
-                            }
-                            if (stateTransfer.hasDefined(ModelKeys.FLUSH_TIMEOUT)) {
-                                fluentStateTransfer.logFlushTimeout(stateTransfer.get(ModelKeys.FLUSH_TIMEOUT).asLong());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.REHASHING)) {
-                            ModelNode rehashing = cache.get(ModelKeys.REHASHING);
-                            FluentConfiguration.HashConfig fluentHash = fluent.hash();
-                            if (rehashing.hasDefined(ModelKeys.ENABLED)) {
-                                fluentHash.rehashEnabled(rehashing.get(ModelKeys.ENABLED).asBoolean());
-                            }
-                            if (rehashing.hasDefined(ModelKeys.TIMEOUT)) {
-                                fluentHash.rehashRpcTimeout(rehashing.get(ModelKeys.TIMEOUT).asLong());
-                            }
-                        }
-                        if (cache.hasDefined(ModelKeys.STORE)) {
-                            ModelNode store = cache.get(ModelKeys.STORE);
-                            FluentConfiguration.LoadersConfig fluentStores = fluent.loaders();
-                            fluentStores.shared(store.hasDefined(ModelKeys.SHARED) ? store.get(ModelKeys.SHARED).asBoolean() : false);
-                            fluentStores.preload(store.hasDefined(ModelKeys.PRELOAD) ? store.get(ModelKeys.PRELOAD).asBoolean() : false);
-                            fluentStores.passivation(store.hasDefined(ModelKeys.PASSIVATION) ? store.get(ModelKeys.PASSIVATION).asBoolean() : true);
-                            CacheStoreConfig storeConfig = this.buildCacheStore(builder, store);
-                            storeConfig.singletonStore().enabled(store.hasDefined(ModelKeys.SINGLETON) ? store.get(ModelKeys.SINGLETON).asBoolean() : false);
-                            storeConfig.fetchPersistentState(store.hasDefined(ModelKeys.FETCH_STATE) ? store.get(ModelKeys.FETCH_STATE).asBoolean() : true);
-                            storeConfig.purgeOnStartup(store.hasDefined(ModelKeys.PURGE) ? store.get(ModelKeys.PURGE).asBoolean() : true);
-                            if (store.hasDefined(ModelKeys.PROPERTY) && (storeConfig instanceof AbstractCacheStoreConfig)) {
-                                Properties properties = new Properties();
-                                for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
-                                    properties.setProperty(property.getName(), property.getValue().asString());
-                                }
-                                ((AbstractCacheStoreConfig) storeConfig).setProperties(properties);
-                            }
-                            fluentStores.addCacheLoader(storeConfig);
-                        }
-                        configurations.put(cacheName, configuration);
-
-                        StartMode startMode = cache.hasDefined(ModelKeys.START) ? StartMode.valueOf(cache.get(ModelKeys.START).asString()) : StartMode.LAZY;
-                        ServiceBuilder<Cache<Object, Object>> cacheBuilder = new CacheService<Object, Object>(cacheName).build(target, serviceName).addDependency(bindingName).setInitialMode(startMode.getMode());
-                        if (cacheName.equals(defaultCache)) {
-                            cacheBuilder.addAliases(CacheService.getServiceName(name, null));
-                        }
-                        cacheBuilder.install();
-                    }
-                    if (!configurations.containsKey(defaultCache)) {
-                        throw new IllegalArgumentException(String.format("%s is not a valid default cache. The %s cache container does not contain a cache with that name", defaultCache, name));
-                    }
-
-                    if (requiresTransport) {
-                        Transport transportConfig = new Transport();
-                        String stack = null;
-                        if (operation.hasDefined(ModelKeys.TRANSPORT)) {
-                            ModelNode transport = operation.get(ModelKeys.TRANSPORT);
-                            if (transport.hasDefined(ModelKeys.STACK)) {
-                                stack = transport.get(ModelKeys.STACK).asString();
-                            }
-                            this.addExecutorDependency(builder, transport, ModelKeys.EXECUTOR, transportConfig.getExecutorInjector());
-                            if (transport.hasDefined(ModelKeys.LOCK_TIMEOUT)) {
-                                transportConfig.setLockTimeout(transport.get(ModelKeys.LOCK_TIMEOUT).asLong());
-                            }
-                            if (transport.hasDefined(ModelKeys.SITE)) {
-                                transportConfig.setSite(transport.get(ModelKeys.SITE).asString());
-                            }
-                            if (transport.hasDefined(ModelKeys.RACK)) {
-                                transportConfig.setRack(transport.get(ModelKeys.RACK).asString());
-                            }
-                            if (transport.hasDefined(ModelKeys.MACHINE)) {
-                                transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
-                            }
-                        }
-                        builder.addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
-                        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, transportConfig.getEnvironmentInjector());
-                        config.setTransport(transportConfig);
-                    }
-
-                    this.addExecutorDependency(builder, operation, ModelKeys.LISTENER_EXECUTOR, config.getListenerExecutorInjector());
-                    this.addScheduledExecutorDependency(builder, operation, ModelKeys.EVICTION_EXECUTOR, config.getEvictionExecutorInjector());
-                    this.addScheduledExecutorDependency(builder, operation, ModelKeys.REPLICATION_QUEUE_EXECUTOR, config.getReplicationQueueExecutorInjector());
-
-                    builder.install();
-
-                    resultHandler.handleResultComplete();
-                    } catch (Throwable e) {
-                        e.printStackTrace(System.err);
-                    }
-                }
-
-                private void addExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<Executor> injector) {
-                    if (model.hasDefined(key)) {
-                        builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
-                    }
-                }
-
-                private void addScheduledExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<ScheduledExecutorService> injector) {
-                    if (model.hasDefined(key)) {
-                        builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), ScheduledExecutorService.class, injector);
-                    }
-                }
-
-                private CacheStoreConfig buildCacheStore(ServiceBuilder<CacheContainer> builder, ModelNode store) {
-                    if (store.hasDefined(ModelKeys.CLASS)) {
-                        String className = store.get(ModelKeys.CLASS).asString();
-                        try {
-                            CacheStore cacheStore = Class.forName(className).asSubclass(CacheStore.class).newInstance();
-                            return cacheStore.getConfigurationClass().asSubclass(CacheStoreConfig.class).newInstance();
-                        } catch (Exception e) {
-                            throw new IllegalArgumentException(String.format("%s is not a valid cache store", className), e);
-                        }
-                    }
-                    // If no class, we assume it's a file cache store
-                    FileCacheStoreConfig storeConfig = new FileCacheStoreConfig();
-                    String relativeTo = store.hasDefined(ModelKeys.RELATIVE_TO) ? store.get(ModelKeys.RELATIVE_TO).asString() : ServerEnvironment.SERVER_DATA_DIR;
-                    builder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, storeConfig.getRelativeToInjector());
-                    storeConfig.setPath(store.hasDefined(ModelKeys.PATH) ? store.get(ModelKeys.PATH).asString() : name);
-                    return storeConfig;
-                }
-            };
-            runtime.setRuntimeTask(task);
-        } else {
-            resultHandler.handleResultComplete();
+    private void addExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<Executor> injector) {
+        if (model.hasDefined(key)) {
+            builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
         }
+    }
 
-        return new BasicOperationResult(removeOperation);
+    private void addScheduledExecutorDependency(ServiceBuilder<CacheContainer> builder, ModelNode model, String key, Injector<ScheduledExecutorService> injector) {
+        if (model.hasDefined(key)) {
+            builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), ScheduledExecutorService.class, injector);
+        }
+    }
+
+    private CacheStoreConfig buildCacheStore(final String name, ServiceBuilder<CacheContainer> builder, ModelNode store) {
+        if (store.hasDefined(ModelKeys.CLASS)) {
+            String className = store.get(ModelKeys.CLASS).asString();
+            try {
+                CacheStore cacheStore = Class.forName(className).asSubclass(CacheStore.class).newInstance();
+                return cacheStore.getConfigurationClass().asSubclass(CacheStoreConfig.class).newInstance();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(String.format("%s is not a valid cache store", className), e);
+            }
+        }
+        // If no class, we assume it's a file cache store
+        FileCacheStoreConfig storeConfig = new FileCacheStoreConfig();
+        String relativeTo = store.hasDefined(ModelKeys.RELATIVE_TO) ? store.get(ModelKeys.RELATIVE_TO).asString() : ServerEnvironment.SERVER_DATA_DIR;
+        builder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, storeConfig.getRelativeToInjector());
+        storeConfig.setPath(store.hasDefined(ModelKeys.PATH) ? store.get(ModelKeys.PATH).asString() : name);
+        return storeConfig;
     }
 
     private static JndiName toJndiName(String value) {

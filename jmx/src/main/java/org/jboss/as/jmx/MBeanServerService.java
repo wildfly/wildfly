@@ -29,6 +29,7 @@ import javax.management.MBeanServer;
 import org.jboss.as.jmx.tcl.TcclMBeanServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -45,8 +46,9 @@ public class MBeanServerService implements Service<MBeanServer> {
 
     private MBeanServer mBeanServer;
 
-    public static void addService(final ServiceTarget batchBuilder) {
-        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
+    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final ServiceListener<Object>... listeners) {
+        return batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
+            .addListener(listeners)
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }

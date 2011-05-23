@@ -22,19 +22,12 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class DeploymentScannerSubsystemRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+public class DeploymentScannerSubsystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final String OPERATION_NAME = ModelDescriptionConstants.REMOVE;
 
@@ -52,21 +45,15 @@ public class DeploymentScannerSubsystemRemove implements ModelRemoveOperationHan
         //
     }
 
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode subsystem = context.getSubModel();
-        if (subsystem.hasDefined(CommonAttributes.SCANNER)
-                && subsystem.get(CommonAttributes.SCANNER).asInt() > 0) {
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        if (model.hasDefined(CommonAttributes.SCANNER) && model.get(CommonAttributes.SCANNER).asInt() > 0) {
             throw new OperationFailedException(new ModelNode().set("Cannot remove subsystem while it still has scanners configured. Remove all scanners first."));
         }
+        super.performRemove(context, operation, model);
+    }
 
-        final ModelNode compensatingOperation = Util.getEmptyOperation(DeploymentScannerSubsystemAdd.OPERATION_NAME,
-                                                                       operation.get(OP_ADDR));
-
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     @Override

@@ -19,20 +19,15 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -45,7 +40,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class NamespaceRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-namespace";
 
@@ -67,14 +62,10 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
     private NamespaceRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(NAMESPACE);
         typeValidator.validateParameter(NAMESPACE, param);
-        ModelNode namespaces = context.getSubModel().get(NAMESPACES);
+        ModelNode namespaces = model.get(NAMESPACES);
         Property toRemove = null;
         ModelNode newList = new ModelNode().setEmptyList();
         String prefix = param.asString();
@@ -82,22 +73,21 @@ public class NamespaceRemoveHandler implements ModelUpdateOperationHandler, Desc
             for (Property namespace : namespaces.asPropertyList()) {
                 if (prefix.equals(namespace.getName())) {
                     toRemove = namespace;
-                }
-                else {
+                } else {
                     newList.add(namespace.getName(), namespace.getValue());
                 }
             }
         }
 
         if (toRemove != null) {
-            ModelNode compensating = NamespaceAddHandler.getAddNamespaceOperation(operation.get(OP_ADDR), toRemove);
             namespaces.set(newList);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensating);
-        }
-        else {
+        } else {
             throw new OperationFailedException(new ModelNode().set("No namespace with URI " + prefix + " found"));
         }
+    }
+
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     @Override

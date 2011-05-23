@@ -3,33 +3,29 @@
  */
 package org.jboss.as.messaging;
 
+import java.util.List;
+import java.util.Locale;
+import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
-
-import java.util.Locale;
-
-import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
@@ -38,7 +34,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -64,20 +60,15 @@ public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
         validator.registerValidator(DURABLE, new ModelTypeValidator(ModelType.BOOLEAN, true));
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         validator.validate(operation);
 
-        ModelNode opAddr = operation.require(OP_ADDR);
-        ModelNode compensatingOp = Util.getResourceRemoveOperation(opAddr);
-        PathAddress address = PathAddress.pathAddress(opAddr);
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
         final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
         final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
 
-        ModelNode model = context.getSubModel();
         model.get(NAME).set(name);
         if (queueAddress != null) {
             model.get(ADDRESS).set(queueAddress);
@@ -88,22 +79,21 @@ public class QueueAdd implements ModelAddOperationHandler, DescriptionProvider {
         if (durable != null) {
             model.get(DURABLE).set(durable);
         }
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
-                    context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
-                            .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
-                            .setInitialMode(Mode.ACTIVE)
-                            .install();
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOp);
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        final String queueAddress = operation.hasDefined(QUEUE_ADDRESS) ? operation.get(QUEUE_ADDRESS).asString() : null;
+        final String filter = operation.hasDefined(FILTER) ? operation.get(FILTER).asString() : null;
+        final Boolean durable = operation.hasDefined(DURABLE) ? operation.get(DURABLE).asBoolean() : null;
+
+        final QueueService service = new QueueService(queueAddress, name, filter, durable != null ? durable : true, false);
+        newControllers.add(context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(name), service)
+                .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
+                .addListener(verificationHandler)
+                .setInitialMode(Mode.ACTIVE)
+                .install());
     }
 
     @Override

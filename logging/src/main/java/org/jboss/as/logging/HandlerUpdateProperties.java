@@ -24,16 +24,10 @@ package org.jboss.as.logging;
 
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Handler;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
@@ -48,40 +42,31 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John Bailey
  */
-public abstract class HandlerUpdateProperties implements ModelUpdateOperationHandler {
+public abstract class HandlerUpdateProperties implements NewStepHandler {
     static final String OPERATION_NAME = "update-properties";
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode opAddr = operation.require(OP_ADDR);
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ModelNode model = context.getSubModel();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(OPERATION_NAME);
-        compensatingOperation.get(OP_ADDR).set(opAddr);
+        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
 
         if (operation.hasDefined(LEVEL)) {
-            apply(model, compensatingOperation, LEVEL);
             apply(operation, model, LEVEL);
         }
         if (operation.hasDefined(FORMATTER)) {
-            apply(model, compensatingOperation, FORMATTER);
             apply(operation, model, FORMATTER);
         }
         if (operation.hasDefined(ENCODING)) {
-            apply(model, compensatingOperation, ENCODING);
             apply(operation, model, ENCODING);
         }
 
-        updateModel(operation, compensatingOperation, model);
+        updateModel(operation, model);
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
                         final Handler handler = controller.getValue();
@@ -100,21 +85,19 @@ public abstract class HandlerUpdateProperties implements ModelUpdateOperationHan
                         }
                         updateRuntime(operation, handler);
                     }
-                    resultHandler.handleResultComplete();
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
     }
 
-    protected abstract void updateModel(final ModelNode operation, final ModelNode compensating, final ModelNode model);
+    protected abstract void updateModel(final ModelNode operation, final ModelNode model);
+
     protected abstract void updateRuntime(final ModelNode operation, final Handler handler);
 
     protected void apply(ModelNode from, ModelNode to, String... attributePath) {
-        if(from.get(attributePath).isDefined()) {
+        if (from.get(attributePath).isDefined()) {
             to.get(attributePath).set(from.get(attributePath));
         }
     }

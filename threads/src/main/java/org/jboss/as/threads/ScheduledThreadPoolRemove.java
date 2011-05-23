@@ -21,28 +21,19 @@
  */
 package org.jboss.as.threads;
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * Removes a scheduled thread pool.
@@ -50,47 +41,18 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ScheduledThreadPoolRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+public class ScheduledThreadPoolRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final ScheduledThreadPoolRemove INSTANCE = new ScheduledThreadPoolRemove();
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        final ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        context.removeService(ThreadsServices.threadFactoryName(name));
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry()
-                            .getService(ThreadsServices.threadFactoryName(name));
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        // Compensating is add
-        final ModelNode model = context.getSubModel();
-        final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
-        if (model.hasDefined(THREAD_FACTORY)) {
-            compensating.get(THREAD_FACTORY).set(model.get(THREAD_FACTORY));
-        }
-        if (model.hasDefined(PROPERTIES)) {
-            compensating.get(PROPERTIES).set(model.get(PROPERTIES));
-        }
-        if (model.hasDefined(MAX_THREADS)) {
-            compensating.get(MAX_THREADS).set(model.get(MAX_THREADS));
-        }
-        if (model.hasDefined(KEEPALIVE_TIME)) {
-            compensating.get(KEEPALIVE_TIME).set(model.get(KEEPALIVE_TIME));
-        }
-        return new BasicOperationResult(compensating);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 
     @Override

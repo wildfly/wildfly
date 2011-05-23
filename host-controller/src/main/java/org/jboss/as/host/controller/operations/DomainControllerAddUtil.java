@@ -22,7 +22,11 @@
 
 package org.jboss.as.host.controller.operations;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.domain.controller.DomainContentRepository;
@@ -73,16 +77,19 @@ public class DomainControllerAddUtil {
 
     static final ServiceName HOST_CONTROLLER_SERVICE_NAME_BASE = ServiceName.JBOSS.append("host", "controller");
 
-    static void installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host,
+    static Collection<ServiceController<?>> installLocalDomainController(final HostControllerEnvironment environment, final ModelNode host,
                                              final ServiceTarget serviceTarget, final boolean isSlave,
-                                             final FileRepository fileRepository, final DomainModelImpl domainModel) {
+                                             final FileRepository fileRepository, final DomainModelImpl domainModel, final ServiceVerificationHandler verificationHandler) {
+
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+
         final String hostName = host.get(NAME).asString();
         final String mgmtNetwork = host.get(MANAGEMENT_INTERFACE, NATIVE_INTERFACE, INTERFACE).asString();
         final int mgmtPort = host.get(MANAGEMENT_INTERFACE, NATIVE_INTERFACE, PORT).asInt();
         final boolean backupDomainFiles = environment.isBackupDomainFiles();
         final boolean useCachedDc = environment.isUseCachedDc();
 
-        serviceTarget.addService(HostRegistryService.SERVICE_NAME, new HostRegistryService()).install();
+        controllers.add(serviceTarget.addService(HostRegistryService.SERVICE_NAME, new HostRegistryService()).addListener(verificationHandler).install());
 
         final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
@@ -93,19 +100,23 @@ public class DomainControllerAddUtil {
         if (isSlave) {
             builder.addDependency(MasterDomainControllerClient.SERVICE_NAME, MasterDomainControllerClient.class, dcService.getMasterDomainControllerClientInjector());
         }
-        builder.addDependency(HOST_CONTROLLER_SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
+        controllers.add(builder.addDependency(HOST_CONTROLLER_SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, dcService.getScheduledExecutorServiceInjector())
                 .addDependency(HostController.SERVICE_NAME, LocalHostModel.class, dcService.getHostControllerServiceInjector())
                 .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork), NetworkInterfaceBinding.class, dcService.getInterfaceInjector())
                 .addDependency(HostRegistryService.SERVICE_NAME, HostRegistryService.class, dcService.getHostRegistryInjector())
-                .install();
+                .addListener(verificationHandler)
+                .install());
 
         //Install the domain controller operation handler
         DomainControllerOperationHandlerService operationHandlerService = new DomainControllerOperationHandlerService(isSlave);
-        serviceTarget.addService(DomainControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
+        controllers.add(serviceTarget.addService(DomainControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
                 .addDependency(DomainController.SERVICE_NAME, ModelController.class, operationHandlerService.getModelControllerValue())
+                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+                .install());
+
+        return controllers;
     }
 
     static void installRemoteDomainControllerConnection(final ModelNode host, final ServiceTarget serviceTarget, final FileRepository repository) {

@@ -19,18 +19,14 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -39,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public class SocketBindingRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -51,29 +47,8 @@ public class SocketBindingRemoveHandler implements ModelRemoveOperationHandler, 
     protected SocketBindingRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        ModelNode opAddr = operation.require(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
-        String name = address.getLastElement().getValue();
-        ModelNode model = context.getSubModel();
-
-        ModelNode compensating = SocketBindingAddHandler.getOperation(opAddr, model);
-        return uninstallSocketBinding(name, model, context, resultHandler, compensating);
-    }
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
     }
-
-    protected OperationResult uninstallSocketBinding(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
-    }
-
 }

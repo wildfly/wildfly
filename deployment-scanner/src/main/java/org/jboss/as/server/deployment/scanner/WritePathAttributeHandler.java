@@ -22,9 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -43,10 +42,8 @@ class WritePathAttributeHandler extends ServerWriteAttributeOperationHandler {
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
+    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
             final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        resultHandler.handleResultComplete();
 
         return true;
     }

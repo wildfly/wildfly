@@ -22,27 +22,19 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.sql.Driver;
+import java.util.List;
+import javax.sql.DataSource;
+import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.registry.DriverRegistry;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.sql.Driver;
-
-import javax.sql.DataSource;
-
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.registry.DriverRegistry;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -63,22 +55,14 @@ import org.jboss.security.SubjectFactory;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.
+ *
  * @author John Bailey
  */
-public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler {
+public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
-        final ModelNode subModel = context.getSubModel();
-
-        populateModel(operation, subModel);
-
-        // Compensating is remove
-        final ModelNode address = operation.require(OP_ADDR);
-        final ModelNode compensating = Util.getResourceRemoveOperation(address);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
         final String rawJndiName = operation.require(JNDINAME).asString();
         final String jndiName;
         if (!rawJndiName.startsWith("java:/") && operation.hasDefined(USE_JAVA_CONTEXT)
@@ -88,96 +72,89 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
             jndiName = rawJndiName;
         }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                    boolean enabled = !operation.hasDefined(ENABLED) || operation.get(ENABLED).asBoolean();
+        boolean enabled = !operation.hasDefined(ENABLED) || operation.get(ENABLED).asBoolean();
 
-                    AbstractDataSourceService dataSourceService = createDataSourceService(jndiName);
+        AbstractDataSourceService dataSourceService = createDataSourceService(jndiName);
 
-                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
+                .addService(dataSourceServiceName, dataSourceService)
+                .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                        dataSourceService.getTransactionIntegrationInjector())
+                .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
+                        dataSourceService.getmanagementRepositoryInjector())
+                .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                        dataSourceService.getSubjectFactoryInjector())
+                .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
+                        dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-                    final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
-                            .addService(dataSourceServiceName, dataSourceService)
-                            .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
-                                    dataSourceService.getTransactionIntegrationInjector())
-                            .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class,
-                                    dataSourceService.getmanagementRepositoryInjector())
-                            .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                                    dataSourceService.getSubjectFactoryInjector())
-                            .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
-                                    dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
+        controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, jndiName, serviceTarget, operation));
 
-                    startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, jndiName, serviceTarget, operation);
-
-                    ModelNode node = operation.require(DATASOURCE_DRIVER);
-                    final String driverName = node.asString();
-                    final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver",
-                            driverName.replaceAll("\\.", "_"));
-                    if (driverServiceName != null) {
-                        dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
-                                dataSourceService.getDriverInjector());
-                    }
-
-                    final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
-                    final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                            .append(jndiName);
-                    final ServiceBuilder<?> referenceBuilder = serviceTarget.addService(referenceFactoryServiceName,
-                            referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
-                            referenceFactoryService.getDataSourceInjector());
-
-                    String bindName = jndiName;
-                    if (jndiName.startsWith("java:/")) {
-                        bindName = jndiName.substring(6);
-                    }
-                    final BinderService binderService = new BinderService(bindName);
-                    final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
-                    final ServiceBuilder<?> binderBuilder = serviceTarget
-                            .addService(binderServiceName, binderService)
-                            .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
-                                    binderService.getManagedObjectInjector())
-                            .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
-                                    binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                                    switch (transition) {
-                                        case STARTING_to_UP: {
-                                            log.infof("Bound data source [%s]", jndiName);
-                                            break;
-                                        }
-                                        case START_REQUESTED_to_DOWN: {
-                                            log.infof("Unbound data source [%s]", jndiName);
-                                            break;
-                                        }
-                                        case REMOVING_to_REMOVED: {
-                                            log.debugf("Removed JDBC Data-source [%s]", jndiName);
-                                            break;
-                                        }
-                                    }
-                                }
-                            });
-
-                    if (enabled) {
-                        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                        referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                    } else {
-                        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
-                        referenceBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
-                        binderBuilder.setInitialMode(ServiceController.Mode.NEVER).install();
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+        ModelNode node = operation.require(DATASOURCE_DRIVER);
+        final String driverName = node.asString();
+        final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
+        if (driverServiceName != null) {
+            dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
+                    dataSourceService.getDriverInjector());
         }
-        return new BasicOperationResult(compensating);
+
+        final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
+        final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
+                .append(jndiName);
+        final ServiceBuilder<?> referenceBuilder = serviceTarget.addService(referenceFactoryServiceName,
+                referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
+                referenceFactoryService.getDataSourceInjector());
+
+        String bindName = jndiName;
+        if (jndiName.startsWith("java:/")) {
+            bindName = jndiName.substring(6);
+        }
+        final BinderService binderService = new BinderService(bindName);
+        final ServiceName binderServiceName = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jndiName);
+        final ServiceBuilder<?> binderBuilder = serviceTarget
+                .addService(binderServiceName, binderService)
+                .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                        binderService.getManagedObjectInjector())
+                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class,
+                        binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
+                                log.infof("Bound data source [%s]", jndiName);
+                                break;
+                            }
+                            case START_REQUESTED_to_DOWN: {
+                                log.infof("Unbound data source [%s]", jndiName);
+                                break;
+                            }
+                            case REMOVING_to_REMOVED: {
+                                log.debugf("Removed JDBC Data-source [%s]", jndiName);
+                                break;
+                            }
+                        }
+                    }
+                });
+
+        if (enabled) {
+            dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addListener(verificationHandler);
+            referenceBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addListener(verificationHandler);
+            binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addListener(verificationHandler);
+        } else {
+            dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
+            referenceBuilder.setInitialMode(ServiceController.Mode.NEVER);
+            binderBuilder.setInitialMode(ServiceController.Mode.NEVER);
+        }
+        controllers.add(dataSourceServiceBuilder.install());
+        controllers.add(referenceBuilder.install());
+        controllers.add(binderBuilder.install());
     }
 
-    protected abstract void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+    protected abstract ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException;
 
@@ -188,6 +165,7 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
     static void populateAddModel(final ModelNode existingModel, final ModelNode newModel,
             final String connectionPropertiesProp, final AttributeDefinition[] attributes) {
         if (existingModel.hasDefined(connectionPropertiesProp)) {
+
             for (Property property : existingModel.get(connectionPropertiesProp).asPropertyList()) {
                 newModel.get(connectionPropertiesProp, property.getName()).set(property.getValue().asString());
             }

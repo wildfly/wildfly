@@ -24,6 +24,7 @@ package org.jboss.as.jpa.service;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -46,12 +47,13 @@ public class JPAService implements Service<Void> {
         return defaultDataSourceName;
     }
 
-    public static void addService(final ServiceTarget target, final String defaultDataSourceName) {
+    public static ServiceController<?> addService(final ServiceTarget target, final String defaultDataSourceName, final ServiceListener<Object>... listeners) {
         JPAService jpaService = new JPAService();
         JPAService.defaultDataSourceName = defaultDataSourceName;
-        target.addService(SERVICE_NAME, jpaService)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install();
+        return target.addService(SERVICE_NAME, jpaService)
+                .addListener(listeners)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     @Override

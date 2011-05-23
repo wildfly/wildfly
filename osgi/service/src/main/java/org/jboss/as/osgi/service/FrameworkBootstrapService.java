@@ -22,7 +22,12 @@
 
 package org.jboss.as.osgi.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 import java.io.File;
@@ -85,17 +90,20 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
     private final SubsystemState subsystemState;
 
-    public static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
+    public static Collection<ServiceController<?>> addService(final ServiceTarget target, final SubsystemState subsystemState, final ServiceListener<Object>... listeners) {
+        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
         FrameworkBootstrapService service = new FrameworkBootstrapService(subsystemState);
         ServiceBuilder<?> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
-        builder.install();
+        builder.addListener(listeners);
+        controllers.add(builder.install());
 
-        AutoInstallIntegration.addService(target, subsystemState);
-        FrameworkModuleIntegration.addService(target, subsystemState);
-        ModuleLoaderIntegration.addService(target);
-        SystemServicesIntegration.addService(target);
+        controllers.add(AutoInstallIntegration.addService(target, subsystemState));
+        controllers.add(FrameworkModuleIntegration.addService(target, subsystemState));
+        controllers.add(ModuleLoaderIntegration.addService(target));
+        controllers.add(SystemServicesIntegration.addService(target));
+        return controllers;
     }
 
     private FrameworkBootstrapService(SubsystemState subsystemState) {
@@ -170,13 +178,13 @@ public class FrameworkBootstrapService implements Service<Void> {
         private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
         private ServiceContainer serviceContainer;
 
-        public static void addService(final ServiceTarget target) {
+        public static ServiceController<?> addService(final ServiceTarget target) {
             SystemServicesIntegration service = new SystemServicesIntegration();
             ServiceBuilder<SystemServicesProvider> builder = target.addService(Services.SYSTEM_SERVICES_PROVIDER, service);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
             builder.addDependency(Services.FRAMEWORK_CREATE);
             builder.setInitialMode(Mode.ON_DEMAND);
-            builder.install();
+            return builder.install();
         }
 
         private SystemServicesIntegration() {
@@ -218,12 +226,12 @@ public class FrameworkBootstrapService implements Service<Void> {
         private final SubsystemState subsystemState;
         private Module frameworkModule;
 
-        private static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
+        private static ServiceController<?> addService(final ServiceTarget target, final SubsystemState subsystemState) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(subsystemState);
             ServiceBuilder<?> builder = target.addService(Services.FRAMEWORK_MODULE_PROVIDER, service);
             builder.addDependency(Services.SYSTEM_MODULE_PROVIDER, Module.class, service.injectedSystemModule);
             builder.setInitialMode(Mode.ON_DEMAND);
-            builder.install();
+            return builder.install();
         }
 
         private FrameworkModuleIntegration(SubsystemState subsystemState) {

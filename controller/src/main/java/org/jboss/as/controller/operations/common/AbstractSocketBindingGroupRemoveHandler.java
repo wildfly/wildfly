@@ -19,6 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
@@ -40,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractSocketBindingGroupRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public abstract class AbstractSocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -50,28 +53,12 @@ public abstract class AbstractSocketBindingGroupRemoveHandler implements ModelRe
     protected AbstractSocketBindingGroupRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String name = address.getLastElement().getValue();
-        ModelNode model = context.getSubModel();
-        ModelNode compensating = getCompensatingOperation(model, operation);
-        return uninstallSocketBindingGroup(name, model, context, resultHandler, compensating);
-    }
-
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
     }
 
-    protected abstract ModelNode getCompensatingOperation(ModelNode model, ModelNode operation);
-
-    protected OperationResult uninstallSocketBindingGroup(String name, ModelNode model, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
+    protected boolean requiresRuntime() {
+        return false;
     }
-
 }

@@ -22,18 +22,15 @@
 
 package org.jboss.as.mc;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
+import java.util.List;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Microcontainer substem add.
@@ -42,25 +39,26 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author Emanuel Muckenhuber
  */
-class McSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class McSubsystemAdd extends AbstractAddStepHandler {
 
     static final McSubsystemAdd INSTANCE = new McSubsystemAdd();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-
-        if(context instanceof BootOperationContext) {
-            final BootOperationContext bootContext = (BootOperationContext) context;
-            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MC_BEAN_DEPLOYMENT, new KernelDeploymentParsingProcessor());
-            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MC_BEAN_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
-        }
-
-        context.getSubModel().setEmptyObject();
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.setEmptyObject();
     }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        if (context.isBooting()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+                public void execute(DeploymentProcessorTarget processorTarget) {
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MC_BEAN_DEPLOYMENT, new KernelDeploymentParsingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MC_BEAN_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+        }
+    }
+
+    protected boolean requiresRuntimeVerification() {
+        return false;
+    }
 }

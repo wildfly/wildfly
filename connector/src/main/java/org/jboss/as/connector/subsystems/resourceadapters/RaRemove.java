@@ -22,42 +22,33 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.ConnectorServices;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdapeters;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class RaRemove extends AbstractRaOperation implements ModelRemoveOperationHandler {
+public class RaRemove extends AbstractRaOperation implements NewStepHandler {
     static final RaRemove INSTANCE = new RaRemove();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) {
+
         final ModelNode opAddr = operation.require(OP_ADDR);
         final String archive = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         operation.get(ARCHIVE).set(archive);
 
         // Compensating is add
-        final ModelNode model = context.getSubModel();
+        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
 
         if (model.hasDefined(RESOURCEADAPTERS)) {
@@ -66,27 +57,17 @@ public class RaRemove extends AbstractRaOperation implements ModelRemoveOperatio
                 compensating.get(RESOURCEADAPTERS).add(raCompensatingNode);
             }
         }
+        context.removeModel(PathAddress.EMPTY_ADDRESS);
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ModifiableResourceAdapeters resourceAdapters = buildResourceAdaptersObject(operation);
+        context.addStep(new NewStepHandler() {
+            public void execute(NewOperationContext context, ModelNode operation) {
+                context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
 
-                    final ServiceController<?> raService = context.getServiceRegistry().getService(
-                            ConnectorServices.RESOURCEADAPTERS_SERVICE);
-                    if (raService != null) {
-                        ((ModifiableResourceAdapeters) raService.getValue()).removeAllResourceAdapters(resourceAdapters
-                                .getResourceAdapters());
-                    }
-
-                    resultHandler.handleResultComplete();
-
+                if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                    // TODO:  RE-ADD SERVICES
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        return new BasicOperationResult(compensating);
+            }
+        }, NewOperationContext.Stage.RUNTIME);
+        context.completeStep();
     }
 }

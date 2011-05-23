@@ -19,20 +19,14 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -42,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 // TODO consider making this concrete and folding in subclass logic
-public abstract class AbstractExtensionAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public abstract class AbstractExtensionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -59,18 +53,11 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
     protected AbstractExtensionAddHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        ModelNode opAddr = operation.get(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String module = address.getLastElement().getValue();
-        context.getSubModel().get(ExtensionDescription.MODULE).set(module);
-        installExtension(module, context);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(AbstractExtensionRemoveHandler.getRemoveExtensionOperation(opAddr));
+        model.get(ExtensionDescription.MODULE).set(module);
+        installExtension(module, model);
     }
 
     @Override
@@ -78,6 +65,9 @@ public abstract class AbstractExtensionAddHandler implements ModelAddOperationHa
         return ExtensionDescription.getExtensionAddOperation(locale);
     }
 
-    protected abstract void installExtension(String module, OperationContext context) throws OperationFailedException;
+    protected abstract void installExtension(String module, ModelNode model) throws OperationFailedException;
 
+    protected boolean requiresRuntime() {
+        return false;
+    }
 }

@@ -22,25 +22,19 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.common.Util;
+import java.util.List;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Thomas.Diesler@jboss.com
  * @author Emanuel Muckenhuber
  */
-class JMXSubsystemAdd implements ModelAddOperationHandler {
+class JMXSubsystemAdd extends AbstractAddStepHandler {
 
     static final JMXSubsystemAdd INSTANCE = new JMXSubsystemAdd();
 
@@ -48,25 +42,13 @@ class JMXSubsystemAdd implements ModelAddOperationHandler {
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        context.getSubModel().get(CommonAttributes.SERVER_BINDING);
-        context.getSubModel().get(CommonAttributes.REGISTRY_BINDING);
-
-        if(context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    // Add the MBean service
-                    MBeanServerService.addService(context.getServiceTarget());
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(Util.getResourceRemoveOperation(operation.require(OP_ADDR)));
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(CommonAttributes.SERVER_BINDING);
+        model.get(CommonAttributes.REGISTRY_BINDING);
     }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        // Add the MBean service
+        newControllers.add(MBeanServerService.addService(context.getServiceTarget(), verificationHandler));
+    }
 }

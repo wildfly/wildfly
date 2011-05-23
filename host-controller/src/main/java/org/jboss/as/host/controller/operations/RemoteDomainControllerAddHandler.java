@@ -19,26 +19,17 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import java.util.List;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
-import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installLocalDomainController;
-import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installRemoteDomainControllerConnection;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -48,16 +39,18 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.DomainModelProxy;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.LocalFileRepository;
+import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installLocalDomainController;
+import static org.jboss.as.host.controller.operations.DomainControllerAddUtil.installRemoteDomainControllerConnection;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class RemoteDomainControllerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
@@ -87,34 +80,17 @@ public class RemoteDomainControllerAddHandler implements ModelUpdateOperationHan
         this.parametersValidator.registerValidator(HOST, new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
-        parametersValidator.validate(operation);
-
-        final ModelNode model = context.getSubModel();
+    protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(DOMAIN_CONTROLLER, REMOTE, PORT).set(operation.require(PORT));
         model.get(DOMAIN_CONTROLLER, REMOTE, HOST).set(operation.require(HOST));
-        resultHandler.handleResultComplete();
+    }
 
-        if (context.getRuntimeContext() != null) {
-            final DomainModelImpl domainModel = domainModelProxy.getDomainModel();
-
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    final FileRepository fileRepository = new LocalFileRepository(environment);
-                    installRemoteDomainControllerConnection(domainModel.getHostModel(), serviceTarget, fileRepository);
-                    installLocalDomainController(environment, domainModel.getHostModel(), serviceTarget, true, fileRepository, domainModelProxy.getDomainModel());
-                }
-            });
-        }
-
-        ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-        return new BasicOperationResult(compensating);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final DomainModelImpl domainModel = domainModelProxy.getDomainModel();
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final FileRepository fileRepository = new LocalFileRepository(environment);
+        installRemoteDomainControllerConnection(domainModel.getHostModel(), serviceTarget, fileRepository);
+        newControllers.addAll(installLocalDomainController(environment, domainModel.getHostModel(), serviceTarget, true, fileRepository, domainModelProxy.getDomainModel(), verificationHandler));
     }
 
     @Override

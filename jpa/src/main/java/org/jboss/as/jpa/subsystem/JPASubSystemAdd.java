@@ -21,15 +21,14 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import java.util.List;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -42,10 +41,11 @@ import org.jboss.as.jpa.processor.PersistenceRefProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitDeploymentProcessor;
 import org.jboss.as.jpa.processor.PersistenceUnitParseProcessor;
 import org.jboss.as.jpa.service.JPAService;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.util.Locale;
@@ -61,7 +61,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  * @author Scott Marlow
  */
 
-class JPASubSystemAdd implements ModelAddOperationHandler, BootOperationHandler, DescriptionProvider {
+class JPASubSystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
 
     static ModelNode getAddOperation(ModelNode address, ModelNode currentModel) {
@@ -81,52 +81,40 @@ class JPASubSystemAdd implements ModelAddOperationHandler, BootOperationHandler,
         runtimeValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-        throws OperationFailedException {
 
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         modelValidator.validate(operation);
-        ModelNode defaultDSNode = operation.require(CommonAttributes.DEFAULT_DATASOURCE);
-        context.getSubModel().get(CommonAttributes.DEFAULT_DATASOURCE).set(defaultDSNode);
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+        final ModelNode defaultDSNode = operation.require(CommonAttributes.DEFAULT_DATASOURCE);
+        model.get(CommonAttributes.DEFAULT_DATASOURCE).set(defaultDSNode);
+    }
 
-        if (context instanceof BootOperationContext) {
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        if (context.isBooting()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+                protected void execute(DeploymentProcessorTarget processorTarget) {
 
-            /* set Hibernate persistence provider as the default provider */
-            javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
-                PersistenceProviderResolverImpl.getInstance());
+                    /* set Hibernate persistence provider as the default provider */
+                    javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
+                            PersistenceProviderResolverImpl.getInstance());
 
-            PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(
-                "org.hibernate.ejb.HibernatePersistence", new HibernatePersistenceProviderAdaptor());
+                    PersistenceProviderAdapterRegistry.putPersistenceProviderAdaptor(
+                            "org.hibernate.ejb.HibernatePersistence", new HibernatePersistenceProviderAdaptor());
 
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_ANNOTATION, new JPAAnnotationParseProcessor());
-            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
-            // TODO: enable updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
-            updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_PERSISTENCE_REF, new PersistenceRefProcessor());
-            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor());
-        }
-
-        if (context.getRuntimeContext() != null) {
-            runtimeValidator.validate(operation.resolve());
-            final String dataSourceName = defaultDSNode.resolve().asString();
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    JPAService.addService(target, dataSourceName);
-                    resultHandler.handleResultComplete();
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_PERSISTENCE_ANNOTATION, new JPAAnnotationParseProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
+                    // TODO: enable updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_PERSISTENCE_REF, new PersistenceRefProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor());
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
+        runtimeValidator.validate(operation.resolve());
+        final ModelNode defaultDSNode = operation.require(CommonAttributes.DEFAULT_DATASOURCE);
+        final String dataSourceName = defaultDSNode.resolve().asString();
+        final ServiceTarget target = context.getServiceTarget();
+        newControllers.add(JPAService.addService(target, dataSourceName, verificationHandler));
 
-        return new BasicOperationResult(compensatingOperation);
     }
 
     @Override

@@ -23,6 +23,8 @@
 package org.jboss.as.naming.service;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -112,16 +114,11 @@ public class NamingExtension implements Extension {
         }
     }
 
-    private static class NamingSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class NamingSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final NamingSubsystemDescribeHandler INSTANCE = new NamingSubsystemDescribeHandler();
-        @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-            ModelNode node = new ModelNode();
-            node.add(createAddOperation());
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+        public void execute(NewOperationContext context, ModelNode operation) {
+            context.getResult().add(createAddOperation());
         }
 
         @Override

@@ -19,19 +19,13 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -42,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingGroupIncludeAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class SocketBindingGroupIncludeAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-include";
 
@@ -64,19 +58,16 @@ public class SocketBindingGroupIncludeAddHandler implements ModelUpdateOperation
     private SocketBindingGroupIncludeAddHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(INCLUDE);
-        ModelNode includes = context.getSubModel().get(INCLUDE);
+        ModelNode includes = model.get(INCLUDE);
         typeValidator.validateParameter(INCLUDE, param);
 
         includes.add(param);
-        resultHandler.handleResultComplete();
-        ModelNode compensating = SocketBindingGroupIncludeRemoveHandler.getOperation(operation.get(OP_ADDR), param.asString());
-        return new BasicOperationResult(compensating);
+    }
+
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     @Override

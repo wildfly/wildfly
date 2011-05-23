@@ -38,15 +38,13 @@ import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
 public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
     static final SizeRotatingHandlerUpdateProperties INSTANCE = new SizeRotatingHandlerUpdateProperties();
 
-    protected void updateModel(final ModelNode operation, final ModelNode compensating, final ModelNode model) {
-        super.updateModel(operation, compensating, model);
+    protected void updateModel(final ModelNode operation, final ModelNode model) {
+        super.updateModel(operation, model);
 
         if (operation.hasDefined(MAX_BACKUP_INDEX)) {
-            apply(model, compensating, MAX_BACKUP_INDEX);
             apply(operation, model, MAX_BACKUP_INDEX);
         }
         if (operation.hasDefined(ROTATE_SIZE)) {
-            apply(model, compensating, ROTATE_SIZE);
             apply(operation, model, ROTATE_SIZE);
         }
     }

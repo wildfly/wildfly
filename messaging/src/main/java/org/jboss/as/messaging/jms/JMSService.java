@@ -33,7 +33,9 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -42,6 +44,7 @@ import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.CompositeName;
 import javax.naming.Name;
+import org.omg.IOP.ServiceContext;
 
 /**
  * The {@code JMSServerManager} service.
@@ -53,11 +56,12 @@ public class JMSService implements Service<JMSServerManager> {
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
     private JMSServerManager jmsServer;
 
-    public static void addService(final ServiceTarget target) {
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
         final JMSService service = new JMSService();
-        target.addService(JMSServices.JMS_MANAGER, service)
+        return target.addService(JMSServices.JMS_MANAGER, service)
             .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
             .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.getNamingStore())
+            .addListener(listeners)
             .setInitialMode(Mode.ACTIVE)
             .install();
     }

@@ -22,29 +22,20 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
 import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Update removing a web connector
  *
  * @author Emanuel Muckenhuber
  */
-class WebConnectorRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+class WebConnectorRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final WebConnectorRemove INSTANCE = new WebConnectorRemove();
 
@@ -52,32 +43,14 @@ class WebConnectorRemove implements ModelRemoveOperationHandler, DescriptionProv
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        context.removeService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
+    }
 
-        final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = WebConnectorAdd.getRecreateOperation(opAddr, subModel);
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry()
-                            .getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
-                    if (service != null) {
-                        service.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 
     @Override

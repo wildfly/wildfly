@@ -22,23 +22,10 @@
 
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.dmr.ModelNode;
 
@@ -47,23 +34,19 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public final class JVMRemoveHandler implements NewStepHandler, DescriptionProvider {
+public final class JVMRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
     public static final JVMRemoveHandler INSTANCE = new JVMRemoveHandler();
 
 
-
-    @Override
-    public void execute(NewOperationContext context, ModelNode operation) {
-        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-        context.removeModel(PathAddress.EMPTY_ADDRESS);
-
-        context.completeStep();
+    protected boolean requiresRuntime() {
+        return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModelNode getModelDescription(final Locale locale) {
         return JVMDescriptions.getJVMRemoveDescription(locale);

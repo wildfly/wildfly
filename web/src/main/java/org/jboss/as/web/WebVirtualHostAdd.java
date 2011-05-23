@@ -22,12 +22,14 @@
 
 package org.jboss.as.web;
 
-import org.apache.catalina.Host;
-import org.jboss.as.controller.BasicOperationResult;
+import java.util.List;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -48,15 +50,13 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
-import java.util.Locale;
-
 /**
  * {@code OperationHandler} responsible for adding a virtual host.
  *
  * @author Emanuel Muckenhuber
  * @author Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
-class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider {
+class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final WebVirtualHostAdd INSTANCE = new WebVirtualHostAdd();
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.log.dir";
@@ -68,87 +68,70 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
         //
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
-        subModel.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
-        subModel.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
-        subModel.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
+        model.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
+        model.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
+        model.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
 
         final boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
-        subModel.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
+        model.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation), welcome);
-                    final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
-                            .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
-                            .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
-                    if (operation.hasDefined(Constants.ACCESS_LOG)) {
-                        final ModelNode accessLog = operation.get(Constants.ACCESS_LOG);
-                        service.setAccessLog(accessLog.clone());
-                        // Create the access log service
-                        accessLogService(name, accessLog, serviceTarget);
-                        serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
-                    }
-                    if (operation.hasDefined(Constants.REWRITE)) {
-                        service.setRewrite(operation.get(Constants.REWRITE).clone());
-                    }
-
-                    boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
-
-                    if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
-                        if (welcome)
-                            throw new OperationFailedException(new ModelNode().set("A default module can not be specified when the welcome root is enabled."));
-                        service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
-                    }
-
-                    serviceBuilder.install();
-
-                    if (welcome) {
-                         final WelcomeContextService welcomeService = new WelcomeContextService();
-                            context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB.append(name).append("welcome"), welcomeService)
-                                    .addDependency(AbstractPathService.pathNameOf(HOME_DIR), String.class, welcomeService.getPathInjector())
-                                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), VirtualHost.class, welcomeService.getHostInjector())
-                                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagementService.class, welcomeService.getHttpMSInjector())
-                                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                                    .install();
-                    }
-
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final WebVirtualHostService service = new WebVirtualHostService(name, aliases(operation), welcome);
+        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
+                .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
+                .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
+        if (operation.hasDefined(Constants.ACCESS_LOG)) {
+            final ModelNode accessLog = operation.get(Constants.ACCESS_LOG);
+            service.setAccessLog(accessLog.clone());
+            // Create the access log service
+            accessLogService(name, accessLog, serviceTarget);
+            serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
         }
-        return new BasicOperationResult(compensatingOperation);
+        if (operation.hasDefined(Constants.REWRITE)) {
+            service.setRewrite(operation.get(Constants.REWRITE).clone());
+        }
+
+        if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
+            if (welcome)
+                throw new OperationFailedException(new ModelNode().set("A default module can not be specified when the welcome root is enabled."));
+            service.setDefaultWebModule(operation.get(Constants.DEFAULT_WEB_MODULE).asString());
+        }
+
+        serviceBuilder.addListener(verificationHandler);
+        newControllers.add(serviceBuilder.install());
+
+        if (welcome) {
+            final WelcomeContextService welcomeService = new WelcomeContextService();
+            newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB.append(name).append("welcome"), welcomeService)
+                    .addDependency(AbstractPathService.pathNameOf(HOME_DIR), String.class, welcomeService.getPathInjector())
+                    .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name), VirtualHost.class, welcomeService.getHostInjector())
+                    .addDependency(ServiceBuilder.DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagementService.class, welcomeService.getHttpMSInjector())
+                    .addListener(verificationHandler)
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install());
+        }
     }
 
     static String[] aliases(final ModelNode node) {
-        if(node.hasDefined(Constants.ALIAS)) {
+        if (node.hasDefined(Constants.ALIAS)) {
             final ModelNode aliases = node.require(Constants.ALIAS);
             final int size = aliases.asInt();
             final String[] array = new String[size];
-            for(int i = 0; i < size; i ++) array[i] = aliases.get(i).asString();
+            for (int i = 0; i < size; i++) array[i] = aliases.get(i).asString();
             return array;
         }
         return NO_ALIASES;
     }
 
     static void accessLogService(final String hostName, final ModelNode element, final ServiceTarget target) {
-        if(element.has(Constants.ACCESS_LOG)) {
+        if (element.has(Constants.ACCESS_LOG)) {
             final ModelNode accessLog = element.get(Constants.ACCESS_LOG);
             final String relativeTo = accessLog.has(RELATIVE_TO) ? accessLog.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
             final String path = accessLog.has(PATH) ? accessLog.get(PATH).asString() : hostName;
@@ -165,13 +148,13 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
 
-        if(subModel.hasDefined(Constants.ALIAS)) {
+        if (subModel.hasDefined(Constants.ALIAS)) {
             operation.get(Constants.ALIAS).set(subModel.get(Constants.ALIAS));
         }
-        if(subModel.hasDefined(Constants.ACCESS_LOG)) {
+        if (subModel.hasDefined(Constants.ACCESS_LOG)) {
             operation.get(Constants.ACCESS_LOG).set(subModel.get(Constants.ACCESS_LOG));
         }
-        if(subModel.hasDefined(Constants.REWRITE)) {
+        if (subModel.hasDefined(Constants.REWRITE)) {
             operation.get(Constants.REWRITE).set(subModel.get(Constants.REWRITE));
         }
         return operation;

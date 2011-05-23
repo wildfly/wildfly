@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment.scanner;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
@@ -48,30 +50,24 @@ abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperati
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
+    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
             final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
-                    final ServiceController<?> controller = context.getServiceRegistry()
-                            .getService(DeploymentScannerService.getServiceName(name));
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
                     if (controller == null) {
                         throw new OperationFailedException(new ModelNode().set("scanner not configured"));
                     } else {
                         final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
-
                         updateScanner(scanner, newValue);
-
-                        resultHandler.handleResultComplete();
                     }
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
         return false;
     }
