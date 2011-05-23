@@ -37,6 +37,7 @@
         </xs:annotation>
       <xs:complexType>
       <xs:all>
+          <xs:element maxOccurs="1" minOccurs="0" name="name" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean" />
           <!-- no file system deployment in AS 
           <xs:element maxOccurs="1" minOccurs="0" type="file-deployment-enabled"/>
@@ -82,9 +83,12 @@
           <xs:element maxOccurs="1" minOccurs="0" name="persist-id-cache" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="remoting-interceptors" type="remoting-interceptorsType" />
           <xs:element maxOccurs="1" minOccurs="0" name="backup" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="allow-failback" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="failback-delay" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="shared-store" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="backup-connector-ref" type="backup-connectorType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType" />
           
           <xs:element maxOccurs="1" minOccurs="0" name="connectors">
               <xs:complexType>
@@ -181,7 +185,8 @@
     <xs:element name="group-address" type="xs:string"/>
     <xs:element name="group-port" type="xs:int"/>
     <xs:element name="broadcast-period" type="xs:long"/>
-
+    <xs:element name="initial-wait-timeout" type="xs:int"/>
+    
     <xs:complexType name="broadcast-groupType">
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
@@ -189,7 +194,7 @@
           <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
           <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
           <xs:element maxOccurs="1" minOccurs="0" ref="broadcast-period" />
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="discovery-groupType" />
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xs:string" />
        </xs:sequence>
        <xs:attribute name="name" type="xs:ID" use="required"/>
     </xs:complexType>
@@ -200,6 +205,7 @@
           <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
           <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
           <xs:element maxOccurs="1" minOccurs="0" name="refresh-timeout" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" ref="initial-wait-timeout" />
        </xs:sequence>
        <xs:attribute name="name" type="xs:ID" use="required"/>
     </xs:complexType>
@@ -209,11 +215,6 @@
           <xs:attribute name="discovery-group-name" type="xs:IDREF" />
        </xs:complexType>
     </xs:element>
-
-    <xs:complexType name="connector-refType">
-       <xs:attribute name="connector-name" type="xs:IDREF" use="required" />
-       <xs:attribute name="backup-connector-name" type="xs:IDREF" use="optional" />
-    </xs:complexType>
 
     <xs:complexType name="remoting-interceptorsType">
        <xs:sequence>
@@ -342,6 +343,7 @@
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="1" name="queue-name" type="xs:IDREF" />
           <xs:element maxOccurs="1" minOccurs="0" name="forwarding-address" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="0" name="ha" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="filter">
              <xs:complexType>
                 <xs:attribute name="string" type="xs:string" use="required"/>
@@ -357,7 +359,13 @@
           <xs:element maxOccurs="1" minOccurs="0" name="user" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="password" type="xs:string" />
           <xs:choice>
-             <xs:element maxOccurs="1" minOccurs="1" name="connector-ref" type="connector-refType" />
+             <xs:element maxOccurs="1" minOccurs="1" name="static-connectors">
+                <xs:complexType>
+                   <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="1" name="connector-ref" type="xs:string"/>
+                   </xs:sequence>
+                </xs:complexType>
+             </xs:element>				
              <xs:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
                 <xs:complexType>
                    <xs:attribute name="discovery-group-name" type="xs:IDREF" use="required" />
@@ -371,14 +379,22 @@
     <xs:complexType name="clusterConnectionType"> 
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="1" name="address" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="1" name="connector-ref" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />   
           <xs:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="forward-when-no-consumers" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-hops" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xs:int" />
           <xs:choice>
-             <xs:element maxOccurs="unbounded" minOccurs="1" name="connector-ref" type="connector-refType" />
-             <xs:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
+             <xs:element maxOccurs="1" minOccurs="0" name="static-connectors">
+                <xs:complexType>
+                   <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xs:string"/>
+                   </xs:sequence>
+                   <xs:attribute name="allow-direct-connections-only" type="xs:boolean" use="optional"/>
+                </xs:complexType>
+             </xs:element>	
+             <xs:element maxOccurs="1" minOccurs="0" name="discovery-group-ref">
                 <xs:complexType>
                    <xs:attribute name="discovery-group-name" type="xs:IDREF" use="required" />
                 </xs:complexType>
@@ -459,6 +475,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="max-delivery-attempts" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-size-bytes" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="page-size-bytes" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="page-max-cache-size" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="address-full-policy" type="addressFullMessagePolicyType" />                
           <xs:element maxOccurs="1" minOccurs="0" name="message-counter-history-day-limit" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="last-value-queue" type="xs:boolean" />
@@ -487,7 +504,7 @@
         <xs:attribute name="name" type="xs:ID" use="required"/>
     </xs:complexType>
     
-    <xs:complexType name="backup-connectorType">
+    <xs:complexType name="live-connectorType">
        <xs:attribute name="connector-name" type="xs:IDREF" use="required" />
     </xs:complexType>
  
