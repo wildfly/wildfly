@@ -10,7 +10,8 @@ Supported commands:
  ls						- list the contents of the node path;
  pwn (or pwd)			- prints the current working node;
  quit (or q)			- quit the command line interface;
- undeploy				- undeploy an application.
+ undeploy				- undeploy an application;
+ version				- prints the version and environment information.
 
 For a more detailed description of a specific command, execute the command with '--help' as the argument.
 

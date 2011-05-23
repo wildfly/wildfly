@@ -48,19 +48,6 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   goto END
 )
 
-echo ===============================================================================
-echo.
-echo   JBoss Admin Command-line Interface
-echo.
-echo   JBOSS_HOME: %JBOSS_HOME%
-echo.
-echo   JAVA: %JAVA%
-echo.
-echo   JAVA_OPTS: %JAVA_OPTS%
-echo.
-echo ===============================================================================
-echo.
-
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_HOME%\modules" ^

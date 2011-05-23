@@ -52,18 +52,4 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
 fi
 
-# Display our environment
-echo "========================================================================="
-echo ""
-echo "  JBoss Admin Command-line Interface"
-echo ""
-echo "  JBOSS_HOME: $JBOSS_HOME"
-echo ""
-echo "  JAVA: $JAVA"
-echo ""
-echo "  JAVA_OPTS: $JAVA_OPTS"
-echo ""
-echo "========================================================================="
-echo ""
-
 eval \"$JAVA\" $JAVA_OPTS -jar \"$JBOSS_HOME/jboss-modules.jar\" -mp \"$JBOSS_HOME/modules\" org.jboss.as.cli '"$@"'

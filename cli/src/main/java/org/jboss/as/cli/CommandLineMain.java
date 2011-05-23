@@ -60,6 +60,7 @@ import org.jboss.as.cli.handlers.OperationRequestHandler;
 import org.jboss.as.cli.handlers.PrefixHandler;
 import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
+import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
 import org.jboss.as.cli.handlers.batch.BatchDiscardHandler;
 import org.jboss.as.cli.handlers.batch.BatchEditLineHandler;
@@ -120,6 +121,8 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new BatchRemoveLineHandler(), "remove-batch-line");
         cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
+
+        cmdRegistry.registerHandler(VersionHandler.INSTANCE, "version");
     }
 
     public static void main(String[] args) throws Exception {
@@ -130,9 +133,15 @@ public class CommandLineMain {
         boolean connect = false;
         String defaultControllerHost = null;
         int defaultControllerPort = -1;
+        boolean version = false;
         for(String arg : args) {
-            if(arg.startsWith("controller=")) {
-                String value = arg.substring(11);
+            if(arg.startsWith("controller=") || arg.startsWith("--controller=")) {
+                final String value;
+                if(arg.startsWith("--")) {
+                    value = arg.substring(13);
+                } else {
+                    value = arg.substring(11);
+                }
                 String portStr = null;
                 int colonIndex = value.indexOf(':');
                 if(colonIndex < 0) {
@@ -159,9 +168,11 @@ public class CommandLineMain {
                         argError = "The port must be a valid non-negative integer: '" + arg + "'";
                     }
                 }
-            } else if("--connect".equals(arg)) {
+            } else if("--connect".equals(arg) || "-c".equals(arg)) {
                 connect = true;
-            } else if(arg.startsWith("file=")) {
+            } else if("--version".equals(arg)) {
+                version = true;
+            } else if(arg.startsWith("file=") || arg.startsWith("--file=")) {
                 if(file != null) {
                     argError = "Duplicate argument 'file'.";
                     break;
@@ -171,7 +182,7 @@ public class CommandLineMain {
                     break;
                 }
 
-                final String fileName = arg.substring(5);
+                final String fileName = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
                 if(!fileName.isEmpty()) {
                     file = new File(fileName);
                     if(!file.exists()) {
@@ -182,7 +193,7 @@ public class CommandLineMain {
                     argError = "Argument 'file' is missing value.";
                     break;
                 }
-            } else if(arg.startsWith("commands=")) {
+            } else if(arg.startsWith("commands=") || arg.startsWith("--commands=")) {
                 if(file != null) {
                     argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
                     break;
@@ -191,8 +202,9 @@ public class CommandLineMain {
                     argError = "Duplicate argument 'command'/'commands'.";
                     break;
                 }
-                commands = arg.substring(9).split(",+");
-            } else if(arg.startsWith("command=")) {
+                final String value = arg.startsWith("--") ? arg.substring(11) : arg.substring(9);
+                commands = value.split(",+");
+            } else if(arg.startsWith("command=") || arg.startsWith("--command=")) {
                 if(file != null) {
                     argError = "Only one of 'file', 'commands' or 'command' can appear as the argument at a time.";
                     break;
@@ -201,12 +213,19 @@ public class CommandLineMain {
                     argError = "Duplicate argument 'command'/'commands'.";
                     break;
                 }
-                commands = new String[]{arg.substring(8)};
+                final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
+                commands = new String[]{value};
             }
         }
 
         if(argError != null) {
             System.err.println(argError);
+            return;
+        }
+
+        if(version) {
+            final CommandContextImpl cmdCtx = new CommandContextImpl();
+            VersionHandler.INSTANCE.handle(cmdCtx);
             return;
         }
 
