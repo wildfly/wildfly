@@ -21,79 +21,26 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.Constants.*;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class JcaSubSystemRemove implements ModelRemoveOperationHandler {
+public class JcaSubSystemRemove extends AbstractRemoveStepHandler {
 
-    static final OperationHandler INSTANCE = new JcaSubSystemRemove();
+    static final NewStepHandler INSTANCE = new JcaSubSystemRemove();
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        // Apply to the model
-        final ModelNode model = context.getSubModel();
-        final String name = model.require(NAME).asString();
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(
-                            ConnectorServices.CONNECTOR_CONFIG_SERVICE);
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        // Compensating is add
-        final ModelNode compensating = new ModelNode();
-        compensating.get(OP_ADDR).set(operation.require(ADDRESS));
-        compensating.get(OP).set(ADD);
-        compensating.get(NAME).set(name);
-        if (model.has(ARCHIVE_VALIDATION_ENABLED)) {
-            compensating.get(ARCHIVE_VALIDATION_ENABLED).set(model.get(ARCHIVE_VALIDATION_ENABLED));
-        }
-        if (model.has(ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
-            compensating.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR));
-        }
-        if (model.has(ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
-            compensating.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN));
-        }
-        if (model.has(BEAN_VALIDATION_ENABLED)) {
-            compensating.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
-        }
-        if (model.has(CACHED_CONNECTION_MANAGER_DEBUG)) {
-            compensating.get(CACHED_CONNECTION_MANAGER_DEBUG).set(model.get(CACHED_CONNECTION_MANAGER_DEBUG));
-        }
-        if (model.has(CACHED_CONNECTION_MANAGER_ERROR)) {
-            compensating.get(CACHED_CONNECTION_MANAGER_ERROR).set(model.get(CACHED_CONNECTION_MANAGER_ERROR));
-        }
-        return new BasicOperationResult(compensating);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        context.removeService(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
     }
+
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
+    }
+
 }

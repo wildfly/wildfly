@@ -22,20 +22,12 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -44,34 +36,25 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-
 /**
  * Operation handler responsible for disabling an existing data-source.
+ *
  * @author John Bailey
  */
-public class DataSourceDisable implements ModelUpdateOperationHandler {
+public class DataSourceDisable implements NewStepHandler {
     static final DataSourceDisable INSTANCE = new DataSourceDisable();
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
-        final ModelNode opAddr = operation.require(OP_ADDR);
+    public void execute(NewOperationContext context, ModelNode operation) {
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(false);
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ENABLE);
-        compensatingOperation.get(OP_ADDR).set(opAddr);
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(final NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final String jndiName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
-        final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
-
-        // update the model
-        context.getSubModel().get(ENABLED).set(false);
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(final RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
+                    final ServiceRegistry registry = context.getServiceRegistry(false);
 
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
@@ -82,22 +65,19 @@ public class DataSourceDisable implements ModelUpdateOperationHandler {
                                 @Override
                                 public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                                     if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
-                                        resultHandler.handleResultComplete();
                                         controller.removeListener(this);
+                                        context.completeStep();
                                     }
                                 }
                             });
                         } else {
-                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName
-                                    + "] is not enabled"));
+                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not enabled"));
                         }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName
-                                + "] is not available"));
+                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not available"));
                     }
 
-                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                            .append(jndiName);
+                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> referenceController = registry.getService(referenceServiceName);
                     if (referenceController != null && ServiceController.State.UP.equals(referenceController.getState())) {
                         referenceController.setMode(ServiceController.Mode.NEVER);
@@ -109,11 +89,8 @@ public class DataSourceDisable implements ModelUpdateOperationHandler {
                         binderController.setMode(ServiceController.Mode.NEVER);
                     }
                 }
-
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
     }
 }

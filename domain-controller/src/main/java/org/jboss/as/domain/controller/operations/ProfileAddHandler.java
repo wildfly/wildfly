@@ -22,46 +22,28 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ProfileAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class ProfileAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final ProfileAddHandler INSTANCE = new ProfileAddHandler();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
+    protected void populateModel(ModelNode operation, ModelNode model) {
         if (operation.has(INCLUDES)) {
-            context.getSubModel().get(INCLUDES).set(operation.get(INCLUDES));
+            model.get(INCLUDES).set(operation.get(INCLUDES));
         }
-        context.getSubModel().get(SUBSYSTEM).setEmptyObject(); // initialize the subsystems
+    }
 
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     @Override

@@ -22,22 +22,18 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.List;
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
@@ -45,44 +41,30 @@ import org.jboss.msc.service.ServiceController.Mode;
  *
  * @author Jean-Frederic Clere
  */
-class ModClusterSubsystemAdd implements ModelAddOperationHandler, DescriptionProvider {
+class ModClusterSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
     private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
 
-    @Override
-    public  OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.set(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG));
+    }
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        compensatingOperation.get(ModelDescriptionConstants.OP_ADDR).set(operation.require(ModelDescriptionConstants.OP_ADDR));
-
-        final ModelNode config = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
-
-        context.getSubModel().set(config);
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    try {
-                    // Add mod_cluster service
-                    final ModClusterService service = new ModClusterService(config.clone());
-                    context.getServiceTarget().addService(ModClusterService.NAME, service)
-                        // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
-                        .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
-                        .setInitialMode(Mode.ACTIVE)
-                        .install();
-                    } catch(Throwable t) {
-                        log.error("Error: " + t);
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        try {
+            // Add mod_cluster service
+            final ModClusterService service = new ModClusterService(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).clone());
+            newControllers.add(context.getServiceTarget().addService(ModClusterService.NAME, service)
+                    // .addListener(new ResultHandler.ServiceStartListener(resultHandler))
+                    .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
+                    .addListener(verificationHandler)
+                    .setInitialMode(Mode.ACTIVE)
+                    .install());
+        } catch (Throwable t) {
+            log.error("Error: " + t);
+            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
-        return new BasicOperationResult(compensatingOperation);
     }
 
     @Override

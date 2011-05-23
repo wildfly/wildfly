@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -75,44 +77,38 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
     /**
      * Handle the actual runtime change.
      *
-     * @param operation the original operation
-     * @param attributeName the attribute name
+     * @param operation      the original operation
+     * @param attributeName  the attribute name
      * @param attributeValue the new attribute value
-     * @param binding the resolved socket binding
+     * @param binding        the resolved socket binding
      * @throws OperationFailedException
      */
     abstract void handleRuntimeChange(final ModelNode operation, final String attributeName, final ModelNode attributeValue, final SocketBinding binding) throws OperationFailedException;
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-                   final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+    protected void modelChanged(final NewOperationContext context, final ModelNode operation,
+                                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathElement element = address.getLastElement();
-        if (context.getRuntimeContext() != null && context instanceof ServerOperationContext) {
-            validateResolvedValue(attributeName, newValue);
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext runtimeTaskContext) throws OperationFailedException {
-                        final ServiceController<?> controller = runtimeTaskContext.getServiceRegistry().getRequiredService(SOCKET_BINDING.append(element.getValue()));
-                        if(controller != null) {
-                            final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
-                            if(requiresRestart() || binding.isBound()) {
-                                ServerOperationContext.class.cast(context).restartRequired();
-                            } else {
-                                handleRuntimeChange(operation, attributeName, newValue, binding);
-                            }
-                            resultHandler.handleResultComplete();
-                        } else {
-                            resultHandler.handleResultComplete();
-                        }
-                }
-            });
-        }
-        else {
-            resultHandler.handleResultComplete();
-        }
 
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(SOCKET_BINDING.append(element.getValue()));
+                    if (controller != null) {
+                        final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
+                        if (requiresRestart() || binding.isBound()) {
+                            ServerOperationContext.class.cast(context).restartRequired();
+                        } else {
+                            handleRuntimeChange(operation, attributeName, newValue, binding);
+                        }
+                    }
+                    context.completeStep();
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
     }
 
 }

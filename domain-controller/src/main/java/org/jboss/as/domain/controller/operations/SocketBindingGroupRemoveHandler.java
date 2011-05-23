@@ -36,12 +36,4 @@ public class SocketBindingGroupRemoveHandler extends AbstractSocketBindingGroupR
     private SocketBindingGroupRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected ModelNode getCompensatingOperation(ModelNode model, ModelNode operation) {
-        return SocketBindingGroupAddHandler.getOperation(operation.get(OP_ADDR), model);
-    }
-
 }

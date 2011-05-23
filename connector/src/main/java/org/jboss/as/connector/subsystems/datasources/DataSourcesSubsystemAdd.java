@@ -25,16 +25,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -45,30 +36,19 @@ import org.jboss.logging.Logger;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author John Bailey
  */
-class DataSourcesSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class DataSourcesSubsystemAdd extends AbstractAddStepHandler {
 
     static final DataSourcesSubsystemAdd INSTANCE = new DataSourcesSubsystemAdd();
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemAdd");
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        // Populate subModel
-        final ModelNode subModel = context.getSubModel();
-        subModel.setEmptyObject();
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.setEmptyObject();
+        model.get(DATA_SOURCE);
+        model.get(XA_DATA_SOURCE);
+        model.get(JDBC_DRIVER);
+    }
 
-        // Initialize the DS and Driver lists
-        subModel.get(DATA_SOURCE);
-        subModel.get(XA_DATA_SOURCE);
-        subModel.get(JDBC_DRIVER);
-
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(REMOVE);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected boolean requiresRuntime() {
+        return false;
     }
 }

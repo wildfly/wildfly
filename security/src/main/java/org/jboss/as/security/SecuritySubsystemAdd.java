@@ -22,7 +22,20 @@
 
 package org.jboss.as.security;
 
+import java.util.List;
+import java.util.Properties;
+import javax.security.auth.login.Configuration;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -33,32 +46,14 @@ import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
-
-import java.util.List;
-import java.util.Properties;
-
-import javax.security.auth.login.Configuration;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
 import org.jboss.as.security.processors.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;
 import org.jboss.as.security.service.SubjectFactoryService;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -82,7 +77,7 @@ import org.jboss.security.plugins.mapping.JBossMappingManager;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry
  */
-class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class SecuritySubsystemAdd implements NewStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.security");
 
@@ -111,12 +106,18 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
 
     static final SecuritySubsystemAdd INSTANCE = new SecuritySubsystemAdd();
 
-    /** Private to ensure singleton. */
+    /**
+     * Private to ensure singleton.
+     */
     private SecuritySubsystemAdd() {
     }
 
-    @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    /**
+     * {@inheritDoc}
+     */
+    public void execute(NewOperationContext context, ModelNode operation) {
+        final ModelNode opAddr = operation.get(OP_ADDR);
+
         String authenticationManagerClassName = "default";
         String callbackHandlerClassName = "default";
         String subjectFactoryClassName = "default";
@@ -125,7 +126,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
         String identityTrustManagerClassName = "default";
         String mappingManagerClassName = "default";
 
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
 
         Properties securityProperties = null;
         final List<ModelNode> securityPropertiesList;
@@ -139,6 +140,7 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                 securityProperties.setProperty(prop.getName(), prop.getValue().asString());
             }
         }
+
         if (operation.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
             authenticationManagerClassName = operation.get(AUTHENTICATION_MANAGER_CLASS_NAME).asString();
             subModel.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(authenticationManagerClassName);
@@ -220,14 +222,21 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
             resolvedSubjectFactoryClassName = subjectFactoryClassName;
         }
 
-        final Properties securityPropertiesStr = securityProperties;
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            if (context.isBooting()) {
+                context.addStep(new AbstractDeploymentChainStep() {
+                    protected void execute(DeploymentProcessorTarget processorTarget) {
+                        processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
+                                new SecurityDependencyProcessor());
+                    }
+                }, NewOperationContext.Stage.RUNTIME);
+            }
 
-        if (context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE,
-                            new SecurityDependencyProcessor());
+            final Properties securityPropertiesStr = securityProperties;
+
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     log.info("Activating Security Subsystem");
 
                     final ServiceTarget target = context.getServiceTarget();
@@ -270,19 +279,20 @@ class SecuritySubsystemAdd implements ModelAddOperationHandler, BootOperationHan
                     // add jaas configuration service
                     Configuration loginConfig = XMLLoginConfigImpl.getInstance();
                     final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
-                    target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
-                            .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    final ServiceController<?> controller = target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
+                            .addListener(verificationHandler)
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
 
-                    resultHandler.handleResultComplete();
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        context.removeService(controller);
+                    }
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
 
-        // Create the compensating operation
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
     }
-
 }

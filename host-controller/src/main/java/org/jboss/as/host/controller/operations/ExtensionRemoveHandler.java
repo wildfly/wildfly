@@ -18,10 +18,7 @@
  */
 package org.jboss.as.host.controller.operations;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.AbstractExtensionRemoveHandler;
-import org.jboss.as.server.BootOperationHandler;
 
 /**
  * Removes an extension from the server.
@@ -29,19 +26,10 @@ import org.jboss.as.server.BootOperationHandler;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
  */
-public class ExtensionRemoveHandler extends AbstractExtensionRemoveHandler implements BootOperationHandler {
+public class ExtensionRemoveHandler extends AbstractExtensionRemoveHandler {
 
     public static final ExtensionRemoveHandler INSTANCE = new ExtensionRemoveHandler();
 
     private ExtensionRemoveHandler() {
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void uninstallExtension(String module, OperationContext context) throws OperationFailedException {
-        // nothing to do right now
-    }
-
 }

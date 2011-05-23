@@ -18,31 +18,14 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
-
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -56,19 +39,31 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
@@ -114,12 +109,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         String name = operation.require(NAME).asString();
@@ -161,7 +151,7 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             unmanagedContentValidator.validate(contentItemNode);
         }
 
-        ModelNode rootModel = context.getSubModel();
+        ModelNode rootModel = context.getModel();
         ModelNode deployments = rootModel.get(DEPLOYMENT);
 
         ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
@@ -185,16 +175,10 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
                 }
             }
         }
-
-        ModelNode compensatingOp = operation.clone();
-        compensatingOp.get(RUNTIME_NAME).set(replaceNode.get(RUNTIME_NAME).asString());
-        compensatingOp.get(CONTENT).set(replaceNode.require(CONTENT).clone());
         // the content repo will already have these, note that content should not be empty
-        removeContentAdditions(compensatingOp.require(CONTENT));
+        removeContentAdditions(replaceNode.require(CONTENT));
 
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOp);
+        context.completeStep();
     }
 
     private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {

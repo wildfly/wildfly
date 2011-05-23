@@ -35,10 +35,9 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
 public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
     static final ConsoleHandlerUpdateProperties INSTANCE = new ConsoleHandlerUpdateProperties();
 
-    protected void updateModel(final ModelNode operation, final ModelNode compensating, ModelNode model) {
-        super.updateModel(operation, compensating, model);
+    protected void updateModel(final ModelNode operation, ModelNode model) {
+        super.updateModel(operation, model);
         if (operation.hasDefined(TARGET)) {
-            apply(model, compensating, TARGET);
             apply(operation, model, TARGET);
         }
     }

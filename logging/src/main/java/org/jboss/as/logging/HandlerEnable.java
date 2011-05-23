@@ -22,17 +22,9 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -44,22 +36,17 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author John Bailey
  */
-public class HandlerEnable implements ModelUpdateOperationHandler {
+public class HandlerEnable implements NewStepHandler {
     static final HandlerEnable INSTANCE = new HandlerEnable();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode opAddr = operation.require(OP_ADDR);
+    public void execute(final NewOperationContext context, ModelNode operation) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(DISABLE);
-        compensatingOperation.get(OP_ADDR).set(opAddr);
-
         final String name = address.getLastElement().getValue();
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(final NewOperationContext context, ModelNode operation) {
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
                     final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
                         controller.addListener(new AbstractServiceListener<Object>() {
@@ -68,17 +55,18 @@ public class HandlerEnable implements ModelUpdateOperationHandler {
                             }
 
                             public void serviceStarted(ServiceController<?> serviceController) {
-                                resultHandler.handleResultComplete();
+                                context.completeStep();
                             }
                         });
                     } else {
-                        resultHandler.handleResultComplete();
+                        context.completeStep();
                     }
+
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
+
     }
 }

@@ -21,68 +21,36 @@
  */
 package org.jboss.as.threads;
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ThreadFactoryRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+public class ThreadFactoryRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     static final ThreadFactoryRemove INSTANCE = new ThreadFactoryRemove();
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
-        final ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        context.removeService(ThreadsServices.threadFactoryName(name));
+    }
 
-        final ModelNode threadFactory = context.getSubModel();
-        final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
-        compensating.get(GROUP_NAME).set(threadFactory.get(GROUP_NAME));
-        compensating.get(THREAD_NAME_PATTERN).set(threadFactory.get(THREAD_NAME_PATTERN));
-        compensating.get(PRIORITY).set(threadFactory.get(PRIORITY));
-        compensating.get(PROPERTIES).set(threadFactory.get(PROPERTIES).clone());
-        threadFactory.clear();
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry()
-                            .getService(ThreadsServices.threadFactoryName(name));
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensating);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 
     @Override

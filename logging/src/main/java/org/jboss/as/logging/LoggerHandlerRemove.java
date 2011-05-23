@@ -22,65 +22,30 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class LoggerHandlerRemove implements ModelRemoveOperationHandler {
-    static final String OPERATION_NAME = "remove-logger-handler";
+class LoggerHandlerRemove extends AbstractRemoveStepHandler {
+
     static final LoggerHandlerRemove INSTANCE = new LoggerHandlerRemove();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        context.removeService(LogServices.handlerName(name));
+    }
 
-        final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set("set-root-logger");
-        for(final Property property : subModel.asPropertyList()) {
-            compensatingOperation.get(property.getName()).set(property.getValue());
-        }
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-                    try {
-                        final ServiceController<?> controller = registry.getService(LogServices.handlerName(name));
-                        if (controller != null) {
-                            controller.setMode(ServiceController.Mode.REMOVE);
-                        }
-                        resultHandler.handleResultComplete();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 
 }

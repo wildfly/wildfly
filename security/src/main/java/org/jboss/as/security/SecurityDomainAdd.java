@@ -63,6 +63,10 @@ import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_ALGORITHM;
 import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_PROVIDER;
 import static org.jboss.as.security.Constants.TYPE;
 
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import javax.security.auth.login.Configuration;
+import javax.transaction.TransactionManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,22 +74,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.login.Configuration;
-import javax.transaction.TransactionManager;
-
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
@@ -127,7 +121,7 @@ import org.jboss.security.plugins.TransactionManagerLocator;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Brian Stansberry
  */
-class SecurityDomainAdd implements ModelAddOperationHandler {
+class SecurityDomainAdd extends AbstractAddStepHandler {
 
     static final String OPERATION_NAME = ADD;
 
@@ -139,61 +133,51 @@ class SecurityDomainAdd implements ModelAddOperationHandler {
 
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
 
-    /** Private to ensure a singleton. */
+    /**
+     * Private to ensure a singleton.
+     */
     private SecurityDomainAdd() {
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        ModelNode opAddr = operation.require(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        Util.copyParamsToModel(operation, model);
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
-
-        Util.copyParamsToModel(operation, context.getSubModel());
-
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, operation);
         final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(securityDomain, operation);
         final String cacheType = getAuthenticationCacheType(operation);
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
-                            applicationPolicy, jsseSecurityDomain, cacheType);
-                    final ServiceTarget target = context.getServiceTarget();
-                    // some login modules may require the TransactionManager
-                    final Injector<TransactionManager> transactionManagerInjector = new Injector<TransactionManager>() {
-                        public void inject(final TransactionManager value) throws InjectionException {
-                            TransactionManagerLocator.setTransactionManager(value);
-                        }
+        final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
+                applicationPolicy, jsseSecurityDomain, cacheType);
+        final ServiceTarget target = context.getServiceTarget();
+        // some login modules may require the TransactionManager
+        final Injector<TransactionManager> transactionManagerInjector = new Injector<TransactionManager>() {
+            public void inject(final TransactionManager value) throws InjectionException {
+                TransactionManagerLocator.setTransactionManager(value);
+            }
 
-                        public void uninject() {
-                        }
-                    };
-                    ServiceBuilder<SecurityDomainContext> builder = target
-                            .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
-                            .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
-                                    securityDomainService.getSecurityManagementInjector())
-                            .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
-                                    securityDomainService.getConfigurationInjector())
-                            .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class,
-                                    transactionManagerInjector);
+            public void uninject() {
+            }
+        };
+        ServiceBuilder<SecurityDomainContext> builder = target
+                .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
+                .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
+                        securityDomainService.getSecurityManagementInjector())
+                .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
+                        securityDomainService.getConfigurationInjector())
+                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class,
+                        transactionManagerInjector);
 
-                    if ("infinispan".equals(cacheType)) {
-                        builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
-                                EmbeddedCacheManager.class, securityDomainService.getCacheManagerInjector());
-                    }
-                    builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+        if ("infinispan".equals(cacheType)) {
+            builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
+                    EmbeddedCacheManager.class, securityDomainService.getCacheManagerInjector());
         }
-        // Create the compensating operation
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(opAddr);
-        return new BasicOperationResult(compensatingOperation);
+        newControllers.add(builder.addListener(verificationHandler)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install());
     }
 
     private ApplicationPolicy createApplicationPolicy(String securityDomain, ModelNode operation) {

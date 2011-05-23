@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.operations;
 
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResultHandler;
@@ -34,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * Abstract superclass for write-attribute operation handlers that run on the
  * server.
- *
+ * <p/>
  * TODO Get ServerOperationContext and BootOperationHandler concepts into
  * the controller module so the same handlers can apply to domain/host attributes.
  *
@@ -66,11 +67,11 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      * to validate values before applying them to the model, and a separate
      * validator to validate the {@link ModelNode#resolve() resolved value} it
      * after it has been applied to the mode.
-     * <p>
+     * <p/>
      * Typically if this constructor is used the {@code valueValidator} would
      * allow expressions, while the {@code resolvedValueValidator} would not.
      *
-     * @param valueValidator the validator to use to validate the value before application to the model. May be {@code null}     *
+     * @param valueValidator         the validator to use to validate the value before application to the model. May be {@code null}     *
      * @param resolvedValueValidator the validator to use to validate the value before application to the model. May be {@code null}
      */
     public ServerWriteAttributeOperationHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
@@ -79,18 +80,16 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        if (context.getRuntimeContext() != null) {
+    protected void modelChanged(final NewOperationContext context, final ModelNode operation,
+                                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
             validateResolvedValue(attributeName, newValue);
-            boolean restartRequired = applyUpdateToRuntime(context, operation, resultHandler, attributeName, newValue, currentValue);
+            boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, newValue, currentValue);
             if (restartRequired && context instanceof ServerOperationContext) {
                 ServerOperationContext.class.cast(context).restartRequired();
             }
-        }
-        else {
-            resultHandler.handleResultComplete();
+        } else {
+            context.completeStep();
         }
     }
 
@@ -109,18 +108,17 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      * Hook to allow subclasses to make runtime changes to effect the attribute value change.
      * Any subclass that overrides MUST ensure
      * one of the 3 terminating methods on {@code resultHandler} is invoked.
-     * <p>
+     * <p/>
      * This default implementation simply invokes {@link ResultHandler#handleResultComplete()}
      * and returns {@code true} if the subclass implements {@link BootOperationHandler}.
      *
      * @return {@code true} if the server requires restart to effect the attribute
      *         value change; {@code false} if not
      */
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+    protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
+                                           final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        resultHandler.handleResultComplete();
-        return (this instanceof BootOperationHandler);
+        return (this instanceof BootOperationHandler); // HMMM
     }
 
 

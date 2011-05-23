@@ -22,8 +22,10 @@
 
 package org.jboss.as.messaging.jms;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -32,6 +34,7 @@ import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -42,31 +45,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *         Date: 5/13/11
  *         Time: 3:30 PM
  */
-public class PooledConnectionFactoryRemove implements ModelRemoveOperationHandler {
+public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler {
 
     public static final PooledConnectionFactoryRemove INSTANCE = new PooledConnectionFactoryRemove();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-       final ModelNode operationAddress = operation.require(OP_ADDR);
+
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        final ModelNode operationAddress = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(operationAddress);
         final String name = address.getLastElement().getValue();
 
-        final ModelNode subModel = context.getSubModel();
-        final ModelNode compensatingOperation = PooledConnectionFactoryAdd.getAddOperation(operationAddress, subModel);
+        context.removeService(MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name));
+    }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> service = context.getServiceRegistry().getService(MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name));
-                    if (service != null) {
-                        service.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
-        }
-        return new BasicOperationResult(compensatingOperation);
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 }

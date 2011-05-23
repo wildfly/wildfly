@@ -32,21 +32,10 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *
  */
-public class BindingGroupRemoveHandler
-    extends AbstractSocketBindingGroupRemoveHandler
-    implements BootOperationHandler {
+public class BindingGroupRemoveHandler extends AbstractSocketBindingGroupRemoveHandler {
 
     public static final BindingGroupRemoveHandler INSTANCE = new BindingGroupRemoveHandler();
 
     private BindingGroupRemoveHandler() {
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected ModelNode getCompensatingOperation(ModelNode model, ModelNode operation) {
-        return BindingGroupAddHandler.getOperation(operation.get(OP_ADDR), model);
-    }
-
 }

@@ -22,65 +22,57 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
+import java.sql.Driver;
+import java.util.ServiceLoader;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Operation handler responsible for removing a jdbc driver.
+ *
  * @author John Bailey
  */
-public class JdbcDriverRemove implements ModelRemoveOperationHandler {
+public class JdbcDriverRemove extends AbstractRemoveStepHandler {
     static final JdbcDriverRemove INSTANCE = new JdbcDriverRemove();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
-
-        final ModelNode opAddr = operation.require(OP_ADDR);
-
-        // Compensating is add
-        final ModelNode model = context.getSubModel();
-        final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String driverName = model.get(DRIVER_NAME).asString();
-        compensating.get(DRIVER_NAME).set(model.get(DRIVER_NAME));
-        compensating.get(DRIVER_MODULE_NAME).set(model.get(DRIVER_MODULE_NAME));
-        compensating.get(DRIVER_MAJOR_VERSION).set(model.get(DRIVER_MAJOR_VERSION));
-        compensating.get(DRIVER_MINOR_VERSION).set(model.get(DRIVER_MINOR_VERSION));
-        compensating.get(DRIVER_CLASS_NAME).set(model.get(DRIVER_CLASS_NAME));
-        compensating.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(model.get(DRIVER_XA_DATASOURCE_CLASS_NAME));
+        final String moduleName = operation.require(DRIVER_MODULE_NAME).asString();
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(final RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
-
-                    // Use the module for now. Would be nice to keep the driver
-                    // info in the model.
-                    final ServiceName serviceName = ServiceName.JBOSS.append("jdbc-driver", driverName);
-                    final ServiceController<?> controller = registry.getService(serviceName);
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+        // Use the module for now.  Would be nice to keep the driver info in the model.
+        final Module module;
+        try {
+            module = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(moduleName));
+        } catch (ModuleLoadException e) {
+            throw new OperationFailedException(e, new ModelNode().set("Failed to load module for driver [" + moduleName + "]"));
         }
-        return new BasicOperationResult(compensating);
+
+        final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
+        if (serviceLoader != null) for (Driver driver : serviceLoader) {
+            final int majorVersion = driver.getMajorVersion();
+            final int minorVersion = driver.getMinorVersion();
+
+            context.removeService(ServiceName.JBOSS.append("jdbc-driver", driver.getClass().getName(), Integer.toString(majorVersion), Integer.toString(minorVersion)));
+        }
+
+    }
+
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
     }
 }

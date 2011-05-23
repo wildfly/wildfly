@@ -70,7 +70,8 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
      * {@inheritDoc}
      */
     @Override
-    protected void populateModel(ModelNode model, ModelNode operation) {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        super.populateModel(operation, model);
         model.get(INCLUDES).set(operation.get(INCLUDES));
     }
 

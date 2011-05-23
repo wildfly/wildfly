@@ -19,6 +19,11 @@
 package org.jboss.as.host.controller.operations;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -30,17 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -55,7 +49,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ServerAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class ServerAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -87,32 +81,26 @@ public class ServerAddHandler implements ModelAddOperationHandler, DescriptionPr
         validator.registerValidator(AUTO_START, new ModelTypeValidator(ModelType.BOOLEAN, true, true));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         validator.validate(operation);
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ModelNode model = context.getSubModel();
         createCoreModel(model);
         model.get(NAME).set(name);
         model.get(GROUP).set(operation.require(GROUP));
-        if(operation.hasDefined(SOCKET_BINDING_GROUP)) {
+        if (operation.hasDefined(SOCKET_BINDING_GROUP)) {
             model.get(SOCKET_BINDING_GROUP).set(operation.get(SOCKET_BINDING_GROUP));
         }
-        if(operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
+        if (operation.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
             model.get(SOCKET_BINDING_PORT_OFFSET).set(operation.get(SOCKET_BINDING_PORT_OFFSET));
         }
         ModelNode autoStart = operation.hasDefined(AUTO_START) ? operation.get(AUTO_START) : new ModelNode().set(true);
         model.get(AUTO_START).set(autoStart);
+    }
 
-        final ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensating);
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     private void createCoreModel(ModelNode root) {

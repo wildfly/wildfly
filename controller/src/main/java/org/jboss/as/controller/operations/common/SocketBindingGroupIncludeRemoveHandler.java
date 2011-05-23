@@ -19,19 +19,14 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -43,7 +38,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingGroupIncludeRemoveHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class SocketBindingGroupIncludeRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-included-group";
 
@@ -65,13 +60,9 @@ public class SocketBindingGroupIncludeRemoveHandler implements ModelUpdateOperat
     private SocketBindingGroupIncludeRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(INCLUDE);
-        ModelNode includes = context.getSubModel().get(INCLUDE);
+        ModelNode includes = model.get(INCLUDE);
         ModelNode toRemove = null;
         typeValidator.validateParameter(INCLUDE, param);
 
@@ -87,12 +78,8 @@ public class SocketBindingGroupIncludeRemoveHandler implements ModelUpdateOperat
         }
 
         if (toRemove != null) {
-            ModelNode compensating = SocketBindingGroupIncludeAddHandler.getOperation(operation.get(OP_ADDR), group);
             includes.set(newList);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensating);
-        }
-        else {
+        } else {
             throw new OperationFailedException(new ModelNode().set("No included group with name " + group + "found"));
         }
     }

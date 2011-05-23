@@ -31,12 +31,12 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeU
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
@@ -49,13 +49,13 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-
 /**
  * Operation handler responsible for enabling an existing data-source.
+ *
  * @author John Bailey
  */
-public class DataSourceEnable implements ModelUpdateOperationHandler {
+<<<<<<< HEAD
+public class DataSourceEnable implements NewStepHandler {
     static final DataSourceEnable LOCAL_INSTANCE = new DataSourceEnable(false);
     static final DataSourceEnable XA_INSTANCE = new DataSourceEnable(true);
 
@@ -68,23 +68,14 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
-        final ModelNode opAddr = operation.require(OP_ADDR);
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(DISABLE);
-        compensatingOperation.get(OP_ADDR).set(opAddr);
+    public void execute(NewOperationContext context, ModelNode operation) {
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(true);
 
-        final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
-
-        // update the model
-        final ModelNode dataSourceNode = context.getSubModel();
-        dataSourceNode.get(ENABLED).set(true);
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(final RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceRegistry registry = context.getServiceRegistry();
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final String jndiName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                    final ServiceRegistry registry = context.getServiceRegistry(false);
 
                     if (isXa()) {
                         final ServiceName dataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
@@ -112,16 +103,13 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
                         if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.ACTIVE);
                         } else {
-                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName
-                                    + "] is already started"));
+                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is already started"));
                         }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName
-                                + "] is not available"));
+                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not available"));
                     }
 
-                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                            .append(jndiName);
+                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> referenceController = registry.getService(referenceServiceName);
                     if (referenceController != null && !ServiceController.State.UP.equals(referenceController.getState())) {
                         referenceController.setMode(ServiceController.Mode.ACTIVE);
@@ -132,13 +120,11 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
                     if (binderController != null && !ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.ACTIVE);
                     }
-                    resultHandler.handleResultComplete();
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
     }
 
     public static DataSourceEnable getLocalInstance() {

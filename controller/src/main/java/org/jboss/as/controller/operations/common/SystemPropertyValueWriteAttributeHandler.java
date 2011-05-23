@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.operations.common;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.OperationContext;
@@ -46,22 +48,19 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
     private SystemPropertyValueWriteAttributeHandler() {
     }
 
-    protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+    protected void modelChanged(final NewOperationContext context, final ModelNode operation, final String attributeName,
+                                final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        RuntimeOperationContext runtimeContext = context.getRuntimeContext();
-        if (runtimeContext != null) {
-            final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-            final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
-            runtimeContext.setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final String propertyName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                    final String propertyValue = newValue.isDefined() ? newValue.asString() : null;
                     SecurityActions.setSystemProperty(propertyName, propertyValue);
-                    resultHandler.handleResultComplete();
+                    context.completeStep();
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
+        context.completeStep();
     }
 }

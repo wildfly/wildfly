@@ -21,20 +21,15 @@
  */
 package org.jboss.as.controller.operations.global;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationHandler;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -52,7 +47,7 @@ import org.jboss.dmr.ModelType;
  */
 public class WriteAttributeHandlers {
 
-    public static class WriteAttributeOperationHandler implements ModelUpdateOperationHandler, NewStepHandler {
+    public static class WriteAttributeOperationHandler implements NewStepHandler {
         public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
         final ParameterValidator valueValidator;
@@ -73,14 +68,7 @@ public class WriteAttributeHandlers {
         }
 
         @Override
-        public void execute(NewOperationContext context, ModelNode operation) {
-            // FIXME implement execute
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String name = operation.require(NAME).asString();
             // Don't require VALUE. Let validateValue decide if it's bothered
             // by and undefined value
@@ -88,7 +76,7 @@ public class WriteAttributeHandlers {
 
             validateValue(name, value);
 
-            final ModelNode submodel = context.getSubModel();
+            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
             final ModelNode currentValue = submodel.get(name).clone();
 
             final ModelNode compensating = Util.getEmptyOperation(operation.require(OP).asString(), operation.require(OP_ADDR));
@@ -97,9 +85,7 @@ public class WriteAttributeHandlers {
 
             submodel.get(name).set(value);
 
-            modelChanged(context, operation, resultHandler, name, value, currentValue);
-
-            return new BasicOperationResult(compensating);
+            modelChanged(context, operation, name, value, currentValue);
         }
 
         /**
@@ -119,10 +105,10 @@ public class WriteAttributeHandlers {
          * This default implementation simply invokes {@link ResultHandler#handleResultComplete()}.
          * @throws OperationFailedException
          */
-        protected void modelChanged(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+        protected void modelChanged(final NewOperationContext context, final ModelNode operation, final String attributeName,
+                                    final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-            resultHandler.handleResultComplete();
+            context.completeStep();
         }
     }
 

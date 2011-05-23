@@ -21,30 +21,25 @@
  */
 package org.jboss.as.threads;
 
+import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
-
-import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseOperationParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -55,18 +50,20 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class UnboundedQueueThreadPoolAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class UnboundedQueueThreadPoolAdd implements NewStepHandler, DescriptionProvider {
 
     static final UnboundedQueueThreadPoolAdd INSTANCE = new UnboundedQueueThreadPoolAdd();
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    /**
+     * {@inheritDoc}
+     */
+    public void execute(NewOperationContext context, ModelNode operation) {
         final BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseUnboundedQueueThreadPoolOperationParameters(operation);
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
         //Apply to the model
-        final ModelNode model = context.getSubModel();
+        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         model.get(NAME).set(name);
         if (params.getThreadFactory() != null) {
             model.get(THREAD_FACTORY).set(params.getThreadFactory());
@@ -81,25 +78,29 @@ public class UnboundedQueueThreadPoolAdd implements ModelAddOperationHandler, De
             model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
         }
 
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+
                     ServiceTarget target = context.getServiceTarget();
                     final ServiceName serviceName = ThreadsServices.executorName(params.getName());
                     final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
                     final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
                     ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-                    serviceBuilder.install();
-                    resultHandler.handleResultComplete();
+                    serviceBuilder.addListener(verificationHandler);
+                    final ServiceController<?> controller = serviceBuilder.install();
+
+                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                        context.removeService(controller);
+                    }
                 }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+            }, NewOperationContext.Stage.RUNTIME);
         }
 
-        // Compensating is remove
-        final ModelNode compensating = Util.getResourceRemoveOperation(params.getAddress());
-        return new BasicOperationResult(compensating);
+        context.completeStep();
     }
 
     @Override

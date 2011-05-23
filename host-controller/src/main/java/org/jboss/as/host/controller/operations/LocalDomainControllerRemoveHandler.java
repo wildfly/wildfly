@@ -19,27 +19,18 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import org.jboss.dmr.ModelNode;
 
 /**
-*
-* @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
-* @version $Revision: 1.1 $
-*/
-public class LocalDomainControllerRemoveHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
+ */
+public class LocalDomainControllerRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-local-domain-controller";
 
@@ -51,20 +42,12 @@ public class LocalDomainControllerRemoveHandler implements ModelUpdateOperationH
     protected LocalDomainControllerRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            final ModelNode compensating = LocalDomainControllerAddHandler.getAddDomainControllerOperation(operation.get(OP_ADDR));
-            context.getSubModel().get(DOMAIN_CONTROLLER).setEmptyObject();
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult(compensating);
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+        model.get(DOMAIN_CONTROLLER).setEmptyObject();
+    }
+
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     @Override

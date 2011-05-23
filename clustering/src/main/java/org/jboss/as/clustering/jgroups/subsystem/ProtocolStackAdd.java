@@ -30,27 +30,20 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-
 import javax.management.MBeanServer;
-
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.as.threads.ThreadsServices;
@@ -69,7 +62,7 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionProvider {
+public class ProtocolStackAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -80,7 +73,7 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
     private static void populate(ModelNode source, ModelNode target) {
         target.get(ModelKeys.TRANSPORT).set(source.require(ModelKeys.TRANSPORT));
         ModelNode protocols = target.get(ModelKeys.PROTOCOL);
-        for (ModelNode protocol: source.require(ModelKeys.PROTOCOL).asList()) {
+        for (ModelNode protocol : source.require(ModelKeys.PROTOCOL).asList()) {
             protocols.add(protocol);
         }
     }
@@ -90,78 +83,66 @@ public class ProtocolStackAdd implements ModelAddOperationHandler, DescriptionPr
         return LocalDescriptions.getProtocolStackAddDescription(locale);
     }
 
-    @Override
-    public OperationResult execute(OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        populate(operation, model);
+    }
 
-        ModelNode opAddr = operation.require(ModelDescriptionConstants.OP_ADDR);
-
-        final ModelNode removeOperation = Util.getResourceRemoveOperation(opAddr);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        ModelNode transport = operation.get(ModelKeys.TRANSPORT);
+        Transport transportConfig = new Transport(transport.require(ModelKeys.TYPE).asString());
+        ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
 
-        populate(operation, context.getSubModel());
-
-        RuntimeOperationContext runtime = context.getRuntimeContext();
-        if (runtime != null) {
-            RuntimeTask task = new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ModelNode transport = operation.get(ModelKeys.TRANSPORT);
-                    Transport transportConfig = new Transport(transport.require(ModelKeys.TYPE).asString());
-                    ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
-
-                    ServiceBuilder<ChannelFactory> builder = context.getServiceTarget()
-                        .addService(ChannelFactoryService.getServiceName(name), new ValueService<ChannelFactory>(new ImmediateValue<ChannelFactory>(new JChannelFactory(stackConfig))))
-                        .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, stackConfig.getMBeanServerInjector())
-                        ;
-                    this.build(builder, transport, transportConfig);
-                    this.addSocketBindingDependency(builder, transport, ModelKeys.DIAGNOSTICS_SOCKET_BINDING, transportConfig.getDiagnosticsSocketBindingInjector());
-                    this.addExecutorDependency(builder, transport, ModelKeys.DEFAULT_EXECUTOR, transportConfig.getDefaultExecutorInjector());
-                    this.addExecutorDependency(builder, transport, ModelKeys.OOB_EXECUTOR, transportConfig.getOOBExecutorInjector());
-                    if (transport.hasDefined(ModelKeys.TIMER_EXECUTOR)) {
-                        builder.addDependency(ThreadsServices.executorName(transport.get(ModelKeys.TIMER_EXECUTOR).asString()), ScheduledExecutorService.class, transportConfig.getTimerExecutorInjector());
-                    }
-                    if (transport.hasDefined(ModelKeys.THREAD_FACTORY)) {
-                        builder.addDependency(ThreadsServices.threadFactoryName(transport.get(ModelKeys.THREAD_FACTORY).asString()), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
-                    }
-                    for (ModelNode protocol: operation.get(ModelKeys.PROTOCOL).asList()) {
-                        Protocol protocolConfig = new Protocol(protocol.require(ModelKeys.TYPE).asString());
-                        this.build(builder, protocol, protocolConfig);
-                        stackConfig.getProtocols().add(protocolConfig);
-                    }
-                    builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-                    resultHandler.handleResultComplete();
-                }
-
-                private void build(ServiceBuilder<ChannelFactory> builder, ModelNode protocol, Protocol protocolConfig) {
-                    this.addSocketBindingDependency(builder, protocol, ModelKeys.SOCKET_BINDING, protocolConfig.getSocketBindingInjector());
-                    Map<String, String> properties = protocolConfig.getProperties();
-                    if (protocol.hasDefined(ModelKeys.PROPERTY)) {
-                        for (Property property: protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
-                            properties.put(property.getName(), property.getValue().asString());
-                        }
-                    }
-                }
-
-                private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, ModelNode model, String key, Injector<SocketBinding> injector) {
-                    if (model.hasDefined(key)) {
-                        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(key).asString()), SocketBinding.class, injector);
-                    }
-                }
-
-                private void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, ModelNode model, String key, Injector<Executor> injector) {
-                    if (model.hasDefined(key)) {
-                        builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
-                    }
-                }
-            };
-            runtime.setRuntimeTask(task);
-        } else {
-            resultHandler.handleResultComplete();
+        ServiceBuilder<ChannelFactory> builder = context.getServiceTarget()
+                .addService(ChannelFactoryService.getServiceName(name), new ValueService<ChannelFactory>(new ImmediateValue<ChannelFactory>(new JChannelFactory(stackConfig))))
+                .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, stackConfig.getMBeanServerInjector());
+        build(builder, transport, transportConfig);
+        addSocketBindingDependency(builder, transport, ModelKeys.DIAGNOSTICS_SOCKET_BINDING, transportConfig.getDiagnosticsSocketBindingInjector());
+        addExecutorDependency(builder, transport, ModelKeys.DEFAULT_EXECUTOR, transportConfig.getDefaultExecutorInjector());
+        addExecutorDependency(builder, transport, ModelKeys.OOB_EXECUTOR, transportConfig.getOOBExecutorInjector());
+        if (transport.hasDefined(ModelKeys.TIMER_EXECUTOR)) {
+            builder.addDependency(ThreadsServices.executorName(transport.get(ModelKeys.TIMER_EXECUTOR).asString()), ScheduledExecutorService.class, transportConfig.getTimerExecutorInjector());
         }
+        if (transport.hasDefined(ModelKeys.THREAD_FACTORY)) {
+            builder.addDependency(ThreadsServices.threadFactoryName(transport.get(ModelKeys.THREAD_FACTORY).asString()), ThreadFactory.class, transportConfig.getThreadFactoryInjector());
+        }
+        for (ModelNode protocol : operation.get(ModelKeys.PROTOCOL).asList()) {
+            Protocol protocolConfig = new Protocol(protocol.require(ModelKeys.TYPE).asString());
+            build(builder, protocol, protocolConfig);
+            stackConfig.getProtocols().add(protocolConfig);
+        }
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
 
-        return new BasicOperationResult(removeOperation);
+        newControllers.add(builder.install());
+
+    }
+
+    private void build(ServiceBuilder<ChannelFactory> builder, ModelNode protocol, Protocol protocolConfig) {
+        this.addSocketBindingDependency(builder, protocol, ModelKeys.SOCKET_BINDING, protocolConfig.getSocketBindingInjector());
+        Map<String, String> properties = protocolConfig.getProperties();
+        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
+            for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+                properties.put(property.getName(), property.getValue().asString());
+            }
+        }
+    }
+
+    private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, ModelNode model, String key, Injector<SocketBinding> injector) {
+        if (model.hasDefined(key)) {
+            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(key).asString()), SocketBinding.class, injector);
+        }
+    }
+
+    private void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, ModelNode model, String key, Injector<Executor> injector) {
+        if (model.hasDefined(key)) {
+            builder.addDependency(ThreadsServices.executorName(model.get(key).asString()), Executor.class, injector);
+        }
+    }
+
+    protected boolean requiresRuntimeVerification() {
+        return false;
     }
 
     static class ProtocolStack implements ProtocolStackConfiguration {

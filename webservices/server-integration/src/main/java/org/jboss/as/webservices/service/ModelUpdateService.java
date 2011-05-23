@@ -45,7 +45,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -73,12 +75,13 @@ public final class ModelUpdateService extends AbstractService<Void> {
         return INSTANCE;
     }
 
-    public static void install(final ServiceTarget serviceTarget) {
+    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object>... listeners) {
         final Injector<ServerController> controllerInjector = INSTANCE.getServerControllerInjector();
         final ServiceBuilder<Void> builder = serviceTarget.addService(WSServices.MODEL_SERVICE, INSTANCE);
         builder.addDependency(OPTIONAL, JBOSS_SERVER_CONTROLLER, ServerController.class, controllerInjector);
+        builder.addListener(listeners);
         builder.setInitialMode(Mode.ACTIVE);
-        builder.install();
+        return builder.install();
     }
 
     public void add(final Endpoint endpoint) {

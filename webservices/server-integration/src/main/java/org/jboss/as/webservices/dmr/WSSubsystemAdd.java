@@ -30,23 +30,17 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import java.net.UnknownHostException;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import java.util.List;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
-import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
 import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ModelUpdateService;
@@ -56,6 +50,7 @@ import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -63,7 +58,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+public class WSSubsystemAdd extends AbstractAddStepHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
 
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
@@ -78,45 +73,9 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         configValidator.registerValidator(WSDL_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
     }
 
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation,
-            final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(final ModelNode operation, final ModelNode submodel) throws OperationFailedException {
         configValidator.validate(operation);
 
-        final ModelNode subModel = context.getSubModel();
-        populateSubModel(operation, subModel);
-
-        if (context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    log.info("Activating WebServices Extension");
-                    ModuleClassLoaderProvider.register();
-                    WSServices.saveContainerRegistry(context.getServiceRegistry());
-
-                    ServiceTarget serviceTarget = context.getServiceTarget();
-                    ServerConfigImpl serverConfig = createServerConfig(operation);
-                    ServerConfigService.install(serviceTarget, serverConfig);
-                    ModelUpdateService.install(serviceTarget);
-                    EndpointRegistryService.install(serviceTarget);
-
-                    // add the DUP for dealing with WS deployments
-                    WSDeploymentActivator.activate(updateContext);
-                    resultHandler.handleResultComplete();
-                }
-            });
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        // Create the compensating operation
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-        return new BasicOperationResult(compensatingOperation);
-    }
-
-    private static void populateSubModel(final ModelNode operation, final ModelNode submodel) {
         submodel.get(MODIFY_WSDL_ADDRESS).set(operation.require(MODIFY_WSDL_ADDRESS));
         submodel.get(WSDL_HOST).set(operation.require(WSDL_HOST));
         if (operation.has(WSDL_PORT)) {
@@ -127,6 +86,29 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
         }
         submodel.get(ENDPOINT_CONFIG).setEmptyObject();
         submodel.get(ENDPOINT).setEmptyObject();
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        if (context.isBooting()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+                protected void execute(DeploymentProcessorTarget processorTarget) {
+                    // add the DUP for dealing with WS deployments
+                    WSDeploymentActivator.activate(processorTarget);
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+        }
+
+        log.info("Activating WebServices Extension");
+        ModuleClassLoaderProvider.register();
+        WSServices.saveContainerRegistry(context.getServiceRegistry(false));
+
+        ServiceTarget serviceTarget = context.getServiceTarget();
+
+        ServerConfigImpl serverConfig = createServerConfig(operation);
+        newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
+        newControllers.add(ModelUpdateService.install(serviceTarget, verificationHandler));
+        newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
     }
 
     private static ServerConfigImpl createServerConfig(ModelNode configuration) {

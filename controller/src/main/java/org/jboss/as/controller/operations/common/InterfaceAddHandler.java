@@ -19,31 +19,29 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.List;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Handler for the interface resource add operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class InterfaceAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class InterfaceAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -66,34 +64,33 @@ public class InterfaceAddHandler implements ModelAddOperationHandler, Descriptio
         this.specified = specified;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
         String name = address.getLastElement().getValue();
-        ModelNode model = context.getSubModel();
         model.get(NAME).set(name);
+        ModelNode criteriaNode = operation.get(CRITERIA);
+        model.get(CRITERIA).set(criteriaNode);
+    }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final ModelNode opAddr = operation.get(OP_ADDR);
+        PathAddress address = PathAddress.pathAddress(opAddr);
+        String name = address.getLastElement().getValue();
         ModelNode criteriaNode = operation.get(CRITERIA);
         ParsedInterfaceCriteria parsed = ParsedInterfaceCriteria.parse(criteriaNode.clone(), specified);
         if (parsed.getFailureMessage() != null) {
             throw new OperationFailedException(new ModelNode().set(parsed.getFailureMessage()));
         }
-        model.get(CRITERIA).set(criteriaNode);
-        ModelNode compensating = Util.getResourceRemoveOperation(operation.get(OP_ADDR));
-        return installInterface(name, parsed, context, resultHandler, compensating);
+        performRuntime(context, operation, model, verificationHandler, newControllers, name, parsed);
+    }
+
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return specified ? InterfaceDescription.getSpecifiedInterfaceAddOperation(locale) : InterfaceDescription.getNamedInterfaceAddOperation(locale);
-    }
-
-    protected OperationResult installInterface(String name, ParsedInterfaceCriteria criteria, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
     }
 
 }

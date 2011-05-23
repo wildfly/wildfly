@@ -22,22 +22,11 @@
 
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationResult;
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.dmr.ModelNode;
 
@@ -46,8 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public final class JVMAddHandler implements NewStepHandler, DescriptionProvider {
-
+public final class JVMAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
     public static final String OPERATION_NAME = ADD;
     public static final JVMAddHandler INSTANCE = new JVMAddHandler(false);
     public static final JVMAddHandler SERVER_INSTANCE = new JVMAddHandler(true);
@@ -58,42 +46,41 @@ public final class JVMAddHandler implements NewStepHandler, DescriptionProvider 
         this.server = server;
     }
 
-    @Override
-    public void execute(NewOperationContext context, ModelNode operation) {
-
-        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-
-        ModelNode jvmType = subModel.get(JVM_TYPE);
-        if(operation.hasDefined(JVM_TYPE)) {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        ModelNode jvmType = model.get(JVM_TYPE);
+        if (operation.hasDefined(JVM_TYPE)) {
             jvmType.set(operation.get(JVM_TYPE));
         }
 
         // Handle attributes
         for (final String attr : JVMHandlers.ATTRIBUTES) {
-            if(operation.has(attr)) {
-                subModel.get(attr).set(operation.get(attr));
+            if (operation.has(attr)) {
+                model.get(attr).set(operation.get(attr));
             } else {
-                subModel.get(attr);
+                model.get(attr);
             }
         }
-        if(server) {
-            for(final String attr : JVMHandlers.SERVER_ATTRIBUTES) {
-                if(operation.has(attr)) {
-                    subModel.get(attr).set(operation.get(attr));
+        if (server) {
+            for (final String attr : JVMHandlers.SERVER_ATTRIBUTES) {
+                if (operation.has(attr)) {
+                    model.get(attr).set(operation.get(attr));
                 } else {
-                    subModel.get(attr);
+                    model.get(attr);
                 }
             }
         }
-
-        context.completeStep();
-
     }
 
-    /** {@inheritDoc} */
+    protected boolean requiresRuntime() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        if(server) {
+        if (server) {
             return JVMDescriptions.getServerJVMAddDescription(locale);
         }
         return JVMDescriptions.getJVMAddDescription(locale);

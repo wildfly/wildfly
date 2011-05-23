@@ -18,19 +18,13 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import java.util.Locale;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentDeployHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class ServerGroupDeploymentDeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = DEPLOY;
 
@@ -58,16 +52,8 @@ public class ServerGroupDeploymentDeployHandler implements ModelUpdateOperationH
         return DeploymentDescription.getDeployDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode model = context.getSubModel();
-        model.get(ENABLED).set(true);
-        ModelNode compensatingOp = ServerGroupDeploymentUndeployHandler.getOperation(operation.get(OP_ADDR));
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
+    public void execute(NewOperationContext context, ModelNode operation) {
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(true);
+        context.completeStep();
     }
 }

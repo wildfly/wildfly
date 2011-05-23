@@ -19,24 +19,18 @@
 package org.jboss.as.controller.operations.common;
 
 
+import java.util.Locale;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.PathDescription;
+import static org.jboss.as.controller.descriptions.common.PathDescription.RELATIVE_TO;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -48,7 +42,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PathAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public class PathAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -81,37 +75,18 @@ public class PathAddHandler implements ModelAddOperationHandler, DescriptionProv
         this.validator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         validator.validate(operation);
 
-        ModelNode model = context.getSubModel();
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
-        ModelNode compensating = PathRemoveHandler.getRemovePathOperation(operation.get(OP_ADDR));
-        ModelNode pathNode = operation.get(PATH);
-        ModelNode relNode = operation.get(RELATIVE_TO);
         model.get(NAME).set(name);
-        model.get(PATH).set(pathNode);
-        model.get(RELATIVE_TO).set(relNode);
-
-        String path = pathNode.isDefined() ? pathNode.asString() : null;
-        String relativeTo = relNode.isDefined() ? relNode.asString() : null;
-        return installPath(name, path, relativeTo, context, resultHandler, compensating);
+        model.get(PATH).set(operation.get(PATH));
+        model.get(RELATIVE_TO).set(operation.get(RELATIVE_TO));
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return specified ? PathDescription.getSpecifiedPathAddOperation(locale) : PathDescription.getNamedPathAddOperation(locale);
     }
-
-    protected OperationResult installPath(String name, String path, String relativeTo, OperationContext context, ResultHandler resultHandler, ModelNode compensatingOp) {
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
-    }
-
 }

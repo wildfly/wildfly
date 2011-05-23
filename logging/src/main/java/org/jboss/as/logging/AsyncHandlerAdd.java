@@ -22,29 +22,19 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -55,56 +45,39 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class AsyncHandlerAdd implements ModelAddOperationHandler {
+class AsyncHandlerAdd extends AbstractAddStepHandler {
 
     static final AsyncHandlerAdd INSTANCE = new AsyncHandlerAdd();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+        model.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
+        model.get(LEVEL).set(operation.get(LEVEL));
+        model.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
+    }
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-        compensatingOperation.get(OP).set(REMOVE);
-
-        final ModelNode subModel = context.getSubModel();
-        subModel.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
-        subModel.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
-        subModel.get(LEVEL).set(operation.get(LEVEL));
-        subModel.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-                    try {
-                        final AsyncHandlerService service = new AsyncHandlerService();
-                        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-                        final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-                        for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
-                            final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
-                            serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
-                            list.add(injectedValue);
-                        }
-                        service.addHandlers(list);
-                        if (operation.hasDefined(QUEUE_LENGTH))
-                            service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
-                        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                        service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
-                        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-                        serviceBuilder.install();
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
-        } else {
-            resultHandler.handleResultComplete();
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final AsyncHandlerService service = new AsyncHandlerService();
+        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+        final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
+        for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
+            final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
+            serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
+            list.add(injectedValue);
         }
-        return new BasicOperationResult(compensatingOperation);
+        service.addHandlers(list);
+        if (operation.hasDefined(QUEUE_LENGTH))
+            service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
+        service.setLevel(Level.parse(operation.get(LEVEL).asString()));
+        service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+
+        serviceBuilder.addListener(verificationHandler);
+        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        newControllers.add(serviceBuilder.install());
     }
+
 }

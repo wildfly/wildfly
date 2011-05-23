@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -64,17 +64,17 @@ abstract class AbstractDeploymentHandler {
         return new OperationFailedException(cause, new ModelNode().set(msg));
     }
 
-    protected static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected static InputStream getInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         String message = "";
         if (operation.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-            if (streamIndex > context.getInputStreams().size() - 1) {
-                IllegalArgumentException e = new IllegalArgumentException("Invalid " + INPUT_STREAM_INDEX + "=" + streamIndex + ", the maximum index is " + (context.getInputStreams().size() - 1));
-                throw createFailureException(e, e.getMessage());
-            }
             message = "Null stream at index " + streamIndex;
-            in = context.getInputStreams().get(streamIndex);
+            try {
+                in = context.getAttachmentStream(streamIndex);
+            } catch (IOException e) {
+                throw new OperationFailedException(e, new ModelNode().set("Failed to get attached stream at index [" +  streamIndex + "]"));
+            }
         } else if (operation.hasDefined(BYTES)) {
             message = "Invalid byte stream.";
             in = new ByteArrayInputStream(operation.get(BYTES).asBytes());

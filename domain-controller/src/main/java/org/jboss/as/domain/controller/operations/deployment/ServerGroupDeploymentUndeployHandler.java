@@ -18,19 +18,13 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentUndeployHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class ServerGroupDeploymentUndeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = UNDEPLOY;
 
@@ -58,16 +52,8 @@ public class ServerGroupDeploymentUndeployHandler implements ModelUpdateOperatio
         return DeploymentDescription.getUndeployDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode model = context.getSubModel();
-        model.get(ENABLED).set(false);
-        ModelNode compensatingOp = ServerGroupDeploymentDeployHandler.getOperation(operation.get(OP_ADDR));
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOp);
+    public void execute(NewOperationContext context, ModelNode operation) {
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(false);
+        context.completeStep();
     }
 }

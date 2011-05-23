@@ -209,7 +209,7 @@ public interface NewOperationContext {
     ModelNode writeModel(PathAddress address, ModelNode newData) throws UnsupportedOperationException;
 
     /**
-     * Remote a model node, relative to the executed operation address.  Since only one operation
+     * Remove a model node, relative to the executed operation address.  Since only one operation
      * may write at a time, this operation may block until other writing operations have completed.
      *
      * @param address the (possibly empty) address to remove

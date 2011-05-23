@@ -66,12 +66,12 @@ public class BundleStartTracker implements Service<BundleStartTracker> {
     private final Map<ServiceName, Tuple> startedServices = new ConcurrentHashMap<ServiceName, Tuple>();
     private ServiceContainer serviceContainer;
 
-    public static void addService(ServiceTarget serviceTarget) {
+    public static final ServiceController<?> addService(ServiceTarget serviceTarget) {
         BundleStartTracker service = new BundleStartTracker();
         ServiceBuilder<BundleStartTracker> builder = serviceTarget.addService(SERVICE_NAME, service);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
         builder.setInitialMode(Mode.PASSIVE);
-        builder.install();
+        return builder.install();
     }
 
     private BundleStartTracker() {

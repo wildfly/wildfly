@@ -19,6 +19,7 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
@@ -26,12 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -45,7 +41,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class SchemaLocationAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "add-schema-location";
 
@@ -67,18 +63,16 @@ public class SchemaLocationAddHandler implements ModelUpdateOperationHandler, De
     private SchemaLocationAddHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         ModelNode param = operation.get(SCHEMA_LOCATION);
-        ModelNode locations = context.getSubModel().get(SCHEMA_LOCATIONS);
+        ModelNode locations = model.get(SCHEMA_LOCATIONS);
         validate(param, locations);
         Property loc = param.asProperty();
         locations.add(loc.getName(), loc.getValue());
-        ModelNode compensating = SchemaLocationRemoveHandler.getRemoveSchemaLocationOperation(operation.get(OP_ADDR), param.asProperty().getName());
-        return new BasicOperationResult(compensating);
+    }
+
+    protected boolean requiresRuntime() {
+        return false;
     }
 
     @Override

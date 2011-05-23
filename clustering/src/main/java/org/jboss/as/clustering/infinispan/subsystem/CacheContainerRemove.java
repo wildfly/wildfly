@@ -23,57 +23,31 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelRemoveOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeOperationContext;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheContainerRemove implements ModelRemoveOperationHandler, DescriptionProvider {
+public class CacheContainerRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return LocalDescriptions.getCacheContainerRemoveDescription(locale);
     }
 
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        ModelNode opAddr = operation.require(ModelDescriptionConstants.OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
+        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final String name = address.getLastElement().getValue();
-
-        ModelNode restoreOperation = CacheContainerAdd.createOperation(opAddr, context.getSubModel());
-
-        RuntimeOperationContext runtime = context.getRuntimeContext();
-        if (runtime != null) {
-            RuntimeTask task = new RuntimeTask() {
-                @Override
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    ServiceController<?> service = context.getServiceRegistry().getService(EmbeddedCacheManagerService.getServiceName(name));
-                    if (service != null) {
-                        service.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            };
-            runtime.setRuntimeTask(task);
-        } else {
-            resultHandler.handleResultComplete();
-        }
-
-        return new BasicOperationResult(restoreOperation);
+        context.removeService(EmbeddedCacheManagerService.getServiceName(name));
     }
+
+    protected void recoverServices(NewOperationContext context, ModelNode operation, ModelNode model) {
+        // TODO:  RE-ADD SERVICES
+    }
+
 }

@@ -19,28 +19,18 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-
 import java.util.Locale;
-
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import org.jboss.dmr.ModelNode;
 
 /**
-*
-* @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
-* @version $Revision: 1.1 $
-*/
-public class RemoteDomainControllerRemoveHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
+ */
+public class RemoteDomainControllerRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = "remove-remote-domain-controller";
 
@@ -52,20 +42,9 @@ public class RemoteDomainControllerRemoveHandler implements ModelUpdateOperation
     protected RemoteDomainControllerRemoveHandler() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        try {
-            context.getSubModel().get(DOMAIN_CONTROLLER).setEmptyObject();
-            resultHandler.handleResultComplete();
-        }
-        catch (Exception e) {
-            throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
-        }
-        final ModelNode compensating = RemoteDomainControllerAddHandler.getAddDomainControllerOperation(operation.get(OP_ADDR), context.getSubModel().get(HOST).asString(), context.getSubModel().get(PORT).asInt());
-        return new BasicOperationResult(compensating);
+    protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) {
+        model.get(DOMAIN_CONTROLLER).setEmptyObject();
+        context.completeStep();
     }
 
     @Override

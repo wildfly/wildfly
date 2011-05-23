@@ -35,11 +35,10 @@ import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
 public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
     static final PeriodicHandlerUpdateProperties INSTANCE = new PeriodicHandlerUpdateProperties();
 
-    protected void updateModel(final ModelNode operation, final ModelNode compensating, final ModelNode model) {
-        super.updateModel(operation, compensating, model);
+    protected void updateModel(final ModelNode operation, final ModelNode model) {
+        super.updateModel(operation, model);
 
         if (operation.hasDefined(SUFFIX)) {
-            apply(model, compensating, SUFFIX);
             apply(operation, model, SUFFIX);
         }
     }

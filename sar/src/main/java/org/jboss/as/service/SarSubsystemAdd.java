@@ -22,46 +22,44 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelAddOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.BootOperationContext;
-import org.jboss.as.server.BootOperationHandler;
+import java.util.List;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class SarSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+public class SarSubsystemAdd extends AbstractAddStepHandler {
 
     static final SarSubsystemAdd INSTANCE = new SarSubsystemAdd();
 
     private SarSubsystemAdd() {
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
-        if(context instanceof BootOperationContext) {
-            final BootOperationContext updateContext = (BootOperationContext) context;
-            updateContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SAR_SUB_DEPLOY_CHECK, new SarSubDeploymentProcessor());
-            updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new SarModuleDependencyProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_DEPLOYMENT, new ServiceDeploymentParsingProcessor());
-            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_DEPLOYMENT, new ParsedServiceDeploymentProcessor());
-        }
-
-        context.getSubModel().setEmptyObject();
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensatingOperation);
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        model.setEmptyObject();
     }
 
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        if (context.isBooting()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+                public void execute(DeploymentProcessorTarget processorTarget) {
+                    processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_SAR_SUB_DEPLOY_CHECK, new SarSubDeploymentProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new SarModuleDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SERVICE_DEPLOYMENT, new ServiceDeploymentParsingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVICE_DEPLOYMENT, new ParsedServiceDeploymentProcessor());
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+        }
+    }
+
+    protected boolean requiresRuntimeVerification() {
+        return false;
+    }
 }

@@ -35,9 +35,8 @@ import org.jboss.logmanager.handlers.AsyncHandler;
 public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties {
     static final AsyncHandlerUpdateProperties INSTANCE = new AsyncHandlerUpdateProperties();
 
-    protected void updateModel(ModelNode operation, ModelNode compensating, ModelNode model) {
+    protected void updateModel(ModelNode operation, ModelNode model) {
         if (operation.hasDefined(OVERFLOW_ACTION)) {
-            apply(model, compensating, OVERFLOW_ACTION);
             apply(operation, model, OVERFLOW_ACTION);
         }
     }

@@ -18,32 +18,24 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelUpdateOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
+import java.util.Locale;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 
 /**
  * Handles undeployment from the runtime.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, DescriptionProvider {
+public class DeploymentUndeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = UNDEPLOY;
 
@@ -61,19 +53,13 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, D
         return DeploymentDescription.getUndeployDeploymentOperation(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode compensatingOp = DeploymentDeployHandler.getOperation(operation.require(OP_ADDR));
-
-        ModelNode model = context.getSubModel();
+    public void execute(NewOperationContext context, ModelNode operation) {
+        ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         final String deploymentUnitName = model.require(RUNTIME_NAME).asString();
         model.get(ENABLED).set(false);
 
-        DeploymentHandlerUtil.undeploy(context, deploymentUnitName, resultHandler);
-        return new BasicOperationResult(compensatingOp);
+        DeploymentHandlerUtil.undeploy(context, deploymentUnitName);
+
+        context.completeStep();
     }
 }

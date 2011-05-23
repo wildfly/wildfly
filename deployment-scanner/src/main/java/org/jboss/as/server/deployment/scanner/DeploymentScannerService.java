@@ -31,7 +31,9 @@ import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -63,7 +65,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private Long deploymentTimeout;
     private final String relativeTo;
 
-    /** The created scanner. */
+    /**
+     * The created scanner.
+     */
     private DeploymentScanner scanner;
 
 
@@ -81,23 +85,23 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     /**
      * Add the deployment scanner service to a batch.
      *
-     * @param serviceTarget the service target
-     * @param name the repository name
-     * @param relativeTo the relative to
-     * @param path the path
-     * @param scanInterval the scan interval
-     * @param scanEnabled scan enabled
+     * @param serviceTarget     the service target
+     * @param name              the repository name
+     * @param relativeTo        the relative to
+     * @param path              the path
+     * @param scanInterval      the scan interval
+     * @param scanEnabled       scan enabled
      * @param deploymentTimeout the deployment timeout
      * @return
      */
-    public static void addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
-            final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout) {
+    public static ServiceController<?> addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
+                                  final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout, final ServiceListener<Object>... listeners) {
         final DeploymentScannerService service = new DeploymentScannerService(relativeTo, scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
         final ServiceName relativePathService = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
 
-        if(relativeTo != null) {
+        if (relativeTo != null) {
             RelativePathService.addService(pathService, path, relativeTo, serviceTarget);
         } else {
             AbsolutePathService.addService(pathService, path, serviceTarget);
@@ -106,20 +110,21 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
 
         ServiceBuilder builder = serviceTarget.addService(serviceName, service)
-            .addDependency(pathService, String.class, service.pathValue)
-            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
-            .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
-            .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
-            .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
+                .addDependency(pathService, String.class, service.pathValue)
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
+                .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
+                .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
+                .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
         if (relativePathService != null) {
             builder.addDependency(relativePathService, String.class, service.relativePathValue);
         }
-         builder.setInitialMode(Mode.ACTIVE)
-            .install();
+        builder.addListener(listeners);
+        return builder.setInitialMode(Mode.ACTIVE)
+                .install();
     }
 
     DeploymentScannerService(final String relativeTo, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
-            final Boolean autoDeployExploded, final Boolean enabled, final Long deploymentTimeout) {
+                             final Boolean autoDeployExploded, final Boolean enabled, final Long deploymentTimeout) {
         this.relativeTo = relativeTo;
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
         this.unit = unit;
@@ -130,7 +135,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void start(StartContext context) throws StartException {
         try {
@@ -141,11 +148,11 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);
-            if(deploymentTimeout != null) {
+            if (deploymentTimeout != null) {
                 scanner.setDeploymentTimeout(deploymentTimeout);
             }
 
-            if(enabled) {
+            if (enabled) {
                 scanner.startScanner();
             }
             this.scanner = scanner;
@@ -154,7 +161,9 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void stop(StopContext context) {
         final DeploymentScanner scanner = this.scanner;
@@ -162,11 +171,13 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         scanner.stopScanner();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized DeploymentScanner getValue() throws IllegalStateException {
         final DeploymentScanner scanner = this.scanner;
-        if(scanner == null) {
+        if (scanner == null) {
             throw new IllegalStateException();
         }
         return scanner;

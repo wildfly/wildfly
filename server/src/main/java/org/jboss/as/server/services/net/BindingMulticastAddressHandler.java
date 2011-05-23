@@ -31,7 +31,7 @@ import java.net.UnknownHostException;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
+public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler {
 
     public static final BindingMulticastAddressHandler INSTANCE = new BindingMulticastAddressHandler();
 
