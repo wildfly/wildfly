@@ -115,7 +115,6 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CREATE_COMPONENT_DESCRIPTIONS, new EJBComponentDescriptionFactory());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_MDB_DD, new MessageDrivenBeanXmlDescriptorProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ASSEMBLY_DESC_DD, new AssemblyDescriptorProcessor());
             //updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
             //updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MESSAGE_DRIVEN_ANNOTATION, new MessageDrivenAnnotationProcessor());
             // Process @DependsOn after the @Singletons have been registered.
@@ -134,6 +133,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION, new ApplicationExceptionAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_REMOVE_METHOD_ANNOTAION, new RemoveAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DD_INTERCEPTORS, new InterceptorClassDeploymentDescriptorProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ASSEMBLY_DESC_DD, new AssemblyDescriptorProcessor());
 
 
             updateContext.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());

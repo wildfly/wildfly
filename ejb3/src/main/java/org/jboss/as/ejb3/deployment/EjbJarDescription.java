@@ -65,6 +65,8 @@ public class EjbJarDescription {
         if (exceptionClassName == null || exceptionClassName.isEmpty()) {
             throw new IllegalArgumentException("Invalid exception class name: " + exceptionClassName);
         }
+        //TODO: Is this a good idea? ApplicationException's equals/hashCode
+        //will not work the way that would be expected
         ApplicationException appException = new ApplicationException() {
             @Override
             public boolean inherited() {

@@ -218,7 +218,6 @@ public enum Phase {
     public static final int PARSE_EJB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     public static final int PARSE_EJB_MDB_DD                            = 0x1300;
-    public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x1301;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_ANNOTATION                        = 0x1400;
     public static final int PARSE_MESSAGE_DRIVEN_ANNOTATION             = 0x1500;
@@ -261,11 +260,12 @@ public enum Phase {
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x3400;
-    public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3600;
+    public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
+    public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
 
     // should be after all components are known
-    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3500;
-    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x3600;
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
+    public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x3800;
 
 
     // DEPENDENCIES
