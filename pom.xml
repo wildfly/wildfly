@@ -3906,6 +3906,12 @@
                 <groupId>org.jboss.spec.javax.xml.rpc</groupId>
                 <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>jboss.web</groupId>
+                    <artifactId>servlet-api</artifactId>
+                  </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
