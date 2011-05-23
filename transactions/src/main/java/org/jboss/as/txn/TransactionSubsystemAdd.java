@@ -22,8 +22,6 @@
 
 package org.jboss.as.txn;
 
-import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -37,12 +35,12 @@ import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.net.SocketBinding;
-import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -62,7 +60,8 @@ import static org.jboss.as.txn.CommonAttributes.*;
 class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
-    private static final String INTERNAL_OBJECTSTORE_PATH = "jboss.transactions.object.store.path";
+    private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
+    private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.transactions");
 
@@ -79,20 +78,30 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
         }
         final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
 
+        final String nodeIdentifier = operation.get(CORE_ENVIRONMENT).hasDefined(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
         final ModelNode processId = operation.get(CORE_ENVIRONMENT).require(PROCESS_ID);
+        final String varDirPathRef = operation.get(CORE_ENVIRONMENT).hasDefined(RELATIVE_TO) ? operation.get(CORE_ENVIRONMENT).get(RELATIVE_TO).asString() : "jboss.server.data.dir";
+        final String varDirPath = operation.get(CORE_ENVIRONMENT).hasDefined(PATH) ? operation.get(CORE_ENVIRONMENT).get(PATH).asString() : "var";
         final String recoveryBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
         final String recoveryStatusBindingName = operation.get(RECOVERY_ENVIRONMENT).require(STATUS_BINDING).asString();
-        final String nodeIdentifier = operation.get(CORE_ENVIRONMENT).has(NODE_IDENTIFIER) ? operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).asString() : "1";
         final boolean coordinatorEnableStatistics = operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).asBoolean(false);
         final ModelNode objectStore = operation.get(OBJECT_STORE);
         final String objectStorePathRef = objectStore.hasDefined(RELATIVE_TO) ? objectStore.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
         final String objectStorePath = objectStore.hasDefined(PATH) ? objectStore.get(PATH).asString() : "tx-object-store";
         final int maxPorts = 10;
         final int coordinatorDefaultTimeout = operation.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).asInt(300);
+        if(log.isDebugEnabled()) {
+            log.debugf("nodeIdentifier=%s\n", nodeIdentifier);
+            log.debugf("varDirPathRef=%s, varDirPath=%s\n", varDirPathRef, varDirPath);
+            log.debugf("objectStorePathRef=%s, objectStorePathRef=%s\n", objectStorePathRef, objectStorePath);
+            log.debugf("recoveryBindingName=%s, recoveryStatusBindingName=%s\n", recoveryBindingName, recoveryStatusBindingName);
+        }
 
         final ModelNode subModel = context.getSubModel();
         subModel.get(CORE_ENVIRONMENT, PROCESS_ID).set(operation.get(CORE_ENVIRONMENT).require(PROCESS_ID));
         subModel.get(CORE_ENVIRONMENT, NODE_IDENTIFIER).set(operation.get(CORE_ENVIRONMENT, NODE_IDENTIFIER));
+        subModel.get(CORE_ENVIRONMENT, RELATIVE_TO).set(operation.get(CORE_ENVIRONMENT, RELATIVE_TO));
+        subModel.get(CORE_ENVIRONMENT, PATH).set(operation.get(CORE_ENVIRONMENT, PATH));
         subModel.get(RECOVERY_ENVIRONMENT, BINDING).set(operation.get(RECOVERY_ENVIRONMENT).require(BINDING));
         subModel.get(RECOVERY_ENVIRONMENT, STATUS_BINDING).set(operation.get(RECOVERY_ENVIRONMENT, STATUS_BINDING));
         subModel.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS).set(operation.get(COORDINATOR_ENVIRONMENT, ENABLE_STATISTICS));
@@ -106,28 +115,50 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
 
-                    // Global configuration.
+                    // Configure the core configuration.
                     String socketBindingName = null;
-                    final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
+                    final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath);
                     if (processId.hasDefined(ProcessIdType.UUID.getName())) {
+                        // Use the UUID based id
                         UuidProcessId id = new UuidProcessId();
-                        coreEnvironmentBean.setProcessImplementation(id);
+                        coreEnvironmentService.setProcessImplementation(id);
                     }
                     else if(processId.hasDefined(ProcessIdType.SOCKET.getName())) {
-                        socketBindingName = operation.get(RECOVERY_ENVIRONMENT).require(BINDING).asString();
+                        // Use the socket process id
+                        coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
+                        ModelNode socket = processId.get(ProcessIdType.SOCKET.getName());
+                        socketBindingName = socket.require(BINDING).asString();
+                        if(socket.hasDefined(SOCKET_PROCESS_ID_MAX_PORTS)) {
+                            int ports = socket.get(SOCKET_PROCESS_ID_MAX_PORTS).asInt(maxPorts);
+                            coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
+                        }
                     } else {
                         // Default to UUID implementation
                         UuidProcessId id = new UuidProcessId();
-                        coreEnvironmentBean.setProcessImplementation(id);
+                        coreEnvironmentService.setProcessImplementation(id);
                     }
+                    ServiceBuilder<?> coreEnvBuilder = target.addService(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, coreEnvironmentService);
+                    if(socketBindingName != null) {
+                        // Add a dependency on the socket id binding
+                        ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
+                        coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
+                    }
+                    ServiceController<String> varDirRPS = RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, target);
+                    coreEnvBuilder
+                        .addDependency(varDirRPS.getName(), String.class, coreEnvironmentService.getPathInjector())
+                        .setInitialMode(Mode.ACTIVE)
+                        .install();
+
                     // XATerminator has no deps, so just add it in there
                     final XATerminatorService xaTerminatorService = new XATerminatorService();
                     target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install();
 
                     // Configure the ObjectStoreEnvironmentBeans
+                    ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
                     final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService();
                     target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
-                        .addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, objStoreEnvironmentService.getPathInjector())
+                        .addDependency(objectStoreRPS.getName(), String.class, objStoreEnvironmentService.getPathInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                         .setInitialMode(Mode.ACTIVE).install();
 
                     final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService();
@@ -135,20 +166,16 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, recoveryManagerService.getOrbInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                        .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER)
                         .setInitialMode(Mode.ACTIVE)
                         .install();
 
-                    final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
+                    final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout);
                     ServiceBuilder<?> atmsBuilder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
-                    if(socketBindingName != null) {
-                        // Add a dependency on the socket id binding
-                        ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
-                        atmsBuilder.addDependency(bindingName, SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
-                    }
                     atmsBuilder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
                         .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
+                        .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
                         .setInitialMode(Mode.ACTIVE)
@@ -158,8 +185,6 @@ class TransactionSubsystemAdd implements ModelAddOperationHandler, BootOperation
                     UserTransactionService.addService(target);
                     target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService()).setInitialMode(Mode.ACTIVE).install();
                     TransactionSynchronizationRegistryService.addService(target);
-
-                    RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
 
                     //we need to initialize this class when we have the correct TCCL set
                     //so we force it to be initialized here

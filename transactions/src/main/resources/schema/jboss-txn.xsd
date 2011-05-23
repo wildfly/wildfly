@@ -71,6 +71,7 @@
 
                 The process-id element specifies the process id implemention.
                 The "node-identifier" attribute is used to set the node identifier on the core environment.
+                The "relative-to" and "path" attributes allow for specification of the environment var directory
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -78,6 +79,8 @@
             <xs:element name="process-id" type="xs:string" />
         </xs:all>
         <xs:attribute name="node-identifier" type="xs:string" default="1"/>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
+        <xs:attribute name="path" type="xs:string" default="var"/>
     </xs:complexType>
     <xs:complexType name="process-id">
         <xs:annotation>
