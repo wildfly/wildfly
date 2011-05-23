@@ -106,6 +106,20 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             }
         }
 
+
+        final List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
+
+        for (InterceptorBindingMetaData binding : defaultInterceptorBindings) {
+            if (binding.getInterceptorClasses() != null) {
+                for (final String clazz : binding.getInterceptorClasses()) {
+                    //we only want default interceptors referenced in the interceptors section
+                    if (interceptorClasses.contains(clazz)) {
+                        defaultInterceptors.add(new InterceptorDescription(clazz));
+                    }
+                }
+            }
+        }
+
         //now we need to process the components, and add interceptor information
         //we iterate over all components, as we need to process default interceptors
         for (final ComponentDescription componentDescription : eeModuleDescription.getComponentDescriptions()) {
@@ -153,7 +167,6 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
 
                         //method level bindings
                         //first find the right method
-
                         final NamedMethodMetaData methodData = binding.getMethod();
                         final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
                         Method resolvedMethod = null;
@@ -214,26 +227,12 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
 
             //now we have all the bindings in a format we can use
             //build the list of default interceptors
-            //TODO: this should only run once
-            final Set<String> defaultInterceptorNames = new HashSet<String>();
-            final List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
+            componentDescription.setDefaultInterceptors(defaultInterceptors);
 
             boolean classLevelExclude = classLevelExcludeDefaultInterceptors == null ? false : classLevelExcludeDefaultInterceptors;
-            if (!componentDescription.isExcludeDefaultInterceptors() && !classLevelExclude) {
-                for (InterceptorBindingMetaData binding : defaultInterceptorBindings) {
-                    if (binding.getInterceptorClasses() != null) {
-                        for (final String clazz : binding.getInterceptorClasses()) {
-                            //we only want default interceptors referenced in the interceptors section
-                            if (interceptorClasses.contains(clazz)) {
-                                defaultInterceptors.add(new InterceptorDescription(clazz));
-                                defaultInterceptorNames.add(clazz);
-                            }
-                        }
-                    }
-                }
+            if(classLevelExclude) {
+                componentDescription.setExcludeDefaultInterceptors(true);
             }
-
-            componentDescription.setDefaultInterceptors(defaultInterceptors);
 
             final List<InterceptorDescription> classLevelInterceptors = new ArrayList<InterceptorDescription>();
             if (classLevelAbsoluteOrder) {

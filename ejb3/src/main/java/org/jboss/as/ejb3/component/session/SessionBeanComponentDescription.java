@@ -446,7 +446,15 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // let super do it's job first
         super.setupViewInterceptors(view);
 
+        //equals/hashCode
+        view.getConfigurators().addLast(new ViewConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addViewInterceptorToFront(ComponentTypeIdentityInterceptorFactory.INSTANCE);
+            }
+        });
         // current invocation
+
 
         // tx management interceptor(s)
         this.addTxManagementInterceptorForView(view);

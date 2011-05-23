@@ -25,12 +25,16 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,6 +49,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final TransactionManagementType transactionManagementType;
 
     private final EjbJarConfiguration ejbJarConfiguration;
+
+    private final Map<String, ServiceName> viewServices;
 
     /**
      * Construct a new instance.
@@ -84,6 +90,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
             }
         }
+        final HashMap<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
+        for(ViewDescription view : componentConfiguration.getComponentDescription().getViews()) {
+            viewServices.put(view.getViewClassName(), view.getServiceName());
+        }
+        this.viewServices = viewServices;
     }
 
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
@@ -128,5 +139,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return result;
     }
 
-
+    public Map<String, ServiceName> getViewServices() {
+        return viewServices;
+    }
 }

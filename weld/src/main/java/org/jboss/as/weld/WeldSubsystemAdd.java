@@ -33,6 +33,7 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
+import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.deployment.processors.BeanArchiveProcessor;
 import org.jboss.as.weld.deployment.processors.BeansXmlProcessor;
@@ -87,7 +88,6 @@ class WeldSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
                     resultHandler.handleResultComplete();
                 }
             });
-            CurrentServiceRegistry.setServiceRegistry(bootContext.getController().getServiceRegistry());
         } else {
             resultHandler.handleResultComplete();
         }

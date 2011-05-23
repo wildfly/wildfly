@@ -115,6 +115,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         } else {
             this.startTime = -1;
         }
+
+        CurrentServiceRegistry.setServiceRegistry(context.getController().getServiceContainer());
+
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, configuration);
         serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
@@ -169,6 +172,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
     @Override
     public synchronized void stop(final StopContext context) {
+        CurrentServiceRegistry.setServiceRegistry(null);
         log.infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 

@@ -19,11 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld;
+package org.jboss.as.server;
 
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
+ * Class that provides static access to the current servers ServiceRegistry.
+ *
+ * This is not ideal, however there are some places that require access to this
+ * where there is no other way of getting it.
+ *
  * @author Stuart Douglas
  */
 public class CurrentServiceRegistry {

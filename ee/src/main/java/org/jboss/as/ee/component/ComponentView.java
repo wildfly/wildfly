@@ -52,4 +52,10 @@ public interface ComponentView {
      * @return the component
      */
     Component getComponent();
+
+    /**
+     *
+     * @return The proxy class used in the view
+     */
+    Class<?> getProxyClass();
 }

@@ -77,8 +77,6 @@ public class NamingSubsystemAdd implements ModelAddOperationHandler, BootOperati
 
                     log.info("Activating Naming Subsystem");
 
-                    ObjectFactoryBuilder.INSTANCE.setServiceRegistry(context.getServiceRegistry());
-
                     NamingContext.initializeNamingManager();
 
                     final NamingStore namingStore = new InMemoryNamingStore(new NamingEventCoordinator());

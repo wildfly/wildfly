@@ -24,7 +24,7 @@ package org.jboss.as.weld.ejb;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.weld.CurrentServiceRegistry;
+import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;

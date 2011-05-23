@@ -22,14 +22,19 @@
 package org.jboss.as.ejb3.component.session;
 
 
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.AccessTimeout;
@@ -40,6 +45,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -56,6 +62,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     protected AccessTimeout beanLevelAccessTimeout;
     private final Set<Method> asynchronousMethods;
     protected Executor asyncExecutor;
+    private final Map<String, ServiceName> viewServices;
 
     /**
      * Construct a new instance.
@@ -64,6 +71,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
      */
     protected SessionBeanComponent(final EJBComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
+        viewServices = ejbComponentCreateService.getViewServices();
 
 //        AccessTimeout accessTimeout = ejbComponentCreateService.getBeanLevelAccessTimeout();
 //        // TODO: the configuration should always have an access timeout
@@ -92,14 +100,22 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     @Override
     public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
-//        final ComponentView view = getComponentView(businessInterface);
-//        if (view == null)
-//            throw new IllegalStateException("Stateful bean " + getComponentName() + " does not have a view " + businessInterface);
-//        // see SessionBeanComponentInstance
-//        Serializable sessionId = ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
-//        Object proxy = view.getViewForInstance(sessionId);
-//        return businessInterface.cast(proxy);
-        throw new RuntimeException("NYI");
+        final Serializable sessionId = ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
+
+        if (viewServices.containsKey(businessInterface.getName())) {
+            final ServiceController<?> serviceController = CurrentServiceRegistry.getServiceRegistry().getRequiredService(viewServices.get(businessInterface.getName()));
+            final ComponentView view = (ComponentView) serviceController.getValue();
+            final ComponentViewInstance instance;
+            if(sessionId != null) {
+                instance = view.createInstance(Collections.<Object, Object>singletonMap(StatefulSessionComponent.SESSION_ATTACH_KEY, sessionId));
+            } else {
+                instance = view.createInstance();
+            }
+            return (T) instance.createProxy();
+        } else {
+            throw new IllegalArgumentException("View of type " + businessInterface + " not found on bean " + this);
+        }
+
     }
 
     @Override

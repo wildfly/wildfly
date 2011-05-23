@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -101,13 +102,19 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     protected void setupViewInterceptors(ViewDescription view) {
         // let super do its job first
         super.setupViewInterceptors(view);
+
         // add instance associating interceptor at the start of the interceptor chain
         view.getConfigurators().addFirst(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+
+                //add equals/hashCode interceptor
+                configuration.addViewInterceptorToFront(ComponentTypeIdentityInterceptorFactory.INSTANCE);
+
                 // add the singleton component instance associating interceptor
                 configuration.addViewInterceptorToFront(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
             }
         });
+
     }
 }

@@ -151,9 +151,12 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
                 // interceptor factory return an interceptor which sets up the session id on component view instance creation
                 InterceptorFactory sessionIdGeneratingInterceptorFactory = new StatefulComponentSessionIdGeneratingInterceptorFactory(sessionIdContextKey);
+
                 // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
                 viewConfiguration.getViewPostConstructInterceptors().addFirst(sessionIdGeneratingInterceptorFactory);
                 viewConfiguration.getViewPreDestroyInterceptors().addFirst(new StatefulComponentInstanceDestroyInterceptorFactory(sessionIdContextKey));
+
+                viewConfiguration.addViewInterceptorToFront(new StatefulIdentityInterceptorFactory(sessionIdContextKey));
             }
         });
 
@@ -199,6 +202,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+
                     logger.warn("Interceptors at ComponentInstance level aren't supported yet - SessionSynchronization semantics for " +
                             "Stateful beans with CMT won't work!");
                 }

@@ -142,4 +142,5 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         throw new RuntimeException("NYI");
         //return getComponentInterceptor().processInvocation(context);
     }
+
 }

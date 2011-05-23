@@ -23,6 +23,7 @@
 package org.jboss.as.naming.context;
 
 import org.jboss.as.naming.ServiceAwareObjectFactory;
+import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceRegistry;
 
@@ -44,8 +45,6 @@ import static org.jboss.as.naming.util.NamingUtils.namingException;
 public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuilder, ObjectFactory {
 
     public static final ObjectFactoryBuilder INSTANCE = new ObjectFactoryBuilder();
-
-    private volatile ServiceRegistry serviceRegistry;
 
     private ObjectFactoryBuilder() {
     }
@@ -103,14 +102,6 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
         return null;
     }
 
-    /**
-     * Sets the service registry to use for service references
-     *
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-    }
-
     private ObjectFactory factoryFromReference(final Reference reference, final Hashtable<?, ?> environment) throws Exception {
         if (reference instanceof ModularReference) {
             return factoryFromModularReference(ModularReference.class.cast(reference), environment);
@@ -129,7 +120,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             final Class<?> factoryClass = classLoader.loadClass(reference.getFactoryClassName());
             ObjectFactory factory = ObjectFactory.class.cast(factoryClass.newInstance());
             if (factory instanceof ServiceAwareObjectFactory) {
-                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(serviceRegistry);
+                ((ServiceAwareObjectFactory) factory).injectServiceRegistry(CurrentServiceRegistry.getServiceRegistry());
             }
             return factory;
         } catch (Throwable t) {
