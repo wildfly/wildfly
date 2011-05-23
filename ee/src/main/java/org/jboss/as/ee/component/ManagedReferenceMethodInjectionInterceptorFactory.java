@@ -42,20 +42,22 @@ final class ManagedReferenceMethodInjectionInterceptorFactory implements Interce
     private final Object valueContextKey;
     private final Value<ManagedReferenceFactory> factoryValue;
     private final Method method;
+    private final boolean optionalInjection;
 
-    ManagedReferenceMethodInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final Method method) {
+    ManagedReferenceMethodInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final Method method, final boolean optionalInjection) {
         this.targetContextKey = targetContextKey;
         this.valueContextKey = valueContextKey;
         this.factoryValue = factoryValue;
         this.method = method;
+        this.optionalInjection = optionalInjection;
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
-        final Map<Object,Object> contextData = context.getContextData();
+        final Map<Object, Object> contextData = context.getContextData();
         @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
         final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
         contextData.put(valueContextKey, valueReference);
-        return new ManagedReferenceMethodInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), method);
+        return new ManagedReferenceMethodInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), method, this.optionalInjection);
     }
 }

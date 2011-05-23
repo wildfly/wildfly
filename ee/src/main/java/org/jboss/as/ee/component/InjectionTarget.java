@@ -37,11 +37,26 @@ public abstract class InjectionTarget {
     private final String className;
     private final String name;
     private final String declaredValueClassName;
+    // True if it's an optional injection (for example: For env-entry when env-entry-value is null)
+    private final boolean optional;
 
     protected InjectionTarget(final String className, final String name, final String declaredValueClassName) {
+        this(className, name, declaredValueClassName, false);
+    }
+
+    /**
+     *
+     * @param className
+     * @param name
+     * @param declaredValueClassName
+     * @param optionalInjection If the injection is optional (for example, in case of env-entry the injection is only done if
+     *  the env-entry has a env-entry-value)
+     */
+    protected InjectionTarget(final String className, final String name, final String declaredValueClassName, final boolean optionalInjection) {
         this.className = className;
         this.name = name;
         this.declaredValueClassName = declaredValueClassName;
+        this.optional = optionalInjection;
     }
 
     /**
@@ -89,11 +104,21 @@ public abstract class InjectionTarget {
      * Get an interceptor factory which will carry out injection into this target.
      *
      * @param targetContextKey the interceptor context key for the target
-     * @param valueContextKey the interceptor context key for the value
-     * @param factoryValue the value to inject
-     * @param deploymentUnit the deployment unit
+     * @param valueContextKey  the interceptor context key for the value
+     * @param factoryValue     the value to inject
+     * @param deploymentUnit   the deployment unit
      * @return the interceptor factory
-     * @throws DeploymentUnitProcessingException if an error occurs
+     * @throws DeploymentUnitProcessingException
+     *          if an error occurs
      */
     public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException;
+
+    /**
+     * Returns true if the injection target is optional. For example, in case of env-entry injection, the injection is only
+     * done if the env-entry-value is specified. Else the injection is skipped.
+     * @return
+     */
+    public boolean isOptionalInjection() {
+        return this.optional;
+    }
 }

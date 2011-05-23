@@ -22,9 +22,14 @@
 
 package org.jboss.as.test.spec.injection;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 
 /**
  * User: jpai
@@ -32,7 +37,24 @@ import javax.ejb.Stateless;
 @Stateless
 public class SimpleSLSB extends Parent {
 
+    // injected via the setter
     private Parent otherBean;
+
+    @Resource
+    private SessionContext sessionContext;
+
+    @Resource(name = "simpleString")
+    private String simpleStringFromDeploymentDescriptor;
+
+    public static final int DEFAULT_UNINJECTED_INT_VAL = 4;
+
+    public static final String DEFAULT_UNINJECTED_STRING_VAL = "This is the default value!!!! ###";
+
+    @Resource(name = "missingEnvEntryValIntResource")
+    private int wontBeInjected = DEFAULT_UNINJECTED_INT_VAL;
+
+    // @Resource is used on the setter
+    private String wontBeInjectedString = DEFAULT_UNINJECTED_STRING_VAL;
 
     public String sayHello(String user) {
         return this.commonBean.sayHello(user);
@@ -46,5 +68,48 @@ public class SimpleSLSB extends Parent {
     @EJB(beanInterface = OtherSLSB.class)
     public void setOtherBean(Parent otherBean) {
         this.otherBean = otherBean;
+    }
+
+    public String getInjectedString() {
+        return this.simpleStringFromDeploymentDescriptor;
+    }
+
+    public int getUnInjectedInt() {
+        return this.wontBeInjected;
+    }
+
+    @Resource(name = "missingEnvEntryValStringResource")
+    public void setUnInjectedString(String val) {
+        this.wontBeInjectedString = val;
+    }
+
+    public String getUnInjectedString() {
+        return this.wontBeInjectedString;
+    }
+
+    public boolean isUnInjectedIntEnvEntryPresentInEnc() {
+        Context ctx = null;
+        try {
+            ctx = new InitialContext();
+            ctx.lookup("java:comp/env/missingEnvEntryValIntResource");
+            return true;
+        } catch (NameNotFoundException nnfe) {
+            return false;
+        } catch (NamingException ne) {
+            throw new RuntimeException(ne);
+        }
+    }
+
+    public boolean isUnInjectedStringEnvEntryPresentInEnc() {
+        Context ctx = null;
+        try {
+            ctx = new InitialContext();
+            ctx.lookup("java:comp/env/missingEnvEntryValStringResource");
+            return true;
+        } catch (NameNotFoundException nnfe) {
+            return false;
+        } catch (NamingException ne) {
+            throw new RuntimeException(ne);
+        }
     }
 }
