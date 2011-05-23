@@ -22,7 +22,9 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -33,7 +35,11 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
+
+import javax.ejb.TransactionManagementType;
 
 /**
  * Component description for a singleton bean
@@ -115,6 +121,28 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 configuration.addViewInterceptorToFront(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
             }
         });
+
+
+        // add the bmt interceptor
+        if (TransactionManagementType.BEAN.equals(this.getTransactionManagementType())) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    final ComponentInterceptorFactory slsbBmtInterceptorFactory = new ComponentInterceptorFactory() {
+                        @Override
+                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                            if (component instanceof SingletonComponent == false) {
+                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
+                                        " isn't a singleton component");
+                            }
+                            return new SingletonBMTInterceptor((SingletonComponent) component);
+                        }
+                    };
+                    // add the bmt interceptor factory
+                    configuration.addViewInterceptorToFront(slsbBmtInterceptorFactory);
+                }
+            });
+        }
 
     }
 }
