@@ -44,9 +44,6 @@
     <name>JBoss Application Server: Test Suite: Smoke Tests</name>
 
     <properties>
-        <!-- This part of the testuite we want to execute by default. -->
-        <skipTests>false</skipTests>
-
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
@@ -84,7 +81,6 @@
                 <groupId>org.jboss.maven.surefire.modular</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>${skipTests}</skipTests>
                     <!--  standard surefire options -->
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
@@ -129,7 +125,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <skipTests>${skipTests}</skipTests>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <enableAssertions>true</enableAssertions>
                             <includes>
@@ -158,7 +153,6 @@
                                    <goal>test</goal>
                                </goals>
                                <configuration>
-                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/xml-module-def.xml</moduleDefinitionFile>
                                    <includes>
                                        <include>org/jboss/as/test/surefire/xml/*TestCase.java</include>
@@ -188,7 +182,6 @@
                                     <goal>test</goal>
                                 </goals>
                                <configuration>
-                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/demos-arquillian-module-def.xml</moduleDefinitionFile>
                                    <includes>
                                       <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
@@ -221,7 +214,6 @@
                                    <goal>test</goal>
                                </goals>
                                <configuration>
-                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/server-module-def.xml</moduleDefinitionFile>
                                    <includes>
                                        <include>org/jboss/as/test/surefire/servermodule/*TestCase.java</include>
@@ -251,7 +243,6 @@
                                    <goal>test</goal>
                                </goals>
                                <configuration>
-                                   <skipTests>${skipTests}</skipTests>
                                    <moduleDefinitionFile>${project.basedir}/src/test/resources/modules/jsf-arquillian-module-def.xml</moduleDefinitionFile>
 			                          <systemProperties>
 			                              <property>

@@ -51,13 +51,9 @@
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
-
-        <!-- By default don't run tests -->
-        <skipTests>true</skipTests>
-
+        
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
-
-        <!-- Versioning -->
+        
         <version.org.jboss.arquillian>1.0.0.Alpha5</version.org.jboss.arquillian>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-12</version.org.jboss.shrinkwrap.shrinkwrap>
     </properties>
@@ -97,8 +93,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- Tests can be enabled via -DskipTests=false or via a profile -->
-                    <skipTests>${skipTests}</skipTests>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <!-- Don't fail the build for integration test failures -->
                     <testFailureIgnore>true</testFailureIgnore>

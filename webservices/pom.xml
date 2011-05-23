@@ -40,8 +40,16 @@
     <name>JBoss Application Server: Web Services Subsystem</name>
 
     <modules>
-        <module>tests-integration</module>
         <module>server-integration</module>
     </modules>
 
+    <profiles>
+      <profile>
+        <id>allTests</id>
+        <modules>
+          <module>tests-integration</module>
+        </modules>
+      </profile>
+    </profiles>
+    
 </project>

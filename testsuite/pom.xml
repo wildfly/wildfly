@@ -40,9 +40,6 @@
 
     <modules>
         <module>smoke</module>
-        <module>stress</module>
-        <module>benchmark</module>
-        <module>integration</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -51,10 +48,6 @@
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
-
-        <!-- This part of the testuite we do not want to execute by default. -->
-        <skipTests>true</skipTests>
-
     </properties>
 
     <build>
@@ -63,7 +56,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>${skipTests}</skipTests>
                     <argLine>${surefire.system.args}</argLine>
                     <includes>
                         <include>**/*TestCase.java</include>
@@ -75,16 +67,21 @@
 
     <profiles>
         <profile>
-            <id>all-tests</id>
+            <id>allTests</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <skipTests>false</skipTests>
                 <skip.benchmark.tests>false</skip.benchmark.tests>
                 <skip.stress.tests>false</skip.stress.tests>
             </properties>
+            <modules>
+                <module>stress</module>
+                <module>benchmark</module>
+                <module>integration</module>
+            </modules>
         </profile>
+        
         <!--
             Name: jpda
             Descr: Enable JPDA remote debuging

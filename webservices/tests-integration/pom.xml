@@ -45,10 +45,6 @@
         <test.resources.directory>${project.build.directory}/test-resources</test.resources.directory>
         <!--surefire.jvm.args>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</surefire.jvm.args-->
         <execute.deployment.test>false</execute.deployment.test>
-
-        <!-- Use -DskipTests=false to enable these integration tests -->
-        <skipTests>true</skipTests>
-
     </properties>
 
     <dependencies>
@@ -114,7 +110,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>${skipTests}</skipTests>
                     <argLine>${surefire.jvm.args}</argLine>
                     <failIfNoTests>false</failIfNoTests>
                     <includes>
