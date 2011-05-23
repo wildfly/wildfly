@@ -39,8 +39,10 @@ import javax.annotation.Resource;
 import javax.annotation.Resources;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link ComponentDescription} instance to configure
@@ -53,6 +55,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
     public static final Map<String, String> FIXED_LOCATIONS;
+    public static final Set<String> SIMPLE_ENTRIES;
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
@@ -65,6 +68,26 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("javax.ejb.SessionContext", "java:comp/EJBContext");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
+
+        final Set<String> simpleEntries = new HashSet<String>();
+        simpleEntries.add("boolean");
+        simpleEntries.add("char");
+        simpleEntries.add("byte");
+        simpleEntries.add("short");
+        simpleEntries.add("int");
+        simpleEntries.add("long");
+        simpleEntries.add("double");
+        simpleEntries.add("float");
+        simpleEntries.add("java.lang.Boolean");
+        simpleEntries.add("java.lang.Character");
+        simpleEntries.add("java.lang.Byte");
+        simpleEntries.add("java.lang.Short");
+        simpleEntries.add("java.lang.Integer");
+        simpleEntries.add("java.lang.Long");
+        simpleEntries.add("java.lang.Double");
+        simpleEntries.add("java.lang.Float");
+        simpleEntries.add("java.lang.String");
+        SIMPLE_ENTRIES = Collections.unmodifiableSet(simpleEntries);
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -158,8 +181,15 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final InjectionSource valueSource;
         // TODO: check for primitives, connection factories, blah blah
         if (isEmpty(lookup)) {
-            eeModuleDescription.addLazyResourceInjection(new LazyResourceInjection(targetDescription, localContextName, classDescription));
-            return;
+            //if it is a primitive type, then it may or may not actually be bound
+            //as if there is no deployment descriptor entry for the item then
+            //we have to ignore it
+            if(SIMPLE_ENTRIES.contains(injectionType)) {
+                eeModuleDescription.addLazyResourceInjection(new LazyResourceInjection(targetDescription, localContextName, classDescription));
+                return;
+            } else {
+                valueSource = new ComponentTypeInjectionSource(injectionType);
+            }
         } else {
             valueSource = new LookupInjectionSource(lookup);
         }
@@ -185,4 +215,5 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     private boolean isEmpty(final String string) {
         return string == null || string.isEmpty();
     }
+
 }

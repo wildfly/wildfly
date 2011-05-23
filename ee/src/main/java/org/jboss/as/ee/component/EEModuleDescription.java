@@ -63,9 +63,14 @@ public final class EEModuleDescription {
     }
 
     public void  addLazyResourceInjection(LazyResourceInjection injection) {
+        //TODO: lazy binding and comp/module aliasing is not really compatible
+        String name = injection.getLocalContextName();
+        if(!name.startsWith("java:")) {
+            name = "java:comp/env/" + name;
+        }
         List<LazyResourceInjection> list = lazyResourceInjections.get(injection.getLocalContextName());
         if(list == null) {
-            lazyResourceInjections.put(injection.getLocalContextName(), list = new ArrayList<LazyResourceInjection>(1));
+            lazyResourceInjections.put(name, list = new ArrayList<LazyResourceInjection>(1));
         }
         list.add(injection);
     }

@@ -53,8 +53,11 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         if (description == null) {
             return;
         }
+
+
         if (environment != null) {
             final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex);
+            handleLazyBindings(description, bindings);
             description.getConfigurators().add(new EEModuleConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, EEModuleDescription description, EEModuleConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -64,8 +67,26 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         }
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
-                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, null, module.getClassLoader(), deploymentReflectionIndex);
+                final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, componentDescription, module.getClassLoader(), deploymentReflectionIndex);
+                handleLazyBindings(description, bindings);
                 componentDescription.getBindingConfigurations().addAll(bindings);
+            }
+        }
+
+    }
+
+    private void handleLazyBindings(final EEModuleDescription description, final List<BindingConfiguration> bindings) {
+        for (final BindingConfiguration binding : bindings) {
+            String name = binding.getName();
+            if (!name.startsWith("java:")) {
+                name = "java:comp/" + name;
+            }
+            final List<LazyResourceInjection> lazyInjections = description.getLazyResourceInjections().get(name);
+            if (lazyInjections != null) {
+                for (final LazyResourceInjection injection : lazyInjections) {
+                    injection.install();
+                }
+                description.getLazyResourceInjections().remove(name);
             }
         }
     }
@@ -89,14 +110,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      *          If the injection points could not be resolved
      */
     protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
-
-        final List<LazyResourceInjection> lazyInjections = moduleDescription.getLazyResourceInjections().get(entry.getName());
-        if (lazyInjections != null) {
-            for (final LazyResourceInjection injection : lazyInjections) {
-                injection.install();
-            }
-            moduleDescription.getLazyResourceInjections().remove(entry.getName());
-        }
 
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
