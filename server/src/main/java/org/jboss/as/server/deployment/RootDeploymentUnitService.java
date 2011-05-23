@@ -36,7 +36,7 @@ import org.jboss.vfs.VirtualFile;
 final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final InjectedValue<ServerDeploymentRepository> serverDeploymentRepositoryInjector = new InjectedValue<ServerDeploymentRepository>();
     private final String name;
-    private final String runtimeName;
+    private final String managementName;
     final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<VirtualFile>();
     private final DeploymentUnit parent;
 
@@ -44,19 +44,20 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * Construct a new instance.
      *
      * @param name the deployment unit simple name
-     * @param runtimeName the deployment runtime name
+     * @param managementName the deployment's domain-wide unique name
      * @param parent the parent deployment unit
      */
-    public RootDeploymentUnitService(final String name, final String runtimeName, final DeploymentUnit parent) {
+    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent) {
         assert name != null : "name is null";
         this.name = name;
+        this.managementName = managementName;
         this.parent = parent;
-        this.runtimeName = runtimeName;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry) {
         final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry);
-        deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, runtimeName);
+        deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, name);
+        deploymentUnit.putAttachment(Attachments.MANAGEMENT_NAME, managementName);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_CONTENTS, contentsInjector.getValue());
 
         // Attach the deployment repo

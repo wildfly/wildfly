@@ -69,7 +69,7 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
         final String name = model.require(NAME).asString();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        redeploy(context, name, runtimeName, resultHandler, contents);
+        redeploy(context, runtimeName, name, resultHandler, contents);
 
         return new BasicOperationResult(compensatingOp);
     }

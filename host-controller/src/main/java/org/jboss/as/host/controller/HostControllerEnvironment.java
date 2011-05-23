@@ -8,9 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.process.DefaultJvmUtils;
@@ -76,14 +74,6 @@ public class HostControllerEnvironment {
 
     /**
      * Constant that holds the name of the environment property
-     * for specifying the domain system deployment URL.
-     *
-     * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/system-content</tt> .
-     */
-    public static final String DOMAIN_SYSTEM_DEPLOYMENT_DIR = "jboss.domain.system.deployment.dir";
-
-    /**
-     * Constant that holds the name of the environment property
      * for specifying the domain log directory for JBoss.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/<em>log</em></tt>.
@@ -120,7 +110,6 @@ public class HostControllerEnvironment {
     private final ConfigurationFile hostConfigurationFile;
     private final ConfigurationFile domainConfigurationFile;
     private final File domainDeploymentDir;
-    private final File domainSystemDeploymentDir;
     private final File domainDataDir;
     private final File domainLogDir;
     private final File domainServersDir;
@@ -218,13 +207,6 @@ public class HostControllerEnvironment {
             tmp = new File(this.domainBaseDir, "content");
         }
         this.domainDeploymentDir = tmp;
-        System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
-
-        tmp = getFileFromProperty(DOMAIN_SYSTEM_DEPLOYMENT_DIR);
-        if (tmp == null) {
-            tmp = new File(this.domainBaseDir, "system-content");
-        }
-        this.domainSystemDeploymentDir = tmp;
         System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
@@ -392,10 +374,6 @@ public class HostControllerEnvironment {
 
     public File getDomainDeploymentDir() {
         return domainDeploymentDir;
-    }
-
-    public File getDomainSystemDeploymentDir() {
-        return domainSystemDeploymentDir;
     }
 
     public File getDomainDataDir() {

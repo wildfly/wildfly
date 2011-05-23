@@ -43,34 +43,10 @@ public interface ServerDeploymentRepository {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment-repository");
 
     /**
-     * Add an external local file reference.
-     *
-     * @param file the local file
-     * @return the hash of the content that will be used as an internal identifier
-     *         for the content. Will not be <code>null</code>
-     */
-    byte[] addExternalFileReference(File file) throws IOException;
-
-    /**
      * Requests that the content with the given unique name and hash be mounted
      * in VFS at the given {@code mountPoint}.
      *
-     * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
-     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
-     * @param deploymentContents the deployment contents. Cannot be <code>null</code>
-     * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
-     * @return {@link java.io.Closeable} that can be used to close the mount
      *
-     * @throws IOException
-     */
-    Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile deploymentContents, VirtualFile mountPoint) throws IOException;
-
-    /**
-     * Requests that the content with the given unique name and hash be mounted
-     * in VFS at the given {@code mountPoint}.
-     *
-     * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
-     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
      * @param deploymentContents the deployment contents. Cannot be <code>null</code>
      * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
      * @param mountExpanded
@@ -78,5 +54,5 @@ public interface ServerDeploymentRepository {
      *
      * @throws IOException
      */
-    Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile deploymentContents, VirtualFile mountPoint, boolean mountExpanded) throws IOException;
+    Closeable mountDeploymentContent(VirtualFile deploymentContents, VirtualFile mountPoint, boolean mountExpanded) throws IOException;
 }

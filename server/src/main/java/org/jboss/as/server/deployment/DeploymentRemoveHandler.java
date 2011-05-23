@@ -23,6 +23,7 @@ import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
@@ -35,9 +36,11 @@ import org.jboss.msc.service.ServiceRegistry;
 
 import java.util.Locale;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 
 /**
  * Handles removal of a deployment from the model.
@@ -65,19 +68,10 @@ public class DeploymentRemoveHandler implements ModelRemoveOperationHandler, Des
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
         final ModelNode model = context.getSubModel();
         final ModelNode compensatingOp = DeploymentAddHandler.getOperation(operation.get(OP_ADDR), model);
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    String deploymentUnitName = model.require(NAME).asString();
-                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry();
-                    final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
-                    if (controller != null) {
-                        controller.setMode(ServiceController.Mode.REMOVE);
-                    }
-                    resultHandler.handleResultComplete();
-                }
-            });
+        boolean enabled = model.hasDefined(ENABLED) ? model.get(ENABLED).asBoolean() : true;
+        if (enabled) {
+            String deploymentUnitName = model.require(RUNTIME_NAME).asString();
+            DeploymentHandlerUtil.undeploy(context, deploymentUnitName, resultHandler);
         } else {
             resultHandler.handleResultComplete();
         }

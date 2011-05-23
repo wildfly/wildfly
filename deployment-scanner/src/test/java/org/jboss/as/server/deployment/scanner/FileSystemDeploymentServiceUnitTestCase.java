@@ -1064,28 +1064,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
             throw new RuntimeException("NYI: org.jboss.as.server.deployment.scanner.FileSystemDeploymentServiceUnitTestCase.MockDeploymentRepository.removeContent");
         }
 
-        @Override
-        public byte[] addExternalFileReference(File file) throws IOException {
-            return addExternalFileReference(file.getName(), file.getName(), file);
-        }
-
-        /** {@inheritDoc} */
-        public byte[] addExternalFileReference(String name, String runtimeName, File file) throws IOException {
-            byte[] bytes = new byte[20];
-            random.nextBytes(bytes);
-            content.add(bytes);
-            return bytes;
-        }
-
         /** {@inheritDoc} */
         @Override
-        public Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile contents, VirtualFile mountPoint) throws IOException {
-            return mountDeploymentContent(name, runtimeName, contents, mountPoint, false);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Closeable mountDeploymentContent(String name, String runtimeName, VirtualFile contents, VirtualFile mountPoint, boolean mountExploded) throws IOException {
+        public Closeable mountDeploymentContent(VirtualFile contents, VirtualFile mountPoint, boolean mountExploded) throws IOException {
             return new Closeable() {
                 @Override
                 public void close() throws IOException {

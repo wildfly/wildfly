@@ -18,6 +18,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -409,9 +410,11 @@ public class ServerOperationResolver {
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host);
                 ModelNode serverOp = operation.clone();
                 if (ADD.equals(serverOp.get(OP).asString())) {
-                    // The op is missing the runtime-name and hash values that the server will need
+                    // The op is missing the runtime-name and content values that the server will need
                     ModelNode domainDeployment = domain.get(DEPLOYMENT, address.getElement(1).getValue());
-                    serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
+                    if (!serverOp.hasDefined(RUNTIME_NAME)) {
+                        serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
+                    }
                     serverOp.get(CONTENT).set(domainDeployment.require(CONTENT));
                 }
                 PathAddress serverAddress = address.subAddress(1);
@@ -422,6 +425,16 @@ public class ServerOperationResolver {
                 String affectedGroup = address.getElement(0).getValue();
                 result = getServerSystemPropertyOperations(operation, address, Level.SERVER_GROUP, domain, affectedGroup, host);
             }
+        } else if (REPLACE_DEPLOYMENT.equals(operation.require(OP).asString())) {
+            String groupName = address.getElement(0).getValue();
+            Set<ServerIdentity> servers = getServersForGroup(groupName, host);
+            ModelNode serverOp = operation.clone();
+            serverOp.get(OP_ADDR).setEmptyList();
+            // The op is missing the runtime-name and content values that the server will need
+            ModelNode domainDeployment = domain.get(DEPLOYMENT, operation.require(NAME).asString());
+            serverOp.get(RUNTIME_NAME).set(domainDeployment.get(RUNTIME_NAME));
+            serverOp.get(CONTENT).set(domainDeployment.require(CONTENT));
+            result = Collections.singletonMap(servers, serverOp);
         }
 
         if (result == null) {

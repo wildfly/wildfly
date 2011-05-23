@@ -58,92 +58,25 @@ import static org.jboss.as.server.deployment.impl.ContentRepositoryImpl.safeClos
 public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepository, Service<ServerDeploymentRepository> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
-    private static final String EXTERNAL = "external";
-    private final File systemDeployDir;
     private TempFileProvider tempFileProvider;
     private final ContentRepositoryImpl contentRepository;
 
 
-    public static void addService(final ServiceTarget serviceTarget, final File repoRoot, final File systemDeployDir, final ContentRepositoryImpl contentRepository) {
+    public static void addService(final ServiceTarget serviceTarget, final ContentRepositoryImpl contentRepository) {
         serviceTarget.addService(ServerDeploymentRepository.SERVICE_NAME,
-                new ServerDeploymentRepositoryImpl(repoRoot, systemDeployDir, contentRepository))
+                new ServerDeploymentRepositoryImpl(contentRepository))
                 .install();
     }
 
     /**
      * Creates a new ServerDeploymentRepositoryImpl.
      */
-    public ServerDeploymentRepositoryImpl(final File repoRoot, final File systemDeployDir, final ContentRepositoryImpl contentRepository) {
-        this.systemDeployDir = systemDeployDir;
+    public ServerDeploymentRepositoryImpl(final ContentRepositoryImpl contentRepository) {
         this.contentRepository = contentRepository;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public byte[] addExternalFileReference(File file) throws IOException {
-        byte[] sha1Bytes = null;
-        final String fileName = file.getAbsolutePath();
-        final MessageDigest messageDigest = contentRepository.messageDigest;
-        synchronized(messageDigest) {
-            messageDigest.reset();
-            if(! file.exists()) {
-                throw new FileNotFoundException(fileName);
-            }
-            final OutputStream os = new OutputStream() {
-                public void write(int b) throws IOException {
-                    //
-                }
-            };
-            final DigestOutputStream dos = new DigestOutputStream(os, messageDigest);
-            calculateHash(file, dos);
-            sha1Bytes = messageDigest.digest();
-        }
-        final File content = getExternalFileReference(sha1Bytes, true);
-        final OutputStream os = new FileOutputStream(content);
-        try {
-            os.write(fileName.getBytes());
-            os.flush();
-            os.close();
-        } finally {
-            safeClose(os);
-        }
-        return sha1Bytes;
-    }
-
-    void calculateHash(final File file, final OutputStream os) throws IOException {
-        os.write(file.getAbsolutePath().getBytes());
-        if(file.isDirectory()) {
-            for(File f : file.listFiles()) {
-                calculateHash(f, os);
-            }
-        } else {
-            final InputStream is = new FileInputStream(file);
-            try {
-                VFSUtils.copyStreamAndClose(is, os);
-            } finally {
-                safeClose(is);
-            }
-        }
-    }
-
-    public boolean hasDeploymentContent(byte[] hash) {
-        if(getExternalFileReference(hash, false).exists()) {
-            return true;
-        }
-        return contentRepository.hasContent(hash);
-    }
-
-    private File getExternalFileReference(byte[] deploymentHash, boolean validate) {
-        final File hashDir = contentRepository.getDeploymentHashDir(deploymentHash, validate);
-        return new File(hashDir, EXTERNAL);
-    }
-
-    public Closeable mountDeploymentContent(String name, String runtimeName, final VirtualFile contents, VirtualFile mountPoint) throws IOException {
-        return mountDeploymentContent(name, runtimeName, contents, mountPoint, false);
-    }
-
-    @Override
-    public Closeable mountDeploymentContent(String name, String runtimeName, final VirtualFile contents, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
+    public Closeable mountDeploymentContent(final VirtualFile contents, VirtualFile mountPoint, boolean mountExpanded) throws IOException {
         // according to the javadoc contents can not be null
         if (contents == null)
             throw new IllegalArgumentException("contents is null");

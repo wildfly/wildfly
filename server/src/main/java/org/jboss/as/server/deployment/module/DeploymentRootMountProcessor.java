@@ -53,7 +53,6 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
         }
 
         final String deploymentName = deploymentUnit.getName();
-        final String deploymentRuntimeName = deploymentUnit.getAttachment(Attachments.RUNTIME_NAME);
         final VirtualFile deploymentContents = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS);
 
         // internal deployments do not have any contents, so there is nothing to mount
@@ -69,13 +68,13 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             mountHandle = null;
         } else {
             // The mount point we will use for the repository file
-            deploymentRoot = VFS.getChild("content/" + deploymentRuntimeName);
+            deploymentRoot = VFS.getChild("content/" + deploymentName);
 
             boolean failed = false;
             Closeable handle = null;
             try {
                 final boolean mountExploded = deploymentName.endsWith("war");
-                handle = serverDeploymentRepository.mountDeploymentContent(deploymentName, deploymentRuntimeName, deploymentContents, deploymentRoot, mountExploded);
+                handle = serverDeploymentRepository.mountDeploymentContent(deploymentContents, deploymentRoot, mountExploded);
                 mountHandle = new MountHandle(handle);
             } catch (IOException e) {
                 failed = true;

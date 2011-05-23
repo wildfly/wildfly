@@ -176,7 +176,6 @@ public class ServerEnvironment implements Serializable {
     private final File serverLogDir;
     private final File serverTempDir;
     private final boolean standalone;
-    private final File serverSystemDeployDir;
 
     public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, boolean standalone) {
         this.standalone = standalone;
@@ -278,12 +277,6 @@ public class ServerEnvironment implements Serializable {
         }
         serverDeployDir = tmp;
 
-        tmp = getFileFromProperty(SERVER_SYSTEM_DEPLOY_DIR, props);
-        if (tmp == null) {
-            tmp = new File(serverDataDir, "system-content");
-        }
-        serverSystemDeployDir = tmp;
-
         tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "log");
@@ -308,7 +301,6 @@ public class ServerEnvironment implements Serializable {
         SecurityActions.setSystemProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
-        SecurityActions.setSystemProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
         SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
     }
@@ -382,10 +374,6 @@ public class ServerEnvironment implements Serializable {
 
     public File getServerDeployDir() {
         return serverDeployDir;
-    }
-
-    public File getServerSystemDeployDir() {
-        return serverSystemDeployDir;
     }
 
     public File getServerLogDir() {

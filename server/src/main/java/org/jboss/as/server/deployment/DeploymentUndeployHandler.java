@@ -23,6 +23,7 @@ import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
@@ -34,6 +35,7 @@ import java.util.Locale;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 
 /**
@@ -65,10 +67,12 @@ public class DeploymentUndeployHandler implements ModelUpdateOperationHandler, D
     @Override
     public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
 
+        ModelNode compensatingOp = DeploymentDeployHandler.getOperation(operation.require(OP_ADDR));
+
         ModelNode model = context.getSubModel();
+        final String deploymentUnitName = model.require(RUNTIME_NAME).asString();
         model.get(ENABLED).set(false);
-        ModelNode compensatingOp = DeploymentDeployHandler.getOperation(operation.get(OP_ADDR));
-        final String deploymentUnitName = model.require(NAME).asString();
+
         DeploymentHandlerUtil.undeploy(context, deploymentUnitName, resultHandler);
         return new BasicOperationResult(compensatingOp);
     }

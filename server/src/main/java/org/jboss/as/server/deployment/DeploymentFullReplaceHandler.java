@@ -122,7 +122,16 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         validator.validate(operation);
 
         String name = operation.require(NAME).asString();
-        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+
+        ModelNode rootModel = context.getSubModel();
+        ModelNode deployments = rootModel.get(DEPLOYMENT);
+        ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
+        if (replaceNode == null) {
+            throw createFailureException("No deployment with name %s found", name);
+        }
+
+        String replacedRuntimeName = replaceNode.require(RUNTIME_NAME).asString();
+        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : replaceNode.require(RUNTIME_NAME).asString();
 
         final byte[] hash;
         // clone it, so we can modify it to our own content
@@ -159,14 +168,6 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
             contentItem = new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
         }
 
-        ModelNode rootModel = context.getSubModel();
-        ModelNode deployments = rootModel.get(DEPLOYMENT);
-
-        ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
-        if (replaceNode == null) {
-            throw createFailureException("No deployment with name %s found", name);
-        }
-
         boolean start = replaceNode.get(ENABLED).asBoolean();
 
         ModelNode deployNode = new ModelNode();
@@ -178,13 +179,13 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         deployments.get(name).set(deployNode);
 
         ModelNode compensatingOp = operation.clone();
-        compensatingOp.get(RUNTIME_NAME).set(replaceNode.get(RUNTIME_NAME).asString());
+        compensatingOp.get(RUNTIME_NAME).set(replacedRuntimeName);
         compensatingOp.get(CONTENT).set(replaceNode.require(CONTENT).clone());
         // the content repo will already have these, note that content should not be empty
         removeContentAdditions(compensatingOp.require(CONTENT));
 
         if (start) {
-            DeploymentHandlerUtil.replace(context, name, runtimeName, resultHandler, contentItem);
+            DeploymentHandlerUtil.replace(context, runtimeName, name, replacedRuntimeName, resultHandler, contentItem);
         } else {
             resultHandler.handleResultComplete();
         }

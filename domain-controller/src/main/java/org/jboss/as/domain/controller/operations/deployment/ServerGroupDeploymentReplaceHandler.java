@@ -18,11 +18,13 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 
 import java.util.Locale;
@@ -99,22 +101,29 @@ public class ServerGroupDeploymentReplaceHandler implements ModelUpdateOperation
             throw operationFailed(String.format("No deployment with name %s found", name));
         }
 
-        byte[] hash = deployment.require(HASH).asBytes();
-        // Ensure the local repo has the files
-        fileRepository.getDeploymentFiles(hash);
+
+        for (ModelNode content : deployment.require(CONTENT).asList()) {
+            if ((content.hasDefined(HASH))) {
+                byte[] hash = content.require(HASH).asBytes();
+                // Ensure the local repo has the files
+                fileRepository.getDeploymentFiles(hash);
+            }
+        }
 
         ModelNode deployments = context.getSubModel().get(DEPLOYMENT);
-        ModelNode deployNode = deployments.hasDefined(name) ? deployments.get(name) : null;
         ModelNode replaceNode = deployments.hasDefined(toReplace) ? deployments.get(toReplace) : null;
+        if (replaceNode == null) {
+            throw operationFailed(String.format("No deployment with name %s found", toReplace));
+        }
+        ModelNode deployNode = deployments.hasDefined(name) ? deployments.get(name) : null;
         if (deployNode == null) {
+            deployNode = new ModelNode();
             deployNode = deployment.clone();
+            deployNode.remove("content");
             deployments.get(name).set(deployNode);
         }
         else if (deployNode.get(ENABLED).asBoolean()) {
             throw operationFailed(String.format("Deployment %s is already started", toReplace));
-        }
-        else if (replaceNode == null) {
-            throw operationFailed(String.format("No deployment with name %s found", toReplace));
         }
 
         // Update model

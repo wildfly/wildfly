@@ -22,6 +22,7 @@
 package org.jboss.as.server.deployment;
 
 import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -29,21 +30,41 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
+import java.io.File;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class PathContentServitor extends AbstractService<VirtualFile> {
-    private final InjectedValue<String> pathValue = new InjectedValue<String>();
+    private final String unresolvedPath;
+    private final InjectedValue<String> relativePathValue = new InjectedValue<String>();
 
-    static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final ServiceName pathServiceName) {
-        final PathContentServitor service = new PathContentServitor();
-        return serviceTarget.addService(serviceName, service)
-            .addDependency(pathServiceName, String.class, service.pathValue)
-            .install();
+    static ServiceController<VirtualFile> addService(final ServiceTarget serviceTarget, final ServiceName serviceName, final String path, final ServiceName relativeToServiceName) {
+        final PathContentServitor service = new PathContentServitor(path);
+        ServiceBuilder<VirtualFile> builder = serviceTarget.addService(serviceName, service);
+        if (relativeToServiceName != null) {
+             builder.addDependency(relativeToServiceName, String.class, service.relativePathValue);
+        }
+        return builder.install();
+    }
+
+    private PathContentServitor(final String relativePath) {
+        this.unresolvedPath = relativePath;
     }
 
     @Override
     public VirtualFile getValue() throws IllegalStateException, IllegalArgumentException {
-        return VFS.getChild(pathValue.getValue());
+        return VFS.getChild(resolvePath());
+    }
+
+    private String resolvePath() {
+        String base = relativePathValue.getOptionalValue();
+        if (base != null) {
+            base = base.endsWith(File.separator) ? base.substring(0, base.length() -1) : base;
+            return base + File.separatorChar + unresolvedPath;
+        } else {
+            return unresolvedPath;
+        }
+
     }
 }

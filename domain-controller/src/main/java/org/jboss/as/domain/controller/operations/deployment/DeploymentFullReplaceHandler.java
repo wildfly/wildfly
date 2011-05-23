@@ -132,7 +132,10 @@ public class DeploymentFullReplaceHandler implements ModelUpdateOperationHandler
         if (contentItemNode.hasDefined(HASH)) {
             managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
-            if (!contentRepository.hasContent(hash))
+            // If we are the master, validate that we actually have this content. If we're not the master
+            // we do not need the content until it's added to a server group we care about, so we defer
+            // pulling it until then
+            if (isMaster && !contentRepository.hasContent(hash))
                 throw createFailureException("No deployment content with hash %s is available in the deployment content repository.", HashUtil.bytesToHexString(hash));
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (!isMaster) {

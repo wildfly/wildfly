@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
@@ -73,7 +72,6 @@ import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration
 import org.jboss.as.host.controller.operations.ExtensionAddHandler;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.deployment.DeploymentHandlerUtil;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -493,12 +491,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         key = ServerEnvironment.SERVER_DEPLOY_DIR;
         if (sysProps.get(key) == null) {
             File serverDeploymentDir = environment.getDomainDeploymentDir();
-            sysProps.put(key, serverDeploymentDir.getAbsolutePath());
-        }
-
-        key = ServerEnvironment.SERVER_SYSTEM_DEPLOY_DIR;
-        if (sysProps.get(key) == null) {
-            File serverDeploymentDir = environment.getDomainSystemDeploymentDir();
             sysProps.put(key, serverDeploymentDir.getAbsolutePath());
         }
     }

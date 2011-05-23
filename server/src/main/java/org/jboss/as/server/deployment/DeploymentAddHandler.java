@@ -76,8 +76,10 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
     static ModelNode getOperation(ModelNode address, ModelNode state) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         op.get(RUNTIME_NAME).set(state.get(RUNTIME_NAME));
-        op.get(HASH).set(state.get(HASH));
-        op.get(ENABLED).set(state.get(ENABLED));
+        op.get(CONTENT).set(state.get(CONTENT));
+        if (state.hasDefined(ENABLED)) {
+            op.get(ENABLED).set(state.get(ENABLED));
+        }
         return op;
     }
 
@@ -174,7 +176,7 @@ public class DeploymentAddHandler implements ModelAddOperationHandler, Descripti
         subModel.get(CONTENT).set(content);
         subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
         if (context.getRuntimeContext() != null && subModel.get(ENABLED).asBoolean()) {
-            DeploymentHandlerUtil.deploy(context, name, runtimeName, resultHandler, contentItem);
+            DeploymentHandlerUtil.deploy(context, runtimeName, name, resultHandler, contentItem);
         } else {
             resultHandler.handleResultComplete();
         }

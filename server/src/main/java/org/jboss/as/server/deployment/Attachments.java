@@ -61,8 +61,16 @@ public final class Attachments {
 
     /**
      * The deployments runtime name
+     *
+     * @deprecated use {@link org.jboss.as.server.deployment.DeploymentUnit#getName()}
      */
+    @Deprecated
     public static final AttachmentKey<String> RUNTIME_NAME = AttachmentKey.create(String.class);
+
+    /**
+     * The name that uniquely identifies the deployment to the management layer across the domain.
+     */
+    public static final AttachmentKey<String> MANAGEMENT_NAME = AttachmentKey.create(String.class);
 
     /**
      * The deployment contents

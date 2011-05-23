@@ -70,13 +70,13 @@ public class DeploymentHandlerUtil {
     private DeploymentHandlerUtil() {
     }
 
-    public static void deploy(final OperationContext context, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
+    public static void deploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(RuntimeTaskContext runtimeContext) throws OperationFailedException {
-                    deploy(runtimeContext, deploymentUnitName, runtimeName, resultHandler, contents);
+                    deploy(runtimeContext, deploymentUnitName, managementName, resultHandler, contents);
                 }
             });
         } else {
@@ -84,7 +84,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    private static void deploy(final RuntimeTaskContext context, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) {
+    private static void deploy(final RuntimeTaskContext context, final String deploymentUnitName, final String managementName, final ResultHandler resultHandler, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry();
         final ServiceController<?> controller = serviceRegistry.getService(deploymentUnitServiceName);
@@ -92,37 +92,26 @@ public class DeploymentHandlerUtil {
             controller.setMode(ServiceController.Mode.ACTIVE);
         } else {
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            final ServiceController<?> previous;
+            final ServiceController<?> contentService;
             // TODO: overlay service
             final ServiceName contentsServiceName = deploymentUnitServiceName.append("contents");
             if (contents[0].hash != null)
-                previous = ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash);
+                contentService = ContentServitor.addService(serviceTarget, contentsServiceName, contents[0].hash);
             else {
                 final String path = contents[0].path;
-                final ServiceName pathServiceName = AbstractPathService.pathNameOf(path);
                 final String relativeTo = contents[0].relativeTo;
-                if (relativeTo != null) {
-                    previous = RelativePathService.addService(pathServiceName, path, relativeTo, serviceTarget);
-                } else {
-                    previous = AbsolutePathService.addService(pathServiceName, path, serviceTarget);
-                }
-                final ServiceController<VirtualFile> contentServiceController = PathContentServitor.addService(serviceTarget, contentsServiceName, pathServiceName);
-                contentServiceController.addListener(new AbstractServiceListener<VirtualFile>() {
-                    @Override
-                    public void serviceRemoved(ServiceController<? extends VirtualFile> serviceController) {
-                        contentServiceController.removeListener(this);
-                        previous.setMode(REMOVE);
-                    }
-                });
+
+                final ServiceName relativeToPathServiceName = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
+                contentService = PathContentServitor.addService(serviceTarget, contentsServiceName, path, relativeToPathServiceName);
             }
-            final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, runtimeName, null);
+            final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null);
             final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
                     .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                     .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
                     .addDependency(contentsServiceName, VirtualFile.class, service.contentsInjector)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
-            previous.addListener(new AbstractServiceListener<Object>() {
+            contentService.addListener(new AbstractServiceListener<Object>() {
                 @Override
                 public void serviceRemoved(ServiceController<? extends Object> controller) {
                     controller.removeListener(this);
@@ -157,7 +146,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
+    public static void redeploy(final OperationContext operationContext, final String deploymentUnitName, final String managementName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
         if (operationContext.getRuntimeContext() != null) {
             operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
@@ -179,7 +168,7 @@ public class DeploymentHandlerUtil {
                             }
                         });
                     } else {
-                        deploy(context, deploymentUnitName, runtimeName, resultHandler, contents);
+                        deploy(context, deploymentUnitName, managementName, resultHandler, contents);
                     }
                 }
             });
@@ -193,21 +182,23 @@ public class DeploymentHandlerUtil {
         controller.setMode(REMOVE);
     }
 
-    public static void replace(final OperationContext operationContext, final String deploymentUnitName, final String runtimeName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
+    public static void replace(final OperationContext operationContext, final String deploymentUnitName, final String managementName,
+                               final String replacedDeploymentUnitName, final ResultHandler resultHandler, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
         if (operationContext.getRuntimeContext() != null) {
             operationContext.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
                 public void execute(final RuntimeTaskContext runtimeContext) throws OperationFailedException {
-                    final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
-                    final ServiceName contentsServiceName = deploymentUnitServiceName.append("contents");
+                    final ServiceName replacedDeploymentUnitServiceName = Services.deploymentUnitName(replacedDeploymentUnitName);
+                    final ServiceName replacedContentsServiceName = replacedDeploymentUnitServiceName.append("contents");
                     executeWhenRemoved(new Runnable() {
-                        @Override
-                        public void run() {
-                            deploy(runtimeContext, deploymentUnitName, runtimeName, resultHandler, contents);
-                        }
-                    }, runtimeContext.getServiceRegistry(), deploymentUnitServiceName);
-                    remove(runtimeContext.getServiceRegistry(), contentsServiceName);
+                                @Override
+                                public void run() {
+                                    deploy(runtimeContext, deploymentUnitName, managementName, resultHandler, contents);
+                                }
+                            }, runtimeContext.getServiceRegistry(), replacedDeploymentUnitServiceName, replacedContentsServiceName);
+                    remove(runtimeContext.getServiceRegistry(), replacedDeploymentUnitServiceName);
+                    remove(runtimeContext.getServiceRegistry(), replacedContentsServiceName);
                 }
             });
         } else {
@@ -221,6 +212,7 @@ public class DeploymentHandlerUtil {
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry();
+                    remove(serviceRegistry, deploymentUnitServiceName);
                     remove(serviceRegistry, deploymentUnitServiceName.append("contents"));
                     resultHandler.handleResultComplete();
                 }

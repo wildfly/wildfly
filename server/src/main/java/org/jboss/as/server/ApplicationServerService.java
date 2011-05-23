@@ -122,7 +122,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         serviceTarget.addListener(bootstrapListener);
         myController.addListener(bootstrapListener);
         ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
-        ServerDeploymentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir(), serverEnvironment.getServerSystemDeployDir(), contentRepository);
+        ServerDeploymentRepositoryImpl.addService(serviceTarget, contentRepository);
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);

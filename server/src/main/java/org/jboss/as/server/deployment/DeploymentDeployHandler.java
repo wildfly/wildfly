@@ -74,7 +74,7 @@ public class DeploymentDeployHandler implements ModelUpdateOperationHandler, Des
         final String name = model.require(NAME).asString();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        DeploymentHandlerUtil.deploy(context, name, runtimeName, resultHandler, contents);
+        DeploymentHandlerUtil.deploy(context, runtimeName, name, resultHandler, contents);
         return new BasicOperationResult(compensatingOp);
     }
 }
