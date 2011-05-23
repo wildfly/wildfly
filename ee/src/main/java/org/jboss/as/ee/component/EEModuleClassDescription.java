@@ -35,8 +35,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
@@ -50,7 +48,6 @@ public final class EEModuleClassDescription {
     private static final DefaultConfigurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 
     private final String className;
-    private final Map<MethodIdentifier, ResourceInjectionConfiguration> resourceInjections = new HashMap<MethodIdentifier, ResourceInjectionConfiguration>();
     private final Deque<ClassConfigurator> configurators = new ArrayDeque<ClassConfigurator>();
     private MethodIdentifier postConstructMethod;
     private MethodIdentifier preDestroyMethod;
@@ -122,35 +119,6 @@ public final class EEModuleClassDescription {
      */
     public void setPreDestroyMethod(final MethodIdentifier preDestroyMethod) {
         this.preDestroyMethod = preDestroyMethod;
-    }
-
-    /**
-     * Add the resource injection description for the given method.
-     *
-     * @param identifier the method identifier
-     * @return the resource injection description
-     */
-    public void putResourceInjection(MethodIdentifier identifier, ResourceInjectionConfiguration injectionDescription) {
-        if (identifier == null) {
-            throw new IllegalArgumentException("identifier is null");
-        }
-        if (injectionDescription == null) {
-            throw new IllegalArgumentException("injectionDescription is null");
-        }
-        if (resourceInjections.containsKey(identifier)) {
-            throw new IllegalArgumentException(identifier.toString() + " is already defined");
-        }
-        resourceInjections.put(identifier, injectionDescription);
-    }
-
-    /**
-     * Get the resource injection description for the given method.  If no such method has been described, {@code null} is returned.
-     *
-     * @param identifier the method identifier
-     * @return the resource injection description or {@code null} if there is none
-     */
-    public ResourceInjectionConfiguration getResourceInjection(MethodIdentifier identifier) {
-        return resourceInjections.get(identifier);
     }
 
     /**

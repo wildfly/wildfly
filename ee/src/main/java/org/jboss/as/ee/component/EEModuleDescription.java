@@ -25,9 +25,11 @@ package org.jboss.as.ee.component;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,6 +41,11 @@ public final class EEModuleDescription {
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, ComponentDescription> componentsByClassName = new HashMap<String, ComponentDescription>();
     private final Map<String, EEModuleClassDescription> classesByName = new HashMap<String, EEModuleClassDescription>();
+    /**
+     * Resource injections that only get installed if a binding is set up
+     * See EE 5.4.1.3
+     */
+    private final Map<String, List<LazyResourceInjection>> lazyResourceInjections = new HashMap<String, List<LazyResourceInjection>>();
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
@@ -53,6 +60,18 @@ public final class EEModuleDescription {
     public EEModuleDescription(final String applicationName, final String moduleName) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
+    }
+
+    public void  addLazyResourceInjection(LazyResourceInjection injection) {
+        List<LazyResourceInjection> list = lazyResourceInjections.get(injection.getLocalContextName());
+        if(list == null) {
+            lazyResourceInjections.put(injection.getLocalContextName(), list = new ArrayList<LazyResourceInjection>(1));
+        }
+        list.add(injection);
+    }
+
+    public Map<String, List<LazyResourceInjection>> getLazyResourceInjections() {
+        return lazyResourceInjections;
     }
 
     /**

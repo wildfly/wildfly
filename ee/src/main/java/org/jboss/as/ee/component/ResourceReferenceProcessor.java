@@ -153,14 +153,6 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
                 }
             }
-
-            // our injection (source) comes from the local (ENC) lookup, no matter what.
-            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
-            if (classType == null) {
-                throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>.");
-            }
-
             final String value = envEntry.getValue();
 
             if (isEmpty(value)) {
@@ -170,25 +162,33 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 continue;
             }
 
+            // our injection (source) comes from the local (ENC) lookup, no matter what.
+            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            if (classType == null) {
+                throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>.");
+            }
+
+
             final String type = classType.getName();
             BindingConfiguration bindingConfiguration = null;
             if (type.equals(String.class.getName())) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(value));
-            } else if (type.equals(Integer.class.getName())) {
+            } else if (type.equals(Integer.class.getName()) || type.equals("int")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Integer.valueOf(value)));
-            } else if (type.equals(Short.class.getName())) {
+            } else if (type.equals(Short.class.getName()) || type.equals("short")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Short.valueOf(value)));
-            } else if (type.equals(Long.class.getName())) {
+            } else if (type.equals(Long.class.getName()) || type.equals("long")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Long.valueOf(value)));
-            } else if (type.equals(Byte.class.getName())) {
+            } else if (type.equals(Byte.class.getName()) || type.equals("byte")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Byte.valueOf(value)));
-            } else if (type.equals(Double.class.getName())) {
+            } else if (type.equals(Double.class.getName()) || type.equals("double")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Double.valueOf(value)));
-            } else if (type.equals(Float.class.getName())) {
+            } else if (type.equals(Float.class.getName()) || type.equals("float")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Float.valueOf(value)));
-            } else if (type.equals(Boolean.class.getName())) {
+            } else if (type.equals(Boolean.class.getName()) || type.equals("boolean")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Boolean.valueOf(value)));
-            } else if (type.equals(Character.class.getName())) {
+            } else if (type.equals(Character.class.getName()) || type.equals("char")) {
                 if (value.length() != 1) {
                     throw new DeploymentUnitProcessingException("env-entry of type java.lang.Character is not exactly one character long " + value);
                 }

@@ -211,7 +211,11 @@ public class ContextNames {
             if(useCompNamespace) {
                 return serviceNameOfContext(app, module, comp, envEntryName);
             } else {
-                return serviceNameOfContext(app, module, module, envEntryName);
+                if(envEntryName.startsWith("java:comp")) {
+                    return serviceNameOfContext(app, module, module, "java:module" + envEntryName.substring("java:comp".length()));
+                } else {
+                    return serviceNameOfContext(app, module, module, envEntryName);
+                }
             }
         } else {
             if(useCompNamespace) {

@@ -99,6 +99,9 @@ public class ComponentDescription {
 
     private final List<ViewDescription> views = new ArrayList<ViewDescription>();
 
+    // Bindings
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+
     private final Deque<ComponentConfigurator> configurators = new ArrayDeque<ComponentConfigurator>();
 
     /**
@@ -424,6 +427,17 @@ public class ComponentDescription {
 
     public void setDeploymentDescriptorEnvironment(DeploymentDescriptorEnvironment deploymentDescriptorEnvironment) {
         this.deploymentDescriptorEnvironment = deploymentDescriptorEnvironment;
+    }
+
+
+    /**
+     * Get the binding configurations for this component.  This list contains bindings which are specific to the
+     * component.
+     *
+     * @return the binding configurations
+     */
+    public List<BindingConfiguration> getBindingConfigurations() {
+        return bindingConfigurations;
     }
 
     /**

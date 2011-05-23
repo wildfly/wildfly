@@ -55,19 +55,15 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
         final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(applicationName, moduleName, compName);
         final Injector<NamingStore> appInjector = selector.getAppContextInjector();
         final Injector<NamingStore> moduleInjector = selector.getModuleContextInjector();
-        final Injector<NamingStore> compInjector;
-        switch (namingMode) {
-            case USE_MODULE: compInjector = moduleInjector; break;
-            case CREATE: compInjector = selector.getCompContextInjector(); break;
-            case NONE:
-            default: compInjector = null;
-        }
+        final Injector<NamingStore> compInjector = selector.getCompContextInjector();
         configuration.getStartDependencies().add(new DependencyConfigurator() {
             public void configureDependency(final ServiceBuilder<?> serviceBuilder) {
                 serviceBuilder.addDependency(appContextServiceName, NamingStore.class, appInjector);
                 serviceBuilder.addDependency(moduleContextServiceName, NamingStore.class, moduleInjector);
                 if (namingMode == ComponentNamingMode.CREATE) {
                     serviceBuilder.addDependency(compContextServiceName, NamingStore.class, compInjector);
+                } else if(namingMode == ComponentNamingMode.USE_MODULE) {
+                    serviceBuilder.addDependency(moduleContextServiceName, NamingStore.class, compInjector);
                 }
             }
         });

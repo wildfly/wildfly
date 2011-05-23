@@ -62,9 +62,6 @@ public class ComponentConfiguration {
     private final List<DependencyConfigurator> createDependencies = new ArrayList<DependencyConfigurator>();
     private final List<DependencyConfigurator> startDependencies = new ArrayList<DependencyConfigurator>();
 
-    // Bindings
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
-
     // Views
     private final List<ViewConfiguration> views = new ArrayList<ViewConfiguration>();
 
@@ -122,16 +119,6 @@ public class ComponentConfiguration {
             map.put(method, deque = new ArrayDeque<InterceptorFactory>());
         }
         return deque;
-    }
-
-    /**
-     * Get the binding configurations for this component.  This list contains bindings which are specific to the
-     * component.
-     *
-     * @return the binding configurations
-     */
-    public List<BindingConfiguration> getBindingConfigurations() {
-        return bindingConfigurations;
     }
 
     /**

@@ -85,8 +85,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
             // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
             // handle these duplicates?
-            final Set<BindingConfiguration> componentLevelBindings = new HashSet(componentConfiguration.getBindingConfigurations());
-            for (BindingConfiguration binding : componentLevelBindings) {
+            for (BindingConfiguration binding : componentConfiguration.getComponentDescription().getBindingConfigurations()) {
                 final String bindingName = binding.getName();
                 final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
                 if (componentConfiguration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE && compBinding) {

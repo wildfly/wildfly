@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -50,7 +51,6 @@ import org.jboss.metadata.ejb.spec.MethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 
 import javax.ejb.AccessTimeout;
@@ -97,6 +97,9 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
 
         final String beanName = sessionBean.getName();
         final SessionBeanComponentDescription sessionBeanDescription = (SessionBeanComponentDescription) moduleDescription.getComponentByName(beanName);
+
+        sessionBeanDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", sessionBean));
+
         // mapped-name
         sessionBeanDescription.setMappedName(sessionBean.getMappedName());
         // local business interface views

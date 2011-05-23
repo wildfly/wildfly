@@ -82,16 +82,16 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 ClassInfo classInfo = fieldInfo.declaringClass();
                 EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                processFieldResource(fieldInfo, name, type, classDescription, annotation);
+                processFieldResource(fieldInfo, name, type, classDescription, annotation, eeModuleDescription);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 ClassInfo classInfo = methodInfo.declaringClass();
                 EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                processMethodResource(methodInfo, name, type, classDescription, annotation);
+                processMethodResource(methodInfo, name, type, classDescription, annotation, eeModuleDescription);
             } else if (annotationTarget instanceof ClassInfo) {
                 ClassInfo classInfo = (ClassInfo) annotationTarget;
                 EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                processClassResource(name, type, classDescription, annotation);
+                processClassResource(name, type, classDescription, annotation, eeModuleDescription);
             }
         }
         final List<AnnotationInstance> resourcesAnnotations = index.getAnnotations(RESOURCES_ANNOTATION_NAME);
@@ -106,7 +106,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                     final AnnotationValue typeValue = annotation.value("type");
                     final String type = typeValue != null ? typeValue.asClass().name().toString() : null;
                     EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                    processClassResource(name, type, classDescription, annotation);
+                    processClassResource(name, type, classDescription, annotation, eeModuleDescription);
                 }
             }
         }
@@ -115,16 +115,16 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void processFieldResource(final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
+    private void processFieldResource(final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
 
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, injectionType);
-        process(classDescription, annotation, injectionType, localContextName, targetDescription);
+        process(classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
     }
 
-    private void processMethodResource(final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
+    private void processMethodResource(final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -135,20 +135,20 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
         final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
-        process(classDescription, annotation, injectionType, localContextName, targetDescription);
+        process(classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
     }
 
-    private void processClassResource(final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation) {
+    private void processClassResource(final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) {
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
         }
         if (isEmpty(type) || type.equals(Object.class.getName())) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a type.");
         }
-        process(classDescription, annotation, type, name, null);
+        process(classDescription, annotation, type, name, null, eeModuleDescription);
     }
 
-    private void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription) {
+    private void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, EEModuleDescription eeModuleDescription) {
         final AnnotationValue lookupAnnotation = annotation.value("lookup");
         String lookup = lookupAnnotation == null ? null : lookupAnnotation.asString();
 
@@ -158,7 +158,8 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final InjectionSource valueSource;
         // TODO: check for primitives, connection factories, blah blah
         if (isEmpty(lookup)) {
-            valueSource = new ComponentTypeInjectionSource(injectionType);
+            eeModuleDescription.addLazyResourceInjection(new LazyResourceInjection(targetDescription, localContextName, classDescription));
+            return;
         } else {
             valueSource = new LookupInjectionSource(lookup);
         }

@@ -65,13 +65,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
                 final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, null, module.getClassLoader(), deploymentReflectionIndex);
-                componentDescription.getConfigurators().add(new ComponentConfigurator() {
-
-                    @Override
-                    public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                        configuration.getBindingConfigurations().addAll(bindings);
-                    }
-                });
+                componentDescription.getBindingConfigurations().addAll(bindings);
             }
         }
     }
@@ -95,6 +89,15 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      *          If the injection points could not be resolved
      */
     protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
+
+        final List<LazyResourceInjection> lazyInjections = moduleDescription.getLazyResourceInjections().get(entry.getName());
+        if (lazyInjections != null) {
+            for (final LazyResourceInjection injection : lazyInjections) {
+                injection.install();
+            }
+            moduleDescription.getLazyResourceInjections().remove(entry.getName());
+        }
+
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
 

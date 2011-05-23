@@ -24,8 +24,6 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleConfiguration;
@@ -64,7 +62,7 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
                 public void configure(DeploymentPhaseContext context, EEModuleDescription description, EEModuleConfiguration configuration) throws DeploymentUnitProcessingException {
                     // the java:module/EJBContext binding configuration
                     // Note that we bind to java:module/EJBContext since it's a .war. End users can still lookup java:comp/EJBContext
-                    // and that will internally get translated to java:module/EJBContext for .war, since java:comp == java:module in
+                    // and that will internally get translated to  java:module/EJBContext for .war, since java:comp == java:module in
                     // a web ENC. So binding to java:module/EJBContext is OK.
                     final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:module/EJBContext", directEjbContextReferenceSource);
                     configuration.getBindingConfigurations().add(ejbContextBinding);
@@ -72,14 +70,8 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
             });
         } else { // EJB packaged outside of a .war. So process normally.
             // add the binding configuration to the component description
-            componentDescription.getConfigurators().add(new ComponentConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    // the java:comp/EJBContext binding configuration
-                    final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
-                    configuration.getBindingConfigurations().add(ejbContextBinding);
-                }
-            });
+            final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
+            componentDescription.getBindingConfigurations().add(ejbContextBinding);
         }
     }
 
