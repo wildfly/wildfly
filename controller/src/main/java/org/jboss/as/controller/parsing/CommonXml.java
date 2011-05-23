@@ -2227,20 +2227,20 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writeAttribute(writer, Attribute.NAME, variable.getName());
 
                 ModelNode realm = variable.getValue();
-                if (realm.has(SERVER_IDENTITIES)) {
+                if (realm.hasDefined(SERVER_IDENTITIES)) {
                     writer.writeStartElement(Element.SERVER_IDENTITIES.getLocalName());
                     ModelNode serverIdentities = realm.get(SERVER_IDENTITIES);
-                    if (serverIdentities.has(SSL)) {
+                    if (serverIdentities.hasDefined(SSL)) {
                         writer.writeStartElement(Element.SSL.getLocalName());
                         ModelNode ssl = serverIdentities.get(SSL);
-                        if (ssl.has(PROTOCOL)) {
+                        if (ssl.hasDefined(PROTOCOL)) {
                             writer.writeAttribute(Attribute.PROTOCOL.getLocalName(), ssl.get(PROTOCOL).asString());
                         }
-                        if (ssl.has(KEYSTORE)) {
+                        if (ssl.hasDefined(KEYSTORE)) {
                             writer.writeStartElement(Element.KEYSTORE.getLocalName());
                             ModelNode keystore = ssl.get(KEYSTORE);
                             writer.writeAttribute(Attribute.PATH.getLocalName(), keystore.require(PATH).asString());
-                            if (keystore.has(RELATIVE_TO)) {
+                            if (keystore.hasDefined(RELATIVE_TO)) {
                                 writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), keystore.require(RELATIVE_TO).asString());
                             }
                             writer.writeAttribute(Attribute.PASSWORD.getLocalName(), keystore.require(PASSWORD).asString());
@@ -2252,11 +2252,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     writer.writeEndElement();
                 }
 
-                if (realm.has(AUTHENTICATION)) {
+                if (realm.hasDefined(AUTHENTICATION)) {
                     writer.writeStartElement(Element.AUTHENTICATION.getLocalName());
                     ModelNode authentication = realm.require(AUTHENTICATION);
 
-                    if (authentication.has(USERS)) {
+                    if (authentication.hasDefined(USERS)) {
                         ModelNode userDomain = authentication.get(USERS);
                         ModelNode users = userDomain.require(USER);
                         writer.writeStartElement(Element.USERS.getLocalName());
@@ -2267,7 +2267,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             writer.writeAttribute(Attribute.USERNAME.getLocalName(), userName);
 
                             // TODO - Later different representations of the password will be available.
-                            if (currentUser.has(PASSWORD)) {
+                            if (currentUser.hasDefined(PASSWORD)) {
                                 writer.writeStartElement(Element.PASSWORD.getLocalName());
                                 writer.writeCharacters(currentUser.get(PASSWORD).asString());
                                 writer.writeEndElement();
@@ -2276,7 +2276,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
 
                         writer.writeEndElement();
-                    } else if (authentication.has(LDAP)) {
+                    } else if (authentication.hasDefined(LDAP)) {
                         ModelNode userLdap = authentication.get(LDAP);
                         writer.writeStartElement(Element.LDAP.getLocalName());
                         writer.writeAttribute(Attribute.CONNECTION.getLocalName(), userLdap.require(CONNECTION).asString());
@@ -2285,7 +2285,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (userLdap.has(RECURSIVE)) {
                             writer.writeAttribute(Attribute.RECURSIVE.getLocalName(), userLdap.require(RECURSIVE).asString());
                         }
-                        if (userLdap.has(USER_DN)) {
+                        if (userLdap.hasDefined(USER_DN)) {
                             writer.writeAttribute(Attribute.USER_DN.getLocalName(), userLdap.require(USER_DN).asString());
                         }
                         writer.writeEndElement();

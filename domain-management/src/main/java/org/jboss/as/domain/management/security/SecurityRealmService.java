@@ -87,9 +87,9 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
 
     public void start(StartContext context) throws StartException {
         log.infof("Starting '%s' Security Realm Service", name);
-        if (authentication != null && authentication.has(USERS)) {
+        if (authentication != null && authentication.hasDefined(USERS)) {
             callbackHandler = new UserDomainCallbackHandler(name, authentication.require(USERS));
-        } else if (authentication != null && authentication.has(LDAP)) {
+        } else if (authentication != null && authentication.hasDefined(LDAP)) {
             callbackHandler = new UserLdapCallbackHandler(connectionManagerValue.getValue(), authentication.require(LDAP));
         } else {
             callbackHandler = new DomainCallbackHandler() {

@@ -67,8 +67,8 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
         ModelNode operationAddress = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(operationAddress);
         final String securityRealm = address.getLastElement().getValue();
-        final ModelNode authentication = operation.has(AUTHENTICATION) ? operation.get(AUTHENTICATION) : null;
-        final ModelNode serverIdentities = operation.has(SERVER_IDENTITIES) ? operation.get(SERVER_IDENTITIES) : null;
+        final ModelNode authentication = operation.hasDefined(AUTHENTICATION) ? operation.get(AUTHENTICATION) : null;
+        final ModelNode serverIdentities = operation.hasDefined(SERVER_IDENTITIES) ? operation.get(SERVER_IDENTITIES) : null;
 
         final ModelNode subModel = context.getSubModel();
         if (serverIdentities != null) {
@@ -102,7 +102,7 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
 
                         ServiceBuilder sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
-                        if (ssl.has(KEYSTORE) && ssl.get(KEYSTORE).has(RELATIVE_TO)) {
+                        if (ssl.hasDefined(KEYSTORE) && ssl.get(KEYSTORE).hasDefined(RELATIVE_TO)) {
                             sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
                         }
 
@@ -126,7 +126,7 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
 
     private static String requiredConnectionManager(ModelNode authentication) {
         String connectionManager = null;
-        if (authentication != null && authentication.has(LDAP)) {
+        if (authentication != null && authentication.hasDefined(LDAP)) {
             ModelNode userLdap = authentication.require(LDAP);
             connectionManager = userLdap.require(CONNECTION).asString();
         }
