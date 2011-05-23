@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.domain;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -32,12 +34,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 /**
  * Utilities for running tests of domain mode.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainTestUtil {
+public class DomainTestSupport {
 
     public static final String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
     public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
@@ -105,6 +112,18 @@ public class DomainTestUtil {
         processFutures(futures, timeout);
     }
 
+
+
+    public static ModelNode validateResponse(ModelNode response) {
+
+        if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
+            Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
+        }
+
+        Assert.assertTrue("result exists", response.has(RESULT));
+        return response.get(RESULT);
+    }
+
     private static void processFutures(Future<?>[] futures, long timeout) throws Exception {
 
         try {
@@ -125,5 +144,5 @@ public class DomainTestUtil {
     }
 
     /** Prevent instantiation */
-    private DomainTestUtil() {}
+    private DomainTestSupport() {}
 }
