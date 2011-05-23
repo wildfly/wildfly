@@ -104,15 +104,18 @@ public class EJBComponentDescriptionFactory implements DeploymentUnitProcessor {
         return ejbJarDescription;
     }
 
-    private static EjbJarMetaData getEjbJarMetaData(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+    private static EnterpriseBeansMetaData getEnterpriseBeansMetaData(final DeploymentUnit deploymentUnit) {
+        final EjbJarMetaData jarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        if (jarMetaData == null)
+            return null;
+        return jarMetaData.getEnterpriseBeans();
     }
 
     private static <B extends EnterpriseBeanMetaData> B getEnterpriseBeanMetaData(final DeploymentUnit deploymentUnit, final String name, final Class<B> expectedType) {
-        final EjbJarMetaData ejbJarMetaData = getEjbJarMetaData(deploymentUnit);
-        if (ejbJarMetaData == null)
+        final EnterpriseBeansMetaData enterpriseBeansMetaData = getEnterpriseBeansMetaData(deploymentUnit);
+        if (enterpriseBeansMetaData == null)
             return null;
-        return expectedType.cast(ejbJarMetaData.getEnterpriseBean(name));
+        return expectedType.cast(enterpriseBeansMetaData.get(name));
     }
 
     /**
