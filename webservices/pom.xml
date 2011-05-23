@@ -45,7 +45,12 @@
 
     <profiles>
       <profile>
-        <id>allTests</id>
+        <id>allTests</id>	
+        <activation>
+	       <property>
+	          <name>allTests</name>
+	       </property>
+        </activation>
         <modules>
           <module>tests-integration</module>
         </modules>

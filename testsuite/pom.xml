@@ -69,7 +69,9 @@
         <profile>
             <id>allTests</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+	          <property>
+	            <name>allTests</name>
+	          </property>
             </activation>
             <properties>
                 <skip.benchmark.tests>false</skip.benchmark.tests>

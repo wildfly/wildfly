@@ -38,13 +38,6 @@
 
     <name>JBoss Application Server: Test Suite: Aggregator</name>
 
-    <modules>
-        <module>api</module>
-        <module>spec</module>
-        <module>internals</module>
-        <module>domain</module>
-    </modules>
-
     <packaging>pom</packaging>
 
     <properties>
@@ -139,6 +132,28 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>allTests</id>
+            <activation>
+	          <property>
+	            <name>allTests</name>
+	          </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian2-container-managed</artifactId>
+                    <version>${project.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+			<modules>
+			    <module>api</module>
+			    <module>spec</module>
+			    <module>internals</module>
+			    <module>domain</module>
+			</modules>
+        </profile>
         <!--
             Name: jpda
             Descr: Enable JPDA remote debuging
@@ -153,20 +168,6 @@
           <properties>
             <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
           </properties>
-        </profile>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-arquillian2-container-managed</artifactId>
-                    <version>${project.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
         </profile>
         <!--
         Though this mode isn't yet available
