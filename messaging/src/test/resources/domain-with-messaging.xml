@@ -138,6 +138,7 @@
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
+        <socket-binding name="txn-socket-process-id" port="4714"/>
         <socket-binding name="hq:netty" port="5445" />
         <socket-binding name="hq:netty-throughput" port="5455" interface="default" />
 

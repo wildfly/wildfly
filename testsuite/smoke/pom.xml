@@ -86,7 +86,6 @@
                     <!--  standard surefire options -->
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
-      
                     <systemProperties>
                         <property>
                           <name>java.util.logging.manager</name>
