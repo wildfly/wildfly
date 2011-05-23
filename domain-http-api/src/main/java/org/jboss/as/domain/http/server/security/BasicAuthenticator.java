@@ -31,11 +31,14 @@ import java.util.Arrays;
 
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.domain.management.security.VerifyPasswordCallback;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAuthenticator {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     private final CallbackHandler callbackHandler;
 
@@ -61,9 +64,10 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
         try {
             callbackHandler.handle(callbacks);
         } catch (IOException e) {
+            log.debug("Callback handle failed.", e);
             return false;
         } catch (UnsupportedCallbackException e) {
-            return false;
+            throw new IllegalStateException("Callback rejected by handler.", e);
         }
 
         if (verifyPasswordCallback) {
