@@ -89,13 +89,9 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 break;
             }
         }
-        final ServiceController.Substate before = transition.getBefore();
-        final ServiceController.Substate after = transition.getAfter();
-        final boolean beforeIsRestState = before.isRestState();
-        final boolean afterIsRestState = after.isRestState();
-        if (beforeIsRestState && ! afterIsRestState) {
+        if (transition.leavesRestState()) {
             outstanding ++;
-        } else if (! beforeIsRestState && afterIsRestState) {
+        } else if (transition.entersRestState()) {
             if (outstanding -- == 1) {
                 notifyAll();
             }
