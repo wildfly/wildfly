@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -32,8 +33,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import java.lang.reflect.Method;
 
 /**
  * A configurator which adds interceptors to the component which establish the naming context.  The interceptor is
@@ -68,10 +67,8 @@ public final class NamespaceConfigurator implements ComponentConfigurator {
             }
         });
         final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new NamespaceContextInterceptor(selector));
-        configuration.getPostConstructInterceptors().addFirst(interceptorFactory);
-        configuration.getPreDestroyInterceptors().addFirst(interceptorFactory);
-        for (Method method : configuration.getDefinedComponentMethods()) {
-            configuration.getComponentInterceptorDeque(method).addFirst(interceptorFactory);
-        }
+        configuration.addPostConstructInterceptor(interceptorFactory, InterceptorOrder.ComponentPostConstruct.JNDI_NAMESPACE_INTERCEPTOR);
+        configuration.addPreDestroyInterceptor(interceptorFactory, InterceptorOrder.ComponentPreDestroy.JNDI_NAMESPACE_INTERCEPTOR);
+        configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.JNDI_NAMESPACE_INTERCEPTOR, false);
     }
 }

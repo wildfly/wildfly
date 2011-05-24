@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -47,12 +48,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -637,96 +636,103 @@ public class ComponentDescription {
             final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new TCCLInterceptor(module.getClassLoader()));
 
             // Apply post-construct
-            final Deque<InterceptorFactory> postConstructInterceptors = configuration.getPostConstructInterceptors();
-            final Iterator<InterceptorFactory> injectorIterator = injectors.descendingIterator();
-            while (injectorIterator.hasNext()) {
-                postConstructInterceptors.addFirst(injectorIterator.next());
+            for (InterceptorFactory injector : injectors) {
+                configuration.addPostConstructInterceptor(injector, InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
             }
-            final Iterator<InterceptorFactory> instantiatorIterator = instantiators.descendingIterator();
-            while (instantiatorIterator.hasNext()) {
-                postConstructInterceptors.addFirst(instantiatorIterator.next());
+
+            for (InterceptorFactory instantiator : instantiators) {
+                configuration.addPostConstructInterceptor(instantiator, InterceptorOrder.ComponentPostConstruct.INSTANTIATION_INTERCEPTORS);
             }
-            postConstructInterceptors.addAll(userPostConstruct);
-            postConstructInterceptors.add(Interceptors.getTerminalInterceptorFactory());
-            postConstructInterceptors.addFirst(tcclInterceptor);
+            for (InterceptorFactory interceptor : userPostConstruct) {
+                configuration.addPostConstructInterceptor(interceptor, InterceptorOrder.ComponentPostConstruct.USER_INTERCEPTORS);
+            }
+            configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
+            configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
 
             // Apply pre-destroy
-            final Deque<InterceptorFactory> preDestroyInterceptors = configuration.getPreDestroyInterceptors();
-            final Iterator<InterceptorFactory> uninjectorsIterator = uninjectors.descendingIterator();
-            while (uninjectorsIterator.hasNext()) {
-                preDestroyInterceptors.addFirst(uninjectorsIterator.next());
+            for (InterceptorFactory uninjector : uninjectors) {
+                configuration.addPreDestroyInterceptor(uninjector, InterceptorOrder.ComponentPreDestroy.UNINJECTION_INTERCEPTORS);
             }
-            final Iterator<InterceptorFactory> destructorIterator = destructors.descendingIterator();
-            while (destructorIterator.hasNext()) {
-                preDestroyInterceptors.addFirst(destructorIterator.next());
+            for (InterceptorFactory destructor : destructors) {
+                configuration.addPreDestroyInterceptor(destructor, InterceptorOrder.ComponentPreDestroy.DESTRUCTION_INTERCEPTORS);
             }
-            preDestroyInterceptors.addAll(userPreDestroy);
-            preDestroyInterceptors.add(Interceptors.getTerminalInterceptorFactory());
-            preDestroyInterceptors.addFirst(tcclInterceptor);
+            for (InterceptorFactory interceptor : userPreDestroy) {
+                configuration.addPreDestroyInterceptor(interceptor, InterceptorOrder.ComponentPreDestroy.USER_INTERCEPTORS);
+            }
+
+            configuration.addPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPreDestroy.TERMINAL_INTERCEPTOR);
+            configuration.addPreDestroyInterceptor(tcclInterceptor, InterceptorOrder.ComponentPreDestroy.TCCL_INTERCEPTOR);
 
             // @AroundInvoke interceptors
             final List<InterceptorDescription> classInterceptors = description.getClassInterceptors();
             final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = description.getMethodInterceptors();
 
-            Class clazz = componentClassConfiguration.getModuleClass();
-            while (clazz != null) {
-                final ClassReflectionIndex classIndex = deploymentReflectionIndex.getClassIndex(clazz);
-                for (final Method method : (Collection<Method>) classIndex.getMethods()) {
-                    MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
-                    Deque<InterceptorFactory> interceptorDeque = configuration.getComponentInterceptorDeque(method);
+            for (final Method method : componentClassConfiguration.getClassMethods()) {
 
-                    // first add the default interceptors (if not excluded) to the deque
-                    if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
-                        for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
-                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                interceptorDeque.addAll(aroundInvokes);
+                //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
+
+                configuration.addComponentInterceptor(method, Interceptors.getInitialInterceptorFactory(), InterceptorOrder.Component.INITIAL_INTERCEPTOR);
+                configuration.addComponentInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
+                // and also add the tccl interceptor
+                configuration.addComponentInterceptor(method, tcclInterceptor, InterceptorOrder.Component.TCCL_INTERCEPTOR);
+
+
+                final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
+
+
+                // first add the default interceptors (if not excluded) to the deque
+                if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
+                    for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
+                        String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                        if (aroundInvokes != null) {
+                            for (final InterceptorFactory factory : aroundInvokes) {
+                                configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
                             }
                         }
                     }
-
-                    // now add class level interceptors (if not excluded) to the deque
-                    if (!description.isExcludeClassInterceptors(identifier)) {
-                        for (InterceptorDescription interceptorDescription : classInterceptors) {
-                            String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                interceptorDeque.addAll(aroundInvokes);
-                            }
-                        }
-                    }
-
-                    // now add method level interceptors for to the deque so that they are triggered after the class interceptors
-                    List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(identifier);
-                    if (methodLevelInterceptors != null) {
-                        for (InterceptorDescription methodLevelInterceptor : methodLevelInterceptors) {
-                            String interceptorClassName = methodLevelInterceptor.getInterceptorClassName();
-                            List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
-                            if (aroundInvokes != null) {
-                                interceptorDeque.addAll(aroundInvokes);
-                            }
-
-                        }
-                    }
-
-                    // finally add the component level around invoke to the deque so that it's triggered last
-                    if (componentUserAroundInvoke != null) {
-                        interceptorDeque.addAll(componentUserAroundInvoke);
-                    }
-
                 }
-                clazz = clazz.getSuperclass();
+
+                // now add class level interceptors (if not excluded) to the deque
+                if (!description.isExcludeClassInterceptors(identifier)) {
+                    for (InterceptorDescription interceptorDescription : classInterceptors) {
+                        String interceptorClassName = interceptorDescription.getInterceptorClassName();
+                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                        if (aroundInvokes != null) {
+                            if (aroundInvokes != null) {
+                                for (final InterceptorFactory factory : aroundInvokes) {
+                                    configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // now add method level interceptors for to the deque so that they are triggered after the class interceptors
+                List<InterceptorDescription> methodLevelInterceptors = methodInterceptors.get(identifier);
+                if (methodLevelInterceptors != null) {
+                    for (InterceptorDescription methodLevelInterceptor : methodLevelInterceptors) {
+                        String interceptorClassName = methodLevelInterceptor.getInterceptorClassName();
+                        List<InterceptorFactory> aroundInvokes = userAroundInvokesByInterceptorClass.get(interceptorClassName);
+                        if (aroundInvokes != null) {
+                            if (aroundInvokes != null) {
+                                for (final InterceptorFactory factory : aroundInvokes) {
+                                    configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+                // finally add the component level around invoke to the deque so that it's triggered last
+                if (componentUserAroundInvoke != null) {
+                    for (final InterceptorFactory factory : componentUserAroundInvoke) {
+                        configuration.addComponentInterceptor(method, factory, InterceptorOrder.Component.USER_INTERCEPTORS);
+                    }
+                }
             }
 
-            //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
-            // and also add the tccl interceptor
-            for (Method method : configuration.getDefinedComponentMethods()) {
-                configuration.getComponentInterceptorDeque(method).addFirst(Interceptors.getInitialInterceptorFactory());
-                configuration.getComponentInterceptorDeque(method).addLast(new ManagedReferenceMethodInterceptorFactory(instanceKey, method));
-                // add to the beginning
-                configuration.getComponentInterceptorDeque(method).addFirst(tcclInterceptor);
-            }
 
             //views
             for (ViewDescription view : description.getViews()) {

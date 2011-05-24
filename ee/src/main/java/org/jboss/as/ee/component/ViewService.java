@@ -84,8 +84,8 @@ final class ViewService implements Service<ComponentView> {
             if (method.getName().equals("finalize") && method.getParameterTypes().length == 0) {
                 viewInterceptorFactories.put(method, DESTROY_INTERCEPTOR);
             } else {
-                viewInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getViewInterceptorDeque(method)));
-                clientInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientInterceptorDeque(method)));
+                viewInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getViewInterceptors(method)));
+                clientInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getClientInterceptors(method)));
             }
         }
         this.viewInterceptorFactories = viewInterceptorFactories;

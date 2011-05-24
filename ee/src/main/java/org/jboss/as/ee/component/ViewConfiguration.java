@@ -22,14 +22,14 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
 
 import java.lang.reflect.Method;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +38,17 @@ import java.util.Map;
  * A configuration of a component view.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Stuart Douglas
  */
 public class ViewConfiguration {
     private final ComponentConfiguration componentConfiguration;
     private final ServiceName viewServiceName;
-    private final Map<Method, Deque<InterceptorFactory>> viewInterceptors = new IdentityHashMap<Method, Deque<InterceptorFactory>>();
-    private final Map<Method, Deque<InterceptorFactory>> clientInterceptors = new IdentityHashMap<Method, Deque<InterceptorFactory>>();
-    private final Deque<InterceptorFactory> viewPostConstructInterceptors = new ArrayDeque<InterceptorFactory>();
-    private final Deque<InterceptorFactory> clientPostConstructInterceptors = new ArrayDeque<InterceptorFactory>();
-    private final Deque<InterceptorFactory> viewPreDestroyInterceptors = new ArrayDeque<InterceptorFactory>();
-    private final Deque<InterceptorFactory> clientPreDestroyInterceptors = new ArrayDeque<InterceptorFactory>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> viewInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> clientInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
+    private final OrderedItemContainer<InterceptorFactory> viewPostConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final OrderedItemContainer<InterceptorFactory> clientPostConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final OrderedItemContainer<InterceptorFactory> viewPreDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final OrderedItemContainer<InterceptorFactory> clientPreDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final ProxyFactory<?> proxyFactory;
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
     private final Class<?> viewClass;
@@ -86,75 +87,175 @@ public class ViewConfiguration {
     }
 
     /**
-     * Get the view interceptor deque for a method.  These interceptors are run sequentially on the "server side" of an
+     * Get the view interceptors for a method.  These interceptors are run sequentially on the "server side" of an
      * invocation.  The interceptor factories are used every time a new view instance is constructed, called with a
      * new factory context each time.  The factory may return the same interceptor instance or a new interceptor
      * instance as appropriate.
      *
      * @param method the method to look up
-     * @return the interceptor deque for this method
+     * @return the interceptors for this method
      */
-    public Deque<InterceptorFactory> getViewInterceptorDeque(Method method) {
-        Map<Method, Deque<InterceptorFactory>> map = viewInterceptors;
-        Deque<InterceptorFactory> deque = map.get(method);
-        if (deque == null) {
-            map.put(method, deque = new ArrayDeque<InterceptorFactory>());
+    public List<InterceptorFactory> getViewInterceptors(Method method) {
+        OrderedItemContainer<InterceptorFactory> container = viewInterceptors.get(method);
+        if (container == null) {
+            return Collections.emptyList();
         }
-        return deque;
+        return container.getSortedItems();
     }
 
     /**
-     * Get the client interceptor deque for a method.  These interceptors are run sequentially on the "client side" of an
+     * Adds an interceptor factory to all methods of a view
+     *
+     * @param interceptorFactory The factory to add
+     * @param priority           The interceptor order
+     */
+    public void addViewInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        for (Method method : proxyFactory.getCachedMethods()) {
+            addViewInterceptor(method, interceptorFactory, priority);
+        }
+    }
+
+    /**
+     * Adds a view interceptor to the given method
+     *
+     * @param method             The method to add
+     * @param interceptorFactory The interceptor factory
+     * @param priority           The priority
+     */
+    public void addViewInterceptor(Method method, InterceptorFactory interceptorFactory, int priority) {
+        OrderedItemContainer<InterceptorFactory> container = viewInterceptors.get(method);
+        if (container == null) {
+            viewInterceptors.put(method, container = new OrderedItemContainer<InterceptorFactory>());
+        }
+        container.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the client interceptors for a method.  These interceptors are run sequentially on the "client side" of an
      * invocation.  The interceptor factories are used every time a new client proxy instance is constructed, called with a
      * new factory context each time.  The factory may return the same interceptor instance or a new interceptor
      * instance as appropriate.
      *
      * @param method the method to look up
-     * @return the interceptor deque for this method
+     * @return the interceptors for this method
      */
-    public Deque<InterceptorFactory> getClientInterceptorDeque(Method method) {
-        Map<Method, Deque<InterceptorFactory>> map = clientInterceptors;
-        Deque<InterceptorFactory> deque = map.get(method);
-        if (deque == null) {
-            map.put(method, deque = new ArrayDeque<InterceptorFactory>());
+    public List<InterceptorFactory> getClientInterceptors(Method method) {
+        OrderedItemContainer<InterceptorFactory> container = clientInterceptors.get(method);
+        if (container == null) {
+            return Collections.emptyList();
         }
-        return deque;
+        return container.getSortedItems();
     }
 
     /**
-     * Get the post-construct interceptor deque for view instances.
+     * Adds a client interceptor factory to all methods of a view
      *
-     * @return the interceptor deque
+     * @param interceptorFactory The factory to add
+     * @param priority           The interceptor order
      */
-    public Deque<InterceptorFactory> getViewPostConstructInterceptors() {
-        return viewPostConstructInterceptors;
+    public void addClientInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        for (Method method : proxyFactory.getCachedMethods()) {
+            addClientInterceptor(method, interceptorFactory, priority);
+        }
     }
 
     /**
-     * Get the post-construct interceptor deque for client proxy instances.
+     * Adds a client interceptor to the given method
      *
-     * @return the interceptor deque
+     * @param method             The method to add
+     * @param interceptorFactory The interceptor factory
+     * @param priority           The priority
      */
-    public Deque<InterceptorFactory> getClientPostConstructInterceptors() {
-        return clientPostConstructInterceptors;
+    public void addClientInterceptor(Method method, InterceptorFactory interceptorFactory, int priority) {
+        OrderedItemContainer<InterceptorFactory> container = clientInterceptors.get(method);
+        if (container == null) {
+            clientInterceptors.put(method, container = new OrderedItemContainer<InterceptorFactory>());
+        }
+        container.add(interceptorFactory, priority);
     }
 
     /**
-     * Get the pre-destroy interceptor deque for view instances.
+     * Get the post-construct interceptors for view instances.
+     * <p/>
+     * This method should only be called after all interceptors have been added.
      *
-     * @return the interceptor deque
+     * @return the interceptors
      */
-    public Deque<InterceptorFactory> getViewPreDestroyInterceptors() {
-        return viewPreDestroyInterceptors;
+    public List<InterceptorFactory> getViewPostConstructInterceptors() {
+        return viewPostConstructInterceptors.getSortedItems();
     }
 
     /**
-     * Get the pre-destroy interceptor deque for client proxy instances.
+     * Adds a view post construct interceptor
      *
-     * @return the interceptor deque
+     * @param interceptorFactory The interceptor
+     * @param priority           The interceptor order
      */
-    public Deque<InterceptorFactory> getClientPreDestroyInterceptors() {
-        return clientPreDestroyInterceptors;
+    public void addViewPostConstructInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
+        viewPostConstructInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the post-construct interceptors for client proxy instances.
+     * <p/>
+     * This method should only be called after all interceptors have been added.
+     *
+     * @return the interceptors
+     */
+    public List<InterceptorFactory> getClientPostConstructInterceptors() {
+        return clientPostConstructInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a client post construct interceptor
+     *
+     * @param interceptorFactory The interceptor
+     * @param priority           The interceptor order
+     */
+    public void addClientPostConstructInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
+        clientPostConstructInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the pre-destroy interceptors for view instances.
+     * <p/>
+     * This method should only be called after all interceptors have been added.
+     *
+     * @return the interceptors
+     */
+    public List<InterceptorFactory> getViewPreDestroyInterceptors() {
+        return viewPreDestroyInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a view pre-destroy interceptor
+     *
+     * @param interceptorFactory The interceptor
+     * @param priority           The interceptor order
+     */
+    public void addViewPreDestroyInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
+        viewPreDestroyInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the pre-destroy interceptors for client proxy instances.
+     * <p/>
+     * This method should only be called after all interceptors have been added.
+     *
+     * @return the interceptors
+     */
+    public List<InterceptorFactory> getClientPreDestroyInterceptors() {
+        return clientPreDestroyInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a client pre-destroy interceptor
+     *
+     * @param interceptorFactory The interceptor
+     * @param priority           The interceptor order
+     */
+    public void addClientPreDestroyInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
+        clientPreDestroyInterceptors.add(interceptorFactory, priority);
     }
 
     /**
@@ -184,45 +285,4 @@ public class ViewConfiguration {
         return viewClass;
     }
 
-    /**
-     * Adds a "server side" interceptor  to the front of the chain which will be applicable for all methods exposed by this view.
-     *
-     * @param interceptorFactory The interceptor to add
-     * @see #getViewInterceptorDeque(java.lang.reflect.Method)
-     */
-    public void addViewInterceptorToFront(InterceptorFactory interceptorFactory) {
-        Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
-        for (Method method : allMethodsOnView) {
-            Deque<InterceptorFactory> interceptorsForMethod = this.getViewInterceptorDeque(method);
-            interceptorsForMethod.addFirst(interceptorFactory);
-        }
-    }
-
-    /**
-     * Adds a "server side" interceptor  to the back of the chain which will be applicable for all methods exposed by this view.
-     *
-     * @param interceptorFactory The interceptor to add
-     * @see #getViewInterceptorDeque(java.lang.reflect.Method)
-     */
-    public void addViewInterceptorToBack(InterceptorFactory interceptorFactory) {
-        Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
-        for (Method method : allMethodsOnView) {
-            Deque<InterceptorFactory> interceptorsForMethod = this.getViewInterceptorDeque(method);
-            interceptorsForMethod.addFirst(interceptorFactory);
-        }
-    }
-
-    /**
-     * Adds a "client side" interceptor which will be applicable for all methods exposed by this view.
-     *
-     * @param interceptorFactory The interceptor to add
-     * @see #getClientInterceptorDeque(java.lang.reflect.Method)
-     */
-    public void addClientViewInterceptor(InterceptorFactory interceptorFactory) {
-        Method[] allMethodsOnView = this.proxyFactory.getCachedMethods();
-        for (Method method : allMethodsOnView) {
-            Deque<InterceptorFactory> interceptorsForMethod = this.getClientInterceptorDeque(method);
-            interceptorsForMethod.add(interceptorFactory);
-        }
-    }
 }

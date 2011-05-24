@@ -29,13 +29,13 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -131,7 +131,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptorToFront(PooledInstanceInterceptor.pooled());
+                configuration.addViewInterceptor(PooledInstanceInterceptor.pooled(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
 
@@ -143,7 +143,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(new MessageDrivenInvocationContextInterceptor()));
+                configuration.addPostConstructInterceptor(MessageDrivenInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
+                configuration.addPreDestroyInterceptor(MessageDrivenInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
             }
         });
     }
@@ -153,7 +154,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptorToFront(new ImmediateInterceptorFactory(new MessageDrivenInvocationContextInterceptor()));
+                configuration.addViewInterceptor(MessageDrivenInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
             }
         });
     }

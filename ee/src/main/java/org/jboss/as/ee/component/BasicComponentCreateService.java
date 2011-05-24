@@ -63,7 +63,7 @@ public class BasicComponentCreateService implements Service<Component> {
         preDestroy = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPreDestroyInterceptors());
         final IdentityHashMap<Method, InterceptorFactory> componentInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
         for (Method method : componentConfiguration.getDefinedComponentMethods()) {
-            componentInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getComponentInterceptorDeque(method)));
+            componentInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getComponentInterceptors(method)));
         }
         componentClass = componentConfiguration.getComponentClass();
         this.componentInterceptors = componentInterceptors;

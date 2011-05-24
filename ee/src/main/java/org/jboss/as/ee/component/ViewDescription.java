@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -143,15 +144,15 @@ public class ViewDescription {
             Method[] methods = configuration.getProxyFactory().getCachedMethods();
             for (Method method : methods) {
                 final Method componentMethod = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, index, method);
-                configuration.getViewInterceptorDeque(method).addLast(new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)));
-                configuration.getClientInterceptorDeque(method).addLast(CLIENT_DISPATCHER_INTERCEPTOR_FACTORY);
+                configuration.addViewInterceptor(method,new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
             }
 
-            configuration.getViewPostConstructInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
-            configuration.getViewPreDestroyInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
+            configuration.addViewPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPostConstruct.TERMINAL_INTERCEPTOR);
+            configuration.addViewPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPreDestroy.TERMINAL_INTERCEPTOR);
 
-            configuration.getClientPostConstructInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
-            configuration.getClientPreDestroyInterceptors().addLast(Interceptors.getTerminalInterceptorFactory());
+            configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
+            configuration.addClientPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
 
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();

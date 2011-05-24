@@ -28,6 +28,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.managedbean.component.ManagedBeanAssociatingInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanDestroyInterceptorFactory;
@@ -44,7 +45,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 import javax.annotation.ManagedBean;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -97,12 +97,10 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                     // Add MB association interceptors
                     final Object contextKey = new Object();
-                    configuration.getViewPostConstructInterceptors().addFirst(new ManagedBeanCreateInterceptorFactory(contextKey));
+                    configuration.addViewPostConstructInterceptor(new ManagedBeanCreateInterceptorFactory(contextKey), InterceptorOrder.ViewPostConstruct.INSTANCE_CREATE);
                     final ManagedBeanAssociatingInterceptorFactory associatingInterceptorFactory = new ManagedBeanAssociatingInterceptorFactory(contextKey);
-                    for (Method method : configuration.getProxyFactory().getCachedMethods()) {
-                        configuration.getViewInterceptorDeque(method).addFirst(associatingInterceptorFactory);
-                    }
-                    configuration.getViewPreDestroyInterceptors().addFirst(new ManagedBeanDestroyInterceptorFactory(contextKey));
+                    configuration.addViewInterceptor(associatingInterceptorFactory, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+                    configuration.addViewPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ViewPreDestroy.INSTANCE_DESTROY);
                 }
             });
             viewDescription.getBindingNames().addAll(Arrays.asList("java:module/" + beanName, "java:app/" + moduleDescription.getModuleName() + "/" + beanName));

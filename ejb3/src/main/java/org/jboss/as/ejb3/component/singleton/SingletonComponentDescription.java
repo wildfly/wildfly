@@ -29,17 +29,18 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
 
 /**
  * Component description for a singleton bean
@@ -115,10 +116,16 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
 
                 //add equals/hashCode interceptor
-                configuration.addViewInterceptorToFront(ComponentTypeIdentityInterceptorFactory.INSTANCE);
+                for(Method method : configuration.getProxyFactory().getCachedMethods()) {
+                    if((method.getName().equals("hashCode") && method.getParameterTypes().length==0) ||
+                            method.getName().equals("equals") && method.getParameterTypes().length ==1 &&
+                                    method.getParameterTypes()[0] == Object.class) {
+                        configuration.addViewInterceptor(ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
+                    }
+                }
 
                 // add the singleton component instance associating interceptor
-                configuration.addViewInterceptorToFront(new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor()));
+                configuration.addViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
 
@@ -139,7 +146,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                         }
                     };
                     // add the bmt interceptor factory
-                    configuration.addViewInterceptorToFront(slsbBmtInterceptorFactory);
+                    configuration.addViewInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
                 }
             });
         }

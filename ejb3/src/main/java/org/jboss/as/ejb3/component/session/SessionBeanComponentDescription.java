@@ -31,6 +31,7 @@ import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -41,7 +42,6 @@ import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
-import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -394,7 +394,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     private void prepareAccessTimeoutConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
-        Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts = new HashMap();
+        Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts = new HashMap<EJBBusinessMethod, AccessTimeout>();
         for (Map.Entry<EJBMethodDescription, AccessTimeout> entry : this.methodAccessTimeouts.entrySet()) {
             EJBMethodDescription method = entry.getKey();
             try {
@@ -412,7 +412,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     private void prepareLockConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
-        Map<EJBBusinessMethod, LockType> methodApplicableLockTypes = new HashMap();
+        Map<EJBBusinessMethod, LockType> methodApplicableLockTypes = new HashMap<EJBBusinessMethod, LockType>();
         for (Map.Entry<EJBMethodDescription, LockType> entry : this.methodLockTypes.entrySet()) {
             EJBMethodDescription method = entry.getKey();
             try {
@@ -432,12 +432,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         String methodName = method.getMethodName();
         String[] types = method.getMethodParams();
         if (types == null || types.length == 0) {
-            return new EJBBusinessMethod(methodName, new Class<?>[0]);
+            return new EJBBusinessMethod(methodName);
         }
         Class<?>[] paramTypes = new Class<?>[types.length];
         int i = 0;
         for (String type : types) {
-            paramTypes[i++] = PrimitiveClassLoaderUtil.loadClass(type.toString(), classLoader);
+            paramTypes[i++] = PrimitiveClassLoaderUtil.loadClass(type, classLoader);
         }
         return new EJBBusinessMethod(methodName, paramTypes);
     }
@@ -450,7 +450,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // current invocation
 
         // tx management interceptor(s)
-        this.addTxManagementInterceptorForView(view);
+        addTxManagementInterceptorForView(view);
 
     }
 
@@ -467,16 +467,16 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
                 // Add CMT interceptor factory
                 if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
-                    configuration.addViewInterceptorToFront(new ComponentInterceptorFactory() {
-                        @Override
-                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                            if (component instanceof TransactionalComponent == false) {
-                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                        " isn't a transactional component. Tx interceptors cannot be applied");
-                            }
-                            return new CMTTxInterceptor((TransactionalComponent) component);
-                        }
-                    });
+                    configuration.addViewInterceptor(new ComponentInterceptorFactory() {
+                                @Override
+                                protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                                    if (!(component instanceof TransactionalComponent)) {
+                                        throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
+                                                " isn't a transactional component. Tx interceptors cannot be applied");
+                                    }
+                                    return new CMTTxInterceptor((TransactionalComponent) component);
+                                }
+                            }, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
                 }
             }
         });
@@ -489,9 +489,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 if(SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
-                    configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(SessionBeanSessionContextInjectionInterceptor.INSTANCE));
+
+                    configuration.addPostConstructInterceptor(SessionBeanSessionContextInjectionInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
                 }
-                configuration.getPostConstructInterceptors().addFirst(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()));
+                configuration.addPostConstructInterceptor(SessionInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
+                configuration.addPreDestroyInterceptor(SessionInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.EJB_SESSION_CONTEXT_INTERCEPTOR);
             }
         });
     }
@@ -501,7 +503,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptorToFront(new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor()));
+                configuration.addViewInterceptor(SessionInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
             }
         });
 

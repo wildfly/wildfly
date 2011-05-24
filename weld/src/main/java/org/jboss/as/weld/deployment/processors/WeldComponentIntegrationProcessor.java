@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -95,7 +96,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
                     addWeldInstantiator(context.getServiceTarget(), configuration, componentClass, beanName, deploymentUnit.getServiceName(), beanManagerServiceName, interceptorClasses, classLoader);
 
-                    configuration.getPostConstructInterceptors().addLast(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses));
+                    configuration.addPostConstructInterceptor(new WeldInjectionInterceptor.Factory(configuration, interceptorClasses), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION);
                 }
             });
 

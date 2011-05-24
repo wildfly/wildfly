@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -39,7 +40,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -47,7 +47,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -270,8 +269,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 Method[] methods = configuration.getProxyFactory().getCachedMethods();
                 for (Method method : methods) {
                     if (TO_STRING_METHOD.equals(method)) {
-                        final Deque<InterceptorFactory> clientInterceptorsForMethod = configuration.getClientInterceptorDeque(method);
-                        clientInterceptorsForMethod.addFirst(new ImmediateInterceptorFactory(new ToStringMethodInterceptor()));
+                        configuration.addClientInterceptor(method, new ImmediateInterceptorFactory(new ToStringMethodInterceptor(EJBComponentDescription.this.getComponentName())), InterceptorOrder.Client.TO_STRING);
                         return;
                     }
                 }
@@ -323,7 +321,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * method, so it's the responsibility of the component to setup this interceptor *only* on <code>toString()</code> method on the component
      * views.
      */
-    private class ToStringMethodInterceptor implements Interceptor {
+    private static class ToStringMethodInterceptor implements Interceptor {
+
+        private final String name;
+
+        public ToStringMethodInterceptor(final String name) {
+            this.name = name;
+        }
+
 
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
@@ -331,7 +336,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             if (componentViewInstance == null) {
                 throw new IllegalStateException("ComponentViewInstance not available in interceptor context: " + context);
             }
-            return "Proxy for view class: " + componentViewInstance.getViewClass().getName() + " of EJB: " + EJBComponentDescription.this.getComponentName();
+            return "Proxy for view class: " + componentViewInstance.getViewClass().getName() + " of EJB: " + name;
         }
     }
 

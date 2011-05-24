@@ -24,18 +24,21 @@ package org.jboss.as.ejb3.component.session;
 import org.jboss.ejb3.context.CurrentInvocationContext;
 import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 import javax.ejb.SessionBean;
 
 /**
  * Interceptor that injects the SessionContext into ejb's that implement {@link SessionBean}
+ *
  * @author Stuart Douglas
  */
 public class SessionBeanSessionContextInjectionInterceptor implements Interceptor {
 
-    public static SessionBeanSessionContextInjectionInterceptor INSTANCE = new SessionBeanSessionContextInjectionInterceptor();
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionBeanSessionContextInjectionInterceptor());
 
     private SessionBeanSessionContextInjectionInterceptor() {
     }

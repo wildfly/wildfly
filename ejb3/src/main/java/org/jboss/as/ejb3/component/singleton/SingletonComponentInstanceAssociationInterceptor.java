@@ -24,7 +24,9 @@ package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
  * Responsible for associating the single component instance for a singleton bean during invocation.
@@ -33,9 +35,15 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class SingletonComponentInstanceAssociationInterceptor extends AbstractEJBInterceptor {
 
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SingletonComponentInstanceAssociationInterceptor());
+
+    private SingletonComponentInstanceAssociationInterceptor() {
+
+    }
+
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-        SingletonComponent singletonComponent = this.getComponent(interceptorContext, SingletonComponent.class);
+        SingletonComponent singletonComponent = getComponent(interceptorContext, SingletonComponent.class);
         // get the component instance
         ComponentInstance singletonComponentInstance = singletonComponent.getComponentInstance();
         if (singletonComponent == null) {

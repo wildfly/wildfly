@@ -29,8 +29,10 @@ import org.jboss.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.ejb3.context.spi.InvocationContext;
 import org.jboss.ejb3.context.spi.SessionContext;
 import org.jboss.ejb3.context.spi.SessionInvocationContext;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -39,6 +41,12 @@ import java.util.Map;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class SessionInvocationContextInterceptor implements Interceptor {
+
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor());
+
+    private SessionInvocationContextInterceptor() {
+
+    }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {

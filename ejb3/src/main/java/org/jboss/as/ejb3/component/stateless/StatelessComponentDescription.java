@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -41,6 +42,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
 
 /**
  * User: jpai
@@ -88,10 +90,17 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
 
                 //add equals/hashCode interceptor
-                configuration.addViewInterceptorToFront(ComponentTypeIdentityInterceptorFactory.INSTANCE);
+                //add equals/hashCode interceptor
+                for(Method method : configuration.getProxyFactory().getCachedMethods()) {
+                    if((method.getName().equals("hashCode") && method.getParameterTypes().length==0) ||
+                            method.getName().equals("equals") && method.getParameterTypes().length ==1 &&
+                                    method.getParameterTypes()[0] == Object.class) {
+                        configuration.addViewInterceptor(ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
+                    }
+                }
 
                 // add the stateless component instance associating interceptor
-                configuration.addViewInterceptorToFront(PooledInstanceInterceptor.pooled());
+                configuration.addViewInterceptor(PooledInstanceInterceptor.pooled(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
 
@@ -111,7 +120,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                         }
                     };
                     // add the bmt interceptor factory
-                    configuration.addViewInterceptorToFront(slsbBmtInterceptorFactory);
+                    configuration.addViewInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
                 }
             });
         }

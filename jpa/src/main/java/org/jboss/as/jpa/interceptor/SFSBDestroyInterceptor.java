@@ -27,10 +27,10 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.ejb3.SFSBContextHandleImpl;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -41,27 +41,32 @@ import java.util.List;
  *
  * @author Scott Marlow
  */
-public class SFSBDestroyInterceptorFactory implements InterceptorFactory {
+public class SFSBDestroyInterceptor implements Interceptor {
 
-    public Interceptor create(final InterceptorFactoryContext context) {
-        return new Interceptor() {
-            @Override
-            public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-                StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
-                SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
-                List<EntityManager> readyToClose = SFSBXPCMap.getINSTANCE().remove(sfsbContextHandle);
-                if (readyToClose != null && readyToClose.size() > 0) {
-                    for (EntityManager entityManager : readyToClose) {
-                        if (entityManager instanceof ExtendedEntityManager) {
-                            // TODO:  continue iterating through remaining entity managers and chain any exceptions
-                            ((ExtendedEntityManager) entityManager).containerClose();
-                        } else {
-                            throw new RuntimeException("can only close SFSB XPC entity manager that are instances of ExtendedEntityManager" + entityManager.getClass().getName());
-                        }
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBDestroyInterceptor());
+
+    private SFSBDestroyInterceptor() {
+    }
+
+    @Override
+    public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+        try {
+
+            return interceptorContext.proceed();
+        } finally {
+            StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
+            SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
+            List<EntityManager> readyToClose = SFSBXPCMap.getINSTANCE().remove(sfsbContextHandle);
+            if (readyToClose != null && readyToClose.size() > 0) {
+                for (EntityManager entityManager : readyToClose) {
+                    if (entityManager instanceof ExtendedEntityManager) {
+                        // TODO:  continue iterating through remaining entity managers and chain any exceptions
+                        ((ExtendedEntityManager) entityManager).containerClose();
+                    } else {
+                        throw new RuntimeException("can only close SFSB XPC entity manager that are instances of ExtendedEntityManager" + entityManager.getClass().getName());
                     }
                 }
-                return interceptorContext.proceed();
             }
-        };
+        }
     }
 }

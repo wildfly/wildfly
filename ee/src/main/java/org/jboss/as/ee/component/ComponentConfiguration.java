@@ -22,13 +22,14 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.InterceptorFactory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayDeque;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Deque;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,9 +53,9 @@ public class ComponentConfiguration {
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
     // Interceptor config
-    private final Deque<InterceptorFactory> postConstructInterceptors = new ArrayDeque<InterceptorFactory>();
-    private final Deque<InterceptorFactory> preDestroyInterceptors = new ArrayDeque<InterceptorFactory>();
-    private final Map<Method, Deque<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, Deque<InterceptorFactory>>();
+    private final OrderedItemContainer<InterceptorFactory> postConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final OrderedItemContainer<InterceptorFactory> preDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
+    private final Map<Method, OrderedItemContainer<InterceptorFactory>> componentInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
 
     // Component instance management
     private ManagedReferenceFactory instanceFactory;
@@ -103,23 +104,62 @@ public class ComponentConfiguration {
      * @return the set of methods
      */
     public Set<Method> getDefinedComponentMethods() {
-        return componentInterceptors.keySet();
+        return moduleClassConfiguration.getClassMethods();
     }
 
     /**
-     * Get the interceptor deque for a component method, creating a new one if necessary.
+     * Gets the interceptor list for a given method. This should not be called until
+     * all interceptors have been added.
      *
      * @param method the component method
      * @return the deque
      */
-    public Deque<InterceptorFactory> getComponentInterceptorDeque(Method method) {
-        Map<Method, Deque<InterceptorFactory>> map = componentInterceptors;
-        Deque<InterceptorFactory> deque = map.get(method);
-        if (deque == null) {
-            map.put(method, deque = new ArrayDeque<InterceptorFactory>());
+    public List<InterceptorFactory> getComponentInterceptors(Method method) {
+        Map<Method, OrderedItemContainer<InterceptorFactory>> map = componentInterceptors;
+        OrderedItemContainer<InterceptorFactory> interceptors = map.get(method);
+        if (interceptors == null) {
+            return Collections.emptyList();
         }
-        return deque;
+        return interceptors.getSortedItems();
     }
+
+    /**
+     * Adds an interceptor factory to every method on the component.
+     *
+     * @param factory    The interceptor factory to add
+     * @param priority   The interceptors relative order
+     * @param publicOnly If true then then interceptor is only added to public methods
+     */
+    public void addComponentInterceptor(InterceptorFactory factory, int priority, boolean publicOnly) {
+        for (Method method : moduleClassConfiguration.getClassMethods()) {
+            if (publicOnly && !Modifier.isPublic(method.getModifiers())) {
+                continue;
+            }
+            OrderedItemContainer<InterceptorFactory> interceptors = componentInterceptors.get(method);
+            if (interceptors == null) {
+                componentInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+            }
+            interceptors.add(factory, priority);
+        }
+    }
+
+    /**
+     * Adds an interceptor factory to a given method. The method parameter *must* be retrived from either the
+     * {@link org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex} or from {@link #getDefinedComponentMethods()},
+     * as the methods are stored in an identity hash map
+     *
+     * @param method   The method to add the interceptor to
+     * @param factory  The interceptor factory to add
+     * @param priority The interceptors relative order
+     */
+    public void addComponentInterceptor(Method method, InterceptorFactory factory, int priority) {
+        OrderedItemContainer<InterceptorFactory> interceptors = componentInterceptors.get(method);
+        if (interceptors == null) {
+            componentInterceptors.put(method, interceptors = new OrderedItemContainer<InterceptorFactory>());
+        }
+        interceptors.add(factory, priority);
+    }
+
 
     /**
      * Get the create dependencies list.
@@ -149,21 +189,45 @@ public class ComponentConfiguration {
     }
 
     /**
-     * Get the post-construct interceptor deque.
+     * Get the post-construct interceptors.
      *
-     * @return the deque
+     * This method should only be called after all interceptors have been added
+     *
+     * @return the sorted interceptors
      */
-    public Deque<InterceptorFactory> getPostConstructInterceptors() {
-        return postConstructInterceptors;
+    public List<InterceptorFactory> getPostConstructInterceptors() {
+        return postConstructInterceptors.getSortedItems();
     }
 
     /**
-     * Get the pre-destroy interceptor deque.
+     * Adds a post construct interceptor
      *
-     * @return the deque
+     * @param interceptorFactory The interceptor to add
+     * @param priority The priority
      */
-    public Deque<InterceptorFactory> getPreDestroyInterceptors() {
-        return preDestroyInterceptors;
+    public void addPostConstructInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        postConstructInterceptors.add(interceptorFactory, priority);
+    }
+
+    /**
+     * Get the pre-destroy interceptors.
+     *
+     * This method should only be called after all interceptors have been added
+     *
+     * @return the sorted interceptor
+     */
+    public List<InterceptorFactory> getPreDestroyInterceptors() {
+        return preDestroyInterceptors.getSortedItems();
+    }
+
+    /**
+     * Adds a pre destroy interceptor
+     *
+     * @param interceptorFactory The interceptor factory to add
+     * @param priority The factories priority
+     */
+    public void addPreDestroyInterceptor(InterceptorFactory interceptorFactory, int priority) {
+        preDestroyInterceptors.add(interceptorFactory, priority);
     }
 
     /**

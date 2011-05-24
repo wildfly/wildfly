@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
@@ -45,6 +46,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         if (moduleDescription == null) {
             return;
         }
@@ -64,7 +66,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Failed to load class " + classDescription.getClassName(), e);
                 }
-                final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, moduleConfiguration, classDescription);
+                final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, moduleConfiguration, classDescription, deploymentReflectionIndex);
                 logger.debug("Configuring EE module class: " + clazz);
                 for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
                     classConfigurator.configure(phaseContext, classDescription, classConfiguration);

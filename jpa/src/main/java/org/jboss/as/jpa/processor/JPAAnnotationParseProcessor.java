@@ -40,13 +40,14 @@ import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
 import org.jboss.as.jpa.interceptor.SBInvocationInterceptor;
-import org.jboss.as.jpa.interceptor.SFSBCreateInterceptorFactory;
-import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptorFactory;
+import org.jboss.as.jpa.interceptor.SFSBCreateInterceptor;
+import org.jboss.as.jpa.interceptor.SFSBDestroyInterceptor;
 import org.jboss.as.jpa.interceptor.SFSBInvocationInterceptor;
 import org.jboss.as.jpa.service.PersistenceUnitService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -331,8 +332,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.getPostConstructInterceptors().addFirst(new SFSBCreateInterceptorFactory());
-                    configuration.getPreDestroyInterceptors().addFirst(new SFSBDestroyInterceptorFactory());
+                    configuration.addPostConstructInterceptor(SFSBCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
+                    configuration.addPreDestroyInterceptor(SFSBDestroyInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
                 }
             });
 
@@ -345,10 +346,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                 view.getConfigurators().addFirst(new ViewConfigurator() {
                     @Override
                     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                        Method[] viewMethods = configuration.getProxyFactory().getCachedMethods();
-                        for (Method viewMethod : viewMethods) {
-                            configuration.getViewInterceptorDeque(viewMethod).addFirst(new ImmediateInterceptorFactory(SFSBInvocationInterceptor.INSTANCE));
-                        }
+                            configuration.addViewInterceptor(SFSBInvocationInterceptor.FACTORY, InterceptorOrder.View.JPA_SFSB_INTERCEPTOR);
                     }
                 });
             }
@@ -356,13 +354,10 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         // register interceptor on stateful/stateless SB with transactional entity manager.
         if (!isExtendedPersistenceContext(annotation) &&
                 (componentDescription.isStateful() || componentDescription.isStateless())) {
-            //TODO: this probably adds the interceptor in the wrong order
             componentDescription.getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    for (Method method : configuration.getDefinedComponentMethods()) {
-                        configuration.getComponentInterceptorDeque(method).addFirst(new ImmediateInterceptorFactory(SBInvocationInterceptor.INSTANCE));
-                    }
+                    configuration.addComponentInterceptor(new ImmediateInterceptorFactory(SBInvocationInterceptor.INSTANCE), InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
                 }
             });
         }
