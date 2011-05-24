@@ -97,6 +97,10 @@ class NewModelControllerImpl implements NewModelController {
         context.completeStep();
     }
 
+    ModelNodeRegistration getRootRegistration() {
+        return rootRegistration;
+    }
+
     class BootStepHandler implements NewStepHandler {
         private final ModelNode operation;
         private final ModelNode response;

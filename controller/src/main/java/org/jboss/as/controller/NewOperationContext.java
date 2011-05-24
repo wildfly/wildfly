@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.IOException;
 import java.io.InputStream;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -108,6 +109,13 @@ public interface NewOperationContext {
      * @return whether the controller is currently booting
      */
     boolean isBooting();
+
+    /**
+     * Get the model node registration.  The registration is relative to the operation address.
+     *
+     * @return the model node registration
+     */
+    ModelNodeRegistration getModelNodeRegistration();
 
     /**
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
