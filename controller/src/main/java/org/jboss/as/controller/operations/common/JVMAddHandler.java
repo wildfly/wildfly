@@ -23,15 +23,19 @@
 package org.jboss.as.controller.operations.common;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
@@ -42,7 +46,14 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public final class JVMAddHandler implements ModelAddOperationHandler, DescriptionProvider {
+public final class JVMAddHandler implements NewStepHandler, DescriptionProvider {
+
+    static ModelNode getAddOperation(ModelNode address, ModelNode toRecreate) {
+        ModelNode add = toRecreate.clone();
+        add.get(OP).set(ADD);
+        add.get(OP_ADDR).set(address);
+        return add;
+    }
 
     public static final String OPERATION_NAME = ADD;
     public static final JVMAddHandler INSTANCE = new JVMAddHandler(false);
@@ -54,13 +65,11 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
         this.server = server;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public void execute(NewOperationContext context, ModelNode operation) {
 
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+        ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
 
-        ModelNode subModel = context.getSubModel();
         ModelNode jvmType = subModel.get(JVM_TYPE);
         if(operation.hasDefined(JVM_TYPE)) {
             jvmType.set(operation.get(JVM_TYPE));
@@ -84,9 +93,11 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
             }
         }
 
-        resultHandler.handleResultComplete();
+        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
+        context.getCompensatingOperation().set(compensatingOperation);
 
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
+
     }
 
     /** {@inheritDoc} */
@@ -97,5 +108,4 @@ public final class JVMAddHandler implements ModelAddOperationHandler, Descriptio
         }
         return JVMDescriptions.getJVMAddDescription(locale);
     }
-
 }

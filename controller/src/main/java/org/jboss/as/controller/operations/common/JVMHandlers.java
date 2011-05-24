@@ -29,12 +29,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Locale;
 
+import com.sun.tools.internal.ws.processor.model.Model;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationHandler;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
@@ -79,19 +83,25 @@ public final class JVMHandlers {
 
     static final String[] SERVER_ATTRIBUTES = {JVM_DEBUG_ENABLED, JVM_DEBUG_OPTIONS};
 
-    private static final OperationHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
-    private static final OperationHandler booleanWriteHandler = new ModelUpdateOperationHandler() {
+    private static final NewStepHandler writeHandler = WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE;
+    private static final NewStepHandler booleanWriteHandler = new NewStepHandler() {
+
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public void execute(NewOperationContext context, ModelNode operation) {
             try {
                 final String name = operation.require(NAME).asString();
                 final boolean value = operation.get(VALUE).asBoolean();
-                context.getSubModel().get(name).set(value);
-                resultHandler.handleResultComplete();
+                ModelNode valNode = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
+                boolean oldVal = valNode.asBoolean();
+                valNode.set(value);
+
+                ModelNode compensatingOp = operation.clone();
+                compensatingOp.get(name).set(oldVal);
+                context.getCompensatingOperation().set(compensatingOp);
             } catch (Exception e) {
-                resultHandler.handleFailed(new ModelNode().set(e.getMessage()));
+                context.getFailureDescription().set(e.toString());
             }
-            return new BasicOperationResult();
+            context.completeStep();
         }
     };
 
@@ -128,27 +138,29 @@ public final class JVMHandlers {
         //
     }
 
-    static final class JVMOptionAddHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    static final class JVMOptionAddHandler implements NewStepHandler, DescriptionProvider {
+
+        static ModelNode getAddOperation(ModelNode address, ModelNode option) {
+            ModelNode add = Util.getEmptyOperation(OPERATION_NAME, address);
+            add.get(JVM_OPTION).set(option);
+            return add;
+        }
 
         static final String OPERATION_NAME = ADD_JVM_OPTION;
         static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
 
-        /** {@inheritDoc} */
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+        public void execute(NewOperationContext context, ModelNode operation) {
 
             final ModelNode option = operation.require(JVM_OPTION);
 
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.get(OP).set(JVMOptionRemoveHandler.OPERATION_NAME);
-            compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-            compensatingOperation.get(JVM_OPTION).set(option);
+            context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(JVM_OPTIONS).add(option);
 
-            context.getSubModel().get(JVM_OPTIONS).add(option);
+            final ModelNode compensatingOperation = JVMOptionRemoveHandler.getRemoveOperation(operation.require(OP_ADDR), option);
 
-            resultHandler.handleResultComplete();
+            context.getCompensatingOperation().set(compensatingOperation);
 
-            return new BasicOperationResult(compensatingOperation);
+            context.completeStep();
         }
 
         /** {@inheritDoc} */
@@ -156,29 +168,28 @@ public final class JVMHandlers {
         public ModelNode getModelDescription(Locale locale) {
             return JVMDescriptions.getOptionAddOperation(locale);
         }
-
     }
 
-    static final class JVMOptionRemoveHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    static final class JVMOptionRemoveHandler implements NewStepHandler, DescriptionProvider {
+
+        static ModelNode getRemoveOperation(ModelNode address, ModelNode option) {
+            ModelNode remove = Util.getEmptyOperation(OPERATION_NAME, address);
+            remove.get(JVM_OPTION).set(option);
+            return remove;
+        }
 
         static final String OPERATION_NAME = "remove-jvm-option";
         static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
 
-        /** {@inheritDoc} */
         @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public void execute(NewOperationContext context, ModelNode operation) {
 
             final ModelNode option = operation.require(JVM_OPTION);
-
-            final ModelNode compensatingOperation = new ModelNode();
-            compensatingOperation.get(OP).set(JVMOptionAddHandler.OPERATION_NAME);
-            compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
-            compensatingOperation.get(JVM_OPTION).set(option);
             //
-            final ModelNode subModel = context.getSubModel();
+            final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
             if(subModel.hasDefined(JVM_OPTIONS)) {
                 final ModelNode values = subModel.get(JVM_OPTIONS);
-                context.getSubModel().get(JVM_OPTIONS).setEmptyList();
+                subModel.get(JVM_OPTIONS).setEmptyList();
 
                 for(ModelNode value : values.asList()) {
                     if(! value.equals(option)) {
@@ -187,9 +198,10 @@ public final class JVMHandlers {
                 }
             }
 
-            resultHandler.handleResultComplete();
+            final ModelNode compensatingOperation = JVMOptionAddHandler.getAddOperation(operation.require(OP_ADDR), option);
+            context.getCompensatingOperation().set(compensatingOperation);
 
-            return new BasicOperationResult(compensatingOperation);
+            context.completeStep();
         }
 
         /** {@inheritDoc} */
@@ -197,7 +209,6 @@ public final class JVMHandlers {
         public ModelNode getModelDescription(Locale locale) {
             return JVMDescriptions.getOptionRemoveOperation(locale);
         }
-
     }
 
 }

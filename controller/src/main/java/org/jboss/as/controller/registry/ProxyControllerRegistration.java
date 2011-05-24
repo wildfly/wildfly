@@ -28,7 +28,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -48,7 +48,7 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    OperationHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
+    NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
         return null;
     }
 
@@ -63,22 +63,22 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
+    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler, final OperationHandler writeHandler, AttributeAccess.Storage storage) {
+    public void registerReadWriteAttribute(final String attributeName, final NewStepHandler readHandler, final NewStepHandler writeHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler, AttributeAccess.Storage storage) {
+    public void registerReadOnlyAttribute(final String attributeName, final NewStepHandler readHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
-    public void registerMetric(final String attributeName, final OperationHandler metricHandler) {
+    public void registerMetric(final String attributeName, final NewStepHandler metricHandler) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 

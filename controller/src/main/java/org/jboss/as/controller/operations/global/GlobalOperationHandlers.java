@@ -154,7 +154,8 @@ public class GlobalOperationHandlers {
                                 continue;
                             }
                             final AccessType type = access.getAccessType();
-                            final OperationHandler handler = access.getReadHandler();
+                            // FIXME incorrect cast just to compile
+                            final OperationHandler handler = (OperationHandler) access.getReadHandler();
                             if(handler != null) {
                                 // Create the attribute operation
                                 final ModelNode attributeOperation = readOperation.clone();
@@ -254,7 +255,8 @@ public class GlobalOperationHandlers {
                 resultHandler.handleResultFragment(Util.NO_LOCATION, result);
                 resultHandler.handleResultComplete();
             } else {
-                handlerResult = attributeAccess.getReadHandler().execute(context, operation, resultHandler);
+                // FIXME bogus cast just to compile
+                handlerResult = ((OperationHandler) attributeAccess.getReadHandler()).execute(context, operation, resultHandler);
             }
 
             return handlerResult;
@@ -276,7 +278,8 @@ public class GlobalOperationHandlers {
             } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
                 throw new OperationFailedException(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
             } else {
-                handlerResult = attributeAccess.getWriteHandler().execute(context, operation, resultHandler);
+                // FIXME bogus cast just to compile
+                handlerResult = ((OperationHandler) attributeAccess.getWriteHandler()).execute(context, operation, resultHandler);
             }
 
             return handlerResult;
@@ -646,7 +649,8 @@ public class GlobalOperationHandlers {
                     return new BasicOperationResult();
                 }
             }
-            final OperationHandler operationHandler = context.getRegistry().getOperationHandler(address, operationName);
+            // FIXME bogus cast just to compile
+            final OperationHandler operationHandler = (OperationHandler) context.getRegistry().getOperationHandler(address, operationName);
             if(operationHandler == null) {
                 resultHandler.handleFailed(new ModelNode().set("no operation handler" + operationName));
                 return new BasicOperationResult();

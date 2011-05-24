@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -36,19 +36,19 @@ public final class OperationEntry {
         PUBLIC, PRIVATE;
     }
 
-    private final OperationHandler operationHandler;
+    private final NewStepHandler operationHandler;
     private final DescriptionProvider descriptionProvider;
     private final EntryType type;
     private final boolean inherited;
 
-    protected OperationEntry(final OperationHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
+    protected OperationEntry(final NewStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
         this.operationHandler = operationHandler;
         this.descriptionProvider = descriptionProvider;
         this.inherited = inherited;
         this.type = type;
     }
 
-    OperationHandler getOperationHandler() {
+    NewStepHandler getOperationHandler() {
         return operationHandler;
     }
 

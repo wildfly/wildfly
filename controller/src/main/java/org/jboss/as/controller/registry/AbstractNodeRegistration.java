@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -57,19 +57,19 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
 
     /** {@inheritDoc} */
     @Override
-    public void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider) {
+    public void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider) {
         registerOperationHandler(operationName, handler, descriptionProvider, false);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
+    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited) {
         registerOperationHandler(operationName, handler, descriptionProvider, inherited, OperationEntry.EntryType.PUBLIC);
     }
 
     /** {@inheritDoc} */
     @Override
-    public abstract void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
+    public abstract void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType);
 
     /** {@inheritDoc} */
     @Override
@@ -87,11 +87,11 @@ abstract class AbstractNodeRegistration implements ModelNodeRegistration {
      * @return the operation handler, or {@code null} if none match
      */
     @Override
-    public final OperationHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
+    public final NewStepHandler getOperationHandler(final PathAddress pathAddress, final String operationName) {
         return getHandler(pathAddress.iterator(), operationName);
     }
 
-    abstract OperationHandler getHandler(ListIterator<PathElement> iterator, String operationName);
+    abstract NewStepHandler getHandler(ListIterator<PathElement> iterator, String operationName);
 
     @Override
     public AttributeAccess getAttributeAccess(final PathAddress address, final String attributeName) {

@@ -23,6 +23,8 @@
 package org.jboss.as.controller.operations.common;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
@@ -34,6 +36,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
@@ -44,27 +47,23 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public final class JVMRemoveHandler implements ModelRemoveOperationHandler, DescriptionProvider {
+public final class JVMRemoveHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
     public static final JVMRemoveHandler INSTANCE = new JVMRemoveHandler();
 
-    /** {@inheritDoc} */
+
+
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
+    public void execute(NewOperationContext context, ModelNode operation) {
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
-        final ModelNode compensatingOperation = new ModelNode();
-        compensatingOperation.get(OP).set(ADD);
-        compensatingOperation.get(OP_ADDR).set(operation.require(OP_ADDR));
+        final ModelNode compensatingOperation = JVMAddHandler.getAddOperation(operation.require(OP_ADDR), subModel);
+        context.getCompensatingOperation().set(compensatingOperation);
 
-        final ModelNode subModel = context.getSubModel();
-        if(subModel.hasDefined(JVM_TYPE)) {
-            compensatingOperation.get(JVM_TYPE).set(subModel.get(JVM_TYPE));
-        }
+        context.removeModel(PathAddress.EMPTY_ADDRESS);
 
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOperation);
+        context.completeStep();
     }
 
     /** {@inheritDoc} */
@@ -72,5 +71,4 @@ public final class JVMRemoveHandler implements ModelRemoveOperationHandler, Desc
     public ModelNode getModelDescription(final Locale locale) {
         return JVMDescriptions.getJVMRemoveDescription(locale);
     }
-
 }

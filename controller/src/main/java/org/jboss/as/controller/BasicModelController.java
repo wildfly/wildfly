@@ -163,17 +163,6 @@ public class BasicModelController extends AbstractModelController<OperationContr
         return ModelNodeRegistration.Factory.create(rootDescriptionProvider);
     }
 
-    /**
-     * Get the operation handler for an address and name.
-     *
-     * @param address the address
-     * @param name the name
-     * @return the operation handler
-     */
-    protected OperationHandler getHandler(final PathAddress address, final String name) {
-        return registry.getOperationHandler(address, name);
-    }
-
     protected ModelProvider getModelProvider() {
         return modelSource;
     }
@@ -293,7 +282,8 @@ public class BasicModelController extends AbstractModelController<OperationContr
     protected OperationHandler getHandlerForOperation(final ModelNode operation, final PathAddress address)
             throws OperationFailedException {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
-        final OperationHandler operationHandler = registry.getOperationHandler(address, operationName);
+        // FIXME this class is going to die, but if not this is a bogus cast to let things compile
+        final OperationHandler operationHandler = (OperationHandler) registry.getOperationHandler(address, operationName);
         if (operationHandler == null) {
             throw new OperationFailedException(new ModelNode().set(String.format("No handler for %s at address %s", operationName, address)));
         }
@@ -364,8 +354,10 @@ public class BasicModelController extends AbstractModelController<OperationContr
         if (configurationPersister != null) {
             // Ugly. We register a handler for reading the config as xml to avoid leaking internals
             // via the ModelController or OperationContext interfaces.
-            XmlMarshallingHandler handler = new XmlMarshallingHandler(configurationPersister, model);
-            this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, handler, handler, false, OperationEntry.EntryType.PRIVATE);
+            OperationHandler handler = new XmlMarshallingHandler(configurationPersister, model);
+            // FIXME this class is going to die, but if not this is a bogus cast to let things compile
+            NewStepHandler nsh = (NewStepHandler) handler;
+            this.registry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, nsh, (DescriptionProvider) handler, false, OperationEntry.EntryType.PRIVATE);
         }
     }
 

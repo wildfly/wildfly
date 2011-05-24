@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -50,8 +52,8 @@ import org.jboss.dmr.ModelType;
  */
 public class WriteAttributeHandlers {
 
-    public static class WriteAttributeOperationHandler implements ModelUpdateOperationHandler {
-        public static OperationHandler INSTANCE = new WriteAttributeOperationHandler();
+    public static class WriteAttributeOperationHandler implements ModelUpdateOperationHandler, NewStepHandler {
+        public static WriteAttributeOperationHandler INSTANCE = new WriteAttributeOperationHandler();
 
         final ParameterValidator valueValidator;
 
@@ -68,6 +70,12 @@ public class WriteAttributeHandlers {
          */
         protected WriteAttributeOperationHandler(ParameterValidator valueValidator) {
             this.valueValidator = valueValidator;
+        }
+
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) {
+            // FIXME implement execute
+            throw new UnsupportedOperationException();
         }
 
         @Override
