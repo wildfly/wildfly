@@ -52,35 +52,35 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
     private List<BindingConfiguration> getResourceEnvRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
-        final ResourceEnvironmentReferencesMetaData entries = environment.getEnvironment().getResourceEnvironmentReferences();
-        if (entries == null) {
+        final ResourceEnvironmentReferencesMetaData resourceEnvRefs = environment.getEnvironment().getResourceEnvironmentReferences();
+        if (resourceEnvRefs == null) {
             return bindings;
         }
-        for (ResourceEnvironmentReferenceMetaData envEntry : entries) {
+        for (ResourceEnvironmentReferenceMetaData resourceEnvRef : resourceEnvRefs) {
             final String name;
-            if (envEntry.getName().startsWith("java:")) {
-                name = envEntry.getName();
+            if (resourceEnvRef.getName().startsWith("java:")) {
+                name = resourceEnvRef.getName();
             } else {
-                name = environment.getDefaultContext() + envEntry.getName();
+                name = environment.getDefaultContext() + resourceEnvRef.getName();
             }
             Class<?> classType = null;
-            if (envEntry.getType() != null) {
+            if (resourceEnvRef.getType() != null) {
                 try {
-                    classType = classLoader.loadClass(envEntry.getType());
+                    classType = classLoader.loadClass(resourceEnvRef.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
+                    throw new DeploymentUnitProcessingException("Could not load " + resourceEnvRef.getType() + " referenced in env-entry ", e);
                 }
             }
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
-            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
             if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
             }
             BindingConfiguration bindingConfiguration = null;
-            if (!isEmpty(envEntry.getLookupName())) {
-                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
+            if (!isEmpty(resourceEnvRef.getLookupName())) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getLookupName()));
             } else {
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
@@ -98,36 +98,36 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
     private List<BindingConfiguration> getResourceRefEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
-        final ResourceReferencesMetaData entries = environment.getEnvironment().getResourceReferences();
-        if (entries == null) {
+        final ResourceReferencesMetaData resourceRefs = environment.getEnvironment().getResourceReferences();
+        if (resourceRefs == null) {
             return bindings;
         }
-        for (ResourceReferenceMetaData envEntry : entries) {
+        for (ResourceReferenceMetaData resourceRef : resourceRefs) {
             final String name;
-            if (envEntry.getName().startsWith("java:")) {
-                name = envEntry.getName();
+            if (resourceRef.getName().startsWith("java:")) {
+                name = resourceRef.getName();
             } else {
-                name = environment.getDefaultContext() + envEntry.getName();
+                name = environment.getDefaultContext() + resourceRef.getName();
             }
 
             Class<?> classType = null;
-            if (envEntry.getType() != null) {
+            if (resourceRef.getType() != null) {
                 try {
-                    classType = classLoader.loadClass(envEntry.getType());
+                    classType = classLoader.loadClass(resourceRef.getType());
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
+                    throw new DeploymentUnitProcessingException("Could not load " + resourceRef.getType() + " referenced in env-entry ", e);
                 }
             }
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(moduleDescription, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
             if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
             }
             BindingConfiguration bindingConfiguration = null;
-            if (!isEmpty(envEntry.getLookupName())) {
-                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(envEntry.getLookupName()));
+            if (!isEmpty(resourceRef.getLookupName())) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else {
                 //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
                 throw new RuntimeException("resource-ref without a lookup-name isn't yet supported");
@@ -139,11 +139,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
     private List<BindingConfiguration> getEnvironmentEntries(DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, EEModuleDescription moduleDescription, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
-        final EnvironmentEntriesMetaData entries = environment.getEnvironment().getEnvironmentEntries();
-        if (entries == null) {
+        final EnvironmentEntriesMetaData envEntries = environment.getEnvironment().getEnvironmentEntries();
+        if (envEntries == null) {
             return bindings;
         }
-        for (EnvironmentEntryMetaData envEntry : entries) {
+        for (EnvironmentEntryMetaData envEntry : envEntries) {
             final String name;
             if (envEntry.getName().startsWith("java:")) {
                 name = envEntry.getName();
@@ -154,7 +154,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             Class<?> classType = null;
             if (envEntry.getType() != null) {
                 try {
-                    classType = classLoader.loadClass(envEntry.getType());
+                    classType = this.loadClass(envEntry.getType(), classLoader);
                 } catch (ClassNotFoundException e) {
                     throw new DeploymentUnitProcessingException("Could not load " + envEntry.getType() + " referenced in env-entry ", e);
                 }
@@ -223,5 +223,41 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
     @Override
     public void undeploy(DeploymentUnit context) {
 
+    }
+
+    private Class<?> loadClass(String className, ClassLoader cl) throws ClassNotFoundException {
+        if (className == null || className.trim().isEmpty()) {
+            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+        }
+        if (className.equals(void.class.getName())) {
+            return void.class;
+        }
+        if (className.equals(byte.class.getName())) {
+            return byte.class;
+        }
+        if (className.equals(short.class.getName())) {
+            return short.class;
+        }
+        if (className.equals(int.class.getName())) {
+            return int.class;
+        }
+        if (className.equals(long.class.getName())) {
+            return long.class;
+        }
+        if (className.equals(char.class.getName())) {
+            return char.class;
+        }
+        if (className.equals(boolean.class.getName())) {
+            return boolean.class;
+        }
+        if (className.equals(float.class.getName())) {
+            return float.class;
+        }
+        if (className.equals(double.class.getName())) {
+            return double.class;
+        }
+        // Now that we know its not a primitive, lets just allow
+        // the passed classloader to handle the request.
+        return Class.forName(className, false, cl);
     }
 }

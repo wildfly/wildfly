@@ -45,6 +45,7 @@ import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
 import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ModelUpdateService;
@@ -105,6 +106,7 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                 }
             });
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
+            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION, new WebServiceContextResourceProcessor());
         } else {
             resultHandler.handleResultComplete();
         }

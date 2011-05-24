@@ -43,12 +43,14 @@ final class ManagedReferenceFieldInjectionInterceptor implements Interceptor {
     private final AtomicReference<ManagedReference> valueReference;
     private final ManagedReferenceFactory factory;
     private final Field field;
+    private final boolean optionalInjection;
 
-    ManagedReferenceFieldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final AtomicReference<ManagedReference> valueReference, final ManagedReferenceFactory factory, final Field field) {
+    ManagedReferenceFieldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final AtomicReference<ManagedReference> valueReference, final ManagedReferenceFactory factory, final Field field, final boolean optionalInjection) {
         this.targetReference = targetReference;
         this.valueReference = valueReference;
         this.factory = factory;
         this.field = field;
+        this.optionalInjection = optionalInjection;
     }
 
     /** {@inheritDoc} */
@@ -56,6 +58,10 @@ final class ManagedReferenceFieldInjectionInterceptor implements Interceptor {
         Object target = targetReference.get().getInstance();
         if (target == null) {
             throw new IllegalStateException("No injection target found");
+        }
+        // if it's an optional injection and the injection source isn't available, then just proceed by skipping the injection
+        if (this.factory == null && this.optionalInjection) {
+            return context.proceed();
         }
         ManagedReference reference = factory.getReference();
         boolean ok = false;
