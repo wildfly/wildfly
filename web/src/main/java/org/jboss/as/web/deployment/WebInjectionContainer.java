@@ -44,26 +44,26 @@ import java.util.Set;
 public class WebInjectionContainer implements InstanceManager {
 
     private final ClassLoader classloader;
-    private final Map<String,ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String,ComponentInstantiator>();
+    private final Map<String, ComponentInstantiator> webComponentInstantiatorMap = new HashMap<String, ComponentInstantiator>();
     private final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
-    private final Map<Object,ManagedReference> instanceMap;
+    private final Map<Object, ManagedReference> instanceMap;
 
     public WebInjectionContainer(ClassLoader classloader) {
         this.classloader = classloader;
         this.instanceMap = new ConcurrentReferenceHashMap<Object, ManagedReference>
-            (256, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
-                    Runtime.getRuntime().availableProcessors(), ConcurrentReferenceHashMap.ReferenceType.STRONG,
-                    ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(Option.IDENTITY_COMPARISONS));
+                (256, ConcurrentReferenceHashMap.DEFAULT_LOAD_FACTOR,
+                        Runtime.getRuntime().availableProcessors(), ConcurrentReferenceHashMap.ReferenceType.STRONG,
+                        ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(Option.IDENTITY_COMPARISONS));
     }
 
     public void addInstantiator(String className, ComponentInstantiator instantiator) {
-        webComponentInstantiatorMap.put(className,instantiator);
+        webComponentInstantiatorMap.put(className, instantiator);
         serviceNames.addAll(instantiator.getServiceNames());
     }
 
     public void destroyInstance(Object instance) throws IllegalAccessException, InvocationTargetException {
         final ManagedReference reference = instanceMap.remove(instance);
-        if(reference != null) {
+        if (reference != null) {
             reference.release();
         }
     }
@@ -74,7 +74,7 @@ public class WebInjectionContainer implements InstanceManager {
 
     public Object newInstance(Class<?> clazz) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException {
         final ComponentInstantiator instantiator = webComponentInstantiatorMap.get(clazz.getName());
-        if(instantiator != null) {
+        if (instantiator != null) {
             return instantiate(instantiator);
         }
         return clazz.newInstance();
@@ -82,22 +82,22 @@ public class WebInjectionContainer implements InstanceManager {
 
     public void newInstance(Object arg0) throws IllegalAccessException, InvocationTargetException, NamingException {
         final ComponentInstantiator instantiator = webComponentInstantiatorMap.get(arg0.getClass().getName());
-        if(instantiator != null) {
-            instantiator.initializeInstance(arg0);
+        if (instantiator != null) {
+            instanceMap.put(arg0, instantiator.initializeInstance(arg0));
         }
     }
 
     public Object newInstance(String className, ClassLoader cl) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
         final ComponentInstantiator instantiator = webComponentInstantiatorMap.get(className);
-        if(instantiator != null) {
+        if (instantiator != null) {
             return instantiate(instantiator);
         }
         return cl.loadClass(className).newInstance();
     }
 
     private Object instantiate(ComponentInstantiator instantiator) {
-        ManagedReference reference =  instantiator.getReference();
-        instanceMap.put(reference.getInstance(),reference);
+        ManagedReference reference = instantiator.getReference();
+        instanceMap.put(reference.getInstance(), reference);
         return reference.getInstance();
     }
 

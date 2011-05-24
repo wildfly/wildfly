@@ -135,7 +135,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                             managedBean = false;
                         }
                     } else if (managedBeanClass && event == XMLStreamConstants.CHARACTERS) {
-                        managedBeanClasses.add(parser.getText());
+                        managedBeanClasses.add(parser.getText().trim());
                     }
                 }
             } catch (Exception e) {
