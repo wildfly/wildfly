@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.client;
 
+import org.jboss.logging.Logger;
+
 /**
  * An operation message handler for handling progress reports.
  *
@@ -35,4 +37,22 @@ public interface OperationMessageHandler {
      * @param message the message
      */
     void handleReport(MessageSeverity severity, String message);
+
+    /**
+     * An operation message handler which logs to the current system log.
+     */
+    OperationMessageHandler logging = new OperationMessageHandler() {
+        private final Logger log = Logger.getLogger("org.jboss.as.controller.client");
+
+        public void handleReport(final MessageSeverity severity, final String message) {
+            Logger.Level level;
+            switch (severity) {
+                case ERROR: level = Logger.Level.ERROR; break;
+                case WARN: level = Logger.Level.WARN; break;
+                case INFO:
+                default: level = Logger.Level.DEBUG; break;
+            }
+            log.log(level, message);
+        }
+    };
 }

@@ -335,13 +335,14 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (modify && flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            modelController.acquireContainerMonitor();
             try {
-                modelController.awaitContainerMonitor(respectInterruption, 0);
+                modelController.awaitContainerMonitor(respectInterruption, 1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                modelController.releaseContainerMonitor();
                 throw new CancellationException("Operation cancelled asynchronously");
             }
-            modelController.acquireContainerMonitor();
         }
         return modelController.getServiceRegistry();
     }
@@ -357,13 +358,14 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            modelController.acquireContainerMonitor();
             try {
-                modelController.awaitContainerMonitor(respectInterruption, 0);
+                modelController.awaitContainerMonitor(respectInterruption, 1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                modelController.releaseContainerMonitor();
                 throw new CancellationException("Operation cancelled asynchronously");
             }
-            modelController.acquireContainerMonitor();
         }
         ServiceController<?> controller = modelController.getServiceRegistry().getService(name);
         if (controller != null) {
@@ -383,13 +385,14 @@ final class NewOperationContextImpl implements NewOperationContext {
         }
         if (flags.add(Flag.AFFECTS_RUNTIME)) {
             takeWriteLock();
+            modelController.acquireContainerMonitor();
             try {
-                modelController.awaitContainerMonitor(respectInterruption, 0);
+                modelController.awaitContainerMonitor(respectInterruption, 1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                modelController.releaseContainerMonitor();
                 throw new CancellationException("Operation cancelled asynchronously");
             }
-            modelController.acquireContainerMonitor();
         }
         doRemove(controller);
     }
