@@ -99,13 +99,18 @@ public class DigestAuthenticator extends Authenticator {
         Map<String, String> challengeParameters = parseDigestChallenge(challenge);
 
         // Validate Challenge, expect one of 3 responses VALID, INVALID, STALE
+
         HttpPrincipal principal = validateUser(httpExchange, challengeParameters);
-        // INVALID - Username / Password verification failed - Nonce is irelevant.
+
+        // INVALID - Username / Password verification failed - Nonce is irrelevant.
         if (principal == null) {
             if (challengeParameters.containsKey(NONCE)) {
                 nonceFactory.useNonce(challengeParameters.get(NONCE));
             }
-            return new Failure(FORBIDDEN);
+
+            Headers responseHeaders = httpExchange.getResponseHeaders();
+            responseHeaders.add(WWW_AUTHENTICATE_HEADER, CHALLENGE + " " + createChallenge(false));
+            return new Authenticator.Retry(UNAUTHORIZED);
         }
 
         // VALID - Verified username and password, Nonce is correct.
