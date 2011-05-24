@@ -55,6 +55,8 @@ final class InitialModuleLoaderFactory {
             SecurityActions.setSystemProperty("module.path", modulePath.getAbsolutePath());
 
             StringBuffer packages = new StringBuffer("org.jboss.modules," + InitialModuleLoaderFactory.class.getPackage().getName());
+            // for model operations
+            packages.append(",org.jboss.as.controller.client,org.jboss.dmr");
             if (systemPackages != null) {
                 for (String packageName : systemPackages)
                     packages.append("," + packageName);
