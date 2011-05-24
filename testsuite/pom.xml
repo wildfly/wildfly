@@ -81,7 +81,6 @@
             <modules>
                 <module>stress</module>
                 <module>benchmark</module>
-                <module>functional</module>
                 <module>integration</module>
             </modules>
         </profile>
