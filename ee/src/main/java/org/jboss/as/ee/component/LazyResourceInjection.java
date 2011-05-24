@@ -30,6 +30,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
  * <p/>
  * Otherwise they are ignored.
  *
+ * TODO: this is fairly horrible, if anyone can think of a better way of doing this i'm all ears
+ *
  * @author Stuart Douglas
  */
 public class LazyResourceInjection {
@@ -37,6 +39,7 @@ public class LazyResourceInjection {
     private final EEModuleClassDescription classDescription;
     private final InjectionTarget injectionTarget;
     private final String localContextName;
+    private boolean installed = false;
 
     public LazyResourceInjection( final InjectionTarget injectionTarget, final String localContextName, final EEModuleClassDescription classDescription) {
         this.injectionTarget = injectionTarget;
@@ -45,8 +48,11 @@ public class LazyResourceInjection {
     }
 
     public void install() {
-        final ResourceInjectionConfiguration resource = new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(localContextName));
-        classDescription.getConfigurators().add(new InjectionConfigrator(resource));
+        if(!installed) {
+            final ResourceInjectionConfiguration resource = new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(localContextName));
+            classDescription.getConfigurators().add(new InjectionConfigrator(resource));
+            installed = true;
+        }
     }
 
     public String getLocalContextName() {

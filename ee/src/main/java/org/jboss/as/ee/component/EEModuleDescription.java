@@ -55,24 +55,36 @@ public final class EEModuleDescription {
      * Construct a new instance.
      *
      * @param applicationName the application name
-     * @param moduleName the module name
+     * @param moduleName      the module name
      */
     public EEModuleDescription(final String applicationName, final String moduleName) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
     }
 
-    public void  addLazyResourceInjection(LazyResourceInjection injection) {
+    public void addLazyResourceInjection(LazyResourceInjection injection) {
         //TODO: lazy binding and comp/module aliasing is not really compatible
         String name = injection.getLocalContextName();
-        if(!name.startsWith("java:")) {
-            name = "java:comp/env/" + name;
+        //we store all the bindings as absolute bindings
+        if (!name.startsWith("java:")) {
+            //there is the potential for both java:comp and java:module bindings to satisfy these injections
+            List<LazyResourceInjection> list = lazyResourceInjections.get("java:comp/env/" + name);
+            if (list == null) {
+                lazyResourceInjections.put("java:comp/env/" + name, list = new ArrayList<LazyResourceInjection>(1));
+            }
+            list.add(injection);
+            list = lazyResourceInjections.get("java:module/env/" + name);
+            if (list == null) {
+                lazyResourceInjections.put("java:module/env/" + name, list = new ArrayList<LazyResourceInjection>(1));
+            }
+            list.add(injection);
+        } else {
+            List<LazyResourceInjection> list = lazyResourceInjections.get(name);
+            if (list == null) {
+                lazyResourceInjections.put(name, list = new ArrayList<LazyResourceInjection>(1));
+            }
+            list.add(injection);
         }
-        List<LazyResourceInjection> list = lazyResourceInjections.get(injection.getLocalContextName());
-        if(list == null) {
-            lazyResourceInjections.put(name, list = new ArrayList<LazyResourceInjection>(1));
-        }
-        list.add(injection);
     }
 
     public Map<String, List<LazyResourceInjection>> getLazyResourceInjections() {
@@ -147,7 +159,7 @@ public final class EEModuleDescription {
     }
 
     public EEModuleClassDescription getOrAddClassByName(String name) {
-        if(name == null) {
+        if (name == null) {
             throw new IllegalArgumentException("Name cannot be null");
         }
         EEModuleClassDescription description = classesByName.get(name);
