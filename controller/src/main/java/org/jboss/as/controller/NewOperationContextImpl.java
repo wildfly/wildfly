@@ -71,6 +71,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     private final NewModelController.OperationTransactionControl transactionControl;
     private final ServiceTarget serviceTarget;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
+    private final boolean booting;
     private boolean respectInterruption = true;
     private PathAddress modelAddress;
     private Stage currentStage = Stage.MODEL;
@@ -101,9 +102,10 @@ final class NewOperationContextImpl implements NewOperationContext {
         CANCELLED,
     }
 
-    NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags, final OperationMessageHandler messageHandler, final ModelNode model, final NewModelController.OperationTransactionControl transactionControl) {
+    NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags, final OperationMessageHandler messageHandler, final ModelNode model, final NewModelController.OperationTransactionControl transactionControl, final boolean booting) {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
+        this.booting = booting;
         this.model = readOnlyModel = model;
         this.modelController = modelController;
         this.messageHandler = messageHandler;
@@ -313,6 +315,10 @@ final class NewOperationContextImpl implements NewOperationContext {
     public Type getType() {
         assert Thread.currentThread() == initiatingThread;
         return contextType;
+    }
+
+    public boolean isBooting() {
+        return booting;
     }
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {

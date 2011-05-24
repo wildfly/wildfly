@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,6 +65,7 @@ class NewModelControllerImpl implements NewModelController {
     private final AtomicReference<ModelNode> modelReference = new AtomicReference<ModelNode>(EMPTY);
     private final ConfigurationPersister persister;
     private final NewOperationContext.Type controllerType;
+    private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
 
     NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration, final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType) {
         this.serviceRegistry = serviceRegistry;
@@ -72,12 +74,10 @@ class NewModelControllerImpl implements NewModelController {
         this.stateMonitor = stateMonitor;
         this.persister = persister;
         this.controllerType = controllerType;
-        // should not be SERVER_BOOT; that is used only by a special operation context during boot
-        assert controllerType != NewOperationContext.Type.SERVER_BOOT;
     }
 
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL), handler, modelReference.get(), control);
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL), handler, modelReference.get(), control, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
         NewStepHandler stepHandler = (NewStepHandler) rootRegistration.getOperationHandler(PathAddress.pathAddress(operation.require(ADDRESS)), operation.require(OP).asString());
         context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
