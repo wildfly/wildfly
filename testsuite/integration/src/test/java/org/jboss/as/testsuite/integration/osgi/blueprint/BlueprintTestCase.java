@@ -45,7 +45,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.blueprint.container.BlueprintContainer;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A simple Blueprint Container test.
@@ -72,7 +71,7 @@ public class BlueprintTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(BlueprintContainer.class, StartLevel.class);
+                builder.addImportPackages(BlueprintContainer.class);
                 return builder.openStream();
             }
         });
@@ -81,7 +80,6 @@ public class BlueprintTestCase {
 
     @Test
     public void testBlueprintContainerAvailable() throws Exception {
-        assertStartLevel(3);
         bundle.start();
         assertEquals("example-blueprint", bundle.getSymbolicName());
 
@@ -91,7 +89,6 @@ public class BlueprintTestCase {
 
     @Test
     public void testServiceA() throws Exception {
-        assertStartLevel(3);
         bundle.start();
         ServiceReference sref = context.getServiceReference(ServiceA.class.getName());
         assertNotNull("ServiceA not null", sref);
@@ -103,7 +100,6 @@ public class BlueprintTestCase {
 
     @Test
     public void testServiceB() throws Exception {
-        assertStartLevel(3);
         bundle.start();
         ServiceReference sref = context.getServiceReference(ServiceB.class.getName());
         assertNotNull("ServiceB not null", sref);
@@ -130,12 +126,5 @@ public class BlueprintTestCase {
 
         BlueprintContainer bpContainer = (BlueprintContainer) context.getService(sref);
         return bpContainer;
-    }
-
-    private void assertStartLevel(int level) {
-        // Icrease start level to make blueprint available
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
-        startLevel.setStartLevel(level);
     }
 }
