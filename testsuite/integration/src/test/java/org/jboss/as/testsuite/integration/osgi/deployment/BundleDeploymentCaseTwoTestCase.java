@@ -50,8 +50,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
- * Bundle gets installed through {@link BundleContext#installBundle(String, InputStream)} and gets uninstalled through
- * {@link Bundle#uninstall()}
+ * Bundle gets installed through {@link ArchiveDeployer#deploy(Archive)} and gets uninstalled through
+ * {@link ArchiveDeployer#undeploy(String)}
  *
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2011
