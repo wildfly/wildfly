@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Locale;
 
-import com.sun.tools.internal.ws.processor.model.Model;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
