@@ -31,7 +31,13 @@ import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
+import org.jboss.tm.TxUtils;
 
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -47,6 +53,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     public static final Object SESSION_ATTACH_KEY = new Object();
 
     private Cache<StatefulSessionComponentInstance> cache;
+
+    private static final Logger logger = Logger.getLogger(StatefulSessionComponent.class);
 
     /**
      * Construct a new instance.
@@ -141,6 +149,76 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         context.setParameters(args);
         throw new RuntimeException("NYI");
         //return getComponentInterceptor().processInvocation(context);
+    }
+
+
+    /**
+     * Removes the session associated with the <code>sessionId</code>.
+     *
+     * @param sessionId         The session id
+     */
+    public void removeSession(final Serializable sessionId) {
+        Transaction currentTx = null;
+        try {
+            currentTx = getTransactionManager().getTransaction();
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (currentTx != null && TxUtils.isActive(currentTx)) {
+            try {
+                // A transaction is in progress, so register a Synchronization so that the session can be removed on tx
+                // completion.
+                currentTx.registerSynchronization(new RemoveSynchronization(this, sessionId));
+            } catch (RollbackException e) {
+                throw new RuntimeException(e);
+            } catch (SystemException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            // no tx currently in progress, so just remove the session
+            getCache().remove(sessionId);
+        }
+
+    }
+
+     /**
+     * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
+     * callback.
+     */
+    private static class RemoveSynchronization implements Synchronization {
+        private final StatefulSessionComponent statefulComponent;
+        private final Serializable sessionId;
+
+        public RemoveSynchronization(final StatefulSessionComponent component, final Serializable sessionId) {
+            if (sessionId == null) {
+                throw new IllegalArgumentException("Session id cannot be null");
+            }
+            if (component == null) {
+                throw new IllegalArgumentException("Stateful component cannot be null");
+            }
+            this.sessionId = sessionId;
+            this.statefulComponent = component;
+
+        }
+
+        public void beforeCompletion() {
+        }
+
+        public void afterCompletion(int status) {
+            try {
+                // remove the session
+                this.statefulComponent.getCache().remove(this.sessionId);
+            } catch (Throwable t) {
+                // An exception thrown from afterCompletion is gobbled up
+                logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
+                if (t instanceof Error)
+                    throw (Error) t;
+                if (t instanceof RuntimeException)
+                    throw (RuntimeException) t;
+                throw new RuntimeException(t);
+            }
+        }
     }
 
 }

@@ -27,13 +27,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
-import org.jboss.tm.TxUtils;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import java.io.Serializable;
 
 /**
@@ -45,8 +39,6 @@ import java.io.Serializable;
  * User: Jaikiran Pai
  */
 public class StatefulRemoveInterceptor implements Interceptor {
-
-    private static final Logger logger = Logger.getLogger(StatefulRemoveInterceptor.class);
 
     private final boolean retainIfException;
 
@@ -78,46 +70,15 @@ public class StatefulRemoveInterceptor implements Interceptor {
             // otherwise, just remove it and throw back the original exception
             final StatefulSessionComponentInstance statefulComponentInstance = (StatefulSessionComponentInstance) context.getPrivateData(ComponentInstance.class);
             final Serializable sessionId = statefulComponentInstance.getId();
-            removeSession(statefulComponent, sessionId);
+            statefulComponent.removeSession(sessionId);
             throw e;
         }
         final StatefulSessionComponentInstance statefulComponentInstance = (StatefulSessionComponentInstance) context.getPrivateData(ComponentInstance.class);
         final Serializable sessionId = statefulComponentInstance.getId();
         // just remove the session because of a call to @Remove method
-        this.removeSession(statefulComponent, sessionId);
+        statefulComponent.removeSession(sessionId);
         // return the invocation result
         return invocationResult;
-    }
-
-    /**
-     * Removes the session associated with the <code>sessionId</code>.
-     *
-     * @param statefulComponent The stateful component
-     * @param sessionId         The session id
-     */
-    private void removeSession(final StatefulSessionComponent statefulComponent, final Serializable sessionId) {
-        Transaction currentTx = null;
-        try {
-            currentTx = statefulComponent.getTransactionManager().getTransaction();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (currentTx != null && TxUtils.isActive(currentTx)) {
-            try {
-                // A transaction is in progress, so register a Synchronization so that the session can be removed on tx
-                // completion.
-                currentTx.registerSynchronization(new RemoveSynchronization(statefulComponent, sessionId));
-            } catch (RollbackException e) {
-                throw new RuntimeException(e);
-            } catch (SystemException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            // no tx currently in progress, so just remove the session
-            statefulComponent.getCache().remove(sessionId);
-        }
-
     }
 
     /**
@@ -131,42 +92,5 @@ public class StatefulRemoveInterceptor implements Interceptor {
         return ejbComponent.getApplicationException(exceptionClass) != null;
     }
 
-    /**
-     * A {@link Synchronization} which removes a stateful session in it's {@link Synchronization#afterCompletion(int)}
-     * callback.
-     */
-    private static class RemoveSynchronization implements Synchronization {
-        private final StatefulSessionComponent statefulComponent;
-        private final Serializable sessionId;
 
-        public RemoveSynchronization(final StatefulSessionComponent component, final Serializable sessionId) {
-            if (sessionId == null) {
-                throw new IllegalArgumentException("Session id cannot be null");
-            }
-            if (component == null) {
-                throw new IllegalArgumentException("Stateful component cannot be null");
-            }
-            this.sessionId = sessionId;
-            this.statefulComponent = component;
-
-        }
-
-        public void beforeCompletion() {
-        }
-
-        public void afterCompletion(int status) {
-            try {
-                // remove the session
-                this.statefulComponent.getCache().remove(this.sessionId);
-            } catch (Throwable t) {
-                // An exception thrown from afterCompletion is gobbled up
-                logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
-                if (t instanceof Error)
-                    throw (Error) t;
-                if (t instanceof RuntimeException)
-                    throw (RuntimeException) t;
-                throw new RuntimeException(t);
-            }
-        }
-    }
 }

@@ -37,11 +37,10 @@ import java.util.Set;
 
 /**
  * Provides access to a running weld deployment.
- * <p>
+ * <p/>
  * Thread Safety: This class is thread safe, and requires a happens before action between construction and usage
  *
  * @author Stuart Douglas
- *
  */
 public class WeldContainer {
 
@@ -72,7 +71,7 @@ public class WeldContainer {
         if (started) {
             throw new IllegalStateException("WeldContainer is already running");
         }
-        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),deployment.getSubDeploymentClassLoaders());
+        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(), deployment.getSubDeploymentClassLoaders());
         started = true;
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
@@ -97,13 +96,13 @@ public class WeldContainer {
         if (!started) {
             throw new IllegalStateException("WeldContainer is not started");
         }
-        ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
             bootstrap.shutdown();
         } finally {
             SecurityActions.setContextClassLoader(oldTccl);
+            ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
         }
         started = false;
     }
@@ -123,7 +122,7 @@ public class WeldContainer {
     /**
      * Gets the {@link BeanManager} for a given bean deployment archive id.
      *
-     * @throws IllegalStateException if the container is not running
+     * @throws IllegalStateException    if the container is not running
      * @throws IllegalArgumentException if the bean deployment archive id is not found
      */
     public BeanManager getBeanManager(String beanArchiveId) {
@@ -145,7 +144,7 @@ public class WeldContainer {
             throw new IllegalStateException("services cannot be added after weld has started");
         }
         deployment.getServices().add(type, service);
-        deployment.getAdditionalBeanDeploymentArchive().getServices().add(type,service);
+        deployment.getAdditionalBeanDeploymentArchive().getServices().add(type, service);
     }
 
     /**
