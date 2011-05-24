@@ -81,7 +81,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
         this.loader = loader;
     }
 
-    @Override
     public void handle(HttpExchange http) throws IOException {
         final URI uri = http.getRequestURI();
         final String requestMethod = http.getRequestMethod();
@@ -185,12 +184,10 @@ public class ConsoleHandler implements ManagementHttpHandler {
             return ConsoleHandler.class.getClassLoader();
     }
 
-    @Override
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
         httpServer.createContext(CONTEXT, this);
     }
 
-    @Override
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(CONTEXT);
     }

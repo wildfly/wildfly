@@ -22,35 +22,13 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 
-import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -67,43 +45,19 @@ import org.jboss.msc.value.InjectedValue;
 public class SecurityRealmService implements Service<SecurityRealmService>, SecurityRealm {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
-    private static final Logger log = Logger.getLogger("org.jboss.as");
+    private static final Logger log = Logger.getLogger("org.jboss.as.domain-management");
 
-    private final InjectedValue<ConnectionManager> connectionManagerValue = new InjectedValue<ConnectionManager>();
-    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final InjectedValue<DomainCallbackHandler> callbackHandler = new InjectedValue<DomainCallbackHandler>();
     private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
 
     private final String name;
 
-    private ModelNode authentication;
-    private DomainCallbackHandler callbackHandler;
-
-    private SSLContext sslContext;
-
-    public SecurityRealmService(String name, ModelNode authentication) {
+    public SecurityRealmService(String name) {
         this.name = name;
-        this.authentication = authentication;
     }
 
     public void start(StartContext context) throws StartException {
         log.infof("Starting '%s' Security Realm Service", name);
-        if (authentication != null && authentication.hasDefined(USERS)) {
-            callbackHandler = new UserDomainCallbackHandler(name, authentication.require(USERS));
-        } else if (authentication != null && authentication.hasDefined(LDAP)) {
-            callbackHandler = new UserLdapCallbackHandler(connectionManagerValue.getValue(), authentication.require(LDAP));
-        } else {
-            callbackHandler = new DomainCallbackHandler() {
-
-                public Class[] getSupportedCallbacks() {
-                    return new Class[0];
-                }
-
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    // TODO - Should be a real error with code.
-                    throw new IllegalStateException("No authentication mechanism defined in security realm.");
-                }
-            };
-        }
     }
 
     public void stop(StopContext context) {
@@ -118,15 +72,13 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
         return name;
     }
 
-    public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
-        return connectionManagerValue;
+    public InjectedValue<DomainCallbackHandler> getCallbackHandlerInjector() {
+        return callbackHandler;
     }
-
 
     public InjectedValue<SSLIdentityService> getSSLIdentityInjector() {
         return sslIdentity;
     }
-
 
     /**
      * Used to obtain the callback handler for the configured 'authorizations'.
@@ -134,7 +86,21 @@ public class SecurityRealmService implements Service<SecurityRealmService>, Secu
      * @return The CallbackHandler to be used for verifying the identity of the caller.
      */
     public DomainCallbackHandler getCallbackHandler() {
-        return callbackHandler;
+        DomainCallbackHandler response = callbackHandler.getOptionalValue();
+        if (response == null) {
+            response = new DomainCallbackHandler() {
+                public Class[] getSupportedCallbacks() {
+                    return new Class[0];
+                }
+
+                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                    // TODO - Should be a real error with code.
+                    throw new IllegalStateException("No authentication mechanism defined in security realm.");
+                }
+            };
+        }
+
+        return response;
     }
 
     public SSLContext getSSLContext() {

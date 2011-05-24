@@ -104,6 +104,7 @@ public enum Element {
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
+    PROPERTIES("properties"),
     PUBLIC_ADDRESS("public-address"),
 
     REMOTE("remote"),

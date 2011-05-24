@@ -61,6 +61,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
@@ -692,12 +693,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         throw unexpectedElement(reader);
                     }
                     switch (element) {
-                        case USERS: {
-                            parseUsersAuthentication(reader, authentication);
-                            break;
-                        }
                         case LDAP: {
                             parseLdapAuthentication(reader, authentication);
+                            break;
+                        }
+                        case PROPERTIES: {
+                            parsePropertiesAuthentication(reader, authentication);
+                            break;
+                        }
+                        case USERS: {
+                            parseUsersAuthentication(reader, authentication);
                             break;
                         }
                         default: {
@@ -783,7 +788,46 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    // The user domain element defines users within the domain model, it is a simple authentication for some out of the box users.
+    protected void parsePropertiesAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication) throws XMLStreamException {
+        ModelNode properties = authentication.get(PROPERTIES);
+
+        String path = null;
+        String relativeTo = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PATH:
+                        path = value;
+                        break;
+                    case RELATIVE_TO: {
+                        relativeTo = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (path == null)
+            throw missingRequired(reader, Collections.singleton(Attribute.PATH));
+
+        requireNoContent(reader);
+
+        properties.get(PATH).set(path);
+        if (relativeTo != null) {
+            properties.get(RELATIVE_TO).set(relativeTo);
+        }
+    }
+
+    // The users element defines users within the domain model, it is a simple authentication for some out of the box users.
     protected void parseUsersAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication) throws XMLStreamException {
         ModelNode userDomain = authentication.get(USERS);
 
@@ -2289,6 +2333,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (userLdap.hasDefined(USER_DN)) {
                             writer.writeAttribute(Attribute.USER_DN.getLocalName(), userLdap.require(USER_DN).asString());
                         }
+                        writer.writeEndElement();
+                    } else if (authentication.hasDefined(PROPERTIES)) {
+                        ModelNode properties = authentication.require(PROPERTIES);
+                        writer.writeStartElement(Element.PROPERTIES.getLocalName());
+                        writer.writeAttribute(Attribute.PATH.getLocalName(), properties.require(PATH).asString());
+                        if (properties.hasDefined(RELATIVE_TO)) {
+                            writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), properties.require(RELATIVE_TO).asString());
+                        }
+
                         writer.writeEndElement();
                     }
 
