@@ -291,6 +291,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                 // -- not reached --
             }
         } while (currentStage != Stage.DONE);
+        currentStage = null;
         // No more steps, verified operation is a success!
         if (isModelAffected()) try {
             modelController.writeModel(model);
@@ -299,16 +300,18 @@ final class NewOperationContextImpl implements NewOperationContext {
             response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
             return resultAction = ResultAction.ROLLBACK;
         }
-        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(ResultAction.ROLLBACK);
-        transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
-            public void commit() {
-                ref.set(ResultAction.KEEP);
-            }
+        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
+        if (transactionControl != null) {
+            transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
+                public void commit() {
+                    ref.set(ResultAction.KEEP);
+                }
 
-            public void rollback() {
-                ref.set(ResultAction.ROLLBACK);
-            }
-        }, response);
+                public void rollback() {
+                    ref.set(ResultAction.ROLLBACK);
+                }
+            }, response);
+        }
         return resultAction = ref.get();
     }
 
@@ -516,6 +519,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     public ModelNode writeModel(final PathAddress requestAddress, final ModelNode newData) throws UnsupportedOperationException {
+        assert newData != null;
         final PathAddress address = modelAddress.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
@@ -543,6 +547,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                 model = model.require(element.getKey()).require(element.getValue());
             }
         }
+        model.set(newData);
         return model;
     }
 
