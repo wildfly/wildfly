@@ -31,15 +31,18 @@ public class ClientConstants {
     public static final String COMPOSITE = "composite";
     public static final String CONTENT = "content";
     public static final String DEPLOYMENT = "deployment";
+    public static final String EXTENSION = "extension";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String NAME = "name";
     public static final String OP = "operation";
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OP_ADDR = "address";
+    public static final String OUTCOME = "outcome";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String STEPS = "steps";
+    public static final String SUCCESS = "success";
     public static final String TO_REPLACE = "to-replace";
 
     public static final String DEPLOYMENT_DEPLOY_OPERATION = "deploy";

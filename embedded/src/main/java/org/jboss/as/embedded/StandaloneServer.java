@@ -21,6 +21,8 @@
  */
 package org.jboss.as.embedded;
 
+import org.jboss.as.controller.client.ModelControllerClient;
+
 import javax.naming.Context;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +46,8 @@ public interface StandaloneServer {
      * @return The naming context.
      */
     Context getContext();
+
+    ModelControllerClient getModelControllerClient();
 
     void start() throws ServerStartException;
 
