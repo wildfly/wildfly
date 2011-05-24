@@ -142,6 +142,7 @@ public class ModelDescriptionConstants {
     public static final String PRIORITY = "priority";
     public static final String PROFILE = "profile";
     public static final String PROFILE_NAME = "profile-name";
+    public static final String PROPERTIES = "properties";
     public static final String PROTOCOL = "protocol";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children-names";

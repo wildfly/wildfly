@@ -26,9 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 
 import java.util.Locale;
 
@@ -44,9 +46,13 @@ import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.security.DomainCallbackHandler;
 import org.jboss.as.domain.management.security.LdapConnectionManagerService;
+import org.jboss.as.domain.management.security.PropertiesCallbackHandler;
 import org.jboss.as.domain.management.security.SSLIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.domain.management.security.UserDomainCallbackHandler;
+import org.jboss.as.domain.management.security.UserLdapCallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -81,41 +87,7 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
         final ModelNode compensatingOperation = new ModelNode(); // TODO - Complete the remove.
 
         if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceTarget serviceTarget = context.getServiceTarget();
-
-                    final SecurityRealmService securityRealmService = new SecurityRealmService(securityRealm, authentication);
-                    ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
-                    ServiceBuilder realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
-
-                    String connectionManager = requiredConnectionManager(authentication);
-                    if (connectionManager != null) {
-                        realmBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, securityRealmService.getConnectionManagerInjector());
-                    }
-
-                    // TODO - The operation will also be split out into it's own handler when I make the operations more fine grained.
-                    if (serverIdentities != null && serverIdentities.has(SSL)) {
-                        ModelNode ssl = serverIdentities.require(SSL);
-                        ServiceName sslServiceName = realmServiceName.append("ssl");
-                        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl);
-
-                        ServiceBuilder sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
-
-                        if (ssl.hasDefined(KEYSTORE) && ssl.get(KEYSTORE).hasDefined(RELATIVE_TO)) {
-                            sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
-                        }
-
-                        sslBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
-                                .install();
-
-                        realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
-                    }
-
-                    realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
-                            .install();
-                }
-            });
+            context.getRuntimeContext().setRuntimeTask(new SecurityRealmAddTask(securityRealm, serverIdentities, authentication));
         } else {
             resultHandler.handleResultComplete();
         }
@@ -124,22 +96,113 @@ public class SecurityRealmAddHandler implements ModelAddOperationHandler, Descri
 
     // TODO - These need to be split into more fine grained services so allow service specific checks.
 
-    private static String requiredConnectionManager(ModelNode authentication) {
-        String connectionManager = null;
-        if (authentication != null && authentication.hasDefined(LDAP)) {
-            ModelNode userLdap = authentication.require(LDAP);
-            connectionManager = userLdap.require(CONNECTION).asString();
-        }
-
-        return connectionManager;
-    }
-
-    private static ServiceName pathName(String relativeTo) {
-        return ServiceName.JBOSS.append("server", "path", relativeTo);
-    }
 
     public ModelNode getModelDescription(Locale locale) {
         // TODO - Complete getModelDescription()
         return new ModelNode();
+    }
+}
+
+class SecurityRealmAddTask implements RuntimeTask {
+
+    final String realmName;
+    final ModelNode serverIdentities;
+    final ModelNode authentication;
+
+    SecurityRealmAddTask(String realmName, ModelNode serverIdentities, ModelNode authentication) {
+        this.realmName = realmName;
+        this.serverIdentities = serverIdentities;
+        this.authentication = authentication;
+    }
+
+    public void execute(RuntimeTaskContext context) throws OperationFailedException {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+
+        final SecurityRealmService securityRealmService = new SecurityRealmService(realmName);
+        final ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
+        ServiceBuilder realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
+
+        ServiceName authenticationName = null;
+        if (authentication.hasDefined(LDAP)) {
+            authenticationName = addLdapService(authentication.require(LDAP), realmServiceName, serviceTarget);
+        } else if (authentication.hasDefined(PROPERTIES)) {
+            authenticationName = addPropertiesService(authentication.require(PROPERTIES), realmServiceName, realmName, serviceTarget);
+        } else if (authentication.hasDefined(USERS)) {
+            authenticationName = addUsersService(authentication.require(USERS), realmServiceName, realmName, serviceTarget);
+        }
+        if (authenticationName != null) {
+            realmBuilder.addDependency(authenticationName, DomainCallbackHandler.class, securityRealmService.getCallbackHandlerInjector());
+        }
+
+        if (serverIdentities != null && serverIdentities.hasDefined(SSL)) {
+            ServiceName sslServiceName = addSSLService(serverIdentities.require(SSL), realmServiceName, serviceTarget);
+            realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
+        }
+
+        realmBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
+    }
+
+    private ServiceName addLdapService(ModelNode ldap, ServiceName realmServiceName, ServiceTarget serviceTarget) {
+        ServiceName ldapServiceName = realmServiceName.append(UserLdapCallbackHandler.SERVICE_SUFFIX);
+        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(ldap);
+
+        ServiceBuilder ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
+        String connectionManager = ldap.require(CONNECTION).asString();
+        ldapBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, ldapCallbackHandler.getConnectionManagerInjector());
+
+        ldapBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
+
+        return ldapServiceName;
+    }
+
+    private ServiceName addPropertiesService(ModelNode properties, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget) {
+        ServiceName propsServiceName = realmServiceName.append(PropertiesCallbackHandler.SERVICE_SUFFIX);
+        PropertiesCallbackHandler propsCallbackHandler = new PropertiesCallbackHandler(realmName, properties);
+
+        ServiceBuilder propsBuilder = serviceTarget.addService(propsServiceName, propsCallbackHandler);
+        if (properties.hasDefined(RELATIVE_TO)) {
+            propsBuilder.addDependency(pathName(properties.get(RELATIVE_TO).asString()), String.class, propsCallbackHandler.getRelativeToInjector());
+        }
+
+        propsBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
+
+        return propsServiceName;
+    }
+
+    // TODO - The operation will also be split out into it's own handler when I make the operations more fine grained.
+    private ServiceName addSSLService(ModelNode ssl, ServiceName realmServiceName, ServiceTarget serviceTarget) {
+        ServiceName sslServiceName = realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX);
+        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl);
+
+        ServiceBuilder sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
+
+        if (ssl.hasDefined(KEYSTORE) && ssl.get(KEYSTORE).hasDefined(RELATIVE_TO)) {
+            sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
+        }
+
+        sslBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
+
+        return sslServiceName;
+    }
+
+    private ServiceName addUsersService(ModelNode users, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget) {
+        ServiceName usersServiceName = realmServiceName.append(UserDomainCallbackHandler.SERVICE_SUFFIX);
+        UserDomainCallbackHandler usersCallbackHandler = new UserDomainCallbackHandler(realmName, users);
+
+        ServiceBuilder usersBuilder = serviceTarget.addService(usersServiceName, usersCallbackHandler);
+
+
+        usersBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
+
+        return usersServiceName;
+    }
+
+    private static ServiceName pathName(String relativeTo) {
+        return ServiceName.JBOSS.append("server", "path", relativeTo);
     }
 }

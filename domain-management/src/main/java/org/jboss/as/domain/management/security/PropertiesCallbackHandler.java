@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -31,34 +30,39 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * A CallbackHandler for users defined within the domain mode.
+ * A CallbackHandler obtaining the users and their passwords from a properties file.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class UserDomainCallbackHandler implements Service<UserDomainCallbackHandler>, DomainCallbackHandler {
+public class PropertiesCallbackHandler implements Service<PropertiesCallbackHandler>, DomainCallbackHandler {
 
-    public static final String SERVICE_SUFFIX = "users";
+    public static final String SERVICE_SUFFIX = "properties";
 
     private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, PasswordCallback.class};
 
     private final String realm;
+    private final String path;
+    private final InjectedValue<String> relativeTo = new InjectedValue<String>();
+    private final Properties users = new Properties();
 
-    private final ModelNode userDomain;
-
-    public UserDomainCallbackHandler(String realm, ModelNode userDomain) {
+    public PropertiesCallbackHandler(String realm, ModelNode properties) {
         this.realm = realm;
-        this.userDomain = userDomain;
+        path = properties.require(PATH).asString();
     }
 
     /*
@@ -66,13 +70,33 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
      */
 
     public void start(StartContext context) throws StartException {
+        String relativeTo = this.relativeTo.getOptionalValue();
+        String file = relativeTo == null ? path : relativeTo + "/" + path;
+
+        File propertiesFile = new File(file);
+        try {
+            users.load(propertiesFile.toURI().toURL().openStream());
+        } catch (MalformedURLException mue) {
+            throw new StartException("Unable to load properties", mue);
+        } catch (IOException ioe) {
+            throw new StartException("Unable to load properties", ioe);
+        }
     }
 
     public void stop(StopContext context) {
+        users.clear();
     }
 
-    public UserDomainCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public PropertiesCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    /*
+     *  Injector Accessors
+     */
+
+    public InjectedValue<String> getRelativeToInjector() {
+        return relativeTo;
     }
 
     /*
@@ -87,7 +111,7 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
         List<Callback> toRespondTo = new LinkedList<Callback>();
 
         String userName = null;
-        ModelNode user = null;
+        boolean userFound = false;
 
         // A single pass may be sufficient but by using a two pass approach the Callbackhandler will not
         // fail if an unexpected order is encountered.
@@ -101,7 +125,7 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
             } else if (current instanceof NameCallback) {
                 NameCallback nameCallback = (NameCallback) current;
                 userName = nameCallback.getDefaultName();
-                user = userDomain.get(USER, userName);
+                userFound = users.containsKey(userName);
             } else if (current instanceof PasswordCallback) {
                 toRespondTo.add(current);
             } else if (current instanceof RealmCallback) {
@@ -115,7 +139,7 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
             }
         }
 
-        if (user == null) {
+        if (userFound == false) {
             // TODO - Again proper error reporting.
             throw new IllegalStateException("User '" + userName + "' not found.");
         }
@@ -127,11 +151,12 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
                 // Don't support impersonating another identity
                 authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizedID()));
             } else if (current instanceof PasswordCallback) {
-                String password = user.require(PASSWORD).asString();
+                String password = users.get(userName).toString();
                 ((PasswordCallback) current).setPassword(password.toCharArray());
             }
         }
 
     }
+
 
 }

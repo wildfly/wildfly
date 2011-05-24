@@ -54,6 +54,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SSLIdentityService implements Service<SSLIdentityService> {
 
+    public static final String SERVICE_SUFFIX = "ssl";
+
     private final ModelNode ssl;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 

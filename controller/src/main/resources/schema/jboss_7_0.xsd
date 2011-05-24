@@ -281,8 +281,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:choice>
-            <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
             <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
+            <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
+            <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
         </xs:choice>
         <xs:attribute name="useDomainController" type="xs:boolean" default="false">
             <xs:annotation>
@@ -361,6 +362,31 @@
             <xs:annotation>
                 <xs:documentation>
                     The users username.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="propertiesAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users stored within properties files.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="relative-to" use="optional" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of another previously named path, or of one of the
+                    standard paths provided by the system. If 'relative-to' is
+                    provided, the value of the 'path' attribute is treated as
+                    relative to the path specified by this attribute.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the properties file containing the users.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

@@ -43,18 +43,25 @@ import java.io.IOException;
 
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A CallbackHandler for users within an LDAP directory.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class UserLdapCallbackHandler implements DomainCallbackHandler {
+public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>, DomainCallbackHandler {
+
+    public static final String SERVICE_SUFFIX = "ldap";
 
     private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, VerifyPasswordCallback.class};
     private static final String DEFAULT_USER_DN = "dn";
 
-    private final ConnectionManager connectionManager;
+    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
 
     private final String baseDn;
     private final String usernameAttribute;
@@ -62,8 +69,7 @@ public class UserLdapCallbackHandler implements DomainCallbackHandler {
     private final String userDn;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    public UserLdapCallbackHandler(ConnectionManager connectionManager, ModelNode userLdap) {
-        this.connectionManager = connectionManager;
+    public UserLdapCallbackHandler(ModelNode userLdap) {
         baseDn = userLdap.require(BASE_DN).asString();
         usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
         if (userLdap.has(RECURSIVE)) {
@@ -78,6 +84,33 @@ public class UserLdapCallbackHandler implements DomainCallbackHandler {
         }
     }
 
+    /*
+     *  Service Methods
+     */
+
+    public void start(StartContext context) throws StartException {
+    }
+
+    public void stop(StopContext context) {
+    }
+
+    public UserLdapCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    /*
+     *  Access to Injectors
+     */
+
+    public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
+        return connectionManager;
+    }
+
+
+    /*
+     *  DomainCallbackHandler Methods
+     */
+
     public Class[] getSupportedCallbacks() {
         // TODO - For safety this Array should be cloned or should use an unmodifiable collection to ensure
         // TODO - caller can not modify.
@@ -85,6 +118,7 @@ public class UserLdapCallbackHandler implements DomainCallbackHandler {
     }
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        ConnectionManager connectionManager = this.connectionManager.getValue();
         String username = null;
         VerifyPasswordCallback verifyPasswordCallback = null;
 
