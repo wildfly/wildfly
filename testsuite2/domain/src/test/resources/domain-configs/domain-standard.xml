@@ -33,6 +33,7 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.osgi"/>
@@ -278,6 +279,9 @@
                 <wsdl-host>localhost</wsdl-host>
                 <modify-wsdl-address>true</modify-wsdl-address>
           </subsystem>
+		  <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+		        <mod-cluster-config advertise-socket="mod_cluster" />
+		  </subsystem>
         </profile>
     </profiles>
 
