@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -322,6 +323,19 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     public boolean isBooting() {
         return booting;
+    }
+
+    public ModelNodeRegistration getModelNodeRegistration() {
+        final PathAddress address = modelAddress;
+        assert Thread.currentThread() == initiatingThread;
+        Stage currentStage = this.currentStage;
+        if (currentStage == null) {
+            throw new IllegalStateException("Operation already complete");
+        }
+        if (currentStage != Stage.MODEL) {
+            throw new IllegalStateException("Stage MODEL is already complete");
+        }
+        return modelController.getRootRegistration().getSubModel(address);
     }
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {
