@@ -260,6 +260,7 @@ public enum Phase {
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
     public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x3400;
+    public static final int PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION  = 0x3401;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
 
