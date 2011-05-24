@@ -143,12 +143,23 @@ public interface NewOperationContext {
 
     /**
      * Read a model location, relative to the executed operation address.  Reads never block.  If a write action was
-     * previously performed, the value read will be from an uncommitted copy of the the management model.
+     * previously performed, the value read will be from an uncommitted copy of the the management model.  The returned
+     * submodel is read-only.
      *
      * @param address the (possibly empty) address to read
      * @return the model data
      */
     ModelNode readModel(PathAddress address);
+
+    /**
+     * Read a model location, relative to the executed operation address, for the purpose of updating the submodel.
+     * This is a write operation, and because only one operation
+     * may write at a time, this operation may block until other writing operations have completed.
+     *
+     * @param address the (possibly empty) address to read
+     * @return the model data
+     */
+    ModelNode readModelForUpdate(PathAddress address);
 
     /**
      * Get a read-only reference of the entire management model.  The structure of the returned model may depend
