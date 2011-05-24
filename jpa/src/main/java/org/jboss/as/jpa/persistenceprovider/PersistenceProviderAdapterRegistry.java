@@ -33,8 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PersistenceProviderAdapterRegistry {
 
-    private static final ConcurrentHashMap<String,PersistenceProviderAdaptor>
-        adapterRegistry = new ConcurrentHashMap<String,PersistenceProviderAdaptor>();
+    private static final ConcurrentHashMap<String, PersistenceProviderAdaptor>
+        adapterRegistry = new ConcurrentHashMap<String, PersistenceProviderAdaptor>();
 
     public static PersistenceProviderAdaptor getPersistenceProviderAdaptor(String persistenceProviderClassName) {
         return adapterRegistry.get(persistenceProviderClassName);

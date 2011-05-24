@@ -95,23 +95,23 @@ public class SecurityActions {
 
             public void setContextClassLoader(final ClassLoader cl) {
                 AccessController.doPrivileged(
-                        new PrivilegedAction<ClassLoader>() {
-                            public ClassLoader run() {
-                                Thread.currentThread().setContextClassLoader(cl);
-                                return null;
-                            }
+                    new PrivilegedAction<ClassLoader>() {
+                        public ClassLoader run() {
+                            Thread.currentThread().setContextClassLoader(cl);
+                            return null;
                         }
+                    }
                 );
             }
 
             public void setContextClassLoader(final Thread thread, final ClassLoader cl) {
                 AccessController.doPrivileged(
-                        new PrivilegedAction<ClassLoader>() {
-                            public ClassLoader run() {
-                                thread.setContextClassLoader(cl);
-                                return null;
-                            }
+                    new PrivilegedAction<ClassLoader>() {
+                        public ClassLoader run() {
+                            thread.setContextClassLoader(cl);
+                            return null;
                         }
+                    }
                 );
             }
         };

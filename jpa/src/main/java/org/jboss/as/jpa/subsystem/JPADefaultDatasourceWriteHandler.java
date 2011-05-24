@@ -31,7 +31,8 @@ public class JPADefaultDatasourceWriteHandler extends ServerWriteAttributeOperat
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler,
-            String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+                                           String attributeName, ModelNode newValue, ModelNode currentValue) throws
+        OperationFailedException {
         if (context.getRuntimeContext() != null) {
             final String dataSourceName = newValue.resolve().asString();
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {

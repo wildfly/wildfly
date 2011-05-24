@@ -31,7 +31,6 @@ package org.jboss.as.jpa.spi;
 public interface SFSBContextHandle {
 
     /**
-     *
      * @return an opaque handle to the SFSB bean context handle.
      */
     Object getBeanContextHandle();

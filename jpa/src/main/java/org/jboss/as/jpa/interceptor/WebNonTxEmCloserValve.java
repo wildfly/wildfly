@@ -47,8 +47,7 @@ public class WebNonTxEmCloserValve extends ValveBase {
         try {
             // call the next interceptor or target
             getNext().invoke(request, response);
-        }
-        finally {
+        } finally {
             NonTxEmCloser.popCall();    // close any transactional entity managers that were created without a jta transaction.
         }
     }

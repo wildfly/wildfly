@@ -69,6 +69,7 @@ public class EntityManagerMetadata implements Serializable {
 
     /**
      * Returns true if this is a transactional scoped entity manager
+     *
      * @return
      */
     public boolean isTransactionScopedEntityManager() {
@@ -79,7 +80,7 @@ public class EntityManagerMetadata implements Serializable {
      * Returns true if this is an extended persistence context (entity manager)
      */
     public boolean isExtendedPersistenceContext() {
-        return ! this.isTransactionScopedEntityManager();
+        return !this.isTransactionScopedEntityManager();
     }
 
 }

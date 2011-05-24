@@ -190,7 +190,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
 
                 case EXCLUDEUNLISTEDCLASSES:
                     String text = reader.getElementText();
-                    if(text == null || text.isEmpty()) {
+                    if (text == null || text.isEmpty()) {
                         //the spec has examples where an empty
                         //exclude-unlisted-classes element has the same
                         //effect as setting it to true

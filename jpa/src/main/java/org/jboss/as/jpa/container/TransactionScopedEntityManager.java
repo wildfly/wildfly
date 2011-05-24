@@ -68,14 +68,13 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
             if (existing != null && existing != result) {       // should be enough to test if not the same object
                 throw new EJBException(
                     "Found extended persistence context in SFSB invocation call stack but that cannot be used " +
-                    "because the transaction already has a transactional context associated with it.  " +
-                    "This can be avoided by changing application code, either eliminate the extended " +
-                    "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
-                    "Scoped persistence unit name=" +puScopedName +
-                    ", persistence context already in transaction =" + existing +
-                    ", extended persistence context =" + result) ;
-            }
-            else if( existing == null) {
+                        "because the transaction already has a transactional context associated with it.  " +
+                        "This can be avoided by changing application code, either eliminate the extended " +
+                        "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
+                        "Scoped persistence unit name=" + puScopedName +
+                        ", persistence context already in transaction =" + existing +
+                        ", extended persistence context =" + result);
+            } else if (existing == null) {
                 // JPA 7.9.1 join the transaction if not already done.
                 TransactionUtil.getInstance().registerExtendedWithTransaction(puScopedName, result);
             }

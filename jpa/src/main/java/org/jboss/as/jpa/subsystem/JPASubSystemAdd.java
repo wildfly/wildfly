@@ -69,6 +69,7 @@ class JPASubSystemAdd implements ModelAddOperationHandler, BootOperationHandler,
         addOp.get(CommonAttributes.DEFAULT_DATASOURCE).set(currentModel.get(CommonAttributes.DEFAULT_DATASOURCE));
         return addOp;
     }
+
     static final String OPERATION_NAME = ADD;
     static final JPASubSystemAdd INSTANCE = new JPASubSystemAdd();
 

@@ -114,7 +114,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts) throws DeploymentUnitProcessingException {
+    private void processPersistenceAnnotations(final DeploymentUnit deploymentUnit, final EEModuleDescription eeModuleDescription, List<AnnotationInstance> persistenceContexts) throws
+        DeploymentUnitProcessingException {
         for (AnnotationInstance annotation : persistenceContexts) {
             ClassInfo declaringClass = null;
             final AnnotationTarget annotationTarget = annotation.target();
@@ -148,7 +149,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private void processField(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final FieldInfo fieldInfo,
-                              final EEModuleClassDescription eeModuleClassDescription) throws DeploymentUnitProcessingException {
+                              final EEModuleClassDescription eeModuleClassDescription) throws
+        DeploymentUnitProcessingException {
 
         final String fieldName = fieldInfo.name();
         final AnnotationValue declaredNameValue = annotation.value("name");
@@ -170,7 +172,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         // add the binding configuration to the class description
         eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                DeploymentUnitProcessingException {
                 configuration.getBindingConfigurations().add(bindingConfiguration);
             }
         });
@@ -182,14 +185,16 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
         eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                DeploymentUnitProcessingException {
                 configuration.getInjectionConfigurations().add(injectionConfiguration);
             }
         });
     }
 
     private void processMethod(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final MethodInfo methodInfo,
-                               final EEModuleClassDescription eeModuleClassDescription) throws DeploymentUnitProcessingException {
+                               final EEModuleClassDescription eeModuleClassDescription) throws
+        DeploymentUnitProcessingException {
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
@@ -212,7 +217,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         // setup the binding configuration in the class description
         eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                DeploymentUnitProcessingException {
                 configuration.getBindingConfigurations().add(bindingConfiguration);
             }
         });
@@ -225,14 +231,16 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
         eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                DeploymentUnitProcessingException {
                 configuration.getInjectionConfigurations().add(injectionConfiguration);
             }
         });
     }
 
     private void processClass(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final ClassInfo classInfo,
-                              final EEModuleClassDescription eeModuleClassDescription) throws DeploymentUnitProcessingException {
+                              final EEModuleClassDescription eeModuleClassDescription) throws
+        DeploymentUnitProcessingException {
 
         final AnnotationValue nameValue = annotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
@@ -245,21 +253,22 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         // setup the binding configuration in the class description
         eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
+                DeploymentUnitProcessingException {
                 configuration.getBindingConfigurations().add(bindingConfiguration);
             }
         });
     }
 
     private InjectionSource getBindingSource(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, String injectionTypeName)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         String scopedPuName = getScopedPuName(deploymentUnit, annotation);
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
             AnnotationValue pcType = annotation.value("type");
             PersistenceContextType type = (pcType == null || PersistenceContextType.TRANSACTION.name().equals(pcType.asString()))
-                    ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
+                ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED;
 
             Map properties;
             AnnotationValue value = annotation.value("properties");
@@ -282,7 +291,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     private boolean isExtendedPersistenceContext(final AnnotationInstance annotation) {
         AnnotationValue value = annotation.value("type");
         return annotation.name().local().equals("PersistenceContext") &&
-                (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
+            (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
 
     }
 
@@ -302,7 +311,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private String getScopedPuName(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         final AnnotationValue puName = annotation.value("unitName");
         String scopedPuName;
@@ -319,7 +328,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName getPuServiceName(String scopedPuName)
-            throws DeploymentUnitProcessingException {
+        throws DeploymentUnitProcessingException {
 
         return PersistenceUnitService.getPUServiceName(scopedPuName);
     }
@@ -331,7 +340,8 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             // first setup the post construct and pre destroy component interceptors
             componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
-                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
+                    DeploymentUnitProcessingException {
                     configuration.addPostConstructInterceptor(SFSBCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
                     configuration.addPreDestroyInterceptor(SFSBDestroyInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
                 }
@@ -345,18 +355,20 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             for (ViewDescription view : views) {
                 view.getConfigurators().addFirst(new ViewConfigurator() {
                     @Override
-                    public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                            configuration.addViewInterceptor(SFSBInvocationInterceptor.FACTORY, InterceptorOrder.View.JPA_SFSB_INTERCEPTOR);
+                    public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws
+                        DeploymentUnitProcessingException {
+                        configuration.addViewInterceptor(SFSBInvocationInterceptor.FACTORY, InterceptorOrder.View.JPA_SFSB_INTERCEPTOR);
                     }
                 });
             }
         }
         // register interceptor on stateful/stateless SB with transactional entity manager.
         if (!isExtendedPersistenceContext(annotation) &&
-                (componentDescription.isStateful() || componentDescription.isStateless())) {
+            (componentDescription.isStateful() || componentDescription.isStateless())) {
             componentDescription.getConfigurators().add(new ComponentConfigurator() {
                 @Override
-                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
+                    DeploymentUnitProcessingException {
                     configuration.addComponentInterceptor(new ImmediateInterceptorFactory(SBInvocationInterceptor.INSTANCE), InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
                 }
             });

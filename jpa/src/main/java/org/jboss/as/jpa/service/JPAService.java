@@ -50,8 +50,8 @@ public class JPAService implements Service<Void> {
         JPAService jpaService = new JPAService();
         JPAService.defaultDataSourceName = defaultDataSourceName;
         target.addService(SERVICE_NAME, jpaService)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
     }
 
     @Override

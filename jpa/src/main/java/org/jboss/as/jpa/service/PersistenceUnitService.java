@@ -155,6 +155,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     /**
      * Create EE container entity manager factory
+     *
      * @param provider
      * @return EntityManagerFactory
      */

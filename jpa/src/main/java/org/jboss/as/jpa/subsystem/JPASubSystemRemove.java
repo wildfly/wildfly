@@ -48,7 +48,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  *
  * @author Brian Stansberry
  */
-class JPASubSystemRemove implements ModelRemoveOperationHandler, BootOperationHandler, DescriptionProvider{
+class JPASubSystemRemove implements ModelRemoveOperationHandler, BootOperationHandler, DescriptionProvider {
 
     static final JPASubSystemRemove INSTANCE = new JPASubSystemRemove();
 

@@ -43,7 +43,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     @Override
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
         properties.put(Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
-        properties.put(org.hibernate.ejb.AvailableSettings.SCANNER,"org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
+        properties.put(org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate.HibernateAnnotationScanner");
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
         properties.put(AvailableSettings.JTA_PLATFORM, new JBossAppServerJtaPlatform());
     }

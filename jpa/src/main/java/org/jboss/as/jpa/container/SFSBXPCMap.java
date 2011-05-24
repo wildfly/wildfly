@@ -163,7 +163,7 @@ public class SFSBXPCMap {
             Object existingList = contextToXPCMap.put(beanContextHandle, xpcList);
             if (existingList != null) {
                 throw new RuntimeException("More than one thread is invoking stateful session bean '" +
-                    beanContextHandle.getBeanContextHandle() + "' at the same time." );
+                    beanContextHandle.getBeanContextHandle() + "' at the same time.");
             }
         } else {
             // session bean was already registered, just add XPC to existing list.
@@ -195,7 +195,7 @@ public class SFSBXPCMap {
             for (WeakReference<EntityManager> xpc_ref : xpcList) {
                 EntityManager xpc = xpc_ref.get();
                 if (xpc != null) {  // null means the SFSB was destroyed without SFSBDestroyInterceptor triggering
-                                    // we can ignore that case since the XPC is already closed by GC
+                    // we can ignore that case since the XPC is already closed by GC
                     List<SFSBContextHandle> sfsbList = XPCToContextMap.get(xpc);
                     if (sfsbList != null) {
                         // build a list of SFSBs that should be removed

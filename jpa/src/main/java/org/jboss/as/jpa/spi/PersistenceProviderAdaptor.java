@@ -49,7 +49,7 @@ public interface PersistenceProviderAdaptor {
      * @param pu
      * @return
      */
-    Iterable<ServiceName>getProviderDependencies(PersistenceUnitMetadata pu);
+    Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu);
 
     /**
      * Called right before persistence provider is invoked to create container entity manager factory.
@@ -59,9 +59,9 @@ public interface PersistenceProviderAdaptor {
      * @param pu
      */
     void beforeCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
+
     /**
      * Called right after persistence provider is invoked to create container entity manager factory.
-     *
      */
     void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
 

@@ -58,19 +58,21 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     /**
      * @return true if an extended persistence context is in use
-     *
-     * Precondition: getEntityManager() must be called previous to calling isExtendedPersistenceContext
+     *         <p/>
+     *         Precondition: getEntityManager() must be called previous to calling isExtendedPersistenceContext
      */
     protected abstract boolean isExtendedPersistenceContext();
 
     /**
      * @return true if a JTA transaction is active
-     *
-     * Precondition: getEntityManager() must be called previous to calling isInTx
+     *         <p/>
+     *         Precondition: getEntityManager() must be called previous to calling isInTx
      */
     protected abstract boolean isInTx();
+
     /**
      * save metadata if not already set.
+     *
      * @param puScopedName
      * @param isExtendedPersistenceContext
      */
@@ -100,7 +102,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         Object x = extensions.get(cls);
         if (x != null)
             return (T) x;
-         return getEntityManager().unwrap(cls);
+        return getEntityManager().unwrap(cls);
     }
 
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
@@ -260,7 +262,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         long start = 0;
         if (isTraceEnabled)
             start = System.currentTimeMillis();
-        LockModeType result=null;
+        LockModeType result = null;
         try {
             result = getEntityManager().getLockMode(entity);
         } finally {
@@ -380,7 +382,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                log.tracef("createNamedQuery name '%s' took %dms",name, elapsed);
+                log.tracef("createNamedQuery name '%s' took %dms", name, elapsed);
             }
         }
     }
@@ -673,7 +675,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     // currently used by TransactionScopedEntityManager to autoclose the
     // underlying entitymanager after each invocation.
     protected void detachNonTxInvocation(EntityManager underlyingEntityManager) {
-        if ( ! this.isExtendedPersistenceContext() && ! this.isInTx()) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
             underlyingEntityManager.clear();
         }
     }
@@ -681,7 +683,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     // JPA 7.9.1 if invoked without a JTA transaction and a transaction scoped persistence context is used,
     // will throw TransactionRequiredException for any calls to entity manager remove/merge/persist/refresh.
     private void transactionIsRequired() {
-        if ( ! this.isExtendedPersistenceContext() && ! this.isInTx()) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
             throw new TransactionRequiredException(
                 "Transaction is required to perform this operation (either use a transaction or extended persistence context)");
         }
@@ -690,7 +692,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     private static String getLockModeAsString(LockModeType lockMode) {
         if (lockMode == null)
             return "(null)";
-        switch(lockMode) {
+        switch (lockMode) {
             case OPTIMISTIC:
                 return "optimistic";
             case OPTIMISTIC_FORCE_INCREMENT:

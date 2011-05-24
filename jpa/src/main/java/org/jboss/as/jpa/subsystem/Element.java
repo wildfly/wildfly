@@ -31,8 +31,7 @@ public enum Element {
     // must be first
     UNKNOWN(null),
     JPA(CommonAttributes.JPA),
-    DEFAULT_DATASOURCE(CommonAttributes.DEFAULT_DATASOURCE)
-    ,;
+    DEFAULT_DATASOURCE(CommonAttributes.DEFAULT_DATASOURCE),;
 
     private final String name;
 

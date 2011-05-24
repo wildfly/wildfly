@@ -39,7 +39,7 @@ import java.io.Serializable;
  * persistence unit, the new SFSB2 will share the same persistence context from SFSB1.
  * Both SFSB1 + SFSB2 will maintain a reference to the underlying persistence context, such that
  * the underlying persistence context will be kept around until both SFSB1 + SFSB2 are destroyed.
- *
+ * <p/>
  * Note:  Unlike TransactionScopedEntityManager, ExtendedEntityManager will directly be shared instead of the
  * underlying EntityManager.  This will facilitate access to the EntityManagerMetadata used in SFSBXPCMap.
  *
@@ -84,17 +84,16 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
             // transaction (with the same puScopedName).
             EntityManager existing = TransactionUtil.getInstance().getTransactionScopedEntityManager(puScopedName);
             if (existing != null && existing != this) {
-            // should be enough to test if not the same object
+                // should be enough to test if not the same object
                 throw new EJBException(
                     "Found extended persistence context in SFSB invocation call stack but that cannot be used " +
-                    "because the transaction already has a transactional context associated with it.  " +
-                    "This can be avoided by changing application code, either eliminate the extended " +
-                    "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
-                    "Scoped persistence unit name=" +puScopedName +
-                    ", persistence context already in transaction =" + existing +
-                    ", extended persistence context =" + this) ;
-            }
-            else if( existing == null) {
+                        "because the transaction already has a transactional context associated with it.  " +
+                        "This can be avoided by changing application code, either eliminate the extended " +
+                        "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
+                        "Scoped persistence unit name=" + puScopedName +
+                        ", persistence context already in transaction =" + existing +
+                        ", extended persistence context =" + this);
+            } else if (existing == null) {
                 // JPA 7.9.1 join the transaction if not already done.
                 TransactionUtil.getInstance().registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
             }
@@ -130,7 +129,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     @Override
     public String toString() {
-        return "ExtendedEntityManager [" + puScopedName +"]";
+        return "ExtendedEntityManager [" + puScopedName + "]";
     }
 
     @Override

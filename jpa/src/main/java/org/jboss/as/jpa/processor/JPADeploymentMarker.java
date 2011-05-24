@@ -37,7 +37,6 @@ public class JPADeploymentMarker {
     /**
      * Mark the top level deployment as being a JPA deployment. If the deployment is not a top level deployment the parent is
      * marked instead
-     *
      */
     public static void mark(DeploymentUnit unit) {
         if (unit.getParent() == null) {

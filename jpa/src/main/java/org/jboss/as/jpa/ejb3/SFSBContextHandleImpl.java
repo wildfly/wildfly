@@ -38,6 +38,7 @@ public class SFSBContextHandleImpl implements SFSBContextHandle {
     public SFSBContextHandleImpl(Serializable id) {
         this.idSFSB = id;
     }
+
     @Override
     public Object getBeanContextHandle() {
         return idSFSB;

@@ -59,7 +59,8 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         this.puServiceName = puServiceName;
     }
 
-    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws
+        DeploymentUnitProcessingException {
         serviceBuilder.addDependencies(puServiceName);
         injector.inject(injectable);
     }
@@ -81,10 +82,10 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
-                final ServiceName puServiceName,
-                final DeploymentUnit deploymentUnit,
-                final String scopedPUName,
-                final String injectionTypeName) {
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final String scopedPUName,
+            final String injectionTypeName) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;

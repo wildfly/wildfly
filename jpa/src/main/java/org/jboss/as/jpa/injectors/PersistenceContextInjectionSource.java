@@ -94,7 +94,8 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         this.puServiceName = puServiceName;
     }
 
-    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws
+        DeploymentUnitProcessingException {
         serviceBuilder.addDependencies(puServiceName);
         injector.inject(injectable);
     }
@@ -121,12 +122,12 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
         public PersistenceContextJndiInjectable(
-                final ServiceName puServiceName,
-                final DeploymentUnit deploymentUnit,
-                final PersistenceContextType type,
-                final Map properties,
-                final String unitName,
-                final String injectionTypeName) {
+            final ServiceName puServiceName,
+            final DeploymentUnit deploymentUnit,
+            final PersistenceContextType type,
+            final Map properties,
+            final String unitName,
+            final String injectionTypeName) {
 
             this.puServiceName = puServiceName;
             this.deploymentUnit = deploymentUnit;

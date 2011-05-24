@@ -51,9 +51,11 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
      * The validator factory that all invocations are delegated to.
      */
     private static volatile ValidatorFactory delegate;
+
     static {
         delegate = new JPALazyValidatorFactory(null);
     }
+
     private static SerializableValidatorFactory INSTANCE = new SerializableValidatorFactory();
 
     public static ValidatorFactory getINSTANCE() {

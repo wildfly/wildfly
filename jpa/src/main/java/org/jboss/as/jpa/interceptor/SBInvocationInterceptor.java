@@ -41,8 +41,7 @@ public class SBInvocationInterceptor implements Interceptor {
         NonTxEmCloser.pushCall();
         try {
             return context.proceed();   // call the next interceptor or target
-        }
-        finally {
+        } finally {
             NonTxEmCloser.popCall();
         }
     }

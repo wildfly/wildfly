@@ -120,9 +120,9 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             //find the resource root for WEB-INF/classes
             ResourceRoot classesRoot = deploymentRoot;
-            for(ResourceRoot resourceRoot : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
-                if(ModuleRootMarker.isModuleRoot(resourceRoot)) {
-                    if(resourceRoot.getRoot().getPathName().contains("WEB-INF/classes")) {
+            for (ResourceRoot resourceRoot : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
+                if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
+                    if (resourceRoot.getRoot().getPathName().contains("WEB-INF/classes")) {
                         classesRoot = resourceRoot;
                         break;
                     }
@@ -173,7 +173,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             for (ResourceRoot resourceRoot : resourceRoots) {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
                 // to deploy(DeploymentPhaseContext)).
-                if (! SubDeploymentMarker.isSubDeployment(resourceRoot) &&
+                if (!SubDeploymentMarker.isSubDeployment(resourceRoot) &&
                     resourceRoot.getRoot().getLowerCaseName().endsWith(JAR_FILE_EXTENSION) &&
                     resourceRoot.getRoot().getParent().getName().equals(LIB_FOLDER)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -245,7 +245,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             pu.setJarFileUrls(jarfilesUrls);
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
-            pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit,pu.getPersistenceUnitName()));
+            pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
             pu.setAnnotationIndex(index);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
@@ -280,7 +280,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     /**
      * Eliminate duplicate PU definitions from clustering the deployment (first definition will win)
-     *
+     * <p/>
      * JPA 8.2  A persistence unit must have a name. Only one persistence unit of any given name must be defined
      * within a single EJB-JAR file, within a single WAR file, within a single application client jar, or within
      * an EAR. See Section 8.2.2, “Persistence Unit Scope”.
@@ -295,14 +295,13 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
                 if (!flattened.containsKey(pu.getPersistenceUnitName())) {
                     flattened.put(pu.getPersistenceUnitName(), pu);
-                }
-                else {
+                } else {
                     PersistenceUnitMetadata first = flattened.get(pu.getPersistenceUnitName());
                     PersistenceUnitMetadata duplicate = pu;
                     log.warn("duplicate Persistence Unit definition for " + duplicate.getPersistenceUnitName() +
                         " in application.  One of the duplicate persistence.xml should be removed from the application." +
                         " Application deployment will continue with the persistence.xml definitions from " +
-                        first.getScopedPersistenceUnitName() +" used.  The persistence.xml definitions from " +
+                        first.getScopedPersistenceUnitName() + " used.  The persistence.xml definitions from " +
                         duplicate.getScopedPersistenceUnitName() + " will be ignored."
                     );
                 }
@@ -368,7 +367,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             JPADeploymentMarker.mark(deploymentUnit);
         }
     }
-
 
 
 }

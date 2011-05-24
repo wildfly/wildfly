@@ -66,7 +66,7 @@ public class ThreadLocalStack<T> {
         if (list == null) {
             throw new RuntimeException("Internal error:  Cannot replace top of stack as stack is null (same as being empty).");
         }
-        list.set(list.size() - 1,obj);  // replace top of stack item, with the specified time.
+        list.set(list.size() - 1, obj);  // replace top of stack item, with the specified time.
     }
 
     public T get() {

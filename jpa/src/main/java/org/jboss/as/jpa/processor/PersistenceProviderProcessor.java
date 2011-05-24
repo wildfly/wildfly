@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Deploy JPA Persistence providers that are found in the application deployment.
  * Modeled after DriverProcessor.
- *
+ * <p/>
  * TODO:  add versioning support so that we could have multiple versions of the provider.
  * Or use the provider jar name (which could include a version) as a version tag that
  * could be specified in the persistence.xml
@@ -55,7 +55,9 @@ import java.util.List;
 public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.as.jpa");
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
@@ -70,11 +72,11 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                     final PersistenceProvider provider = constructor.newInstance();
                     log.infof("Deploying Persistence Provider %s ", providerClass);
                     phaseContext
-                            .getServiceTarget()
-                            .addService(
-                                    ServiceName.JBOSS.append("persistenceprovider", providerName ),
-                                    new ValueService<PersistenceProvider>(new ImmediateValue<PersistenceProvider>(provider))).setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
+                        .getServiceTarget()
+                        .addService(
+                            ServiceName.JBOSS.append("persistenceprovider", providerName),
+                            new ValueService<PersistenceProvider>(new ImmediateValue<PersistenceProvider>(provider))).setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
                     PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(provider);
 
                 } catch (Exception e) {
@@ -84,7 +86,9 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void undeploy(final DeploymentUnit context) {
     }
 

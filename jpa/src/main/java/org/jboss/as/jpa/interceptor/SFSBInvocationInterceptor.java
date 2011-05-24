@@ -50,14 +50,13 @@ public class SFSBInvocationInterceptor implements Interceptor {
         if (componentInstance == null) {
             throw new IllegalStateException("componentInstance not set in InterceptorContext: " + context);
         }
-        StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance)componentInstance;
+        StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) componentInstance;
         SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
 
         SFSBCallStack.pushCall(sfsbContextHandle);
         try {
             return context.proceed();   // call the next interceptor or target
-        }
-        finally {
+        } finally {
             SFSBCallStack.popCall();
         }
     }

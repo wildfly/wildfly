@@ -45,7 +45,6 @@ import org.jboss.dmr.ModelType;
  * Model and operation descriptions for the JPA subsystem.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
- *
  */
 public class JPADescriptions {
 
