@@ -34,7 +34,6 @@ import static org.jboss.as.messaging.CommonAttributes.ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
-import static org.jboss.as.messaging.CommonAttributes.BACKUP_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
@@ -805,8 +804,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (has(node, BACKUP)) {
             writeSimpleElement(writer, Element.BACKUP, node);
         }
-        if (has(node, BACKUP_CONNECTOR_REF)) {
-            writeSimpleElement(writer, Element.BACKUP_CONNECTOR_REF, node);
+        if (has(node, CONNECTOR_REF)) {
+            writeSimpleElement(writer, Element.CONNECTOR_REF, node);
         }
         if (has(node, BINDINGS_DIRECTORY)) {
             writeDirectory(writer, Element.BINDINGS_DIRECTORY, node);

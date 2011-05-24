@@ -27,6 +27,7 @@ package org.jboss.as.messaging.jms;
  */
 public interface CommonAttributes {
 
+    String HA ="ha";
     String AUTO_GROUP ="auto-group";
     String BLOCK_ON_ACK ="block-on-acknowledge";
     String BLOCK_ON_DURABLE_SEND ="block-on-durable-send";

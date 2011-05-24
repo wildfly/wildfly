@@ -42,8 +42,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -144,12 +144,12 @@ public class ExampleRunner {
         }
     }
 
-    static ClientSessionFactory createClientSessionFactory(String host, int port) {
+    static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
         final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("host", host);
         properties.put("port", port);
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
-        return HornetQClient.createClientSessionFactory(configuration);
+        return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
 
 }

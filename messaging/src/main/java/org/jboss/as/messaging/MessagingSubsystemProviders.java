@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
-import static org.jboss.as.messaging.CommonAttributes.BACKUP_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
@@ -33,6 +32,7 @@ import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
@@ -68,7 +68,7 @@ import org.jboss.dmr.ModelNode;
 class MessagingSubsystemProviders {
 
     static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { ACCEPTOR, ADDRESS_SETTING, BACKUP,
-        BACKUP_CONNECTOR_REF, BINDINGS_DIRECTORY, BROADCAST_PERIOD, CLUSTERED, CLUSTER_PASSWORD, CLUSTER_USER, CONNECTION_TTL_OVERRIDE, CONNECTOR,
+        CONNECTOR_REF, BINDINGS_DIRECTORY, BROADCAST_PERIOD, CLUSTERED, CLUSTER_PASSWORD, CLUSTER_USER, CONNECTION_TTL_OVERRIDE, CONNECTOR,
         CREATE_BINDINGS_DIR, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, ID_CACHE_SIZE, JMX_DOMAIN, JMX_MANAGEMENT_ENABLED,
         JOURNAL_BUFFER_SIZE, JOURNAL_BUFFER_TIMEOUT, JOURNAL_COMPACT_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_DIRECTORY,
         JOURNAL_MIN_FILES, JOURNAL_SYNC_NON_TRANSACTIONAL, JOURNAL_TYPE, JOURNAL_FILE_SIZE, JOURNAL_MAX_IO, LARGE_MESSAGES_DIRECTORY, PAGING_DIRECTORY,

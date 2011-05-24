@@ -31,7 +31,6 @@ import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLIC
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
-import static org.jboss.as.messaging.CommonAttributes.BACKUP_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
@@ -65,6 +64,7 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTI
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_TRANSACTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
 import static org.jboss.as.messaging.CommonAttributes.LVQ;
 import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
@@ -220,8 +220,8 @@ class MessagingSubsystemAdd implements ModelAddOperationHandler {
         final Configuration configuration = new ConfigurationImpl();
         // --
         configuration.setBackup(params.get(BACKUP).asBoolean(ConfigurationImpl.DEFAULT_BACKUP));
-        if(params.has(BACKUP_CONNECTOR_REF)) {
-            configuration.setBackupConnectorName(params.get(BACKUP_CONNECTOR_REF).asString());
+        if(params.has(LIVE_CONNECTOR_REF)) {
+            configuration.setLiveConnectorName(params.get(LIVE_CONNECTOR_REF).asString());
         }
         configuration.setClustered(params.get(CLUSTERED).asBoolean(ConfigurationImpl.DEFAULT_CLUSTERED));
         configuration.setClusterPassword(params.get(CLUSTER_PASSWORD).asString());

@@ -59,6 +59,7 @@ public class Test implements TestMBean {
 
     private final List<String> receivedMessages = new ArrayList<String>();
 
+    @Override
     public void start() throws Exception {
         //HornetQ needs the proper TCL
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -68,7 +69,7 @@ public class Test implements TestMBean {
             //HornetQService set up the config and starts the HornetQServer
 
             //Not using JNDI so we use the core services directly
-            sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+            sf = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName())).createSessionFactory();
 
             //Create a queue
             ClientSession coreSession = sf.createSession(false, true, true);
@@ -108,6 +109,7 @@ public class Test implements TestMBean {
         }
     }
 
+    @Override
     public void stop() throws Exception {
         shutdown.set(true);
         if (session != null)
@@ -117,6 +119,7 @@ public class Test implements TestMBean {
         coreSession.close();
     }
 
+    @Override
     public void sendMessage(String txt) throws Exception {
         System.out.println("-----> Attempting to send message");
         ClientProducer producer = session.createProducer(QUEUE_EXAMPLE_QUEUE);
@@ -127,6 +130,7 @@ public class Test implements TestMBean {
         producer.send(message);
     }
 
+    @Override
     public List<String> readMessages(String txt) {
         synchronized (receivedMessages) {
             List<String> list = new ArrayList<String>(receivedMessages);

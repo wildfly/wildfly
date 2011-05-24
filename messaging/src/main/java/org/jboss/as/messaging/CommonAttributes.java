@@ -35,7 +35,7 @@ interface CommonAttributes {
     String ADDRESS_SETTINGS ="address-settings";
     String ASYNC_CONNECTION_EXECUTION_ENABLED ="async-connection-execution-enabled";
     String BACKUP ="backup";
-    String BACKUP_CONNECTOR_REF ="backup-connector-ref";
+    String LIVE_CONNECTOR_REF ="live-connector-ref";
     String BINDINGS_DIRECTORY ="bindings-directory";
     String BROADCAST_PERIOD ="broadcast-period";
     String CLUSTERED ="clustered";

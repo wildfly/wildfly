@@ -22,11 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -41,16 +36,14 @@ import static org.jboss.as.messaging.jms.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTION_TTL;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.jms.CommonAttributes.CONNECTOR_BACKUP_NAME;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_MAX_RATE;
 import static org.jboss.as.messaging.jms.CommonAttributes.CONSUMER_WINDOW_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_GROUP_NAME;
-import static org.jboss.as.messaging.jms.CommonAttributes.DISCOVERY_INITIAL_WAIT_TIMEOUT;
 import static org.jboss.as.messaging.jms.CommonAttributes.DUPS_OK_BATCH_SIZE;
 import static org.jboss.as.messaging.jms.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.jms.CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION;
-import static org.jboss.as.messaging.jms.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.jms.CommonAttributes.GROUP_ID;
+import static org.jboss.as.messaging.jms.CommonAttributes.HA;
 import static org.jboss.as.messaging.jms.CommonAttributes.LOAD_BALANCING_CLASS_NAME;
 import static org.jboss.as.messaging.jms.CommonAttributes.MAX_RETRY_INTERVAL;
 import static org.jboss.as.messaging.jms.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
@@ -70,15 +63,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
+import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.RuntimeTask;
+import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.jms.JMSServices.NodeAttribute;
 import org.jboss.dmr.ModelNode;
@@ -116,6 +113,7 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+                @Override
                 public void execute(RuntimeTaskContext context) throws OperationFailedException {
                     final ConnectionFactoryConfiguration configuration = createConfiguration(name, operation);
                     final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
@@ -134,8 +132,9 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
     }
 
     static ConnectionFactoryConfiguration createConfiguration(final String name, final ModelNode operation) {
-        final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, jndiBindings(operation));
+        final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, HornetQClient.DEFAULT_HA, jndiBindings(operation));
 
+        config.setHA(operation.get(HA).asBoolean(HornetQClient.DEFAULT_HA));
         config.setAutoGroup(operation.get(AUTO_GROUP).asBoolean(HornetQClient.DEFAULT_AUTO_GROUP));
         config.setBlockOnAcknowledge(operation.get(BLOCK_ON_ACK).asBoolean(HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE));
         config.setBlockOnDurableSend(operation.get(BLOCK_ON_DURABLE_SEND).asBoolean(HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND));
@@ -150,11 +149,10 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
         config.setConnectionTTL(operation.get(CONNECTION_TTL).asLong(HornetQClient.DEFAULT_CONNECTION_TTL));
         if (operation.hasDefined(CONNECTOR)) {
             ModelNode connectorRefs = operation.get(CONNECTOR);
-            List<Pair<String, String>> connectorNames = new ArrayList<Pair<String,String>>();
+            List<String> connectorNames = new ArrayList<String>();
             for (String connectorName : operation.get(CONNECTOR).keys()) {
                 ModelNode connectorRef = connectorRefs.get(connectorName);
-                String backup = connectorRef.hasDefined(CONNECTOR_BACKUP_NAME) ? connectorRef.get(CONNECTOR_BACKUP_NAME).asString() : null;
-                connectorNames.add( new Pair<String, String>(connectorName, backup));
+                connectorNames.add(connectorName);
             }
             config.setConnectorNames(connectorNames);
         }
@@ -167,12 +165,10 @@ class ConnectionFactoryAdd implements ModelAddOperationHandler {
         }
         config.setDupsOKBatchSize(operation.get(DUPS_OK_BATCH_SIZE).asInt(HornetQClient.DEFAULT_ACK_BATCH_SIZE));
         config.setFailoverOnInitialConnection(operation.get(FAILOVER_ON_INITIAL_CONNECTION).asBoolean(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION));
-        config.setFailoverOnServerShutdown(operation.get(FAILOVER_ON_SERVER_SHUTDOWN).asBoolean(HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN));
         if(operation.hasDefined(GROUP_ID)) {
             config.setGroupID(operation.get(GROUP_ID).asString());
         }
 
-        config.setInitialWaitTimeout(operation.get(DISCOVERY_INITIAL_WAIT_TIMEOUT).asLong(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT));
         if (operation.hasDefined(LOAD_BALANCING_CLASS_NAME)) {
              config.setLoadBalancingPolicyClassName(operation.get(LOAD_BALANCING_CLASS_NAME).asString());
         }
