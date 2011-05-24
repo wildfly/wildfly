@@ -295,8 +295,9 @@ public enum Phase {
     // POST_MODULE
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0000;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0001;
-    public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0002;
-    public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0003;
+    public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0002;
+    public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0003;
+    public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0004;
     public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0100;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
