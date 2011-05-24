@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb3.tx2.spi.TransactionalComponent;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -54,6 +55,8 @@ import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
 import javax.ejb.SessionBean;
 import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -186,6 +189,18 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         this.setupViewInterceptors(viewDescription);
         // setup client side view interceptors
         this.setupClientViewInterceptors(viewDescription);
+
+        //set up interceptor for non-business methods
+        viewDescription.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                for(final Method method : configuration.getProxyFactory().getCachedMethods()) {
+                    if(!Modifier.isPublic(method.getModifiers())) {
+                        configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new NotBusinessMethodInterceptor(method)), InterceptorOrder.View.NOT_BUSINESS_METHOD);
+                    }
+                }
+            }
+        });
 
     }
 
