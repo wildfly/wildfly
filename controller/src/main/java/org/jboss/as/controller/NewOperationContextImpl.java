@@ -467,6 +467,37 @@ final class NewOperationContextImpl implements NewOperationContext {
         return model;
     }
 
+    public ModelNode readModelForUpdate(final PathAddress requestAddress) {
+        final PathAddress address = modelAddress.append(requestAddress);
+        assert Thread.currentThread() == initiatingThread;
+        Stage currentStage = this.currentStage;
+        if (currentStage == null) {
+            throw new IllegalStateException("Operation already complete");
+        }
+        if (currentStage != Stage.MODEL) {
+            throw new IllegalStateException("Stage MODEL is already complete");
+        }
+        if (flags.add(Flag.AFFECTS_MODEL)) {
+            takeWriteLock();
+            model = model.clone();
+            readOnlyModel = null;
+        }
+        ModelNode model = this.model;
+        final Iterator<PathElement> i = address.iterator();
+        while (i.hasNext()) {
+            final PathElement element = i.next();
+            if (element.isMultiTarget()) {
+                throw new IllegalArgumentException("Cannot write to *");
+            }
+            if (! i.hasNext()) {
+                model = model.require(element.getKey()).get(element.getValue());
+            } else {
+                model = model.require(element.getKey()).require(element.getValue());
+            }
+        }
+        return model;
+    }
+
     public ModelNode getModel() {
         final ModelNode readOnlyModel = this.readOnlyModel;
         if (readOnlyModel == null) {
