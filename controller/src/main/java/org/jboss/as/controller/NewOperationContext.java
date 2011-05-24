@@ -102,6 +102,13 @@ public interface NewOperationContext {
     Type getType();
 
     /**
+     * Determine whether the controller is currently performing boot tasks.
+     *
+     * @return whether the controller is currently booting
+     */
+    boolean isBooting();
+
+    /**
      * Get the service registry.  If the step is not a runtime operation handler step, an exception will be thrown.  The
      * returned registry must not be used to remove services.
      *
@@ -278,10 +285,6 @@ public interface NewOperationContext {
          * A running server instance with an active runtime container.
          */
         SERVER,
-        /**
-         * A server instance which is still in the boot stage.
-         */
-        SERVER_BOOT,
         /**
          * A server instance which is in management-only mode (no runtime container is available).
          */
