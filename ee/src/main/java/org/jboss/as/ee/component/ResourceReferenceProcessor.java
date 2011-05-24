@@ -160,8 +160,10 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 }
             }
             final String value = envEntry.getValue();
-
-            if (isEmpty(value)) {
+            final String lookup = envEntry.getLookupName();
+            if(!isEmpty(value) && !isEmpty(lookup)) {
+                throw new DeploymentUnitProcessingException("Cannot specify both a <env-entry-value> and a <lookup-name> in an environemnt entry.");
+            } else if(isEmpty(lookup) && isEmpty(value)) {
                 //if no value is provided then it is not an error
                 //this reference should simply be ignored
                 // (Java ee platform spec 6.0 fr pg 80)
@@ -178,7 +180,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             final String type = classType.getName();
             BindingConfiguration bindingConfiguration = null;
-            if (type.equals(String.class.getName())) {
+            if(!isEmpty(lookup)) {
+                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+            } else if (type.equals(String.class.getName())) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(value));
             } else if (type.equals(Integer.class.getName()) || type.equals("int")) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(Integer.valueOf(value)));
