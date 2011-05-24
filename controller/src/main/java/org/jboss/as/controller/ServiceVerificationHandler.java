@@ -68,6 +68,9 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
     public synchronized void listenerAdded(final ServiceController<?> controller) {
         set.add(controller);
+        if (! controller.getSubstate().isRestState()) {
+            outstanding++;
+        }
     }
 
     public synchronized void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
