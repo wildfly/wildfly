@@ -24,7 +24,6 @@ package org.jboss.as.testsuite.integration.osgi.xservice;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
@@ -111,6 +110,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
 
     @Test
     public void moduleInvokesBundleService() throws Exception {
+
         // Deploy the bundle which contains the target service
         Archive<?> targetArchive = deploymentProvider.getClientDeployment(TARGET_BUNDLE_NAME);
         String targetDeploymentName = archiveDeployer.deploy(targetArchive);
@@ -135,9 +135,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
                         }
                     }
                 });
-                if (startedLatch.await(2000, TimeUnit.MILLISECONDS) == false) {
-                    fail("Timeout starting: " + targetBundle);
-                }
+                startedLatch.await(2000, TimeUnit.MILLISECONDS);
             }
             OSGiTestHelper.assertBundleState(Bundle.ACTIVE, targetBundle.getState());
 

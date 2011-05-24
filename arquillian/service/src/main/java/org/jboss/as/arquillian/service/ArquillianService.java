@@ -29,7 +29,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.management.MBeanServer;
 
@@ -55,8 +57,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -64,8 +64,14 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.FutureServiceValue;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -273,31 +279,35 @@ public class ArquillianService implements Service<ArquillianService> {
             return ArquillianService.class.getClassLoader();
         }
 
-        void assertServiceState(ServiceName serviceName, State expState, long timeout) {
-            ServiceController<?> controller = serviceContainer.getService(serviceName);
-            State state = controller != null ? controller.getState() : null;
-            while ((state == null || state != expState) && timeout > 0) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    // ignore
-                }
-                controller = serviceContainer.getService(serviceName);
-                state = controller != null ? controller.getState() : null;
-                timeout -= 100;
-            }
-            if (expState != state)
-                throw new IllegalArgumentException(serviceName + " expected: " + expState + " but was " + state);
-        }
-
         @SuppressWarnings("unchecked")
         private Framework awaitActiveOSGiFramework() {
             ServiceController<Framework> controller = (ServiceController<Framework>) serviceContainer.getRequiredService(FRAMEWORK_ACTIVE);
-            if (controller.getState() != State.UP) {
-                controller.setMode(Mode.ACTIVE);
-                assertServiceState(FRAMEWORK_ACTIVE, State.UP, 10000);
+            Future<Framework> future = new FutureServiceValue<Framework>(controller);
+            Framework framework;
+            try {
+                framework = future.get(10, TimeUnit.SECONDS);
+                BundleContext context = framework.getBundleContext();
+                ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
+                StartLevel startLevel = (StartLevel) context.getService(sref);
+                if (startLevel.getStartLevel() < 5) {
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    context.addFrameworkListener(new FrameworkListener() {
+                        public void frameworkEvent(FrameworkEvent event) {
+                            if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                                latch.countDown();
+                            }
+                        }
+                    });
+                    startLevel.setStartLevel(5);
+                    if (latch.await(20, TimeUnit.SECONDS) == false)
+                        throw new TimeoutException("Timeout waiting for STARTLEVEL_CHANGED event");
+                }
+            } catch (RuntimeException rte) {
+                throw rte;
+            } catch (Exception ex) {
+                throw new IllegalStateException("Error starting framework", ex);
             }
-            return controller.getValue();
+            return framework;
         }
     }
 }

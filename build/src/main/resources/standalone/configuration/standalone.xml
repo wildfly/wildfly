@@ -272,6 +272,7 @@
                 <module identifier="org.apache.felix.metatype" startlevel="2"/>
                 <module identifier="org.apache.felix.webconsole" startlevel="2"/>
                 <module identifier="org.jboss.as.osgi.configadmin" startlevel="2"/>
+                <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
                 <module identifier="org.jboss.osgi.http" startlevel="2"/>
                 <!-- bundles started in startlevel 3 -->
                 <module identifier="org.jboss.osgi.blueprint" startlevel="3"/>
