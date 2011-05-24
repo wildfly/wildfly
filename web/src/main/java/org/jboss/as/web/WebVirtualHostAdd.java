@@ -53,6 +53,7 @@ import java.util.Locale;
  * {@code OperationHandler} responsible for adding a virtual host.
  *
  * @author Emanuel Muckenhuber
+ * @author Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider {
 
@@ -134,7 +135,7 @@ class WebVirtualHostAdd implements ModelAddOperationHandler, DescriptionProvider
     }
 
     static String[] aliases(final ModelNode node) {
-        if(node.has(Constants.ALIAS)) {
+        if(node.hasDefined(Constants.ALIAS)) {
             final ModelNode aliases = node.require(Constants.ALIAS);
             final int size = aliases.asInt();
             final String[] array = new String[size];
