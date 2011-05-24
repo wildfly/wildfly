@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -83,6 +84,38 @@ class NewModelControllerImpl implements NewModelController {
         context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
         context.completeStep();
         return response;
+    }
+
+    void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, modelReference.get(), control, bootingFlag.getAndSet(false));
+        ModelNode result = context.getResult();
+        result.setEmptyList();
+        for (ModelNode bootOp : bootList) {
+            final ModelNode response = result.add();
+            context.addStep(response, bootOp, new BootStepHandler(bootOp, response), NewOperationContext.Stage.MODEL);
+        }
+        context.completeStep();
+    }
+
+    class BootStepHandler implements NewStepHandler {
+        private final ModelNode operation;
+        private final ModelNode response;
+
+        BootStepHandler(final ModelNode operation, final ModelNode response) {
+            this.operation = operation;
+            this.response = response;
+        }
+
+        public void execute(final NewOperationContext context, final ModelNode operation) {
+            final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
+            NewStepHandler stepHandler = (NewStepHandler) rootRegistration.getOperationHandler(address, operation.require(OP).asString());
+            if (stepHandler == null) {
+                context.getFailureDescription().set("No handler for operation address " + address);
+            } else {
+                context.addStep(response, this.operation, stepHandler, NewOperationContext.Stage.MODEL);
+            }
+            context.completeStep();
+        }
     }
 
     public NewModelControllerClient createClient(final Executor executor) {
