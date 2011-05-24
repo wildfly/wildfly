@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -92,7 +92,7 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    OperationHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
+    NewStepHandler getHandler(final ListIterator<PathElement> iterator, final String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
         if (entry != null && entry.isInherited()) {
             return entry.getOperationHandler();
@@ -136,28 +136,28 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public void registerOperationHandler(final String operationName, final OperationHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
+    public void registerOperationHandler(final String operationName, final NewStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType)) != null) {
             throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationHandler readHandler, final OperationHandler writeHandler, AttributeAccess.Storage storage) {
+    public void registerReadWriteAttribute(final String attributeName, final NewStepHandler readHandler, final NewStepHandler writeHandler, AttributeAccess.Storage storage) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationHandler readHandler, AttributeAccess.Storage storage) {
+    public void registerReadOnlyAttribute(final String attributeName, final NewStepHandler readHandler, AttributeAccess.Storage storage) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationHandler metricHandler) {
+    public void registerMetric(String attributeName, NewStepHandler metricHandler) {
         if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }

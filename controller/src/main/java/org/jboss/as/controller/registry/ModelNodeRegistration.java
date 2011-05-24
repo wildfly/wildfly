@@ -25,7 +25,7 @@ package org.jboss.as.controller.registry;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.OperationHandler;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -71,7 +71,7 @@ public interface ModelNodeRegistration {
      * @param descriptionProvider the description provider for this operation
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider);
+    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider);
 
     /**
      * Register an operation handler for this model node.
@@ -82,7 +82,7 @@ public interface ModelNodeRegistration {
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
+    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
 
     /**
      * Register an operation handler for this model node.
@@ -94,7 +94,7 @@ public interface ModelNodeRegistration {
      * @param entryType the operation entry type
      * @throws IllegalArgumentException if either parameter is {@code null}
      */
-    void registerOperationHandler(String operationName, OperationHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
+    void registerOperationHandler(String operationName, NewStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
 
 
     /**
@@ -108,7 +108,7 @@ public interface ModelNodeRegistration {
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
      */
-    void registerReadWriteAttribute(String attributeName, OperationHandler readHandler, OperationHandler writeHandler, AttributeAccess.Storage storage);
+    void registerReadWriteAttribute(String attributeName, NewStepHandler readHandler, NewStepHandler writeHandler, AttributeAccess.Storage storage);
 
     /**
      * Records that the given attribute can be read from but not written to, and
@@ -120,7 +120,7 @@ public interface ModelNodeRegistration {
      *
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
      */
-    void registerReadOnlyAttribute(String attributeName, OperationHandler readHandler, AttributeAccess.Storage storage);
+    void registerReadOnlyAttribute(String attributeName, NewStepHandler readHandler, AttributeAccess.Storage storage);
 
     /**
      * Records that the given attribute is a metric.
@@ -130,7 +130,7 @@ public interface ModelNodeRegistration {
      *
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
      */
-    void registerMetric(String attributeName, OperationHandler metricHandler);
+    void registerMetric(String attributeName, NewStepHandler metricHandler);
 
     /**
      * Register a proxy controller.
@@ -154,7 +154,7 @@ public interface ModelNodeRegistration {
      * @param operationName the operation name
      * @return the operation handler
      */
-    OperationHandler getOperationHandler(PathAddress address, String operationName);
+    NewStepHandler getOperationHandler(PathAddress address, String operationName);
 
     /**
      * Get the operation description at the given address, or {@code null} if none exists.
