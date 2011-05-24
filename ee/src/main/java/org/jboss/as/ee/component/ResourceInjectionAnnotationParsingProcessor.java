@@ -34,9 +34,11 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import javax.xml.ws.WebServiceContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,10 +54,14 @@ import java.util.Set;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUnitProcessor {
+
+    private static final Logger logger = Logger.getLogger(ResourceInjectionAnnotationParsingProcessor.class);
+
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
     public static final Map<String, String> FIXED_LOCATIONS;
     public static final Set<String> SIMPLE_ENTRIES;
+    public static final Set<String> KNOWN_EXTERNAL_RESOURCE_TYPES;
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
@@ -89,6 +95,10 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         simpleEntries.add("java.lang.String");
         simpleEntries.add("java.lang.Class");
         SIMPLE_ENTRIES = Collections.unmodifiableSet(simpleEntries);
+
+        final Set<String> knownResourceTypes = new HashSet<String>();
+        knownResourceTypes.add(WebServiceContext.class.getName());
+        KNOWN_EXTERNAL_RESOURCE_TYPES = Collections.unmodifiableSet(knownResourceTypes);
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -139,7 +149,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void processFieldResource(final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) {
+    protected void processFieldResource(final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
@@ -148,7 +158,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         process(classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
     }
 
-    private void processMethodResource(final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) {
+    protected void processMethodResource(final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -163,7 +173,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         process(classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
     }
 
-    private void processClassResource(final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) {
+    protected void processClassResource(final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
         }
@@ -173,7 +183,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         process(classDescription, annotation, type, name, null, eeModuleDescription);
     }
 
-    private void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription) {
+    protected void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         final AnnotationValue lookupAnnotation = annotation.value("lookup");
         String lookup = lookupAnnotation == null ? null : lookupAnnotation.asString();
 
@@ -192,10 +202,19 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // then there will be no binding the ENC and that's what is expected by the Java EE 6 spec. Furthermore,
             // if the @Resource is a env-entry binding then the injection target will be optional since in the absence of
             // a env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
+        } else if (KNOWN_EXTERNAL_RESOURCE_TYPES.contains(injectionType)) {
+            // if it's a known (external) resource type (for example: WebServiceContext type), then we'll just skip processing
+            // that @Resource and let any external DUP handle that resource. It's the responsibility of the external DUP
+            // to process that @Resource and setup the corresponding bindings and injection configuration.
+
+            // let's just log a message informing that we are skipping this @Resource
+            logger.debug("Processing of @Resource of type: " + injectionType + " for ENC name: " + localContextName
+                    + " is being skipped and will be processed separately by a different deployment unit processor");
+            // skip and return
+            return;
         } else {
-            // TODO: This isn't right. @Resource can be used with a specific set of types (when lookup value is missing).
-            // If the type isn't known and if the lookup value is missing, then throw an error
-            valueSource = new ComponentTypeInjectionSource(injectionType);
+            throw new DeploymentUnitProcessingException("Can't handle @Resource for ENC name: " + localContextName +
+                    " since it's missing a lookup value and isn't of any known type");
         }
 
         // our injection comes from the local lookup, no matter what.
