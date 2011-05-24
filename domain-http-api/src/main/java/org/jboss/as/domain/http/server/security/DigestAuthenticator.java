@@ -99,7 +99,7 @@ public class DigestAuthenticator extends Authenticator {
         Map<String, String> challengeParameters = parseDigestChallenge(challenge);
 
         // Validate Challenge, expect one of 3 responses VALID, INVALID, STALE
-        HttpPrincipal principal = validateUser(challengeParameters);
+        HttpPrincipal principal = validateUser(httpExchange, challengeParameters);
         // INVALID - Username / Password verification failed - Nonce is irelevant.
         if (principal == null) {
             if (challengeParameters.containsKey(NONCE)) {
@@ -121,7 +121,7 @@ public class DigestAuthenticator extends Authenticator {
         return new Authenticator.Retry(UNAUTHORIZED);
     }
 
-    private HttpPrincipal validateUser(Map<String, String> challengeParameters) {
+    private HttpPrincipal validateUser(HttpExchange httpExchange, Map<String, String> challengeParameters) {
         // Step 1 - Create Callbacks
         // TODO - Should we use SASL callbacks or add our own and have our handler support both?
         /* TODO - Maybe also consider callbacks for returning some parts ready hashed e.g. HA1 - this
@@ -156,7 +156,7 @@ public class DigestAuthenticator extends Authenticator {
 
             byte[] ha1 = HexUtil.convertToHexBytes(md.digest());
 
-            md.update(GET.getBytes());
+            md.update(httpExchange.getRequestMethod().getBytes());
             md.update(COLON);
             md.update(challengeParameters.get(URI).getBytes());
 
