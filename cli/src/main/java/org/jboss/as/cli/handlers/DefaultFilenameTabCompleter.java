@@ -69,4 +69,9 @@ public class DefaultFilenameTabCompleter extends FilenameTabCompleter {
        }
        return result + correction;
    }
+
+   @Override
+   protected boolean startsWithRoot(String path) {
+       return path.startsWith(File.separator);
+   }
 }

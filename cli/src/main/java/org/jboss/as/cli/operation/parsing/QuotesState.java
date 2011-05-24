@@ -31,11 +31,17 @@ public class QuotesState extends DefaultParsingState {
     public static final QuotesState QUOTES_INCLUDED = new QuotesState(true);
 
     public QuotesState(boolean quotesInContent) {
+        this(quotesInContent, true);
+    }
+
+    public QuotesState(boolean quotesInContent, boolean escapeEnabled) {
         super("QUOTES", quotesInContent);
 
         this.setEndContentHandler(new ErrorCharacterHandler("The closing '\"' is missing."));
         this.putHandler('"', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        this.enterState('\\', EscapeCharacterState.INSTANCE);
+        if(escapeEnabled) {
+            this.enterState('\\', EscapeCharacterState.INSTANCE);
+        }
         this.setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }
 

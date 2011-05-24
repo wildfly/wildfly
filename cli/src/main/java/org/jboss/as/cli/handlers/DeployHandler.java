@@ -229,6 +229,10 @@ public class DeployHandler extends BatchModeCommandHandler {
                 ctx.printLine("Path " + f.getAbsolutePath() + " doesn't exist.");
                 return;
             }
+            if(f.isDirectory()) {
+                ctx.printLine(f.getAbsolutePath() + " is a directory.");
+                return;
+            }
         } else {
             f = null;
         }

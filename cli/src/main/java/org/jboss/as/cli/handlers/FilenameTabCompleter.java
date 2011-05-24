@@ -32,6 +32,8 @@ import org.jboss.as.cli.CommandLineCompleter;
  */
 public abstract class FilenameTabCompleter implements CommandLineCompleter {
 
+    protected abstract boolean startsWithRoot(String path);
+
     protected int getCandidates(String buffer, List<String> candidates) {
 
         final String translated;
@@ -41,9 +43,8 @@ public abstract class FilenameTabCompleter implements CommandLineCompleter {
         } else if (buffer.startsWith("~")) {
             translated = new File(System.getProperty("user.home"))
                     .getParentFile().getAbsolutePath();
-        } else if (!(buffer.startsWith(File.separator))) {
-            translated = new File("").getAbsolutePath() + File.separator
-                    + buffer;
+        } else if (!startsWithRoot(buffer)) {
+            translated = new File("").getAbsolutePath() + File.separator + buffer;
         } else {
             translated = buffer;
         }
