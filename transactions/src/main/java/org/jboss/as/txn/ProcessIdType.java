@@ -6,7 +6,7 @@ package org.jboss.as.txn;
  * @version $Revision:$
  */
 public enum ProcessIdType {
-    UUID("uuid", "org.jboss.as.txn.UuidProcessId"),
+    UUID("uuid", "com.arjuna.ats.internal.arjuna.utils.UuidProcessId"),
     FILE("file", "com.arjuna.ats.internal.arjuna.utils.FileProcessId"),
     MBEAN("mbean", "com.arjuna.ats.internal.arjuna.utils.MBeanProcessId"),
     SOCKET("socket", "com.arjuna.ats.internal.arjuna.utils.SocketProcessId")

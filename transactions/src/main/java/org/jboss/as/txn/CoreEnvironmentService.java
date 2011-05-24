@@ -21,6 +21,7 @@ package org.jboss.as.txn;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.utils.Process;
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
