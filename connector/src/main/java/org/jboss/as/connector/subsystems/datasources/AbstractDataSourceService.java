@@ -93,8 +93,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     private javax.sql.DataSource sqlDataSource;
 
-    protected AS7DataSourceDeployer deployer;
-
     protected AbstractDataSourceService(final String jndiName) {
         this.jndiName = jndiName;
     }
@@ -103,7 +101,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         try {
             final ServiceContainer container = startContext.getController().getServiceContainer();
 
-            CommonDeployment deploymentMD = deployer.deploy(container);
+            CommonDeployment deploymentMD = getDeployer().deploy(container);
             if (deploymentMD.getCfs().length != 1) {
                 throw new StartException("unable to start the ds because it generate more than one cf");
             }
@@ -113,6 +111,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             throw new StartException("Error during the deployment of " + jndiName, t);
         }
     }
+
+    protected abstract AS7DataSourceDeployer getDeployer();
 
     public synchronized void stop(StopContext stopContext) {
 

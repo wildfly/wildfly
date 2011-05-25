@@ -22,30 +22,37 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * XA data-source service implementation.
- * @author John Bailey
- * @author Stefano Maestri
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
+ *         Maestri</a>
  */
-public class XaDataSourceService extends AbstractDataSourceService {
+public class DataSourceConfigService implements Service<DataSource> {
 
-    private final InjectedValue<XaDataSource> dataSourceConfig = new InjectedValue<XaDataSource>();
+    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
 
-    public XaDataSourceService(final String jndiName) {
-        super(jndiName);
+    private DataSource dataSourceConfig;
+
+    public DataSourceConfigService(DataSource dataSourceConfig) {
+        super();
+        this.dataSourceConfig = dataSourceConfig;
     }
 
-    public AS7DataSourceDeployer getDeployer() {
-        // this.dataSourceConfig = dataSourceConfig;
-        return new AS7DataSourceDeployer(log, dataSourceConfig.getValue());
-
+    public synchronized void start(StartContext startContext) throws StartException {
     }
 
-    public Injector<XaDataSource> getDataSourceConfigInjector() {
+    public synchronized void stop(StopContext stopContext) {
+    }
+
+    @Override
+    public DataSource getValue() throws IllegalStateException, IllegalArgumentException {
         return dataSourceConfig;
     }
+
 }

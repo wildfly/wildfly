@@ -23,20 +23,29 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.jca.common.api.metadata.ds.DataSource;
-import org.jboss.jca.common.api.metadata.ds.Driver;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Local data-source service implementation.
  * @author John Bailey
+ * @author Stefano Maestri
  */
 public class LocalDataSourceService extends AbstractDataSourceService {
 
-    private final DataSource dataSourceConfig;
+    private final InjectedValue<DataSource> dataSourceConfig = new InjectedValue<DataSource>();
 
-    public LocalDataSourceService(final String jndiName, final DataSource dataSourceConfig) {
+    public LocalDataSourceService(final String jndiName) {
         super(jndiName);
-        this.dataSourceConfig = dataSourceConfig;
-        deployer = new AS7DataSourceDeployer(log, dataSourceConfig);
+    }
 
+    public AS7DataSourceDeployer getDeployer() {
+        // this.dataSourceConfig = dataSourceConfig;
+        return new AS7DataSourceDeployer(log, dataSourceConfig.getValue());
+
+    }
+
+    public Injector<DataSource> getDataSourceConfigInjector() {
+        return dataSourceConfig;
     }
 }

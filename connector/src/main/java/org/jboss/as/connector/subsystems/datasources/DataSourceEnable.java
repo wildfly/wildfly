@@ -26,7 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
+import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
+import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
 import org.jboss.as.controller.OperationContext;
@@ -38,10 +39,15 @@ import org.jboss.as.controller.RuntimeTask;
 import org.jboss.as.controller.RuntimeTaskContext;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -50,7 +56,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  * @author John Bailey
  */
 public class DataSourceEnable implements ModelUpdateOperationHandler {
-    static final DataSourceEnable INSTANCE = new DataSourceEnable();
+    static final DataSourceEnable LOCAL_INSTANCE = new DataSourceEnable(false);
+    static final DataSourceEnable XA_INSTANCE = new DataSourceEnable(true);
+
+    private final boolean xa;
+
+    public DataSourceEnable(boolean xa) {
+        super();
+        this.xa = xa;
+    }
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
@@ -64,12 +78,33 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
         final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         // update the model
-        context.getSubModel().get(ENABLED).set(true);
+        final ModelNode dataSourceNode = context.getSubModel();
+        dataSourceNode.get(ENABLED).set(true);
 
         if (context.getRuntimeContext() != null) {
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 public void execute(final RuntimeTaskContext context) throws OperationFailedException {
                     final ServiceRegistry registry = context.getServiceRegistry();
+
+                    if (isXa()) {
+                        final ServiceName dataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
+                                .append(jndiName);
+                        final ServiceController<?> dataSourceConfigController = registry
+                                .getService(dataSourceConfigServiceName);
+                        if (dataSourceConfigController != null) {
+                            ((XaDataSource) dataSourceConfigController.getValue()).setEnabled(true);
+
+                        }
+                    } else {
+                        final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE
+                                .append(jndiName);
+                        final ServiceController<?> dataSourceConfigController = registry
+                                .getService(dataSourceConfigServiceName);
+                        if (dataSourceConfigController != null) {
+                            ((DataSource) dataSourceConfigController.getValue()).setEnabled(true);
+
+                        }
+                    }
 
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
@@ -104,5 +139,13 @@ public class DataSourceEnable implements ModelUpdateOperationHandler {
             resultHandler.handleResultComplete();
         }
         return new BasicOperationResult(compensatingOperation);
+    }
+
+    public static DataSourceEnable getLocalInstance() {
+        return LOCAL_INSTANCE;
+    }
+
+    public boolean isXa() {
+        return xa;
     }
 }

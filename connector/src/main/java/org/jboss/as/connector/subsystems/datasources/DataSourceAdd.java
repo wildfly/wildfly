@@ -30,6 +30,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Operation handler responsible for adding a DataSource.
@@ -42,16 +46,31 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
         populateAddModel(operation, model, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);
     }
 
-    protected AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation)
+    protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {
+
+        LocalDataSourceService service = new LocalDataSourceService(jndiName);
+        return service;
+    }
+
+    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException {
-        final DataSource dataSource;
+        final DataSource dataSourceConfig;
         try {
-            dataSource = from(operation);
+            dataSourceConfig = from(operation);
         } catch (ValidateException e) {
             e.printStackTrace();
             throw new OperationFailedException(e, new ModelNode().set("Failed to create DataSource instance for [" + operation
                     + "]\n reason:" + e.getLocalizedMessage()));
         }
-        return new LocalDataSourceService(jndiName, dataSource);
+        final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
+        final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
+
+        serviceTarget.addService(dataSourceCongServiceName, configService).setInitialMode(Mode.ACTIVE).install();
+
+        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, DataSource.class,
+                ((LocalDataSourceService) dataSourceService).getDataSourceConfigInjector());
+
     }
+
 }

@@ -204,7 +204,7 @@ public class DataSourcesExtension implements Extension {
                 DATA_SOURCE_DESC);
         dataSources.registerOperationHandler(ADD, DataSourceAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
+        dataSources.registerOperationHandler(ENABLE, DataSourceEnable.LOCAL_INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
         dataSources.registerOperationHandler("flush-idle-connection-in-pool",
                 PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
@@ -232,7 +232,7 @@ public class DataSourcesExtension implements Extension {
                 XA_DATA_SOURCE_DESC);
         xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler(REMOVE, XaDataSourceRemove.INSTANCE, REMOVE_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
+        xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.XA_INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
         xaDataSources.registerOperationHandler("flush-idle-connection-in-pool",
                 PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);

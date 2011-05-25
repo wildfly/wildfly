@@ -44,7 +44,6 @@ import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Abstract operation handler responsible for removing a DataSource.
- *
  * @author John Bailey
  */
 public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHandler {
@@ -52,7 +51,8 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
+            throws OperationFailedException {
         final ModelNode opAddr = operation.require(OP_ADDR);
         final String jndiName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
@@ -83,10 +83,25 @@ public abstract class AbstractDataSourceRemove implements ModelRemoveOperationHa
                         binderController.setMode(ServiceController.Mode.REMOVE);
                     }
 
-                    final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
+                            .append(jndiName);
                     final ServiceController<?> referenceFactoryController = registry.getService(referenceFactoryServiceName);
                     if (referenceFactoryController != null) {
                         referenceFactoryController.setMode(ServiceController.Mode.REMOVE);
+                    }
+
+                    final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceController<?> dataSourceConfigController = registry.getService(dataSourceConfigServiceName);
+                    if (dataSourceConfigController != null) {
+                        dataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
+                    }
+
+                    final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
+                            .append(jndiName);
+                    final ServiceController<?> xaDataSourceConfigController = registry
+                            .getService(xaDataSourceConfigServiceName);
+                    if (xaDataSourceConfigController != null) {
+                        xaDataSourceConfigController.setMode(ServiceController.Mode.REMOVE);
                     }
 
                     final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);

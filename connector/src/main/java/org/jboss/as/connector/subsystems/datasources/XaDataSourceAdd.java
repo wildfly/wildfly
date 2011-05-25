@@ -29,10 +29,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Operation handler responsible for adding a XA data-source.
  * @author John Bailey
+ * @author Stefano Maestri
  */
 public class XaDataSourceAdd extends AbstractDataSourceAdd {
     static final XaDataSourceAdd INSTANCE = new XaDataSourceAdd();
@@ -41,15 +46,29 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         populateAddModel(operation, model, XADATASOURCEPROPERTIES, XA_DATASOURCE_ATTRIBUTE);
     }
 
-    protected AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation)
+    protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {
+
+        XaDataSourceService service = new XaDataSourceService(jndiName);
+        return service;
+    }
+
+    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException {
-        final XaDataSource dataSource;
+        final XaDataSource dataSourceConfig;
         try {
-            dataSource = xaFrom(operation);
+            dataSourceConfig = xaFrom(operation);
         } catch (ValidateException e) {
             throw new OperationFailedException(e, new ModelNode().set("Failed to create XaDataSource instance for ["
                     + operation + "]\n reason:" + e.getLocalizedMessage()));
         }
-        return new XaDataSourceService(jndiName, dataSource);
+        final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
+        final XADataSourceConfigService configService = new XADataSourceConfigService(dataSourceConfig);
+
+        serviceTarget.addService(dataSourceCongServiceName, configService).setInitialMode(Mode.ACTIVE).install();
+
+        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, XaDataSource.class,
+                ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
+
     }
 }
