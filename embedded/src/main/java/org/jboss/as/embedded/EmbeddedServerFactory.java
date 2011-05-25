@@ -74,7 +74,7 @@ public class EmbeddedServerFactory {
             final StandaloneServer standaloneServer = (StandaloneServer) createMethod.invoke(null, jbossHomeDir, moduleLoader, systemProps, systemEnv);
             return standaloneServer;
         } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage() + " in " + moduleLoader, e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {

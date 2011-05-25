@@ -31,9 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.modules.ClassPathModuleLoader;
 import org.jboss.modules.DependencySpec;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.ResourceLoaderSpec;
@@ -178,9 +176,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                             .moduleSpecServiceName(dependency.getIdentifier()));
                 }
             }
-        // why the hack not? :-)
-        if (Module.getBootModuleLoader() instanceof ClassPathModuleLoader)
-            specBuilder.addDependency(DependencySpec.createModuleDependencySpec(ClassPathModuleLoader.IDENTIFIER));
         if (!childFirst) {
             specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         }
