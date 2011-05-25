@@ -59,6 +59,9 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             for (ServiceController<?> controller : problem) {
                 problemList.add(controller.getName().getCanonicalName());
             }
+            if (NewModelControllerImpl.RB_ON_RT_FAILURE.get() == Boolean.TRUE) {
+                context.setRollbackOnly();
+            }
         }
         for (ServiceController<?> controller : set) {
             controller.removeListener(this);

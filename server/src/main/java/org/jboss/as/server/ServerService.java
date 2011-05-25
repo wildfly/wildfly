@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -32,15 +33,20 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.ServiceLoaderProcessor;
 import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser;
@@ -58,29 +64,58 @@ import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
+import org.jboss.as.server.moduleservice.ExtensionIndexService;
+import org.jboss.as.server.moduleservice.ExternalModuleService;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServerService extends AbstractControllerService {
 
+    private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
+    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
+    private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
+
+    private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
+    private final Bootstrap.Configuration configuration;
+
     /**
      * Construct a new instance.
      *
-     * @param configurationPersister the configuration persister for this server
+     * @param configuration the bootstrap configuration
+     * @param prepareStep the prepare step to use
      */
-    ServerService(final ConfigurationPersister configurationPersister, final NewStepHandler prepareStep) {
-        super(NewOperationContext.Type.SERVER, configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
+    ServerService(final Bootstrap.Configuration configuration, final NewStepHandler prepareStep) {
+        super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
+        this.configuration = configuration;
     }
 
+    /**
+     * Add this service to the given service target.
+     *
+     * @param serviceTarget the service target
+     * @param configuration the bootstrap configuration
+     */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        ServerService service = new ServerService(null, null /* todo configuration and prepare step */);
+        ServerService service = new ServerService(configuration, new NewStepHandler() {
+            public void execute(final NewOperationContext context, final ModelNode operation) {
+            }
+        });
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
+        serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
+        serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
+        serviceBuilder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
+        serviceBuilder.addDependency(Services.JBOSS_EXTERNAL_MODULE_SERVICE, ExternalModuleService.class,
+                service.injectedExternalModuleService);
         serviceBuilder.install();
     }
 
@@ -99,6 +134,29 @@ public final class ServerService extends AbstractControllerService {
                 deployers.get(phase).add(new RegisteredProcessor(priority, processor));
             }
         });
+        final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+        final ServiceTarget serviceTarget = context.getChildTarget();
+
+        final File[] extDirs = serverEnvironment.getJavaExtDirs();
+        final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
+        newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
+        serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX,
+                new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+        // Activate module loader
+        deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_SERVICE_MODULE_LOADER, new DeploymentUnitProcessor() {
+            @Override
+            public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+                phaseContext.getDeploymentUnit().putAttachment(Attachments.SERVICE_MODULE_LOADER, injectedModuleLoader.getValue());
+                phaseContext.getDeploymentUnit().putAttachment(Attachments.EXTERNAL_MODULE_SERVICE, injectedExternalModuleService.getValue());
+            }
+
+            @Override
+            public void undeploy(DeploymentUnit context) {
+                context.removeAttachment(Attachments.SERVICE_MODULE_LOADER);
+            }
+        }));
+
         // Activate core processors for jar deployment
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor()));
         deployers.get(Phase.STRUCTURE).add(new RegisteredProcessor(Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor()));
@@ -120,6 +178,7 @@ public final class ServerService extends AbstractControllerService {
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
+        deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
 
         try {
@@ -138,7 +197,7 @@ public final class ServerService extends AbstractControllerService {
             }
             finalDeployers.put(phase, Arrays.asList(processorList.toArray(new DeploymentUnitProcessor[processorList.size()])));
         }
-        DeployerChainsService.addService(context.getChildTarget(), finalDeployers);
+        DeployerChainsService.addService(serviceTarget, finalDeployers);
     }
 
     public void stop(final StopContext context) {
