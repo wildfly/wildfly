@@ -170,7 +170,7 @@ public class TransactionExtension implements Extension {
                         store.get(PATH).set(value);
                         break;
                     default:
-                        unexpectedAttribute(reader, i);
+                        throw unexpectedAttribute(reader, i);
                 }
             }
             // Handle elements
@@ -193,7 +193,7 @@ public class TransactionExtension implements Extension {
                         coordinator.get(DEFAULT_TIMEOUT).set(value);
                         break;
                     default:
-                        unexpectedAttribute(reader, i);
+                        throw unexpectedAttribute(reader, i);
                 }
             }
             // Handle elements
@@ -220,7 +220,7 @@ public class TransactionExtension implements Extension {
                         env.get(NODE_IDENTIFIER).set(value);
                         break;
                     default:
-                        unexpectedAttribute(reader, i);
+                        throw unexpectedAttribute(reader, i);
                 }
             }
             // elements
@@ -228,6 +228,7 @@ public class TransactionExtension implements Extension {
             final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 final Element element = Element.forName(reader.getLocalName());
+                required.remove(element);
                 switch (element) {
                   case PROCESS_ID : {
                       if (!encountered.add(element)) {
@@ -240,10 +241,10 @@ public class TransactionExtension implements Extension {
                   }
                   default:
                      throw unexpectedElement(reader);
-               }
+                }
             }
             if (! required.isEmpty()) {
-                missingRequired(reader, required);
+                throw missingRequired(reader, required);
             }
             return env;
         }
@@ -304,11 +305,11 @@ public class TransactionExtension implements Extension {
                         socketId.get(SOCKET_PROCESS_ID_MAX_PORTS).set(value);
                         break;
                     default:
-                        unexpectedAttribute(reader, i);
+                        throw unexpectedAttribute(reader, i);
                 }
             }
             if (! required.isEmpty()) {
-                missingRequired(reader, required);
+                throw missingRequired(reader, required);
             }
             // Handle elements
             requireNoContent(reader);
@@ -334,7 +335,7 @@ public class TransactionExtension implements Extension {
                 }
             }
             if(! env.has(BINDING)) {
-                missingRequired(reader, Collections.singleton(Attribute.BINDING));
+                throw missingRequired(reader, Collections.singleton(Attribute.BINDING));
             }
             // Handle elements
             requireNoContent(reader);
