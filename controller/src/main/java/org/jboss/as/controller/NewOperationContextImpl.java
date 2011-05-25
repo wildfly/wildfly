@@ -90,7 +90,7 @@ final class NewOperationContextImpl implements NewOperationContext {
      */
     private ModelNode model;
     private ModelNode readOnlyModel;
-    private ResultAction resultAction = ResultAction.ROLLBACK;
+    private ResultAction resultAction;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
@@ -234,6 +234,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                     ModelNode newOperation = operation = step.operation;
                     modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
                     step.handler.execute(this, newOperation);
+                    assert resultAction != null;
                     return resultAction;
                 } catch (Throwable t) {
                     // If this block is entered, then the next step failed
@@ -248,8 +249,9 @@ final class NewOperationContextImpl implements NewOperationContext {
                         // this result action will be overwritten in finally, but whatever
                         return resultAction = ResultAction.ROLLBACK;
                     } else {
-                        if (resultAction == ResultAction.ROLLBACK) {
+                        if (resultAction != ResultAction.KEEP) {
                             response.get(ROLLED_BACK).set(true);
+                            resultAction = ResultAction.ROLLBACK;
                         }
                         response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
                         // It failed after!  Just return, ignore the failure
@@ -292,6 +294,9 @@ final class NewOperationContextImpl implements NewOperationContext {
                 // -- not reached --
             }
         } while (currentStage != Stage.DONE);
+        if (resultAction == ResultAction.ROLLBACK) {
+            return ResultAction.ROLLBACK;
+        }
         currentStage = null;
         // No more steps, verified operation is a success!
         if (isModelAffected()) try {
@@ -323,6 +328,14 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     public boolean isBooting() {
         return booting;
+    }
+
+    public boolean isRollbackOnly() {
+        return resultAction == ResultAction.ROLLBACK;
+    }
+
+    public void setRollbackOnly() {
+        resultAction = ResultAction.ROLLBACK;
     }
 
     public ModelNodeRegistration getModelNodeRegistration() {
