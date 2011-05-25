@@ -74,33 +74,11 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
      *
      * @param ejbComponentCreateService the component configuration
      */
-    protected SessionBeanComponent(final EJBComponentCreateService ejbComponentCreateService) {
+    protected SessionBeanComponent(final SessionBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
         viewServices = ejbComponentCreateService.getViewServices();
 
-        ComponentConfiguration configuration = ejbComponentCreateService.getComponentConfiguration();
-        SessionBeanComponentDescription description = (SessionBeanComponentDescription) configuration.getComponentDescription();
-        AccessTimeout accessTimeout = description.getBeanLevelAccessTimeout();
-        // TODO: the configuration should always have an access timeout
-        if (accessTimeout == null) {
-            accessTimeout = new AccessTimeout() {
-                @Override
-                public long value() {
-                    return 5;
-                }
-
-                @Override
-                public TimeUnit unit() {
-                    return MINUTES;
-                }
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return AccessTimeout.class;
-                }
-            };
-        }
-        this.beanLevelAccessTimeout = accessTimeout;
+        this.beanLevelAccessTimeout = ejbComponentCreateService.getBeanAccessTimeout();
         this.asynchronousMethods = null; //ejbComponentCreateService.getAsynchronousMethods();
 //        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
     }

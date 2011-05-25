@@ -23,8 +23,8 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -47,6 +47,16 @@ public class EJBMethodDescription {
         this.methodName = methodInfo.name();
         this.viewType = MethodIntf.BEAN;
         String[] params = this.toString(methodInfo.args());
+        this.methodParamTypes = params == null ? new String[0] : params;
+    }
+
+    public EJBMethodDescription(Method method) {
+        if (method == null) {
+            throw new IllegalArgumentException("Method cannot be null");
+        }
+        this.methodName = method.getName();
+        this.viewType = MethodIntf.BEAN;
+        String[] params = this.toString(method.getParameterTypes());
         this.methodParamTypes = params == null ? new String[0] : params;
     }
 
@@ -112,7 +122,7 @@ public class EJBMethodDescription {
         return result;
     }
 
-    private String[] toString(Type[] types) {
+    private String[] toString(Object[] types) {
         if (types == null) {
             return null;
         }

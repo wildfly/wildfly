@@ -211,7 +211,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         // bean level lock-type
         LockType lockType = singletonBeanMetaData.getLockType();
         singletonComponentDescription.setBeanLevelLockType(lockType);
-// add method level lock type to the description
+        // add method level lock type to the description
         ConcurrentMethodsMetaData concurrentMethods = singletonBeanMetaData.getConcurrentMethods();
         if (concurrentMethods != null) {
             for (ConcurrentMethodMetaData concurrentMethod : concurrentMethods) {

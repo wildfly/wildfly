@@ -72,9 +72,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         super(singletonComponentCreateService);
         this.initOnStartup = singletonComponentCreateService.isInitOnStartup();
 
-        this.beanLevelLockType = null; //ejbComponentCreateService.getBeanLevelLockType();
-        this.methodLockTypes = null; //ejbComponentCreateService.getMethodApplicableLockTypes();
-        this.methodAccessTimeouts = null; //ejbComponentCreateService.getMethodApplicableAccessTimeouts();
+        this.beanLevelLockType = singletonComponentCreateService.getBeanLockType();
+        this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
+        this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
     }
 
     @Override
@@ -85,29 +85,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.singletonComponentInstance = new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
         return this.singletonComponentInstance;
     }
-
-//    @Override
-//    public Interceptor createClientInterceptor(Class<?> view) {
-//        return new Interceptor() {
-//            @Override
-//            public Object processInvocation(InterceptorContext context) throws Exception {
-//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-//                // runs on remote clients.
-//                context.putPrivateData(Component.class, SingletonComponent.this);
-//
-//                final Method method = context.getMethod();
-//                if(isAsynchronous(method)) {
-//                    return invokeAsynchronous(method, context);
-//                }
-//                return context.proceed();
-//            }
-//        };
-//    }
-//
-//    @Override
-//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-//        return createClientInterceptor(view);
-//    }
 
     synchronized ComponentInstance getComponentInstance() {
         if (this.singletonComponentInstance == null) {
@@ -135,8 +112,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public LockType getLockType(Method method) {
-        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), method.getParameterTypes());
-        LockType lockType = this.methodLockTypes.get(beanMethod);
+        final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
+        final LockType lockType = this.methodLockTypes.get(ejbMethod);
         if (lockType != null) {
             return lockType;
         }
@@ -150,8 +127,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public AccessTimeout getAccessTimeout(Method method) {
-        EJBBusinessMethod beanMethod = new EJBBusinessMethod(method.getName(), method.getParameterTypes());
-        AccessTimeout accessTimeout = this.methodAccessTimeouts.get(beanMethod);
+        final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
+        final AccessTimeout accessTimeout = this.methodAccessTimeouts.get(ejbMethod);
         if (accessTimeout != null) {
             return accessTimeout;
         }

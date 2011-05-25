@@ -32,8 +32,6 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
-import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -59,6 +57,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -260,13 +259,17 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Sets the {@link LockType} for the specific bean method represented by the <code>methodName</code> and <code>methodParamTypes</code>
+     * Sets the {@link LockType} for the specific bean method
      *
      * @param lockType The applicable lock type for the method
      * @param method   The method
      */
     public void setLockType(LockType lockType, EJBMethodDescription method) {
         this.methodLockTypes.put(method, lockType);
+    }
+
+    public Map<EJBMethodDescription, LockType> getMethodApplicableLockTypes() {
+        return Collections.unmodifiableMap(this.methodLockTypes);
     }
 
     /**
@@ -292,13 +295,17 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     * Sets the {@link AccessTimeout} for the specific bean method represented by the <code>methodName</code> and <code>methodParamTypes</code>
+     * Sets the {@link AccessTimeout} for the specific bean method
      *
      * @param accessTimeout The applicable access timeout for the method
      * @param method        The method
      */
     public void setAccessTimeout(AccessTimeout accessTimeout, EJBMethodDescription method) {
         this.methodAccessTimeouts.put(method, accessTimeout);
+    }
+
+    public Map<EJBMethodDescription, AccessTimeout> getMethodApplicableAccessTimeouts() {
+        return Collections.unmodifiableMap(this.methodAccessTimeouts);
     }
 
     /**
@@ -407,55 +414,42 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 //        this.prepareAccessTimeoutConfiguration(sessionBeanComponentConfiguration, phaseContext);
 //    }
 
-    private void prepareAccessTimeoutConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
-        Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts = new HashMap<EJBBusinessMethod, AccessTimeout>();
-        for (Map.Entry<EJBMethodDescription, AccessTimeout> entry : this.methodAccessTimeouts.entrySet()) {
-            EJBMethodDescription method = entry.getKey();
-            try {
-                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
-                methodApplicableAccessTimeouts.put(ejbMethod, entry.getValue());
-            } catch (ClassNotFoundException cnfe) {
-                throw new DeploymentUnitProcessingException("Could not process @AccessTimeout configurations due to exception: ", cnfe);
-            }
+//    private void prepareAccessTimeoutConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+//        ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
+//        Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts = new HashMap<EJBBusinessMethod, AccessTimeout>();
+//        for (Map.Entry<EJBMethodDescription, AccessTimeout> entry : this.methodAccessTimeouts.entrySet()) {
+//            EJBMethodDescription method = entry.getKey();
+//            try {
+//                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
+//                methodApplicableAccessTimeouts.put(ejbMethod, entry.getValue());
+//            } catch (ClassNotFoundException cnfe) {
+//                throw new DeploymentUnitProcessingException("Could not process @AccessTimeout configurations due to exception: ", cnfe);
+//            }
+//
+//        }
+//        // add it to the SessionBeanConfiguration
+//        sessionBeanComponentConfiguration.setMethodApplicableAccessTimeout(methodApplicableAccessTimeouts);
+//
+//    }
 
-        }
-        // add it to the SessionBeanConfiguration
-        sessionBeanComponentConfiguration.setMethodApplicableAccessTimeout(methodApplicableAccessTimeouts);
-
-    }
-
-    private void prepareLockConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
-        Map<EJBBusinessMethod, LockType> methodApplicableLockTypes = new HashMap<EJBBusinessMethod, LockType>();
-        for (Map.Entry<EJBMethodDescription, LockType> entry : this.methodLockTypes.entrySet()) {
-            EJBMethodDescription method = entry.getKey();
-            try {
-                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
-                methodApplicableLockTypes.put(ejbMethod, entry.getValue());
-
-            } catch (ClassNotFoundException cnfe) {
-                throw new DeploymentUnitProcessingException("Could not process LockType configurations due to exception: ", cnfe);
-            }
-        }
-        // add the locktype to the session bean configuration
-        sessionBeanComponentConfiguration.setMethodApplicableLockType(methodApplicableLockTypes);
-
-    }
-
-    private EJBBusinessMethod getEJBBusinessMethod(EJBMethodDescription method, ClassLoader classLoader) throws ClassNotFoundException {
-        String methodName = method.getMethodName();
-        String[] types = method.getMethodParams();
-        if (types == null || types.length == 0) {
-            return new EJBBusinessMethod(methodName);
-        }
-        Class<?>[] paramTypes = new Class<?>[types.length];
-        int i = 0;
-        for (String type : types) {
-            paramTypes[i++] = PrimitiveClassLoaderUtil.loadClass(type, classLoader);
-        }
-        return new EJBBusinessMethod(methodName, paramTypes);
-    }
+//    private void prepareLockConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+//        ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
+//        Map<EJBBusinessMethod, LockType> methodApplicableLockTypes = new HashMap<EJBBusinessMethod, LockType>();
+//        for (Map.Entry<EJBMethodDescription, LockType> entry : this.methodLockTypes.entrySet()) {
+//            EJBMethodDescription method = entry.getKey();
+//            try {
+//                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
+//                methodApplicableLockTypes.put(ejbMethod, entry.getValue());
+//
+//            } catch (ClassNotFoundException cnfe) {
+//                throw new DeploymentUnitProcessingException("Could not process LockType configurations due to exception: ", cnfe);
+//            }
+//        }
+//        // add the locktype to the session bean configuration
+//        sessionBeanComponentConfiguration.setMethodApplicableLockType(methodApplicableLockTypes);
+//
+//    }
+//
 
     @Override
     protected void setupViewInterceptors(ViewDescription view) {
@@ -503,7 +497,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                if(SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
+                if (SessionBean.class.isAssignableFrom(configuration.getComponentClass())) {
 
                     configuration.addPostConstructInterceptor(SessionBeanSessionContextInjectionInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.RESOURCE_INJECTION_INTERCEPTORS);
                 }

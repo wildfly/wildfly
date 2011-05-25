@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -38,6 +39,10 @@ public class EJBBusinessMethod implements Serializable {
 
     private int hashCode;
 
+
+    public EJBBusinessMethod(Method method) {
+        this(method.getName(), method.getParameterTypes());
+    }
 
     public EJBBusinessMethod(String methodName, Class<?>... methodParamTypes) {
         this(MethodIntf.BEAN, methodName, methodParamTypes);

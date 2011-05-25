@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -32,6 +34,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -39,6 +42,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
 
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 
@@ -64,6 +68,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     public SingletonComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                          final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
+        // add container managed concurrency interceptor to the component
+        this.addConcurrencyManagementInterceptor();
     }
 
     @Override
@@ -116,9 +122,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
 
                 //add equals/hashCode interceptor
-                for(Method method : configuration.getProxyFactory().getCachedMethods()) {
-                    if((method.getName().equals("hashCode") && method.getParameterTypes().length==0) ||
-                            method.getName().equals("equals") && method.getParameterTypes().length ==1 &&
+                for (Method method : configuration.getProxyFactory().getCachedMethods()) {
+                    if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
+                            method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
                                     method.getParameterTypes()[0] == Object.class) {
                         configuration.addViewInterceptor(ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
                     }
@@ -152,4 +158,19 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         }
 
     }
+
+    private void addConcurrencyManagementInterceptor() {
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                final SingletonComponentDescription singletonComponentDescription = (SingletonComponentDescription) description;
+                // we don't care about BEAN managed concurrency, so just return
+                if (singletonComponentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
+                    return;
+                }
+                configuration.addComponentInterceptor(new ContainerManagedConcurrencyInterceptorFactory(), InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, true);
+            }
+        });
+    }
+
 }

@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.pool.Pool;
 import org.jboss.ejb3.pool.StatelessObjectFactory;
@@ -55,7 +56,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
      *
      * @param ejbComponentCreateService
      */
-    public StatelessSessionComponent(final EJBComponentCreateService ejbComponentCreateService) {
+    public StatelessSessionComponent(final SessionBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<StatelessSessionComponentInstance> factory = new StatelessObjectFactory<StatelessSessionComponentInstance>() {

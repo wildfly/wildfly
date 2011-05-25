@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
@@ -61,7 +62,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
      *
      * @param ejbComponentCreateService the component configuration
      */
-    protected StatefulSessionComponent(final EJBComponentCreateService ejbComponentCreateService) {
+    protected StatefulSessionComponent(final SessionBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
 
 

@@ -25,12 +25,13 @@ package org.jboss.as.ejb3.component.stateless;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 
 /**
  * @author Stuart Douglas
  */
-public class StatelessSessionComponentCreateService extends EJBComponentCreateService {
+public class StatelessSessionComponentCreateService extends SessionBeanComponentCreateService {
 
     /**
      * Construct a new instance.
