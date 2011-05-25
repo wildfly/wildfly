@@ -186,6 +186,11 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     protected void process(final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         final AnnotationValue lookupAnnotation = annotation.value("lookup");
         String lookup = lookupAnnotation == null ? null : lookupAnnotation.asString();
+        // if "lookup" hasn't been specified then fallback on "mappedName" which we treat the same as "lookup"
+        if (isEmpty(lookup)) {
+            final AnnotationValue mappedNameAnnotationValue = annotation.value("mappedName");
+            lookup = mappedNameAnnotationValue == null ? null : mappedNameAnnotationValue.asString();
+        }
 
         if (isEmpty(lookup) && FIXED_LOCATIONS.containsKey(injectionType)) {
             lookup = FIXED_LOCATIONS.get(injectionType);
@@ -214,7 +219,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             return;
         } else {
             throw new DeploymentUnitProcessingException("Can't handle @Resource for ENC name: " + localContextName +
-                    " since it's missing a lookup value and isn't of any known type");
+                    " since it's missing a \"lookup\" (or \"mappedName\") value and isn't of any known type");
         }
 
         // our injection comes from the local lookup, no matter what.
