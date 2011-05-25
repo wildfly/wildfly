@@ -52,6 +52,11 @@
             <artifactId>jboss-as-server</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.logging</groupId>
+            <artifactId>jboss-osgi-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Needed for @Resource(lookup=) -->
         <dependency>
            <groupId>org.jboss.spec.javax.annotation</groupId>
