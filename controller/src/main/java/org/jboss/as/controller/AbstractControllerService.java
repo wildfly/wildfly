@@ -22,14 +22,11 @@
 
 package org.jboss.as.controller;
 
-import java.util.EnumSet;
-import java.util.List;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -46,6 +43,7 @@ public abstract class AbstractControllerService implements Service<NewModelContr
     private final NewOperationContext.Type controllerType;
     private final ConfigurationPersister configurationPersister;
     private final DescriptionProvider rootDescriptionProvider;
+    private final NewStepHandler prepareStep;
     private volatile NewModelControllerImpl controller;
 
     /**
@@ -54,17 +52,19 @@ public abstract class AbstractControllerService implements Service<NewModelContr
      * @param controllerType the controller type for the new controller
      * @param configurationPersister the configuration persister
      * @param rootDescriptionProvider the root description provider
+     * @param prepareStep the prepare step to prepend to operation execution
      */
-    protected AbstractControllerService(final NewOperationContext.Type controllerType, final ConfigurationPersister configurationPersister, final DescriptionProvider rootDescriptionProvider) {
+    protected AbstractControllerService(final NewOperationContext.Type controllerType, final ConfigurationPersister configurationPersister, final DescriptionProvider rootDescriptionProvider, final NewStepHandler prepareStep) {
         this.controllerType = controllerType;
         this.configurationPersister = configurationPersister;
         this.rootDescriptionProvider = rootDescriptionProvider;
+        this.prepareStep = prepareStep;
     }
 
     public void start(final StartContext context) throws StartException {
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
-        final NewModelControllerImpl controller = new NewModelControllerImpl(container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType);
+        final NewModelControllerImpl controller = new NewModelControllerImpl(container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep);
         this.controller = controller;
         try {
             boot(context);

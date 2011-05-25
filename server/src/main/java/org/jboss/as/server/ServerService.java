@@ -57,6 +57,8 @@ import org.jboss.as.server.deployment.module.SubDeploymentDependencyProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -71,8 +73,14 @@ public final class ServerService extends AbstractControllerService {
      *
      * @param configurationPersister the configuration persister for this server
      */
-    public ServerService(final ConfigurationPersister configurationPersister) {
-        super(NewOperationContext.Type.SERVER, configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER);
+    ServerService(final ConfigurationPersister configurationPersister) {
+        super(NewOperationContext.Type.SERVER, configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
+    }
+
+    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
+        ServerService service = new ServerService(null /* todo configuration */);
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
+        serviceBuilder.install();
     }
 
     public void start(final StartContext context) throws StartException {
