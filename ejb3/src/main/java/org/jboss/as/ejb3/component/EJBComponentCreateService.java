@@ -81,7 +81,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             for (ViewConfiguration view : views) {
                 final MethodIntf viewType = ejbComponentDescription.getMethodIntf(view.getViewClass().getName());
                 for (Method method : view.getProxyFactory().getCachedMethods()) {
-                    this.processTxAttr(ejbComponentDescription, viewType, method);
+                    final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
+                    this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
                 }
             }
         }
@@ -105,6 +106,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return componentConfiguration;
     }
 
+    private static Method getComponentMethod(final ComponentConfiguration componentConfiguration, final String name, final Class<?>[] parameterTypes) {
+        try {
+            return componentConfiguration.getComponentClass().getMethod(name, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     ConcurrentMap<MethodIntf, ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>>> getTxAttrs() {
         return txAttrs;
     }
@@ -123,8 +132,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             return;
         }
 
+        String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
-        TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttribute(methodIntf, methodName, toString(method.getParameterTypes()));
+        TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttribute(methodIntf, className, methodName, toString(method.getParameterTypes()));
 
         ConcurrentMap<String, ConcurrentMap<ArrayKey, TransactionAttributeType>> perMethodIntf = this.txAttrs.get(methodIntf);
         if (perMethodIntf == null) {

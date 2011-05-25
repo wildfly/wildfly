@@ -120,6 +120,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         if (sessionBean.getTransactionType() != TransactionManagementType.BEAN) {
             ContainerTransactionsMetaData containerTransactions = sessionBean.getContainerTransactions();
             if (containerTransactions != null && !containerTransactions.isEmpty()) {
+                final String className = null; // applies to any class
                 for (ContainerTransactionMetaData containerTx : containerTransactions) {
                     TransactionAttributeType txAttr = containerTx.getTransAttribute();
                     MethodsMetaData methods = containerTx.getMethods();
@@ -127,12 +128,12 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
                         String methodName = method.getMethodName();
                         MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                         if (methodName.equals("*")) {
-                            sessionBeanDescription.setTransactionAttribute(methodIntf, txAttr);
+                            sessionBeanDescription.setTransactionAttribute(methodIntf, className, txAttr);
                         } else {
 
                             MethodParametersMetaData methodParams = method.getMethodParams();
                             // update the session bean description with the tx attribute info
-                            sessionBeanDescription.setTransactionAttribute(methodIntf, txAttr, methodName, this.getMethodParams(methodParams));
+                            sessionBeanDescription.setTransactionAttribute(methodIntf, txAttr, className, methodName, this.getMethodParams(methodParams));
                         }
                     }
                 }
