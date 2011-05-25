@@ -64,6 +64,8 @@ import java.util.concurrent.CancellationException;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -531,14 +533,23 @@ public abstract class AbstractProxyControllerTest {
                 }
             });
 
-            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+            // TODO get rid of these casts once global handlers are converted
+            NewStepHandler READ_RESOURCE =  (NewStepHandler) GlobalOperationHandlers.READ_RESOURCE;
+            NewStepHandler READ_ATTRIBUTE =  (NewStepHandler) GlobalOperationHandlers.READ_ATTRIBUTE;
+            NewStepHandler READ_RESOURCE_DESCRIPTION =  (NewStepHandler) GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION;
+            NewStepHandler READ_CHILDREN_NAMES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_NAMES;
+            NewStepHandler READ_CHILDREN_TYPES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_TYPES;
+            NewStepHandler READ_OPERATION_NAMES =  (NewStepHandler) GlobalOperationHandlers.READ_OPERATION_NAMES;
+            NewStepHandler READ_OPERATION_DESCRIPTION =  (NewStepHandler) GlobalOperationHandlers.READ_OPERATION_DESCRIPTION;
+            NewStepHandler WRITE_ATTRIBUTE =  (NewStepHandler) GlobalOperationHandlers.WRITE_ATTRIBUTE;
+            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
             getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
@@ -576,20 +587,28 @@ public abstract class AbstractProxyControllerTest {
                 }
             });
 
-            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+            // TODO get rid of these casts once global handlers are converted
+            NewStepHandler READ_RESOURCE =  (NewStepHandler) GlobalOperationHandlers.READ_RESOURCE;
+            NewStepHandler READ_ATTRIBUTE =  (NewStepHandler) GlobalOperationHandlers.READ_ATTRIBUTE;
+            NewStepHandler READ_RESOURCE_DESCRIPTION =  (NewStepHandler) GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION;
+            NewStepHandler READ_CHILDREN_NAMES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_NAMES;
+            NewStepHandler READ_CHILDREN_TYPES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_TYPES;
+            NewStepHandler READ_OPERATION_NAMES =  (NewStepHandler) GlobalOperationHandlers.READ_OPERATION_NAMES;
+            NewStepHandler READ_OPERATION_DESCRIPTION =  (NewStepHandler) GlobalOperationHandlers.READ_OPERATION_DESCRIPTION;
+            NewStepHandler WRITE_ATTRIBUTE =  (NewStepHandler) GlobalOperationHandlers.WRITE_ATTRIBUTE;
+            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
             getRegistry().registerOperationHandler("Test",
-                    new OperationHandler() {
+                    new NewStepHandler() {
                         @Override
-                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler)
-                                throws OperationFailedException {
-                            return null;
+                        public void execute(NewOperationContext context, ModelNode operation) {
+                            return;
                         }
                     },
                     new DescriptionProvider() {
@@ -642,11 +661,10 @@ public abstract class AbstractProxyControllerTest {
             hostChildReg.registerMetric("metric", GlobalOperationsTestCase.TestMetricHandler.INSTANCE);
 
             hostChildReg.registerOperationHandler("test-op",
-                    new OperationHandler() {
-
+                    new NewStepHandler() {
                         @Override
-                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-                            return null;
+                        public void execute(NewOperationContext context, ModelNode operation) {
+                            return;
                         }
                     },
                     new DescriptionProvider() {

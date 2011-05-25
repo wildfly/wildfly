@@ -74,6 +74,8 @@ import java.util.Set;
 
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -1007,16 +1009,28 @@ public class GlobalOperationsTestCase {
             });
 
 
-            getRegistry().registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
-            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
-            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
-            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+            // TODO get rid of these casts once global handlers are converted
+            NewStepHandler RESOLVE =  (NewStepHandler) GlobalOperationHandlers.RESOLVE;
+            NewStepHandler READ_RESOURCE =  (NewStepHandler) GlobalOperationHandlers.READ_RESOURCE;
+            NewStepHandler READ_ATTRIBUTE =  (NewStepHandler) GlobalOperationHandlers.READ_ATTRIBUTE;
+            NewStepHandler READ_RESOURCE_DESCRIPTION =  (NewStepHandler) GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION;
+            NewStepHandler READ_CHILDREN_NAMES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_NAMES;
+            NewStepHandler READ_CHILDREN_TYPES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_TYPES;
+            NewStepHandler READ_OPERATION_NAMES =  (NewStepHandler) GlobalOperationHandlers.READ_OPERATION_NAMES;
+            NewStepHandler READ_OPERATION_DESCRIPTION =  (NewStepHandler) GlobalOperationHandlers.READ_OPERATION_DESCRIPTION;
+            NewStepHandler READ_CHILDREN_RESOURCES =  (NewStepHandler) GlobalOperationHandlers.READ_CHILDREN_RESOURCES;
+            NewStepHandler WRITE_ATTRIBUTE =  (NewStepHandler) GlobalOperationHandlers.WRITE_ATTRIBUTE;
+
+            getRegistry().registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, RESOLVE, (DescriptionProvider) GlobalOperationHandlers.RESOLVE, false, OperationEntry.EntryType.PRIVATE);
+            getRegistry().registerOperationHandler(READ_RESOURCE_OPERATION, READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_ATTRIBUTE_OPERATION, READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_OPERATION_NAMES_OPERATION, READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+            getRegistry().registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+            getRegistry().registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
 
             ModelNodeRegistration profileReg = getRegistry().registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
@@ -1177,10 +1191,10 @@ public class GlobalOperationsTestCase {
 
 
             profileSub1Reg.registerOperationHandler("testA1-1",
-                    new OperationHandler() {
+                    new NewStepHandler() {
                         @Override
-                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-                            return null;
+                        public void execute(NewOperationContext context, ModelNode operation) {
+                            return;
                         }
                     },
                     new DescriptionProvider() {
@@ -1195,11 +1209,11 @@ public class GlobalOperationsTestCase {
                     },
                     false);
             profileSub1Reg.registerOperationHandler("testA1-2",
-                    new OperationHandler() {
+                    new NewStepHandler() {
 
                         @Override
-                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-                            return null;
+                        public void execute(NewOperationContext context, ModelNode operation) {
+                            return;
                         }
                     },
                     new DescriptionProvider() {
@@ -1216,11 +1230,11 @@ public class GlobalOperationsTestCase {
 
 
             profileASub2Reg.registerOperationHandler("testA2",
-                    new OperationHandler() {
+                    new NewStepHandler() {
 
                         @Override
-                        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-                            return null;
+                        public void execute(NewOperationContext context, ModelNode operation) {
+                            return;
                         }
                     },
                     new DescriptionProvider() {
@@ -1267,13 +1281,12 @@ public class GlobalOperationsTestCase {
                     return node;
                 }
             });
-            profileCSub5Reg.registerReadOnlyAttribute("name", new OperationHandler() {
+            profileCSub5Reg.registerReadOnlyAttribute("name", new NewStepHandler() {
 
                 @Override
-                public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-                    resultHandler.handleResultFragment(new String[0], new ModelNode().set("Overridden by special read handler"));
-                    resultHandler.handleResultComplete();
-                    return new BasicOperationResult();
+                public void execute(NewOperationContext context, ModelNode operation) {
+                    context.getResult().set("Overridden by special read handler");
+                    context.completeStep();
                 }
             }, AttributeAccess.Storage.CONFIGURATION);
 
@@ -1302,14 +1315,13 @@ public class GlobalOperationsTestCase {
 
     }
 
-    static class TestMetricHandler implements OperationHandler {
+    static class TestMetricHandler implements NewStepHandler {
         static final TestMetricHandler INSTANCE = new TestMetricHandler();
         private static final Random random = new Random();
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            resultHandler.handleResultFragment(new String[0], new ModelNode().set(random.nextInt()));
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+        public void execute(final NewOperationContext context, final ModelNode operation) {
+            context.getResult().set(random.nextInt());
+            context.completeStep();
         }
 
     }

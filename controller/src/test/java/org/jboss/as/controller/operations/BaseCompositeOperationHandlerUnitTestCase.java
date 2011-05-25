@@ -17,10 +17,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.jboss.as.controller.BaseModelControllerUnitTestCase;
 import org.jboss.as.controller.BaseModelControllerUnitTestCase.BadHandler;
 import org.jboss.as.controller.BaseModelControllerUnitTestCase.EvilHandler;
 import org.jboss.as.controller.BaseModelControllerUnitTestCase.GoodHandler;
 import org.jboss.as.controller.BasicModelController;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -31,7 +33,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests of {@link BaseCompositeOperationHandler}.
+ * Unit tests of composite operation handling in {@link BasicModelController}.
+ *
+ * TODO remove
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -147,9 +151,9 @@ public class BaseCompositeOperationHandlerUnitTestCase {
         protected TestModelController() {
             super(createTestNode(), new NullConfigurationPersister(), DESC_PROVIDER);
 
-            getRegistry().registerOperationHandler("good", new GoodHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("bad", new BadHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("evil", new EvilHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("good", (NewStepHandler) new GoodHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("bad", (NewStepHandler) new BadHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("evil", (NewStepHandler) new EvilHandler(), DESC_PROVIDER, false);
         }
     }
 

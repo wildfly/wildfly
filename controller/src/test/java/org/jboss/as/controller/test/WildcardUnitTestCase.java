@@ -33,6 +33,8 @@ import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -110,7 +112,9 @@ public class WildcardUnitTestCase extends TestCase {
         private static void initialize(final ModelNodeRegistration root) {
             root.registerOperationHandler("read-resource", new TestHandler(), NULL, true);
             root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
-            root.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, GlobalOperationHandlers.RESOLVE, GlobalOperationHandlers.RESOLVE, false);
+            // TODO remove once global op handlers are converted
+            NewStepHandler RESOLVE = (NewStepHandler) GlobalOperationHandlers.RESOLVE;
+            root.registerOperationHandler(GlobalOperationHandlers.ResolveAddressOperationHandler.OPERATION_NAME, RESOLVE, (DescriptionProvider) GlobalOperationHandlers.RESOLVE, false);
 
             final ModelNodeRegistration hosts = root.registerSubModel(host, NULL);
             final ModelNodeRegistration servers = hosts.registerSubModel(server, NULL);
@@ -125,34 +129,32 @@ public class WildcardUnitTestCase extends TestCase {
         }
     }
 
-    private static class TestHandler implements ModelQueryOperationHandler {
+    private static class TestHandler implements NewStepHandler {
+
         /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
+        public void execute(NewOperationContext context, ModelNode operation) {
 
-            resultHandler.handleResultFragment(new String[0], context.getSubModel());
-            resultHandler.handleResultComplete();
+            context.getResult().set(context.readModel(PathAddress.EMPTY_ADDRESS));
 
-            return new BasicOperationResult();
+            context.completeStep();
         }
     }
 
-    private static class DescribeHandler implements OperationHandler {
+    private static class DescribeHandler implements NewStepHandler {
 
         /** {@inheritDoc} */
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) {
 
-            final ModelNodeRegistration registry = context.getRegistry();
+            final ModelNodeRegistration registry = context.getModelNodeRegistration();
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
             if(descriptionProvider == null) {
-                resultHandler.handleFailed(new ModelNode());
+                context.getFailureDescription().set(new ModelNode());
             } else {
-                resultHandler.handleResultFragment(new String[0], descriptionProvider.getModelDescription(null));
-                resultHandler.handleResultComplete();
+                context.getResult().set(descriptionProvider.getModelDescription(null));
             }
 
-            return new BasicOperationResult();
+            context.completeStep();
         }
 
     }
