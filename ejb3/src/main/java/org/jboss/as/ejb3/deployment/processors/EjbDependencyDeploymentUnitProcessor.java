@@ -70,6 +70,10 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         moduleSpecification.addDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
+
+        // FIXME: still not the best way to do it
+        if (Boolean.getBoolean("org.jboss.as.ejb3.EMBEDDED"))
+            moduleSpecification.addDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false));
     }
 
     @Override
