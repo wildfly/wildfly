@@ -67,7 +67,6 @@ import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -106,10 +105,7 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        ServerService service = new ServerService(configuration, new NewStepHandler() {
-            public void execute(final NewOperationContext context, final ModelNode operation) {
-            }
-        });
+        ServerService service = new ServerService(configuration, null);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
