@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
@@ -626,6 +627,7 @@ public class DeploymentManagementTestCase {
     }
 
     @Test
+    @Ignore("AS7-895")
     public void testManagedFullReplaceUnmanaged() throws Exception {
         // Establish the deployment
         testUnmanagedExplodedDeployment();
