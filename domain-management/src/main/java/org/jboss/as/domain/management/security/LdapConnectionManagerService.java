@@ -101,7 +101,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
      */
 
     public Object getConnection() throws Exception {
-        return new InitialDirContext(fullProperties);
+        return getConnection(fullProperties);
     }
 
     public Object getConnection(String principal, String credential) throws Exception {
@@ -109,7 +109,23 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
         connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
 
-        return new InitialDirContext(connectionProperties);
+        return getConnection(connectionProperties);
+    }
+
+    // TODO - Workaround to clear ContextClassLoader to allow access to System ClassLoader
+    private Object getConnection(Properties properties) throws Exception {
+        ClassLoader original = null;
+        try {
+            original = Thread.currentThread().getContextClassLoader();
+            if (original != null) {
+                Thread.currentThread().setContextClassLoader(null);
+            }
+            return new InitialDirContext(properties);
+        } finally {
+            if (original != null) {
+                Thread.currentThread().setContextClassLoader(original);
+            }
+        }
     }
 
 }
