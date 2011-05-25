@@ -50,7 +50,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
         } catch (ValidateException e) {
             e.printStackTrace();
             throw new OperationFailedException(e, new ModelNode().set("Failed to create DataSource instance for [" + operation
-                    + "]"));
+                    + "]\n reason:" + e.getLocalizedMessage()));
         }
         return new LocalDataSourceService(jndiName, dataSource);
     }

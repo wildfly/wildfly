@@ -177,7 +177,7 @@ public abstract class AbstractDataSourceAdd implements ModelAddOperationHandler 
 
     static void populateAddModel(final ModelNode existingModel, final ModelNode newModel,
             final String connectionPropertiesProp, final AttributeDefinition[] attributes) {
-        if (existingModel.has(connectionPropertiesProp)) {
+        if (existingModel.hasDefined(connectionPropertiesProp)) {
             for (Property property : existingModel.get(connectionPropertiesProp).asPropertyList()) {
                 newModel.get(connectionPropertiesProp, property.getName()).set(property.getValue().asString());
             }

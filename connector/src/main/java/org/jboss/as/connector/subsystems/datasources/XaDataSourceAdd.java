@@ -32,7 +32,6 @@ import org.jboss.jca.common.api.validator.ValidateException;
 
 /**
  * Operation handler responsible for adding a XA data-source.
- *
  * @author John Bailey
  */
 public class XaDataSourceAdd extends AbstractDataSourceAdd {
@@ -42,12 +41,14 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         populateAddModel(operation, model, XADATASOURCEPROPERTIES, XA_DATASOURCE_ATTRIBUTE);
     }
 
-    protected AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation) throws OperationFailedException {
+    protected AbstractDataSourceService createDataSourceService(final String jndiName, final ModelNode operation)
+            throws OperationFailedException {
         final XaDataSource dataSource;
         try {
             dataSource = xaFrom(operation);
         } catch (ValidateException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Failed to create XaDataSource instance for [" + operation + "]"));
+            throw new OperationFailedException(e, new ModelNode().set("Failed to create XaDataSource instance for ["
+                    + operation + "]\n reason:" + e.getLocalizedMessage()));
         }
         return new XaDataSourceService(jndiName, dataSource);
     }
