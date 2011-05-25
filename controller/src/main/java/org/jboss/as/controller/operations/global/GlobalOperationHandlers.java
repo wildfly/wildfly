@@ -83,7 +83,7 @@ public class GlobalOperationHandlers {
     public static final OperationHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final OperationHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
-    public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
+    public static final OperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
     private GlobalOperationHandlers() {
         //

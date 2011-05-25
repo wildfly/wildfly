@@ -30,7 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests of {@link BaseModelController}.
+ * Unit tests of {@link BasicModelController}.
+ *
+ * TODO remove
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -156,9 +158,9 @@ public class BaseModelControllerUnitTestCase {
         protected TestModelController() {
             super(createTestNode(), new NullConfigurationPersister(), DESC_PROVIDER);
 
-            getRegistry().registerOperationHandler("good", new GoodHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("bad", new BadHandler(), DESC_PROVIDER, false);
-            getRegistry().registerOperationHandler("evil", new EvilHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("good", (NewStepHandler) new GoodHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("bad",  (NewStepHandler) new BadHandler(), DESC_PROVIDER, false);
+            getRegistry().registerOperationHandler("evil",  (NewStepHandler) new EvilHandler(), DESC_PROVIDER, false);
         }
     }
 
