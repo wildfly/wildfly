@@ -52,7 +52,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
         }
         final ClassLoader classLoader = getContextClassLoader();
         try {
-            final Class<?> factoryClass = classLoader.loadClass(factoryClassName);
+            final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
             return (javax.naming.spi.InitialContextFactory)factoryClass.newInstance();
         } catch (Exception e) {
             throw new NamingException("Failed instantiate InitialContextFactory " + factoryClassName + " from classloader " + classLoader);
