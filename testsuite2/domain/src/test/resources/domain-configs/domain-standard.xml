@@ -163,43 +163,34 @@
                </configuration>
                <properties>
                    <property name="org.jboss.osgi.system.modules">
+                   org.apache.commons.logging,
                    org.apache.log4j,
-                   org.jboss.arquillian.api,
-                   org.jboss.arquillian.junit,
-                   org.jboss.arquillian.protocol.osgi,
-                   org.jboss.arquillian.spi,
                    org.jboss.as.osgi,
-                   org.jboss.shrinkwrap.api,
-                   javax.inject.api,
-                   org.junit
+                   org.slf4j,
                    </property>
                    <property name="org.osgi.framework.system.packages.extra">
-                   javax.transaction;version=1.1,
+                   org.apache.commons.logging;version=1.1.1,
                    org.apache.log4j;version=1.2,
                    org.jboss.as.osgi.service;version=7.0,
-                   org.jboss.logging;version=3.0,
-                   org.jboss.osgi.deployment.deployer;version=1.0,
-                   org.jboss.osgi.deployment.interceptor;version=1.0,
-                   org.jboss.osgi.spi;version=1.0,
                    org.jboss.osgi.spi.capability;version=1.0,
                    org.jboss.osgi.spi.util;version=1.0,
                    org.jboss.osgi.testing;version=1.0,
-                   org.jboss.osgi.vfs;version=1.0,
-
-                   org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
-                   org.jboss.shrinkwrap.api, org.jboss.shrinkwrap.api.asset, org.jboss.shrinkwrap.api.spec,
-                   org.jboss.shrinkwrap.impl.base,
-                   org.junit, org.junit.runner, javax.inject
+                   org.slf4j;version=1.5.10,
                    </property>
                </properties>
                <modules>
-                   <module identifier="org.osgi.compendium"/>
-                   <module identifier="org.apache.aries.util"/>
-                   <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
-                   <module identifier="org.apache.felix.configadmin" start="true"/>
-                   <module identifier="org.jboss.osgi.common" start="true"/>
+                   <!-- modules registered with the OSGi layer on startup -->
+                   <module identifier="org.jboss.as.arquillian.aggregate"/>
+                   <module identifier="org.jboss.logging"/>
+                   <!-- bundles installed on startup -->
                    <module identifier="org.apache.aries.jmx" start="true"/>
+                   <module identifier="org.apache.aries.util"/>
+                   <module identifier="org.apache.felix.configadmin" start="true"/>
+                   <module identifier="org.apache.felix.log" start="true"/>
+                   <module identifier="org.jboss.as.osgi.configadmin" start="true"/>
                    <module identifier="org.jboss.osgi.jmx" start="true"/>
+                   <module identifier="org.jboss.osgi.logging" start="true"/>
+                   <module identifier="org.osgi.compendium"/>
                </modules>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
