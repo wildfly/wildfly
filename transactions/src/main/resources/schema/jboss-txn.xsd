@@ -69,17 +69,58 @@
             <![CDATA[
                 The core environment configuration.
 
-                The "socket-binding" attribute is used to reference the correct socket binding to use for the
-                socket process id.
+                The process-id element specifies the process id implemention.
+                The "node-identifier" attribute is used to set the node identifier on the core environment.
+                The "relative-to" and "path" attributes allow for specification of the environment var directory
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="process-id" type="xs:string" />
+        </xs:all>
+        <xs:attribute name="node-identifier" type="xs:string" default="1"/>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
+        <xs:attribute name="path" type="xs:string" default="var"/>
+    </xs:complexType>
+    <xs:complexType name="process-id">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The process identifer implementation
                 The "node-identifier" attribute is used to set the node identifier on the core environment.
                 The "socket-process-id-max-ports" attribute is used to set the max ports on the core environment.
             ]]>
             </xs:documentation>
         </xs:annotation>
+        <xs:choice>
+            <xs:element name="uuid" type="uuid" />
+            <xs:element name="socket" type="socket-id" />
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="uuid">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The UUID based process identifer implementation
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+    </xs:complexType>
+    <xs:complexType name="socket-id">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The socket based process identifer implementation
+                The "socket-binding" attribute is used to specify the port to bind to.
+                The "socket-process-id-max-ports" attribute is used to set the max ports on the core environment.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
         <xs:attribute name="socket-binding" type="xs:string" use="required"/>
-        <xs:attribute name="node-identifier" type="xs:string" default="1"/>
         <xs:attribute name="socket-process-id-max-ports" type="xs:int" default="10" />
     </xs:complexType>
+
+    <xs:attribute name="socket-process-id-max-ports" type="xs:int" default="10" />
 
     <xs:complexType name="coordinator-environment">
         <xs:annotation>

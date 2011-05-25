@@ -24,6 +24,7 @@ package org.jboss.as.txn;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 interface CommonAttributes {
 
@@ -34,10 +35,15 @@ interface CommonAttributes {
     String ENABLE_STATISTICS = "enable-statistics";
     String NODE_IDENTIFIER = "node-identifier";
     String OBJECT_STORE = "object-store";
-    String PATH = "path";
+    /** The com.arjuna.ats.arjuna.utils.Process implementation type */
+    String PROCESS_ID = "process-id";
     String RECOVERY_ENVIRONMENT = "recovery-environment";
-    String RELATIVE_TO = "relative-to";
-    String SOCKET_PROCESS_ID_MAX_PORTS = "socket-process-id-max-ports";
+    /** The process-id/socket element */
+    String SOCKET = "socket";
+    /** The process-id/socket attribute for max ports */
+    String SOCKET_PROCESS_ID_MAX_PORTS = "max-ports";
     String STATUS_BINDING = "status-socket-binding";
-
+    /** The process-id/uuid element */
+    String UUID = "uuid";
+    // TODO, process-id/mbean, process-id/file
 }

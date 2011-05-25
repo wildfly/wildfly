@@ -29,6 +29,7 @@ import java.util.Map;
  * Enumeration of elements used in the transactions subsystem.
  *
  * @author John E. Bailey
+ * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 enum Element {
     // must be first
@@ -38,6 +39,9 @@ enum Element {
     CORE_ENVIRONMENT("core-environment"),
     COORDINATOR_ENVIRONMENT("coordinator-environment"),
     OBJECT_STORE("object-store"),
+    PROCESS_ID("process-id"),
+    SOCKET("socket"),
+    UUID("uuid"),
     ;
 
     private final String name;

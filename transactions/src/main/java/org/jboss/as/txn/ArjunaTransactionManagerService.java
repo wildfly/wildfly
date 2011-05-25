@@ -22,13 +22,13 @@
 
 package org.jboss.as.txn;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-
-import org.jboss.as.server.services.net.SocketBinding;
-import static org.jboss.as.txn.SecurityActions.setContextLoader;
+import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.ats.jta.common.jtaPropertyManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -40,20 +40,19 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.LastResource;
 import org.omg.CORBA.ORB;
 
-import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
-import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jta.common.jtaPropertyManager;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.jboss.as.txn.SecurityActions.setContextLoader;
 
 /**
  * A service for the propriatary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Thomas.Diesler@jboss.com
+ * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jbossatx.jta.TransactionManagerService> {
 
@@ -62,19 +61,14 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
-    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private ObjStoreBrowser objStoreBrowser;
 
-    private String coreNodeIdentifier;
-    private int coreSocketProcessIdMaxPorts;
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
 
-    ArjunaTransactionManagerService(final String coreNodeIdentifier, final int coreSocketProcessIdMaxPorts, final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout) {
-        this.coreNodeIdentifier = coreNodeIdentifier;
-        this.coreSocketProcessIdMaxPorts = coreSocketProcessIdMaxPorts;
+    ArjunaTransactionManagerService(final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
     }
@@ -86,11 +80,6 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         setContextLoader(ArjunaTransactionManagerService.class.getClassLoader());
 
         try {
-            // Global configuration.
-            final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
-            coreEnvironmentBean.setSocketProcessIdPort(socketProcessBindingInjector.getValue().getSocketAddress().getPort());
-            coreEnvironmentBean.setNodeIdentifier(coreNodeIdentifier);
-            coreEnvironmentBean.setSocketProcessIdMaxPorts(coreSocketProcessIdMaxPorts);
 
             final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
             jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
@@ -189,7 +178,4 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
         return orbInjector;
     }
 
-    Injector<SocketBinding> getSocketProcessBindingInjector() {
-        return socketProcessBindingInjector;
-    }
 }

@@ -29,6 +29,7 @@ import java.util.Map;
  * Enumeration of attributes used in the transactions subsystem.
  *
  * @author John E. Bailey
+ * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 enum Attribute {
     UNKNOWN(null),
@@ -38,6 +39,7 @@ enum Attribute {
     SOCKET_PROCESS_ID_MAX_PORTS("socket-process-id-max-ports"),
     ENABLE_STATISTICS("enable-statistics"),
     DEFAULT_TIMEOUT("default-timeout"),
+    PROCESS_ID("process-id"),
     RELATIVE_TO("relative-to"),
     PATH("path"),
     ;

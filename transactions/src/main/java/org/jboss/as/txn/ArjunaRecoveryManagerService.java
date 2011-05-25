@@ -33,11 +33,7 @@ import com.arjuna.ats.internal.jts.recovery.transactions.ServerTransactionRecove
 import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionRecoveryModule;
 import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.jboss.as.server.services.net.SocketBinding;
-import static org.jboss.as.txn.SecurityActions.setContextLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,10 +43,17 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.jboss.as.txn.SecurityActions.setContextLoader;
+
 /**
  * A service responsible for exposing the propriatary Arjuna {@link RecoveryManagerService}.
  *
  * @author John Bailey
+ * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 public class ArjunaRecoveryManagerService implements Service<RecoveryManagerService> {
 
