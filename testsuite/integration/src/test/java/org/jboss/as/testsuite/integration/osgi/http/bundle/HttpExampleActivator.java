@@ -23,7 +23,7 @@ package org.jboss.as.testsuite.integration.osgi.http.bundle;
 
 import java.util.Properties;
 
-import org.jboss.osgi.common.log.LogServiceTracker;
+import org.jboss.osgi.logging.LogServiceTracker;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;

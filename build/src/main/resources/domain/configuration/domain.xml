@@ -222,7 +222,7 @@
                     <module identifier="org.osgi.compendium"/>
                     <!-- bundles started in startlevel 1 -->
                     <module identifier="org.apache.felix.log" startlevel="1"/>
-                    <module identifier="org.jboss.osgi.common" startlevel="1"/>
+                    <module identifier="org.jboss.osgi.logging" startlevel="1"/>
                     <!-- bundles started in startlevel 2 -->
                     <module identifier="org.apache.aries.jmx" startlevel="2"/>
                     <module identifier="org.apache.felix.configadmin" startlevel="2"/>
