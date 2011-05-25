@@ -87,11 +87,13 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
             TransactionAttributeType transactionAttributeType = TransactionAttributeType.valueOf(annotationInstance.value().asEnum());
             if (target instanceof ClassInfo) {
                 // Style 1
-                componentDescription.setTransactionAttribute(methodIntf, transactionAttributeType);
+                final String className = target.toString();
+                componentDescription.setTransactionAttribute(methodIntf, className, transactionAttributeType);
             } else if (target instanceof MethodInfo) {
                 // Style 3
                 final MethodInfo method = (MethodInfo) target;
-                componentDescription.setTransactionAttribute(methodIntf, transactionAttributeType, method.name(), toString(method.args()));
+                final String className = method.declaringClass().toString();
+                componentDescription.setTransactionAttribute(methodIntf, transactionAttributeType, className, method.name(), toString(method.args()));
             }
         }
     }

@@ -92,12 +92,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     };
 
-    // style 1 == beanTransactionAttribute
+    private final Map<String, TransactionAttributeType> txStyle1 = new HashMap<String, TransactionAttributeType>();
     private final Map<String, TransactionAttributeType> txStyle2 = new HashMap<String, TransactionAttributeType>();
-    private final PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>> txStyle3 = new PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>() {
+    private final PopulatingMap<String, PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>> txStyle3 = new PopulatingMap<String, PopulatingMap<String,Map<ArrayKey,TransactionAttributeType>>>() {
         @Override
-        Map<ArrayKey, TransactionAttributeType> populate() {
-            return new HashMap<ArrayKey, TransactionAttributeType>();
+        PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>> populate() {
+            return new PopulatingMap<String, Map<ArrayKey, TransactionAttributeType>>() {
+                @Override
+                Map<ArrayKey, TransactionAttributeType> populate() {
+                    return new HashMap<ArrayKey, TransactionAttributeType>();
+                }
+            };
         }
     };
 
@@ -132,7 +137,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return map.get(key);
     }
 
-    public TransactionAttributeType getTransactionAttribute(MethodIntf methodIntf, String methodName, String... methodParams) {
+    public TransactionAttributeType getTransactionAttribute(MethodIntf methodIntf, String className, String methodName, String... methodParams) {
         assert methodIntf != null : "methodIntf is null";
         assert methodName != null : "methodName is null";
         assert methodParams != null : "methodParams is null";
@@ -147,10 +152,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         txAttr = get(txPerViewStyle1, methodIntf);
         if (txAttr != null)
             return txAttr;
-        txAttr = get(get(txStyle3, methodName), methodParamsKey);
+        txAttr = get(get(get(txStyle3, className), methodName), methodParamsKey);
         if (txAttr != null)
             return txAttr;
         txAttr = get(txStyle2, methodName);
+        if (txAttr != null)
+            return txAttr;
+        txAttr = get(txStyle1, className);
         if (txAttr != null)
             return txAttr;
         return beanTransactionAttribute;
@@ -166,9 +174,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
      * @param transactionAttribute
      */
-    public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute) {
-        if (methodIntf == null)
-            this.beanTransactionAttribute = transactionAttribute;
+    public void setTransactionAttribute(MethodIntf methodIntf, String className, TransactionAttributeType transactionAttribute) {
+        if (methodIntf != null && className != null)
+            throw new IllegalArgumentException("both methodIntf and className are set on " + getComponentName());
+        if (methodIntf == null) {
+            txStyle1.put(className, transactionAttribute);
+        }
         else
             txPerViewStyle1.put(methodIntf, transactionAttribute);
     }
@@ -195,10 +206,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param methodName
      * @param methodParams
      */
-    public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, String methodName, String... methodParams) {
+    public void setTransactionAttribute(MethodIntf methodIntf, TransactionAttributeType transactionAttribute, final String className, String methodName, String... methodParams) {
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         if (methodIntf == null)
-            txStyle3.pick(methodName).put(methodParamsKey, transactionAttribute);
+            txStyle3.pick(className).pick(methodName).put(methodParamsKey, transactionAttribute);
         else
             txPerViewStyle3.pick(methodIntf).pick(methodName).put(methodParamsKey, transactionAttribute);
     }
