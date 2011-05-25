@@ -52,7 +52,6 @@ import org.jboss.msc.value.InjectedValue;
 public class PropertiesCallbackHandler implements Service<PropertiesCallbackHandler>, DomainCallbackHandler {
 
     public static final String SERVICE_SUFFIX = "properties";
-
     private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, PasswordCallback.class};
 
     private final String realm;
@@ -140,8 +139,7 @@ public class PropertiesCallbackHandler implements Service<PropertiesCallbackHand
         }
 
         if (userFound == false) {
-            // TODO - Again proper error reporting.
-            throw new IllegalStateException("User '" + userName + "' not found.");
+            throw new UserNotFoundException(userName);
         }
 
         // Second Pass - Now iterate the Callback(s) requiring a response.

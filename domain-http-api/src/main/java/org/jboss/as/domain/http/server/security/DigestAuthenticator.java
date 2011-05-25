@@ -40,11 +40,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.domain.management.security.UserNotFoundException;
 import org.jboss.as.domain.management.util.HexUtil;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
+import org.jboss.logging.Logger;
 
 /**
  * An authenticator to handle Digest authentication.
@@ -52,6 +54,8 @@ import org.jboss.com.sun.net.httpserver.HttpPrincipal;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class DigestAuthenticator extends Authenticator {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.domain.http.api");
 
     private final NonceFactory nonceFactory = new NonceFactory();
 
@@ -127,19 +131,33 @@ public class DigestAuthenticator extends Authenticator {
     }
 
     private HttpPrincipal validateUser(HttpExchange httpExchange, Map<String, String> challengeParameters) {
+        String realm = challengeParameters.get(REALM);
+        String username = challengeParameters.get(USERNAME);
+
+        if (realm == null || realm.length() == 0 || username == null || username.length() == 0) {
+            // Fail quickly if either the realm or username are not supplied.
+            return null;
+        }
+
+
         // Step 1 - Create Callbacks
         // TODO - Should we use SASL callbacks or add our own and have our handler support both?
         /* TODO - Maybe also consider callbacks for returning some parts ready hashed e.g. HA1 - this
            would mean password not even needed by JBoss installation, Hash would also only be applicable
            this realm. */
-        RealmCallback rcb = new RealmCallback("Realm", challengeParameters.get(REALM));
-        NameCallback ncb = new NameCallback("Username", challengeParameters.get(USERNAME));
+        RealmCallback rcb = new RealmCallback("Realm", realm);
+        NameCallback ncb = new NameCallback("Username", username);
         PasswordCallback pcb = new PasswordCallback("Password", false);
         Callback[] callbacks = new Callback[]{rcb, ncb, pcb};
 
         // Step 2 - Call CallbackHandler
         try {
             callbackHandler.handle(callbacks);
+        } catch (UserNotFoundException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e.getMessage());
+            }
+            return null;
         } catch (IOException e) {
             throw new IllegalStateException("CallbackHander not suitable for Digest authentication.");
         } catch (UnsupportedCallbackException e) {

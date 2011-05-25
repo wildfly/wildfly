@@ -49,7 +49,6 @@ import org.jboss.msc.service.StopContext;
 public class UserDomainCallbackHandler implements Service<UserDomainCallbackHandler>, DomainCallbackHandler {
 
     public static final String SERVICE_SUFFIX = "users";
-
     private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, PasswordCallback.class};
 
     private final String realm;
@@ -101,7 +100,9 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
             } else if (current instanceof NameCallback) {
                 NameCallback nameCallback = (NameCallback) current;
                 userName = nameCallback.getDefaultName();
-                user = userDomain.get(USER, userName);
+                if (userDomain.get(USER).hasDefined(userName)) {
+                    user = userDomain.get(USER, userName);
+                }
             } else if (current instanceof PasswordCallback) {
                 toRespondTo.add(current);
             } else if (current instanceof RealmCallback) {
@@ -116,8 +117,7 @@ public class UserDomainCallbackHandler implements Service<UserDomainCallbackHand
         }
 
         if (user == null) {
-            // TODO - Again proper error reporting.
-            throw new IllegalStateException("User '" + userName + "' not found.");
+            throw new UserNotFoundException(userName);
         }
 
         // Second Pass - Now iterate the Callback(s) requiring a response.
