@@ -190,6 +190,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         // 1. operation is cancelled
         // 2. operation failed in model phase
         // 3. operation failed in runtime/verify and rollback_on_fail is set
+        // 4. isRollbackOnly
         ModelNode response = this.response;
         if (flags.contains(Flag.CANCELLED)) {
             response.get(OUTCOME).set(CANCELLED);
@@ -200,6 +201,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (response.hasDefined(FAILURE_DESCRIPTION) && (contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL) || currentStage == Stage.MODEL)) {
             response.get(OUTCOME).set(FAILED);
             response.get(ROLLED_BACK).set(true);
+            return ResultAction.ROLLBACK;
+        }
+        if (resultAction == ResultAction.ROLLBACK) {
             return ResultAction.ROLLBACK;
         }
         do {
@@ -294,9 +298,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                 // -- not reached --
             }
         } while (currentStage != Stage.DONE);
-        if (resultAction == ResultAction.ROLLBACK) {
-            return ResultAction.ROLLBACK;
-        }
         currentStage = null;
         // No more steps, verified operation is a success!
         if (isModelAffected()) try {
