@@ -45,8 +45,8 @@ import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.api.Run;
 import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -156,12 +156,12 @@ public class MessagingClientTestCase {
         }
     }
 
-    static ClientSessionFactory createClientSessionFactory(String host, int port) {
+    static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
         final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("host", host);
         properties.put("port", port);
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
-        return HornetQClient.createClientSessionFactory(configuration);
+        return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
 
 }

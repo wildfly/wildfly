@@ -138,9 +138,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case BACKUP:
                     handleElementText(reader, element, operation);
                     break;
-                case BACKUP_CONNECTOR_REF:
-                    handleElementText(reader, element, operation);
-                    break;
                 case BINDINGS_DIRECTORY: {
                     final ModelNode directory = parseDirectory(reader);
                     operation.get(BINDINGS_DIRECTORY).set(directory);

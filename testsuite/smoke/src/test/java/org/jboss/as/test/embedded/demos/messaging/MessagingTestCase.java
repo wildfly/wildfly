@@ -90,7 +90,7 @@ public class MessagingTestCase {
         //HornetQService set up the config and starts the HornetQServer
 
         //Not using JNDI so we use the core services directly
-        sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+        sf = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName())).createSessionFactory();
 
         //Create a queue
         ClientSession coreSession = sf.createSession(false, true, true);
