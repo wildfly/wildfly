@@ -34,6 +34,7 @@ import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,6 +66,7 @@ public class SimpleWebserviceEndpointTestCase {
     }
 
     @Test
+    @Ignore
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.testsuite.integration.ws", "SimpleService");
         final URL wsdlURL = new URL("http://localhost:8080/ws-endpoint-example/SimpleService?wsdl");
