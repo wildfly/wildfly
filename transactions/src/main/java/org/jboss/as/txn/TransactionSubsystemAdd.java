@@ -22,6 +22,7 @@
 
 package org.jboss.as.txn;
 
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.OperationContext;
