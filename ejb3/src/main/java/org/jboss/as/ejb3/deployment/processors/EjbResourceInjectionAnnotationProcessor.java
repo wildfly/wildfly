@@ -183,7 +183,12 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
             name = stringValueOrNull(annotation, "name");
             beanInterface = classValueOrNull(annotation, "beanInterface");
             beanName = stringValueOrNull(annotation, "beanName");
-            lookup = stringValueOrNull(annotation, "lookup");
+            String lookupValue = stringValueOrNull(annotation, "lookup");
+            // if "lookup" isn't specified, then fallback on "mappedName". We treat "mappedName" the same as "lookup"
+            if (isEmpty(lookupValue)) {
+                lookupValue = stringValueOrNull(annotation, "mappedName");
+            }
+            this.lookup = lookupValue;
             description = stringValueOrNull(annotation, "description");
         }
 
