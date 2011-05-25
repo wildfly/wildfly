@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
@@ -73,12 +74,12 @@ public final class ServerService extends AbstractControllerService {
      *
      * @param configurationPersister the configuration persister for this server
      */
-    ServerService(final ConfigurationPersister configurationPersister) {
+    ServerService(final ConfigurationPersister configurationPersister, final NewStepHandler prepareStep) {
         super(NewOperationContext.Type.SERVER, configurationPersister, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
     }
 
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        ServerService service = new ServerService(null /* todo configuration */);
+        ServerService service = new ServerService(null, null /* todo configuration and prepare step */);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.install();
     }
@@ -119,7 +120,6 @@ public final class ServerService extends AbstractControllerService {
         deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SUB_DEPLOYMENTS, new SubDeploymentDependencyProcessor()));
         deployers.get(Phase.CONFIGURE_MODULE).add(new RegisteredProcessor(Phase.CONFIGURE_MODULE_SPEC, new ModuleSpecProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
-        deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
 
         try {
