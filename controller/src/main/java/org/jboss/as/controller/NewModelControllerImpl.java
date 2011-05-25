@@ -67,19 +67,24 @@ class NewModelControllerImpl implements NewModelController {
     private final ConfigurationPersister persister;
     private final NewOperationContext.Type controllerType;
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
+    private final NewStepHandler prepareStep;
 
-    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration, final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType) {
+    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration, final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType, final NewStepHandler prepareStep) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
         this.stateMonitor = stateMonitor;
         this.persister = persister;
         this.controllerType = controllerType;
+        this.prepareStep = prepareStep;
     }
 
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
         NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL), handler, modelReference.get(), control, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
+        if (prepareStep != null) {
+            context.addStep(prepareStep, NewOperationContext.Stage.MODEL);
+        }
         NewStepHandler stepHandler = (NewStepHandler) rootRegistration.getOperationHandler(PathAddress.pathAddress(operation.require(ADDRESS)), operation.require(OP).asString());
         context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
         context.completeStep();
