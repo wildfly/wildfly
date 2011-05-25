@@ -111,6 +111,18 @@ public interface NewOperationContext {
     boolean isBooting();
 
     /**
+     * Determine whether the current operation is bound to be rolled back.
+     *
+     * @return {@code true} if the operation will be rolled back
+     */
+    boolean isRollbackOnly();
+
+    /**
+     * Indicate that the operation should be rolled back, regardless of outcome.
+     */
+    void setRollbackOnly();
+
+    /**
      * Get the model node registration.  The registration is relative to the operation address.
      *
      * @return the model node registration
