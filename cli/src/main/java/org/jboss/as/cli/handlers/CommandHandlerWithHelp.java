@@ -27,8 +27,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
@@ -40,12 +38,11 @@ import org.jboss.as.protocol.StreamUtils;
  *
  * @author Alexey Loubyansky
  */
-public abstract class CommandHandlerWithHelp implements CommandHandler {
+public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments {
 
     private final String filename;
     private final boolean connectionRequired;
-    private CommandLineCompleter argsCompleter;
-    protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue("--help", "-h") {
+    protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue(this, "--help", "-h") {
         @Override
         public boolean canAppearNext(CommandContext ctx) {
             return !ctx.getParsedArguments().hasArguments();
@@ -62,14 +59,6 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
         }
         this.filename = "help/" + command + ".txt";
         this.connectionRequired = connectionRequired;
-
-        SimpleArgumentTabCompleter argsCompleter = new SimpleArgumentTabCompleter();
-        argsCompleter.addArgument(helpArg);
-        this.argsCompleter = argsCompleter;
-    }
-
-    public void setArgumentCompleter(CommandLineCompleter argsCompleter) {
-        this.argsCompleter = argsCompleter;
     }
 
     @Override
@@ -78,11 +67,6 @@ public abstract class CommandHandlerWithHelp implements CommandHandler {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public CommandLineCompleter getArgumentCompleter() {
-        return argsCompleter;
     }
 
     /* (non-Javadoc)

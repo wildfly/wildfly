@@ -43,9 +43,7 @@ public class PrefixHandler extends CommandHandlerWithHelp {
 
     public PrefixHandler(String command) {
         super(command, true);
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-        nodePath = new ArgumentWithValue(false, OperationRequestCompleter.INSTANCE, 0, "--node-path");
-        argsCompleter.addArgument(nodePath);
+        nodePath = new ArgumentWithValue(this, OperationRequestCompleter.INSTANCE, 0, "--node-path");
     }
 
     @Override

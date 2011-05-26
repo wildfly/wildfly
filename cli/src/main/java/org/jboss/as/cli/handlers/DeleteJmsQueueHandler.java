@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
@@ -46,9 +47,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
     public DeleteJmsQueueHandler() {
         super("delete-jms-queue", true);
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        profile = new ArgumentWithValue(new DefaultCompleter(new CandidatesProvider(){
+        profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
                 return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
@@ -61,9 +60,8 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(profile);
 
-        name = new ArgumentWithValue(true, new DefaultCompleter(new DefaultCompleter.CandidatesProvider() {
+        name = new ArgumentWithValue(this, new DefaultCompleter(new DefaultCompleter.CandidatesProvider() {
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
                 ModelControllerClient client = ctx.getModelControllerClient();
@@ -92,7 +90,6 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(name);
     }
 
     /* (non-Javadoc)
@@ -104,7 +101,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
         ModelNode request;
         try {
             request = buildRequest(ctx);
-        } catch (OperationFormatException e1) {
+        } catch (CommandFormatException e1) {
             ctx.printLine(e1.getLocalizedMessage());
             return;
         }
@@ -127,8 +124,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx)
-            throws OperationFormatException {
+    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         if(ctx.isDomainMode()) {
@@ -139,12 +135,7 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
             builder.addNode("profile", profile);
         }
 
-        final String name;
-        try {
-            name = this.name.getValue(ctx.getParsedArguments());
-        } catch(IllegalArgumentException e) {
-            throw new OperationFormatException("Missing required name argument.");
-        }
+        final String name = this.name.getValue(ctx.getParsedArguments(), true);
 
         builder.addNode("subsystem", "jms");
         builder.addNode("queue", name);

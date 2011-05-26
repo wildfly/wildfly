@@ -73,4 +73,14 @@ public class VersionHandler implements CommandHandler {
         ctx.printLine("os.name: " + SecurityActions.getSystemProperty("os.name"));
         ctx.printLine("os.version: " + SecurityActions.getSystemProperty("os.version"));
     }
+
+    @Override
+    public boolean hasArgument(String name) {
+        return false;
+    }
+
+    @Override
+    public boolean hasArgument(int index) {
+        return false;
+    }
 }

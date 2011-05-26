@@ -23,13 +23,13 @@ package org.jboss.as.cli.handlers.batch;
 
 import java.util.List;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.cli.operation.OperationFormatException;
 
 /**
  *
@@ -37,10 +37,12 @@ import org.jboss.as.cli.operation.OperationFormatException;
  */
 public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
+    private final CommandLineCompleter argCompleter;
+
     public BatchEditLineHandler() {
         super("batch-edit-line");
 
-        setArgumentCompleter(new CommandLineCompleter() {
+        argCompleter = new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -123,7 +125,12 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
                     return candidates.isEmpty() ? -1 : nextCharIndex;
                 }
                 return nextCharIndex + cmdResult;
-            }});
+            }};
+    }
+
+    @Override
+    public CommandLineCompleter getArgumentCompleter() {
+        return argCompleter;
     }
 
     @Override
@@ -195,7 +202,7 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
         try {
             BatchedCommand newCmd = ctx.toBatchedCommand(editedLine);
             batch.set(lineNumber - 1, newCmd);
-        } catch (OperationFormatException e) {
+        } catch (CommandFormatException e) {
             ctx.printLine("Failed to process command line '" + editedLine + "': " + e.getLocalizedMessage());
         }
     }

@@ -23,8 +23,10 @@ package org.jboss.as.cli.impl;
 
 import java.util.List;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
 
 /**
  *
@@ -32,60 +34,34 @@ import org.jboss.as.cli.ParsedArguments;
  */
 public class ArgumentWithValue extends ArgumentWithoutValue {
 
-    private final boolean required;
     private final CommandLineCompleter valueCompleter;
 
-    public ArgumentWithValue(String fullName) {
-        this(false, -1, fullName, null);
+    public ArgumentWithValue(CommandHandlerWithArguments handler, String fullName) {
+        this(handler, fullName, null);
     }
 
-    public ArgumentWithValue(String fullName, String shortName) {
-        this(false, -1, fullName, shortName);
+    public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, String fullName) {
+        this(handler, valueCompleter, fullName, null);
     }
 
-    public ArgumentWithValue(CommandLineCompleter valueCompleter, String fullName) {
-        this(false, valueCompleter, -1, fullName, null);
+    public ArgumentWithValue(CommandHandlerWithArguments handler, String fullName, String shortName) {
+        this(handler, null, fullName, shortName);
     }
 
-    public ArgumentWithValue(CommandLineCompleter valueCompleter, String fullName, String shortName) {
-        this(false, valueCompleter, -1, fullName, shortName);
+    public ArgumentWithValue(CommandHandlerWithArguments handler, int index, String fullName) {
+        this(handler, null, index, fullName);
     }
 
-    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, String fullName) {
-        this(required, valueCompleter, -1, fullName, null);
-    }
-
-    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, String fullName, String shortName) {
-        this(required, valueCompleter, -1, fullName, shortName);
-    }
-
-    public ArgumentWithValue(boolean required, String fullName) {
-        this(required, -1, fullName, null);
-    }
-
-    public ArgumentWithValue(boolean required, String fullName, String shortName) {
-        this(required, -1, fullName, shortName);
-    }
-
-    public ArgumentWithValue(int index, String fullName) {
-        this(false, index, fullName, null);
-    }
-
-    public ArgumentWithValue(boolean required, int index, String fullName, String shortName) {
-        this(required, null, index, fullName, shortName);
-    }
-
-    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, int index, String fullName) {
-        this(required, valueCompleter, index, fullName, null);
-    }
-
-    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, int index, String fullName, String shortName) {
-        super(index, fullName, shortName);
-        this.required = required;
+    public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, int index, String fullName) {
+        super(handler, index, fullName);
         this.valueCompleter = valueCompleter;
     }
 
-    @Override
+    public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, String fullName, String shortName) {
+        super(handler, fullName, shortName);
+        this.valueCompleter = valueCompleter;
+    }
+
     public CommandLineCompleter getValueCompleter() {
         return valueCompleter;
     }
@@ -94,7 +70,7 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
      * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public String getValue(ParsedArguments args) {
+    public String getValue(ParsedArguments args, boolean required) throws CommandFormatException {
 
         String value = null;
         if(args.hasArguments()) {
@@ -116,7 +92,7 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
             buf.append("Required argument ");
             buf.append('\'').append(fullName).append('\'');
             buf.append(" is missing.");
-            throw new IllegalArgumentException(buf.toString());
+            throw new CommandFormatException(buf.toString());
         }
         return value;
     }

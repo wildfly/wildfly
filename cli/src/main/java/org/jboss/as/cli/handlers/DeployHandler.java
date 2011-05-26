@@ -59,14 +59,11 @@ public class DeployHandler extends BatchModeCommandHandler {
     public DeployHandler() {
         super("deploy", true);
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        l = new ArgumentWithoutValue("-l");
+        l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
-        argsCompleter.addArgument(l);
 
         FilenameTabCompleter pathCompleter = Util.isWindows() ? WindowsFilenameTabCompleter.INSTANCE : DefaultFilenameTabCompleter.INSTANCE;
-        path = new ArgumentWithValue(false, pathCompleter, 0, "--path") {
+        path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
             @Override
             public String getValue(ParsedArguments args) {
                 String value = super.getValue(args);
@@ -79,13 +76,11 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
         };
         path.addCantAppearAfter(l);
-        argsCompleter.addArgument(path);
 
-        force = new ArgumentWithoutValue("--force", "-f");
+        force = new ArgumentWithoutValue(this, "--force", "-f");
         force.addRequiredPreceding(path);
-        argsCompleter.addArgument(force);
 
-        name = new ArgumentWithValue( new CommandLineCompleter() {
+        name = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -128,13 +123,11 @@ public class DeployHandler extends BatchModeCommandHandler {
         path.addCantAppearAfter(l);
         path.addCantAppearAfter(name);
         //name.addRequiredPreceding(path);
-        argsCompleter.addArgument(name);
 
-        rtName = new ArgumentWithValue("--runtime-name");
+        rtName = new ArgumentWithValue(this, "--runtime-name");
         rtName.addRequiredPreceding(path);
-        argsCompleter.addArgument(rtName);
 
-        allServerGroups = new ArgumentWithoutValue("--all-server-groups")  {
+        allServerGroups = new ArgumentWithoutValue(this, "--all-server-groups")  {
             @Override
             public boolean canAppearNext(CommandContext ctx) {
                 if(!ctx.isDomainMode()) {
@@ -144,11 +137,10 @@ public class DeployHandler extends BatchModeCommandHandler {
             }
         };
 
-        argsCompleter.addArgument(allServerGroups);
         allServerGroups.addRequiredPreceding(path);
         allServerGroups.addRequiredPreceding(name);
 
-        serverGroups = new ArgumentWithValue(false, new CommandLineCompleter() {
+        serverGroups = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
@@ -197,15 +189,13 @@ public class DeployHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(serverGroups);
         serverGroups.addRequiredPreceding(path);
         serverGroups.addRequiredPreceding(name);
 
         serverGroups.addCantAppearAfter(allServerGroups);
         allServerGroups.addCantAppearAfter(serverGroups);
 
-        disabled = new ArgumentWithoutValue("--disabled");
-        argsCompleter.addArgument(disabled);
+        disabled = new ArgumentWithoutValue(this, "--disabled");
         disabled.addRequiredPreceding(path);
     }
 

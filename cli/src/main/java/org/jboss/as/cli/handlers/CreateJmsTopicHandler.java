@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
@@ -47,9 +48,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
     public CreateJmsTopicHandler() {
         super("create-jms-topic", true);
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        profile = new ArgumentWithValue(new DefaultCompleter(new CandidatesProvider(){
+        profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
                 return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
@@ -62,9 +61,8 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(profile);
 
-        name = new ArgumentWithValue(true, /*0,*/ "--name") {
+        name = new ArgumentWithValue(this, /*0,*/ "--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) {
                 if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
@@ -73,10 +71,8 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(name);
 
-        entries = new ArgumentWithValue(new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
-        argsCompleter.addArgument(entries);
+        entries = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
     }
 
     /* (non-Javadoc)
@@ -88,7 +84,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
         ModelNode request;
         try {
             request = buildRequest(ctx);
-        } catch (OperationFormatException e1) {
+        } catch (CommandFormatException e1) {
             ctx.printLine(e1.getLocalizedMessage());
             return;
         }
@@ -111,7 +107,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
+    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ParsedArguments args = ctx.getParsedArguments();
@@ -124,12 +120,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
             builder.addNode("profile",profile);
         }
 
-        final String name;
-        try {
-            name = this.name.getValue(args);
-        } catch(IllegalArgumentException e) {
-            throw new OperationFormatException(e.getLocalizedMessage());
-        }
+        final String name = this.name.getValue(args, true);
 
         builder.addNode("subsystem", "jms");
         builder.addNode("topic", name);

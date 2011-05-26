@@ -45,19 +45,14 @@ public class HistoryHandler extends CommandHandlerWithHelp {
     public HistoryHandler(String command) {
         super(command);
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        clear = new ArgumentWithoutValue("--clear");
+        clear = new ArgumentWithoutValue(this, "--clear");
         clear.setExclusive(true);
-        argsCompleter.addArgument(clear);
 
-        disable = new ArgumentWithoutValue("--disable");
+        disable = new ArgumentWithoutValue(this, "--disable");
         disable.setExclusive(true);
-        argsCompleter.addArgument(disable);
 
-        enable = new ArgumentWithoutValue("--enable");
+        enable = new ArgumentWithoutValue(this, "--enable");
         enable.setExclusive(true);
-        argsCompleter.addArgument(enable);
     }
 
     @Override

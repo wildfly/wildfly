@@ -76,6 +76,17 @@ public interface CommandArgument {
     String getValue(ParsedArguments args);
 
     /**
+     * Returns the value of the argument specified on the command line.
+     * If the argument isn't specified and the value is not required null is returned.
+     * Otherwise an exception is thrown.
+     *
+     * @param args  parsed arguments.
+     * @param required  whether the value for this argument is required.
+     * @return  the value of the argument or null if the argument isn't present and the value is not required.
+     */
+    String getValue(ParsedArguments args, boolean required) throws CommandFormatException;
+
+    /**
      * Checks whether the argument accepts value.
      * @return  true if this argument accepts a value, otherwise false.
      */

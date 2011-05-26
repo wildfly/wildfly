@@ -31,7 +31,6 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.cli.handlers.SimpleArgumentTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 
@@ -47,13 +46,10 @@ public class BatchHandler extends CommandHandlerWithHelp {
     public BatchHandler() {
         super("batch");
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        l = new ArgumentWithoutValue("-l");
+        l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
-        argsCompleter.addArgument(l);
 
-        name = new ArgumentWithValue(false, new CommandLineCompleter() {
+        name = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -82,7 +78,6 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
             }}, 0, "--name");
         name.addCantAppearAfter(l);
-        argsCompleter.addArgument(name);
     }
 
     /* (non-Javadoc)

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.cli;
 
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -30,5 +29,5 @@ import org.jboss.dmr.ModelNode;
  */
 public interface OperationCommand extends CommandHandler {
 
-    ModelNode buildRequest(CommandContext ctx) throws OperationFormatException;
+    ModelNode buildRequest(CommandContext ctx) throws CommandFormatException;
 }

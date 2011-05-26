@@ -28,8 +28,10 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.ParsedArguments;
+import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
 
 /**
  *
@@ -45,21 +47,36 @@ public class ArgumentWithoutValue implements CommandArgument {
     protected List<CommandArgument> cantAppearAfter = Collections.emptyList();
     protected boolean exclusive;
 
-    public ArgumentWithoutValue(String fullName) {
-        this(-1, fullName, null);
+    public ArgumentWithoutValue(CommandHandlerWithArguments handler, String fullName) {
+        this(handler, -1, fullName);
     }
 
-    public ArgumentWithoutValue(String fullName, String shortName) {
-        this(-1, fullName, shortName);
-    }
-
-    public ArgumentWithoutValue(int index, String fullName, String shortName) {
+    public ArgumentWithoutValue(CommandHandlerWithArguments handler, String fullName, String shortName) {
         if(fullName == null || fullName.length() < 1) {
             throw new IllegalArgumentException("Full name is null or an empty string.");
         }
         this.fullName = fullName;
         this.shortName = shortName;
+        this.index = -1;
+
+        if(handler == null) {
+            throw new IllegalArgumentException("Command handler is null");
+        }
+        handler.addArgument(this);
+    }
+
+    public ArgumentWithoutValue(CommandHandlerWithArguments handler, int index, String fullName) {
+        if(fullName == null || fullName.length() < 1) {
+            throw new IllegalArgumentException("Full name is null or an empty string.");
+        }
+        this.fullName = fullName;
+        this.shortName = null;
         this.index = index;
+
+        if(handler == null) {
+            throw new IllegalArgumentException("Command handler is null");
+        }
+        handler.addArgument(this);
     }
 
     public void setExclusive(boolean exclusive) {
@@ -102,7 +119,25 @@ public class ArgumentWithoutValue implements CommandArgument {
      */
     @Override
     public String getValue(ParsedArguments args) {
-        return null;
+        try {
+            return getValue(args, false);
+        } catch (CommandFormatException e) {
+            return null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandArgument#getValue(org.jboss.as.cli.CommandContext)
+     */
+    @Override
+    public String getValue(ParsedArguments args, boolean required) throws CommandFormatException {
+        if(!required) {
+            return null;
+        }
+        if(isPresent(args)) {
+            return null;
+        }
+        throw new CommandFormatException("Required argument '" + fullName + "' is missing value.");
     }
 
     @Override

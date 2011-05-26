@@ -95,4 +95,14 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
         ctx.getOperationRequestParser().parse(ctx.getArgumentsString(), builder);
         return builder.buildRequest();
     }
+
+    @Override
+    public boolean hasArgument(String name) {
+        return false;
+    }
+
+    @Override
+    public boolean hasArgument(int index) {
+        return false;
+    }
 }

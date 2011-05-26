@@ -53,4 +53,18 @@ public interface CommandHandler {
      * @param ctx  current command context
      */
     void handle(CommandContext ctx);
+
+    /**
+     * Checks whether the command handler recognizes the argument by the name.
+     * @param name  argument name to check
+     * @return  true if the handler recognizes the argument, otherwise - false.
+     */
+    boolean hasArgument(String name);
+
+    /**
+     * Checks whether the command handler accepts an argument with the specified index.
+     * @param index  argument index to check
+     * @return  true if the handler accepts an argument with the specified index, otherwise - false.
+     */
+    boolean hasArgument(int index);
 }

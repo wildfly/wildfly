@@ -400,7 +400,7 @@ public class CommandLineMain {
                             Batch batch = cmdCtx.getBatchManager().getActiveBatch();
                             batch.add(batchedCmd);
                             cmdCtx.printLine("#" + batch.size() + " " + batchedCmd.getCommand());
-                        } catch (OperationFormatException e) {
+                        } catch (CommandFormatException e) {
                             cmdCtx.printLine("Failed to add to batch: " + e.getLocalizedMessage());
                         }
                     }
@@ -751,7 +751,7 @@ public class CommandLineMain {
         }
 
         @Override
-        public BatchedCommand toBatchedCommand(String line) throws OperationFormatException {
+        public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
 
             if (line.isEmpty()) {
                 throw new IllegalArgumentException("Null command line.");

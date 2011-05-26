@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
@@ -41,7 +42,7 @@ import org.jboss.dmr.ModelNode;
 public class CreateJmsCFHandler extends BatchModeCommandHandler {
 
     private final ArgumentWithValue name;
-    private final ArgumentWithValue autoGroup;
+    //private final ArgumentWithValue autoGroup;
     private final ArgumentWithValue entries;
     private final ArgumentWithValue profile;
 /*    private final ArgumentWithValue connector;
@@ -79,9 +80,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
     public CreateJmsCFHandler() {
         super("create-jms-cf", true);
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        profile = new ArgumentWithValue(new DefaultCompleter(new CandidatesProvider(){
+        profile = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
                 return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
@@ -94,9 +93,8 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(profile);
 
-        name = new ArgumentWithValue(true, /*0, */"--name") {
+        name = new ArgumentWithValue(this, /*0, */"--name") {
             @Override
             public boolean canAppearNext(CommandContext ctx) {
                 if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
@@ -105,13 +103,10 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(name);
 
-        autoGroup = new ArgumentWithValue("--auto-group");
-        argsCompleter.addArgument(autoGroup);
+        //autoGroup = new ArgumentWithValue(this, "--auto-group");
 
-        entries = new ArgumentWithValue("--entries");
-        argsCompleter.addArgument(entries);
+        entries = new ArgumentWithValue(this, "--entries");
 
 /*        clientId = new ArgumentWithValue("--client-id");
         addArgument(clientId);
@@ -126,7 +121,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
         ModelNode request;
         try {
             request = buildRequest(ctx);
-        } catch (OperationFormatException e) {
+        } catch (CommandFormatException e) {
             ctx.printLine(e.getLocalizedMessage());
             return;
         }
@@ -148,8 +143,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public ModelNode buildRequest(CommandContext ctx)
-            throws OperationFormatException {
+    public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
 
@@ -166,12 +160,7 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
         builder.addNode("subsystem", "jms");
         builder.setOperationName("add");
 
-        final String name;
-        try {
-            name = this.name.getValue(args);
-        } catch(IllegalArgumentException e) {
-            throw new OperationFormatException(e.getLocalizedMessage());
-        }
+        final String name = this.name.getValue(args, true);
 
         final String entriesStr = this.entries.getValue(args);
 

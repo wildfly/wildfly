@@ -55,13 +55,10 @@ public class UndeployHandler extends BatchModeCommandHandler {
     public UndeployHandler() {
         super("undeploy", true);
 
-        SimpleArgumentTabCompleter argsCompleter = (SimpleArgumentTabCompleter) this.getArgumentCompleter();
-
-        l = new ArgumentWithoutValue("-l");
+        l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
-        argsCompleter.addArgument(l);
 
-        name = new ArgumentWithValue(false, new CommandLineCompleter() {
+        name = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -97,9 +94,8 @@ public class UndeployHandler extends BatchModeCommandHandler {
 
             }}, 0, "--name");
         name.addCantAppearAfter(l);
-        argsCompleter.addArgument(name);
 
-        allRelevantServerGroups = new ArgumentWithoutValue("--all-relevant-server-groups") {
+        allRelevantServerGroups = new ArgumentWithoutValue(this, "--all-relevant-server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) {
                 if(!ctx.isDomainMode()) {
@@ -108,10 +104,9 @@ public class UndeployHandler extends BatchModeCommandHandler {
                 return super.canAppearNext(ctx);
             }
         };
-        argsCompleter.addArgument(allRelevantServerGroups);
         allRelevantServerGroups.addRequiredPreceding(name);
 
-        serverGroups = new ArgumentWithValue(false, new CommandLineCompleter() {
+        serverGroups = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
@@ -169,13 +164,11 @@ public class UndeployHandler extends BatchModeCommandHandler {
             }
         };
         serverGroups.addRequiredPreceding(name);
-        argsCompleter.addArgument(serverGroups);
 
         serverGroups.addCantAppearAfter(allRelevantServerGroups);
         allRelevantServerGroups.addCantAppearAfter(serverGroups);
 
-        keepContent = new ArgumentWithoutValue("--keep-content");
-        argsCompleter.addArgument(keepContent);
+        keepContent = new ArgumentWithoutValue(this, "--keep-content");
         keepContent.addRequiredPreceding(name);
     }
 
