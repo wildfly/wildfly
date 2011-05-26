@@ -34,7 +34,6 @@ import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
