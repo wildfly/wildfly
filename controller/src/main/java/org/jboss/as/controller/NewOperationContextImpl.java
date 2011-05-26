@@ -91,16 +91,16 @@ final class NewOperationContextImpl implements NewOperationContext {
     private ModelNode model;
     private ModelNode readOnlyModel;
     private ResultAction resultAction;
+    private boolean affectsModel;
+    private boolean affectsRuntime;
+    private boolean cancelled;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
     }
 
     enum Flag {
-        AFFECTS_MODEL,
-        AFFECTS_RUNTIME,
-        WRITE_LOCK_TAKEN,
-        CANCELLED,
+        WRITE_LOCK_TAKEN
     }
 
     NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags, final OperationMessageHandler messageHandler, final ModelNode model, final NewModelController.OperationTransactionControl transactionControl, final boolean booting) {
@@ -184,7 +184,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             throw new IllegalStateException("Operation already complete");
         }
         if (Thread.currentThread().isInterrupted()) {
-            flags.add(Flag.CANCELLED);
+            cancelled = true;
         }
         // Rollback when any of:
         // 1. operation is cancelled
@@ -192,7 +192,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         // 3. operation failed in runtime/verify and rollback_on_fail is set
         // 4. isRollbackOnly
         ModelNode response = this.response;
-        if (flags.contains(Flag.CANCELLED)) {
+        if (cancelled) {
             response.get(OUTCOME).set(CANCELLED);
             response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
             response.get(ROLLED_BACK).set(true);
@@ -213,14 +213,14 @@ final class NewOperationContextImpl implements NewOperationContext {
                 if (contextType == Type.MANAGEMENT && currentStage == Stage.MODEL.next()) {
                     currentStage = null;
                 }
-                if (flags.contains(Flag.AFFECTS_RUNTIME) && currentStage == Stage.VERIFY) {
+                if (affectsRuntime && currentStage == Stage.VERIFY) {
                     // a change was made to the runtime
                     modelController.releaseContainerMonitor();
                     try {
                         modelController.awaitContainerMonitor(true, 0);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        flags.add(Flag.CANCELLED);
+                        cancelled = true;
                         response.get(OUTCOME).set(CANCELLED);
                         response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
                         response.get(ROLLED_BACK).set(true);
@@ -361,8 +361,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (! (currentStage == Stage.RUNTIME || currentStage == Stage.VERIFY && ! modify)) {
             throw new IllegalStateException("Get service registry only supported in runtime operations");
         }
-        if (modify && flags.add(Flag.AFFECTS_RUNTIME)) {
+        if (modify && !affectsRuntime) {
             takeWriteLock();
+            affectsRuntime = true;
             modelController.acquireContainerMonitor();
             try {
                 modelController.awaitContainerMonitor(respectInterruption, 1);
@@ -384,8 +385,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY) {
             throw new IllegalStateException("Service removal only supported in runtime operations");
         }
-        if (flags.add(Flag.AFFECTS_RUNTIME)) {
+        if (!affectsRuntime) {
             takeWriteLock();
+            affectsRuntime = true;
             modelController.acquireContainerMonitor();
             try {
                 modelController.awaitContainerMonitor(respectInterruption, 1);
@@ -411,8 +413,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY) {
             throw new IllegalStateException("Service removal only supported in runtime operations");
         }
-        if (flags.add(Flag.AFFECTS_RUNTIME)) {
+        if (!affectsRuntime) {
             takeWriteLock();
+            affectsRuntime = true;
             modelController.acquireContainerMonitor();
             try {
                 modelController.awaitContainerMonitor(respectInterruption, 1);
@@ -462,8 +465,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY) {
             throw new IllegalStateException("Get service target only supported in runtime operations");
         }
-        if (flags.add(Flag.AFFECTS_RUNTIME)) {
+        if (!affectsRuntime) {
             takeWriteLock();
+            affectsRuntime = true;
             try {
                 modelController.awaitContainerMonitor(respectInterruption, 0);
             } catch (InterruptedException e) {
@@ -517,8 +521,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (flags.add(Flag.AFFECTS_MODEL)) {
+        if (!affectsModel) {
             takeWriteLock();
+            affectsModel = true;
             model = model.clone();
             readOnlyModel = null;
         }
@@ -560,8 +565,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (flags.add(Flag.AFFECTS_MODEL)) {
+        if (!affectsModel) {
             takeWriteLock();
+            affectsModel = true;
             model = model.clone();
             readOnlyModel = null;
         }
@@ -592,8 +598,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (flags.add(Flag.AFFECTS_MODEL)) {
+        if (!affectsModel) {
             takeWriteLock();
+            affectsModel = true;
             model = model.clone();
         }
         ModelNode model = this.model;
@@ -613,11 +620,11 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     public boolean isModelAffected() {
-        return flags.contains(Flag.AFFECTS_MODEL);
+        return affectsModel;
     }
 
     public boolean isRuntimeAffected() {
-        return flags.contains(Flag.AFFECTS_RUNTIME);
+        return affectsRuntime;
     }
 
     public Stage getCurrentStage() {
