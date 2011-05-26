@@ -22,6 +22,9 @@
 
 package org.jboss.as.testsuite.integration.jpa.defaultdatasource;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,11 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * default datasource tests
@@ -80,7 +78,6 @@ public class DatasourceTestCase {
         );
 
         jar.addResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        //jar.addResource(new StringAsset(""), "META-INF/MANIFEST.MF");
         return jar;
     }
 

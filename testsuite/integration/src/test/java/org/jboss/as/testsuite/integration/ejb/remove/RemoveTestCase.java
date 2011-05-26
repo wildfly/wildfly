@@ -22,11 +22,14 @@
 
 package org.jboss.as.testsuite.integration.ejb.remove;
 
+import javax.ejb.NoSuchEJBException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -61,7 +64,6 @@ public class RemoveTestCase {
         jar.addClasses(RemoveTestCase.class,
             SFSB1.class
         );
-        jar.addResource(new StringAsset(""), "META-INF/MANIFEST.MF");
         return jar;
     }
 

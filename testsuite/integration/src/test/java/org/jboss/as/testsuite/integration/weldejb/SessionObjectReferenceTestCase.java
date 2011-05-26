@@ -21,6 +21,19 @@
  */
 package org.jboss.as.testsuite.integration.weldejb;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.beans.XMLDecoder;
+import java.io.StringBufferInputStream;
+import java.net.MalformedURLException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import javax.ejb.ConcurrentAccessException;
+
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
@@ -29,18 +42,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.stdio.WriterOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.ConcurrentAccessException;
-import java.beans.XMLDecoder;
-import java.io.StringBufferInputStream;
-import java.net.MalformedURLException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test two things:

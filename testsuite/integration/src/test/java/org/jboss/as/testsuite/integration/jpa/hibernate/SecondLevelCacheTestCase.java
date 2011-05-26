@@ -22,6 +22,14 @@
 
 package org.jboss.as.testsuite.integration.jpa.hibernate;
 
+import static org.junit.Assert.assertTrue;
+
+import java.sql.Connection;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,13 +39,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.sql.Connection;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Hibernate session factory tests
@@ -87,7 +88,6 @@ public class SecondLevelCacheTestCase {
         );
 
         jar.addResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        jar.addResource(new StringAsset(""), "META-INF/MANIFEST.MF");
         return jar;
     }
 
