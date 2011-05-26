@@ -2969,6 +2969,10 @@
                 <version>${version.org.jboss.ejb3}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.jboss.aop</groupId>
+                        <artifactId>jboss-aop</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-log4j</artifactId>
                     </exclusion>
