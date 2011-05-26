@@ -240,13 +240,6 @@ public interface NewOperationContext {
     Stage getCurrentStage();
 
     /**
-     * Get the compensating operation node, creating it if necessary.
-     *
-     * @return the compensating operation node
-     */
-    ModelNode getCompensatingOperation();
-
-    /**
      * Send a message to the client.  Valid only during this operation.
      *
      * @param severity the message severity

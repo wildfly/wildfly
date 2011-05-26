@@ -388,8 +388,6 @@ public class ModelControllerImplUnitTestCase {
 
             context.getResult().set(current);
 
-            ModelNode compensatingOp = getOperation("good", name, current, operation.get("rollbackName").asString());
-            context.getCompensatingOperation().set(compensatingOp);
             context.completeStep();
         }
     }
@@ -454,8 +452,6 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, NewOperationContext.Stage.RUNTIME);
 
-            ModelNode compOp = getOperation(operation.get("rollbackName").asString(), name, current);
-            context.getCompensatingOperation().set(compOp);
             context.completeStep();
         }
     }
@@ -487,8 +483,6 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, NewOperationContext.Stage.RUNTIME);
 
-            ModelNode compOp = getOperation(operation.get("rollbackName").asString(), name, current);
-            context.getCompensatingOperation().set(compOp);
             context.completeStep();
         }
     }
@@ -520,8 +514,6 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, NewOperationContext.Stage.RUNTIME);
 
-            ModelNode compOp = getOperation(operation.get("rollbackName").asString(), name, current);
-            context.getCompensatingOperation().set(compOp);
             context.completeStep();
         }
     }
@@ -555,8 +547,6 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, NewOperationContext.Stage.RUNTIME);
 
-            ModelNode compOp = getOperation("missing-service", name, current, operation.get("rollbackName").asString(), true);
-            context.getCompensatingOperation().set(compOp);
             context.completeStep();
         }
     }
@@ -607,8 +597,6 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, NewOperationContext.Stage.RUNTIME);
 
-            ModelNode compOp = getOperation("bad-service", name, current, operation.get("rollbackName").asString(), true);
-            context.getCompensatingOperation().set(compOp);
             context.completeStep();
         }
     }

@@ -647,13 +647,6 @@ final class NewOperationContextImpl implements NewOperationContext {
         return currentStage;
     }
 
-    public ModelNode getCompensatingOperation() {
-        if (operation == null) {
-            throw new NullPointerException("operation is null");
-        }
-        return response.get(COMPENSATING_OPERATION);
-    }
-
     public void report(final MessageSeverity severity, final String message) {
         try {
             messageHandler.handleReport(severity, message);
