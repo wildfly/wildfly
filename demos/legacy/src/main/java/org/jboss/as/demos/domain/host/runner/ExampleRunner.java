@@ -23,7 +23,6 @@
 package org.jboss.as.demos.domain.host.runner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPENSATING_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -32,16 +31,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.IOException;
 import java.net.InetAddress;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -72,14 +73,18 @@ public class ExampleRunner {
     void runSysProperties(final ModelControllerClient client) throws Exception {
         final ModelNode address = new ModelNode();
         address.add(HOST, "local");
+        address.add(SYSTEM_PROPERTY, "test-property");
 
         final ModelNode operation = new ModelNode();
-        operation.get(OP).set("add-system-property");
+        operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("test-property");
         operation.get(VALUE).set("test-value");
 
-        runOperationAndRollback(operation, client);
+        final ModelNode reversing = new ModelNode();
+        reversing.get(OP).set("remove");
+        reversing.get(OP_ADDR).set(address);
+
+        runOperationAndRollback(operation, reversing, client);
     }
 
     void runPaths(final ModelControllerClient client) throws Exception {
@@ -93,7 +98,11 @@ public class ExampleRunner {
         operation.get(NAME).set("temp");
         operation.get(PATH).set("temp");
 
-        runOperationAndRollback(operation,client);
+        final ModelNode reversing = new ModelNode();
+        reversing.get(OP).set("remove");
+        reversing.get(OP_ADDR).set(address);
+
+        runOperationAndRollback(operation, reversing, client);
     }
 
     void runInterface(final ModelControllerClient client) throws IOException {
@@ -107,10 +116,14 @@ public class ExampleRunner {
         operation.get(NAME).set("new");
         operation.get(CRITERIA).set("any-address");
 
-        runOperationAndRollback(operation, client);
+        final ModelNode reversing = new ModelNode();
+        reversing.get(OP).set("remove");
+        reversing.get(OP_ADDR).set(address);
+
+        runOperationAndRollback(operation, reversing, client);
     }
 
-    void runOperationAndRollback(final ModelNode operation, final ModelControllerClient client) throws IOException {
+    void runOperationAndRollback(final ModelNode operation, final ModelNode reversing, final ModelControllerClient client) throws IOException {
 
         System.out.println("Executing operation:\n" + operation);
         final ModelNode result = client.execute(operation);
@@ -126,9 +139,8 @@ public class ExampleRunner {
 
             System.out.println("Effect on resource is \n" + readResult.get(RESULT));
         } finally {
-            final ModelNode compensating = result.get(COMPENSATING_OPERATION);
-            System.out.println("Reverting change via \n" + compensating);
-            checkSuccess(client.execute(compensating));
+            System.out.println("Reverting change via \n" + reversing);
+            checkSuccess(client.execute(reversing));
         }
     }
 

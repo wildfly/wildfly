@@ -93,10 +93,6 @@ public final class JVMHandlers {
                 ModelNode valNode = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
                 boolean oldVal = valNode.asBoolean();
                 valNode.set(value);
-
-                ModelNode compensatingOp = operation.clone();
-                compensatingOp.get(name).set(oldVal);
-                context.getCompensatingOperation().set(compensatingOp);
             } catch (Exception e) {
                 context.getFailureDescription().set(e.toString());
             }
@@ -139,12 +135,6 @@ public final class JVMHandlers {
 
     static final class JVMOptionAddHandler implements NewStepHandler, DescriptionProvider {
 
-        static ModelNode getAddOperation(ModelNode address, ModelNode option) {
-            ModelNode add = Util.getEmptyOperation(OPERATION_NAME, address);
-            add.get(JVM_OPTION).set(option);
-            return add;
-        }
-
         static final String OPERATION_NAME = ADD_JVM_OPTION;
         static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
 
@@ -154,10 +144,6 @@ public final class JVMHandlers {
             final ModelNode option = operation.require(JVM_OPTION);
 
             context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(JVM_OPTIONS).add(option);
-
-            final ModelNode compensatingOperation = JVMOptionRemoveHandler.getRemoveOperation(operation.require(OP_ADDR), option);
-
-            context.getCompensatingOperation().set(compensatingOperation);
 
             context.completeStep();
         }
@@ -170,12 +156,6 @@ public final class JVMHandlers {
     }
 
     static final class JVMOptionRemoveHandler implements NewStepHandler, DescriptionProvider {
-
-        static ModelNode getRemoveOperation(ModelNode address, ModelNode option) {
-            ModelNode remove = Util.getEmptyOperation(OPERATION_NAME, address);
-            remove.get(JVM_OPTION).set(option);
-            return remove;
-        }
 
         static final String OPERATION_NAME = "remove-jvm-option";
         static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
@@ -196,9 +176,6 @@ public final class JVMHandlers {
                     }
                 }
             }
-
-            final ModelNode compensatingOperation = JVMOptionAddHandler.getAddOperation(operation.require(OP_ADDR), option);
-            context.getCompensatingOperation().set(compensatingOperation);
 
             context.completeStep();
         }

@@ -58,9 +58,6 @@ public final class JVMRemoveHandler implements NewStepHandler, DescriptionProvid
     public void execute(NewOperationContext context, ModelNode operation) {
         final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
-        final ModelNode compensatingOperation = JVMAddHandler.getAddOperation(operation.require(OP_ADDR), subModel);
-        context.getCompensatingOperation().set(compensatingOperation);
-
         context.removeModel(PathAddress.EMPTY_ADDRESS);
 
         context.completeStep();

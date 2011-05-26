@@ -48,13 +48,6 @@ import org.jboss.dmr.ModelNode;
  */
 public final class JVMAddHandler implements NewStepHandler, DescriptionProvider {
 
-    static ModelNode getAddOperation(ModelNode address, ModelNode toRecreate) {
-        ModelNode add = toRecreate.clone();
-        add.get(OP).set(ADD);
-        add.get(OP_ADDR).set(address);
-        return add;
-    }
-
     public static final String OPERATION_NAME = ADD;
     public static final JVMAddHandler INSTANCE = new JVMAddHandler(false);
     public static final JVMAddHandler SERVER_INSTANCE = new JVMAddHandler(true);
@@ -92,9 +85,6 @@ public final class JVMAddHandler implements NewStepHandler, DescriptionProvider 
                 }
             }
         }
-
-        final ModelNode compensatingOperation = Util.getResourceRemoveOperation(operation.require(OP_ADDR));
-        context.getCompensatingOperation().set(compensatingOperation);
 
         context.completeStep();
 

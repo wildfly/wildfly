@@ -51,6 +51,8 @@ public class ModelDescriptionConstants {
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    /** @deprecated operation responses will no longer include the compensating operation */
+    @Deprecated
     public static final String COMPENSATING_OPERATION = "compensating-operation";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
