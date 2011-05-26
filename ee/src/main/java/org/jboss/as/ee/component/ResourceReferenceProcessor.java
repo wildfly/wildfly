@@ -88,7 +88,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                 } else {
                     //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
-                    throw new RuntimeException("res-env-ref without a lookup-name isn't yet supported");
+                    if (resourceEnvRef.getResourceEnvRefName().startsWith("java:")) {
+                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getResourceEnvRefName()));
+                    } else {
+                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:/" + resourceEnvRef.getResourceEnvRefName()));
+                    }
                 }
             }
             bindings.add(bindingConfiguration);
@@ -130,7 +134,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else {
                 //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
-                throw new RuntimeException("resource-ref without a lookup-name isn't yet supported");
+                if (resourceRef.getResourceRefName().startsWith("java:")) {
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getResourceRefName()));
+                } else {
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:/" + resourceRef.getResourceRefName()));
+                }
             }
             bindings.add(bindingConfiguration);
         }
@@ -161,9 +169,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             }
             final String value = envEntry.getValue();
             final String lookup = envEntry.getLookupName();
-            if(!isEmpty(value) && !isEmpty(lookup)) {
+            if (!isEmpty(value) && !isEmpty(lookup)) {
                 throw new DeploymentUnitProcessingException("Cannot specify both a <env-entry-value> and a <lookup-name> in an environemnt entry.");
-            } else if(isEmpty(lookup) && isEmpty(value)) {
+            } else if (isEmpty(lookup) && isEmpty(value)) {
                 //if no value is provided then it is not an error
                 //this reference should simply be ignored
                 // (Java ee platform spec 6.0 fr pg 80)
@@ -180,7 +188,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             final String type = classType.getName();
             BindingConfiguration bindingConfiguration = null;
-            if(!isEmpty(lookup)) {
+            if (!isEmpty(lookup)) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
             } else if (type.equals(String.class.getName())) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(value));
