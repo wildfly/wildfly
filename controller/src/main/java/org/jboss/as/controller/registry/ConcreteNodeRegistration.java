@@ -44,12 +44,16 @@ import org.jboss.dmr.ModelNode;
 
 final class ConcreteNodeRegistration extends AbstractNodeRegistration {
 
+    @SuppressWarnings("unused")
     private volatile Map<String, NodeSubregistry> children;
 
+    @SuppressWarnings("unused")
     private volatile Map<String, OperationEntry> operations;
 
+    @SuppressWarnings("unused")
     private volatile DescriptionProvider descriptionProvider;
 
+    @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
 
     private static final AtomicMapFieldUpdater<ConcreteNodeRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteNodeRegistration.class, Map.class, "children"));
