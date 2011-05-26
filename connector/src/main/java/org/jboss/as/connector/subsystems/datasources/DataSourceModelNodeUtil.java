@@ -314,7 +314,7 @@ class DataSourceModelNodeUtil {
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
-        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, false);
+        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, true);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, null);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
@@ -388,7 +388,7 @@ class DataSourceModelNodeUtil {
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
-        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, false);
+        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, true);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, null);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);

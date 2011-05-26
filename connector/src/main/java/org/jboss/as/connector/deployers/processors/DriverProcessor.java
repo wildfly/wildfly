@@ -59,9 +59,9 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
         if (module != null && servicesAttachment != null) {
             final ModuleClassLoader classLoader = module.getClassLoader();
             final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());
-            for (String driverName : driverNames) {
+            for (String driverClassName : driverNames) {
                 try {
-                    final Class<? extends Driver> driverClass = classLoader.loadClass(driverName).asSubclass(Driver.class);
+                    final Class<? extends Driver> driverClass = classLoader.loadClass(driverClassName).asSubclass(Driver.class);
                     final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                     final Driver driver = constructor.newInstance();
                     final int majorVersion = driver.getMajorVersion();
@@ -74,20 +74,18 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                         log.infof("Deploying non-JDBC-compliant driver %s (version %d.%d)", driverClass,
                                 Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
                     }
-
-                    InstalledDriver driverMetadata = new InstalledDriver(deploymentUnit.getName(), driverClass.getName(), null,
-                            majorVersion, minorVersion, compliant);
+                    String driverName = deploymentUnit.getName();
+                    InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, majorVersion,
+                            minorVersion, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
                     phaseContext
                             .getServiceTarget()
-                            .addService(
-                                    ServiceName.JBOSS.append("jdbc-driver", driverName, Integer.toString(majorVersion),
-                                            Integer.toString(minorVersion)), driverService)
+                            .addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll(".", "_")), driverService)
                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                                     driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
                 } catch (Exception e) {
-                    log.warnf("Unable to instantiate driver class \"%s\": %s", driverName, e);
+                    log.warnf("Unable to instantiate driver class \"%s\": %s", driverClassName, e);
                 }
             }
         }

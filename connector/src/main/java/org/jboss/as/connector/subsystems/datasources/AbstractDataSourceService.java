@@ -212,23 +212,29 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
                 DataSources dataSources = null;
                 if (dataSourceConfig != null) {
-                    InstalledDriver installedDriver = driverRegistry.getValue()
-                            .getInstalledDriver(dataSourceConfig.getDriver());
-                    org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
-                            installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), installedDriver
-                                    .getModuleName().getName(), installedDriver.getDriverClassName(),
-                            installedDriver.getXaDataSourceClassName());
-                    drivers.put(driver.getName(), driver);
-                    dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
+                    String driverName = dataSourceConfig.getDriver();
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
+                    if (installedDriver != null) {
+                        String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
+                                : null;
+                        org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
+                                installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), moduleName,
+                                installedDriver.getDriverClassName(), installedDriver.getXaDataSourceClassName());
+                        drivers.put(driverName, driver);
+                        dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
+                    }
                 } else if (xaDataSourceConfig != null) {
-                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(
-                            xaDataSourceConfig.getDriver());
-                    org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
-                            installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), installedDriver
-                                    .getModuleName().getName(), installedDriver.getDriverClassName(),
-                            installedDriver.getXaDataSourceClassName());
-                    drivers.put(driver.getName(), driver);
-                    dataSources = new DatasourcesImpl(null, Arrays.asList(xaDataSourceConfig), drivers);
+                    String driverName = xaDataSourceConfig.getDriver();
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
+                    if (installedDriver != null) {
+                        String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
+                                : null;
+                        org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
+                                installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), moduleName,
+                                installedDriver.getDriverClassName(), installedDriver.getXaDataSourceClassName());
+                        drivers.put(driverName, driver);
+                        dataSources = new DatasourcesImpl(null, Arrays.asList(xaDataSourceConfig), drivers);
+                    }
                 }
 
                 CommonDeployment c = createObjectsAndInjectValue(new URL("file://DataSourceDeployment"), jndiName,
