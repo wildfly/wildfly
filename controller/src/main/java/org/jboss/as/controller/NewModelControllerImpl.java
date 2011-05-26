@@ -84,7 +84,10 @@ class NewModelControllerImpl implements NewModelController {
     static final ThreadLocal<Boolean> RB_ON_RT_FAILURE = new ThreadLocal<Boolean>();
 
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL), handler, modelReference.get(), control, bootingFlag.getAndSet(false));
+        final ModelNode headers = operation.get(OPERATION_HEADERS);
+        final boolean rollbackOnFailure = headers == null || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean(true);
+        final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, modelReference.get(), control, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
         if (prepareStep != null) {
             context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
@@ -99,8 +102,6 @@ class NewModelControllerImpl implements NewModelController {
         }, NewOperationContext.Stage.VERIFY);
         NewStepHandler stepHandler = (NewStepHandler) rootRegistration.getOperationHandler(PathAddress.pathAddress(operation.require(ADDRESS)), operation.require(OP).asString());
         context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
-        final ModelNode headers = operation.get(OPERATION_HEADERS);
-        final boolean rollbackOnFailure = headers == null || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean(true);
         RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
         try {
             context.completeStep();
