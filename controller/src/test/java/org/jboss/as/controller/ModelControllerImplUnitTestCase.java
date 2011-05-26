@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
@@ -148,6 +149,28 @@ public class ModelControllerImplUnitTestCase {
         assertEquals(5, result.get(RESULT).asInt());
     }
 
+    /**
+     * Test successfully updating the model but then having the caller roll back the transaction.
+     * @throws Exception
+     */
+    @Test
+    public void testGoodModelExecutionTxRollback() throws Exception {
+        ModelNode result = controller.execute(getOperation("good", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        // Store response data for later assertions after we check more critical stuff
+        String outcome = result.get(OUTCOME).asString();
+        boolean rolledback = result.get(ROLLED_BACK).asBoolean();
+
+        // Confirm model was unchanged
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(1, result.get(RESULT).asInt());
+
+        // Assert the first response was as expected
+        assertEquals(FAILED, outcome);  // TODO success may be valid???
+        assertTrue(rolledback);
+    }
+
     @Test
     public void testModelStageFailureExecution() throws Exception {
         ModelNode result = controller.execute(getOperation("bad", "attr1", 5), null, null, null);
@@ -256,6 +279,27 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(5, result.get("result").asInt());
+    }
+
+    @Test
+    public void testGoodServiceTxRollback() throws Exception {
+        ModelNode result = controller.execute(getOperation("good-service", "attr1", 5), null, null, null);
+        System.out.println(result);
+        // Store response data for later assertions after we check more critical stuff
+
+        ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("good-service"));
+        if (sc != null) {
+            assertEquals(ServiceController.Mode.REMOVE, sc.getMode());
+        }
+
+        // Confirm model was unchanged
+        ModelNode result2 = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals(SUCCESS, result2.get(OUTCOME).asString());
+        assertEquals(1, result2.get(RESULT).asInt());
+
+        // Assert the first response was as expected
+        assertEquals(FAILED, result.get(OUTCOME).asString());   // TODO success may be valid???
+        assertTrue(result.get(ROLLED_BACK).asBoolean());
     }
 
     @Test
@@ -575,6 +619,16 @@ public class ModelControllerImplUnitTestCase {
             return new ModelNode();
         }
     };
+
+    private static class RollbackTransactionControl implements NewModelController.OperationTransactionControl {
+
+        static final RollbackTransactionControl INSTANCE = new RollbackTransactionControl();
+
+        @Override
+        public void operationPrepared(NewModelController.OperationTransaction transaction, ModelNode result) {
+            transaction.rollback();
+        }
+    }
 
 
     private static class NullConfigurationPersister implements ConfigurationPersister{
