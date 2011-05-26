@@ -22,7 +22,6 @@
 package org.jboss.as.cli.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,25 +35,26 @@ import org.jboss.as.cli.parsing.CommandLineParser;
  *
  * @author Alexey Loubyansky
  */
-public class DefaultParsedArguments implements ParsedArguments {
+public class DefaultParsedArguments implements ParsedArguments, CommandLineParser.CallbackHandler {
 
     /** current command's arguments */
     private String argsStr;
     /** named command arguments */
-    private Map<String, String> namedArgs;
+    private Map<String, String> namedArgs = new HashMap<String, String>();
     /** other command arguments */
-    private List<String> otherArgs;
+    private List<String> otherArgs = new ArrayList<String>();
+
+    private boolean parsed;
 
     public void reset(String args) {
         argsStr = args;
-        namedArgs = null;
-        otherArgs = null;
+        namedArgs.clear();
+        otherArgs.clear();
+        parsed = false;
     }
 
     public void parse(String args) {
-        argsStr = args;
-        namedArgs = null;
-        otherArgs = null;
+        reset(args);
         parseArgs();
     }
 
@@ -71,7 +71,7 @@ public class DefaultParsedArguments implements ParsedArguments {
      */
     @Override
     public boolean hasArguments() {
-        if(otherArgs == null) {
+        if(!parsed) {
             parseArgs();
         }
         return !namedArgs.isEmpty() || !otherArgs.isEmpty();
@@ -82,7 +82,7 @@ public class DefaultParsedArguments implements ParsedArguments {
      */
     @Override
     public boolean hasArgument(String argName) {
-        if(namedArgs == null) {
+        if(!parsed) {
             parseArgs();
         }
         return namedArgs.containsKey(argName);
@@ -93,7 +93,7 @@ public class DefaultParsedArguments implements ParsedArguments {
      */
     @Override
     public String getArgument(String argName) {
-        if(namedArgs == null) {
+        if(!parsed) {
             parseArgs();
         }
         return namedArgs.get(argName);
@@ -104,7 +104,7 @@ public class DefaultParsedArguments implements ParsedArguments {
      */
     @Override
     public Set<String> getArgumentNames() {
-        if(namedArgs == null) {
+        if(!parsed) {
             parseArgs();
         }
         return namedArgs.keySet();
@@ -115,50 +115,28 @@ public class DefaultParsedArguments implements ParsedArguments {
      */
     @Override
     public List<String> getOtherArguments() {
-        if(otherArgs == null) {
+        if(!parsed) {
             parseArgs();
         }
         return otherArgs;
     }
 
     private void parseArgs() {
-        namedArgs = null;
-        otherArgs = null;
         if (argsStr != null && !argsStr.isEmpty()) {
             try {
-                CommandLineParser.parse(argsStr, new CommandLineParser.CallbackHandler() {
-                    @Override
-                    public void argument(String name, int nameStart, String value, int valueStart, int leaveIndex) {
-                        if(name != null) {
-                            if(namedArgs == null) {
-                                namedArgs = Collections.singletonMap(name, value);
-                            } else {
-                                if(namedArgs.size() == 1) {
-                                    namedArgs = new HashMap<String, String>(namedArgs);
-                                }
-                                namedArgs.put(name, value);
-                            }
-                        } else if(value != null) {
-                            if(otherArgs == null) {
-                                otherArgs = Collections.singletonList(value);
-                            } else {
-                                if(otherArgs.size() == 1) {
-                                    otherArgs = new ArrayList<String>(otherArgs);
-                                }
-                                otherArgs.add(value);
-                            }
-                        }
-                    }
-                });
+                CommandLineParser.parse(argsStr, this);
             } catch (CommandLineException e) {
             }
         }
+        parsed = true;
+    }
 
-        if(namedArgs == null) {
-            namedArgs = Collections.emptyMap();
-        }
-        if(otherArgs == null) {
-            otherArgs = Collections.emptyList();
+    @Override
+    public void argument(String name, int nameStart, String value, int valueStart, int end) {
+        if(name != null) {
+            namedArgs.put(name, value);
+        } else if(value != null) {
+            otherArgs.add(value);
         }
     }
 }

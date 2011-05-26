@@ -283,7 +283,7 @@ public class DeployHandler extends BatchModeCommandHandler {
 
                 ctx.printLine("'" + name + "' re-deployed successfully.");
             } else {
-                ctx.printLine("'" + name + "' is already deployed (use " + force.getDefaultName() + " to force re-deploy).");
+                ctx.printLine("'" + name + "' is already deployed (use " + force.getFullName() + " to force re-deploy).");
             }
 
             return;

@@ -35,32 +35,52 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
     private final boolean required;
     private final CommandLineCompleter valueCompleter;
 
-    public ArgumentWithValue(String... names) {
-        this(false, -1, names);
+    public ArgumentWithValue(String fullName) {
+        this(false, -1, fullName, null);
     }
 
-    public ArgumentWithValue(CommandLineCompleter valueCompleter, String... names) {
-        this(false, valueCompleter, -1, names);
+    public ArgumentWithValue(String fullName, String shortName) {
+        this(false, -1, fullName, shortName);
     }
 
-    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, String... names) {
-        this(required, valueCompleter, -1, names);
+    public ArgumentWithValue(CommandLineCompleter valueCompleter, String fullName) {
+        this(false, valueCompleter, -1, fullName, null);
     }
 
-    public ArgumentWithValue(boolean required, String... names) {
-        this(required, -1, names);
+    public ArgumentWithValue(CommandLineCompleter valueCompleter, String fullName, String shortName) {
+        this(false, valueCompleter, -1, fullName, shortName);
     }
 
-    public ArgumentWithValue(int index, String defaultName) {
-        this(false, index, defaultName);
+    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, String fullName) {
+        this(required, valueCompleter, -1, fullName, null);
     }
 
-    public ArgumentWithValue(boolean required, int index, String... names) {
-        this(required, null, index, names);
+    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, String fullName, String shortName) {
+        this(required, valueCompleter, -1, fullName, shortName);
     }
 
-    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, int index, String... names) {
-        super(index, names);
+    public ArgumentWithValue(boolean required, String fullName) {
+        this(required, -1, fullName, null);
+    }
+
+    public ArgumentWithValue(boolean required, String fullName, String shortName) {
+        this(required, -1, fullName, shortName);
+    }
+
+    public ArgumentWithValue(int index, String fullName) {
+        this(false, index, fullName, null);
+    }
+
+    public ArgumentWithValue(boolean required, int index, String fullName, String shortName) {
+        this(required, null, index, fullName, shortName);
+    }
+
+    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, int index, String fullName) {
+        this(required, valueCompleter, index, fullName, null);
+    }
+
+    public ArgumentWithValue(boolean required, CommandLineCompleter valueCompleter, int index, String fullName, String shortName) {
+        super(index, fullName, shortName);
         this.required = required;
         this.valueCompleter = valueCompleter;
     }
@@ -81,46 +101,20 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
             if(index >= 0) {
                 List<String> others = args.getOtherArguments();
                 if(others.size() > index) {
-                    value = others.get(index);
+                    return others.get(index);
                 }
             }
 
-            if(names != null) {
-                if(names.length == 1) {
-                    if(value == null) {
-                        value = args.getArgument(names[0]);
-                    } else {
-                        String namedValue = args.getArgument(names[0]);
-                        if(namedValue != null && !namedValue.equals(value)) {
-                            throw new IllegalArgumentException("Argument " + defaultName + " is specified twice: '" +
-                                    value + "' vs '" + namedValue + "'.");
-                        }
-                    }
-                } else {
-                    for(String name : names) {
-                        if(value == null) {
-                            value = args.getArgument(name);
-                        } else {
-                            String namedValue = args.getArgument(name);
-                            if(namedValue != null && !namedValue.equals(value)) {
-                                throw new IllegalArgumentException("Argument " + defaultName + " is specified twice: '" +
-                                        value + "' vs '" + namedValue + "'.");
-                            }
-                        }
-
-                    }
-                }
+            value = args.getArgument(fullName);
+            if(value == null && shortName != null) {
+                value = args.getArgument(shortName);
             }
         }
 
         if(required && value == null && !isPresent(args)) {
             StringBuilder buf = new StringBuilder();
             buf.append("Required argument ");
-            if(names != null) {
-                buf.append('\'').append(names[0]).append('\'');
-            } else {
-                buf.append("with index ").append(index);
-            }
+            buf.append('\'').append(fullName).append('\'');
             buf.append(" is missing.");
             throw new IllegalArgumentException(buf.toString());
         }

@@ -28,8 +28,19 @@ package org.jboss.as.cli;
  */
 public interface CommandHandler {
 
+    /**
+     * Checks whether the command is available in the current context
+     * (e.g. some commands require connection with the controller,
+     * some are available only in the batch mode, etc)
+     * @param ctx  current context
+     * @return  true if the command can be executed in the current context, false - otherwise.
+     */
     boolean isAvailable(CommandContext ctx);
 
+    /**
+     * The tab-completer for the argument value.
+     * @return  the tab-completer for the argument value or null if the completer is not available for the argument.
+     */
     CommandLineCompleter getArgumentCompleter();
 
     /**
@@ -37,5 +48,9 @@ public interface CommandHandler {
      */
     boolean isBatchMode();
 
+    /**
+     * Handles the execution of the command.
+     * @param ctx  current command context
+     */
     void handle(CommandContext ctx);
 }

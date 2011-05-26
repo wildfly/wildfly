@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli;
 
+
 /**
  *
  * @author Alexey Loubyansky
@@ -29,10 +30,17 @@ public interface CommandArgument {
 
     /**
      * The default name of the argument.
-     * An argument can have a few names, e.g. --force and -f.
+     * An argument can have more than one name, e.g. --force and -f.
+     * Full name can't be null.
      * @return  the default name of the argument.
      */
-    String getDefaultName();
+    String getFullName();
+
+    /**
+     * Short name of the argument if exists.
+     * @return short name of the argument or null if the short name doesn't exist.
+     */
+    String getShortName();
 
     /**
      * If the argument doesn't have a name its value can be found by index.

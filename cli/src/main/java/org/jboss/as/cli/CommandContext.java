@@ -53,12 +53,6 @@ public interface CommandContext {
     String getArgumentsString();
 
     /**
-     * Sets a new arguments string;
-     * @param args  the new arguments.
-     */
-    void setArgumentsString(String args);
-
-    /**
      * Parsed command line arguments.
      * @return  parsed command line arguments.
      */

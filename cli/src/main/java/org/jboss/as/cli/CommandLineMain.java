@@ -540,11 +540,6 @@ public class CommandLineMain {
         }
 
         @Override
-        public void setArgumentsString(String args) {
-            parsedArgs.reset(args);
-        }
-
-        @Override
         public void terminateSession() {
             terminate = true;
         }
@@ -737,7 +732,7 @@ public class CommandLineMain {
 
         private void setArgs(String cmd, String args) {
             this.cmd = cmd;
-            setArgumentsString(args);
+            parsedArgs.reset(args);
         }
 
         @Override

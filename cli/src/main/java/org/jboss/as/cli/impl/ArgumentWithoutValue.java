@@ -38,26 +38,27 @@ import org.jboss.as.cli.ParsedArguments;
 public class ArgumentWithoutValue implements CommandArgument {
 
     protected final int index;
-    protected final String defaultName;
-    protected final String[] names;
+    protected final String fullName;
+    protected final String shortName;
 
     protected List<CommandArgument> requiredPreceding;
     protected List<CommandArgument> cantAppearAfter = Collections.emptyList();
     protected boolean exclusive;
 
-    public ArgumentWithoutValue(String... names) {
-        this(-1, names);
+    public ArgumentWithoutValue(String fullName) {
+        this(-1, fullName, null);
     }
 
-    public ArgumentWithoutValue(int index, String... names) {
-        if(names == null || names.length < 1) {
-            throw new IllegalArgumentException("There must be at least one non-null default name.");
+    public ArgumentWithoutValue(String fullName, String shortName) {
+        this(-1, fullName, shortName);
+    }
+
+    public ArgumentWithoutValue(int index, String fullName, String shortName) {
+        if(fullName == null || fullName.length() < 1) {
+            throw new IllegalArgumentException("Full name is null or an empty string.");
         }
-        this.defaultName = names[0];
-        if(defaultName == null) {
-            throw new IllegalArgumentException("There must be at least one non-null default name.");
-        }
-        this.names = names;
+        this.fullName = fullName;
+        this.shortName = shortName;
         this.index = index;
     }
 
@@ -114,22 +115,19 @@ public class ArgumentWithoutValue implements CommandArgument {
             return true;
         }
 
-        if(names != null && names.length > 0) {
-            if(names.length == 1) {
-                return args.hasArgument(names[0]);
-            }
-            for(String name : names) {
-                if(args.hasArgument(name)) {
-                    return true;
-                }
-            }
+        if(args.hasArgument(fullName)) {
+            return true;
+        }
+
+        if(shortName != null && args.hasArgument(shortName)) {
+            return true;
         }
         return false;
     }
 
     @Override
-    public String getDefaultName() {
-        return defaultName;
+    public String getFullName() {
+        return fullName;
     }
 
     @Override
@@ -165,5 +163,10 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public boolean isValueRequired() {
         return false;
+    }
+
+    @Override
+    public String getShortName() {
+        return shortName;
     }
 }
