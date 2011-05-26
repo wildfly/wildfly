@@ -70,7 +70,6 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
 
-
     ApplicationServerService(final List<ServiceActivator> extraServices, final Bootstrap.Configuration configuration) {
         this.extraServices = extraServices;
         this.configuration = configuration;
@@ -107,7 +106,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final ServiceTarget serviceTarget = context.getChildTarget();
         final ServiceController<?> myController = context.getController();
         final ServiceContainer container = myController.getServiceContainer();
-        futureContainer = new FutureServiceContainer(container);
+        futureContainer = new FutureServiceContainer();
 
         long startTime = this.startTime;
         if (startTime == -1) {
@@ -126,7 +125,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
-        ServerControllerService.addService(serviceTarget, configuration);
+        ServerService.addService(serviceTarget, configuration);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {
@@ -214,7 +213,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
     private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
 
-        public FutureServiceContainer(final ServiceContainer container) {
+        FutureServiceContainer() {
             super(JBossExecutors.directExecutor());
         }
 
