@@ -16,16 +16,13 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.AbstractDeployableContainer;
-import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
-import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.ServerController;
-import org.jboss.dmr.ModelNode;
 
-import javax.management.MBeanServerConnection;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -36,14 +33,20 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import javax.management.MBeanServerConnection;
+
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.AbstractDeployableContainer;
+import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
+import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.ServerController;
+import org.jboss.dmr.ModelNode;
+
 
 /**
- * JBossASEmbeddedContainer
+ * JBossAsManagedContainer
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010

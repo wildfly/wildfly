@@ -22,7 +22,18 @@
 
 package org.jboss.as.test.spec.ejb3;
 
-import org.jboss.arquillian.api.Deployment;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.EJB;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonBean;

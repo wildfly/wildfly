@@ -21,7 +21,13 @@
  */
 package org.jboss.as.test.integration.internals.as7_859;
 
-import org.jboss.arquillian.api.Deployment;
+import static org.jboss.as.test.integration.common.Naming.lookup;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
@@ -29,12 +35,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.NamingException;
-
-import static org.jboss.as.test.integration.common.Naming.lookup;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

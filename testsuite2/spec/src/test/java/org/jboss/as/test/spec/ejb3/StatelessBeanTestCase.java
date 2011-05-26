@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.SimpleInterceptor;
 import org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionBean;

@@ -18,13 +18,6 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
-import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.dmr.ModelNode;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -54,6 +46,13 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Utility for controlling the lifecycle of a domain.

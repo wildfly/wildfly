@@ -48,6 +48,10 @@
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-demos2-spec</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-arquillian2-container-managed</artifactId>
         <scope>test</scope>
       </dependency>
     </dependencies>

@@ -22,17 +22,18 @@
 
 package org.jboss.as.test.spec.ejb3.stateful;
 
-import org.jboss.arquillian.api.Deployment;
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.NoSuchEJBException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
-import javax.ejb.NoSuchEJBException;
-import java.util.logging.Logger;
 
 /**
  * Tests the {@link javax.ejb.Remove @Remove} methods on Stateful session beans.

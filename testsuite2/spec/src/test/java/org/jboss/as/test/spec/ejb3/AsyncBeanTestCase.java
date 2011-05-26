@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 
 import javax.ejb.EJB;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.AsyncBean;
 import org.jboss.as.demos.ejb3.archive.AsyncLocal;

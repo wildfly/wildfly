@@ -25,8 +25,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jboss.arquillian</groupId>
-			<artifactId>arquillian-spi</artifactId>
+			<groupId>org.jboss.arquillian.core</groupId>
+			<artifactId>arquillian-core-spi</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.protocol</groupId>
@@ -40,6 +40,10 @@
 			<groupId>org.jboss.arquillian.testenricher</groupId>
 			<artifactId>arquillian-testenricher-ejb</artifactId>
 		</dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.testenricher</groupId>
+      <artifactId>arquillian-testenricher-initialcontext</artifactId>
+    </dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.testenricher</groupId>
 			<artifactId>arquillian-testenricher-resource</artifactId>

@@ -17,8 +17,8 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.spi.ConfigurationException;
-import org.jboss.arquillian.spi.util.Validate;
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
 
 /**

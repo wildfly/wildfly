@@ -59,8 +59,16 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jboss.arquillian</groupId>
-      <artifactId>arquillian-junit</artifactId>
+      <groupId>org.jboss.arquillian.core</groupId>
+      <artifactId>arquillian-core-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.junit</groupId>
+      <artifactId>arquillian-junit-container</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -97,6 +105,22 @@
         <exclusion>
           <groupId>org.jboss.arquillian.testenricher</groupId>
           <artifactId>arquillian-testenricher-msc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-impl-base</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-spi</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.jboss.logging</groupId>

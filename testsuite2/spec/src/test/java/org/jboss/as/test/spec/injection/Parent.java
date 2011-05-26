@@ -25,7 +25,6 @@ package org.jboss.as.test.spec.injection;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
-import javax.ejb.SessionContext;
 
 /**
  * User: jpai

@@ -39,5 +39,12 @@
    Compile-time dependencies upon anything  in the AS7 runtime
    are allowed in this section
    -->
+   <dependencies>
+     <dependency>
+       <groupId>org.jboss.as</groupId>
+       <artifactId>jboss-as-arquillian2-container-managed</artifactId>
+       <scope>test</scope>
+     </dependency>
+   </dependencies>
 
 </project>

@@ -19,8 +19,8 @@ package org.jboss.as.arquillian.container;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jboss.arquillian.spi.ConfigurationException;
-import org.jboss.arquillian.spi.client.container.ContainerConfiguration;
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
 /**
  * JBossAS7 server configuration

@@ -47,8 +47,8 @@
         
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
         
-        <version.org.jboss.arquillian>1.0.0.Alpha5</version.org.jboss.arquillian>
-        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-12</version.org.jboss.shrinkwrap.shrinkwrap>
+        <version.org.jboss.arquillian>1.0.0.Beta1</version.org.jboss.arquillian>
+        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-beta-2</version.org.jboss.shrinkwrap.shrinkwrap>
     </properties>
 
     <build>
@@ -131,6 +131,13 @@
         </plugins>
     </build>
 
+    <modules>
+      <module>api</module>
+      <module>spec</module>
+      <module>internals</module>
+      <module>domain</module>
+    </modules>
+
     <profiles>
         <profile>
             <id>allTests</id>
@@ -147,12 +154,6 @@
                     <scope>test</scope>
                 </dependency>
             </dependencies>
-			<modules>
-			    <module>api</module>
-			    <module>spec</module>
-			    <module>internals</module>
-			    <module>domain</module>
-			</modules>
         </profile>
         <!--
             Name: jpda
@@ -219,12 +220,36 @@
                 <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
               </exclusion>
               <exclusion>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-api</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-impl-base</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-junit</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-spi</artifactId>
+              </exclusion>
+              <exclusion>
                 <groupId>org.jboss.arquillian.protocol</groupId>
                 <artifactId>arquillian-protocol-osgi</artifactId>
               </exclusion>
               <exclusion>
+                <groupId>org.jboss.arquillian.protocol</groupId>
+                <artifactId>arquillian-protocol-jmx</artifactId>
+              </exclusion>
+              <exclusion>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-jmx</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-resource</artifactId>
               </exclusion>
               <exclusion>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
@@ -329,14 +354,27 @@
             <groupId>org.jboss.spec.javax.xml.ws</groupId>
             <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
         </dependency>
+        
+        <!-- Arquillian -->
+        <dependency>
+          <groupId>org.jboss.arquillian.core</groupId>
+          <artifactId>arquillian-core-api</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.arquillian.junit</groupId>
+          <artifactId>arquillian-junit-container</artifactId>
+          <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 
 <dependencyManagement>
     <dependencies>
 
       <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-api</artifactId>
+        <groupId>org.jboss.arquillian.core</groupId>
+        <artifactId>arquillian-core-api</artifactId>
         <version>${version.org.jboss.arquillian}</version>
         <exclusions>
           <exclusion>
@@ -347,8 +385,8 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-impl-base</artifactId>
+        <groupId>org.jboss.arquillian.core</groupId>
+        <artifactId>arquillian-core-impl-base</artifactId>
         <version>${version.org.jboss.arquillian}</version>
         <exclusions>
           <exclusion>
@@ -375,14 +413,25 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-junit</artifactId>
+        <groupId>org.jboss.arquillian.junit</groupId>
+        <artifactId>arquillian-junit-core</artifactId>
         <version>${version.org.jboss.arquillian}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.arquillian.junit</groupId>
+        <artifactId>arquillian-junit-container</artifactId>
+        <version>${version.org.jboss.arquillian}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-spi</artifactId>
+        <groupId>org.jboss.arquillian.core</groupId>
+        <artifactId>arquillian-core-spi</artifactId>
         <version>${version.org.jboss.arquillian}</version>
       </dependency>
 
@@ -431,6 +480,12 @@
       <dependency>
         <groupId>org.jboss.arquillian.testenricher</groupId>
         <artifactId>arquillian-testenricher-ejb</artifactId>
+        <version>${version.org.jboss.arquillian}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.jboss.arquillian.testenricher</groupId>
+        <artifactId>arquillian-testenricher-initialcontext</artifactId>
         <version>${version.org.jboss.arquillian}</version>
       </dependency>
 
