@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * EJB specific view description.
@@ -50,5 +51,10 @@ public final class EJBViewDescription extends ViewDescription {
     public ViewConfiguration createViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ProxyFactory<?> proxyFactory) {
         return new EJBViewConfiguration(viewClass, componentConfiguration, getServiceName(), proxyFactory, getMethodIntf());
     }
+
+    /*@Override // TODO: what to do in JNDI if multiple views are available for no interface view ?
+    public ServiceName getServiceName() {
+        return super.getServiceName().append(methodIntf.toString());
+    }*/
 
 }

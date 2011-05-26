@@ -23,6 +23,7 @@ package org.jboss.as.webservices.deployers;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentException;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -73,32 +74,39 @@ public final class WSEJBAdapterDeployer {
    private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeploymentAdapter wsDeploymentAdapter) {
        final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
        final List<WebServiceDeclaration> endpoints = wsDeploymentAdapter.getServiceEndpoints();
+       final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
 
-       if (webServiceAnnotations != null && !webServiceAnnotations.isEmpty()) {
-           final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
-           for (AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
-               final AnnotationTarget target = webServiceAnnotation.target();
-               final ClassInfo webServiceClassInfo = (ClassInfo) target;
-               final String beanClassName = webServiceClassInfo.name().toString();
-               ComponentDescription absCD = moduleDescription.getComponentByClassName(beanClassName);
+       for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
+           final AnnotationTarget target = webServiceAnnotation.target();
+           final ClassInfo webServiceClassInfo = (ClassInfo) target;
+           final String beanClassName = webServiceClassInfo.name().toString();
+           final ComponentDescription componentDescription = moduleDescription.getComponentByClassName(beanClassName);
 
-               final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1);
-               final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: hacky, hacky, hacky :(
-               if (!(absCD instanceof SessionBeanComponentDescription))
-                   continue;
-               final SessionBeanComponentDescription beanComponentDescription = (SessionBeanComponentDescription) absCD;
-               if (beanComponentDescription.isStateless() || beanComponentDescription.isSingleton()) {
-                   final String ejbContainerName = newEJBContainerName(unit, absCD);
-                   endpoints.add(new WebServiceDeclarationAdapter((SessionBeanComponentDescription)absCD, webServiceClassInfo, ejbContainerName));
-               }
+           // final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1); // TODO: investigate why commented out
+           // final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: investigate why commented out
+           final SessionBeanComponentDescription sessionBean = getSessionBean(componentDescription);
+           if (sessionBean != null && (sessionBean.isStateless() || sessionBean.isSingleton())) {
+               final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
+               final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
+               // final String ejbContainerName = newEJBContainerName(unit, componentDescription); TODO: removed
+               endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName));
            }
        }
    }
 
+   private static SessionBeanComponentDescription getSessionBean(final ComponentDescription componentDescription) {
+       if (componentDescription instanceof SessionBeanComponentDescription) {
+           return (SessionBeanComponentDescription) componentDescription;
+       }
+
+       return null;
+   }
+
+   /** TODO: removed
    private static String newEJBContainerName(final DeploymentUnit unit, final ComponentDescription componentDescription) {
        // TODO: algorithm copied from org.jboss.as.ee.component.ComponentInstallProcessor.deployComponent() method - remove this construction code duplicity
        return unit.getServiceName().append("component").append(componentDescription.getComponentName()).append("START").getCanonicalName();
-   }
+   }*/
 
    private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
        final Index compositeIndex = ASHelper.getRootAnnotationIndex(unit);

@@ -160,7 +160,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     public void addNoInterfaceView() {
         noInterfaceViewPresent = true;
-        registerView(getEJBClassName(), MethodIntf.LOCAL);
+        final ViewDescription viewDescription = registerView(getEJBClassName(), MethodIntf.LOCAL);
         //set up interceptor for non-business methods
         viewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
@@ -172,6 +172,11 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 }
             }
         });
+    }
+
+    public EJBViewDescription addWebserviceEndpointView() { // TODO: shouldn't we reuse addNoInterfaceView() method and pass one parameter to it explicitly?
+        noInterfaceViewPresent = true; // TODO ? should we modify this mark for WS endpoint views?
+        return registerView(getEJBClassName(), MethodIntf.SERVICE_ENDPOINT);
     }
 
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
@@ -203,14 +208,16 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         }
     }
 
-    private void registerView(final String viewClassName, final MethodIntf viewType) {
+    private EJBViewDescription registerView(final String viewClassName, final MethodIntf viewType) {
         // setup the ViewDescription
-        final ViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType);
+        final EJBViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType);
         getViews().add(viewDescription);
         // setup server side view interceptors
         setupViewInterceptors(viewDescription);
         // setup client side view interceptors
         setupClientViewInterceptors(viewDescription);
+        // return created view
+        return viewDescription;
     }
 
     public boolean hasNoInterfaceView() {
