@@ -87,9 +87,9 @@ class NewModelControllerImpl implements NewModelController {
         NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL), handler, modelReference.get(), control, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
         if (prepareStep != null) {
-            context.addStep(prepareStep, NewOperationContext.Stage.MODEL);
+            context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
         }
-        context.addStep(new NewStepHandler() {
+        context.addStep(response, operation, new NewStepHandler() {
             public void execute(final NewOperationContext context, final ModelNode operation) {
                 if (context.completeStep() == NewOperationContext.ResultAction.KEEP && context.isModelAffected()) {
                     // TODO store the model here
