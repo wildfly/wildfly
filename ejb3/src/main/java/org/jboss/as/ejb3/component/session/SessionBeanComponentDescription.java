@@ -193,8 +193,8 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         viewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                for(final Method method : configuration.getProxyFactory().getCachedMethods()) {
-                    if(!Modifier.isPublic(method.getModifiers())) {
+                for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
+                    if (!Modifier.isPublic(method.getModifiers())) {
                         configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new NotBusinessMethodInterceptor(method)), InterceptorOrder.View.NOT_BUSINESS_METHOD);
                     }
                 }
@@ -388,68 +388,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      * @return
      */
     public abstract SessionBeanType getSessionBeanType();
-
-//    @Override
-//    protected void processComponentMethod(final ComponentConfiguration configuration, final Method componentMethod) throws DeploymentUnitProcessingException {
-//        super.processComponentMethod(configuration, componentMethod);
-//        // Process the async methods
-//        if (asynchronousMethods.contains(MethodIdentifier.getIdentifierForMethod(componentMethod)) || asynchronousViews.contains(componentMethod.getDeclaringClass().getName())) {
-//            if (!Void.TYPE.isAssignableFrom(componentMethod.getReturnType()) && !Future.class.isAssignableFrom(componentMethod.getReturnType())) {
-//                throw new DeploymentUnitProcessingException("Invalid asynchronous method [" + componentMethod + "].  Asynchronous methods must return either void or Future<V>.");
-//            }
-//            SessionBeanComponentConfiguration sessionBeanComponentConfiguration = (SessionBeanComponentConfiguration) configuration;
-//            sessionBeanComponentConfiguration.addAsynchronousMethod(componentMethod);
-//        }
-//    }
-
-//    @Override
-//    protected void prepareComponentConfiguration(ComponentConfiguration configuration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-//        // let super do it's job first
-//        super.prepareComponentConfiguration(configuration, phaseContext);
-//
-//        SessionBeanComponentConfiguration sessionBeanComponentConfiguration = (SessionBeanComponentConfiguration) configuration;
-//        // update the SessionBeanConfiguration with the method level LockType info
-//        this.prepareLockConfiguration(sessionBeanComponentConfiguration, phaseContext);
-//        // update the SessionBeanConfiguration with the method level @AccessTimeout info
-//        this.prepareAccessTimeoutConfiguration(sessionBeanComponentConfiguration, phaseContext);
-//    }
-
-//    private void prepareAccessTimeoutConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-//        ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
-//        Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts = new HashMap<EJBBusinessMethod, AccessTimeout>();
-//        for (Map.Entry<EJBMethodDescription, AccessTimeout> entry : this.methodAccessTimeouts.entrySet()) {
-//            EJBMethodDescription method = entry.getKey();
-//            try {
-//                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
-//                methodApplicableAccessTimeouts.put(ejbMethod, entry.getValue());
-//            } catch (ClassNotFoundException cnfe) {
-//                throw new DeploymentUnitProcessingException("Could not process @AccessTimeout configurations due to exception: ", cnfe);
-//            }
-//
-//        }
-//        // add it to the SessionBeanConfiguration
-//        sessionBeanComponentConfiguration.setMethodApplicableAccessTimeout(methodApplicableAccessTimeouts);
-//
-//    }
-
-//    private void prepareLockConfiguration(SessionBeanComponentConfiguration sessionBeanComponentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-//        ClassLoader beanClassLoader = sessionBeanComponentConfiguration.getComponentClass().getClassLoader();
-//        Map<EJBBusinessMethod, LockType> methodApplicableLockTypes = new HashMap<EJBBusinessMethod, LockType>();
-//        for (Map.Entry<EJBMethodDescription, LockType> entry : this.methodLockTypes.entrySet()) {
-//            EJBMethodDescription method = entry.getKey();
-//            try {
-//                EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(method, beanClassLoader);
-//                methodApplicableLockTypes.put(ejbMethod, entry.getValue());
-//
-//            } catch (ClassNotFoundException cnfe) {
-//                throw new DeploymentUnitProcessingException("Could not process LockType configurations due to exception: ", cnfe);
-//            }
-//        }
-//        // add the locktype to the session bean configuration
-//        sessionBeanComponentConfiguration.setMethodApplicableLockType(methodApplicableLockTypes);
-//
-//    }
-//
 
     @Override
     protected void setupViewInterceptors(ViewDescription view) {
