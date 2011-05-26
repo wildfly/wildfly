@@ -36,7 +36,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -83,6 +82,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 final EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
                 final MethodIntf viewType = ejbView.getMethodIntf();
                 for (Method method : view.getProxyFactory().getCachedMethods()) {
+                    // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
+                    if (!Modifier.isPublic(method.getModifiers()))
+                        continue;
                     final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
                     this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
                 }
