@@ -91,9 +91,14 @@ final class NewOperationContextImpl implements NewOperationContext {
     private ModelNode model;
     private ModelNode readOnlyModel;
     private ResultAction resultAction;
+    /** Tracks whether any steps have gotten write access to the model */
     private boolean affectsModel;
+    /** Tracks whether any steps have gotten write access to the runtime */
     private boolean affectsRuntime;
+    /** Tracks whether we've detected cancellation */
     private boolean cancelled;
+    /** Current number of nested levels of completeStep() calls */
+    private int stackSize;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
@@ -196,12 +201,14 @@ final class NewOperationContextImpl implements NewOperationContext {
             response.get(OUTCOME).set(CANCELLED);
             response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
             response.get(ROLLED_BACK).set(true);
-            return ResultAction.ROLLBACK;
+            resultAction = ResultAction.ROLLBACK;
+            return resultAction;
         }
         if (response.hasDefined(FAILURE_DESCRIPTION) && (contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL) || currentStage == Stage.MODEL)) {
             response.get(OUTCOME).set(FAILED);
             response.get(ROLLED_BACK).set(true);
-            return ResultAction.ROLLBACK;
+            resultAction = ResultAction.ROLLBACK;
+            return resultAction;
         }
         if (resultAction == ResultAction.ROLLBACK) {
             return ResultAction.ROLLBACK;
@@ -233,6 +240,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                 ModelNode oldOperation = operation;
                 ModelNode oldResponse = response;
                 try {
+                    stackSize++;
                     flags = EnumSet.noneOf(Flag.class);
                     response = this.response = step.response;
                     ModelNode newOperation = operation = step.operation;
@@ -264,13 +272,13 @@ final class NewOperationContextImpl implements NewOperationContext {
                     }
                 } finally {
                     try {
-                        if (currentStage != null) {
+                        if (currentStage != Stage.DONE) {
                             // This is a failure because the next step failed to call completeStep().
                             // Either an exception occurred beforehand, or the implementer screwed up.
                             // If an exception occurred, then this will have no effect.
                             // If the implementer screwed up, then we're essentially fixing the context state and treating
                             // the overall operation as a failure.
-                            currentStage = null;
+                            currentStage = Stage.DONE;
                             if (! response.hasDefined(FAILURE_DESCRIPTION)) {
                                 response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
                             }
@@ -293,12 +301,16 @@ final class NewOperationContextImpl implements NewOperationContext {
                         if (flags.contains(Flag.WRITE_LOCK_TAKEN)) {
                             modelController.releaseLock();
                         }
+                        if (--stackSize == 0) {
+                            // We're returning from the outermost completeStep()
+                            // Null out the current stage to disallow further access to the context
+                            currentStage = null;
+                        }
                     }
                 }
                 // -- not reached --
             }
         } while (currentStage != Stage.DONE);
-        currentStage = null;
         // No more steps, verified operation is a success!
         if (isModelAffected()) try {
             modelController.writeModel(model);
@@ -339,6 +351,10 @@ final class NewOperationContextImpl implements NewOperationContext {
         resultAction = ResultAction.ROLLBACK;
     }
 
+    private boolean isRollingBack() {
+        return currentStage == Stage.DONE && resultAction == ResultAction.ROLLBACK;
+    }
+
     public ModelNodeRegistration getModelNodeRegistration() {
         final PathAddress address = modelAddress;
         assert Thread.currentThread() == initiatingThread;
@@ -358,7 +374,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (! (currentStage == Stage.RUNTIME || currentStage == Stage.VERIFY && ! modify)) {
+        if (! (currentStage == Stage.RUNTIME || currentStage == Stage.VERIFY || isRollingBack() && ! modify)) {
             throw new IllegalStateException("Get service registry only supported in runtime operations");
         }
         if (modify && !affectsRuntime) {
@@ -382,7 +398,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY) {
+        if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw new IllegalStateException("Service removal only supported in runtime operations");
         }
         if (!affectsRuntime) {
@@ -410,7 +426,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY) {
+        if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw new IllegalStateException("Service removal only supported in runtime operations");
         }
         if (!affectsRuntime) {
@@ -462,7 +478,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY) {
+        if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw new IllegalStateException("Get service target only supported in runtime operations");
         }
         if (!affectsRuntime) {
