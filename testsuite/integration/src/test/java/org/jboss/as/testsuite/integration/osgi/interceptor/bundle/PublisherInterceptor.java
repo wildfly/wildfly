@@ -34,7 +34,7 @@ import org.osgi.service.http.HttpService;
 
 /**
  * An interceptor that publishes HttpMetadata.
- * 
+ *
  * @author thomas.diesler@jboss.com
  * @since 23-Oct-2009
  */
@@ -63,9 +63,15 @@ public class PublisherInterceptor extends AbstractLifecycleInterceptor {
                 Class<?> servletClass = bundle.loadClass(servletName);
                 HttpServlet servlet = (HttpServlet) servletClass.newInstance();
 
-                // Register the servlet with the HttpService
-                HttpService httpService = getHttpService(context, true);
-                httpService.registerServlet("/servlet", servlet, null, null);
+                ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+                try {
+                    // Register the servlet with the HttpService
+                    HttpService httpService = getHttpService(context, true);
+                    httpService.registerServlet("/servlet", servlet, null, null);
+                } finally {
+                    // [AS7-903] 3rd party code may leak TCCL
+                    Thread.currentThread().setContextClassLoader(ctxLoader);
+                }
             } catch (RuntimeException rte) {
                 throw rte;
             } catch (Exception ex) {
@@ -76,9 +82,15 @@ public class PublisherInterceptor extends AbstractLifecycleInterceptor {
         // Unregister the endpoint on STOPPING
         else if (state == Bundle.STOPPING) {
             log.info("Unpublish HttpMetadata: " + metadata);
-            HttpService httpService = getHttpService(context, false);
-            if (httpService != null)
-                httpService.unregister("/servlet");
+            ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+            try {
+                HttpService httpService = getHttpService(context, false);
+                if (httpService != null)
+                    httpService.unregister("/servlet");
+            } finally {
+                // [AS7-903] 3rd party code may leak TCCL
+                Thread.currentThread().setContextClassLoader(ctxLoader);
+            }
         }
     }
 

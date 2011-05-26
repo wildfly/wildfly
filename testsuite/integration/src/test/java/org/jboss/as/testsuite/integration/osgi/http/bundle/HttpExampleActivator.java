@@ -33,7 +33,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * A Service Activator
- * 
+ *
  * @author thomas.diesler@jboss.com
  * @since 04-Feb-2009
  */
@@ -71,6 +71,7 @@ public class HttpExampleActivator implements BundleActivator {
 
     private void registerService(BundleContext context, HttpService httpService) {
         log.log(LogService.LOG_INFO, "registerService: " + context.getBundle());
+        ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Properties initParams = new Properties();
             initParams.setProperty("initProp", "SomeValue");
@@ -78,13 +79,21 @@ public class HttpExampleActivator implements BundleActivator {
             httpService.registerResources("/file", "/res", null);
         } catch (Exception ex) {
             throw new RuntimeException("Cannot register context", ex);
+        } finally {
+            // [AS7-903] 3rd party code may leak TCCL
+            Thread.currentThread().setContextClassLoader(ctxLoader);
         }
     }
 
     private void unregisterService(BundleContext context, HttpService httpService) {
         log.log(LogService.LOG_INFO, "unregisterService: " + context.getBundle());
-        httpService.unregister("/servlet");
-        httpService.unregister("/file");
+        ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            httpService.unregister("/servlet");
+            httpService.unregister("/file");
+        } finally {
+            // [AS7-903] 3rd party code may leak TCCL
+            Thread.currentThread().setContextClassLoader(ctxLoader);
+        }
     }
-
 }
