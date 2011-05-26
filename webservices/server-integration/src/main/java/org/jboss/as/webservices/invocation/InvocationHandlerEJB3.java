@@ -126,20 +126,14 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
          // prepare for invocation
          this.onBeforeInvocation(wsInvocation);
 
-         final ComponentView ejbContainer = this.getEjb3Container();
-
-         final Method seiMethod = wsInvocation.getJavaMethod();
-         final Serializable sessionId = null; // Not applicable
-         // Interceptors 1.1 / EJB 3.1 FR 12.6
-         final Map<String, Object> contextData = /*translate(*/getWebServiceContext(wsInvocation).getMessageContext()/*)*/;
-         // TODO: should we know it is MethodIntf.SERVICE_ENDPOINT?
-         //final Class<?> invokedBusinessInterface = null;
-         final Method implMethod = seiMethod; // TODO -- ?? ejbContainer.getComponentMethod(seiMethod);
+         final ComponentView ejbContainer = getEjb3Container();
+         final Map<String, Object> contextData = getWebServiceContext(wsInvocation).getMessageContext();
          final Object[] args = wsInvocation.getArgs();
          // invoke method
          final ComponentViewInstance ejbInstance = ejbContainer.createInstance(); // TODO: should we always create new instance per invocation ?
          final InterceptorContext interceptorContext = new InterceptorContext();
-         final Method method = lookupProperMethod(implMethod, ejbInstance.allowedMethods());
+         final Method seiMethod = wsInvocation.getJavaMethod();
+         final Method method = lookupProperMethod(seiMethod, ejbInstance.allowedMethods());
          interceptorContext.setMethod(method);
          interceptorContext.setContextData(contextData);
          interceptorContext.setParameters(args);

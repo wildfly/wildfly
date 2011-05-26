@@ -22,6 +22,15 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.LockType;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -30,18 +39,8 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.LockType;
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
@@ -168,20 +167,5 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             //this.destroyInstance(this.singletonComponentInstance);
             this.singletonComponentInstance = null;
         }
-    }
-
-    @Override
-    public Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method beanMethod, Object[] args) throws Exception {
-        if (sessionId != null)
-            throw new IllegalArgumentException("Singleton " + this + " does not support sessions");
-        if (invokedBusinessInterface != null)
-            throw new UnsupportedOperationException("invokedBusinessInterface != null");
-        InterceptorContext context = new InterceptorContext();
-        context.putPrivateData(Component.class, this);
-        context.setContextData(contextData);
-        context.setMethod(beanMethod);
-        context.setParameters(args);
-        throw new RuntimeException("invoke() not yet implemented");
-        //return getComponentInterceptor().processInvocation(context);
     }
 }

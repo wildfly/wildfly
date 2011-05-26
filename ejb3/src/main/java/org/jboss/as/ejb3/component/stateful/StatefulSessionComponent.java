@@ -21,8 +21,17 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
@@ -31,18 +40,8 @@ import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TxUtils;
-
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Stateful Session Bean
@@ -132,26 +131,6 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
         return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
-
-
-
-    @Override
-    public Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method beanMethod, Object[] args) throws Exception {
-        if (sessionId == null)
-            throw new IllegalArgumentException("Session is mandatory on Stateful " + this);
-        if (invokedBusinessInterface != null)
-            throw new UnsupportedOperationException("invokedBusinessInterface != null");
-        InterceptorContext context = new InterceptorContext();
-        context.putPrivateData(Component.class, this);
-        // TODO: attaching as Serializable.class is a bit wicked
-        context.putPrivateData(Serializable.class, sessionId);
-        context.setContextData(contextData);
-        context.setMethod(beanMethod);
-        context.setParameters(args);
-        throw new RuntimeException("NYI");
-        //return getComponentInterceptor().processInvocation(context);
-    }
-
 
     /**
      * Removes the session associated with the <code>sessionId</code>.

@@ -149,8 +149,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         return false;
     }
 
-    public abstract Object invoke(Serializable sessionId, Map<String, Object> contextData, Class<?> invokedBusinessInterface, Method implMethod, Object[] args) throws Exception;
-
     protected Object invokeAsynchronous(final Method method, final InterceptorContext context) throws Exception {
         if (Void.TYPE.isAssignableFrom(method.getReturnType())) {
             return new AsyncVoidInterceptor(getAsynchronousExecutor()).processInvocation(context);
