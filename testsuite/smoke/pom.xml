@@ -44,7 +44,6 @@
     <name>JBoss Application Server: Test Suite: Smoke Tests</name>
 
     <properties>
-        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
     <dependencies>

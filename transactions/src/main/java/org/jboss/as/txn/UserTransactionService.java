@@ -44,7 +44,7 @@ public class UserTransactionService extends AbstractService<UserTransaction> {
     public static void addService(final ServiceTarget target) {
         UserTransactionService service = new UserTransactionService();
         ServiceBuilder<?> serviceBuilder = target.addService(SERVICE_NAME, service);
-        serviceBuilder.addAliases(ServiceName.of("jbosgi", UserTransaction.class.getName()));
+        serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", UserTransaction.class.getName()));
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         serviceBuilder.install();
     }

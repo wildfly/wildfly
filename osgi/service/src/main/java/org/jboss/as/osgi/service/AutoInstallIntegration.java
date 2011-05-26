@@ -58,6 +58,7 @@ import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Integration point to auto install bundles at framework startup.
@@ -72,6 +73,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
     private InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private InjectedValue<Bundle> injectedSystemBundle = new InjectedValue<Bundle>();
+    private InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     private SubsystemState subsystemState;
 
     static void addService(final ServiceTarget target, final SubsystemState subsystemState) {
@@ -80,6 +82,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedEnvironment);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(Services.SYSTEM_BUNDLE, Bundle.class, service.injectedSystemBundle);
+        builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
         builder.addDependency(Services.FRAMEWORK_INIT);
         builder.setInitialMode(Mode.ON_DEMAND);
         builder.install();
@@ -106,10 +109,11 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
                     URL url = bundleFile.toURI().toURL();
                     BundleInfo info = BundleInfo.createBundleInfo(url);
                     Deployment dep = DeploymentFactory.createDeployment(info);
-                    dep.setAutoStart(moduleMetaData.isStart());
+                    Integer startLevel = moduleMetaData.getStartLevel();
+                    if (startLevel != null)
+                        dep.setStartLevel(startLevel.intValue());
                     serviceName = bundleManager.installBundle(serviceTarget, dep);
-                }
-                else {
+                } else {
                     ModuleLoader moduleLoader = Module.getBootModuleLoader();
                     Module module = moduleLoader.loadModule(identifier);
                     OSGiMetaData metadata = getModuleMetadata(module);
@@ -133,14 +137,16 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
                 public void start(StartContext context) throws StartException {
                     for (ServiceName serviceName : pendingServices.keySet()) {
                         OSGiModule moduleMetaData = pendingServices.get(serviceName);
-                        if (moduleMetaData.isStart()) {
+                        if (moduleMetaData.getStartLevel() != null) {
                             @SuppressWarnings("unchecked")
                             ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getRequiredService(serviceName);
                             Bundle bundle = controller.getValue();
+                            StartLevel startLevel = injectedStartLevel.getValue();
+                            startLevel.setBundleStartLevel(bundle, moduleMetaData.getStartLevel());
                             try {
                                 bundle.start();
                             } catch (BundleException ex) {
-                                log.errorf(ex, "Cannot start persistent bundle: %s", bundle);
+                                log.errorf(ex, "Cannot start bundle: %s", bundle);
                             }
                         }
                     }
@@ -209,8 +215,7 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
         FileInputStream input = new FileInputStream(entryFile);
         try {
             return OSGiMetaDataBuilder.load(input);
-        }
-        finally {
+        } finally {
             input.close();
         }
     }

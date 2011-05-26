@@ -132,7 +132,7 @@ public class BundleStartTracker extends AbstractService<BundleStartTracker> {
                             try {
                                 int bundleType = packageAdmin.getBundleType(bundle);
                                 if (bundleType != BUNDLE_TYPE_FRAGMENT) {
-                                    bundle.start();
+                                    bundle.start(Bundle.START_TRANSIENT);
                                 }
                             } catch (BundleException ex) {
                                 log.errorf(ex, "Cannot start bundle: %s", bundle);

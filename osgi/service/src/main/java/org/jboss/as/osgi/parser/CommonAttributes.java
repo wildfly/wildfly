@@ -32,6 +32,6 @@ interface CommonAttributes {
     String MODULES = "modules";
     String PID = "pid";
     String PROPERTIES = "properties";
-    String START = "start";
+    String STARTLEVEL = "start";
 
 }

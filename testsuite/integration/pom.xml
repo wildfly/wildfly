@@ -21,6 +21,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
+<!--
+  To run a single test in the debugger, run surefire like this and connect your remote debugger to port 5005
+  
+  mvn -Dtest=SimpleBundleTestCase -Dmaven.surefire.debug=true test
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -39,13 +44,17 @@
     <name>JBoss Application Server: Test Suite: Integration Tests</name>
 
     <properties>
-        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.logging</groupId>
+            <artifactId>jboss-osgi-logging</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Needed for @Resource(lookup=) -->

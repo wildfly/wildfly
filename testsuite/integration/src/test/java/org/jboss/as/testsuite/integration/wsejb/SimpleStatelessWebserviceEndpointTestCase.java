@@ -33,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,6 +58,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     }
 
     @Test
+    @Ignore
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.testsuite.integration.wsejb", "SimpleService");
         final URL wsdlURL = new URL("http://localhost:8080/stateless-ws-endpoint-example/SimpleService/SimpleStatelessWebserviceEndpointImpl?wsdl");

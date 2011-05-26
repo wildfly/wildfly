@@ -39,7 +39,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -57,7 +56,6 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("Disable until intermittent failures described at AS7-673 are resolved")
 public class SimpleArchiveDeployerTestCase {
 
     @Inject

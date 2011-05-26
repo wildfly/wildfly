@@ -111,6 +111,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     @Override
     public void addModule(final ModuleSpec moduleSpec) {
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
+        log.debugf("Add module spec to loader: %s", identifier);
         ServiceName serviceName = ServiceModuleLoader.moduleSpecServiceName(identifier);
         ServiceBuilder<ModuleSpec> builder = serviceTarget.addService(serviceName, new AbstractService<ModuleSpec>() {
             public ModuleSpec getValue() throws IllegalStateException {
@@ -133,6 +134,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     public void addModule(final Module module) {
         ServiceName serviceName = getModuleServiceName(module.getIdentifier());
         if (serviceContainer.getService(serviceName) == null) {
+            log.debugf("Add module to loader: %s", module.getIdentifier());
             ServiceBuilder<Module> builder = serviceTarget.addService(serviceName, new AbstractService<Module>() {
                 public Module getValue() throws IllegalStateException {
                     return module;
@@ -150,19 +152,20 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         ServiceName serviceName = getModuleSpecServiceName(identifier);
         ServiceController<?> controller = serviceContainer.getService(serviceName);
         if (controller != null) {
+            log.debugf("Remove module spec fom loader: %s", serviceName);
             controller.setMode(Mode.REMOVE);
         }
         serviceName = getModuleServiceName(identifier);
         controller = serviceContainer.getService(serviceName);
         if (controller != null) {
+            log.debugf("Remove module fom loader: %s", serviceName);
             controller.setMode(Mode.REMOVE);
         }
     }
 
     /**
-     * Get the module identifier for the given {@link XModule}
-     * The returned identifier must be such that it can be used
-     * by the {@link ServiceModuleLoader}
+     * Get the module identifier for the given {@link XModule} The returned identifier must be such that it can be used by the
+     * {@link ServiceModuleLoader}
      */
     @Override
     public ModuleIdentifier getModuleIdentifier(XModule resModule) {
@@ -184,19 +187,19 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
-        ServiceName serviceName = ServiceModuleLoader.moduleSpecServiceName(identifier);
-        ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer.getService(serviceName);
-        return controller != null ? controller.getValue() : null;
+        ModuleSpec moduleSpec = injectedModuleLoader.getValue().findModule(identifier);
+        if (moduleSpec == null)
+            log.debugf("Cannot obtain module spec for: %s", identifier);
+        return moduleSpec;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected Module preloadModule(ModuleIdentifier identifier) throws ModuleLoadException {
-        ServiceName serviceName = getModuleServiceName(identifier);
-        ServiceController<Module> controller = (ServiceController<Module>) serviceContainer.getService(serviceName);
-        return controller != null ? controller.getValue() : ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
+        Module module = ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
+        if (module == null)
+            log.debugf("Cannot obtain module for: %s", identifier);
+        return module;
     }
 
     @Override

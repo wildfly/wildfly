@@ -48,6 +48,7 @@
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
+        <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
     <build>

@@ -120,19 +120,19 @@ public final class SubsystemState implements Serializable {
         private static final long serialVersionUID = -2280880859263752474L;
 
         private final ModuleIdentifier identifier;
-        private final boolean start;
+        private final Integer startlevel;
 
-        OSGiModule(ModuleIdentifier identifier, boolean start) {
+        OSGiModule(ModuleIdentifier identifier, Integer startlevel) {
             this.identifier = identifier;
-            this.start = start;
+            this.startlevel = startlevel;
         }
 
         public ModuleIdentifier getIdentifier() {
             return identifier;
         }
 
-        public boolean isStart() {
-            return start;
+        public Integer getStartLevel() {
+            return startlevel;
         }
     }
 }

@@ -72,7 +72,7 @@ public class BundleInstallService implements Service<BundleInstallService> {
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(BundleStartTracker.SERVICE_NAME, BundleStartTracker.class, service.injectedStartTracker);
         builder.addDependency(deploymentUnitName(contextName));
-        builder.addDependency(Services.FRAMEWORK_INIT);
+        builder.addDependency(Services.FRAMEWORK_ACTIVE);
         builder.install();
     }
 
