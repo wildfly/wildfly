@@ -76,7 +76,6 @@ final class NewOperationContextImpl implements NewOperationContext {
     private boolean respectInterruption = true;
     private PathAddress modelAddress;
     private Stage currentStage = Stage.MODEL;
-    private EnumSet<Flag> flags = EnumSet.noneOf(Flag.class);
     /**
      * The result of the current operation.
      */
@@ -98,14 +97,14 @@ final class NewOperationContextImpl implements NewOperationContext {
     /** Tracks whether we've detected cancellation */
     private boolean cancelled;
     /** Current number of nested levels of completeStep() calls */
-    private int stackSize;
+    private int depth;
+    /** Write lock acquisition depth */
+    private int lockDepth;
+    /** Container monitor acquisition depth */
+    private int containerMonitorDepth;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
-    }
-
-    enum Flag {
-        WRITE_LOCK_TAKEN
     }
 
     NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags, final OperationMessageHandler messageHandler, final ModelNode model, final NewModelController.OperationTransactionControl transactionControl, final boolean booting) {
@@ -183,11 +182,19 @@ final class NewOperationContextImpl implements NewOperationContext {
             respectInterruption = false;
         }
     }
+
+    /**
+     * Perform the work of completing a step.
+     *
+     * @return the result action for the step which has just completed
+     */
     private ResultAction doCompleteStep() {
         assert Thread.currentThread() == initiatingThread;
+        // If the operation is done, fail.
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
+        // Cancellation is detected via interruption.
         if (Thread.currentThread().isInterrupted()) {
             cancelled = true;
         }
@@ -213,18 +220,20 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (resultAction == ResultAction.ROLLBACK) {
             return ResultAction.ROLLBACK;
         }
+        // Locate the next step to execute.
+        Step step = null;
         do {
-            Step step = steps.get(currentStage).pollFirst();
+            step = steps.get(currentStage).pollFirst();
             if (step == null) {
+                // No steps remain in this stage; proceed to the next stage.
                 currentStage = currentStage.next();
                 if (contextType == Type.MANAGEMENT && currentStage == Stage.MODEL.next()) {
+                    // Management mode; we do not proceed past the MODEL stage.
                     currentStage = null;
-                }
-                if (affectsRuntime && currentStage == Stage.VERIFY) {
-                    // a change was made to the runtime
-                    modelController.releaseContainerMonitor();
+                } else if (affectsRuntime && currentStage == Stage.VERIFY) {
+                    // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
                     try {
-                        modelController.awaitContainerMonitor(true, 0);
+                        modelController.awaitContainerMonitor(true, 1);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         cancelled = true;
@@ -235,80 +244,7 @@ final class NewOperationContextImpl implements NewOperationContext {
                     }
                 }
             } else {
-                PathAddress oldModelAddress = modelAddress;
-                EnumSet<Flag> oldFlags = flags;
-                ModelNode oldOperation = operation;
-                ModelNode oldResponse = response;
-                try {
-                    stackSize++;
-                    flags = EnumSet.noneOf(Flag.class);
-                    response = this.response = step.response;
-                    ModelNode newOperation = operation = step.operation;
-                    modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
-                    step.handler.execute(this, newOperation);
-                    assert resultAction != null;
-                    return resultAction;
-                } catch (Throwable t) {
-                    // If this block is entered, then the next step failed
-                    // The question is, did it fail before or after calling completeStep()?
-                    if (currentStage != null) {
-                        // It failed before, so consider the operation a failure.
-                        if (! response.hasDefined(FAILURE_DESCRIPTION)) {
-                            response.get(FAILURE_DESCRIPTION).set("Operation handler failed: " + t);
-                        }
-                        response.get(OUTCOME).set(FAILED);
-                        response.get(ROLLED_BACK).set(true);
-                        // this result action will be overwritten in finally, but whatever
-                        return resultAction = ResultAction.ROLLBACK;
-                    } else {
-                        if (resultAction != ResultAction.KEEP) {
-                            response.get(ROLLED_BACK).set(true);
-                            resultAction = ResultAction.ROLLBACK;
-                        }
-                        response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
-                        // It failed after!  Just return, ignore the failure
-                        report(MessageSeverity.WARN, "Step handler " + step.handler + " failed after completion");
-                        return resultAction;
-                    }
-                } finally {
-                    try {
-                        if (currentStage != Stage.DONE) {
-                            // This is a failure because the next step failed to call completeStep().
-                            // Either an exception occurred beforehand, or the implementer screwed up.
-                            // If an exception occurred, then this will have no effect.
-                            // If the implementer screwed up, then we're essentially fixing the context state and treating
-                            // the overall operation as a failure.
-                            currentStage = Stage.DONE;
-                            if (! response.hasDefined(FAILURE_DESCRIPTION)) {
-                                response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
-                            }
-                            response.get(OUTCOME).set(FAILED);
-                            response.get(ROLLED_BACK).set(true);
-                            // We deliberately override the result to always roll back in this case!
-                            //noinspection ReturnInsideFinallyBlock
-                            return resultAction = ResultAction.ROLLBACK;
-                        } else {
-                            if (resultAction == ResultAction.ROLLBACK) {
-                                response.get(ROLLED_BACK).set(true);
-                            }
-                            response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
-                        }
-                    } finally {
-                        modelAddress = oldModelAddress;
-                        flags = oldFlags;
-                        operation = oldOperation;
-                        this.response = response = oldResponse;
-                        if (flags.contains(Flag.WRITE_LOCK_TAKEN)) {
-                            modelController.releaseLock();
-                        }
-                        if (--stackSize == 0) {
-                            // We're returning from the outermost completeStep()
-                            // Null out the current stage to disallow further access to the context
-                            currentStage = null;
-                        }
-                    }
-                }
-                // -- not reached --
+                return executeStep(response, step);
             }
         } while (currentStage != Stage.DONE);
         // No more steps, verified operation is a success!
@@ -332,6 +268,83 @@ final class NewOperationContextImpl implements NewOperationContext {
             }, response);
         }
         return resultAction = ref.get();
+    }
+
+    private ResultAction executeStep(ModelNode response, final Step step) {
+        PathAddress oldModelAddress = modelAddress;
+        ModelNode oldOperation = operation;
+        ModelNode oldResponse = response;
+        try {
+            // next step runs at the next depth level
+            depth++;
+            response = this.response = step.response;
+            ModelNode newOperation = operation = step.operation;
+            modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
+            step.handler.execute(this, newOperation);
+            assert resultAction != null;
+        } catch (Throwable t) {
+            // If this block is entered, then the next step failed
+            // The question is, did it fail before or after calling completeStep()?
+            if (currentStage != null) {
+                // It failed before, so consider the operation a failure.
+                if (! response.hasDefined(FAILURE_DESCRIPTION)) {
+                    response.get(FAILURE_DESCRIPTION).set("Operation handler failed: " + t);
+                }
+                response.get(OUTCOME).set(FAILED);
+                response.get(ROLLED_BACK).set(true);
+                // this result action will be overwritten in finally, but whatever
+                return resultAction = ResultAction.ROLLBACK;
+            } else {
+                if (resultAction != ResultAction.KEEP) {
+                    response.get(ROLLED_BACK).set(true);
+                    resultAction = ResultAction.ROLLBACK;
+                }
+                response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
+                // It failed after!  Just return, ignore the failure
+                report(MessageSeverity.WARN, "Step handler " + step.handler + " failed after completion");
+                return resultAction;
+            }
+        }
+        try {
+            if (currentStage != Stage.DONE) {
+                // This is a failure because the next step failed to call completeStep().
+                // Either an exception occurred beforehand, or the implementer screwed up.
+                // If an exception occurred, then this will have no effect.
+                // If the implementer screwed up, then we're essentially fixing the context state and treating
+                // the overall operation as a failure.
+                currentStage = Stage.DONE;
+                if (! response.hasDefined(FAILURE_DESCRIPTION)) {
+                    response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
+                }
+                response.get(OUTCOME).set(FAILED);
+                response.get(ROLLED_BACK).set(true);
+                return resultAction = ResultAction.ROLLBACK;
+            } else {
+                response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
+            }
+            if (resultAction == ResultAction.ROLLBACK) {
+                response.get(ROLLED_BACK).set(true);
+            }
+            return resultAction;
+        } finally {
+            modelAddress = oldModelAddress;
+            operation = oldOperation;
+            this.response = response = oldResponse;
+            if (lockDepth == depth) {
+                modelController.releaseLock();
+                lockDepth = 0;
+            }
+            if (containerMonitorDepth == depth) {
+                awaitContainerMonitor();
+                modelController.releaseContainerMonitor();
+                containerMonitorDepth = 0;
+            }
+            if (--depth == 0) {
+                // We're returning from the outermost completeStep()
+                // Null out the current stage to disallow further access to the context
+                currentStage = null;
+            }
+        }
     }
 
     public Type getType() {
@@ -380,14 +393,8 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (modify && !affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
-            modelController.acquireContainerMonitor();
-            try {
-                modelController.awaitContainerMonitor(respectInterruption, 1);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                modelController.releaseContainerMonitor();
-                throw new CancellationException("Operation cancelled asynchronously");
-            }
+            acquireContainerMonitor();
+            awaitContainerMonitor();
         }
         return modelController.getServiceRegistry();
     }
@@ -404,14 +411,9 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
+            acquireContainerMonitor();
+            awaitContainerMonitor();
             modelController.acquireContainerMonitor();
-            try {
-                modelController.awaitContainerMonitor(respectInterruption, 1);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                modelController.releaseContainerMonitor();
-                throw new CancellationException("Operation cancelled asynchronously");
-            }
         }
         ServiceController<?> controller = modelController.getServiceRegistry().getService(name);
         if (controller != null) {
@@ -432,14 +434,8 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
-            modelController.acquireContainerMonitor();
-            try {
-                modelController.awaitContainerMonitor(respectInterruption, 1);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                modelController.releaseContainerMonitor();
-                throw new CancellationException("Operation cancelled asynchronously");
-            }
+            acquireContainerMonitor();
+            awaitContainerMonitor();
         }
         doRemove(controller);
     }
@@ -484,32 +480,48 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
-            try {
-                modelController.awaitContainerMonitor(respectInterruption, 0);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
-            }
-            modelController.acquireContainerMonitor();
+            acquireContainerMonitor();
+            awaitContainerMonitor();
         }
         return serviceTarget;
     }
 
     private void takeWriteLock() {
-        if (flags.add(Flag.WRITE_LOCK_TAKEN)) {
+        if (lockDepth == 0) {
+            if (currentStage == Stage.DONE) {
+                throw new IllegalStateException("Invalid modification after completed step");
+            }
             try {
                 modelController.acquireLock(respectInterruption);
+                lockDepth = depth;
             } catch (InterruptedException e) {
-                flags.remove(Flag.WRITE_LOCK_TAKEN);
                 Thread.currentThread().interrupt();
                 throw new CancellationException("Operation cancelled asynchronously");
+            }
+        }
+    }
+
+    private void acquireContainerMonitor() {
+        if (containerMonitorDepth == 0) {
+            if (currentStage == Stage.DONE) {
+                throw new IllegalStateException("Invalid modification after completed step");
             }
             try {
-                modelController.awaitContainerMonitor(respectInterruption, 0);
+                modelController.acquireLock(respectInterruption);
+                containerMonitorDepth = depth;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new CancellationException("Operation cancelled asynchronously");
             }
+        }
+    }
+
+    private void awaitContainerMonitor() {
+        try {
+            modelController.awaitContainerMonitor(respectInterruption, 1);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CancellationException("Operation cancelled asynchronously");
         }
     }
 
