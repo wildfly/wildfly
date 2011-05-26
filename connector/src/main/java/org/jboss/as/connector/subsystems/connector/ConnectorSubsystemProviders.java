@@ -87,26 +87,31 @@ class ConnectorSubsystemProviders {
                     bundle.getString("archive-validation.enabled"));
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, DEFAULT).set(true);
 
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DESCRIPTION).set(
                     bundle.getString("archive-validation.fail-on-error"));
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DEFAULT).set(true);
 
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DESCRIPTION).set(
                     bundle.getString("archive-validation.fail-on-warn"));
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DEFAULT).set(false);
 
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
                     bundle.getString("cached-connection-manager.debug"));
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DEFAULT).set(false);
 
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
                     bundle.getString("cached-connection-manager.error"));
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
+            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DEFAULT).set(false);
 
             return subsystem;
         }
