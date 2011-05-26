@@ -105,7 +105,7 @@ public interface ModelNodeRegistration {
      * @param readHandler the handler for attribute reads. May be {@code null}
      *                    in which case the default handling is used
      * @param writeHandler the handler for attribute writes. Cannot be {@code null}
-     *
+     * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
      */
     void registerReadWriteAttribute(String attributeName, NewStepHandler readHandler, NewStepHandler writeHandler, AttributeAccess.Storage storage);
@@ -117,7 +117,7 @@ public interface ModelNodeRegistration {
      * @param attributeName the name of the attribute. Cannot be {@code null}
      * @param readHandler the handler for attribute reads. May be {@code null}
      *                    in which case the default handling is used
-     *
+     * @param storage the storage type for this attribute
      * @throws IllegalArgumentException if {@code attributeName} is {@code null}
      */
     void registerReadOnlyAttribute(String attributeName, NewStepHandler readHandler, AttributeAccess.Storage storage);
@@ -176,6 +176,7 @@ public interface ModelNodeRegistration {
     /**
      * Gets the information on how to read from or write to the given attribute.
      *
+     * @param address the address of the resource
      * @param attributeName the name of the attribute
      *
      * @return the handling information, or {@code null} if the attribute or address is unknown
