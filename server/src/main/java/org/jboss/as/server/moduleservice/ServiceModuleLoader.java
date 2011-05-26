@@ -21,6 +21,9 @@
  */
 package org.jboss.as.server.moduleservice;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
@@ -39,9 +42,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * {@link ModuleLoader} that loads module definitions from msc services. Module specs are looked up in msc services that
@@ -150,7 +150,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
 
     @SuppressWarnings("unchecked")
     @Override
-    protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
+    public ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
         ServiceController<ModuleSpec> controller = (ServiceController<ModuleSpec>) serviceContainer.getService(moduleSpecServiceName(identifier));
         if (controller == null) {
             throw new ModuleLoadException("Could not load module " + identifier + " as corresponding module spec service " + identifier + " was not found");
