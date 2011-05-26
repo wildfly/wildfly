@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@Ignore("Composite ops not working yet")
+//@Ignore("Composite ops not working yet")
 public class CompositeOperationHandlerUnitTestCase {
 
     private ServiceContainer container;
@@ -76,30 +76,24 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-    public void testGoodCompositeExecution() throws Exception {
+    public void testModelStageGood() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
+        System.out.println(result);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(2, result.get("result").asInt());
         assertEquals("success", result.get("result", "step-1", "outcome").asString());
         assertEquals("success", result.get("result", "step-2", "outcome").asString());
         assertEquals(1, result.get("result", "step-1", "result").asInt());
         assertEquals(2, result.get("result", "step-2", "result").asInt());
-        assertEquals("good", result.get("result", "step-1", "compensating-operation", "operation").asString());
-        assertEquals("good", result.get("result", "step-2", "compensating-operation", "operation").asString());
-        assertEquals(new ModelNode().setEmptyList(), result.get("result", "step-1", "compensating-operation", "address"));
-        assertEquals(new ModelNode().setEmptyList(), result.get("result", "step-2", "compensating-operation", "address"));
-        assertEquals("composite", result.get("compensating-operation", "operation").asString());
-        assertEquals(new ModelNode().setEmptyList(), result.get("compensating-operation", "address"));
-        assertEquals(2, result.get("compensating-operation", "steps").asInt());
 
         assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
     }
 
     @Test
-    public void testBadCompositeExecution() throws Exception {
+    public void testModelStageFailure() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
@@ -113,82 +107,58 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-    public void testEvilCompositeExecution() throws Exception {
+    public void testModelStageUnhandledFailure() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("evil", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this handler is evil") > - 1);
+
+        final String description = result.get("failure-description").toString();
+        assertTrue(description.contains("this handler is evil"));
+        assertTrue(description.contains(" and was rolled back."));
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
     }
 
     @Test
-    public void testOperationFailedExecution() throws Exception {
-        ModelNode step1 = getOperation("good", "attr1", 2);
-        ModelNode step2 = getOperation("bad", "attr2", 1);
-        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-        final String description = result.get("failure-description").toString();
-        assertTrue(description.contains("this request is bad"));
-        assertTrue(description.contains(" and was rolled back."));
-
-        assertTrue(sharedState.get());
-
-        Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
-        Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
-    }
-
-    @Test
-    public void testOperationFailedExecutionNoRollback() throws Exception {
+    public void testModelStageFailureNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
         ModelNode op = getCompositeOperation(null, step1, step2);
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        System.out.println(result);
+        // Model stage failure should result in rollback regardless of the header
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > - 1);
 
-        assertTrue(sharedState.get());
 
-        Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
-        Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+        assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
     }
 
     @Test
-    public void testUnhandledFailureExecution() throws Exception {
+    public void testModelStageUnhandledFailureNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("evil", "attr2", 1);
-        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        ModelNode op = getCompositeOperation(null, step1, step2);
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        ModelNode result = controller.execute(op, null, null, null);
+        System.out.println(result);
+        // Model stage failure should result in rollback regardless of the header
+        assertEquals(FAILED, result.get(OUTCOME).asString());
 
         final String description = result.get("failure-description").toString();
         assertTrue(description.contains("this handler is evil"));
         assertTrue(description.contains(" and was rolled back."));
 
-        assertTrue(sharedState.get());
-
-        Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
-        Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+        assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
     }
 
     @Test
-    public void testUnhandledFailureExecutionNoRollback() throws Exception {
-        ModelNode step1 = getOperation("good", "attr1", 2);
-        ModelNode step2 = getOperation("evil", "attr2", 1);
-        ModelNode op = getCompositeOperation(null, step1, step2);
-        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        ModelNode result = controller.execute(op, null, null, null);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        assertTrue(sharedState.get());
-
-        Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
-        Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
-    }
-
-    @Test
-    public void testHandleFailedExecution() throws Exception {
+    public void testRuntimeStageFailed() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2, null, false);
         ModelNode step2 = getOperation("handleFailed", "attr2", 1, null, false);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
@@ -204,7 +174,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-    public void testHandleFailedExecutionNoRollback() throws Exception {
+    public void testRuntimeStageFailedNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("handleFailed", "attr2", 1);
         ModelNode op = getCompositeOperation(null, step1, step2);
@@ -212,14 +182,29 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(op, null, null, null);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        assertTrue(sharedState.get());
+        assertFalse(sharedState.get());
 
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
     }
 
     @Test
-    public void testGoodNestedComposite() throws Exception {
+    public void testRuntimeStageUnhandleFailureNoRollback() throws Exception {
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("runtimeException", "attr2", 1);
+        ModelNode op = getCompositeOperation(null, step1, step2);
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        ModelNode result = controller.execute(op, null, null, null);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        assertFalse(sharedState.get());
+
+        Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testModelStageGoodNestedComposite() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2, null, false);
         ModelNode step2 = getOperation("good", "attr2", 1, null, false);
         ModelNode comp1 = getCompositeOperation(null, step1, step2);
@@ -244,7 +229,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-    public void testBadNestedComposite() throws Exception {
+    public void testModelStageFailedNestedComposite() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode comp1 = getCompositeOperation(null, step1, step2);
@@ -262,7 +247,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-    public void testGoodServiceCompositeExecution() throws Exception {
+    public void testGoodServiceComposite() throws Exception {
 
         assertTrue(sharedState.get());
         ModelNode step1 = getOperation("good", "attr1", 2);
@@ -275,15 +260,6 @@ public class CompositeOperationHandlerUnitTestCase {
         Assert.assertEquals("success", result.get("result", "step-2", "outcome").asString());
         Assert.assertEquals(1, result.get("result", "step-1", "result").asInt());
         Assert.assertEquals(2, result.get("result", "step-2", "result").asInt());
-        Assert.assertEquals("good", result.get("result", "step-1", "compensating-operation", "operation").asString());
-        Assert.assertEquals("good-service", result.get("result", "step-2", "compensating-operation", "operation").asString());
-        Assert.assertEquals(new ModelNode().setEmptyList(), result.get("result", "step-1", "compensating-operation", "address"));
-        Assert.assertEquals(new ModelNode().setEmptyList(), result.get("result", "step-2", "compensating-operation", "address"));
-        Assert.assertEquals("composite", result.get("compensating-operation", "operation").asString());
-        Assert.assertEquals(new ModelNode().setEmptyList(), result.get("compensating-operation", "address"));
-        Assert.assertEquals(2, result.get("compensating-operation", "steps").asInt());
-
-        assertFalse(sharedState.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("good-service"));
         assertNotNull(sc);
@@ -316,8 +292,6 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(20, controller.execute(getOperation("good", "attr1", 3), null, null, null).get(RESULT).asInt());
         Assert.assertEquals(10, controller.execute(getOperation("good", "attr2", 3), null, null, null).get(RESULT).asInt());
-
-        assertFalse(sharedState.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("good-service"));
         assertNotNull(sc);
@@ -408,6 +382,54 @@ public class CompositeOperationHandlerUnitTestCase {
         assertTrue(sharedState.get());
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("missing-service"));
+        if (sc != null) {
+            Assert.assertEquals(ServiceController.Mode.REMOVE, sc.getMode());
+        }
+
+        Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testGoodServiceCompositeTxRollback() throws Exception {
+
+        assertTrue(sharedState.get());
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("good-service", "attr2", 1);
+        ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        Assert.assertEquals("failed", result.get("outcome").asString());
+        assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
+
+        assertTrue(sharedState.get());
+
+        ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("bad-service"));
+        if (sc != null) {
+            Assert.assertEquals(ServiceController.Mode.REMOVE, sc.getMode());
+        }
+
+        Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testGoodServiceNestedCompositeTxRollback() throws Exception {
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp1 = getCompositeOperation(null, step1, step2);
+        ModelNode step3 = getOperation("good", "attr1", 20);
+        ModelNode step4 = getOperation("good-service", "attr2", 10);
+        ModelNode comp2 = getCompositeOperation(null, step3, step4);
+        ModelNode op = getCompositeOperation(null, comp1, comp2);
+//        System.out.println(op);
+        ModelNode result = controller.execute(op, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        Assert.assertEquals("failed", result.get("outcome").asString());
+        assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
+
+        assertTrue(sharedState.get());
+
+        ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("bad-service"));
         if (sc != null) {
             Assert.assertEquals(ServiceController.Mode.REMOVE, sc.getMode());
         }
