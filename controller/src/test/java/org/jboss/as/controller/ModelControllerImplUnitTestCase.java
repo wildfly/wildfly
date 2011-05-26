@@ -112,7 +112,7 @@ public class ModelControllerImplUnitTestCase {
             ModelNodeRegistration rootRegistration = ModelNodeRegistration.Factory.create(DESC_PROVIDER);
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
-//            rootRegistration.registerOperationHandler("composite", new NewCompositeOperationHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("composite", new NewCompositeOperationHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("good", new ModelStageGoodHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("bad", new ModelStageFailsHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("evil", new ModelStageThrowsExceptionHandler(), DESC_PROVIDER, false);
@@ -608,7 +608,7 @@ public class ModelControllerImplUnitTestCase {
         }
     };
 
-    private static class RollbackTransactionControl implements NewModelController.OperationTransactionControl {
+    static class RollbackTransactionControl implements NewModelController.OperationTransactionControl {
 
         static final RollbackTransactionControl INSTANCE = new RollbackTransactionControl();
 

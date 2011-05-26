@@ -150,7 +150,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == Stage.DONE) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (stage.compareTo(currentStage) < 0) {
+        if (stage.compareTo(currentStage) < 0 && (stage != Stage.IMMEDIATE || currentStage == Stage.DONE)) {
             throw new IllegalStateException("Stage " + stage + " is already complete");
         }
         if (contextType == Type.MANAGEMENT && stage.compareTo(Stage.MODEL) > 0) {
