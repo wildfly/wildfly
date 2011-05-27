@@ -107,10 +107,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         EJBViewDescription ejbViewDescription = null;
         for (ViewDescription viewDescription : views) {
             ejbViewDescription = (EJBViewDescription) viewDescription;
-            if (ejbViewDescription.getMethodIntf() == MethodIntf.SERVICE_ENDPOINT) {
-                // do not publish webservice view to JNDI, skip JNDI binding setup
-                continue; // TODO: investigate how to do it right for WS endpoints
-            }
+            if (!ejbViewDescription.hasJNDIBindings()) continue;
 
             final String viewClassName = ejbViewDescription.getViewClassName();
 
@@ -140,19 +137,21 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         // Note that this also applies to java:app and java:module bindings
         // as can be seen by the examples in 4.4.2.1
         if (views.size() == 1) {
-            final ViewDescription viewDescription = views.get(0);
+            final EJBViewDescription viewDescription = (EJBViewDescription) views.get(0);
+            if (ejbViewDescription.hasJNDIBindings()) {
 
-            // java:global binding
-            registerBinding(viewDescription, globalJNDIBaseName);
-            logBinding(jndiBindingsLogMessage, globalJNDIBaseName);
+                // java:global binding
+                registerBinding(viewDescription, globalJNDIBaseName);
+                logBinding(jndiBindingsLogMessage, globalJNDIBaseName);
 
-            // java:app binding
-            registerBinding(viewDescription, appJNDIBaseName);
-            logBinding(jndiBindingsLogMessage, appJNDIBaseName);
+                // java:app binding
+                registerBinding(viewDescription, appJNDIBaseName);
+                logBinding(jndiBindingsLogMessage, appJNDIBaseName);
 
-            // java:module binding
-            registerBinding(viewDescription, moduleJNDIBaseName);
-            logBinding(jndiBindingsLogMessage, moduleJNDIBaseName);
+                // java:module binding
+                registerBinding(viewDescription, moduleJNDIBaseName);
+                logBinding(jndiBindingsLogMessage, moduleJNDIBaseName);
+            }
         }
 
         // log the jndi bindings

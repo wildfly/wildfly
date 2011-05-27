@@ -37,10 +37,12 @@ import org.jboss.msc.service.ServiceName;
 public final class EJBViewDescription extends ViewDescription {
 
     private final MethodIntf methodIntf;
+    private final boolean hasJNDIBindings;
 
     public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
         super(componentDescription, viewClassName);
         this.methodIntf = methodIntf;
+        hasJNDIBindings = initHasJNDIBindings(methodIntf);
     }
 
     public MethodIntf getMethodIntf() {
@@ -55,6 +57,24 @@ public final class EJBViewDescription extends ViewDescription {
     @Override // TODO: what to do in JNDI if multiple views are available for no interface view ?
     public ServiceName getServiceName() {
         return super.getServiceName().append(methodIntf.toString());
+    }
+
+    public boolean hasJNDIBindings() {
+        return hasJNDIBindings;
+    }
+
+    private boolean initHasJNDIBindings(final MethodIntf methodIntf) {
+        if (methodIntf == MethodIntf.MESSAGE_ENDPOINT) {
+            return false;
+        }
+        if (methodIntf == MethodIntf.SERVICE_ENDPOINT) {
+            return false;
+        }
+        if (methodIntf == MethodIntf.TIMER) {
+            return false;
+        }
+
+        return true;
     }
 
 }
