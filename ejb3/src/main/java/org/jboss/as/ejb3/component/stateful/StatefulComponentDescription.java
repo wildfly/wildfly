@@ -60,6 +60,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     private static final Logger logger = Logger.getLogger(StatefulComponentDescription.class);
 
+    private MethodDescription afterBegin;
+    private MethodDescription afterCompletion;
+    private MethodDescription beforeCompletion;
     private Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
 
     private class StatefulRemoveMethod {
@@ -136,9 +139,33 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return true;
     }
 
+    public MethodDescription getAfterBegin() {
+        return afterBegin;
+    }
+
+    public MethodDescription getAfterCompletion() {
+        return afterCompletion;
+    }
+
+    public MethodDescription getBeforeCompletion() {
+        return beforeCompletion;
+    }
+
     @Override
     public SessionBeanType getSessionBeanType() {
         return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
+    }
+
+    public void setAfterBegin(String className, String methodName) {
+        this.afterBegin = new MethodDescription(className, methodName);
+    }
+
+    public void setAfterCompletion(String className, String methodName) {
+        this.afterCompletion = new MethodDescription(className, methodName, boolean.class.getName());
+    }
+
+    public void setBeforeCompletion(String className, String methodName) {
+        this.beforeCompletion = new MethodDescription(className, methodName);
     }
 
     @Override

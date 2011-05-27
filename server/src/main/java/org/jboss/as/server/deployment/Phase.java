@@ -233,6 +233,7 @@ public enum Phase {
     public static final int PARSE_EJB_ACCESS_TIMEOUT_ANNOTATION         = 0x1B00;
     // should be after all views are known
     public static final int PARSE_EJB_TRANSACTION_ATTR_ANNOTATION       = 0x1C00;
+    public static final int PARSE_EJB_SESSION_SYNCHRONIZATION_ANNOTATION = 0x1C50;
     public static final int PARSE_EJB_RESOURCE_ADAPTER_ANNOTATION       = 0x1D00;
     public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x1E00;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;

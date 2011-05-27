@@ -27,6 +27,7 @@ import org.jboss.invocation.InterceptorContext;
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBException;
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,16 +64,16 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                 transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
                     @Override
                     public void beforeCompletion() {
-                        // TODO: beforeCompletion callbacks on SessionSynchronization
+                        instance.beforeCompletion();
                     }
 
                     @Override
                     public void afterCompletion(int status) {
-                        // TODO: afterCompletion callbacks on SessionSynchronization
+                        instance.afterCompletion(status == Status.STATUS_COMMITTED);
                         release(instance);
                     }
                 });
-                // TODO: afterBegin callbacks on SessionSynchronization
+                instance.afterBegin();
                 transactionKey = currentTransactionKey;
             }
         }

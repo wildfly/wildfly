@@ -47,7 +47,7 @@ public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
     public void validate() throws ConfigurationException {
         super.validate();
 
-        Validate.configurationDirectoryExists(jbossHome, "jbossHome must exist");
+        Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
         if (javaHome != null) {
             Validate.configurationDirectoryExists(javaHome, "javaHome must exist");
         }

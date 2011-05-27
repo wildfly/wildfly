@@ -21,13 +21,16 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Identifiable;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.util.id.GUID;
 
+import javax.ejb.EJBException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -39,14 +42,52 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
     private final GUID id;
 
+    private final Interceptor afterBegin;
+    private final Interceptor afterCompletion;
+    private final Interceptor beforeCompletion;
+
     /**
      * Construct a new instance.
      *
      * @param component the component
      */
-    protected StatefulSessionComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+    protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         this.id = new GUID();
+
+        this.afterBegin = component.createInterceptor(component.afterBegin);
+        this.afterCompletion = component.createInterceptor(component.afterCompletion);
+        this.beforeCompletion = component.createInterceptor(component.beforeCompletion);
+    }
+
+    protected void afterBegin() {
+        execute(afterBegin);
+    }
+
+    protected void afterCompletion(boolean committed) {
+        execute(afterCompletion, committed);
+    }
+
+    protected void beforeCompletion() {
+        execute(beforeCompletion);
+    }
+
+    protected Object execute(final Interceptor interceptor, final Object... parameters) {
+        if (interceptor == null)
+            return null;
+        final InterceptorContext interceptorContext = new InterceptorContext();
+        interceptorContext.putPrivateData(Component.class, getComponent());
+        interceptorContext.putPrivateData(ComponentInstance.class, this);
+        interceptorContext.putPrivateData(InvokeMethodOnTargetInterceptor.PARAMETERS_KEY, parameters);
+        try {
+            return interceptor.processInvocation(interceptorContext);
+        } catch (Error e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
     }
 
     @Override

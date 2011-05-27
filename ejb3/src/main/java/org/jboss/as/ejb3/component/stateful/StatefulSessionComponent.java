@@ -32,17 +32,21 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Cache;
 import org.jboss.ejb3.cache.NoPassivationCache;
 import org.jboss.ejb3.cache.StatefulObjectFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TxUtils;
+
+
 
 /**
  * Stateful Session Bean
@@ -57,14 +61,21 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     private static final Logger logger = Logger.getLogger(StatefulSessionComponent.class);
 
+    final InterceptorFactory afterBegin;
+    final InterceptorFactory afterCompletion;
+    final InterceptorFactory beforeCompletion;
+
     /**
      * Construct a new instance.
      *
      * @param ejbComponentCreateService the component configuration
      */
-    protected StatefulSessionComponent(final SessionBeanComponentCreateService ejbComponentCreateService) {
+    protected StatefulSessionComponent(final StatefulSessionComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
 
+        this.afterBegin = ejbComponentCreateService.afterBegin;
+        this.afterCompletion = ejbComponentCreateService.afterCompletion;
+        this.beforeCompletion = ejbComponentCreateService.beforeCompletion;
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
@@ -124,6 +135,14 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 //        };
 //    }
 
+    protected Interceptor createInterceptor(final InterceptorFactory factory) {
+        if (factory == null)
+            return null;
+        final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        context.getContextData().put(Component.class, this);
+        return factory.create(context);
+    }
+
     public Serializable createSession() {
         return getCache().create().getId();
     }
@@ -167,7 +186,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     }
 
-     /**
+    /**
      * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
      * callback.
      */

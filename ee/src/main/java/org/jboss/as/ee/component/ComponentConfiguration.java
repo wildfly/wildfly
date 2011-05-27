@@ -66,6 +66,8 @@ public class ComponentConfiguration {
     // Views
     private final List<ViewConfiguration> views = new ArrayList<ViewConfiguration>();
 
+    private InterceptorFactory namespaceContextInterceptorFactory;
+
     public ComponentConfiguration(final ComponentDescription componentDescription, final EEModuleClassConfiguration moduleClassConfiguration) {
         this.componentDescription = componentDescription;
         this.moduleClassConfiguration = moduleClassConfiguration;
@@ -293,5 +295,13 @@ public class ComponentConfiguration {
 
     public String toString() {
         return getClass().getName() + "[name=" + componentDescription.getComponentName() + " class=" + componentDescription.getComponentClassName() + "]";
+    }
+
+    public InterceptorFactory getNamespaceContextInterceptorFactory() {
+        return namespaceContextInterceptorFactory;
+    }
+
+    public void setNamespaceContextInterceptorFactory(InterceptorFactory interceptorFactory) {
+        this.namespaceContextInterceptorFactory = interceptorFactory;
     }
 }
