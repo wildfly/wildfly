@@ -41,7 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +49,7 @@ import java.util.List;
  * Sets up JNDI bindings for each of the views exposed by a {@link SessionBeanComponentDescription session bean}
  *
  * @author Jaikiran Pai
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
@@ -87,21 +87,20 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
      * @param deploymentUnit The deployment unit containing the session bean
      */
     private void setupJNDIBindings(SessionBeanComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
-
-        List<ViewDescription> views = sessionBean.getViews();
+        final List<ViewDescription> views = sessionBean.getViews();
         if (views == null || views.isEmpty()) {
             logger.info("No jndi bindings will be created for EJB: " + sessionBean.getEJBName() + " since no views are exposed");
             return;
         }
 
         // In case of EJB bindings, appname == .ear file name (if it's an .ear deployment)
-        String applicationName = this.getEarName(deploymentUnit);
-        String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
-        String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
-        String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
+        final String applicationName = this.getEarName(deploymentUnit);
+        final String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
+        final String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
+        final String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
-        StringBuilder jndiBindingsLogMessage = new StringBuilder();
+        final StringBuilder jndiBindingsLogMessage = new StringBuilder();
         jndiBindingsLogMessage.append("JNDI bindings for session bean named " + sessionBean.getEJBName() + " in deployment unit " + deploymentUnit + " are as follows:\n\n");
 
         // now create the bindings for each view under the java:global, java:app and java:module namespaces
@@ -113,40 +112,22 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
                 continue; // TODO: investigate how to do it right for WS endpoints
             }
 
-            String viewClassName = ejbViewDescription.getViewClassName();
+            final String viewClassName = ejbViewDescription.getViewClassName();
+
             // java:global bindings
-            String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
-            final InjectionSource globalBindingSource = new ViewBindingInjectionSource(ejbViewDescription.getServiceName());
-            final BindingConfiguration globalBinding = new BindingConfiguration(globalJNDIName, globalBindingSource);
-            // add the binding to the view configuration
-            this.addBindingConfiguration(ejbViewDescription, globalBinding);
-            // add to the log message
-            jndiBindingsLogMessage.append("\t");
-            jndiBindingsLogMessage.append(globalJNDIName);
-            jndiBindingsLogMessage.append("\n");
+            final String globalJNDIName = globalJNDIBaseName + "!" + viewClassName;
+            registerBinding(viewDescription, globalJNDIName);
+            logBinding(jndiBindingsLogMessage, globalJNDIName);
 
             // java:app bindings
-            String appJNDIName = appJNDIBaseName + "!" + viewClassName;
-            final InjectionSource appBindingSource = new ViewBindingInjectionSource(ejbViewDescription.getServiceName());
-            final BindingConfiguration appBinding = new BindingConfiguration(appJNDIName, appBindingSource);
-            // add the binding to the view description
-            this.addBindingConfiguration(ejbViewDescription, appBinding);
-            // add to the log message
-            jndiBindingsLogMessage.append("\t");
-            jndiBindingsLogMessage.append(appJNDIName);
-            jndiBindingsLogMessage.append("\n");
+            final String appJNDIName = appJNDIBaseName + "!" + viewClassName;
+            registerBinding(viewDescription, appJNDIName);
+            logBinding(jndiBindingsLogMessage, appJNDIName);
 
             // java:module bindings
-            String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
-            final InjectionSource moduleBindingSource = new ViewBindingInjectionSource(ejbViewDescription.getServiceName());
-            final BindingConfiguration moduleBinding = new BindingConfiguration(moduleJNDIName, moduleBindingSource);
-            // add the binding to the view description
-            this.addBindingConfiguration(ejbViewDescription, moduleBinding);
-            // add to the log message
-            jndiBindingsLogMessage.append("\t");
-            jndiBindingsLogMessage.append(moduleJNDIName);
-            jndiBindingsLogMessage.append("\n");
-
+            final String moduleJNDIName = moduleJNDIBaseName + "!" + viewClassName;
+            registerBinding(viewDescription, moduleJNDIName);
+            logBinding(jndiBindingsLogMessage, moduleJNDIName);
         }
 
         // EJB3.1 spec, section 4.4.1 Global JNDI Access states:
@@ -162,38 +143,32 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             final ViewDescription viewDescription = views.get(0);
 
             // java:global binding
-            final InjectionSource globalBindingSource = new ViewBindingInjectionSource(viewDescription.getServiceName());
-            final BindingConfiguration globalBinding = new BindingConfiguration(globalJNDIBaseName, globalBindingSource);
-            // add the binding to the view description
-            this.addBindingConfiguration(viewDescription, globalBinding);
-            // add to the log message
-            jndiBindingsLogMessage.append("\t");
-            jndiBindingsLogMessage.append(globalJNDIBaseName);
-            jndiBindingsLogMessage.append("\n");
-
+            registerBinding(viewDescription, globalJNDIBaseName);
+            logBinding(jndiBindingsLogMessage, globalJNDIBaseName);
 
             // java:app binding
-            final InjectionSource appBindingSource = new ViewBindingInjectionSource(viewDescription.getServiceName());
-            final BindingConfiguration appBinding = new BindingConfiguration(appJNDIBaseName, appBindingSource);
-            // add the binding to the view description
-            this.addBindingConfiguration(viewDescription, appBinding);
-            // add to the log message
-            jndiBindingsLogMessage.append("\t");
-            jndiBindingsLogMessage.append(appJNDIBaseName);
-            jndiBindingsLogMessage.append("\n");
+            registerBinding(viewDescription, appJNDIBaseName);
+            logBinding(jndiBindingsLogMessage, appJNDIBaseName);
 
             // java:module binding
-            final InjectionSource moduleBindingSource = new ViewBindingInjectionSource(viewDescription.getServiceName());
-            final BindingConfiguration moduleBinding = new BindingConfiguration(moduleJNDIBaseName, moduleBindingSource);
-            // add the binding to the view description
-            this.addBindingConfiguration(viewDescription, moduleBinding);
-            // add to the log message
-            jndiBindingsLogMessage.append("\t");
-            jndiBindingsLogMessage.append(moduleJNDIBaseName);
-            jndiBindingsLogMessage.append("\n");
+            registerBinding(viewDescription, moduleJNDIBaseName);
+            logBinding(jndiBindingsLogMessage, moduleJNDIBaseName);
         }
+
         // log the jndi bindings
         logger.info(jndiBindingsLogMessage);
+    }
+
+    private void registerBinding(final ViewDescription viewDescription, final String jndiName) {
+        final InjectionSource moduleBindingSource = new ViewBindingInjectionSource(viewDescription.getServiceName());
+        final BindingConfiguration moduleBinding = new BindingConfiguration(jndiName, moduleBindingSource);
+        addBindingConfiguration(viewDescription, moduleBinding);
+    }
+
+    private void logBinding(final StringBuilder jndiBindingsLogMessage, final String jndiName) {
+        jndiBindingsLogMessage.append("\t");
+        jndiBindingsLogMessage.append(jndiName);
+        jndiBindingsLogMessage.append("\n");
     }
 
     /**
