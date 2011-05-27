@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.common.metadata.resourceadapter.ResourceAdaptersImpl;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -41,19 +40,19 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-final class ResourceAdaptersService implements Service<ResourceAdaptersService.ModifiableResourceAdapeters> {
+final class ResourceAdaptersService implements Service<ResourceAdaptersService.ModifiableResourceAdaptors> {
 
-    private final ModifiableResourceAdapeters value;
+    private final ModifiableResourceAdaptors value;
 
     private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
 
     /** create an instance **/
-    public ResourceAdaptersService(ModifiableResourceAdapeters value) {
+    public ResourceAdaptersService(ModifiableResourceAdaptors value) {
         this.value = value;
     }
 
     @Override
-    public ModifiableResourceAdapeters getValue() throws IllegalStateException {
+    public ModifiableResourceAdaptors getValue() throws IllegalStateException {
         return value;
     }
 
@@ -67,7 +66,7 @@ final class ResourceAdaptersService implements Service<ResourceAdaptersService.M
 
     }
 
-    public static final class ModifiableResourceAdapeters implements ResourceAdapters {
+    public static final class ModifiableResourceAdaptors implements ResourceAdapters {
 
         private static final long serialVersionUID = 9096011997958619051L;
         private final ArrayList<ResourceAdapter> resourceAdapters;
@@ -76,7 +75,7 @@ final class ResourceAdaptersService implements Service<ResourceAdaptersService.M
          * Create a new ResopurceAdaptersImpl.
          * @param resourceAdapters resourceAdapters
          */
-        public ModifiableResourceAdapeters(List<ResourceAdapter> resourceAdapters) {
+        public ModifiableResourceAdaptors(List<ResourceAdapter> resourceAdapters) {
             super();
             if (resourceAdapters != null) {
                 this.resourceAdapters = new ArrayList<ResourceAdapter>(resourceAdapters.size());

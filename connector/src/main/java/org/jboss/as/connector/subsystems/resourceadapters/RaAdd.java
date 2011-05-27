@@ -26,14 +26,12 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdapeters;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdaptors;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -70,7 +68,7 @@ public class RaAdd extends AbstractRaOperation implements NewStepHandler {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
-                    ModifiableResourceAdapeters resourceAdapters = buildResourceAdaptersObject(operation);
+                    ModifiableResourceAdaptors resourceAdapters = buildResourceAdaptersObject(operation);
 
                     final ServiceController<?> raService = context.getServiceRegistry(false).getService(
                             ConnectorServices.RESOURCEADAPTERS_SERVICE);
@@ -79,7 +77,7 @@ public class RaAdd extends AbstractRaOperation implements NewStepHandler {
                          controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
                                         new ResourceAdaptersService(resourceAdapters)).setInitialMode(Mode.ACTIVE).addListener(verificationHandler).install();
                     } else {
-                        ((ModifiableResourceAdapeters) raService.getValue()).addAllResourceAdapters(resourceAdapters.getResourceAdapters());
+                        ((ModifiableResourceAdaptors) raService.getValue()).addAllResourceAdapters(resourceAdapters.getResourceAdapters());
                     }
 
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
