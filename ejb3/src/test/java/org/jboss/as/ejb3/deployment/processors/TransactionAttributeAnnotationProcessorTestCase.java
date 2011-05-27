@@ -133,6 +133,30 @@ public class TransactionAttributeAnnotationProcessorTestCase {
     }
 
     @Test
+    public void testNoInterfaceView() throws Exception {
+        DeploymentUnit deploymentUnit = mockDeploymentUnit();
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
+        DeploymentPhaseContext phaseContext = null;
+        Indexer indexer = new Indexer();
+        index(indexer, SomeClass.class);
+        CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
+
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final ServiceName duServiceName = deploymentUnit.getServiceName();
+        StatelessComponentDescription componentDescription = new StatelessComponentDescription(SomeClass.class.getSimpleName(), SomeClass.class.getName(), ejbJarDescription, duServiceName);
+        componentDescription.addNoInterfaceView();
+        TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
+        processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
+
+        // make sure to use the declaring class as the class name!
+        assertEquals(SUPPORTS, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, SomeClass.class.getName(), "aMethod"));
+        assertEquals(SUPPORTS, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, SomeClass.class.getName(), "bMethod"));
+    }
+
+    @Test
     public void testViews() throws Exception {
         DeploymentUnit deploymentUnit = mockDeploymentUnit();
         // Mark the deployment unit as a EJB deployment

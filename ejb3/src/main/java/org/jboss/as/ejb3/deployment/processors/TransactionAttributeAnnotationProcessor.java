@@ -87,7 +87,7 @@ public class TransactionAttributeAnnotationProcessor extends AbstractAnnotationE
             if (target instanceof ClassInfo) {
                 // Style 1
                 final String className = target.toString();
-                componentDescription.setTransactionAttribute(methodIntf, className, transactionAttributeType);
+                componentDescription.setTransactionAttribute(methodIntf, methodIntf == null ? className : null, transactionAttributeType);
             } else if (target instanceof MethodInfo) {
                 // Style 3
                 final MethodInfo method = (MethodInfo) target;
