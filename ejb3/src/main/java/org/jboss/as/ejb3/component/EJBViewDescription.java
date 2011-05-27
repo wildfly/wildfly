@@ -52,9 +52,9 @@ public final class EJBViewDescription extends ViewDescription {
         return new EJBViewConfiguration(viewClass, componentConfiguration, getServiceName(), proxyFactory, getMethodIntf());
     }
 
-    /*@Override // TODO: what to do in JNDI if multiple views are available for no interface view ?
+    @Override // TODO: what to do in JNDI if multiple views are available for no interface view ?
     public ServiceName getServiceName() {
         return super.getServiceName().append(methodIntf.toString());
-    }*/
+    }
 
 }
