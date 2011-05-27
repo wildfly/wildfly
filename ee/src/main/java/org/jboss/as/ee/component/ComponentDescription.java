@@ -748,9 +748,9 @@ public class ComponentDescription {
                 }
                 final ViewConfiguration viewConfiguration;
                 if (viewClass.isInterface()) {
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, viewClass.getClassLoader(), viewClass));
+                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), Object.class, viewClass.getClassLoader(), viewClass.getProtectionDomain(), viewClass));
                 } else {
-                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, viewClass.getClassLoader()));
+                    viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet(), viewClass, viewClass.getClassLoader(), viewClass.getProtectionDomain()));
                 }
                 for (final ViewConfigurator configurator : view.getConfigurators()) {
                     configurator.configure(context, configuration, view, viewConfiguration);
