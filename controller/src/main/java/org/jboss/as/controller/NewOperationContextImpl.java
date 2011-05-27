@@ -247,14 +247,6 @@ final class NewOperationContextImpl implements NewOperationContext {
                 return executeStep(response, step);
             }
         } while (currentStage != Stage.DONE);
-        // No more steps, verified operation is a success!
-        if (isModelAffected()) try {
-            modelController.writeModel(model);
-        } catch (ConfigurationPersistenceException e) {
-            response.get(OUTCOME).set(FAILED);
-            response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
-            return resultAction = ResultAction.ROLLBACK;
-        }
         final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
         if (transactionControl != null) {
             transactionControl.operationPrepared(new NewModelController.OperationTransaction() {
@@ -267,7 +259,17 @@ final class NewOperationContextImpl implements NewOperationContext {
                 }
             }, response);
         }
-        return resultAction = ref.get();
+        resultAction = ref.get();
+        // No more steps, verified operation is a success!
+        if (isModelAffected() && resultAction == ResultAction.KEEP) try {
+            modelController.writeModel(model);
+        } catch (ConfigurationPersistenceException e) {
+            // TODO this is a sort of tx heuristic; need to deal with this more robustly
+            response.get(OUTCOME).set(FAILED);
+            response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
+            return resultAction = ResultAction.ROLLBACK;
+        }
+        return resultAction;
     }
 
     private ResultAction executeStep(ModelNode response, final Step step) {
@@ -280,24 +282,39 @@ final class NewOperationContextImpl implements NewOperationContext {
             response = this.response = step.response;
             ModelNode newOperation = operation = step.operation;
             modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
-            step.handler.execute(this, newOperation);
+            try {
+                step.handler.execute(this, newOperation);
+            } catch (OperationFailedException ofe) {
+                if (currentStage != Stage.DONE) {
+                    // Handler threw OFE before calling completeStep(); that's equivalent to
+                    // a request that we set the failure description and call completeStep()
+                    response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
+                    completeStep();
+                }
+                else {
+                    // Handler threw OFE after calling completeStep()
+                    // Throw it on and let standard error handling deal with it
+                    throw ofe;
+                }
+            }
             assert resultAction != null;
         } catch (Throwable t) {
             // If this block is entered, then the next step failed
             // The question is, did it fail before or after calling completeStep()?
-            if (currentStage != null) {
+            if (currentStage != Stage.DONE) {
                 // It failed before, so consider the operation a failure.
                 if (! response.hasDefined(FAILURE_DESCRIPTION)) {
                     response.get(FAILURE_DESCRIPTION).set("Operation handler failed: " + t);
                 }
                 response.get(OUTCOME).set(FAILED);
-                response.get(ROLLED_BACK).set(true);
-                // this result action will be overwritten in finally, but whatever
-                return resultAction = ResultAction.ROLLBACK;
+                resultAction = getFailedResultAction(t);
+                if (resultAction == ResultAction.ROLLBACK) {
+                    response.get(ROLLED_BACK).set(true);
+                }
+                return resultAction;
             } else {
                 if (resultAction != ResultAction.KEEP) {
                     response.get(ROLLED_BACK).set(true);
-                    resultAction = ResultAction.ROLLBACK;
                 }
                 response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
                 // It failed after!  Just return, ignore the failure
@@ -318,11 +335,13 @@ final class NewOperationContextImpl implements NewOperationContext {
                 }
                 response.get(OUTCOME).set(FAILED);
                 response.get(ROLLED_BACK).set(true);
-                return resultAction = ResultAction.ROLLBACK;
+                resultAction = getFailedResultAction(null);
+                return resultAction;
             } else {
                 response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
             }
             if (resultAction == ResultAction.ROLLBACK) {
+                response.get(OUTCOME).set(FAILED);
                 response.get(ROLLED_BACK).set(true);
             }
             return resultAction;
@@ -345,6 +364,19 @@ final class NewOperationContextImpl implements NewOperationContext {
                 currentStage = null;
             }
         }
+    }
+
+    /**
+     * Decide whether failure should trigger a rollback.
+     *
+     * @param cause the cause of the failure, or {@code null} if failure is not the result of catching a throwable
+     */
+    private ResultAction getFailedResultAction(Throwable cause) {
+        if (currentStage == Stage.MODEL || cancelled || contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL)
+                || isRollbackOnly() || (cause != null && !(cause instanceof OperationFailedException))) {
+            return ResultAction.ROLLBACK;
+        }
+        return ResultAction.KEEP;
     }
 
     public Type getType() {
@@ -680,6 +712,8 @@ final class NewOperationContextImpl implements NewOperationContext {
             this.handler = handler;
             this.response = response;
             this.operation = operation;
+            // Create the outcome node early so it appears at the top of the response
+            response.get(OUTCOME);
         }
     }
 

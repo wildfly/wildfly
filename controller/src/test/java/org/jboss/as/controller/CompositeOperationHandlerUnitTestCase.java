@@ -189,18 +189,36 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-    public void testRuntimeStageUnhandleFailureNoRollback() throws Exception {
+    public void testRuntimeStageOFENoRollback() throws Exception {
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("operationFailedException", "attr2", 1);
+        ModelNode op = getCompositeOperation(null, step1, step2);
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        ModelNode result = controller.execute(op, null, null, null);
+        System.out.println(result);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testRuntimeStageUnhandledFailureNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("runtimeException", "attr2", 1);
         ModelNode op = getCompositeOperation(null, step1, step2);
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        System.out.println(result);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        final String description = result.get("failure-description").toString();
+        assertTrue(description.contains("runtime exception"));
+        assertTrue(description.contains(" and was rolled back."));
 
         assertFalse(sharedState.get());
 
-        Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
-        Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+        Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+        Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
     }
 
     @Test
