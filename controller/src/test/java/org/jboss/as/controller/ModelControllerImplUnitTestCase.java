@@ -118,6 +118,7 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("evil", new ModelStageThrowsExceptionHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("handleFailed", new RuntimeStageFailsHandler(state), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("runtimeException", new RuntimeStageThrowsExceptionHandler(state), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("operationFailedException", new RuntimeStageThrowsOFEHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("bad-service", new BadServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("missing-service", new MissingServiceHandler(), DESC_PROVIDER, false);
@@ -240,8 +241,23 @@ public class ModelControllerImplUnitTestCase {
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get("failure-description").toString().indexOf("runtime exception") > - 1);
 
-        // Confirm runtime state was changed
+        // Confirm runtime state was changed (handler changes it and throws exception, does not fix state)
         assertFalse(sharedState.get());
+
+        // Confirm model was unchanged
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals("success", result.get("outcome").asString());
+        assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testOperationFailedExceptionNoRollback() throws Exception {
+
+        ModelNode op = getOperation("operationFailedException", "attr1", 5, "good");
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        ModelNode result = controller.execute(op, null, null, null);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get("failure-description").toString().indexOf("OFE") > - 1);
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
@@ -283,7 +299,7 @@ public class ModelControllerImplUnitTestCase {
 
     @Test
     public void testGoodServiceTxRollback() throws Exception {
-        ModelNode result = controller.execute(getOperation("good-service", "attr1", 5), null, null, null);
+        ModelNode result = controller.execute(getOperation("good-service", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
         // Store response data for later assertions after we check more critical stuff
 
@@ -480,6 +496,30 @@ public class ModelControllerImplUnitTestCase {
                 public void execute(NewOperationContext context, ModelNode operation) {
                     toggleRuntimeState(state);
                     throw new RuntimeException("runtime exception");
+                }
+            }, NewOperationContext.Stage.RUNTIME);
+
+            context.completeStep();
+        }
+    }
+
+    public static class RuntimeStageThrowsOFEHandler implements NewStepHandler {
+
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) {
+
+            String name = operation.require("name").asString();
+            ModelNode attr = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
+            int current = attr.asInt();
+            attr.set(operation.require("value"));
+
+            context.getResult().set(current);
+
+            context.addStep(new NewStepHandler() {
+
+                @Override
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    throw new OperationFailedException(new ModelNode().set("OFE"));
                 }
             }, NewOperationContext.Stage.RUNTIME);
 
