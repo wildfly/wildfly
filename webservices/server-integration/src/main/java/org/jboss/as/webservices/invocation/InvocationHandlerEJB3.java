@@ -66,7 +66,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private String ejbName;
 
    /** EJB3 container. */
-   private ComponentViewInstance ejbContainer;
+   private volatile ComponentViewInstance ejbContainer;
 
    /**
     * Constructor.
@@ -95,13 +95,17 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     *
     * @return EJB3 container
     */
-   private synchronized ComponentViewInstance getEjb3Container() {
+   private ComponentViewInstance getEjb3Container() {
       if (ejbContainer == null) {
-         final ComponentView ejbView = iocContainer.getBean(ejbName, ComponentView.class);
-         if (ejbView == null) {
-            throw new WebServiceException("Cannot find ejb: " + ejbName);
+         synchronized(this) {
+            if (ejbContainer == null) {
+               final ComponentView ejbView = iocContainer.getBean(ejbName, ComponentView.class);
+               if (ejbView == null) {
+                  throw new WebServiceException("Cannot find ejb: " + ejbName);
+               }
+               ejbContainer = ejbView.createInstance();
+            }
          }
-         ejbContainer = ejbView.createInstance();
       }
 
       return ejbContainer;
