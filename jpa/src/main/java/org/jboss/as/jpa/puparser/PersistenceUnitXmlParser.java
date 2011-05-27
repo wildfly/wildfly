@@ -45,7 +45,8 @@ import java.util.Properties;
  */
 public class PersistenceUnitXmlParser extends MetaDataElementParser {
     private static final Logger log = Logger.getLogger("org.jboss.jpa");
-
+    // cache the trace enabled flag
+    private static final boolean traceEnabled = log.isTraceEnabled();
     public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader) throws XMLStreamException {
 
         reader.require(START_DOCUMENT, null, null);  // check for a bogus document and throw error
@@ -158,6 +159,9 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
+            if (traceEnabled) {
+                log.trace("parse persistence.xml: attribute value("+i+") = " + value);
+            }
             final String attributeNamespace = reader.getAttributeNamespace(i);
             if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
                 continue;
@@ -179,6 +183,9 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         // until the ending PERSISTENCEUNIT tag
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
+            if (traceEnabled) {
+                log.trace("parse persistence.xml: element=" + element.getLocalName());
+            }
             switch (element) {
                 case CLASS:
                     classes.add(reader.getElementText());
@@ -239,7 +246,9 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     throw unexpectedElement(reader);
             }
         }
-
+        if (traceEnabled) {
+            log.trace("parse persistence.xml: reached ending persistence-unit tag");
+        }
         pu.setManagedClassNames(classes);
         pu.setJarFiles(jarfiles);
         pu.setMappingFiles(mappingFiles);

@@ -29,6 +29,7 @@ import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.logging.Logger;
 
 import java.util.List;
 
@@ -38,18 +39,29 @@ import java.util.List;
  * @author Scott Marlow (forked from Carlo de Wolf code).
  */
 public class PersistenceUnitSearch {
-
+    private static final Logger log = Logger.getLogger("org.jboss.jpa");
+    // cache the trace enabled flag
+    private static final boolean traceEnabled = log.isTraceEnabled();
 
     public static String resolvePersistenceUnitSupplier(DeploymentUnit deploymentUnit, String persistenceUnitName) {
+        if (traceEnabled) {
+            log.tracef("pu search for name '%s' inside of %s", persistenceUnitName, deploymentUnit.getName());
+        }
         int i = (persistenceUnitName == null ? -1 : persistenceUnitName.indexOf('#'));
         if (i != -1) {
             String path = persistenceUnitName.substring(0, i);
             PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, path);
+            if (traceEnabled) {
+                log.trace("pu search found " + pu.getScopedPersistenceUnitName());
+            }
             return pu.getScopedPersistenceUnitName();
         } else {
             String name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (name == null)
                 throw new IllegalArgumentException("Can't find a persistence unit named '" + persistenceUnitName + "' in " + deploymentUnit);
+            if (traceEnabled) {
+                log.trace("pu search found " + name);
+            }
             return name;
         }
     }
@@ -106,8 +118,15 @@ public class PersistenceUnitSearch {
             return null;
 
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
-            if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName))
+            if (traceEnabled) {
+                log.tracef("findWithinModule check '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+            }
+            if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName)) {
+                if (traceEnabled) {
+                    log.tracef("findWithinModule matched '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+                }
                 return persistenceUnit.getScopedPersistenceUnitName();
+            }
         }
         return null;
     }
@@ -126,10 +145,16 @@ public class PersistenceUnitSearch {
             return null;
 
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
-            if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName))
+            if (traceEnabled) {
+                log.tracef("findWithinModule check '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+            }
+            if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName)) {
+                if (traceEnabled) {
+                    log.tracef("findWithinModule matched '%s' against pu '%s'", persistenceUnitName,persistenceUnit.getPersistenceUnitName());
+                }
                 return persistenceUnit.getScopedPersistenceUnitName();
+             }
         }
-
         return null;
     }
 
@@ -181,7 +206,13 @@ public class PersistenceUnitSearch {
             PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             if (holder != null) {
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                    if (traceEnabled) {
+                        log.tracef("getPersistenceUnit check '%s' against pu '%s'", name,pu.getPersistenceUnitName());
+                    }
                     if (pu.getPersistenceUnitName().equals(name)) {
+                        if (traceEnabled) {
+                            log.tracef("getPersistenceUnit matched '%s' against pu '%s'", name,pu.getPersistenceUnitName());
+                        }
                         return pu;
                     }
                 }
