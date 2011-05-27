@@ -97,7 +97,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         }
         this.messageListenerInterfaceName = messageListenerInterfaceName;
         // add it to the view description
-        ViewDescription viewDescription = new EJBViewDescription(this, messageListenerInterfaceName, MethodIntf.SERVICE_ENDPOINT);
+        ViewDescription viewDescription = new EJBViewDescription(this, messageListenerInterfaceName, MethodIntf.MESSAGE_ENDPOINT);
         this.getViews().add(viewDescription);
     }
 
