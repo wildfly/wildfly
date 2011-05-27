@@ -45,6 +45,7 @@ import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 
 import javax.xml.stream.XMLInputFactory;
@@ -80,7 +81,11 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (index == null) {
+            return;
+        }
+        if(module == null) {
             return;
         }
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
@@ -90,6 +95,19 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
         handleAnnotations(index, managedBeanClasses);
         processXmlManagedBeans(deploymentUnit, managedBeanClasses);
         for (String managedBean : managedBeanClasses) {
+            //try and load the class, and skip the class if it cannot be loaded
+            //this is not ideal, but we are not allowed to let the deployment
+            //fail due to missing managed beans
+            try {
+                final Class<?> componentClass = module.getClassLoader().loadClass(managedBean);
+                componentClass.getConstructor();
+            } catch (ClassNotFoundException e) {
+                log.error("Could not load JSF managed bean class " + managedBean);
+                continue;
+            } catch (NoSuchMethodException e) {
+                log.error("JSF managed bean class " + managedBean + " has no default constructor");
+                continue;
+            }
             installManagedBeanComponent(managedBean, moduleDescription, deploymentUnit);
         }
 
@@ -107,6 +125,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                 inputFactory.setXMLResolver(NoopXmlResolver.create());
                 XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
+                StringBuilder className = null;
                 int indent = 0;
                 boolean managedBean = false;
                 boolean managedBeanClass = false;
@@ -125,6 +144,7 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                         } else if (indent == 3 && managedBean) {
                             if (parser.getLocalName().equals(MANAGED_BEAN_CLASS)) {
                                 managedBeanClass = true;
+                                className = new StringBuilder();
                             }
                         }
 
@@ -134,8 +154,12 @@ public class JsfManagedBeanProcessor implements DeploymentUnitProcessor {
                         if (indent == 1) {
                             managedBean = false;
                         }
+                        if(className != null) {
+                            managedBeanClasses.add(className.toString().trim());
+                            className = null;
+                        }
                     } else if (managedBeanClass && event == XMLStreamConstants.CHARACTERS) {
-                        managedBeanClasses.add(parser.getText().trim());
+                        className.append(parser.getText());
                     }
                 }
             } catch (Exception e) {

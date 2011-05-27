@@ -487,7 +487,11 @@ public class ComponentDescription {
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(instanceFactory, instanceKey));
             } else {
                 //use the default constructor if no instanceFactory has been set
-                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>((Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY), Collections.<Value<?>>emptyList()));
+                final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
+                if(constructor == null) {
+                    throw new DeploymentUnitProcessingException("Could not find default constructor for " + componentClassConfiguration.getModuleClass());
+                }
+                ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>(constructor, Collections.<Value<?>>emptyList()));
                 instantiators.addFirst(new ManagedReferenceInterceptorFactory(factory, instanceKey));
             }
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
