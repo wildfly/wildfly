@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdapeters;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdaptors;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -69,7 +69,7 @@ import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
 
 public abstract class AbstractRaOperation {
 
-    protected ModifiableResourceAdapeters buildResourceAdaptersObject(ModelNode operation) throws OperationFailedException {
+    protected ModifiableResourceAdaptors buildResourceAdaptersObject(ModelNode operation) throws OperationFailedException {
         List<ResourceAdapter> resourceAdapters = new ArrayList<ResourceAdapter>();
         Map<String, String> configProperties = null;
         if (operation.hasDefined(CONFIG_PROPERTIES)) {
@@ -100,7 +100,7 @@ public abstract class AbstractRaOperation {
 
         resourceAdapters.add(ra);
 
-        return new ModifiableResourceAdapeters(resourceAdapters);
+        return new ModifiableResourceAdaptors(resourceAdapters);
 
     }
 
