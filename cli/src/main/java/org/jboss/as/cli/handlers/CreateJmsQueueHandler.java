@@ -56,7 +56,7 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
                 return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
             }}), "--profile") {
             @Override
-            public boolean canAppearNext(CommandContext ctx) {
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(!ctx.isDomainMode()) {
                     return false;
                 }
@@ -66,7 +66,7 @@ public class CreateJmsQueueHandler extends BatchModeCommandHandler {
 
         name = new ArgumentWithValue(this, /*0,*/ "--name") {
             @Override
-            public boolean canAppearNext(CommandContext ctx) {
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
                     return false;
                 }

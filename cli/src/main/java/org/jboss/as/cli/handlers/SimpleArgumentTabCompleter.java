@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.impl.DefaultParsedArguments;
@@ -63,11 +64,11 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
 
         results.reset();
         final DefaultParsedArguments parsedArguments = (DefaultParsedArguments) ctx.getParsedArguments();
-        parsedArguments.reset(null);
+        parsedArguments.reset(null, null);
         try {
             CommandLineParser.parse(buffer, new CommandLineParser.CallbackHandler() {
                 @Override
-                public void argument(String name, int nameStart, String value, int valueStart, int end) {
+                public void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException {
                     if(end > 0 && end < buffer.length()) {
                         parsedArguments.argument(name, nameStart, value, valueStart, end);
                     }
@@ -101,9 +102,13 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                         }
                     } else {
                         for (CommandArgument arg : allArgs) {
-                            if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
-                                valueCompleter = arg.getValueCompleter();
-                                break;
+                            try {
+                                if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
+                                    valueCompleter = arg.getValueCompleter();
+                                    break;
+                                }
+                            } catch (CommandFormatException e) {
+                                return -1;
                             }
                         }
                     }
@@ -127,9 +132,13 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
                             }
                         } else {
                             for (CommandArgument arg : allArgs) {
-                                if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
-                                    valueCompleter = arg.getValueCompleter();
-                                    break;
+                                try {
+                                    if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
+                                        valueCompleter = arg.getValueCompleter();
+                                        break;
+                                    }
+                                } catch (CommandFormatException e) {
+                                    return -1;
                                 }
                             }
                         }
@@ -161,26 +170,30 @@ public class SimpleArgumentTabCompleter implements CommandLineCompleter {
         }
 
         for(CommandArgument arg : allArgs) {
-            if(arg.canAppearNext(ctx)) {
-                if(arg.getIndex() >= 0) {
-                    CommandLineCompleter valCompl = arg.getValueCompleter();
-                    if(valCompl != null) {
-                        valCompl.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
-                    }
-                } else {
-                    String argName = arg.getFullName();
-                    if (chunk == null) {
-                        if (arg.isValueRequired()) {
-                            argName += '=';
+            try {
+                if(arg.canAppearNext(ctx)) {
+                    if(arg.getIndex() >= 0) {
+                        CommandLineCompleter valCompl = arg.getValueCompleter();
+                        if(valCompl != null) {
+                            valCompl.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
                         }
-                        candidates.add(argName);
-                    } else if (argName.startsWith(chunk)) {
-                        if (arg.isValueRequired()) {
-                            argName += '=';
+                    } else {
+                        String argName = arg.getFullName();
+                        if (chunk == null) {
+                            if (arg.isValueRequired()) {
+                                argName += '=';
+                            }
+                            candidates.add(argName);
+                        } else if (argName.startsWith(chunk)) {
+                            if (arg.isValueRequired()) {
+                                argName += '=';
+                            }
+                            candidates.add(argName);
                         }
-                        candidates.add(argName);
                     }
                 }
+            } catch (CommandFormatException e) {
+                return -1;
             }
         }
 

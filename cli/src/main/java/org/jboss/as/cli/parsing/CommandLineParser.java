@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.parsing;
 
-import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.parsing.ParsingContext;
 import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
@@ -38,10 +38,10 @@ import org.jboss.as.cli.operation.parsing.StateParser;
 public class CommandLineParser {
 
     public interface CallbackHandler {
-        void argument(String name, int nameStart, String value, int valueStart, int end);
+        void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException;
     }
 
-    public static void parse(String commandLine, final CallbackHandler argHandler) throws CommandLineException {
+    public static void parse(String commandLine, final CallbackHandler argHandler) throws CommandFormatException {
 
         if(commandLine == null || commandLine.isEmpty()) {
             return;
@@ -74,7 +74,7 @@ public class CommandLineParser {
             }
 
             @Override
-            public void leavingState(ParsingContext ctx) throws OperationFormatException {
+            public void leavingState(ParsingContext ctx) throws CommandFormatException {
                 //System.out.println("leaving " + ctx.getState().getId());
 
                 final String id = ctx.getState().getId();

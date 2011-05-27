@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 /**
  *
@@ -29,5 +29,5 @@ import org.jboss.as.cli.operation.OperationFormatException;
  */
 public interface CharacterHandler {
 
-    void handle(ParsingContext ctx) throws OperationFormatException;
+    void handle(ParsingContext ctx) throws CommandFormatException;
 }

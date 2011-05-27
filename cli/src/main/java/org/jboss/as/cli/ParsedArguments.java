@@ -39,22 +39,25 @@ public interface ParsedArguments {
     /**
      * Checks whether there are arguments on the command line for the current command.
      * @return true if there are arguments, false if there aren't.
+     * @throws CommandLineException
      */
-    boolean hasArguments();
+    boolean hasArguments() throws CommandFormatException;
 
     /**
      * Checks whether the named argument is present among the command arguments.
      * @return
+     * @throws CommandLineException
      */
-    boolean hasArgument(String argName);
+    boolean hasArgument(String argName) throws CommandFormatException;
 
     /**
      * Returns a value for the named argument on the command line or
      * null if the argument with the name isn't present.
      * @param argName  the name of the argument
      * @return  the value of the argument or null if the argument isn't present
+     * @throws CommandLineException
      */
-    String getArgument(String argName);
+    String getArgument(String argName) throws CommandFormatException;
 
     /**
      * Returns a set of argument names present on the command line
@@ -62,8 +65,9 @@ public interface ParsedArguments {
      *
      * @return  a set of argument names present on the command line
      * of an empty set if there no named arguments on the command line
+     * @throws CommandLineException
      */
-    Set<String> getArgumentNames();
+    Set<String> getArgumentNames() throws CommandFormatException;
 
     /**
      * Returns arguments that are not switches as a list of strings
@@ -71,6 +75,7 @@ public interface ParsedArguments {
      * an empty list is returned.
      * @return a list of arguments that are not switches or an empty list
      * if there are no such arguments.
+     * @throws CommandLineException
      */
-    List<String> getOtherArguments();
+    List<String> getOtherArguments() throws CommandFormatException;
 }

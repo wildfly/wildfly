@@ -54,7 +54,7 @@ public class LsHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         final String nodePath = this.nodePath.getValue(ctx.getParsedArguments());
 

@@ -55,8 +55,9 @@ public interface CommandArgument {
      * Checks whether the argument is present on the command line.
      * @param args  parsed arguments
      * @return  true if the argument is present, false - otherwise.
+     * @throws CommandFormatException
      */
-    boolean isPresent(ParsedArguments args);
+    boolean isPresent(ParsedArguments args) throws CommandFormatException;
 
     /**
      * Checks whether the argument can appear on the command
@@ -64,7 +65,7 @@ public interface CommandArgument {
      * @param args  parsed arguments.
      * @return true if the argument can appear on the command line next, false - otherwise.
      */
-    boolean canAppearNext(CommandContext ctx);
+    boolean canAppearNext(CommandContext ctx) throws CommandFormatException;
 
     /**
      * Returns the value of the argument specified on the command line.
@@ -73,7 +74,7 @@ public interface CommandArgument {
      * @param args  parsed arguments.
      * @return  the value of the argument or null if the argument isn't present or is missing value.
      */
-    String getValue(ParsedArguments args);
+    String getValue(ParsedArguments args) throws CommandFormatException;
 
     /**
      * Returns the value of the argument specified on the command line.

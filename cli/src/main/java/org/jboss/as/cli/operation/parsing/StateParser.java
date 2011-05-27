@@ -24,7 +24,7 @@ package org.jboss.as.cli.operation.parsing;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 /**
  *
@@ -38,11 +38,11 @@ public class StateParser {
         initialState.enterState(ch, state);
     }
 
-    public void parse(String str, ParsingStateCallbackHandler callbackHandler) throws OperationFormatException {
+    public void parse(String str, ParsingStateCallbackHandler callbackHandler) throws CommandFormatException {
         parse(str, callbackHandler, initialState);
     }
 
-    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState) throws OperationFormatException {
+    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState) throws CommandFormatException {
 
         if (str == null || str.isEmpty()) {
             return;
@@ -99,14 +99,14 @@ public class StateParser {
         }
 
         @Override
-        public void enterState(ParsingState state) throws OperationFormatException {
+        public void enterState(ParsingState state) throws CommandFormatException {
             stack.push(state);
             callbackHandler.enteredState(this);
             state.getEnterHandler().handle(this);
         }
 
         @Override
-        public ParsingState leaveState() throws OperationFormatException {
+        public ParsingState leaveState() throws CommandFormatException {
             callbackHandler.leavingState(this);
             stack.peek().getLeaveHandler().handle(this);
             ParsingState pop = stack.pop();
@@ -132,7 +132,7 @@ public class StateParser {
         }
 
         @Override
-        public void reenterState() throws OperationFormatException {
+        public void reenterState() throws CommandFormatException {
             callbackHandler.leavingState(this);
             ParsingState state = stack.peek();
             state.getLeaveHandler().handle(this);

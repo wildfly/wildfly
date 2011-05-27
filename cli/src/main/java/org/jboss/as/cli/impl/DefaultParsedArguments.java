@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.parsing.CommandLineParser;
 
@@ -44,17 +45,20 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
     /** other command arguments */
     private List<String> otherArgs = new ArrayList<String>();
 
+    private CommandHandler handler;
+
     private boolean parsed;
 
-    public void reset(String args) {
+    public void reset(String args, CommandHandler handler) {
         argsStr = args;
         namedArgs.clear();
         otherArgs.clear();
+        this.handler = handler;
         parsed = false;
     }
 
-    public void parse(String args) {
-        reset(args);
+    public void parse(String args) throws CommandFormatException {
+        reset(args, null);
         parseArgs();
     }
 
@@ -70,7 +74,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
      * @see org.jboss.as.cli.ParsedArguments#hasArguments()
      */
     @Override
-    public boolean hasArguments() {
+    public boolean hasArguments() throws CommandFormatException {
         if(!parsed) {
             parseArgs();
         }
@@ -81,7 +85,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
      * @see org.jboss.as.cli.ParsedArguments#hasArgument(java.lang.String)
      */
     @Override
-    public boolean hasArgument(String argName) {
+    public boolean hasArgument(String argName) throws CommandFormatException {
         if(!parsed) {
             parseArgs();
         }
@@ -92,7 +96,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
      * @see org.jboss.as.cli.ParsedArguments#getArgument(java.lang.String)
      */
     @Override
-    public String getArgument(String argName) {
+    public String getArgument(String argName) throws CommandFormatException {
         if(!parsed) {
             parseArgs();
         }
@@ -103,7 +107,7 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
      * @see org.jboss.as.cli.ParsedArguments#getArgumentNames()
      */
     @Override
-    public Set<String> getArgumentNames() {
+    public Set<String> getArgumentNames() throws CommandFormatException {
         if(!parsed) {
             parseArgs();
         }
@@ -114,28 +118,31 @@ public class DefaultParsedArguments implements ParsedArguments, CommandLineParse
      * @see org.jboss.as.cli.ParsedArguments#getOtherArguments()
      */
     @Override
-    public List<String> getOtherArguments() {
+    public List<String> getOtherArguments() throws CommandFormatException {
         if(!parsed) {
             parseArgs();
         }
         return otherArgs;
     }
 
-    private void parseArgs() {
+    private void parseArgs() throws CommandFormatException {
         if (argsStr != null && !argsStr.isEmpty()) {
-            try {
-                CommandLineParser.parse(argsStr, this);
-            } catch (CommandLineException e) {
-            }
+            CommandLineParser.parse(argsStr, this);
         }
         parsed = true;
     }
 
     @Override
-    public void argument(String name, int nameStart, String value, int valueStart, int end) {
+    public void argument(String name, int nameStart, String value, int valueStart, int end) throws CommandFormatException {
         if(name != null) {
+            if(handler != null && !handler.hasArgument(name)) {
+                throw new CommandFormatException("Unexpected argument name '" + name + "'.");
+            }
             namedArgs.put(name, value);
         } else if(value != null) {
+            if(handler != null && !handler.hasArgument(otherArgs.size())) {
+                throw new CommandFormatException("Unexpected argument '" + value + "'.");
+            }
             otherArgs.add(value);
         }
     }

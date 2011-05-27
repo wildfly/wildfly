@@ -28,7 +28,7 @@ import static org.junit.Assert.assertNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.parsing.PropertyListState;
 import org.jboss.as.cli.operation.parsing.StateParser;
 import org.junit.Assert;
@@ -112,7 +112,7 @@ public class OperationParamListStateTestCase extends BaseStateParserTest {
         parser.addState('(', PropertyListState.INSTANCE);
         try {
             parser.parse(str, callbackHandler);
-        } catch (OperationFormatException e) {
+        } catch (CommandFormatException e) {
             Assert.fail(e.getLocalizedMessage());
         }
     }

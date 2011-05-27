@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
@@ -75,8 +76,12 @@ public class CreateJmsResourceHandler extends BatchModeCommandHandler {
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws OperationFormatException {
 
-        if(!ctx.getParsedArguments().hasArguments()) {
-            throw new OperationFormatException("Arguments are missing");
+        try {
+            if(!ctx.getParsedArguments().hasArguments()) {
+                throw new OperationFormatException("Arguments are missing");
+            }
+        } catch (CommandFormatException e) {
+            throw new OperationFormatException(e.getLocalizedMessage());
         }
 
         //String target = null;

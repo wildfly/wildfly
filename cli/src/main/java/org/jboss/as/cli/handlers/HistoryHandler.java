@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
@@ -56,7 +57,7 @@ public class HistoryHandler extends CommandHandlerWithHelp {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         ParsedArguments args = ctx.getParsedArguments();
         if(!args.hasArguments()) {

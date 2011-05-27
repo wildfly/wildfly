@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 /**
  *
@@ -43,7 +43,7 @@ public class NodeState extends DefaultParsingState {
 
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 if(ctx.getCharacter() == '/') {
                     ctx.leaveState();
                 } else {
@@ -57,21 +57,21 @@ public class NodeState extends DefaultParsingState {
         putHandler('=', new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 ctx.leaveState();
             }});
 
         putHandler('/', new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 ctx.leaveState();
             }});
 
         final CharacterHandler colonHandler = new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 ctx.leaveState();
                 ctx.enterState(opState);
             }};

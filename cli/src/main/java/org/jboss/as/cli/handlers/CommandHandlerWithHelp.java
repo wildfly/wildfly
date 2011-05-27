@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
@@ -44,7 +45,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
     private final boolean connectionRequired;
     protected final ArgumentWithoutValue helpArg = new ArgumentWithoutValue(this, "--help", "-h") {
         @Override
-        public boolean canAppearNext(CommandContext ctx) {
+        public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
             return !ctx.getParsedArguments().hasArguments();
         }
     };
@@ -73,7 +74,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public void handle(CommandContext ctx) {
+    public void handle(CommandContext ctx) throws CommandFormatException {
 
         if(helpArg.isPresent(ctx.getParsedArguments())) {
             printHelp(ctx);
@@ -112,7 +113,7 @@ public abstract class CommandHandlerWithHelp extends CommandHandlerWithArguments
         return;
     }
 
-    protected abstract void doHandle(CommandContext ctx);
+    protected abstract void doHandle(CommandContext ctx) throws CommandFormatException;
 
     @Override
     public boolean isBatchMode() {

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.BatchManager;
@@ -84,7 +85,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         BatchManager batchManager = ctx.getBatchManager();
 

@@ -53,7 +53,7 @@ public class DeleteJmsTopicHandler extends BatchModeCommandHandler {
                 return Util.getNodeNames(ctx.getModelControllerClient(), null, "profile");
             }}), "--profile") {
             @Override
-            public boolean canAppearNext(CommandContext ctx) {
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(!ctx.isDomainMode()) {
                     return false;
                 }
@@ -83,7 +83,7 @@ public class DeleteJmsTopicHandler extends BatchModeCommandHandler {
                 }
             }), 0, "--name") {
             @Override
-            public boolean canAppearNext(CommandContext ctx) {
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode() && !profile.isPresent(ctx.getParsedArguments())) {
                     return false;
                 }

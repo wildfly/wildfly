@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 
 /**
@@ -42,7 +42,7 @@ public class OperationState extends DefaultParsingState {
         setDefaultHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 ctx.enterState(opNameState);
             }});
         setIgnoreWhitespaces(true);

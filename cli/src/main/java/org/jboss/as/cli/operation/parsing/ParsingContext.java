@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 /**
  *
@@ -31,11 +31,11 @@ public interface ParsingContext {
 
     ParsingState getState();
 
-    void enterState(ParsingState state) throws OperationFormatException;
+    void enterState(ParsingState state) throws CommandFormatException;
 
-    ParsingState leaveState() throws OperationFormatException;
+    ParsingState leaveState() throws CommandFormatException;
 
-    void reenterState() throws OperationFormatException;
+    void reenterState() throws CommandFormatException;
 
     ParsingStateCallbackHandler getCallbackHandler();
 

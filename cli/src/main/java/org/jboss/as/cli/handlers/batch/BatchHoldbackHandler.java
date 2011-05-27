@@ -22,6 +22,7 @@
 package org.jboss.as.cli.handlers.batch;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
@@ -48,7 +49,7 @@ public class BatchHoldbackHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {

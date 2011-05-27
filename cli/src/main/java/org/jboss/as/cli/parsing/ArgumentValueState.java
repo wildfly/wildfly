@@ -21,8 +21,8 @@
  */
 package org.jboss.as.cli.parsing;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.parsing.CharacterHandler;
 import org.jboss.as.cli.operation.parsing.DefaultParsingState;
 import org.jboss.as.cli.operation.parsing.DefaultStateWithEndCharacter;
@@ -44,7 +44,7 @@ public class ArgumentValueState extends DefaultParsingState {
         super(ID);
         this.setEnterHandler(new CharacterHandler() {
             @Override
-            public void handle(ParsingContext ctx) throws OperationFormatException {
+            public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.getCharacter() != '=') {
                     getHandler(ctx.getCharacter()).handle(ctx);
                 }

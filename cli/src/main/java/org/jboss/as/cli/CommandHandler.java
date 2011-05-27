@@ -52,7 +52,7 @@ public interface CommandHandler {
      * Handles the execution of the command.
      * @param ctx  current command context
      */
-    void handle(CommandContext ctx);
+    void handle(CommandContext ctx) throws CommandFormatException;
 
     /**
      * Checks whether the command handler recognizes the argument by the name.

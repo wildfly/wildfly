@@ -141,7 +141,7 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
-    public boolean isPresent(ParsedArguments args) {
+    public boolean isPresent(ParsedArguments args) throws CommandFormatException {
         if(!args.hasArguments()) {
             return false;
         }
@@ -166,26 +166,26 @@ public class ArgumentWithoutValue implements CommandArgument {
     }
 
     @Override
-    public boolean canAppearNext(CommandContext ctx) {
+    public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
 
         ParsedArguments args = ctx.getParsedArguments();
-        if(exclusive) {
+        if (exclusive) {
             return !args.hasArguments();
         }
 
-        if(isPresent(args)) {
+        if (isPresent(args)) {
             return false;
         }
 
-        for(CommandArgument arg : cantAppearAfter) {
-            if(arg.isPresent(args)) {
+        for (CommandArgument arg : cantAppearAfter) {
+            if (arg.isPresent(args)) {
                 return false;
             }
         }
 
-        if(requiredPreceding != null) {
-            for(CommandArgument arg : requiredPreceding) {
-                if(arg.isPresent(args)) {
+        if (requiredPreceding != null) {
+            for (CommandArgument arg : requiredPreceding) {
+                if (arg.isPresent(args)) {
                     return true;
                 }
             }

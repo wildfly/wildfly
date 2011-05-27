@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.operation.impl;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestParser;
 import org.jboss.as.cli.operation.parsing.NodeState;
@@ -193,7 +194,11 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
             }
         };
 
-        StateParser.parse(operationRequest, stateCallbackHandler, OperationRequestState.INSTANCE);
+        try {
+            StateParser.parse(operationRequest, stateCallbackHandler, OperationRequestState.INSTANCE);
+        } catch (CommandFormatException e) {
+            throw new OperationFormatException("Failed to parse operation request '" + operationRequest + "'", e);
+        }
     }
 
 }

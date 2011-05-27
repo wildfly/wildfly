@@ -113,9 +113,8 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
                 final String batchedCmd = batch.getCommands().get(lineNumber - 1).getCommand();
                 if(cmd.isEmpty() || batchedCmd.startsWith(cmd)) {
-                    int lastWsIndex = cmd.lastIndexOf(' ');
-                    if(lastWsIndex > 0) {
-                        candidates.add(batchedCmd.substring(lastWsIndex + 1).trim());
+                    if(cmdResult > -1) {
+                        candidates.add(batchedCmd.substring(cmdResult).trim());
                     } else {
                         candidates.add(batchedCmd);
                     }
@@ -202,8 +201,22 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
         try {
             BatchedCommand newCmd = ctx.toBatchedCommand(editedLine);
             batch.set(lineNumber - 1, newCmd);
+            ctx.printLine("#" + lineNumber + " " + newCmd.getCommand());
         } catch (CommandFormatException e) {
             ctx.printLine("Failed to process command line '" + editedLine + "': " + e.getLocalizedMessage());
         }
+    }
+
+    /**
+     * It has to accept everything since we don't know what kind of command will be edited.
+     */
+    @Override
+    public boolean hasArgument(int index) {
+        return true;
+    }
+
+    @Override
+    public boolean hasArgument(String name) {
+        return true;
     }
 }

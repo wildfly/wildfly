@@ -24,6 +24,7 @@ package org.jboss.as.cli.handlers.batch;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
@@ -50,7 +51,7 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) {
+    protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
         BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
@@ -105,5 +106,10 @@ public class BatchMoveLineHandler extends CommandHandlerWithHelp {
         }
 
         batch.move(lineNumber - 1, toLineNumber - 1);
+    }
+
+    @Override
+    public boolean hasArgument(int index) {
+        return index < 2;
     }
 }

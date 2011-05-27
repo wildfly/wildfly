@@ -83,6 +83,8 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
             if(Util.isSuccess(result)) {
                 batchManager.discardActiveBatch();
                 ctx.printLine("The batch executed successfully.");
+            } else {
+                ctx.printLine("Failed to execute batch: " + Util.getFailureDescription(result));
             }
         } catch (Exception e) {
             ctx.printLine("Failed to execute batch: " + e.getLocalizedMessage());

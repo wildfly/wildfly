@@ -356,7 +356,7 @@ public class CommandLineMain {
         }
 
         if(isOperation(line)) {
-            cmdCtx.setArgs(null, line);
+            cmdCtx.setArgs(null, line, null);
             if(cmdCtx.isBatchMode()) {
                 DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(cmdCtx.getPrefix());
                 try {
@@ -386,10 +386,11 @@ public class CommandLineMain {
                     break;
                 }
             }
-            cmdCtx.setArgs(cmd, cmdArgs);
 
             CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
             if(handler != null) {
+                cmdCtx.setArgs(cmd, cmdArgs, handler);
+
                 if(cmdCtx.isBatchMode() && handler.isBatchMode()) {
                     if(!(handler instanceof OperationCommand)) {
                         cmdCtx.printLine("The command is not allowed in a batch.");
@@ -405,14 +406,19 @@ public class CommandLineMain {
                         }
                     }
                 } else {
-                    handler.handle(cmdCtx);
+                    try {
+                        handler.handle(cmdCtx);
+                    } catch (CommandFormatException e) {
+                        cmdCtx.printLine(e.getLocalizedMessage());
+                    }
                 }
+
+                cmdCtx.setArgs(null, null, null);
             } else {
                 cmdCtx.printLine("Unexpected command '" + line
                         + "'. Type 'help' for the list of supported commands.");
             }
         }
-        cmdCtx.setArgs(null, null);
     }
 
     protected static jline.ConsoleReader initConsoleReader() {
@@ -730,9 +736,9 @@ public class CommandLineMain {
             return defaultControllerPort;
         }
 
-        private void setArgs(String cmd, String args) {
+        private void setArgs(String cmd, String args, CommandHandler handler) {
             this.cmd = cmd;
-            parsedArgs.reset(args);
+            parsedArgs.reset(args, handler);
         }
 
         @Override
@@ -757,11 +763,11 @@ public class CommandLineMain {
                 throw new IllegalArgumentException("Null command line.");
             }
 
-            final String originalCommand = this.cmd;
-            final String originalArguments = this.parsedArgs.getArgumentsString();
+            final DefaultParsedArguments originalParsedArguments = this.parsedArgs;
             if(isOperation(line)) {
                 try {
-                    setArgs(null, line);
+                    this.parsedArgs = new DefaultParsedArguments();
+                    setArgs(null, line, null);
                     DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(getPrefix());
                     parser.parse(line, builder);
                     ModelNode request = builder.buildRequest();
@@ -770,7 +776,7 @@ public class CommandLineMain {
                     op.append(line.substring(line.indexOf(':')));
                     return new DefaultBatchedCommand(op.toString(), request);
                 } finally {
-                    setArgs(originalCommand, originalArguments);
+                    this.parsedArgs = originalParsedArguments;
                 }
             }
 
@@ -793,11 +799,12 @@ public class CommandLineMain {
             }
 
             try {
-                setArgs(cmd, cmdArgs);
+                this.parsedArgs = new DefaultParsedArguments();
+                setArgs(cmd, cmdArgs, handler);
                 ModelNode request = ((OperationCommand)handler).buildRequest(this);
                 return new DefaultBatchedCommand(line, request);
             } finally {
-                setArgs(originalCommand, originalArguments);
+                this.parsedArgs = originalParsedArguments;
             }
         }
 

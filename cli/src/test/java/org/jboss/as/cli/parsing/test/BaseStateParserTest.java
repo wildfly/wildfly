@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.parsing.BasicInitialParsingState;
 import org.jboss.as.cli.operation.parsing.ParsingContext;
@@ -51,7 +52,7 @@ public class BaseStateParserTest {
         result = new ParsedTerm(null);
     }
 
-    protected void parse(String str) throws OperationFormatException {
+    protected void parse(String str) throws CommandFormatException {
         StateParser.parse(str, callbackHandler, BasicInitialParsingState.INSTANCE);
     }
 

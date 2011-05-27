@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 /**
 *
@@ -44,7 +44,7 @@ public final class EscapeCharacterState extends BaseParsingState {
         return new CharacterHandler() {
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 ctx.getCallbackHandler().character(ctx);
                 ctx.leaveState();
             }

@@ -1,6 +1,6 @@
 package org.jboss.as.cli.operation.parsing;
 
-import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.cli.CommandFormatException;
 
 public final class OperationNameState extends DefaultParsingState {
 
@@ -18,7 +18,7 @@ public final class OperationNameState extends DefaultParsingState {
         putHandler('(', new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx)
-                    throws OperationFormatException {
+                    throws CommandFormatException {
                 ctx.leaveState();
                 ctx.enterState(propList);
             }});

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.impl.DefaultParsedArguments;
 import org.junit.Test;
@@ -53,7 +54,11 @@ public class CommandLineArgumentsTestCase {
 
     protected ParsedArguments parse(String line) {
         DefaultParsedArguments args = new DefaultParsedArguments();
-        args.parse(line);
+        try {
+            args.parse(line);
+        } catch (CommandFormatException e) {
+            org.junit.Assert.fail(e.getLocalizedMessage());
+        }
         return args;
     }
 }
