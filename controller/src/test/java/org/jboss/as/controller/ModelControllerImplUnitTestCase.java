@@ -26,7 +26,9 @@
 package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -51,18 +53,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -144,6 +135,18 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("bad-service", new BadServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("missing-service", new MissingServiceHandler(), DESC_PROVIDER, false);
+
+            rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
+            rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
+            rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+
+            rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
 
             value = new NewModelControllerImpl(serviceContainer, target, rootRegistration, new ContainerStateMonitor(serviceContainer, serviceController),
                     new NullConfigurationPersister(), NewOperationContext.Type.SERVER, null);
@@ -376,6 +379,50 @@ public class ModelControllerImplUnitTestCase {
         assertEquals(1, result.get("result").asInt());
     }
 
+    @Test
+    public void testGlobal() throws Exception {
+
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(false);
+
+        ModelNode result = controller.execute(operation, null, null, null);
+        assertTrue(result.get("result").hasDefined("child"));
+        assertTrue(result.get("result", "child").has("one"));
+        assertFalse(result.get("result", "child").hasDefined("one"));
+
+        operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(true);
+
+        result = controller.execute(operation, null, null, null);
+        assertTrue(result.get("result", "child", "one").hasDefined("attribute1"));
+
+        operation = new ModelNode();
+        operation.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(CHILD_TYPE).set("child");
+
+        result = controller.execute(operation, null, null, null).get("result");
+        assertEquals("one", result.get(0).asString());
+        assertEquals("two", result.get(1).asString());
+
+        operation = new ModelNode();
+        operation.get(OP).set(READ_CHILDREN_TYPES_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+
+        result = controller.execute(operation, null, null, null).get("result");
+        assertEquals("child", result.get(0).asString());
+
+        operation = new ModelNode();
+        operation.get(OP).set(READ_CHILDREN_RESOURCES_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(CHILD_TYPE).set("child");
+    }
+
+
     public static ModelNode getOperation(String opName, String attr, int val) {
         return getOperation(opName, attr, val, null, false);
     }
@@ -406,6 +453,9 @@ public class ModelControllerImplUnitTestCase {
             //Atttributes
             model.get("attr1").set(1);
             model.get("attr2").set(2);
+
+            model.get("child", "one", "attribute1").set(1);
+            model.get("child", "two", "attribute2").set(2);
 
             context.writeModel(PathAddress.EMPTY_ADDRESS, model);
 
