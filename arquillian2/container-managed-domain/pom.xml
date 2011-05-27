@@ -39,12 +39,11 @@
     <name>JBoss Application Server: Arquillian Managed Domain Container</name>
 
     <packaging>jar</packaging>
-    
+
     <properties>
-         <!-- TODO Disable, the managed container does not get stopped https://jira.jboss.org/browse/ARQ-282 -->
-        <skipExecUnitTests>true</skipExecUnitTests>
+
     </properties>
-    
+
   <dependencies>
     <dependency>
       <groupId>org.jboss.as</groupId>

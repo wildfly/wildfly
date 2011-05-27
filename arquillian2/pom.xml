@@ -25,7 +25,6 @@
   <packaging>pom</packaging>
 
   <properties>
-    <skipExecUnitTests>false</skipExecUnitTests>
 
     <!-- Versioning -->
     <version.org.jboss.arquillian>1.0.0.Alpha5</version.org.jboss.arquillian>
@@ -54,7 +53,6 @@
             </property>
           </systemProperties>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <skipExec>${skipExecUnitTests}</skipExec>
           <includes>
             <include>**/*TestCase.java</include>
           </includes>
@@ -159,7 +157,7 @@
         <artifactId>arquillian-testenricher-cdi</artifactId>
         <version>${version.org.jboss.arquillian}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.jboss.arquillian.testenricher</groupId>
         <artifactId>arquillian-testenricher-ejb</artifactId>
