@@ -81,7 +81,7 @@ public class GlobalOperationHandlers {
     public static final OperationHandler READ_ATTRIBUTE = new ReadAttributeHandler();
     public static final OperationHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final OperationHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
-    public static final OperationHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
+    public static final NewStepHandler   WRITE_ATTRIBUTE = new WriteAttributeHandler();
     public static final OperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
     private GlobalOperationHandlers() {
@@ -266,7 +266,7 @@ public class GlobalOperationHandlers {
      * {@link OperationHandler} writing a single attribute. The required request parameter "name" represents the attribute name.
      */
     public static class WriteAttributeHandler implements NewStepHandler {
-        public void execute(NewOperationContext context, ModelNode operation) {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String attributeName = operation.require(NAME).asString();
             final AttributeAccess attributeAccess = context.getModelNodeRegistration().getAttributeAccess(PathAddress.pathAddress(operation.get(OP_ADDR)), attributeName);
             if (attributeAccess == null) {
