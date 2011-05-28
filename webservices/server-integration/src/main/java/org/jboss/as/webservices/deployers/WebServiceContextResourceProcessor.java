@@ -22,20 +22,14 @@
 
 package org.jboss.as.webservices.deployers;
 
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.EEResourceReferenceProcessor;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
-import org.jboss.as.ee.component.LookupInjectionSource;
-import org.jboss.as.ee.component.ResourceInjectionAnnotationParsingProcessor;
-import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.injection.WebServiceContextInjectionSource;
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.logging.Logger;
 
 import javax.xml.ws.WebServiceContext;
@@ -46,38 +40,22 @@ import javax.xml.ws.WebServiceContext;
  * <p/>
  * User : Jaikiran Pai
  */
-public class WebServiceContextResourceProcessor extends ResourceInjectionAnnotationParsingProcessor {
+public class WebServiceContextResourceProcessor implements EEResourceReferenceProcessor {
 
     private static final Logger logger = Logger.getLogger(WebServiceContextResourceProcessor.class);
 
     @Override
-    protected void process(EEModuleClassDescription classDescription, AnnotationInstance annotation, String injectionType, String localContextName, InjectionTarget targetDescription, EEModuleDescription eeModuleDescription) {
-        // we process only @Resource of type WebServiceContext
-        if (!WebServiceContext.class.getName().equals(injectionType)) {
-            return;
-        }
+    public String getResourceReferenceType() {
+        return WebServiceContext.class.getName();
+    }
+
+    @Override
+    public InjectionSource getResourceReferenceBindingSource(final DeploymentPhaseContext phaseContext, final EEModuleDescription eeModuleDescription,
+                                                             final EEModuleClassDescription classDescription, final String resourceReferenceType,
+                                                             final String localContextName, final InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {
         logger.debug("Processing @Resource of type: " + WebServiceContext.class.getName() + " for ENC name: " + localContextName);
-        // setup the ENC binding
+        // webservice context binding source
         final InjectionSource bindingSource = new WebServiceContextInjectionSource();
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-
-        // setup the injection target (if any)
-        // our injection comes from the local lookup, no matter what.
-        final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
-        final ResourceInjectionConfiguration resourceInjectionConfiguration = targetDescription != null ? new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
-
-        // add the binding and injection configurator
-        classDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                // add the ENC binding configuration
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-                // add the injection configuration (if any)
-                if (resourceInjectionConfiguration != null) {
-                    configuration.getInjectionConfigurations().add(resourceInjectionConfiguration);
-                }
-            }
-        });
-
+        return bindingSource;
     }
 }

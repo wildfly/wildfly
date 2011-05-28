@@ -25,6 +25,7 @@ package org.jboss.as.ee.managedbean.processors;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -32,6 +33,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.managedbean.component.ManagedBeanAssociatingInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanDestroyInterceptorFactory;
+import org.jboss.as.ee.managedbean.component.ManagedBeanResourceReferenceProcessor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -106,6 +108,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             viewDescription.getBindingNames().addAll(Arrays.asList("java:module/" + beanName, "java:app/" + moduleDescription.getModuleName() + "/" + beanName));
             componentDescription.getViews().add(viewDescription);
             moduleDescription.addComponent(componentDescription);
+
+            // register a EEResourceReferenceProcessor which can process @Resource references to this managed bean.
+            EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new ManagedBeanResourceReferenceProcessor(beanClassName));
         }
     }
 

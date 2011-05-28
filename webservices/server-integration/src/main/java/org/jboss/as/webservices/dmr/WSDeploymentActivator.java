@@ -22,6 +22,7 @@
 
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.ee.component.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.server.BootOperationContext;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
@@ -29,12 +30,14 @@ import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
 import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
+import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
 import org.jboss.logging.Logger;
 import org.jboss.ws.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
+import javax.xml.ws.WebServiceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -63,6 +66,11 @@ final class WSDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.INSTALL, priority++, new WSModelDeploymentProcessor());
 
         addDeploymentProcessors(updateContext, priority);
+
+        // Add a EEResourceReferenceProcessor which handles @Resource references of type WebServiceContext.
+        // Note that we do it here instead of a DUP because the @Resource reference processor for WebServiceContext *isn't*
+        // per DU
+        EEResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(new WebServiceContextResourceProcessor());
     }
 
     private static List<DeploymentAspect> getDeploymentAspects(final ClassLoader cl, final String resourcePath)

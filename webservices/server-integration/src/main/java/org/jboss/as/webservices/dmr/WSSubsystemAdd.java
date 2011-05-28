@@ -106,7 +106,6 @@ public class WSSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                 }
             });
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION, new WebServiceContextResourceProcessor());
         } else {
             resultHandler.handleResultComplete();
         }
