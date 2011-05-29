@@ -53,11 +53,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
     static {
-        try {
-            Module.registerURLStreamHandlerFactoryModule(Module.getContextModuleLoader().loadModule(JBOSS_WEB));
-        } catch (ModuleLoadException e) {
-            throw new IllegalArgumentException("Web URL stream handler registration failed", e);
-        }
+        Module.registerURLStreamHandlerFactoryModule(Module.forClass(WarClassloadingDependencyProcessor.class));
     }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
