@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.jboss.as.controller.AbstractControllerService;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -93,8 +94,8 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      * @param prepareStep the prepare step to use
      */
-    ServerService(final Bootstrap.Configuration configuration, final NewStepHandler prepareStep) {
-        super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
+    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final NewStepHandler prepareStep) {
+        super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
         this.configuration = configuration;
     }
 
@@ -104,8 +105,8 @@ public final class ServerService extends AbstractControllerService {
      * @param serviceTarget the service target
      * @param configuration the bootstrap configuration
      */
-    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration) {
-        ServerService service = new ServerService(configuration, null);
+    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration, final ControlledProcessState processState) {
+        ServerService service = new ServerService(configuration, processState, null);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);

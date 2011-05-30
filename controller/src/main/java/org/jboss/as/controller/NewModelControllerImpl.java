@@ -27,7 +27,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicStampedReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.as.controller.client.NewModelControllerClient;
@@ -46,6 +48,8 @@ import org.jboss.threads.AsyncFutureTask;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 /**
@@ -70,8 +74,11 @@ class NewModelControllerImpl implements NewModelController {
     private final NewOperationContext.Type controllerType;
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
     private final NewStepHandler prepareStep;
+    private final ControlledProcessState processState;
 
-    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration, final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType, final NewStepHandler prepareStep) {
+    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
+                           final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
+                           final NewStepHandler prepareStep,final ControlledProcessState processState) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -79,6 +86,7 @@ class NewModelControllerImpl implements NewModelController {
         this.persister = persister;
         this.controllerType = controllerType;
         this.prepareStep = prepareStep;
+        this.processState = processState;
     }
 
     static final ThreadLocal<Boolean> RB_ON_RT_FAILURE = new ThreadLocal<Boolean>();
@@ -87,7 +95,7 @@ class NewModelControllerImpl implements NewModelController {
         final ModelNode headers = operation.get(OPERATION_HEADERS);
         final boolean rollbackOnFailure = headers == null || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean(true);
         final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, bootingFlag.getAndSet(false));
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, processState, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
         if (prepareStep != null) {
             context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
@@ -100,7 +108,7 @@ class NewModelControllerImpl implements NewModelController {
                 }
             }
         }, NewOperationContext.Stage.VERIFY);
-        NewStepHandler stepHandler = (NewStepHandler) rootRegistration.getOperationHandler(PathAddress.pathAddress(operation.require(ADDRESS)), operation.require(OP).asString());
+        NewStepHandler stepHandler = rootRegistration.getOperationHandler(PathAddress.pathAddress(operation.require(ADDRESS)), operation.require(OP).asString());
         context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
         RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
         try {
@@ -108,11 +116,20 @@ class NewModelControllerImpl implements NewModelController {
         } finally {
             RB_ON_RT_FAILURE.set(null);
         }
+        ControlledProcessState.State state = processState.getState();
+        switch (state) {
+            case RELOAD_REQUIRED:
+            case RESTART_REQUIRED:
+                response.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
+                break;
+            default:
+                break;
+        }
         return response;
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, modelReference.get(), control, bootingFlag.getAndSet(false));
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, modelReference.get(), control, processState, bootingFlag.getAndSet(false));
         ModelNode result = context.getResult();
         result.setEmptyList();
         for (ModelNode bootOp : bootList) {
@@ -137,7 +154,7 @@ class NewModelControllerImpl implements NewModelController {
 
         public void execute(final NewOperationContext context, final ModelNode operation) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
-            NewStepHandler stepHandler = (NewStepHandler) rootRegistration.getOperationHandler(address, operation.require(OP).asString());
+            NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operation.require(OP).asString());
             if (stepHandler == null) {
                 context.getFailureDescription().set("No handler for operation address " + address);
             } else {
@@ -264,5 +281,25 @@ class NewModelControllerImpl implements NewModelController {
 
     ServiceTarget getServiceTarget() {
         return serviceTarget;
+    }
+
+    ControlledProcessState.State getState() {
+        return processState.getState();
+    }
+
+    Object setReloadRequired() {
+        return processState.setReloadRequired();
+    }
+
+    Object setRestartRequired() {
+        return processState.setRestartRequired();
+    };
+
+    void revertReloadRequired(Object stamp) {
+        processState.revertReloadRequired(stamp);
+    }
+
+    void revertRestartRequired(Object stamp) {
+        processState.revertRestartRequired(stamp);
     }
 }

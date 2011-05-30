@@ -53,7 +53,34 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -81,7 +108,8 @@ public class ModelControllerImplUnitTestCase {
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ModelControllerService svc = new ModelControllerService(container);
+        ControlledProcessState processState = new ControlledProcessState(true);
+        ModelControllerService svc = new ModelControllerService(container, processState);
         ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         sharedState = svc.state;
@@ -89,6 +117,7 @@ public class ModelControllerImplUnitTestCase {
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
+        processState.setRunning();
     }
 
     @After
@@ -113,9 +142,11 @@ public class ModelControllerImplUnitTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         private NewModelController value;
         private final ServiceContainer serviceContainer;
+        private final ControlledProcessState processState;
 
-        ModelControllerService(final ServiceContainer serviceContainer) {
+        ModelControllerService(final ServiceContainer serviceContainer, final ControlledProcessState processState) {
             this.serviceContainer = serviceContainer;
+            this.processState = processState;
         }
 
         @Override
@@ -135,6 +166,8 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("bad-service", new BadServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("missing-service", new MissingServiceHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("reload-required", new ReloadRequiredHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("restart-required", new RestartRequiredHandler(), DESC_PROVIDER, false);
 
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
@@ -149,7 +182,7 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
 
             value = new NewModelControllerImpl(serviceContainer, target, rootRegistration, new ContainerStateMonitor(serviceContainer, serviceController),
-                    new NullConfigurationPersister(), NewOperationContext.Type.SERVER, null);
+                    new NullConfigurationPersister(), NewOperationContext.Type.SERVER, null, processState);
             latch.countDown();
         }
 
@@ -282,7 +315,7 @@ public class ModelControllerImplUnitTestCase {
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().indexOf("OFE") > - 1);
+        assertTrue(result.get("failure-description").toString().indexOf("OFE") > -1);
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
@@ -422,6 +455,62 @@ public class ModelControllerImplUnitTestCase {
         operation.get(CHILD_TYPE).set("child");
     }
 
+    public void testReloadRequired() throws Exception {
+        ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, null, null);
+        System.out.println(result);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertTrue(result.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).asBoolean());
+        assertEquals(ControlledProcessState.State.RELOAD_REQUIRED.toString(), result.get(RESPONSE_HEADERS, PROCESS_STATE).asString());
+
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals("success", result.get("outcome").asString());
+        assertEquals(5, result.get("result").asInt());
+    }
+
+    @Test
+    public void testRestartRequired() throws Exception {
+        ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, null, null);
+        System.out.println(result);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertTrue(result.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).asBoolean());
+        assertEquals(ControlledProcessState.State.RESTART_REQUIRED.toString(), result.get(RESPONSE_HEADERS, PROCESS_STATE).asString());
+
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals("success", result.get("outcome").asString());
+        assertEquals(5, result.get("result").asInt());
+    }
+
+    @Test
+    public void testReloadRequiredTxRollback() throws Exception {
+        ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertFalse(result.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD));
+        assertFalse(result.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE));
+
+        // Confirm model was unchanged
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals("success", result.get("outcome").asString());
+        assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testRestartRequiredTxRollback() throws Exception {
+        ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertFalse(result.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART));
+        assertFalse(result.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE));
+
+        // Confirm model was unchanged
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        assertEquals("success", result.get("outcome").asString());
+        assertEquals(1, result.get("result").asInt());
+    }
 
     public static ModelNode getOperation(String opName, String attr, int val) {
         return getOperation(opName, attr, val, null, false);
@@ -710,6 +799,46 @@ public class ModelControllerImplUnitTestCase {
             }, NewOperationContext.Stage.RUNTIME);
 
             context.completeStep();
+        }
+    }
+
+    public static class ReloadRequiredHandler implements NewStepHandler {
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) {
+
+            String name = operation.require(NAME).asString();
+            ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+            ModelNode attr = model.get(name);
+            final int current = attr.asInt();
+            attr.set(operation.require(VALUE));
+
+            context.getResult().set(current);
+
+            context.runtimeUpdateSkipped();
+            context.reloadRequired();
+            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                context.revertReloadRequired();
+            }
+        }
+    }
+
+    public static class RestartRequiredHandler implements NewStepHandler {
+        @Override
+        public void execute(NewOperationContext context, ModelNode operation) {
+
+            String name = operation.require(NAME).asString();
+            ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+            ModelNode attr = model.get(name);
+            final int current = attr.asInt();
+            attr.set(operation.require(VALUE));
+
+            context.getResult().set(current);
+
+            context.runtimeUpdateSkipped();
+            context.restartRequired();
+            if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
+                context.revertRestartRequired();
+            }
         }
     }
 

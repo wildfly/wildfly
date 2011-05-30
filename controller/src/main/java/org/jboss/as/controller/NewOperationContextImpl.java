@@ -76,6 +76,7 @@ final class NewOperationContextImpl implements NewOperationContext {
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     private final boolean booting;
     private final OperationAttachments attachments;
+    private final ControlledProcessState processState;
 
     private boolean respectInterruption = true;
     private PathAddress modelAddress;
@@ -106,6 +107,8 @@ final class NewOperationContextImpl implements NewOperationContext {
     private int lockDepth;
     /** Container monitor acquisition depth */
     private int containerMonitorDepth;
+    /** Stamp to hand back to revert a reload/restartRequired call */
+    private StampHolder restartStampHolder;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
@@ -113,7 +116,8 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
-                            final ModelNode model, final NewModelController.OperationTransactionControl transactionControl, final boolean booting) {
+                            final ModelNode model, final NewModelController.OperationTransactionControl transactionControl,
+                            final ControlledProcessState processState, final boolean booting) {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
         this.booting = booting;
@@ -121,6 +125,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         this.modelController = modelController;
         this.messageHandler = messageHandler;
         this.attachments = attachments;
+        this.processState = processState;
         response = new ModelNode().setEmptyObject();
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
@@ -290,10 +295,13 @@ final class NewOperationContextImpl implements NewOperationContext {
         PathAddress oldModelAddress = modelAddress;
         ModelNode oldOperation = operation;
         ModelNode oldResponse = response;
+        StampHolder oldRestartStamp = restartStampHolder;
+        Stage stepStage = null;
         try {
             // next step runs at the next depth level
             depth++;
             response = this.response = step.response;
+            this.restartStampHolder = step.restartStamp;
             ModelNode newOperation = operation = step.operation;
             modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
             try {
@@ -335,34 +343,11 @@ final class NewOperationContextImpl implements NewOperationContext {
                 report(MessageSeverity.WARN, "Step handler " + step.handler + " failed after completion");
                 return resultAction;
             }
-        }
-        try {
-            if (currentStage != Stage.DONE) {
-                // This is a failure because the next step failed to call completeStep().
-                // Either an exception occurred beforehand, or the implementer screwed up.
-                // If an exception occurred, then this will have no effect.
-                // If the implementer screwed up, then we're essentially fixing the context state and treating
-                // the overall operation as a failure.
-                currentStage = Stage.DONE;
-                if (! response.hasDefined(FAILURE_DESCRIPTION)) {
-                    response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
-                }
-                response.get(OUTCOME).set(FAILED);
-                response.get(ROLLED_BACK).set(true);
-                resultAction = getFailedResultAction(null);
-                return resultAction;
-            } else {
-                response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
-            }
-            if (resultAction == ResultAction.ROLLBACK) {
-                response.get(OUTCOME).set(FAILED);
-                response.get(ROLLED_BACK).set(true);
-            }
-            return resultAction;
         } finally {
             modelAddress = oldModelAddress;
             operation = oldOperation;
-            this.response = response = oldResponse;
+            this.response = oldResponse;
+            this.restartStampHolder = oldRestartStamp;
             if (lockDepth == depth) {
                 modelController.releaseLock();
                 lockDepth = 0;
@@ -372,12 +357,36 @@ final class NewOperationContextImpl implements NewOperationContext {
                 modelController.releaseContainerMonitor();
                 containerMonitorDepth = 0;
             }
+            stepStage = currentStage;
             if (--depth == 0) {
                 // We're returning from the outermost completeStep()
                 // Null out the current stage to disallow further access to the context
                 currentStage = null;
             }
         }
+
+        if (stepStage != Stage.DONE) {
+            // This is a failure because the next step failed to call completeStep().
+            // Either an exception occurred beforehand, or the implementer screwed up.
+            // If an exception occurred, then this will have no effect.
+            // If the implementer screwed up, then we're essentially fixing the context state and treating
+            // the overall operation as a failure.
+            currentStage = currentStage != null ? Stage.DONE : null;
+            if (! response.hasDefined(FAILURE_DESCRIPTION)) {
+                response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
+            }
+            response.get(OUTCOME).set(FAILED);
+            response.get(ROLLED_BACK).set(true);
+            resultAction = getFailedResultAction(null);
+            return resultAction;
+        } else {
+            response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
+        }
+        if (resultAction == ResultAction.ROLLBACK) {
+            response.get(OUTCOME).set(FAILED);
+            response.get(ROLLED_BACK).set(true);
+        }
+        return resultAction;
     }
 
     /**
@@ -413,6 +422,55 @@ final class NewOperationContextImpl implements NewOperationContext {
     private boolean isRollingBack() {
         return currentStage == Stage.DONE && resultAction == ResultAction.ROLLBACK;
     }
+
+    @Override
+    public void reloadRequired() {
+        if (processState.isReloadSupported()) {
+            this.restartStampHolder.restartStamp = processState.setReloadRequired();
+            this.response.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).set(true);
+        } else {
+            restartRequired();
+        }
+    }
+
+    @Override
+    public void restartRequired() {
+        this.restartStampHolder.restartStamp = processState.setRestartRequired();
+        this.response.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).set(true);
+    }
+
+    @Override
+    public void revertReloadRequired() {
+        if (processState.isReloadSupported()) {
+            processState.revertReloadRequired(this.restartStampHolder.restartStamp);
+            if (this.response.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD)) {
+                this.response.get(RESPONSE_HEADERS).remove(OPERATION_REQUIRES_RELOAD);
+                if (this.response.get(RESPONSE_HEADERS).asInt() == 0) {
+                    this.response.remove(RESPONSE_HEADERS);
+                }
+            }
+        }
+        else {
+            revertRestartRequired();
+        }
+    }
+
+    @Override
+    public void revertRestartRequired() {
+        processState.revertRestartRequired(this.restartStampHolder.restartStamp);
+        if (this.response.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART)) {
+            this.response.get(RESPONSE_HEADERS).remove(OPERATION_REQUIRES_RESTART);
+            if (this.response.get(RESPONSE_HEADERS).asInt() == 0) {
+                this.response.remove(RESPONSE_HEADERS);
+            }
+        }
+    }
+
+    @Override
+    public void runtimeUpdateSkipped() {
+        this.response.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).set(true);
+    }
+
 
     public ModelNodeRegistration getModelNodeRegistration() {
         final PathAddress address = modelAddress;
@@ -721,6 +779,7 @@ final class NewOperationContextImpl implements NewOperationContext {
         private final NewStepHandler handler;
         private final ModelNode response;
         private final ModelNode operation;
+        private final StampHolder restartStamp  = new StampHolder();
 
         private Step(final NewStepHandler handler, final ModelNode response, final ModelNode operation) {
             this.handler = handler;
@@ -729,6 +788,15 @@ final class NewOperationContextImpl implements NewOperationContext {
             // Create the outcome node early so it appears at the top of the response
             response.get(OUTCOME);
         }
+    }
+
+    /**
+     *  Simple wrapper object to allow the context and the current Step to share a reference to the object returned by
+     *  {@link org.jboss.as.controller.NewModelControllerImpl#setReloadRequired()} or
+     *  {@link org.jboss.as.controller.NewModelControllerImpl#setRestartRequired()}
+     */
+    static class StampHolder {
+        private Object restartStamp;
     }
 
     class ContextServiceTarget implements ServiceTarget {

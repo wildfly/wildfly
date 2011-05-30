@@ -144,6 +144,7 @@ public class ModelDescriptionConstants {
     public static final String PORT_OFFSET = "port-offset";
     public static final String PRIORITY = "priority";
     public static final String PROCESS_TYPE = "process-type";
+    public static final String PROCESS_STATE = "process-state";
     public static final String PROFILE = "profile";
     public static final String PROFILE_NAME = "profile-name";
     public static final String PROPERTIES = "properties";
@@ -168,6 +169,7 @@ public class ModelDescriptionConstants {
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
     public static final String RESPONSE = "response";
+    public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
@@ -177,6 +179,7 @@ public class ModelDescriptionConstants {
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNNING_SERVER = "server";
     public static final String RUNTIME_NAME = "runtime-name";
+    public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SEARCH_CREDENTIAL = "search-credential";
@@ -191,6 +194,8 @@ public class ModelDescriptionConstants {
     public static final String SERVER_GROUPS = "server-groups";
     public static final String SERVER_IDENTITIES = "server-identities";
     public static final String SERVER_OPERATIONS = "server-operations";
+    public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
+    public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
     public static final String SHUTDOWN = "shutdown";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
