@@ -148,7 +148,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType);
-        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, injectionType, isEnvEntryType);
+        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString(), isEnvEntryType);
         process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
     }
 
@@ -163,7 +163,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType);
-        final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType, isEnvEntryType);
+        final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString(), isEnvEntryType);
         process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
     }
 

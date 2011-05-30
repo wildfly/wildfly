@@ -76,11 +76,15 @@ public final class MethodInjectionTarget extends InjectionTarget {
         }
         Iterator<Method> iterator = methods.iterator();
         if (!iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("No matching method found for method '" + name + "' on '" + className + "'");
+            throw new DeploymentUnitProcessingException("No matching method found for method " + name +
+                    paramType != null ? "(" + paramType + ")" : "" +
+                    " on " + className);
         }
         Method method = iterator.next();
         if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name + "' on '" + className + "'");
+            throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name +
+                    paramType != null ? "(" + paramType + ")" : "" +
+                    " on " + className);
         }
         return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, this.isOptionalInjection());
     }
