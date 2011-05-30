@@ -32,7 +32,6 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -107,40 +106,11 @@ public class CreateJmsCFHandler extends BatchModeCommandHandler {
         //autoGroup = new ArgumentWithValue(this, "--auto-group");
 
         entries = new ArgumentWithValue(this, "--entries");
+        entries.addRequiredPreceding(name);
 
 /*        clientId = new ArgumentWithValue("--client-id");
         addArgument(clientId);
 */    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
-     */
-    @Override
-    protected void doHandle(CommandContext ctx) {
-
-        ModelNode request;
-        try {
-            request = buildRequest(ctx);
-        } catch (CommandFormatException e) {
-            ctx.printLine(e.getLocalizedMessage());
-            return;
-        }
-
-        ModelControllerClient client = ctx.getModelControllerClient();
-        final ModelNode result;
-        try {
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
-        ctx.printLine("Successfully created connection factory.");
-    }
 
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {

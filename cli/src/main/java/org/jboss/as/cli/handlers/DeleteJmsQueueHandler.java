@@ -92,37 +92,6 @@ public class DeleteJmsQueueHandler extends BatchModeCommandHandler {
         };
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
-     */
-    @Override
-    protected void doHandle(CommandContext ctx) {
-
-        ModelNode request;
-        try {
-            request = buildRequest(ctx);
-        } catch (CommandFormatException e1) {
-            ctx.printLine(e1.getLocalizedMessage());
-            return;
-        }
-
-        ModelControllerClient client = ctx.getModelControllerClient();
-
-        final ModelNode result;
-        try {
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine("Failed to delete queue: " + Util.getFailureDescription(result));
-            return;
-        }
-        ctx.printLine("Successfully removed queue. ");
-    }
-
     @Override
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 

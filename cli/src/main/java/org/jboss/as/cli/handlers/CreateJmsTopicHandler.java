@@ -32,7 +32,6 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -73,37 +72,7 @@ public class CreateJmsTopicHandler extends BatchModeCommandHandler {
         };
 
         entries = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"topic/"}), "--entries");
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
-     */
-    @Override
-    protected void doHandle(CommandContext ctx) {
-
-        ModelNode request;
-        try {
-            request = buildRequest(ctx);
-        } catch (CommandFormatException e1) {
-            ctx.printLine(e1.getLocalizedMessage());
-            return;
-        }
-
-        ModelControllerClient client = ctx.getModelControllerClient();
-        final ModelNode result;
-        try {
-            result = client.execute(request);
-        } catch (Exception e) {
-            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
-            return;
-        }
-
-        if (!Util.isSuccess(result)) {
-            ctx.printLine(Util.getFailureDescription(result));
-            return;
-        }
-
-        ctx.printLine("Successfully created topic.");
+        entries.addRequiredPreceding(name);
     }
 
     @Override
