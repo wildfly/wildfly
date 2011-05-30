@@ -41,20 +41,6 @@
 
     <modules>
         <module>server-integration</module>
+        <module>tests-integration</module>
     </modules>
-
-    <profiles>
-      <profile>
-        <id>allTests</id>	
-        <activation>
-	       <property>
-	          <name>allTests</name>
-	       </property>
-        </activation>
-        <modules>
-          <module>tests-integration</module>
-        </modules>
-      </profile>
-    </profiles>
-    
 </project>
