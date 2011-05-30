@@ -34,7 +34,6 @@ import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,19 +53,18 @@ public class SimpleWebserviceEndpointTestCase {
         war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
         war.addClass(SimpleWebserviceEndpointImpl.class);
         war.addWebResource(WebXml.get("<servlet>" +
-        		"    <servlet-name>TestService</servlet-name>" +
-        		"    <servlet-class>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl</servlet-class>" +
-        		"  </servlet>" +
-        		"  <servlet-mapping>" +
-        		"    <servlet-name>TestService</servlet-name>" +
-        		"    <url-pattern>/SimpleService</url-pattern>" +
-        		"  </servlet-mapping>"),"web.xml");
+            "    <servlet-name>TestService</servlet-name>" +
+            "    <servlet-class>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl</servlet-class>" +
+            "  </servlet>" +
+            "  <servlet-mapping>" +
+            "    <servlet-name>TestService</servlet-name>" +
+            "    <url-pattern>/SimpleService</url-pattern>" +
+            "  </servlet-mapping>"),"web.xml");
         log.info(war.toString(true));
         return war;
     }
 
     @Test
-    @Ignore
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.testsuite.integration.ws", "SimpleService");
         final URL wsdlURL = new URL("http://localhost:8080/ws-endpoint-example/SimpleService?wsdl");

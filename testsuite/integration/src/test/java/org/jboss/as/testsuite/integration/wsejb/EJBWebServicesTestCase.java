@@ -28,7 +28,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,7 +46,6 @@ public class EJBWebServicesTestCase {
     }
 
     @Test
-    @Ignore
     public void testSingleton() throws Exception {
         final String message = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:test=\"http://wsejb.integration.testsuite.as.jboss.org/\">"
                 + "  <soapenv:Header/>"
@@ -63,10 +61,10 @@ public class EJBWebServicesTestCase {
     }
 
     @Test
-    @Ignore
     public void testSingletonWSDL() throws Exception {
         final String wsdl = HttpRequest.get("http://localhost:8080/ejbws-example/SingletonEndpoint?wsdl", 10, SECONDS);
         // TODO: check something
         System.out.println(wsdl);
     }
+
 }
