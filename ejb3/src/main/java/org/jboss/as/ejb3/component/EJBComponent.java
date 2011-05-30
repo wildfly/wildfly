@@ -285,7 +285,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
         try {
             return jndiContext.lookup(namespaceStrippedJndiName);
         } catch (NamingException ne) {
-            throw new RuntimeException("Could not lookup jndi name: " + namespaceStrippedJndiName + " in context: " + jndiContext, ne);
+            throw new IllegalArgumentException("Could not lookup jndi name: " + namespaceStrippedJndiName + " in context: " + jndiContext, ne);
         }
     }
 
