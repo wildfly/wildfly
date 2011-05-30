@@ -129,6 +129,15 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         return asyncExecutor;
     }
 
+    @Override
+    public boolean getRollbackOnly() throws IllegalStateException {
+        // NOT_SUPPORTED and NEVER will not have a transaction context, so we can ignore those
+        if (getCurrentTransactionAttribute() == TransactionAttributeType.SUPPORTS) {
+            throw new IllegalStateException("EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute");
+        }
+        return super.getRollbackOnly();
+    }
+
     protected boolean isAsynchronous(final Method method) {
         final Set<Method> asyncMethods = this.asynchronousMethods;
         if (asyncMethods == null) {
@@ -234,24 +243,11 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     }
 
     @Override
-    protected boolean isSetRollbackOnlyAllowed(TransactionAttributeType txAttrType) {
-        // EJB3.1 Spec, section 13.6.2.8
-        // setRollbackOnly on session beans is not allowed for NEVER, SUPPORTS and NOT_SUPPORTED tx attribute types.
-        if (txAttrType == TransactionAttributeType.NEVER || txAttrType == TransactionAttributeType.SUPPORTS ||
-                txAttrType == TransactionAttributeType.NOT_SUPPORTED) {
-            return false;
+    public void setRollbackOnly() throws IllegalStateException {
+        // NOT_SUPPORTED and NEVER will not have a transaction context, so we can ignore those
+        if (getCurrentTransactionAttribute() == TransactionAttributeType.SUPPORTS) {
+            throw new IllegalStateException("EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute");
         }
-        return true;
-    }
-
-    @Override
-    protected boolean isGetRollbackOnlyAllowed(TransactionAttributeType txAttrType) {
-        // EJB3.1 Spec, section 13.6.2.9
-        // getRollbackOnly on session beans is not allowed for NEVER, SUPPORTS and NOT_SUPPORTED tx attribute types.
-        if (txAttrType == TransactionAttributeType.NEVER || txAttrType == TransactionAttributeType.SUPPORTS ||
-                txAttrType == TransactionAttributeType.NOT_SUPPORTED) {
-            return false;
-        }
-        return true;
+        super.setRollbackOnly();
     }
 }

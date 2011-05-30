@@ -42,10 +42,13 @@ import java.util.Map;
  */
 public class SessionInvocationContextInterceptor implements Interceptor {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor());
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor(false));
+    public static final InterceptorFactory LIFECYCLE_FACTORY = new ImmediateInterceptorFactory(new SessionInvocationContextInterceptor(true));
 
-    private SessionInvocationContextInterceptor() {
+    private final boolean lifecycleCallback;
 
+    private SessionInvocationContextInterceptor(final boolean lifecycleCallback) {
+        this.lifecycleCallback = lifecycleCallback;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class SessionInvocationContextInterceptor implements Interceptor {
         // On a normal method invocation, the invoked business interface will be obtained from the ComponentViewInstance
         final Class<?> invokedBusinessInterface = componentViewInstance == null ? null : componentViewInstance.getViewClass();
         Object[] parameters = context.getParameters();
-        SessionInvocationContext sessionInvocationContext = new CustomSessionInvocationContext(context, invokedBusinessInterface, invokedMethod, parameters);
+        SessionInvocationContext sessionInvocationContext = new CustomSessionInvocationContext(lifecycleCallback, context, invokedBusinessInterface, invokedMethod, parameters);
         context.putPrivateData(InvocationContext.class, sessionInvocationContext);
         CurrentInvocationContext.push(sessionInvocationContext);
         try {
@@ -70,8 +73,8 @@ public class SessionInvocationContextInterceptor implements Interceptor {
     protected static class CustomSessionInvocationContext extends BaseSessionInvocationContext {
         private InterceptorContext context;
 
-        protected CustomSessionInvocationContext(InterceptorContext context, Class<?> invokedBusinessInterface, Method method, Object[] parameters) {
-            super(invokedBusinessInterface, method, parameters);
+        protected CustomSessionInvocationContext(boolean lifecycleCallback, InterceptorContext context, Class<?> invokedBusinessInterface, Method method, Object[] parameters) {
+            super(lifecycleCallback, invokedBusinessInterface, method, parameters);
 
             this.context = context;
         }
