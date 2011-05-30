@@ -32,6 +32,7 @@ import org.jboss.jandex.MethodInfo;
 import javax.ejb.AfterBegin;
 import javax.ejb.AfterCompletion;
 import javax.ejb.BeforeCompletion;
+import javax.ejb.SessionSynchronization;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +53,15 @@ public class SessionSynchronizationAnnotationProcessor extends AbstractAnnotatio
         return StatefulComponentDescription.class;
     }
 
+    private static boolean implementsSessionSynchronization(final ClassInfo classInfo) {
+        for(DotName intf : classInfo.interfaces()) {
+            if (intf.toString().equals(SessionSynchronization.class.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     protected void processAnnotations(final ClassInfo beanClass, final CompositeIndex index, final StatefulComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         final DotName superName = beanClass.superName();
@@ -59,6 +69,13 @@ public class SessionSynchronizationAnnotationProcessor extends AbstractAnnotatio
             ClassInfo superClass = index.getClassByName(superName);
             if (superClass != null)
                 processAnnotations(superClass, index, componentDescription);
+        }
+
+        if (implementsSessionSynchronization(beanClass)) {
+            componentDescription.setAfterBegin(null, "afterBegin");
+            componentDescription.setAfterCompletion(null, "afterCompletion");
+            componentDescription.setBeforeCompletion(null, "beforeCompletion");
+            return;
         }
 
         final Map<DotName, List<AnnotationInstance>> classAnnotations = beanClass.annotations();
