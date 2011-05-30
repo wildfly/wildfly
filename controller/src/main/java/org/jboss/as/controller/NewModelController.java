@@ -94,4 +94,8 @@ public interface NewModelController {
          */
         void rollback();
     }
+
+    enum ProcessState {
+
+    }
 }

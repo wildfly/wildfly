@@ -25,10 +25,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,7 +55,8 @@ public class CompositeOperationHandlerUnitTestCase {
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ModelControllerImplUnitTestCase.ModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService(container);
+        ControlledProcessState processState = new ControlledProcessState(true);
+        ModelControllerImplUnitTestCase.ModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService(container, processState);
         ServiceBuilder<NewModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         sharedState = svc.state;
@@ -58,6 +64,7 @@ public class CompositeOperationHandlerUnitTestCase {
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
+        processState.setRunning();
     }
 
     @After
@@ -99,7 +106,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > - 1);
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > -1);
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
@@ -454,6 +461,76 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testReloadRequired() throws Exception {
+        ModelNode step1 = getOperation("reload-required", "attr1", 5);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp = getCompositeOperation(null, step1, step2);
+        ModelNode result = controller.execute(comp, null, null, null);
+        System.out.println(result);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).asBoolean());
+        Assert.assertEquals(ControlledProcessState.State.RELOAD_REQUIRED.toString(), result.get(RESPONSE_HEADERS, PROCESS_STATE).asString());
+
+        result = controller.execute(getOperation("good", "attr1", 5), null, null, null);
+        Assert.assertEquals("success", result.get(OUTCOME).asString());
+        Assert.assertEquals(5, result.get(RESULT).asInt());
+    }
+
+    @Test
+    public void testRestartRequired() throws Exception {
+        ModelNode step1 = getOperation("restart-required", "attr1", 5);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp = getCompositeOperation(null, step1, step2);
+        ModelNode result = controller.execute(comp, null, null, null);
+        System.out.println(result);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).asBoolean());
+        Assert.assertEquals(ControlledProcessState.State.RESTART_REQUIRED.toString(), result.get(RESPONSE_HEADERS, PROCESS_STATE).asString());
+
+        result = controller.execute(getOperation("good", "attr1", 3), null, null, null);
+        Assert.assertEquals("success", result.get(OUTCOME).asString());
+        Assert.assertEquals(5, result.get(RESULT).asInt());
+    }
+
+    @Test
+    public void testReloadRequiredTxRollback() throws Exception {
+        ModelNode step1 = getOperation("reload-required", "attr1", 5);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp = getCompositeOperation(null, step1, step2);
+        ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertFalse(result.get(RESULT, "step-1", RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD));
+        assertFalse(result.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE));
+
+        // Confirm model was unchanged
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        Assert.assertEquals("success", result.get(OUTCOME).asString());
+        Assert.assertEquals(1, result.get(RESULT).asInt());
+    }
+
+    @Test
+    public void testRestartRequiredTxRollback() throws Exception {
+        ModelNode step1 = getOperation("restart-required", "attr1", 5);
+        ModelNode step2 = getOperation("good", "attr2", 1);
+        ModelNode comp = getCompositeOperation(null, step1, step2);
+        ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
+        System.out.println(result);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
+        assertFalse(result.get(RESULT, "step-1", RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART));
+        assertFalse(result.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE));
+
+        // Confirm model was unchanged
+        result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
+        Assert.assertEquals("success", result.get(OUTCOME).asString());
+        Assert.assertEquals(1, result.get(RESULT).asInt());
     }
 
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {

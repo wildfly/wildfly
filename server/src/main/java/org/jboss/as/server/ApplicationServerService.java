@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.server.Bootstrap.Configuration;
 import org.jboss.as.server.deployment.impl.ContentRepositoryImpl;
@@ -54,6 +55,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,6 +69,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     private static final Logger configLog = Logger.getLogger("org.jboss.as.config");
     private final List<ServiceActivator> extraServices;
     private final Bootstrap.Configuration configuration;
+    private final ControlledProcessState processState;
     private volatile FutureServiceContainer futureContainer;
     private volatile long startTime;
 
@@ -74,6 +77,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         this.extraServices = extraServices;
         this.configuration = configuration;
         startTime = configuration.getStartTime();
+        processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
     }
 
     @Override
@@ -125,7 +129,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
-        ServerService.addService(serviceTarget, configuration);
+        ServerService.addService(serviceTarget, configuration, processState);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {
@@ -163,6 +167,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         AbsolutePathService.addService("user.home", System.getProperty("user.home"), serviceTarget);
         AbsolutePathService.addService("java.home", System.getProperty("java.home"), serviceTarget);
 
+        processState.setRunning();
+
         if (log.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();
             log.debugf("JBoss AS root service started in %d.%06d ms", Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
@@ -171,6 +177,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
     @Override
     public synchronized void stop(final StopContext context) {
+        processState.setStopping();
         CurrentServiceRegistry.setServiceRegistry(null);
         log.infof("JBoss AS %s \"%s\" stopped in %dms", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }

@@ -130,6 +130,42 @@ public interface NewOperationContext {
     void setRollbackOnly();
 
     /**
+     * Notify the context that the process requires a stop and re-start of its root service (but not a full process
+     * restart) in order to ensure stable operation and/or to bring its running state in line with its persistent configuration.
+     *
+     * @see ControlledProcessState.State#RELOAD_REQUIRED
+     */
+    void reloadRequired();
+
+    /**
+     * Notify the context that the process must be terminated and replaced with a new process in order to ensure stable
+     * operation and/or to bring the running state in line with the persistent configuration.
+     *
+     * @see ControlledProcessState.State#RESTART_REQUIRED
+     */
+    void restartRequired();
+
+    /**
+     * Notify the context that a previous call to {@link #reloadRequired()} can be ignored (typically because the change
+     * that led to the need for reload has been rolled back.)
+     */
+    void revertReloadRequired();
+
+    /**
+     * Notify the context that a previous call to {@link #restartRequired()} can be ignored (typically because the change
+     * that led to the need for restart has been rolled back.)
+     */
+    void revertRestartRequired();
+
+    /**
+     * Notify the context that an update to the runtime that would normally have been made could not be made due to
+     * the current state of the process. As an example, a step handler that can only update the runtime when
+     * {@link #isBooting()} is {@code true} must invoke this method if it is executed when {@link #isBooting()}
+     * is {@code false}.
+     */
+    void runtimeUpdateSkipped();
+
+    /**
      * Get the model node registration.  The registration is relative to the operation address.
      *
      * @return the model node registration
