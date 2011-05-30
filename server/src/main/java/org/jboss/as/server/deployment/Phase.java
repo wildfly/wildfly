@@ -259,7 +259,6 @@ public enum Phase {
     public static final int PARSE_INTERCEPTORS_ANNOTATION               = 0x3100;
     public static final int PARSE_LIEFCYCLE_ANNOTATION                  = 0x3200;
     public static final int PARSE_AROUNDINVOKE_ANNOTATION               = 0x3300;
-    public static final int PARSE_RESOURCE_INJECTION_ANNOTATION         = 0x3400;
     public static final int PARSE_RESOURCE_INJECTION_WEBSERVICE_CONTEXT_ANNOTATION  = 0x3401;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
@@ -295,25 +294,26 @@ public enum Phase {
 
 
     // POST_MODULE
-    public static final int POST_MODULE_REFLECTION_INDEX                = 0x0000;
-    public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0001;
-    public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0002;
-    public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0003;
-    public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0004;
-    public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0005;
-    public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0006;
-    public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0100;
-    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0200;
-    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0300;
-    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0400;
-    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0500;
-    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0501;
-    public static final int POST_MODULE_WS_EJB_INTEGRATION              = 0x0600;
+    public static final int POST_MODULE_INJECTION_ANNOTATION            = 0x0100;
+    public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
+    public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
+    public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0400;
+    public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0500;
+    public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
+    public static final int POST_MODULE_WELD_EJB_INTERCEPTORS_INTEGRATION = 0x0700;
+    public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
+    public static final int POST_MODULE_AGGREGATE_COMPONENT_INDEX       = 0x0900;
+    public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
+    public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
+    public static final int POST_MODULE_EAR_DEPENDENCY                  = 0x0C00;
+    public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0D00;
+    public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0E00;
+    public static final int POST_MODULE_WS_EJB_INTEGRATION              = 0x0F00;
     // should come before ejb jndi bindings processor
-    public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x0700;
-    public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x0800;
-    public static final int POST_MODULE_EJB_MODULE_CONFIGURATION        = 0x0801;
-    public static final int POST_INITIALIZE_IN_ORDER                    = 0x0900;
+    public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x1000;
+    public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x1100;
+    public static final int POST_MODULE_EJB_MODULE_CONFIGURATION        = 0x1200;
+    public static final int POST_INITIALIZE_IN_ORDER                    = 0x1300;
 
 
     // INSTALL

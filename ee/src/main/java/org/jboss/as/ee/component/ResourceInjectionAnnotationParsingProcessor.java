@@ -35,6 +35,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
@@ -100,6 +101,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(RESOURCE_ANNOTATION_NAME);
         for (AnnotationInstance annotation : resourceAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();
@@ -111,16 +113,16 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 ClassInfo classInfo = fieldInfo.declaringClass();
                 EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                processFieldResource(phaseContext, fieldInfo, name, type, classDescription, annotation, eeModuleDescription);
+                processFieldResource(phaseContext, fieldInfo, name, type, classDescription, annotation, eeModuleDescription, module);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 ClassInfo classInfo = methodInfo.declaringClass();
                 EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                processMethodResource(phaseContext, methodInfo, name, type, classDescription, annotation, eeModuleDescription);
+                processMethodResource(phaseContext, methodInfo, name, type, classDescription, annotation, eeModuleDescription, module);
             } else if (annotationTarget instanceof ClassInfo) {
                 ClassInfo classInfo = (ClassInfo) annotationTarget;
                 EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription);
+                processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription, module);
             }
         }
         final List<AnnotationInstance> resourcesAnnotations = index.getAnnotations(RESOURCES_ANNOTATION_NAME);
@@ -135,7 +137,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                     final AnnotationValue typeValue = annotation.value("type");
                     final String type = typeValue != null ? typeValue.asClass().name().toString() : null;
                     EEModuleClassDescription classDescription = eeModuleDescription.getOrAddClassByName(classInfo.name().toString());
-                    processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription);
+                    processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription, module);
                 }
             }
         }
@@ -144,16 +146,16 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     public void undeploy(final DeploymentUnit context) {
     }
 
-    protected void processFieldResource(final DeploymentPhaseContext phaseContext, final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
+    protected void processFieldResource(final DeploymentPhaseContext phaseContext, final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription, final Module module) throws DeploymentUnitProcessingException {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;
         final String localContextName = isEmpty(name) ? fieldInfo.declaringClass().name().toString() + "/" + fieldName : name;
-        final boolean isEnvEntryType = this.isEnvEntryType(injectionType);
+        final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString(), isEnvEntryType);
-        process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
+        process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription, module);
     }
 
-    protected void processMethodResource(final DeploymentPhaseContext phaseContext, final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
+    protected void processMethodResource(final DeploymentPhaseContext phaseContext, final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription, final Module module) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -163,22 +165,22 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final String localContextName = isEmpty(name) ? methodInfo.declaringClass().name().toString() + "/" + contextNameSuffix : name;
 
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : type;
-        final boolean isEnvEntryType = this.isEnvEntryType(injectionType);
+        final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString(), isEnvEntryType);
-        process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription);
+        process(phaseContext, classDescription, annotation, injectionType, localContextName, targetDescription, eeModuleDescription, module);
     }
 
-    protected void processClassResource(final DeploymentPhaseContext phaseContext, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
+    protected void processClassResource(final DeploymentPhaseContext phaseContext, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription, final Module module) throws DeploymentUnitProcessingException {
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
         }
         if (isEmpty(type) || type.equals(Object.class.getName())) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a type.");
         }
-        process(phaseContext, classDescription, annotation, type, name, null, eeModuleDescription);
+        process(phaseContext, classDescription, annotation, type, name, null, eeModuleDescription, module);
     }
 
-    protected void process(final DeploymentPhaseContext phaseContext, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
+    protected void process(final DeploymentPhaseContext phaseContext, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription, final Module module) throws DeploymentUnitProcessingException {
         final AnnotationValue lookupAnnotation = annotation.value("lookup");
         String lookup = lookupAnnotation == null ? null : lookupAnnotation.asString();
         // if "lookup" hasn't been specified then fallback on "mappedName" which we treat the same as "lookup"
@@ -191,7 +193,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             lookup = FIXED_LOCATIONS.get(injectionType);
         }
         InjectionSource valueSource = null;
-        final boolean isEnvEntryType = this.isEnvEntryType(injectionType);
+        final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         if (!isEmpty(lookup)) {
             valueSource = new LookupInjectionSource(lookup);
         } else if (isEnvEntryType) {
@@ -248,12 +250,15 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         return string == null || string.isEmpty();
     }
 
-    private boolean isEnvEntryType(final String type) {
+    private boolean isEnvEntryType(final String type, final Module module) {
         if (SIMPLE_ENTRIES.contains(type)) {
             return true;
         }
-        // TODO: Enums should be handled.
-        return false;
+        try {
+            return  module.getClassLoader().loadClass(type).isEnum();
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
 }
