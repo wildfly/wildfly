@@ -101,7 +101,6 @@ public interface NewModelControllerClient extends Closeable {
          * Create a client instance for an existing channel. It is the client's responsibility to close this channel
          *
          * @param channel The channel to use
-         * @param executorService
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
@@ -113,7 +112,7 @@ public interface NewModelControllerClient extends Closeable {
          * Create a client instance for a remote address and port.
          *
          * @param address the address of the remote host
-         * @param executorService
+         * @param port the port
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
@@ -125,7 +124,7 @@ public interface NewModelControllerClient extends Closeable {
          * Create a client instance for a remote address and port.
          *
          * @param hostName the remote host
-         * @param executorService
+         * @param port the port
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */

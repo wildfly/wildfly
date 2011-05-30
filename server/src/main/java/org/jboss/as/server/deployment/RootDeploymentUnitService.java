@@ -25,6 +25,7 @@ package org.jboss.as.server.deployment;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
 
@@ -39,6 +40,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final String managementName;
     final InjectedValue<VirtualFile> contentsInjector = new InjectedValue<VirtualFile>();
     private final DeploymentUnit parent;
+    private final DeploymentModelUtils model;
 
     /**
      * Construct a new instance.
@@ -47,23 +49,35 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * @param managementName the deployment's domain-wide unique name
      * @param parent the parent deployment unit
      */
-    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent) {
+    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final DeploymentModelUtils model) {
         assert name != null : "name is null";
         this.name = name;
         this.managementName = managementName;
         this.parent = parent;
+        this.model = model;
     }
 
     protected DeploymentUnit createAndInitializeDeploymentUnit(final ServiceRegistry registry) {
-        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry);
+        model.initialize();
+        final DeploymentUnit deploymentUnit = new DeploymentUnitImpl(parent, name, registry, model);
         deploymentUnit.putAttachment(Attachments.RUNTIME_NAME, name);
         deploymentUnit.putAttachment(Attachments.MANAGEMENT_NAME, managementName);
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_CONTENTS, contentsInjector.getValue());
+        deploymentUnit.putAttachment(DeploymentModelUtils.KEY, model);
 
         // Attach the deployment repo
         deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());
 
         return deploymentUnit;
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        try {
+            super.stop(context);
+        } finally {
+            model.cleanup();
+        }
     }
 
     Injector<ServerDeploymentRepository> getServerDeploymentRepositoryInjector() {

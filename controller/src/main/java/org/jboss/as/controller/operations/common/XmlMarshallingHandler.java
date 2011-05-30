@@ -32,6 +32,7 @@ import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -60,8 +61,9 @@ public class XmlMarshallingHandler implements NewStepHandler, DescriptionProvide
 
     @Override
     public void execute(NewOperationContext context, ModelNode operation) {
-
-        final ModelNode model = context.getModel();
+        final Resource resource = context.getRootResource();
+        // Get the model recursively
+        final ModelNode model = Resource.Tools.readModel(resource);
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {

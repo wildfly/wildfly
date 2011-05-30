@@ -100,24 +100,6 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
     }
 
     @Override
-    public ModelNodeRegistration registerRuntimeSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
-        if (address == null) {
-            throw new IllegalArgumentException("address is null");
-        }
-        if (descriptionProvider == null) {
-            throw new IllegalArgumentException("descriptionProvider is null");
-        }
-        if ("*".equals(getValueString())) {
-            // We can'  resolve></>
-            throw new IllegalStateException("Cannot register a runtime-only sub model under a wildcard parent");
-        }
-
-        final String key = address.getKey();
-        final NodeSubregistry child = getOrCreateSubregistry(key);
-        return child.register(address.getValue(), descriptionProvider, true);
-    }
-
-    @Override
     public void registerSubModel(final PathElement address, final ModelNodeRegistration subModel) {
         if (address == null) {
             throw new IllegalArgumentException("address is null");
@@ -471,34 +453,6 @@ final class ConcreteNodeRegistration extends AbstractNodeRegistration {
         }
     }
 
-    @Override
-    void resolveAddress(PathAddress address, PathAddress base, Set<PathAddress> addresses) {
-        final PathAddress current = address.subAddress(base.size());
-        final Iterator<PathElement> iterator = current.iterator();
-        if(iterator.hasNext()) {
-            final PathElement next = iterator.next();
-            final NodeSubregistry subregistry = children.get(next.getKey());
-            if(subregistry == null) {
-                return;
-            }
-            if(next.isWildcard()) {
-                for(final String key : subregistry.getChildNames()) {
-                    final PathElement element = PathElement.pathElement(next.getKey(), key);
-                    subregistry.resolveAddress(address, base, element, addresses);
-                }
-            } else if (next.isMultiTarget()) {
-                for(final String value : next.getSegments()) {
-                    final PathElement element = PathElement.pathElement(next.getKey(), value);
-                    subregistry.resolveAddress(address, base, element, addresses);
-                }
-            } else {
-                final PathElement element = PathElement.pathElement(next.getKey(), next.getValue());
-                subregistry.resolveAddress(address, base, element, addresses);
-            }
-        } else {
-            addresses.add(base);
-        }
-    }
 
 }
 

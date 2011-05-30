@@ -57,7 +57,7 @@ public class RaRemove extends AbstractRaOperation implements NewStepHandler {
                 compensating.get(RESOURCEADAPTERS).add(raCompensatingNode);
             }
         }
-        context.removeModel(PathAddress.EMPTY_ADDRESS);
+        context.removeResource(PathAddress.EMPTY_ADDRESS);
 
         context.addStep(new NewStepHandler() {
             public void execute(NewOperationContext context, ModelNode operation) {

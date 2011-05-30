@@ -31,6 +31,7 @@ import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.NewServerInventory;
 import org.jboss.as.process.ProcessInfo;
@@ -68,13 +69,13 @@ public class NewStartServersHandler implements NewStepHandler, DescriptionProvid
         if (!context.isBooting()) {
             throw new OperationFailedException(new ModelNode().set(String.format("Cannot invoke %s after host boot", operation.require(OP))));
         }
-
+        final ModelNode domainModel = Resource.Tools.readModel(context.getRootResource());
         context.addStep(new NewStepHandler() {
             @Override
             public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                 // start servers
-                final ModelNode domainModel = context.getModel();
-                final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+                final Resource resource =  context.readResource(PathAddress.EMPTY_ADDRESS);
+                final ModelNode hostModel = Resource.Tools.readModel(resource);
                 if(hostModel.hasDefined(SERVER_CONFIG)) {
                     final ModelNode servers = hostModel.get(SERVER_CONFIG).clone();
                     if (hostControllerEnvironment.isRestart()){

@@ -265,58 +265,6 @@ public class PathAddress implements Iterable<PathElement> {
         return model;
     }
 
-    public static Set<PathAddress> resolve(final PathAddress address, final ModelNode model, boolean create) {
-        if(! address.isMultiTarget()) {
-            return Collections.singleton(address);
-        }
-        final Set<PathAddress> resolved = new HashSet<PathAddress>();
-        resolve(address, EMPTY_ADDRESS, model, resolved, create);
-        return resolved;
-    }
-
-    private static void resolve(final PathAddress address, PathAddress base, ModelNode model, final Set<PathAddress> resolved, final boolean create) {
-        final PathAddress current = address.subAddress(base.size());
-        final Iterator<PathElement> iterator = current.iterator();
-        if(! iterator.hasNext()) {
-            resolved.add(base);
-            return;
-        }
-        while(iterator.hasNext()) {
-            final PathElement next = iterator.next();
-            if(next.isWildcard()) {
-                if(model.hasDefined(next.getKey())) {
-                    for(final String value : model.require(next.getKey()).keys()) {
-                        final PathElement element = PathElement.pathElement(next.getKey(), value);
-                        resolve(address, base.append(element), model.get(next.getKey(), value), resolved, create);
-                    }
-                }
-                return;
-            } else if (next.isMultiTarget()) {
-                if(model.hasDefined(next.getKey())) {
-                    final ModelNode subModel = model.get(next.getKey());
-                    for(final String value : next.getSegments()) {
-                        if(subModel.hasDefined(value)) {
-                            final PathElement element = PathElement.pathElement(next.getKey(), value);
-                            resolve(address, base.append(element), subModel.get(value), resolved, create);
-                        }
-                    }
-                }
-                return;
-            } else {
-                if(create && ! iterator.hasNext()) {
-                    model = model.require(next.getKey()).get(next.getValue());
-                } else {
-                    model = model.require(next.getKey()).require(next.getValue());
-                }
-                if(! iterator.hasNext()) {
-                    resolved.add(base.append(next));
-                } else {
-                    base = base.append(next);
-                }
-            }
-        }
-    }
-
     /**
      * Convert this path address to its model node representation.
      *

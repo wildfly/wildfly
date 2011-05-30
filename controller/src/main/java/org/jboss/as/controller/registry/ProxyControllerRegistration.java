@@ -77,11 +77,6 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
     }
 
     @Override
-    public ModelNodeRegistration registerRuntimeSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
-    }
-
-    @Override
     public void registerSubModel(final PathElement address, final ModelNodeRegistration subModel) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
@@ -195,14 +190,6 @@ final class ProxyControllerRegistration extends AbstractNodeRegistration impleme
         while (iterator.hasNext())
             iterator.next();
         return this;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    void resolveAddress(final PathAddress address, final PathAddress base, final Set<PathAddress> addresses) {
-        assert base.equals(proxyController.getProxyNodeAddress()) : "invalid address " + base;
-        final PathAddress subAddress = address.subAddress(base.size());
-        addresses.add(address.append(subAddress));
     }
 
     @Override

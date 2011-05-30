@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -82,7 +83,7 @@ public class ServerOperationsResolverHandler implements NewStepHandler {
             context.setRollbackOnly();
         } else {
 
-            final ModelNode domainModel = context.getModel();
+            final ModelNode domainModel = Resource.Tools.readModel(context.getRootResource());
             ParsedOp.ServerOperationProvider provider = new ParsedOp.ServerOperationProvider() {
 
                 @Override

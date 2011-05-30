@@ -71,7 +71,7 @@ public abstract class AbstractControllerService implements Service<NewModelContr
     public void start(final StartContext context) throws StartException {
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
-        final NewModelControllerImpl controller = new NewModelControllerImpl(createCoreModel(), container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
+        final NewModelControllerImpl controller = new NewModelControllerImpl(container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
         initModel(controller.getRootRegistration());
         this.controller = controller;
 
@@ -125,7 +125,10 @@ public abstract class AbstractControllerService implements Service<NewModelContr
         return controller;
     }
 
-    protected abstract ModelNode createCoreModel();
+    @Deprecated
+    protected ModelNode createCoreModel() {
+        return new ModelNode();
+    }
 
     protected abstract void initModel(ModelNodeRegistration rootRegistration);
 }

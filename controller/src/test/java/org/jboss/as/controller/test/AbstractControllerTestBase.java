@@ -26,11 +26,14 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -40,7 +43,9 @@ import org.jboss.msc.service.StartException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.omg.CORBA.INITIALIZE;
 
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -51,7 +56,9 @@ public abstract class AbstractControllerTestBase {
 
     abstract DescriptionProvider getRootDescriptionProvider();
     abstract void initModel(final ModelNodeRegistration registration);
-    abstract ModelNode createCoreModel();
+    protected ModelNode createCoreModel() {
+        return new ModelNode();
+    }
 
     private ServiceContainer container;
     private NewModelController controller;
@@ -108,7 +115,7 @@ public abstract class AbstractControllerTestBase {
         }
 
         protected ModelNode createCoreModel() {
-            return AbstractControllerTestBase.this.createCoreModel();
+            return new ModelNode();
         }
 
         protected void initModel(ModelNodeRegistration rootRegistration) {
@@ -120,5 +127,38 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
+    static void createModel(final NewOperationContext context, final ModelNode node) {
+        createModel(context, PathAddress.EMPTY_ADDRESS, node);
+    }
+
+    static void createModel(final NewOperationContext context, final PathAddress base, final ModelNode node) {
+        if(! node.isDefined()) {
+            return;
+        }
+        final ModelNodeRegistration registration = context.getModelNodeRegistrationForUpdate();
+        final Set<String> children = registration.getChildNames(base);
+        final ModelNode current = new ModelNode();
+
+        if(node.getType() == ModelType.OBJECT) {
+            for(final String key : node.keys()) {
+                if(! children.contains(key)) {
+                    current.get(key).set(node.get(key));
+                }
+            }
+            context.createResource(base).getModel().set(current);
+        } else {
+            context.createResource(base).getModel().set(node);
+            return;
+        }
+        if(children != null && ! children.isEmpty()) {
+            for(final String childType : children) {
+                if(node.hasDefined(childType)) {
+                    for(final String key : node.get(childType).keys()) {
+                        createModel(context, base.append(PathElement.pathElement(childType, key)), node.get(childType, key));
+                    }
+                }
+            }
+        }
+    }
 
 }

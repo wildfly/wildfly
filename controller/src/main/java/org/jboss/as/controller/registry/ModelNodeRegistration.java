@@ -59,24 +59,6 @@ public interface ModelNodeRegistration extends ImmutableModelNodeRegistration {
     ModelNodeRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**
-     * Register the existence of an addressable sub-node of this model node that only exists in the runtime and has no
-     * representation in the persistent configuration model.
-     *
-     * @param address the address of the submodel (may include a wildcard)
-     * @param descriptionProvider source for descriptive information describing this
-     *                            portion of the model (must not be {@code null})
-     * @return a model node registration which may be used to add operations
-     *
-     * @throws IllegalArgumentException if a submodel is already registered at {@code address}
-     * @throws IllegalStateException if the {@link PathElement} used to register {@code this} node was a
-     *           {@link org.jboss.as.controller.PathElement#isWildcard() wildcard } path element. Runtime-only
-     *           submodels can only be registered under parents with concrete addresses
-     *
-     * @see #isRuntimeOnly()
-     */
-    ModelNodeRegistration registerRuntimeSubModel(PathElement address, DescriptionProvider descriptionProvider);
-
-    /**
      * Register the existence of an addressable sub-node of this model node.
      *
      * @param address the address of the submodel (may include a wildcard)
@@ -187,13 +169,7 @@ public interface ModelNodeRegistration extends ImmutableModelNodeRegistration {
      */
     void unregisterProxyController(PathElement address);
 
-    /**
-     * Resolve a address against the registry.
-     *
-     * @param address the address
-     * @return the resolved addresses
-     */
-    Set<PathAddress> resolveAddress(PathAddress address);
+
 
     /**
      * A factory for creating a new, root model node registration.

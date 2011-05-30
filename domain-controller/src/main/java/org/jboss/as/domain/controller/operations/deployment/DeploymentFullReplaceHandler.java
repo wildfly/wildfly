@@ -20,6 +20,8 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.NewOperationContext;
@@ -49,6 +51,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
@@ -59,7 +62,6 @@ import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -152,31 +154,30 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
             unmanagedContentValidator.validate(contentItemNode);
         }
 
-        ModelNode rootModel = context.getModel();
-        ModelNode deployments = rootModel.get(DEPLOYMENT);
-
-        ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
+        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+        final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
+        final Resource replaceNode = root.getChild(deploymentPath);
         if (replaceNode == null) {
             throw createFailureException("No deployment with name %s found", name);
         }
 
-        final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
-        final ModelNode deployNode = context.readModelForUpdate(address);
+        final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));
+        ModelNode deployNode = deployment.getModel();
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
 
-        if (rootModel.hasDefined(SERVER_GROUP)) {
-            for (Property server : rootModel.get(SERVER_GROUP).asPropertyList()) {
-                ModelNode serverConfig = server.getValue();
-                if (serverConfig.hasDefined(DEPLOYMENT) && serverConfig.get(DEPLOYMENT).hasDefined(name)) {
-                    ModelNode groupDeployNode = serverConfig.get(DEPLOYMENT, name);
-                    groupDeployNode.get(RUNTIME_NAME).set(runtimeName);
+        if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
+            for(final Resource.ResourceEntry entry : root.getChildren(SERVER_GROUP)) {
+                if(entry.hasChild(deploymentPath)) {
+                    final PathAddress deploymentAddress = PathAddress.EMPTY_ADDRESS.append(entry.getPathElement());
+                    final Resource serverGroupDeployment = context.readResourceForUpdate(deploymentAddress);
+                    serverGroupDeployment.getModel().get(RUNTIME_NAME).set(runtimeName);
                 }
             }
         }
         // the content repo will already have these, note that content should not be empty
-        removeContentAdditions(deployNode.require(CONTENT));
+        removeContentAdditions(replaceNode.getModel().require(CONTENT));
 
         context.completeStep();
     }

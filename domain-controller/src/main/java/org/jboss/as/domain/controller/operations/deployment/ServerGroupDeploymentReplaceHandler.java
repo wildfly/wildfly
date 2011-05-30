@@ -36,6 +36,7 @@ import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -82,15 +83,18 @@ public class ServerGroupDeploymentReplaceHandler implements NewStepHandler, Desc
                     DeploymentFullReplaceHandler.OPERATION_NAME));
         }
 
-        ModelNode deployment;
-        try {
+        final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
+        final PathElement replacePath = PathElement.pathElement(DEPLOYMENT, toReplace);
 
-            deployment = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)).navigate(context.getModel(), false);
-        } catch (IllegalArgumentException iae) {
+        Resource domainDeployment;
+        try {
+            // check if the domain deployment exists
+            domainDeployment = context.getRootResource().requireChild(deploymentPath);
+        } catch (Exception e) {
             throw operationFailed(String.format("No deployment with name %s found", name));
         }
 
-
+        final ModelNode deployment = domainDeployment.getModel();
         for (ModelNode content : deployment.require(CONTENT).asList()) {
             if ((content.hasDefined(HASH))) {
                 byte[] hash = content.require(HASH).asBytes();
@@ -99,25 +103,27 @@ public class ServerGroupDeploymentReplaceHandler implements NewStepHandler, Desc
             }
         }
 
-        ModelNode deployments = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(DEPLOYMENT);
-        ModelNode replaceNode = deployments.hasDefined(toReplace) ? deployments.get(toReplace) : null;
-        if (replaceNode == null) {
+        final Resource serverGroup = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        if (! serverGroup.hasChild(replacePath)) {
             throw operationFailed(String.format("No deployment with name %s found", toReplace));
         }
-        ModelNode deployNode = deployments.hasDefined(name) ? deployments.get(name) : null;
-        if (deployNode == null) {
-            deployNode = new ModelNode();
-            deployNode = deployment.clone();
-            deployNode.remove("content");
-            deployments.get(name).set(deployNode);
-        } else if (deployNode.get(ENABLED).asBoolean()) {
-            throw operationFailed(String.format("Deployment %s is already started", toReplace));
+        final Resource replaceResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(replacePath));
+        //
+        final Resource deploymentResource;
+        if(! serverGroup.hasChild(deploymentPath)) {
+            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
+            final ModelNode deployNode = resource.getModel();
+            deployNode.set(deployment); // Get the information from the domain deployment
+            deployNode.remove("content"); // Prune the content information
+            deployNode.get(ENABLED).set(true); // Enable
+        } else {
+            deploymentResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
+            if(deploymentResource.getModel().get(ENABLED).asBoolean()) {
+                throw operationFailed(String.format("Deployment %s is already started", toReplace));
+            }
         }
-
-        // Update model
-        deployNode.get(ENABLED).set(true);
-        replaceNode.get(ENABLED).set(false);
-
+        //
+        replaceResource.getModel().get(ENABLED).set(false);
         context.completeStep();
     }
 

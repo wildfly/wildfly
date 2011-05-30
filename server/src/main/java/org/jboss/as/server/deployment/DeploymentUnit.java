@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
@@ -58,4 +60,16 @@ public interface DeploymentUnit extends Attachable {
      * @return the service registry
      */
     ServiceRegistry getServiceRegistry();
+
+    /**
+     * Create a management sub-model for components from the deployment itself. Operations, metrics and descriptions
+     * have to be registered as part of the subsystem registration {@link org.jboss.as.controller.ExtensionContext} and
+     * {@linkplain org.jboss.as.controller.SubsystemRegistration.registerDeploymentModel}.
+     *
+     * @param subsystemName the subsystem name the model was registered
+     * @param address the path address this sub-model should be created in
+     * @return the model node
+     */
+    ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address);
+
 }

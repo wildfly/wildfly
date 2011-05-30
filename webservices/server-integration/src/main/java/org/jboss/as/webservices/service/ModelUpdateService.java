@@ -41,7 +41,6 @@ import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -88,13 +87,13 @@ public final class ModelUpdateService extends AbstractService<Void> {
     @Override
     public void start(StartContext context) throws StartException {
         super.start(context);
-        client = controllerValue.getValue().createClient(Executors.newCachedThreadPool());
+        // client = controllerValue.getValue().createClient(Executors.newCachedThreadPool());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        StreamUtils.safeClose(client);
+        // StreamUtils.safeClose(client);
         client = null;
         super.stop(context);
     }

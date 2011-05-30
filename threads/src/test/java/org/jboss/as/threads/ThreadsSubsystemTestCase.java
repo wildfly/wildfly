@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import org.jboss.as.controller.NewStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -890,12 +891,6 @@ public class ThreadsSubsystemTestCase {
             latch.countDown();
         }
 
-        protected ModelNode createCoreModel() {
-            model = new ModelNode();
-            model.get("profile", "test", "subsystem");
-            return model;
-        }
-
         protected void initModel(ModelNodeRegistration rootRegistration) {
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
@@ -906,6 +901,19 @@ public class ThreadsSubsystemTestCase {
             rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+
+            rootRegistration.registerOperationHandler("setup", new NewStepHandler() {
+                @Override
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
+                    context.completeStep();
+                }
+            }, new DescriptionProvider() {
+                @Override
+                public ModelNode getModelDescription(Locale locale) {
+                    return new ModelNode();
+                }
+            });
 
             ModelNodeRegistration profileRegistration = rootRegistration.registerSubModel(PathElement.pathElement("profile"), profileDescriptionProvider);
             TestNewExtensionContext context = new TestNewExtensionContext(profileRegistration);

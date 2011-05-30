@@ -66,6 +66,7 @@ import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -131,16 +132,20 @@ public class GlobalOperationHandlers {
             // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
             final ReadResourceAssemblyHandler assemblyHandler = new ReadResourceAssemblyHandler(directAttributes, metrics, otherAttributes, directChildren, childResources);
             context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
-
             final ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
-            final ModelNode model = safeReadModel(context);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            // Get the model for this resource.
+            final ModelNode model = resource.getModel();
 
-            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, model, null): Collections.<String, Set<String>>emptyMap();
+            final Map<String, Set<String>> childrenByType = registry != null ? getChildAddresses(registry, resource, null): Collections.<String, Set<String>>emptyMap();
 
-            // Store direct attributes first
-            for (String key : model.keys()) {
-                if (!childrenByType.containsKey(key)) {
-                    directAttributes.put(key, model.get(key));
+            if(model.isDefined()) {
+                // Store direct attributes first
+                for (String key : model.keys()) {
+                    // In case someone put some garbage in it
+                    if(! childrenByType.containsKey(key)) {
+                        directAttributes.put(key, model.get(key));
+                    }
                 }
             }
 
@@ -158,6 +163,9 @@ public class GlobalOperationHandlers {
                             PathElement childPE = PathElement.pathElement(childType, child);
                             PathAddress relativeAddr = PathAddress.pathAddress(childPE);
                             ImmutableModelNodeRegistration childReg = registry.getSubModel(relativeAddr);
+                            if(childReg == null) {
+                                throw new OperationFailedException(new ModelNode().set(String.format("no child registry for (%s, %s)", childType, child)));
+                            }
                             // We only invoke runtime resources if they are remote proxies
                             if (childReg.isRuntimeOnly() && (!proxies || !childReg.isRemote())) {
                                 storeDirect = true;
@@ -391,9 +399,9 @@ public class GlobalOperationHandlers {
 
             validator.validate(operation);
             final String childType = operation.require(CHILD_TYPE).asString();
-            ModelNode subModel = safeReadModel(context);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             ImmutableModelNodeRegistration registry = context.getModelNodeRegistration();
-            Map<String, Set<String>> childAddresses = getChildAddresses(registry, subModel, childType);
+            Map<String, Set<String>> childAddresses = getChildAddresses(registry, resource, childType);
             Set<String> childNames = childAddresses.get(childType);
             if (childNames == null) {
                 throw new OperationFailedException(new ModelNode().set(String.format("No known child type named %s", childType))); //TODO i18n
@@ -436,8 +444,8 @@ public class GlobalOperationHandlers {
             }
             final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
 
-            ModelNode subModel = safeReadModel(context);
-            if (!subModel.hasDefined(childType)) {
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            if (! resource.hasChildren(childType)) {
                 context.getResult().setEmptyObject();
             } else {
                 // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
@@ -446,8 +454,9 @@ public class GlobalOperationHandlers {
                 // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
                 final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
                 context.addStep(assemblyHandler, NewOperationContext.Stage.IMMEDIATE);
+
                 final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                for (final String key : subModel.get(childType).keys()) {
+                for (final String key : resource.getChildrenNames(childType)) {
                     final PathElement childPath =  PathElement.pathElement(childType, key);
                     final PathAddress childAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(childType, key));
 
@@ -663,7 +672,11 @@ public class GlobalOperationHandlers {
                     if (readChild) {
                         ModelNode rrOp = new ModelNode();
                         rrOp.get(OP).set(opName);
-                        rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, element).toModelNode());
+                        try {
+                            rrOp.get(OP_ADDR).set(PathAddress.pathAddress(address, element).toModelNode());
+                        } catch (Exception e) {
+                            continue;
+                        }
                         rrOp.get(RECURSIVE).set(true);
                         rrOp.get(PROXIES).set(proxies);
                         rrOp.get(OPERATIONS).set(ops);
@@ -685,7 +698,7 @@ public class GlobalOperationHandlers {
     };
 
     /**
-     * Assembles the resonse to a read-resource request from the components gathered by earlier steps.
+     * Assembles the response to a read-resource request from the components gathered by earlier steps.
      */
     private static class ReadResourceDescriptionAssemblyHandler implements NewStepHandler {
 
@@ -803,8 +816,8 @@ public class GlobalOperationHandlers {
                     if(registration.isRemote() || registration.isRuntimeOnly()) {
                         // TODO dispatch
                     }
-                    final ModelNode model = context.readModel(base);
-                    final Map<String, Set<String>> resolved = getChildAddresses(registration, model, childType);
+                    final Resource resource = context.readResource(base);
+                    final Map<String, Set<String>> resolved = getChildAddresses(registration, resource, childType);
                     for (Map.Entry<String, Set<String>> entry : resolved.entrySet()) {
                         final String key = entry.getKey();
                         final Set<String> children = entry.getValue();
@@ -842,7 +855,7 @@ public class GlobalOperationHandlers {
 
     private static ModelNode safeReadModel(final NewOperationContext context) {
         try {
-            ModelNode result = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode result = context.readModel(PathAddress.EMPTY_ADDRESS);
             if (result.isDefined()) {
                 return result;
             }
@@ -856,12 +869,12 @@ public class GlobalOperationHandlers {
      * Gets the addresses of the child resources under the given resource.
      *
      * @param registry  registry entry representing the resource
-     * @param model  model representing the resource
+     * @param resource the current resource
      * @param validChildType a single child type to which the results should be limited. If {@code null} the result
      *                       should include all child types
      * @return map where the keys are the child types and the values are a set of child names associated with a type
      */
-    private static Map<String,Set<String>> getChildAddresses(final ImmutableModelNodeRegistration registry, final ModelNode model, final String validChildType) {
+    private static Map<String,Set<String>> getChildAddresses(final ImmutableModelNodeRegistration registry, Resource resource, final String validChildType) {
 
         Map<String,Set<String>> result = new HashMap<String, Set<String>>();
         Set<PathElement> elements = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
@@ -874,9 +887,8 @@ public class GlobalOperationHandlers {
             if (set == null) {
                 set = new HashSet<String>();
                 result.put(childType, set);
-                // Store all the model children the first time we see this child type
-                if (model.hasDefined(childType)) {
-                    set.addAll(model.get(childType).keys());
+                if(resource.hasChildren(childType)) {
+                    set.addAll(resource.getChildrenNames(childType));
                 }
             }
             if (!element.isWildcard()) {

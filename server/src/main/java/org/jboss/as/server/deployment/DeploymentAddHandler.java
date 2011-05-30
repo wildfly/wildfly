@@ -175,19 +175,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
         subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
 
         if (subModel.get(ENABLED).asBoolean() && (context.getType() == NewOperationContext.Type.SERVER)) {
-            context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-
-                    DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
-
-                    context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
-
-                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(Services.deploymentUnitName(runtimeName));
-                    }
-                }
-            }, NewOperationContext.Stage.RUNTIME);
+            DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
         }
 
         context.completeStep();

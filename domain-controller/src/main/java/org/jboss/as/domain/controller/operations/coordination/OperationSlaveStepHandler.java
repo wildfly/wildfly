@@ -51,7 +51,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
@@ -82,7 +82,9 @@ public class OperationSlaveStepHandler {
 
         final PathAddress originalAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ImmutableModelNodeRegistration originalRegistration = context.getModelNodeRegistration();
-        ParsedOp parsedOp = parseOperation(operation, 0, context.getModel());
+        final Resource root = context.getRootResource();
+        final ModelNode model = Resource.Tools.readModel(root);
+        ParsedOp parsedOp = parseOperation(operation, 0, model);
         ModelNode domainOp = parsedOp.getDomainOperation();
 
         if (domainOp.isDefined()) {

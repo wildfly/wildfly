@@ -48,6 +48,7 @@ import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistry;
@@ -59,6 +60,7 @@ import org.jboss.threads.AsyncFutureTask;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class NewModelControllerImpl implements NewModelController {
+
     private static final ModelNode EMPTY;
 
     static {
@@ -72,17 +74,23 @@ class NewModelControllerImpl implements NewModelController {
     private final ModelNodeRegistration rootRegistration;
     private final Lock writeLock = new ReentrantLock();
     private final ContainerStateMonitor stateMonitor;
-    private final AtomicReference<ModelNode> modelReference = new AtomicReference<ModelNode>(EMPTY);
+    private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
     private final ConfigurationPersister persister;
     private final NewOperationContext.Type controllerType;
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
     private final NewStepHandler prepareStep;
     private final ControlledProcessState processState;
 
+    @Deprecated
     NewModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
+                       final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
+                       final NewStepHandler prepareStep,final ControlledProcessState processState) {
+        this(serviceRegistry, serviceTarget, rootRegistration, stateMonitor, persister, controllerType, prepareStep, processState);
+    }
+
+    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
                            final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
                            final NewStepHandler prepareStep,final ControlledProcessState processState) {
-        modelReference.set(model);
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -241,14 +249,14 @@ class NewModelControllerImpl implements NewModelController {
         };
     }
 
-    ConfigurationPersister.PersistenceResource writeModel(final ModelNode newModel, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
-        newModel.protect();
+    ConfigurationPersister.PersistenceResource writeModel(final Resource resource, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+        final ModelNode newModel = Resource.Tools.readModel(resource);  // Get the model representation
         final ConfigurationPersister.PersistenceResource delegate = persister.store(newModel, affectedAddresses);
         return new ConfigurationPersister.PersistenceResource() {
 
             @Override
             public void commit() {
-                modelReference.set(newModel);
+                modelReference.set(resource);
                 delegate.commit();
             }
 

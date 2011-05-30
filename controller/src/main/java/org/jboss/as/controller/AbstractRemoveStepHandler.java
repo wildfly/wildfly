@@ -50,7 +50,7 @@ public abstract class AbstractRemoveStepHandler implements NewStepHandler {
     }
 
     protected void performRemove(NewOperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        context.removeModel(PathAddress.EMPTY_ADDRESS);
+        context.removeResource(PathAddress.EMPTY_ADDRESS);
     }
 
     protected void performRuntime(final NewOperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {

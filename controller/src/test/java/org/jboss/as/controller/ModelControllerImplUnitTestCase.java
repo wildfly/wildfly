@@ -53,6 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import org.jboss.as.controller.operations.common.Util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -118,8 +119,8 @@ public class ModelControllerImplUnitTestCase {
         sharedState = svc.state;
         svc.latch.await();
         controller = svc.getValue();
-//        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
-//        controller.execute(setup, null, null, null);
+        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
+        controller.execute(setup, null, null, null);
         processState.setRunning();
     }
 
@@ -145,20 +146,6 @@ public class ModelControllerImplUnitTestCase {
 
         ModelControllerService(final ControlledProcessState processState) {
             super(NewOperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
-        }
-
-        @Override
-        protected ModelNode createCoreModel() {
-
-            ModelNode model = new ModelNode();
-
-            //Atttributes
-            model.get("attr1").set(1);
-            model.get("attr2").set(2);
-
-            model.get("child", "one", "attribute1").set(1);
-            model.get("child", "two", "attribute2").set(2);
-            return model;
         }
 
         @Override
@@ -544,10 +531,15 @@ public class ModelControllerImplUnitTestCase {
             model.get("attr1").set(1);
             model.get("attr2").set(2);
 
-            model.get("child", "one", "attribute1").set(1);
-            model.get("child", "two", "attribute2").set(2);
+            context.createResource(PathAddress.EMPTY_ADDRESS).getModel().set(model);
 
-            context.writeModel(PathAddress.EMPTY_ADDRESS, model);
+            final ModelNode child1 = new ModelNode();
+            child1.get("attribute1").set(1);
+            final ModelNode child2 = new ModelNode();
+            child2.get("attribute2").set(2);
+
+            context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("child", "one"))).getModel().set(child1);
+            context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("child", "two"))).getModel().set(child2);
 
             context.completeStep();
         }

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -34,7 +35,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+
+import java.util.Locale;
 
 /**
  * The webservices extension.
@@ -64,11 +68,15 @@ public final class WSExtension implements Extension {
         epConfigs.registerOperationHandler(ADD, EndpointConfigAdd.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_ADD_DESCRIPTION, false);
         epConfigs.registerOperationHandler(REMOVE, EndpointConfigRemove.INSTANCE, WSSubsystemProviders.ENDPOINTCONFIG_REMOVE_DESCRIPTION, false);
 
+
+        final ModelNodeRegistration deployments = subsystem.registerDeploymentModel(new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return new ModelNode();
+            }
+        });
         // ws endpoint children
-        final ModelNodeRegistration endpoints = registration.registerSubModel(PathElement.pathElement(ENDPOINT), WSSubsystemProviders.ENDPOINT_DESCRIPTION);
-        endpoints.registerOperationHandler(ADD, WSEndpointAdd.INSTANCE, WSSubsystemProviders.ENDPOINT_ADD_DESCRIPTION, false, PRIVATE);
-        endpoints.registerOperationHandler(REMOVE, WSEndpointRemove.INSTANCE, WSSubsystemProviders.ENDPOINT_REMOVE_DESCRIPTION, false, PRIVATE);
-        // ws endpoint metrics
+        final ModelNodeRegistration endpoints = deployments.registerSubModel(PathElement.pathElement(ENDPOINT), WSSubsystemProviders.ENDPOINT_DESCRIPTION);
         for (final String attributeName : WSEndpointMetrics.ATTRIBUTES) {
             endpoints.registerMetric(attributeName, WSEndpointMetrics.INSTANCE);
         }

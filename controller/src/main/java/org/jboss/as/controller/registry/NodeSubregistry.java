@@ -273,19 +273,4 @@ final class NodeSubregistry {
         }
     }
 
-    void resolveAddress(final PathAddress address, final PathAddress base, final PathElement current, Set<PathAddress> addresses) {
-        final Map<String, AbstractNodeRegistration> snapshot = childRegistries;
-        final AbstractNodeRegistration childRegistry = snapshot.get(current.getValue());
-        if(childRegistry == null) {
-            final AbstractNodeRegistration wildcardRegistry = snapshot.get("*");
-            if(wildcardRegistry == null) {
-                return;
-            }
-            wildcardRegistry.resolveAddress(address, base.append(current), addresses);
-        } else {
-            childRegistry.resolveAddress(address, base.append(current), addresses);
-        }
-    }
-
-
 }

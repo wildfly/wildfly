@@ -27,6 +27,7 @@ import java.io.InputStream;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -254,6 +255,7 @@ public interface NewOperationContext {
      * @param address the (possibly empty) address to read
      * @return the model data
      */
+    @Deprecated
     ModelNode readModel(PathAddress address);
 
     /**
@@ -264,36 +266,8 @@ public interface NewOperationContext {
      * @param address the (possibly empty) address to read
      * @return the model data
      */
+    @Deprecated
     ModelNode readModelForUpdate(PathAddress address);
-
-    /**
-     * Get a read-only reference of the entire management model.  The structure of the returned model may depend
-     * on the context type (domain vs. server).
-     *
-     * @return the read-only model
-     */
-    ModelNode getModel();
-
-    /**
-     * Write new content to a model location, relative to the executed operation address.  Since only one operation
-     * may write at a time, this operation may block until other writing operations have completed.
-     *
-     * @param address the (possibly empty) address to write
-     * @param newData the new value for the node
-     * @return the old value of the node
-     * @throws UnsupportedOperationException if the calling operation is not a model operation
-     */
-    ModelNode writeModel(PathAddress address, ModelNode newData) throws UnsupportedOperationException;
-
-    /**
-     * Remove a model node, relative to the executed operation address.  Since only one operation
-     * may write at a time, this operation may block until other writing operations have completed.
-     *
-     * @param address the (possibly empty) address to remove
-     * @return the old value of the node
-     * @throws UnsupportedOperationException if the calling operation is not a model operation
-     */
-    ModelNode removeModel(PathAddress address) throws UnsupportedOperationException;
 
     /**
      * Acquire the controlling {@link NewModelController}'s exclusive lock. Holding this lock prevent other operations
@@ -309,6 +283,50 @@ public interface NewOperationContext {
      * </p>
      */
     void acquireControllerLock();
+
+    /**
+     * Create a new resource, relative to the executed operation address.  Since only one operation
+     * may write at a time, this operation may block until other writing operations have completed.
+     *
+     * @param address the (possibly empty) address to remove
+     * @return the created resource
+     * @throws UnsupportedOperationException if the calling operation is not a model operation
+     */
+    Resource createResource(PathAddress address) throws UnsupportedOperationException;
+
+    /**
+     * Get the addressable resource for read only operations.
+     *
+     * @param address the address
+     * @return the resource
+     */
+    Resource readResource(PathAddress address);
+
+    /**
+     * Get an addressable resource for update operations.
+     *
+     * @param address the address
+     * @return the resource
+     */
+    Resource readResourceForUpdate(PathAddress address);
+
+    /**
+     * Remove a resource relative to the executed operation address. Since only one operation
+     * may write at a time, this operation may block until other writing operations have completed.
+     *
+     * @param address the (possibly empty) address to remove
+     * @return the old value of the node
+     * @throws UnsupportedOperationException if the calling operation is not a model operation
+     */
+    Resource removeResource(PathAddress address) throws UnsupportedOperationException;
+
+    /**
+     * Get a read-only reference of the entire management model.  The structure of the returned model may depend
+     * on the context type (domain vs. server).
+     *
+     * @return the read-only resource
+     */
+    Resource getRootResource();
 
     /**
      * Determine whether the model has thus far been affected by this operation.

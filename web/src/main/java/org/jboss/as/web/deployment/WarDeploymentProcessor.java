@@ -37,6 +37,7 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -52,6 +53,8 @@ import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.session.DistributableSessionManager;
+import org.jboss.dmr.ModelNode;
+import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
@@ -230,5 +233,22 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);
         }
+        processManagement(deploymentUnit, metaData);
+    }
+
+
+    void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
+        for(final JBossServletMetaData servlet : metaData.getServlets()) {
+            try {
+                final String name = servlet.getName().replace(' ', '_');
+                final ModelNode node = unit.createDeploymentSubModel("web", PathElement.pathElement("servlet", name));
+                node.get("servlet-class").set(servlet.getServletClass());
+                node.get("servlet-name").set(servlet.getServletName());
+            } catch (Exception e) {
+                // Should a failure in creating the mgmt view also make to the deploymen to fail?
+                continue;
+            }
+        }
+
     }
 }

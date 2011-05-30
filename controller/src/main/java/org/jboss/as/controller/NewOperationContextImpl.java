@@ -58,6 +58,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.DelegatingImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ImmutableModelNodeRegistration;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -111,11 +112,9 @@ final class NewOperationContextImpl implements NewOperationContext {
      * The current operation body being executed.
      */
     private ModelNode operation;
-    /**
-     * The model.  If {@code affectsModel} is {@code true}, this is a clone of the model.
-     */
-    private ModelNode model;
-    private ModelNode readOnlyModel;
+
+    private Resource model;
+    private Resource readOnlyModel;
     private ResultAction resultAction;
     /** Tracks whether any steps have gotten write access to the runtime */
     private boolean affectsRuntime;
@@ -136,12 +135,12 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
-                            final ModelNode model, final NewModelController.OperationTransactionControl transactionControl,
+                            final Resource model, final NewModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final boolean booting) {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
         this.booting = booting;
-        this.model = readOnlyModel = model;
+        this.model = this.readOnlyModel = model;
         this.modelController = modelController;
         this.messageHandler = messageHandler;
         this.attachments = attachments;
@@ -691,11 +690,12 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        ModelNode model = this.model;
+        Resource model = this.model;
         for (final PathElement element : address) {
-            model = model.require(element.getKey()).require(element.getValue());
+            model = model.requireChild(element);
         }
-        return model;
+        // recursively read the model
+        return Resource.Tools.readModel(model);
     }
 
     public ModelNode readModelForUpdate(final PathAddress requestAddress) {
@@ -714,7 +714,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             readOnlyModel = null;
         }
         affectsModel.add(address);
-        ModelNode model = this.model;
+        Resource model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
             final PathElement element = i.next();
@@ -722,27 +722,45 @@ final class NewOperationContextImpl implements NewOperationContext {
                 throw new IllegalArgumentException("Cannot write to *");
             }
             if (! i.hasNext()) {
-                model = model.require(element.getKey()).get(element.getValue());
+                final String key = element.getKey();
+                if(! model.hasChild(element)) {
+                    final PathAddress parent = address.subAddress(0, address.size() -1);
+                    final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
+                    if(!childrenNames.contains(key)) {
+                        throw new IllegalStateException("no child-type " + key);
+                    }
+                    // TODO check cardinality
+                    final Resource newModel = Resource.Factory.create();
+                    model.registerChild(element, newModel);
+                    model = newModel;
+                } else {
+                    model = model.requireChild(element);
+                }
             } else {
-                model = model.require(element.getKey()).require(element.getValue());
+                model = model.requireChild(element);
             }
         }
-        return model;
-    }
-
-    public ModelNode getModel() {
-        final ModelNode readOnlyModel = this.readOnlyModel;
-        if (readOnlyModel == null) {
-            final ModelNode newModel = model.clone();
-            newModel.protect();
-            return this.readOnlyModel = newModel;
-        } else {
-            return readOnlyModel;
+        if(model == null) {
+            throw new IllegalStateException();
         }
+        return model.getModel();
     }
 
-    public ModelNode writeModel(final PathAddress requestAddress, final ModelNode newData) throws UnsupportedOperationException {
-        assert newData != null;
+    public Resource readResource(PathAddress requestAddress) {
+        final PathAddress address = modelAddress.append(requestAddress);
+        assert Thread.currentThread() == initiatingThread;
+        Stage currentStage = this.currentStage;
+        if (currentStage == null) {
+            throw new IllegalStateException("Operation already complete");
+        }
+        Resource model = this.model;
+        for (final PathElement element : address) {
+            model = model.requireChild(element);
+        }
+        return model.clone();
+    }
+
+    public Resource readResourceForUpdate(PathAddress requestAddress) {
         final PathAddress address = modelAddress.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
@@ -758,24 +776,19 @@ final class NewOperationContextImpl implements NewOperationContext {
             readOnlyModel = null;
         }
         affectsModel.add(address);
-        ModelNode model = this.model;
+        Resource resource = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
                 throw new IllegalArgumentException("Cannot write to *");
             }
-            if (! i.hasNext()) {
-                model = model.require(element.getKey()).get(element.getValue());
-            } else {
-                model = model.require(element.getKey()).require(element.getValue());
-            }
+            resource = resource.requireChild(element);
         }
-        model.set(newData);
-        return model;
+        return resource;
     }
 
-    public ModelNode removeModel(final PathAddress requestAddress) throws UnsupportedOperationException {
+    public Resource createResource(PathAddress requestAddress) {
         final PathAddress address = modelAddress.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
@@ -788,9 +801,10 @@ final class NewOperationContextImpl implements NewOperationContext {
         if (affectsModel.size() == 0) {
             takeWriteLock();
             model = model.clone();
+            readOnlyModel = null;
         }
         affectsModel.add(address);
-        ModelNode model = this.model;
+        Resource model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
             final PathElement element = i.next();
@@ -798,9 +812,54 @@ final class NewOperationContextImpl implements NewOperationContext {
                 throw new IllegalArgumentException("Cannot write to *");
             }
             if (! i.hasNext()) {
-                model = model.require(element.getKey()).remove(element.getValue());
+                final String key = element.getKey();
+                if(model.hasChild(element)) {
+                    throw new IllegalStateException("duplicate resource " + address);
+                } else {
+                    final PathAddress parent = address.subAddress(0, address.size() -1);
+                    final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
+                    if(!childrenNames.contains(key)) {
+                        throw new IllegalStateException("no child-type " + key);
+                    }
+                    // TODO check cardinality
+                    final Resource newModel = Resource.Factory.create();
+                    model.registerChild(element, newModel);
+                    model = newModel;
+                }
             } else {
-                model = model.require(element.getKey()).require(element.getValue());
+                model = model.requireChild(element);
+            }
+        }
+        return model;
+    }
+
+    public Resource removeResource(final PathAddress requestAddress) {
+        final PathAddress address = modelAddress.append(requestAddress);
+        assert Thread.currentThread() == initiatingThread;
+        Stage currentStage = this.currentStage;
+        if (currentStage == null) {
+            throw new IllegalStateException("Operation already complete");
+        }
+        if (currentStage != Stage.MODEL) {
+            throw new IllegalStateException("Stage MODEL is already complete");
+        }
+        if (affectsModel.size() == 0) {
+            takeWriteLock();
+            model = model.clone();
+            readOnlyModel = null;
+        }
+        affectsModel.add(address);
+        Resource model = this.model;
+        final Iterator<PathElement> i = address.iterator();
+        while (i.hasNext()) {
+            final PathElement element = i.next();
+            if (element.isMultiTarget()) {
+                throw new IllegalArgumentException("Cannot remove *");
+            }
+            if (! i.hasNext()) {
+                model = model.removeChild(element);
+            } else {
+                model = model.requireChild(element);
             }
         }
         return model;
@@ -808,6 +867,16 @@ final class NewOperationContextImpl implements NewOperationContext {
 
     public void acquireControllerLock() {
         takeWriteLock();
+    }
+
+    public Resource getRootResource() {
+        final Resource readOnlyModel = this.readOnlyModel;
+        if (readOnlyModel == null) {
+            final Resource newModel = this.model.clone();
+            return this.readOnlyModel = newModel;
+        } else {
+            return readOnlyModel;
+        }
     }
 
     public boolean isModelAffected() {

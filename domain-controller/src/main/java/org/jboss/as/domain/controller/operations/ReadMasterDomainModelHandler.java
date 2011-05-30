@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -29,6 +31,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,6 +45,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.NewDomainController;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.dmr.ModelNode;
@@ -62,19 +67,18 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
         this.registry = registry;
     }
 
-
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-        // We're not going to update the model, but use readModelForUpdate to lock the model controller
-        final ModelNode modelClone = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).clone();  // clone
+        //Lock the model here
+        final Resource root = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final String hostName = operation.get(HOST).asString();
 
-        // Don't send the host tree
-        modelClone.get(HOST).clear();
+        // Get the list of all resources registered in this model
+        final List<ModelNode> modelDescription = describeAsNodeList(root);
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME);
         op.get(OP_ADDR).setEmptyList();
-        op.get(DOMAIN_MODEL).set(modelClone);
+        op.get(DOMAIN_MODEL).set(modelDescription);
 
         //TODO get this from somewhere
         final NewProxyController proxy = registry.popChannelAndCreateProxy(hostName);
@@ -122,6 +126,38 @@ public class ReadMasterDomainModelHandler implements NewStepHandler, Description
                 } else {
                     tx.rollback();
                 }
+            }
+        }
+    }
+
+    /**
+     * Describe the model as a list of resources with their address and model, which
+     * the HC can directly apply to create the model. Although the format might appear
+     * similar as the operations generated at boot-time this description is only useful
+     * to create the resource tree and cannot be used to invoke any operation.
+     *
+     * @param resource the root resource
+     * @return the list of resources
+     */
+    static List<ModelNode> describeAsNodeList(final Resource resource) {
+        final List<ModelNode> list = new ArrayList<ModelNode>();
+        describe(PathAddress.EMPTY_ADDRESS, resource, list);
+        return list;
+    }
+
+    static void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
+        if(resource.isProxy() || resource.isRuntime()) {
+            return; // ignore runtime and proxies
+        } else if (base.size() >= 1 && base.getElement(0).getKey().equals(ModelDescriptionConstants.HOST)) {
+            return; // ignore hosts
+        }
+        final ModelNode description = new ModelNode();
+        description.get("domain-resource-address").set(base.toModelNode());
+        description.get("domain-resource-model").set(resource.getModel());
+        nodes.add(description);
+        for(final String childType : resource.getChildTypes()) {
+            for(final Resource.ResourceEntry entry : resource.getChildren(childType)) {
+                describe(base.append(entry.getPathElement()), entry, nodes);
             }
         }
     }

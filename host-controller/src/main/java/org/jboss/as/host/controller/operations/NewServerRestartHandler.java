@@ -30,6 +30,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.NewServerInventory;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
@@ -62,10 +63,11 @@ public class NewServerRestartHandler implements NewStepHandler, DescriptionProvi
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
 
+        final ModelNode model = Resource.Tools.readModel(context.getRootResource());
         context.addStep(new NewStepHandler() {
             @Override
             public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServerStatus status = serverInventory.restartServer(serverName, -1, context.getModel());
+                final ServerStatus status = serverInventory.restartServer(serverName, -1, model);
                 context.getResult().set(status.toString());
                 context.completeStep();
             }

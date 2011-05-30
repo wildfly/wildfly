@@ -21,9 +21,12 @@
  */
 package org.jboss.as.server;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
@@ -123,6 +126,8 @@ import org.jboss.as.server.services.net.BindingRemoveHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
 
 /**
  *
@@ -266,6 +271,10 @@ public class
         deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
         deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);
         deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, DeploymentRedeployHandler.INSTANCE, DeploymentRedeployHandler.INSTANCE, false);
+
+        // The sub-deployments registry
+        deployments.registerSubModel(PathElement.pathElement("subdeployment"), deployments);
+
 
         // Extensions
         ModelNodeRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);

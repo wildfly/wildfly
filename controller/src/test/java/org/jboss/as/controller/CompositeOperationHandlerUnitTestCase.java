@@ -64,8 +64,8 @@ public class CompositeOperationHandlerUnitTestCase {
         sharedState = svc.state;
         svc.latch.await();
         controller = svc.getValue();
-//        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
-//        controller.execute(setup, null, null, null);
+        ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
+        controller.execute(setup, null, null, null);
         processState.setRunning();
     }
 

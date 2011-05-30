@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_MODEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -69,64 +71,22 @@ public class ApplyRemoteMasterDomainModelHandler implements NewStepHandler, Desc
 
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode domainModel = operation.get(DOMAIN_MODEL);
-        final ModelNode rootModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-
-        if (domainModel.hasDefined(NAMESPACES)) {
-            rootModel.get(NAMESPACES).set(domainModel.get(NAMESPACES));
-        }
-        if (domainModel.hasDefined(SCHEMA_LOCATIONS)) {
-            rootModel.get(SCHEMA_LOCATIONS).set(domainModel.get(SCHEMA_LOCATIONS));
-        }
-        if (domainModel.hasDefined(EXTENSION)) {
-            rootModel.get(EXTENSION).set(domainModel.get(EXTENSION));
-        }
-        if (domainModel.hasDefined(PATH)) {
-            rootModel.get(PATH).set(domainModel.get(PATH));
-        }
-        if (domainModel.hasDefined(SYSTEM_PROPERTY)) {
-            rootModel.get(SYSTEM_PROPERTY).set(domainModel.get(SYSTEM_PROPERTY));
-        }
-        if (domainModel.hasDefined(PROFILE)) {
-            rootModel.get(PROFILE).set(domainModel.get(PROFILE));
-        }
-        if (domainModel.hasDefined(INTERFACE)) {
-            rootModel.get(INTERFACE).set(domainModel.get(INTERFACE));
-        }
-        if (domainModel.hasDefined(SOCKET_BINDING_GROUP)) {
-            rootModel.get(SOCKET_BINDING_GROUP).set(domainModel.get(SOCKET_BINDING_GROUP));
-        }
-        if (domainModel.hasDefined(DEPLOYMENT)) {
-            rootModel.get(DEPLOYMENT).set(domainModel.get(DEPLOYMENT));
-        }
-        if (domainModel.hasDefined(SERVER_GROUP)) {
-            rootModel.get(SERVER_GROUP).set(domainModel.get(SERVER_GROUP));
-        }
-
-        final Set<String> modules = new HashSet<String>();
-        // If we were provided a model, we're a slave and need to initialize all extensions
-        if (rootModel != null && rootModel.hasDefined(EXTENSION)) {
-            for (Property prop : rootModel.get(EXTENSION).asPropertyList()) {
+        // We get the model as a list of resources descriptions
+        for(final ModelNode resourceDescription : domainModel.asList()) {
+            final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+            final Resource resource = context.createResource(resourceAddress);
+            if(resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(ModelDescriptionConstants.EXTENSION)) {
+                final String module = resourceAddress.getElement(0).getValue();
                 try {
-                    final String module = prop.getValue().get(ExtensionDescription.MODULE).asString();
-                    if (modules.contains(module)) {
-                        continue;
-                    }
                     for (final Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
-                        modules.add(module);
-
-                        context.addStep(new NewStepHandler() {
-                            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
-                                extension.initialize(extensionContext);
-                                context.completeStep();
-                            }
-                        }, Stage.IMMEDIATE);
+                        extension.initialize(extensionContext);
                     }
                 } catch (ModuleLoadException e) {
                     throw new RuntimeException(e);
                 }
             }
+            resource.writeModel(resourceDescription.get("domain-resource-model"));
         }
-
         context.completeStep();
     }
 

@@ -25,11 +25,13 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -52,13 +54,14 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
     protected void performRemove(NewOperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String deploymentName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
-        final ModelNode root = context.getModel();
-        if (root.hasDefined(SERVER_GROUP)) {
-            List<String> badGroups = new ArrayList<String>();
-            for (Property prop : root.get(SERVER_GROUP).asPropertyList()) {
-                ModelNode sg = prop.getValue();
-                if (sg.hasDefined(DEPLOYMENT) && sg.get(DEPLOYMENT).has(deploymentName)) {
-                    badGroups.add(prop.getName());
+        final Resource root = context.getRootResource();
+
+        if(root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
+
+            final List<String> badGroups = new ArrayList<String>();
+            for(final Resource.ResourceEntry entry : root.getChildren(SERVER_GROUP)) {
+                if(entry.hasChild(PathElement.pathElement(DEPLOYMENT, deploymentName))) {
+                    badGroups.add(entry.getName());
                 }
             }
 
@@ -67,7 +70,6 @@ public class DeploymentRemoveHandler extends AbstractRemoveStepHandler implement
                 throw new OperationFailedException(new ModelNode().set(msg));
             }
         }
-
         super.performRemove(context, operation, model);
     }
 

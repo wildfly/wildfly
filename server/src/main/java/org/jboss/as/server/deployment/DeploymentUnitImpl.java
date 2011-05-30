@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
@@ -34,6 +36,7 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
     private final DeploymentUnit parent;
     private final String name;
     private final ServiceRegistry serviceRegistry;
+    private final DeploymentModelUtils model;
 
     /**
      * Construct a new instance.
@@ -42,10 +45,11 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
      * @param name the deployment unit name
      * @param serviceRegistry the service registry
      */
-    DeploymentUnitImpl(final DeploymentUnit parent, final String name, final ServiceRegistry serviceRegistry) {
+    DeploymentUnitImpl(final DeploymentUnit parent, final String name, final ServiceRegistry serviceRegistry, final DeploymentModelUtils model) {
         this.parent = parent;
         this.name = name;
         this.serviceRegistry = serviceRegistry;
+        this.model = model;
     }
 
     public ServiceName getServiceName() {
@@ -78,5 +82,10 @@ class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUnit {
         } else {
             return String.format("deployment \"%s\"", name);
         }
+    }
+
+    @Override
+    public ModelNode createDeploymentSubModel(final String subsystemName, final PathElement address) {
+        return this.model.createDeploymentSubModel(subsystemName, address);
     }
 }

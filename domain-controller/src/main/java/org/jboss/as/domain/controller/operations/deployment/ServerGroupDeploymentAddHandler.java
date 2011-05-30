@@ -26,6 +26,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -76,7 +77,8 @@ public class ServerGroupDeploymentAddHandler implements NewStepHandler, Descript
         PathAddress address = PathAddress.pathAddress(opAddr);
         String name = address.getLastElement().getValue();
 
-        ModelNode deployment = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)).navigate(context.getModel(), false);
+        final Resource deploymentResource = context.getRootResource().navigate(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
+        ModelNode deployment = deploymentResource.getModel();
 
         for (ModelNode content : deployment.require(CONTENT).asList()) {
             if ((content.hasDefined(HASH))) {

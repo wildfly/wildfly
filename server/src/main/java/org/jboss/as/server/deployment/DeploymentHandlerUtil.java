@@ -29,8 +29,10 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
@@ -81,6 +83,9 @@ public class DeploymentHandlerUtil {
         assert contents != null : "contents is null";
 
         if (context.getType() == NewOperationContext.Type.SERVER) {
+            // Create the deployment model utils
+            final DeploymentModelUtils model = DeploymentModelUtils.create(context, PathAddress.EMPTY_ADDRESS);
+
             context.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
@@ -97,7 +102,7 @@ public class DeploymentHandlerUtil {
                         }
                     } else {
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, model, contents);
 
                         context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
@@ -112,7 +117,7 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    private static Collection<ServiceController<?>> doDeploy(final NewOperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler, final ContentItem... contents) {
+    private static Collection<ServiceController<?>> doDeploy(final NewOperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler, final DeploymentModelUtils model, final ContentItem... contents) {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
 
@@ -131,7 +136,7 @@ public class DeploymentHandlerUtil {
         }
         controllers.add(contentService);
 
-        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null);
+        final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null, model);
         final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
                 .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                 .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.getServerDeploymentRepositoryInjector())
@@ -156,6 +161,9 @@ public class DeploymentHandlerUtil {
         assert contents != null : "contents is null";
 
         if (operationContext.getType() == NewOperationContext.Type.SERVER) {
+            // Create the deployment model utils
+            final DeploymentModelUtils model = DeploymentModelUtils.create(operationContext, PathAddress.EMPTY_ADDRESS);
+
             operationContext.addStep(new NewStepHandler() {
                 public void execute(final NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
@@ -166,7 +174,7 @@ public class DeploymentHandlerUtil {
                         @Override
                         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, model, contents);
                             context.completeStep();
                         }
                     }, NewOperationContext.Stage.IMMEDIATE);
@@ -182,6 +190,8 @@ public class DeploymentHandlerUtil {
         assert contents != null : "contents is null";
 
         if (operationContext.getType() == NewOperationContext.Type.SERVER) {
+            // Create the deployment model utils
+            final DeploymentModelUtils model = DeploymentModelUtils.create(operationContext, PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, managementName)));
             operationContext.addStep(new NewStepHandler() {
                 public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceName replacedDeploymentUnitServiceName = Services.deploymentUnitName(replacedDeploymentUnitName);
@@ -190,7 +200,7 @@ public class DeploymentHandlerUtil {
                     operationContext.removeService(replacedDeploymentUnitServiceName);
 
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, contents);
+                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, model, contents);
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
@@ -202,7 +212,7 @@ public class DeploymentHandlerUtil {
                         final String runtimeName = originalDeployment.require(RUNTIME_NAME).asString();
                         final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
                         verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, runtimeName, name, verificationHandler, contents);
+                        doDeploy(context, runtimeName, name, verificationHandler, model, contents);
                     }
                 }
             }, NewOperationContext.Stage.RUNTIME);
@@ -224,7 +234,7 @@ public class DeploymentHandlerUtil {
                         final String runtimeName = model.require(RUNTIME_NAME).asString();
                         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        doDeploy(context, runtimeName, name, verificationHandler, contents);
+                        doDeploy(context, runtimeName, name, verificationHandler, null, contents);
                     }
                 }
             }, NewOperationContext.Stage.RUNTIME);

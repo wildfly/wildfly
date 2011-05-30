@@ -49,6 +49,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.old.StreamUtils;
 
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
@@ -115,17 +116,18 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
 
         validator.validate(operation);
 
-        String name = operation.require(NAME).asString();
+        final String name = operation.require(NAME).asString();
+        final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
 
-        ModelNode rootModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        ModelNode deployments = rootModel.get(DEPLOYMENT);
-        ModelNode replaceNode = deployments.hasDefined(name) ? deployments.get(name) : null;
-        if (replaceNode == null) {
+        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+        boolean exists = root.hasChild(PathElement.pathElement(DEPLOYMENT, name));
+        if (! exists) {
             throw createFailureException("No deployment with name %s found", name);
         }
 
-        String replacedRuntimeName = replaceNode.require(RUNTIME_NAME).asString();
-        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : replaceNode.require(RUNTIME_NAME).asString();
+        final ModelNode replaceNode = context.readModelForUpdate(address);
+        final String replacedRuntimeName = replaceNode.require(RUNTIME_NAME).asString();
+        final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : replaceNode.require(RUNTIME_NAME).asString();
 
         final byte[] hash;
         // clone it, so we can modify it to our own content
@@ -164,14 +166,11 @@ public class DeploymentFullReplaceHandler implements NewStepHandler, Description
 
         boolean start = replaceNode.get(ENABLED).asBoolean();
 
-                final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
         final ModelNode deployNode = context.readModelForUpdate(address);
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
         deployNode.get(ENABLED).set(start);
-
-        deployments.get(name).set(deployNode);
 
         // the content repo will already have these, note that content should not be empty
         removeContentAdditions(deployNode.require(CONTENT));

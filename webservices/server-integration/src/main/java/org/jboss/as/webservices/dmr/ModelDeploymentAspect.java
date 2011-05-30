@@ -22,7 +22,22 @@
 
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
 import org.jboss.as.webservices.service.ModelUpdateService;
+import org.jboss.dmr.ModelNode;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -40,16 +55,43 @@ public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
 
     @Override
     public void start(final Deployment dep) {
-        for (final Endpoint ep : dep.getService().getEndpoints()) {
-            ModelUpdateService.getInstance().add(ep);
+        final DeploymentUnit unit = dep.getAttachment(DeploymentUnit.class);
+        for (final Endpoint endpoint : dep.getService().getEndpoints()) {
+
+            final ModelNode op = unit.createDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
+                    PathElement.pathElement(ENDPOINT, getId(endpoint)));
+
+            op.get(ENDPOINT_NAME).set(getName(endpoint));
+            op.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
+            op.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
+            op.get(ENDPOINT_TYPE).set(getType(endpoint));
+            op.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
         }
     }
 
     @Override
     public void stop(final Deployment dep) {
-        for (final Endpoint ep : dep.getService().getEndpoints()) {
-            ModelUpdateService.getInstance().remove(ep);
-        }
+        //
+    }
+
+    private String getType(final Endpoint endpoint) {
+        return endpoint.getService().getDeployment().getType().toString();
+    }
+
+    private String getName(final Endpoint endpoint) {
+        return endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT);
+    }
+
+    private String getContext(final Endpoint endpoint) {
+        return endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_CONTEXT);
+    }
+
+    private String getId(final Endpoint endpoint) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getContext(endpoint));
+        sb.append(':');
+        sb.append(getName(endpoint));
+        return sb.toString();
     }
 
 }

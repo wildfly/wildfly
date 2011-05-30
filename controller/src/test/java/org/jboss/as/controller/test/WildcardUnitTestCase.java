@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.test;
 
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -71,6 +72,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
         read.get(OP_ADDR).set(address);
 
         ModelNode result = controller.execute(read, null, null, null);
+        System.out.println(result);
         result = result.get("result");
 
         Assert.assertEquals(4, result.asInt()); // A,B one,two
@@ -83,19 +85,6 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
     }
 
-    protected ModelNode createCoreModel() {
-        final ModelNode model = new ModelNode();
-
-        model.get("host", "A", "server", "one", "subsystem", "web", "connector", "default", "1").setEmptyObject();
-        model.get("host", "A", "server", "two", "subsystem", "web", "connector", "default", "2").setEmptyObject();
-        model.get("host", "A", "server", "three", "subsystem", "web", "connector", "other", "3").setEmptyObject();
-        model.get("host", "B", "server", "one", "subsystem", "web", "connector", "default", "4").setEmptyObject();
-        model.get("host", "B", "server", "two", "subsystem", "web", "connector", "default", "5").setEmptyObject();
-        model.get("host", "B", "server", "three", "subsystem", "web", "connector", "default", "6").setEmptyObject();
-
-        return model;
-    }
-
     @Override
     DescriptionProvider getRootDescriptionProvider() {
         return NULL;
@@ -105,6 +94,27 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
     void initModel(ModelNodeRegistration root) {
             root.registerOperationHandler("read-resource", GlobalOperationHandlers.READ_RESOURCE, NULL, true);
             root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
+
+            root.registerOperationHandler("setup", new NewStepHandler() {
+                @Override
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+
+                    final ModelNode model = new ModelNode();
+
+                    model.get("host", "A", "server", "one", "subsystem", "web", "connector", "default", "1").setEmptyObject();
+                    model.get("host", "A", "server", "two", "subsystem", "web", "connector", "default", "2").setEmptyObject();
+                    model.get("host", "A", "server", "three", "subsystem", "web", "connector", "other", "3").setEmptyObject();
+                    model.get("host", "B", "server", "one", "subsystem", "web", "connector", "default", "4").setEmptyObject();
+                    model.get("host", "B", "server", "two", "subsystem", "web", "connector", "default", "5").setEmptyObject();
+                    model.get("host", "B", "server", "three", "subsystem", "web", "connector", "default", "6").setEmptyObject();
+
+                    createModel(context, model);
+
+                    context.completeStep();
+                }
+            }, NULL);
+
+
 
             final ModelNodeRegistration hosts = root.registerSubModel(host, NULL);
             final ModelNodeRegistration servers = hosts.registerSubModel(server, NULL);

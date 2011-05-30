@@ -81,10 +81,10 @@ public class PathElement {
      */
     PathElement(final String key, final String value) {
         if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
-            throw new IllegalArgumentException("Invalid key specification");
+            throw new IllegalArgumentException("Invalid key specification" + key);
         }
         if (value == null || !VALID_VALUE_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid value specification");
+            throw new IllegalArgumentException("Invalid value specification " + value);
         }
         boolean multiTarget = false;
         if(key.equals(WILDCARD_VALUE)) {
