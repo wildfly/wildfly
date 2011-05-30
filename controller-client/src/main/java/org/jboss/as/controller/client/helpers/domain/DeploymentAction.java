@@ -105,21 +105,4 @@ public interface DeploymentAction {
      */
     String getReplacedDeploymentUnitUniqueName();
 
-    /**
-     * Register a listener for notifications as the action is executed.
-     *
-     * @param listener the listener. Cannot be <code>null</code>
-     */
-    void addDomainUpdateListener(DomainUpdateListener listener);
-
-    /**
-     * Remove a previously {@link #addDomainUpdateListener(DomainUpdateListener) registered}
-     * listener.
-     *
-     * @paramlistener the listener. Cannot be <code>null</code>
-     *
-     * @return <code>true</code> if <code>listener</code> was registered; <code>false</code> otherwise
-     */
-    boolean removeDomainUpdateListener(DomainUpdateListener listener);
-
 }

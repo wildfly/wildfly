@@ -21,13 +21,9 @@
  */package org.jboss.as.controller.client.helpers.domain.impl;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
-import org.jboss.as.controller.client.helpers.domain.DomainUpdateListener;
 
 /**
  * Implementation of {@link DeploymentAction}.
@@ -79,7 +75,6 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final String oldDeploymentUnitName;
     private final String newContentFileName;
     private final byte[] newContentHash;
-    private transient Set<DomainUpdateListener> listeners;
 
     private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
         assert type != null : "type is null";
@@ -119,27 +114,6 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     public byte[] getNewContentHash() {
         return newContentHash;
-    }
-
-    @Override
-    public synchronized void addDomainUpdateListener(DomainUpdateListener listener) {
-        if (listeners == null) {
-            listeners = new HashSet<DomainUpdateListener>();
-        }
-        listeners.add(listener);
-
-        // FIXME remove when we can actually provide notifications
-        throw new UnsupportedOperationException("Use of DomainUpdateListener is not currently supported");
-    }
-
-    @Override
-    public synchronized boolean removeDomainUpdateListener(DomainUpdateListener listener) {
-        return listeners != null && listeners.remove(listener);
-    }
-
-    synchronized Set<DomainUpdateListener> getListeners() {
-        return listeners == null ? Collections.<DomainUpdateListener>emptySet()
-                                 : Collections.unmodifiableSet(listeners);
     }
 
 }
