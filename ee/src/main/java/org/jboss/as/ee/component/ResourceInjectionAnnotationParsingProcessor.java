@@ -214,15 +214,17 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             }
         }
 
+        // the binding/injection is optional if it's a env-entry which doesn't a env-entry-value or a lookup value
+        final boolean optionalEnvEntry = isEnvEntryType && this.isEmpty(lookup);
         // our injection comes from the local lookup, no matter what.
-        final InjectionSource injectionSource = new LookupInjectionSource(localContextName, isEnvEntryType);
+        final InjectionSource injectionSource = new LookupInjectionSource(localContextName, optionalEnvEntry);
         final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
                 new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
 
         // Create the binding from whence our injection comes.
         // Don't bind for env-entry since it's optional and depends on whether a value is set in the deployment descriptor
         final BindingConfiguration bindingConfiguration;
-        if (isEnvEntryType) {
+        if (optionalEnvEntry) {
             bindingConfiguration = null;
         } else {
             bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
