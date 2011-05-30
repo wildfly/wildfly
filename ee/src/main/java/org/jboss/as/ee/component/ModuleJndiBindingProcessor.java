@@ -29,6 +29,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
@@ -46,6 +48,9 @@ import java.util.Set;
  * @author Stuart Douglas
  */
 public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
+
+
+    private static final Logger logger = Logger.getLogger(ModuleJndiBindingProcessor.class);
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -150,6 +155,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                             continue;
                         }
                         final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
+
+                        logger.tracef("Binding %s using service %s", binding.getName(), serviceName);
+
                         if (deploymentDescriptorBindings.containsKey(serviceName)) {
                             continue; //this has been overridden by a DD binding
                         }
@@ -192,9 +200,14 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             );
             // The resource value is determined by the reference source, which may add a dependency on the original value to the binding
             bindingConfiguration.getSource().getResourceValue(resolutionContext, sourceServiceBuilder, phaseContext, service.getManagedObjectInjector());
+            try {
             resourceValue = sourceServiceBuilder
                     .addDependency(serviceName.getParent(), NamingStore.class, service.getNamingStoreInjector())
                     .install();
+            } catch (DuplicateServiceException e) {
+                //TODO: reference counted global JNDI bindings
+                logger.error("Duplicate global jndi binding: " + bindingName, e);
+            }
         } else {
             throw new DeploymentUnitProcessingException("Binding name must not be null: " + bindingConfiguration);
         }

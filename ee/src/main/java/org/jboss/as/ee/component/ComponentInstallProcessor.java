@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -48,6 +49,9 @@ import static org.jboss.as.server.deployment.Attachments.MODULE;
  */
 public final class ComponentInstallProcessor implements DeploymentUnitProcessor {
 
+
+    private static final Logger logger = Logger.getLogger(ComponentInstallProcessor.class);
+
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(MODULE);
@@ -59,6 +63,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         // Iterate through each component, installing it into the container
         for (ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             try {
+                logger.tracef("Installing component %s", configuration.getComponentClass().getName());
                 deployComponent(phaseContext, configuration);
             } catch (RuntimeException e) {
                 throw new DeploymentUnitProcessingException("Failed to install component " + configuration, e);
@@ -152,8 +157,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             }.run();
 
 
-            for (InterceptorDescription interceptor : configuration.getComponentDescription().getClassInterceptors()) {
+            for (InterceptorDescription interceptor : configuration.getComponentDescription().getAllInterceptors()) {
                 final EEModuleClassConfiguration interceptorClass = moduleConfiguration.getClassConfiguration(interceptor.getInterceptorClassName());
+
                 if (interceptorClass != null) {
                     new ClassDescriptionTraversal(interceptorClass, moduleConfiguration) {
                         @Override
@@ -179,7 +185,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName();
                 final BinderService service = new BinderService(bindingName);
-                ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName), service);
+                final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
+                logger.tracef("Binding %s for %s using service name %s", bindingName, configuration.getComponentClass(), serviceName);
+                ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(serviceName, service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                 serviceBuilder.addDependency(contextServiceName, NamingStore.class, service.getNamingStoreInjector());
                 serviceBuilder.install();
