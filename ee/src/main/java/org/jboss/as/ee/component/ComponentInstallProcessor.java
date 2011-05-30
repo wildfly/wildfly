@@ -74,7 +74,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final String applicationName = configuration.getApplicationName();
         final String moduleName = configuration.getModuleName();
         final String componentName = configuration.getComponentName();
-        final ServiceName baseName = deploymentUnit.getServiceName().append("component").append(componentName);
+        final ServiceName baseName = configuration.getComponentDescription().getServiceName();
 
         //create additional injectors
         final ServiceName createServiceName = baseName.append("CREATE");

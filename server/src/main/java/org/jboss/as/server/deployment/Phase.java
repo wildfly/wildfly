@@ -334,6 +334,7 @@ public enum Phase {
     public static final int INSTALL_PERSISTENCE_REF                     = 0x1000;
     public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1100;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
+    public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
     public static final int INSTALL_EE_COMPONENT                        = 0x1230;
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
     public static final int INSTALL_JAXRS_COMPONENT                     = 0x1400;

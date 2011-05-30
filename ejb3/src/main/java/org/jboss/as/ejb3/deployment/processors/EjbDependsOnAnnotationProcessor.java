@@ -23,15 +23,17 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.AbstractComponentConfigProcessor;
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
@@ -42,10 +44,10 @@ import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- *
  */
 public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProcessor {
     /**
@@ -55,13 +57,14 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
 
     @Override
     protected final void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext,
-            final CompositeIndex index, final ComponentDescription componentDescription)
+                                                final CompositeIndex index, final ComponentDescription componentDescription)
             throws DeploymentUnitProcessingException {
+
         final ClassInfo beanClass = index.getClassByName(DotName.createSimple(componentDescription.getComponentClassName()));
         if (beanClass == null) {
             return; // We can't continue without the annotation index info.
         }
-        Class<SessionBeanComponentDescription> componentDescriptionType = SessionBeanComponentDescription.class;
+        final Class<SingletonComponentDescription> componentDescriptionType = SingletonComponentDescription.class;
         // Only process EJB deployments and components that are applicable
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit) || !(componentDescriptionType.isAssignableFrom(componentDescription.getClass()))) {
             return;
@@ -71,7 +74,10 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
             return;
         }
 
-        final SessionBeanComponentDescription singletonComponentDescription = componentDescriptionType.cast(componentDescription);
+        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+
+        final SingletonComponentDescription singletonComponentDescription = componentDescriptionType.cast(componentDescription);
         final List<AnnotationInstance> dependsOnAnnotations = annotationsOnBean.get(DotName.createSimple(DependsOn.class
                 .getName()));
         if (dependsOnAnnotations == null || dependsOnAnnotations.isEmpty()) {
@@ -80,9 +86,20 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
         validate(annotationsOnBean, dependsOnAnnotations, singletonComponentDescription.getEJBName());
         final AnnotationInstance dependsOnAnnotation = dependsOnAnnotations.get(0);
         // Add the dependencies
-        final List<AnnotationValue> annotationValues = dependsOnAnnotation.values();
-        for (AnnotationValue annotationValue : annotationValues) {
-            componentDescription.addDependency(createServiceName(deploymentUnit, annotationValue.asString(), null),
+        final String[] annotationValues = dependsOnAnnotation.value().asStringArray();
+        for (String annotationValue : annotationValues) {
+
+            final Set<ComponentDescription> components = applicationDescription.getComponents(annotationValue, deploymentRoot.getRoot());
+            if (components.isEmpty()) {
+                throw new DeploymentUnitProcessingException("Could not find EJB " + annotationValue + " referenced by @DependsOn annotation in " + componentDescription.getComponentClassName());
+            } else if (components.size() != 1) {
+                throw new DeploymentUnitProcessingException("More than one EJB called" + annotationValue + " referenced by @DependsOn annotation in " + componentDescription.getComponentClassName() + " Components: " + components);
+            }
+            final ComponentDescription component = components.iterator().next();
+
+            final ServiceName serviceName = createServiceName(component);
+            singletonComponentDescription.getDependsOn().add(serviceName);
+            componentDescription.addDependency(createServiceName(component),
                     DependencyType.REQUIRED);
         }
         logger.info(singletonComponentDescription.getEJBName() + " bean has @DependsOn");
@@ -94,9 +111,10 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
      * @param annotationsOnBean
      * @param dependsOnAnnotations
      * @param beanName
-     * @throws DeploymentUnitProcessingException if invalid.
+     * @throws DeploymentUnitProcessingException
+     *          if invalid.
      */
-    private void validate(final Map<DotName, List<AnnotationInstance>> annotationsOnBean,final List<AnnotationInstance> dependsOnAnnotations, final String beanName) throws DeploymentUnitProcessingException {
+    private void validate(final Map<DotName, List<AnnotationInstance>> annotationsOnBean, final List<AnnotationInstance> dependsOnAnnotations, final String beanName) throws DeploymentUnitProcessingException {
         if (dependsOnAnnotations.size() > 1) {
             throw new DeploymentUnitProcessingException("More than one @DependsOn annotation found on bean: " + beanName);
         }
@@ -118,8 +136,8 @@ public class EjbDependsOnAnnotationProcessor extends AbstractComponentConfigProc
     }
 
     // TODO - This should be externalized to share with EjbResourcesInjectionAnnotationProcessor
-    private ServiceName createServiceName(final DeploymentUnit deploymentUnit, final String beanName, final String beanInterface) {
-        final ServiceName beanServiceName = deploymentUnit.getServiceName().append("component").append(beanName).append("START");
+    private ServiceName createServiceName(final ComponentDescription componentDescription) {
+        final ServiceName beanServiceName = componentDescription.getServiceName().append("START");
         return beanServiceName;
     }
 }

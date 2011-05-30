@@ -25,6 +25,9 @@ package org.jboss.as.ejb3.component.singleton;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.List;
 
 /**
  * User: jpai
@@ -32,9 +35,11 @@ import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 public class SingletonComponentCreateServiceFactory extends EJBComponentCreateServiceFactory {
 
     private final boolean initOnStartup;
+    private final List<ServiceName> dependsOn;
 
-    public SingletonComponentCreateServiceFactory(final boolean initServiceOnStartup) {
+    public SingletonComponentCreateServiceFactory(final boolean initServiceOnStartup, final List<ServiceName> dependsOn) {
         this.initOnStartup = initServiceOnStartup;
+        this.dependsOn = dependsOn;
     }
 
     @Override
@@ -43,6 +48,6 @@ public class SingletonComponentCreateServiceFactory extends EJBComponentCreateSe
             throw new IllegalStateException("EjbJarConfiguration hasn't been set in " + this +
                     " .Cannot create component create service for EJB " + configuration.getComponentName());
         }
-        return new SingletonComponentCreateService(configuration, this.ejbJarConfiguration, this.initOnStartup);
+        return new SingletonComponentCreateService(configuration, this.ejbJarConfiguration, this.initOnStartup, dependsOn);
     }
 }

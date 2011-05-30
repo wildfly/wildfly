@@ -121,7 +121,6 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             //updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbAnnotationProcessor());
             //updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MESSAGE_DRIVEN_ANNOTATION, new MessageDrivenAnnotationProcessor());
             // Process @DependsOn after the @Singletons have been registered.
-            updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ANNOTATION, new EjbDependsOnAnnotationProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TIMERSERVICE_BINDING, new TimerServiceJndiBindingProcessor());
             updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementAnnotationProcessor());
@@ -151,6 +150,7 @@ class Ejb3SubsystemAdd implements ModelAddOperationHandler, BootOperationHandler
             updateContext.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_REMOVE_METHOD, new RemoveMethodDeploymentDescriptorProcessor());
 
             updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_REF, new EjbRefProcessor());
+            updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnAnnotationProcessor());
 
 
             // add the real deployment processor

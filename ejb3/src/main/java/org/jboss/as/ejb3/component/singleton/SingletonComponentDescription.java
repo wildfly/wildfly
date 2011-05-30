@@ -48,6 +48,8 @@ import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Component description for a singleton bean
@@ -60,6 +62,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
      * Flag to indicate whether the singleton bean is a @Startup (a.k.a init-on-startup) bean
      */
     private boolean initOnStartup;
+
+    private final List<ServiceName> dependsOn = new ArrayList<ServiceName>();
 
     /**
      * Construct a new instance.
@@ -81,7 +85,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
         ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
         // setup the component create service
-        singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup()));
+        singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup(), dependsOn));
 
         if(getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
             //we need to add the transaction interceptor to the lifecycle methods
@@ -196,4 +200,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         });
     }
 
+    public List<ServiceName> getDependsOn() {
+        return dependsOn;
+    }
 }

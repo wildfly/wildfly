@@ -26,6 +26,9 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.List;
 
 /**
  * @author Stuart Douglas
@@ -33,15 +36,17 @@ import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 public class SingletonComponentCreateService extends SessionBeanComponentCreateService {
 
     private final boolean initOnStartup;
+    private final List<ServiceName> dependsOn;
 
-    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration, final boolean initOnStartup) {
+    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration, final boolean initOnStartup, final List<ServiceName> dependsOn) {
         super(componentConfiguration, ejbJarConfiguration);
         this.initOnStartup = initOnStartup;
+        this.dependsOn = dependsOn;
     }
 
     @Override
     protected BasicComponent createComponent() {
-        return new SingletonComponent(this);
+        return new SingletonComponent(this, dependsOn);
     }
 
     public boolean isInitOnStartup() {

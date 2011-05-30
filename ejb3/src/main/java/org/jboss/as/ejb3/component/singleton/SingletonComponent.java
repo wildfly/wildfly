@@ -22,25 +22,28 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.ejb.AccessTimeout;
-import javax.ejb.LockType;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.server.CurrentServiceRegistry;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.LockType;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
@@ -51,7 +54,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private static final Logger logger = Logger.getLogger(SingletonComponent.class);
 
-    private SingletonComponentInstance singletonComponentInstance;
+    private volatile SingletonComponentInstance singletonComponentInstance;
 
     private boolean initOnStartup;
 
@@ -61,14 +64,18 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
 
+    private final List<ServiceName> dependsOn;
+
     /**
      * Construct a new instance.
      *
      * @param singletonComponentCreateService
      *         the component configuration
+     * @param dependsOn
      */
-    public SingletonComponent(final SingletonComponentCreateService singletonComponentCreateService) {
+    public SingletonComponent(final SingletonComponentCreateService singletonComponentCreateService, final List<ServiceName> dependsOn) {
         super(singletonComponentCreateService);
+        this.dependsOn = dependsOn;
         this.initOnStartup = singletonComponentCreateService.isInitOnStartup();
 
         this.beanLevelLockType = singletonComponentCreateService.getBeanLockType();
@@ -85,9 +92,22 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         return this.singletonComponentInstance;
     }
 
-    synchronized ComponentInstance getComponentInstance() {
+    ComponentInstance getComponentInstance() {
         if (this.singletonComponentInstance == null) {
-            this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+            synchronized (this) {
+                if(this.singletonComponentInstance == null) {
+
+                    for(ServiceName serviceName : dependsOn) {
+                        final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceRegistry.getServiceRegistry().getRequiredService(serviceName);
+                        final Component component = service.getValue();
+                        if(component instanceof SingletonComponent) {
+                            ((SingletonComponent) component).getComponentInstance();
+                        }
+                    }
+
+                    this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
+                }
+            }
         }
         return this.singletonComponentInstance;
     }

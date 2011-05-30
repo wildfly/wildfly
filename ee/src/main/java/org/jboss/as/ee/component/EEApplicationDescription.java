@@ -24,9 +24,11 @@ package org.jboss.as.ee.component;
 
 import org.jboss.vfs.VirtualFile;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +36,8 @@ import java.util.Set;
  * @author John Bailey
  */
 public class EEApplicationDescription {
-    private final Map<String, Set<ViewInformation>> componentsByViewName = new HashMap<String, Set<ViewInformation>>();
+    private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<String, List<ViewInformation>>();
+    private final Map<String, List<Description>> componentsByName = new HashMap<String, List<Description>>();
 
     /**
      * Add a component to this application.
@@ -44,22 +47,28 @@ public class EEApplicationDescription {
      */
     public void addComponent(ComponentDescription description, final VirtualFile deploymentRoot) {
         for (ViewDescription viewDescription : description.getViews()) {
-            Set<ViewInformation> viewComponents = componentsByViewName.get(viewDescription.getViewClassName());
+            List<ViewInformation> viewComponents = componentsByViewName.get(viewDescription.getViewClassName());
             if (viewComponents == null) {
-                viewComponents = new HashSet<ViewInformation>();
+                viewComponents = new ArrayList<ViewInformation>(1);
                 componentsByViewName.put(viewDescription.getViewClassName(), viewComponents);
             }
             viewComponents.add(new ViewInformation(viewDescription, deploymentRoot, description.getComponentName()));
         }
+        List<Description> components = componentsByName.get(description.getComponentName());
+        if (components == null) {
+            componentsByName.put(description.getComponentName(), components = new ArrayList<Description>(1));
+        }
+        components.add(new Description(description, deploymentRoot));
     }
 
     /**
      * Get all views that have the given type in the application
+     *
      * @param viewType The view type
      * @return All views of the given type
      */
     public Set<ViewDescription> getComponentsForViewName(final String viewType) {
-        final Set<ViewInformation> info = componentsByViewName.get(viewType);
+        final List<ViewInformation> info = componentsByViewName.get(viewType);
 
         if (info == null) {
             return Collections.<ViewDescription>emptySet();
@@ -72,14 +81,57 @@ public class EEApplicationDescription {
     }
 
     /**
+     * Get all components in the application that have the given name
+     *
+     * @param componentName  The name of the component
+     * @param deploymentRoot The deployment root of the component doing the lookup
+     * @return A set of all views for the given component name and type
+     */
+    public Set<ComponentDescription> getComponents(final String componentName, final VirtualFile deploymentRoot) {
+        final List<Description> info = componentsByName.get(componentName);
+        if (info == null) {
+            return Collections.emptySet();
+        }
+        if (componentName.contains("#")) {
+            final String[] parts = componentName.split("#");
+            final String path = parts[0];
+            final VirtualFile virtualPath = deploymentRoot.getChild(path);
+            final String name = parts[1];
+            final Set<ComponentDescription> ret = new HashSet<ComponentDescription>();
+            for (Description i : info) {
+                //now we need to check the path
+                if (virtualPath.equals(i.deploymentRoot)) {
+                    ret.add(i.componentDescription);
+                }
+            }
+            return ret;
+        } else {
+            final Set<ComponentDescription> all = new HashSet<ComponentDescription>();
+            final Set<ComponentDescription> thisDeployment = new HashSet<ComponentDescription>();
+            for (Description i : info) {
+                all.add(i.componentDescription);
+                if(i.deploymentRoot.equals(deploymentRoot)) {
+                    thisDeployment.add(i.componentDescription);
+                }
+            }
+            //if there are multiple e
+            if (all.size() > 1) {
+                return thisDeployment;
+            }
+            return all;
+        }
+    }
+
+    /**
      * Get all views in the application that have the given name and view type
-     * @param componentName The name of the component
-     * @param viewName The view type
+     *
+     * @param componentName  The name of the component
+     * @param viewName       The view type
      * @param deploymentRoot The deployment root of the component doing the lookup
      * @return A set of all views for the given component name and type
      */
     public Set<ViewDescription> getComponents(final String componentName, final String viewName, final VirtualFile deploymentRoot) {
-        final Set<ViewInformation> info = componentsByViewName.get(viewName);
+        final List<ViewInformation> info = componentsByViewName.get(viewName);
         if (info == null) {
             return Collections.<ViewDescription>emptySet();
         }
@@ -90,36 +142,52 @@ public class EEApplicationDescription {
             final String name = parts[1];
             final Set<ViewDescription> ret = new HashSet<ViewDescription>();
             for (ViewInformation i : info) {
-                if(i.beanName.equals(name)) {
+                if (i.beanName.equals(name)) {
                     //now we need to check the path
-                    if(virtualPath.equals(i.deploymentRoot)) {
+                    if (virtualPath.equals(i.deploymentRoot)) {
                         ret.add(i.viewDescription);
                     }
                 }
             }
             return ret;
         } else {
-            final Set<ViewDescription> ret = new HashSet<ViewDescription>();
+            final Set<ViewDescription> all = new HashSet<ViewDescription>();
+            final Set<ViewDescription> thisDeployment = new HashSet<ViewDescription>();
             for (ViewInformation i : info) {
-                if(i.beanName.equals(componentName)) {
-                    ret.add(i.viewDescription);
+                if (i.beanName.equals(componentName)) {
+                    all.add(i.viewDescription);
+                    if(i.deploymentRoot.equals(deploymentRoot)) {
+                        thisDeployment.add(i.viewDescription);
+                    }
                 }
             }
-            return ret;
+            if (all.size() > 1) {
+                return thisDeployment;
+            }
+            return all;
         }
-
     }
+
 
     private static class ViewInformation {
         private final ViewDescription viewDescription;
         private final VirtualFile deploymentRoot;
         private final String beanName;
 
-
         public ViewInformation(final ViewDescription viewDescription, final VirtualFile deploymentRoot, final String beanName) {
             this.viewDescription = viewDescription;
             this.deploymentRoot = deploymentRoot;
             this.beanName = beanName;
+        }
+    }
+
+    private static class Description {
+        private final ComponentDescription componentDescription;
+        private final VirtualFile deploymentRoot;
+
+        public Description(final ComponentDescription componentDescription, final VirtualFile deploymentRoot) {
+            this.componentDescription = componentDescription;
+            this.deploymentRoot = deploymentRoot;
         }
     }
 

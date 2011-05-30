@@ -488,7 +488,7 @@ public class ComponentDescription {
             } else {
                 //use the default constructor if no instanceFactory has been set
                 final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
-                if(constructor == null) {
+                if (constructor == null) {
                     throw new DeploymentUnitProcessingException("Could not find default constructor for " + componentClassConfiguration.getModuleClass());
                 }
                 ValueManagedReferenceFactory factory = new ValueManagedReferenceFactory(new ConstructedValue<Object>(constructor, Collections.<Value<?>>emptyList()));
@@ -757,6 +757,16 @@ public class ComponentDescription {
                 }
                 configuration.getViews().add(viewConfiguration);
             }
+
+            configuration.getStartDependencies().add(new DependencyConfigurator() {
+                @Override
+                public void configureDependency(final ServiceBuilder<?> serviceBuilder) throws DeploymentUnitProcessingException {
+                    for (final Map.Entry<ServiceName, ServiceBuilder.DependencyType> entry : description.getDependencies().entrySet()) {
+                        serviceBuilder.addDependency(entry.getValue(), entry.getKey());
+                    }
+
+                }
+            });
         }
 
         private boolean isNotOverriden(final EEModuleClassConfiguration configuration, final Method method, final ClassReflectionIndex<?> componentClassIndex, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {

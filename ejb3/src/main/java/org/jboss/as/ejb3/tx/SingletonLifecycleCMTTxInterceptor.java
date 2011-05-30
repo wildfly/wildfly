@@ -54,8 +54,8 @@ public class SingletonLifecycleCMTTxInterceptor extends org.jboss.ejb3.tx2.impl.
                 return never(invocation.getInvocationContext());
             case NOT_SUPPORTED:
                 return notSupported(invocation.getInvocationContext());
+            //singleton beans lifecyle methods must treat REQUIRED as REQUIRES_NEW
             case REQUIRED:
-                return required(invocation.getInvocationContext());
             case REQUIRES_NEW:
                 return requiresNew(invocation.getInvocationContext());
             case SUPPORTS:
