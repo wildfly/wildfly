@@ -26,10 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.ArchiveDeployer;
-import org.jboss.arquillian.api.ArchiveProvider;
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.DeploymentProvider;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
 import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
@@ -58,11 +55,11 @@ import org.osgi.service.packageadmin.PackageAdmin;
 @RunWith(Arquillian.class)
 public class SimpleArchiveDeployerTestCase {
 
-    @Inject
-    public DeploymentProvider provider;
+    //@Inject
+    //public DeploymentProvider provider;
 
-    @Inject
-    public ArchiveDeployer archiveDeployer;
+    //@Inject
+    //public ArchiveDeployer archiveDeployer;
 
     @Inject
     public BundleContext context;
@@ -89,8 +86,8 @@ public class SimpleArchiveDeployerTestCase {
     public void testClientDeploymentAsArchive() throws Exception {
 
         String symbolicName = "archive-deployer-test-bundle";
-        Archive<?> archive = provider.getClientDeployment(symbolicName);
-        String depname = archiveDeployer.deploy(archive);
+        Archive<?> archive = null; //provider.getClientDeployment(symbolicName);
+        String depname = null; //archiveDeployer.deploy(archive);
 
         final Bundle bundle = getDeployedBundle(symbolicName);
         assertNotNull("Bundle found", bundle);
@@ -113,7 +110,7 @@ public class SimpleArchiveDeployerTestCase {
             }
         });
 
-        archiveDeployer.undeploy(depname);
+        //archiveDeployer.undeploy(depname);
 
         if (uninstallLatch.await(1000, TimeUnit.MILLISECONDS) == false)
             fail("UNINSTALLED event not received");
@@ -130,7 +127,7 @@ public class SimpleArchiveDeployerTestCase {
         return bundles[0];
     }
 
-    @ArchiveProvider
+    //@ArchiveProvider
     public static JavaArchive getTestArchive(String name) {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
         archive.addClasses(SimpleActivator.class, SimpleService.class);

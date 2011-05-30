@@ -28,15 +28,14 @@ import java.net.UnknownHostException;
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public class JBossAsContainerConfiguration implements ContainerConfiguration {
+public class JBossAsCommonConfiguration implements ContainerConfiguration {
+
     private InetAddress bindAddress;
     private int managementPort;
     private int jmxPort;
     private int httpPort;
-    private boolean executeWithServlet;
-    private long startupTimeout;
 
-    public JBossAsContainerConfiguration() {
+    public JBossAsCommonConfiguration() {
         bindAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
         jmxPort = 1090;
@@ -81,33 +80,15 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
         this.httpPort = httpPort;
     }
 
-    public boolean isExecuteWithServlet() {
-        if (!executeWithServlet) {
-            String val = System.getProperty("jboss.arquillian.executeWithServlet", null);
-            if (val != null) {
-                return Boolean.valueOf(val);
-            }
-        }
-        return executeWithServlet;
-    }
-
-    public void setExecuteWithServlet(boolean executeWithServlet) {
-        this.executeWithServlet = executeWithServlet;
-    }
-
-    public long getStartupTimeout() {
-        return startupTimeout;
-    }
-
-    public void setStartupTimeout(long startupTimeout) {
-        this.startupTimeout = startupTimeout;
-    }
-
     private InetAddress getInetAddress(String name) {
         try {
             return InetAddress.getByName(name);
         } catch (UnknownHostException e) {
             throw new IllegalArgumentException("Unknown host: " + name);
         }
+    }
+
+    @Override
+    public void validate() throws ConfigurationException {
     }
 }

@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-testsuite2-integration-domain</artifactId>
-    <name>JBoss Application Server: Test Suite: Domain Mode Integration Tests</name>
+    <name>JBoss Application Server: Test Suite2: Domain Mode Integration Tests</name>
 
    <!--
    Compile-time dependencies upon anything  in the AS7 runtime
@@ -43,7 +43,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian2-container-managed-domain</artifactId>
+            <artifactId>jboss-as-arquillian-container-managed-domain</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

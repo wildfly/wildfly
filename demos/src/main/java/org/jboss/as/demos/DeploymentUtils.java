@@ -21,24 +21,8 @@
  */
 package org.jboss.as.demos;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.DuplicateDeploymentNameException;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.container.ResourceContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +37,24 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.DuplicateDeploymentNameException;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.container.ResourceContainer;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>standalone</b> application server
@@ -186,7 +187,7 @@ public class DeploymentUtils implements Closeable {
                 if (file.isDirectory()) {
                     addFiles(archive, file, ArchivePaths.create(dest, name));
                 } else {
-                    archive.addResource(file, ArchivePaths.create(dest, name));
+                    archive.addAsResource(file, ArchivePaths.create(dest, name));
                 }
             }
         }
@@ -241,7 +242,7 @@ public class DeploymentUtils implements Closeable {
 
         protected File createArchive(Archive<?> archive) {
             File realArchive = new File(getOutputDir(), archive.getName());
-            archive.as(ZipExporter.class).exportZip(realArchive, true);
+            archive.as(ZipExporter.class).exportTo(realArchive, true);
             return realArchive;
         }
 
@@ -308,10 +309,7 @@ public class DeploymentUtils implements Closeable {
     private class ArbitraryDeployment extends AbstractDeployment {
         final File realArchive;
 
-        public ArbitraryDeployment(Archive archive,  boolean show) {
-
-            ArchivePath metaInf = ArchivePaths.create("META-INF");
-
+        public ArbitraryDeployment(Archive<?> archive,  boolean show) {
             System.out.println(archive.toString(show));
             realArchive = createArchive(archive);
         }

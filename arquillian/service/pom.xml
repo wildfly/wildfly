@@ -42,12 +42,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-arquillian-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian</groupId>
-      <artifactId>arquillian-junit</artifactId>
+      <groupId>org.jboss.arquillian.junit</groupId>
+      <artifactId>arquillian-junit-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.arquillian.protocol</groupId>
@@ -56,24 +52,18 @@
     <dependency>
       <groupId>org.jboss.arquillian.testenricher</groupId>
       <artifactId>arquillian-testenricher-cdi</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-spi</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.testenricher</groupId>
-      <artifactId>arquillian-testenricher-jmx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.testenricher</groupId>
-      <artifactId>arquillian-testenricher-msc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.arquillian.testenricher</groupId>
       <artifactId>arquillian-testenricher-osgi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-arquillian-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.as</groupId>

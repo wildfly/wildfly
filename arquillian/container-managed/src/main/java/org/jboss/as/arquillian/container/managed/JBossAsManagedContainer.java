@@ -23,7 +23,6 @@ import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.AbstractDeployableContainer;
-import org.jboss.as.arquillian.container.JBossAsContainerConfiguration;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -54,7 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public final class JBossAsManagedContainer extends AbstractDeployableContainer {
+public final class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAsManagedConfiguration> {
 
     private final Logger log = Logger.getLogger(JBossAsManagedContainer.class.getName());
     private MBeanServerConnectionProvider provider;
@@ -73,14 +72,18 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer {
     }
 
     @Override
-    public void setup(Context context, Configuration configuration) {
-        super.setup(context, configuration);
-        JBossAsContainerConfiguration config = getContainerConfiguration();
+    public Class<JBossAsManagedConfiguration> getConfigurationClass() {
+        return JBossAsManagedConfiguration.class;
+    }
+
+    @Override
+    public void setup(JBossAsManagedConfiguration config) {
+        super.setup(config);
         provider = new MBeanServerConnectionProvider(config.getBindAddress(), config.getJmxPort());
     }
 
     @Override
-    protected void startInternal(Context context) throws LifecycleException {
+    protected void startInternal() throws LifecycleException {
         try {
             String jbossHomeKey = "jboss.home";
             String jbossHomeDir = System.getProperty(jbossHomeKey);
@@ -134,20 +137,16 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer {
             });
             Runtime.getRuntime().addShutdownHook(shutdownThread);
 
-            long startupTimeout = getContainerConfiguration().getStartupTimeout();
-
-            long timeout = startupTimeout;
+            long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
+            long timeout = startupTimeout * 1000;
             boolean serverAvailable = false;
             while (timeout > 0 && serverAvailable == false) {
-
                 serverAvailable = isServerStarted();
-
                 if (!serverAvailable) {
                     Thread.sleep(100);
                     timeout -= 100;
                 }
             }
-
             if (!serverAvailable) {
                 destroyProcess();
                 throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
@@ -158,7 +157,7 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer {
     }
 
     @Override
-    protected void stopInternal(Context context) throws LifecycleException {
+    protected void stopInternal() throws LifecycleException {
         if(shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
@@ -178,11 +177,6 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer {
     protected MBeanServerConnection getMBeanServerConnection() {
         return provider.getConnection();
     }
-
-    @Override
-    protected ContainerMethodExecutor getContainerMethodExecutor() {
-        return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.REMOTE);
-   }
 
     private boolean isServerStarted() {
         try {

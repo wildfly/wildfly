@@ -21,13 +21,11 @@
  */
 package org.jboss.as.test.surefire.servermodule;
 
-import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
-import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,11 +37,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.NoSuchElementException;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Test the HTTP API upload functionality to ensure that a deployment is successfully
@@ -84,7 +84,7 @@ public class HttpDeploymentUploadUnitTestCase extends AbstractServerInModuleTest
 //            final WebArchive archive = ShrinkWrapUtils.createWebArchive(TEST_WAR, SimpleServlet.class.getPackage());
             final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar", Simple.class.getPackage());
             os = new BufferedOutputStream(connection.getOutputStream());
-            is = new BufferedInputStream(archive.as(ZipExporter.class).exportZip());
+            is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
             // Write the POST request and read the response from the HTTP server.
             writeUploadRequest(is, os);

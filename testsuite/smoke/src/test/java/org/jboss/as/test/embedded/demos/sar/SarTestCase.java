@@ -27,9 +27,8 @@ import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.demos.sar.archive.ConfigService;
@@ -45,7 +44,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class SarTestCase {
 
     @Deployment

@@ -36,14 +36,16 @@ import java.util.concurrent.TimeoutException;
 
 import javax.management.MBeanServer;
 
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.context.ContextManager;
 import org.jboss.arquillian.context.ContextManagerBuilder;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
-import org.jboss.arquillian.spi.TestResult;
+import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
-import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
-import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
@@ -93,6 +95,18 @@ public class ArquillianService implements Service<ArquillianService> {
     private final Map<String, CountDownLatch> waitingTests = new ConcurrentHashMap<String, CountDownLatch>();
     private JMXTestRunner jmxTestRunner;
 
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<Framework> frameworkInst;
+
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<BundleContext> bundleContextInst;
+
+    @Inject
+    @DeploymentScoped
+    private InstanceProducer<Bundle> bundleInst;
+
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
@@ -112,35 +126,30 @@ public class ArquillianService implements Service<ArquillianService> {
         final ServiceTarget serviceTarget = context.getChildTarget();
 
         try {
-            jmxTestRunner = new JMXTestRunner() {
+            jmxTestRunner = new JMXTestRunner(testClassLoader) {
 
                 @Override
-                public TestResult runTestMethod(String className, String methodName, Map<String, String> props) {
+                public TestResult runTestMethodRemote(String className, String methodName) {
                     Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
                     ContextManager contextManager = initializeContextManager(className, properties);
                     try {
                         // actually run the tests
-                        return super.runTestMethod(className, methodName, props);
+                        return super.runTestMethodRemote(className, methodName);
                     } finally {
                         contextManager.teardown(properties);
                     }
                 }
 
                 @Override
-                public InputStream runTestMethodEmbedded(String className, String methodName, Map<String, String> props) {
+                public InputStream runTestMethodEmbedded(String className, String methodName) {
                     Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
                     ContextManager contextManager = initializeContextManager(className, properties);
                     try {
                         // actually run the tests
-                        return super.runTestMethodEmbedded(className, methodName, props);
+                        return super.runTestMethodEmbedded(className, methodName);
                     } finally {
                         contextManager.teardown(properties);
                     }
-                }
-
-                @Override
-                protected TestClassLoader getTestClassLoader() {
-                    return testClassLoader;
                 }
 
                 private ContextManager initializeContextManager(String className, Map<String, Object> properties) {
@@ -286,11 +295,12 @@ public class ArquillianService implements Service<ArquillianService> {
 
             else if (osgidep != null) {
                 Bundle bundle = osgidep.getAttachment(Bundle.class);
-                BundleAssociation.setBundle(bundle);
+                bundleInst.set(bundle);
                 ServiceContainerAssociation.setServiceContainer(serviceContainer);
                 ServerDeploymentManagerAssociation.setServerDeploymentManager(deploymentManager);
                 Framework framework = awaitActiveOSGiFramework();
-                BundleContextAssociation.setBundleContext(framework.getBundleContext());
+                frameworkInst.set(framework);
+                bundleContextInst.set(framework.getBundleContext());
                 testClass = bundle.loadClass(className);
             }
 
@@ -298,11 +308,6 @@ public class ArquillianService implements Service<ArquillianService> {
                 throw new ClassNotFoundException(className);
 
             return testClass;
-        }
-
-        @Override
-        public ClassLoader getServiceClassLoader() {
-            return ArquillianService.class.getClassLoader();
         }
 
         @SuppressWarnings("unchecked")

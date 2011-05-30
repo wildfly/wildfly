@@ -23,9 +23,7 @@ package org.jboss.as.test.embedded.demos.managedbean;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
 import org.jboss.as.demos.managedbean.archive.LookupService;
@@ -55,14 +53,14 @@ public class ManagedBeanTestCase {
 
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class,"managedbean-example.jar");
-        jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
-        jar.addManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
-        jar.addManifestResource(EmptyAsset.INSTANCE,"beans.xml");
+        jar.addAsManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+        jar.addAsManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator", "services/org.jboss.msc.service.ServiceActivator");
+        jar.addAsManifestResource(EmptyAsset.INSTANCE,"beans.xml");
         jar.addPackage(SimpleManagedBean.class.getPackage());
         jar.addPackage(ManagedBeanTestCase.class.getPackage());
         jar.addPackage(BeanWithSimpleInjected.class.getPackage());
         jar.addClass(PollingUtils.class);
-        ear.add(jar, "/");
+        ear.add(jar, "/", ZipExporter.class);
 
         return ear;
     }

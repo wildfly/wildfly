@@ -41,12 +41,16 @@
     <modules>
         <module>common</module>
         <module>service</module>
-        <module>container-embedded</module>
         <module>container-managed</module>
+        <module>container-managed-domain</module>
+        <!-- 
+        <module>container-embedded</module>
         <module>container-remote</module>
+        -->
         <module>processor-jsfunit</module>
         <module>protocol-servlet</module>
         <module>testenricher-cdi</module>
+        <module>testenricher-msc</module>
         <module>testenricher-resource</module>
     </modules>
 
@@ -86,8 +90,8 @@
 
     <dependencies>
         <dependency>
-           <groupId>org.jboss.arquillian</groupId>
-           <artifactId>arquillian-api</artifactId>
+           <groupId>org.jboss.arquillian.core</groupId>
+           <artifactId>arquillian-core-api</artifactId>
         </dependency>
 
         <dependency>

@@ -46,12 +46,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-jmx</artifactId>
+            <groupId>org.jboss.arquillian.core</groupId>
+            <artifactId>arquillian-core-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian</groupId>
-            <artifactId>arquillian-spi</artifactId>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.jsfunit</groupId>

@@ -84,7 +84,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
             @Override
             public void initialDeploy() {
                 Future<?> future = manager.execute(manager.newDeploymentPlan()
-                        .add("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).deploy("test-deployment.sar")
+                        .add("test-deployment.sar", archive.as(ZipExporter.class).exportAsInputStream()).deploy("test-deployment.sar")
                         .build());
                 awaitDeploymentExecution(future);
             }
@@ -92,7 +92,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
             @Override
             public void fullReplace() {
                 Future<?> future = manager.execute(manager.newDeploymentPlan()
-                        .replace("test-deployment.sar", archive.as(ZipExporter.class).exportZip()).build());
+                        .replace("test-deployment.sar", archive.as(ZipExporter.class).exportAsInputStream()).build());
                 awaitDeploymentExecution(future);
             }
 
@@ -114,7 +114,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
-        archive.as(ZipExporter.class).exportZip(file, true);
+        archive.as(ZipExporter.class).exportTo(file, true);
 
         testDeployments(new DeploymentExecutor() {
 
@@ -147,7 +147,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
         final File dir = new File("target/archives");
         dir.mkdirs();
         final File file = new File(dir, "test-deployment.sar");
-        archive.as(ZipExporter.class).exportZip(file, true);
+        archive.as(ZipExporter.class).exportTo(file, true);
 
         final File deployDir = createDeploymentDir("deployments");
 

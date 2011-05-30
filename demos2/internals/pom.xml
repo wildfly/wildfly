@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-demos2-internals</artifactId>
-    <name>JBoss Application Server: Demos: AS7 Internals</name>
+    <name>JBoss Application Server: Demos2: AS7 Internals</name>
 
    <!-- 
    Compile-time dependencies upon anything  in the AS7 runtime

@@ -108,7 +108,8 @@
         <version.org.hornetq.hornetq-jms>2.2.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.0.0.CR2</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian>1.0.0.Alpha4.SP10</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian.core>1.0.0.Beta1</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.osgi>1.0.0-SNAPSHOT</version.org.jboss.arquillian.osgi>
         <version.org.jboss.classfilewriter>1.0.0.Alpha7</version.org.jboss.classfilewriter>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta1</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb3>2.0.0-beta-1</version.org.jboss.ejb3>
@@ -154,7 +155,7 @@
         <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.0.Beta2</version.org.jboss.security.jboss-negotiation>
-        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-11</version.org.jboss.shrinkwrap.shrinkwrap>
+        <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-beta-2</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
@@ -501,24 +502,6 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -537,13 +520,19 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-managed-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-container-remote</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-service</artifactId>
+                <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -555,19 +544,25 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian2-common</artifactId>
+                <artifactId>jboss-as-arquillian-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian2-container-managed</artifactId>
+                <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian2-container-managed-domain</artifactId>
+                <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2886,109 +2881,99 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-api</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-api</artifactId>
-                    </exclusion>
-                </exclusions>
+              <groupId>org.jboss.arquillian.container</groupId>
+              <artifactId>arquillian-container-spi</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-api</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-impl-base</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-impl-base</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-spi</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-impl-base</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-junit</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-spi</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            
+            <dependency>
+              <groupId>org.jboss.arquillian.junit</groupId>
+              <artifactId>arquillian-junit-container</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+                </exclusion>
+              </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian.protocol</groupId>
+              <groupId>org.jboss.arquillian.protocol</groupId>
               <artifactId>arquillian-protocol-jmx</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
-
+              <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
               <groupId>org.jboss.arquillian.protocol</groupId>
               <artifactId>arquillian-protocol-osgi</artifactId>
-              <version>${version.org.jboss.arquillian}</version>
-              <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.osgi.spi</groupId>
-                        <artifactId>jbosgi-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap</groupId>
-                        <artifactId>shrinkwrap-impl-base</artifactId>
-                    </exclusion>
-              </exclusions>
+              <version>${version.org.jboss.arquillian.osgi}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss.arquillian.protocol</groupId>
+              <artifactId>arquillian-protocol-servlet</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.test</groupId>
+                <artifactId>arquillian-test-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-cdi</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-jmx</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <artifactId>arquillian-testenricher-ejb</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-msc</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <artifactId>arquillian-testenricher-initialcontext</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-osgi</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <version>${version.org.jboss.arquillian.osgi}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-resource</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
@@ -3843,6 +3828,22 @@
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>org.jboss.slf4j</groupId>
                 <artifactId>slf4j-jboss-logmanager</artifactId>

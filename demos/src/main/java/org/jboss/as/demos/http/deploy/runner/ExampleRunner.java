@@ -51,8 +51,8 @@ public class ExampleRunner {
             // Create the test WAR file and get a stream to its contents to be included in the POST.
             WebArchive archive = ShrinkWrap.create(WebArchive.class, "war-example.war");
             archive.addPackage(SimpleServlet.class.getPackage());
-            addResources("archives/war-example.war", archive);
-            is = new BufferedInputStream(archive.as(ZipExporter.class).exportZip());
+            addAsResources("archives/war-example.war", archive);
+            is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
             // Write the POST request and read the response from the HTTP server.
             URL uploadContent = new URL("http://localhost:9990/domain-api/add-content");
@@ -214,7 +214,7 @@ public class ExampleRunner {
 
 
 
-    private static void addResources(String archiveName, ResourceContainer<?> archive) {
+    private static void addAsResources(String archiveName, ResourceContainer<?> archive) {
         File resourcesDir = getResources(archiveName);
         if (resourcesDir != null) {
             addFiles(archive, resourcesDir, ArchivePaths.create("/"));
@@ -251,7 +251,7 @@ public class ExampleRunner {
             if (file.isDirectory()) {
                 addFiles(archive, file, ArchivePaths.create(dest, name));
             } else {
-                archive.addResource(file, ArchivePaths.create(dest, name));
+                archive.addAsResource(file, ArchivePaths.create(dest, name));
             }
         }
     }

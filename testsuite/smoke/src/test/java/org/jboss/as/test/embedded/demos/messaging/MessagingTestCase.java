@@ -36,9 +36,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.logging.Logger;
@@ -56,7 +54,6 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.IN_CONTAINER)
 public class MessagingTestCase {
     private static final String QUEUE_EXAMPLE_QUEUE = "queue.exampleQueue";
 

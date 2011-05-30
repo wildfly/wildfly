@@ -398,15 +398,15 @@
         </module-def>
 
         <module-def name="org.jboss.arquillian.api">
-            <maven-resource group="org.jboss.arquillian" artifact="arquillian-api"/>
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-api"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.impl">
-            <maven-resource group="org.jboss.arquillian" artifact="arquillian-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-impl-base"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.junit">
-            <maven-resource group="org.jboss.arquillian" artifact="arquillian-junit"/>
+            <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-core"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.protocol.jmx">
@@ -418,7 +418,7 @@
         </module-def>
 
         <module-def name="org.jboss.arquillian.spi">
-            <maven-resource group="org.jboss.arquillian" artifact="arquillian-spi"/>
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-spi"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.cdi">
@@ -426,12 +426,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-cdi"/>
         </module-def>
 
-        <module-def name="org.jboss.arquillian.testenricher.jmx">
-            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-jmx"/>
-        </module-def>
-
         <module-def name="org.jboss.arquillian.testenricher.msc">
-            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-msc"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-msc"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.osgi">

@@ -22,18 +22,16 @@
 
 package org.jboss.as.test.embedded.demos.ejb3.jndi;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 /**
  * Tests that the session beans are bound to all the jndi binding names mandated by the EJB3.1 spec, when the EJBs are

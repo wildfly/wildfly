@@ -515,23 +515,28 @@
         </dependency>
 
         <dependency>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-api</artifactId>
+          <groupId>org.jboss.arquillian.core</groupId>
+          <artifactId>arquillian-core-api</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-impl-base</artifactId>
+          <groupId>org.jboss.arquillian.core</groupId>
+          <artifactId>arquillian-core-impl-base</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-junit</artifactId>
+          <groupId>org.jboss.arquillian.core</groupId>
+          <artifactId>arquillian-core-spi</artifactId>
+        </dependency>
+        
+        <dependency>
+          <groupId>org.jboss.arquillian.junit</groupId>
+          <artifactId>arquillian-junit-container</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-spi</artifactId>
+          <groupId>org.jboss.arquillian.junit</groupId>
+          <artifactId>arquillian-junit-core</artifactId>
         </dependency>
 
         <dependency>
@@ -547,16 +552,6 @@
         <dependency>
            <groupId>org.jboss.arquillian.testenricher</groupId>
            <artifactId>arquillian-testenricher-resource</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.arquillian.testenricher</groupId>
-           <artifactId>arquillian-testenricher-jmx</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.arquillian.testenricher</groupId>
-           <artifactId>arquillian-testenricher-msc</artifactId>
         </dependency>
 
         <dependency>
@@ -578,6 +573,11 @@
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
         </dependency>
 
         <dependency>

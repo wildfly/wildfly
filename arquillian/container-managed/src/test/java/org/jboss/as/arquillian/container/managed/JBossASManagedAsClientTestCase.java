@@ -27,9 +27,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.managed.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,7 +41,7 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class JBossASManagedAsClientTestCase extends JBossASManagedInContainerTestCase {
 
     @Deployment
@@ -51,8 +50,7 @@ public class JBossASManagedAsClientTestCase extends JBossASManagedInContainerTes
         archive.addPackage(ConfigService.class.getPackage());
         String path = "META-INF/jboss-service.xml";
         URL resourceURL = JBossASManagedAsClientTestCase.class.getResource("/sar-example.sar/" + path);
-        archive.addResource(new File(resourceURL.getFile()), path);
-
+        archive.addAsResource(new File(resourceURL.getFile()), path);
         return archive;
     }
 

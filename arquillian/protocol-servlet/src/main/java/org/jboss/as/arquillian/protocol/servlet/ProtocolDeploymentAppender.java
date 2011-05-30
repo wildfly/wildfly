@@ -16,7 +16,7 @@
  */
 package org.jboss.as.arquillian.protocol.servlet;
 
-import org.jboss.arquillian.spi.AuxiliaryArchiveAppender;
+import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -41,6 +41,6 @@ public class ProtocolDeploymentAppender implements AuxiliaryArchiveAppender {
     public Archive<?> createAuxiliaryArchive() {
         return ShrinkWrap.create(JavaArchive.class, "arquillian-protocol.jar")
                 .addClasses(ServletTestRunner.class)
-                .addManifestResource("org/jboss/as/arquillian/protocol/servlet/web-fragment.xml", "web-fragment.xml");
+                .addAsManifestResource("org/jboss/as/arquillian/protocol/servlet/web-fragment.xml", "web-fragment.xml");
     }
 }

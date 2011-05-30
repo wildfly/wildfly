@@ -30,8 +30,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.arquillian.spi.TestResult;
-import org.jboss.arquillian.spi.TestResult.Status;
+import org.jboss.arquillian.test.spi.TestResult;
+import org.jboss.arquillian.test.spi.TestResult.Status;
 import org.jboss.jsfunit.framework.WebConversationFactory;
 
 /**

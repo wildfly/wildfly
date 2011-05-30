@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-testsuite2-integration-spec</artifactId>
-    <name>JBoss Application Server: Test Suite: Spec Integration Tests</name>
+    <name>JBoss Application Server: Test Suite2: Spec Integration Tests</name>
 
     <!-- 
     ONLY the Java EE Spec APIs are to be allowed in compile scope here
@@ -51,7 +51,7 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-arquillian2-container-managed</artifactId>
+        <artifactId>jboss-as-arquillian-container-managed</artifactId>
         <scope>test</scope>
       </dependency>
     </dependencies>

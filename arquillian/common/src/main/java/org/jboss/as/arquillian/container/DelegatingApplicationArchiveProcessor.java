@@ -18,9 +18,9 @@ package org.jboss.as.arquillian.container;
 
 import java.util.jar.Manifest;
 
-import org.jboss.arquillian.osgi.OSGiApplicationArchiveProcessor;
-import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
-import org.jboss.arquillian.spi.TestClass;
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.protocol.osgi.OSGiApplicationArchiveProcessor;
+import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
 

@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.osgi.service.ConfigAdminListener;
 import org.jboss.as.osgi.service.ConfigAdminService;

@@ -31,6 +31,7 @@ import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
 import org.jboss.as.demos.managedbean.mbean.TestMBean;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
@@ -46,18 +47,18 @@ public class ExampleRunner {
         try {
             EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "managedbean-example.ear");
             JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "managedbean-mbean.sar");
-            sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/MANIFEST.MF", "MANIFEST.MF");
-            sar.addManifestResource("archives/managedbean-mbean.sar/META-INF/jboss-service.xml", "jboss-service.xml");
+            sar.addAsManifestResource("archives/managedbean-mbean.sar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+            sar.addAsManifestResource("archives/managedbean-mbean.sar/META-INF/jboss-service.xml", "jboss-service.xml");
             sar.addPackage(TestMBean.class.getPackage());
-            ear.add(sar, "/");
+            ear.add(sar, "/", ZipExporter.class);
 
             JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "managedbean-example.jar");
-            jar.addManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
-            jar.addManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator",
+            jar.addAsManifestResource("archives/managedbean-example.jar/META-INF/MANIFEST.MF", "MANIFEST.MF");
+            jar.addAsManifestResource("archives/managedbean-example.jar/META-INF/services/org.jboss.msc.service.ServiceActivator",
                     "services/org.jboss.msc.service.ServiceActivator");
-            jar.addManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+            jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
             jar.addPackage(SimpleManagedBean.class.getPackage());
-            ear.add(jar, "/");
+            ear.add(jar, "/", ZipExporter.class);
 
             utils = new DeploymentUtils(ear);
 

@@ -21,22 +21,8 @@
  */
 package org.jboss.as.demos;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +39,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>domain controller</b>
@@ -226,7 +227,7 @@ public class DomainDeploymentUtils implements Closeable {
             System.out.println(archive.toString(show));
 
             realArchive = new File(getOutputDir(), archive.getName());
-            archive.as(ZipExporter.class).exportZip(realArchive, true);
+            archive.as(ZipExporter.class).exportTo(realArchive, true);
         }
 
         private void addFiles(JavaArchive archive, File dir, ArchivePath dest) {
@@ -235,7 +236,7 @@ public class DomainDeploymentUtils implements Closeable {
                 if (file.isDirectory()) {
                     addFiles(archive, file, ArchivePaths.create(dest, name));
                 } else {
-                    archive.addResource(file, ArchivePaths.create(dest, name));
+                    archive.addAsResource(file, ArchivePaths.create(dest, name));
                 }
             }
         }
@@ -339,15 +340,6 @@ public class DomainDeploymentUtils implements Closeable {
                 file.mkdir();
             }
             return file.getAbsoluteFile();
-        }
-
-        private void close(Closeable c) {
-            try {
-                if (c != null) {
-                    c.close();
-                }
-            } catch (IOException ignore) {
-            }
         }
     }
 }

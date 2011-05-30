@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-demos2-spec</artifactId>
-    <name>JBoss Application Server: Demos: Spec</name>
+    <name>JBoss Application Server: Demos2: Spec</name>
 
     <!-- 
     ONLY the Java EE Spec APIs are to be allowed in compile scope here

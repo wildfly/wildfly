@@ -21,13 +21,14 @@
  */
 package org.jboss.as.test.embedded.demos.jaxrs;
 
+import java.net.URL;
+
 import junit.framework.Assert;
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.jaxrs.archive.HelloWorldResource;
-import org.jboss.as.demos.war.archive.SimpleServlet;
 import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.PollingUtils.UrlConnectionTask;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -35,14 +36,12 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.net.URL;
-
 /**
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class JaxrsTestCase {
 
     @Deployment

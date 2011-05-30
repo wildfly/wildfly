@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-testsuite2-integration-api</artifactId>
-    <name>JBoss Application Server: Test Suite: AS7 API Integration Tests</name>
+    <name>JBoss Application Server: Test Suite2: AS7 API Integration Tests</name>
 
    <!-- 
    When available, the AS7 API dependency declaration will live here

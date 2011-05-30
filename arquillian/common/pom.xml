@@ -54,30 +54,20 @@
           <artifactId>arquillian-protocol-osgi</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
-        </dependency>
-        <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>
           <artifactId>arquillian-testenricher-cdi</artifactId>
-          <exclusions>
-            <exclusion>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-spi</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.arquillian.testenricher</groupId>
-          <artifactId>arquillian-testenricher-msc</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.arquillian.testenricher</groupId>
-          <artifactId>arquillian-testenricher-jmx</artifactId>
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>
           <artifactId>arquillian-testenricher-osgi</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
@@ -90,6 +80,10 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.spi</groupId>

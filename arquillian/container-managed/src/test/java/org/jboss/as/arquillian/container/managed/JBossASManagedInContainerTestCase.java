@@ -24,7 +24,7 @@ import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.managed.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class JBossASManagedInContainerTestCase {
+
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sar-example.sar");
@@ -46,7 +47,7 @@ public class JBossASManagedInContainerTestCase {
         archive.addClass(JBossASManagedInContainerTestCase.class);
         String path = "META-INF/jboss-service.xml";
         URL resourceURL = JBossASManagedInContainerTestCase.class.getResource("/sar-example.sar/" + path);
-        archive.addResource(new File(resourceURL.getFile()), path);
+        archive.addAsResource(new File(resourceURL.getFile()), path);
         return archive;
     }
 

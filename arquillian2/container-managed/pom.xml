@@ -12,7 +12,7 @@
   </parent>
 
   <artifactId>jboss-as-arquillian2-container-managed</artifactId>
-  <name>JBoss Application Server: Arquillian Container Managed</name>
+  <name>JBoss Application Server: Arquillian2 Container Managed</name>
   <description>JBoss AS Managed 7.x Container integration for the Arquillian Project</description>
 
   <packaging>jar</packaging>
@@ -54,56 +54,6 @@
       <version>${project.version}</version>
       <type>pom</type>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-impl-base</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian</groupId>
-          <artifactId>arquillian-spi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian.protocol</groupId>
-          <artifactId>arquillian-protocol-osgi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian.testenricher</groupId>
-          <artifactId>arquillian-testenricher-jmx</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.arquillian.testenricher</groupId>
-          <artifactId>arquillian-testenricher-msc</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>jboss-logging-spi</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>

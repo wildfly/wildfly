@@ -21,8 +21,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.Manifest;
 
-import org.jboss.arquillian.spi.DeploymentPackager;
-import org.jboss.arquillian.spi.TestDeployment;
+import org.jboss.arquillian.container.test.spi.TestDeployment;
+import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
+import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -47,7 +48,7 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
     }
 
     @Override
-    public Archive<?> generateDeployment(TestDeployment testDeployment) {
+    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> protocolProcessors) {
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(testDeployment.getApplicationArchive());
         final Archive<?> appArchive = testDeployment.getApplicationArchive();
@@ -65,7 +66,7 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
                     // we don't want to include the arquillian-core.jar and arquillian-junit.jar
                     // auxillary archives, as these are already part of the container
                     if (!excludedAuxillaryArchives.contains(aux.getName())) {
-                        appArchive.add(aux, webInfLib);
+                        appArchive.add(aux, webInfLib, ZipExporter.class);
                     }
                 }
             } else {

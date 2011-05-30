@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.embedded.demos.ejb3.dd;
 
-import javax.ejb.Stateless;
 
 /**
  * User: jpai

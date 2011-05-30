@@ -12,7 +12,7 @@
 	</parent>
 
 	<artifactId>jboss-as-arquillian2-common</artifactId>
-	<name>JBoss Application Server: Arquillian Container Commons</name>
+	<name>JBoss Application Server: Arquillian2 Container Commons</name>
 	<description>A Common Base Implementation for the JBoss AS 7.x Container Integrations for the Arquillian Project</description>
 
 	<properties>

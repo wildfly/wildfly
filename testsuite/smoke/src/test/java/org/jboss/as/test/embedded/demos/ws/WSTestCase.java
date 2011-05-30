@@ -28,9 +28,8 @@ import javax.xml.ws.Service;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ws.archive.Endpoint;
 import org.jboss.as.demos.ws.archive.EndpointImpl;
@@ -48,7 +47,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class WSTestCase {
 
     @Deployment

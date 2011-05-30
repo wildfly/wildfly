@@ -21,9 +21,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jboss.arquillian.spi.ContainerMethodExecutor;
-import org.jboss.arquillian.spi.TestMethodExecutor;
-import org.jboss.arquillian.spi.TestResult;
+import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
+import org.jboss.arquillian.test.spi.TestMethodExecutor;
+import org.jboss.arquillian.test.spi.TestResult;
 
 /**
  * ServletMethodExecutor

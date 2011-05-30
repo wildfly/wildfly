@@ -21,8 +21,27 @@
 */
 package org.jboss.as.test.surefire.xml;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+
 import org.jboss.as.controller.BasicModelController;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathElement;
@@ -49,23 +68,6 @@ import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import javax.xml.namespace.QName;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
 /**
  *

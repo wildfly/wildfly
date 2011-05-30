@@ -78,12 +78,12 @@ public class AutoDeployTestSupport {
         URL resource = tccl.getResource("basic.war/index.html");
         if (resource == null)
             throw new IllegalStateException("basic.war/index.html not found");
-        war.addResource(resource, "index.html");
+        war.addAsResource(resource, "index.html");
         war.setWebXML(webxml);
 
         basicWar = new File(tmpDir, "basic.war");
         basicWar.deleteOnExit();
-        war.as(ZipExporter.class).exportZip(basicWar, true);
+        war.as(ZipExporter.class).exportTo(basicWar, true);
     }
 
     public void cleanupChannels() {

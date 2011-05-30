@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>jboss-as-demos2-api</artifactId>
-    <name>JBoss Application Server: Demos: AS7 API</name>
+    <name>JBoss Application Server: Demos2: AS7 API</name>
 
    <!-- 
    When available, the AS7 API dependency declaration will live here

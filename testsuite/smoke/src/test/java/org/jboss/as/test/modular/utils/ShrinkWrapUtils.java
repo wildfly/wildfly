@@ -136,7 +136,7 @@ public class ShrinkWrapUtils {
      * @throws java.io.IOException
      */
     public static File writeToFileSystem(JavaArchive javaArchive, File destDirectory) throws IOException {
-        InputStream inputStream = javaArchive.as(ZipExporter.class).exportZip();
+        InputStream inputStream = javaArchive.as(ZipExporter.class).exportAsInputStream();
         String jarFileName = javaArchive.getName();
         File jarFile = new File(destDirectory, jarFileName);
         FileOutputStream fos = new FileOutputStream(jarFile);
@@ -168,7 +168,7 @@ public class ShrinkWrapUtils {
             if (file.isDirectory()) {
                 addFiles(archive, file, ArchivePaths.create(dest, name));
             } else {
-                archive.addResource(file, ArchivePaths.create(dest, name));
+                archive.addAsResource(file, ArchivePaths.create(dest, name));
             }
         }
     }

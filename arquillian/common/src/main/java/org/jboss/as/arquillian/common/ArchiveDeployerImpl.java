@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.arquillian.api.ArchiveDeployer;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -36,7 +35,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
  * @author Thomas.Diesler@jboss.com
  * @since 16-Feb-2011
  */
-public final class ArchiveDeployerImpl implements ArchiveDeployer {
+public final class ArchiveDeployerImpl { //implements ArchiveDeployer {
 
     private ServerDeploymentManager deploymentManager;
 
@@ -44,9 +43,8 @@ public final class ArchiveDeployerImpl implements ArchiveDeployer {
         this.deploymentManager = deploymentManager;
     }
 
-    @Override
     public String deploy(Archive<?> archive) throws Exception {
-        InputStream input = archive.as(ZipExporter.class).exportZip();
+        InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
         DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
         builder = builder.add(archive.getName(), input).andDeploy();
         DeploymentPlan plan = builder.build();
@@ -55,7 +53,6 @@ public final class ArchiveDeployerImpl implements ArchiveDeployer {
         return runtimeName;
     }
 
-    @Override
     public void undeploy(String runtimeName) throws Exception {
         DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
         DeploymentPlan plan = builder.undeploy(runtimeName).remove(runtimeName).build();
