@@ -36,6 +36,13 @@ import org.jboss.invocation.InterceptorFactoryContext;
  * User: Jaikiran Pai
  */
 public class ContainerManagedConcurrencyInterceptorFactory implements InterceptorFactory {
+
+    public static final ContainerManagedConcurrencyInterceptorFactory INSTANCE = new ContainerManagedConcurrencyInterceptorFactory();
+
+    private ContainerManagedConcurrencyInterceptorFactory() {
+
+    }
+
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
         final Component component = (Component) context.getContextData().get(Component.class);

@@ -57,6 +57,7 @@ public class InterceptorOrder {
     public static final class ComponentPostConstruct {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
+        public static final int TRANSACTION_INTERCEPTOR = 0x101;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x300;
         public static final int INSTANTIATION_INTERCEPTORS = 0x400;
@@ -74,6 +75,7 @@ public class InterceptorOrder {
     public static final class ComponentPreDestroy {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
+        public static final int TRANSACTION_INTERCEPTOR = 0x101;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x300;
         public static final int JPA_SFSB_DESTROY = 0x400;

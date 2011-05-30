@@ -95,7 +95,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                     if((method.getName().equals("hashCode") && method.getParameterTypes().length==0) ||
                             method.getName().equals("equals") && method.getParameterTypes().length ==1 &&
                                     method.getParameterTypes()[0] == Object.class) {
-                        configuration.addViewInterceptor(ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
+                        configuration.addViewInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
                     }
                 }
 

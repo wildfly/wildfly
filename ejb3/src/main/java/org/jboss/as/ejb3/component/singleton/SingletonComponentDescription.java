@@ -32,10 +32,12 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.Interceptor;
@@ -43,6 +45,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 
@@ -70,6 +73,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
         // add container managed concurrency interceptor to the component
         this.addConcurrencyManagementInterceptor();
+
     }
 
     @Override
@@ -78,6 +82,25 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup()));
+
+        if(getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
+            //we need to add the transaction interceptor to the lifecycle methods
+            getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+
+                    if(getClassDescription().getPostConstructMethod() != null) {
+                        TransactionAttributeType txAttr = getTransactionAttribute(MethodIntf.BEAN, getClassDescription().getClassName(), getClassDescription().getPostConstructMethod().getName(), getClassDescription().getPostConstructMethod().getParameterTypes());
+                        configuration.addPostConstructInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(txAttr), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                    }
+                    if(getClassDescription().getPreDestroyMethod() != null) {
+                        TransactionAttributeType txAttr = getTransactionAttribute(MethodIntf.BEAN, getClassDescription().getClassName(), getClassDescription().getPreDestroyMethod().getName(), getClassDescription().getPreDestroyMethod().getParameterTypes());
+                        configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(txAttr), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                    }
+                }
+            });
+
+        }
 
         return singletonComponentConfiguration;
     }
@@ -126,7 +149,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
                             method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
                                     method.getParameterTypes()[0] == Object.class) {
-                        configuration.addViewInterceptor(ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
+                        configuration.addViewInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
                     }
                 }
 
@@ -168,7 +191,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 if (singletonComponentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
                     return;
                 }
-                configuration.addComponentInterceptor(new ContainerManagedConcurrencyInterceptorFactory(), InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, true);
+                configuration.addComponentInterceptor(ContainerManagedConcurrencyInterceptorFactory.INSTANCE, InterceptorOrder.Component.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR, true);
             }
         });
     }

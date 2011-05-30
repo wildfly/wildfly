@@ -23,11 +23,9 @@
 package org.jboss.as.ejb3.component.session;
 
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -37,13 +35,10 @@ import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.tx.CMTTxInterceptor;
+import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.ejb3.tx2.spi.TransactionalComponent;
 import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
@@ -59,7 +54,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -402,16 +396,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
                 // Add CMT interceptor factory
                 if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
-                    configuration.addViewInterceptor(new ComponentInterceptorFactory() {
-                                @Override
-                                protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                                    if (!(component instanceof TransactionalComponent)) {
-                                        throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                                " isn't a transactional component. Tx interceptors cannot be applied");
-                                    }
-                                    return new CMTTxInterceptor((TransactionalComponent) component);
-                                }
-                            }, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
+                    configuration.addViewInterceptor(CMTTxInterceptorFactory.INSTANCE, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
                 }
             }
         });
@@ -458,4 +443,5 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public boolean isStateless() {
         return getSessionBeanType() == SessionBeanType.STATELESS;
     }
+
 }
