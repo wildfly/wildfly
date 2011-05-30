@@ -21,12 +21,23 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentException;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -34,29 +45,31 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration;
 import org.jboss.wsf.spi.deployment.integration.WebServiceDeployment;
-
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class WSEJBAdapterDeployer {
+public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(WSEJBAdapterDeployer.class);
-    private static final DotName WEB_SERVICE_ANNOTATION = DotName.createSimple(WebService.class.getName());
-    private static final DotName WEB_SERVICE_PROVIDER_ANNOTATION = DotName.createSimple(WebServiceProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WSEJBIntegrationProcessor.class);
+
+    @Override
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        final WebServiceDeploymentAdapter wsDeploymentAdapter = new WebServiceDeploymentAdapter();
+        processAnnotation(unit, ASHelper.WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
+        processAnnotation(unit, ASHelper.WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
+        unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
+    }
+
+    @Override
+    public void undeploy(final DeploymentUnit context) {
+        // NOOP
+    }
 
    /**
     * Deploys WebServiceDeployment meta data.
@@ -65,10 +78,6 @@ public final class WSEJBAdapterDeployer {
     * @throws DeploymentException exception
     */
    public static void internalDeploy(final DeploymentUnit unit) {
-       final WebServiceDeploymentAdapter wsDeploymentAdapter = new WebServiceDeploymentAdapter();
-       processAnnotation(unit, WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
-       processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
-       unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
    }
 
    private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeploymentAdapter wsDeploymentAdapter) {
@@ -81,14 +90,10 @@ public final class WSEJBAdapterDeployer {
            final ClassInfo webServiceClassInfo = (ClassInfo) target;
            final String beanClassName = webServiceClassInfo.name().toString();
            final ComponentDescription componentDescription = moduleDescription.getComponentByClassName(beanClassName);
-
-           // final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1); // TODO: investigate why commented out
-           // final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: investigate why commented out
            final SessionBeanComponentDescription sessionBean = getSessionBean(componentDescription);
            if (sessionBean != null && (sessionBean.isStateless() || sessionBean.isSingleton())) {
                final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
                final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
-               // final String ejbContainerName = newEJBContainerName(unit, componentDescription); TODO: removed
                endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName));
            }
        }
@@ -102,15 +107,12 @@ public final class WSEJBAdapterDeployer {
        return null;
    }
 
-   /** TODO: removed
-   private static String newEJBContainerName(final DeploymentUnit unit, final ComponentDescription componentDescription) {
-       // TODO: algorithm copied from org.jboss.as.ee.component.ComponentInstallProcessor.deployComponent() method - remove this construction code duplicity
-       return unit.getServiceName().append("component").append(componentDescription.getComponentName()).append("START").getCanonicalName();
-   }*/
-
    private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
-       final Index compositeIndex = ASHelper.getRootAnnotationIndex(unit);
-       return compositeIndex.getAnnotations(annotation);
+       final List<AnnotationInstance> retVal = new LinkedList<AnnotationInstance>();
+       for (final Index index : ASHelper.getRootAnnotationIndexes(unit)) {
+           retVal.addAll(index.getAnnotations(annotation));
+       }
+       return retVal;
    }
 
    /**
