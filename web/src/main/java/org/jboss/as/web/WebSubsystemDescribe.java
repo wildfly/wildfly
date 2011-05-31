@@ -22,62 +22,53 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
+import java.util.Locale;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import java.util.Locale;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class WebSubsystemDescribe implements ModelQueryOperationHandler, DescriptionProvider {
+class WebSubsystemDescribe implements NewStepHandler, DescriptionProvider {
 
     static final WebSubsystemDescribe INSTANCE = new WebSubsystemDescribe();
 
     /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-        final ModelNode result = new ModelNode();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        final ModelNode result = context.getResult();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
-        if(subModel.hasDefined(Constants.CONTAINER_CONFIG)) {
+        if (subModel.hasDefined(Constants.CONTAINER_CONFIG)) {
             subsystemAdd.get(Constants.CONTAINER_CONFIG).set(subModel.get(Constants.CONTAINER_CONFIG));
         }
         result.add(subsystemAdd);
-        if(subModel.hasDefined(Constants.CONNECTOR)) {
-            for(final Property connector : subModel.get(Constants.CONNECTOR).asPropertyList()) {
+        if (subModel.hasDefined(Constants.CONNECTOR)) {
+            for (final Property connector : subModel.get(Constants.CONNECTOR).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
                 address.add(Constants.CONNECTOR, connector.getName());
                 result.add(WebConnectorAdd.getRecreateOperation(address, connector.getValue()));
             }
         }
-        if(subModel.hasDefined(Constants.VIRTUAL_SERVER)) {
-            for(final Property host : subModel.get(Constants.VIRTUAL_SERVER).asPropertyList()) {
+        if (subModel.hasDefined(Constants.VIRTUAL_SERVER)) {
+            for (final Property host : subModel.get(Constants.VIRTUAL_SERVER).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
                 address.add(Constants.VIRTUAL_SERVER, host.getName());
                 result.add(WebVirtualHostAdd.getAddOperation(address, host.getValue()));
             }
         }
-
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.completeStep();
     }
 
     @Override

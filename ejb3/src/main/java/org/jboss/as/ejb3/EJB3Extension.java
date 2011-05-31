@@ -22,17 +22,22 @@
 
 package org.jboss.as.ejb3;
 
-import org.jboss.as.controller.BasicOperationResult;
+import java.util.List;
+import java.util.Locale;
+import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -43,12 +48,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author Emanuel Muckenhuber
@@ -106,16 +105,12 @@ public class EJB3Extension implements Extension {
         return subsystem;
     }
 
-    private static class SubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class SubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
-        @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-            ModelNode node = new ModelNode();
-            node.add(createAddSubSystemOperation());
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            context.getResult().add(createAddSubSystemOperation());
+            context.completeStep();
         }
 
         @Override

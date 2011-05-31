@@ -20,43 +20,58 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.modcluster;
+package org.jboss.as.messaging.jms;
 
-import java.util.Locale;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
- * @author Jean-Frederic Clere
+ * @author Emanuel Muckenhuber
  */
-class ModClusterSubsystemDescribe implements NewStepHandler, DescriptionProvider {
+class JMSSubsystemDescribeHandler implements NewStepHandler {
 
-    static final ModClusterSubsystemDescribe INSTANCE = new ModClusterSubsystemDescribe();
+    static final JMSSubsystemDescribeHandler INSTANCE = new JMSSubsystemDescribeHandler();
 
     /** {@inheritDoc} */
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
+        final ModelNode result = context.getResult();
         final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
-        if(subModel.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
-            subsystemAdd.get(CommonAttributes.MOD_CLUSTER_CONFIG).set(subModel.get(CommonAttributes.MOD_CLUSTER_CONFIG));
-        }
-        context.getResult().add(subsystemAdd);
-        context.completeStep();
-    }
+        result.add(subsystemAdd);
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return new ModelNode();
+        if(subModel.hasDefined(CommonAttributes.CONNECTION_FACTORY)) {
+            for(final Property property : subModel.get(CommonAttributes.CONNECTION_FACTORY).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.CONNECTION_FACTORY, property.getName());
+                result.add(ConnectionFactoryAdd.getAddOperation(address, property.getValue()));
+            }
+        }
+        if(subModel.hasDefined(CommonAttributes.QUEUE)) {
+            for(final Property property : subModel.get(CommonAttributes.QUEUE).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.QUEUE, property.getName());
+                result.add(JMSQueueAdd.getOperation(address, property.getValue()));
+            }
+        }
+        if(subModel.hasDefined(CommonAttributes.TOPIC)) {
+            for(final Property property : subModel.get(CommonAttributes.TOPIC).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(CommonAttributes.TOPIC, property.getName());
+                result.add(JMSTopicAdd.getOperation(address, property.getValue()));
+            }
+        }
+
+        context.completeStep();
     }
 }

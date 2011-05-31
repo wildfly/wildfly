@@ -34,7 +34,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -42,39 +41,36 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
+import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
 import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
-import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
 import org.jboss.as.threads.ThreadsParser;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -369,14 +365,12 @@ public class JcaExtension implements Extension {
         }
     }
 
-    private static class ConnectorSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class ConnectorSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final ConnectorSubsystemDescribeHandler INSTANCE = new ConnectorSubsystemDescribeHandler();
 
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode add = createEmptyAddOperation();
-            final ModelNode model = context.getSubModel();
+            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             if (model.hasDefined(BEAN_VALIDATION_ENABLED)) {
                 add.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
@@ -397,7 +391,7 @@ public class JcaExtension implements Extension {
                 add.get(CACHED_CONNECTION_MANAGER_ERROR).set(model.get(CACHED_CONNECTION_MANAGER_ERROR));
             }
 
-            ModelNode result = new ModelNode();
+            final ModelNode result = context.getResult();
             result.add(add);
 
             if (model.hasDefined(THREAD_POOL)) {
@@ -411,9 +405,7 @@ public class JcaExtension implements Extension {
                 }
             }
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         }
 
         @Override

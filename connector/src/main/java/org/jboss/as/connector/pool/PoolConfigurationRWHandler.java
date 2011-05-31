@@ -34,15 +34,10 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -64,29 +59,22 @@ public class PoolConfigurationRWHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final String[] ATTRIBUTES = new String[] { MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
+    public static final String[] ATTRIBUTES = new String[]{MAX_POOL_SIZE, MIN_POOL_SIZE, BLOCKING_TIMEOUT_WAIT_MILLIS,
             IDLETIMEOUTMINUTES, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMINUTES, POOL_PREFILL, POOL_USE_STRICT_MIN,
-            USE_FAST_FAIL };
+            USE_FAST_FAIL};
 
-    public static class PoolConfigurationReadHandler implements ModelQueryOperationHandler {
+    public static class PoolConfigurationReadHandler implements NewStepHandler {
         public static PoolConfigurationReadHandler INSTANCE = new PoolConfigurationReadHandler();
 
-        /** {@inheritDoc} */
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) throws OperationFailedException {
-
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String jndiName = address.getLastElement().getValue();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String parameterName = operation.require(NAME).asString();
 
-            final ModelNode submodel = context.getSubModel();
+            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
             final ModelNode currentValue = submodel.get(parameterName).clone();
 
-            resultHandler.handleResultFragment(new String[0], currentValue);
-            resultHandler.handleResultComplete();
+            context.getResult().set(currentValue);
 
-            return new BasicOperationResult();
+            context.completeStep();
         }
     }
 
@@ -98,8 +86,8 @@ public class PoolConfigurationRWHandler {
 
         @Override
         protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
-                final String parameterName, final ModelNode newValue,
-                final ModelNode currentValue) throws OperationFailedException {
+               final String parameterName, final ModelNode newValue,
+               final ModelNode currentValue) throws OperationFailedException {
 
             if (context.getType() == NewOperationContext.Type.SERVER) {
                 context.addStep(new NewStepHandler() {

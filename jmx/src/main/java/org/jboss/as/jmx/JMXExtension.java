@@ -22,30 +22,25 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -177,19 +172,14 @@ public class JMXExtension implements Extension {
         }
     }
 
-    private static class JMXDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class JMXDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final JMXDescribeHandler INSTANCE = new JMXDescribeHandler();
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-            final ModelNode model = context.getSubModel();
 
-            final ModelNode node = new ModelNode();
-            node.add(createAddOperation());
-            node.add(createAddConnectorOperation(model.require(CommonAttributes.SERVER_BINDING).asString(), model.require(CommonAttributes.REGISTRY_BINDING).asString()));
-
-            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+            context.getResult().add(createAddOperation());
+            context.getResult().add(createAddConnectorOperation(model.require(CommonAttributes.SERVER_BINDING).asString(), model.require(CommonAttributes.REGISTRY_BINDING).asString()));
+            context.completeStep();
         }
 
         @Override

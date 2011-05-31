@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.dmr;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -49,7 +51,7 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSEndpointMetrics implements ModelQueryOperationHandler {
+final class WSEndpointMetrics implements NewStepHandler {
 
     static final WSEndpointMetrics INSTANCE = new WSEndpointMetrics();
     static final String[] ATTRIBUTES;
@@ -76,29 +78,27 @@ final class WSEndpointMetrics implements ModelQueryOperationHandler {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry().getService(WSServices.REGISTRY_SERVICE);
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(WSServices.REGISTRY_SERVICE);
                     if (controller != null) {
                         try {
-                            final ModelNode result = getEndpointMetricsFragment(operation, controller);
-                            resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, result);
-                            resultHandler.handleResultComplete();
+                            context.getResult().set(getEndpointMetricsFragment(operation, controller));
                         } catch (Exception e) {
                             throw new OperationFailedException(new ModelNode().set(getFallbackMessage() + ": " + e.getMessage()));
                         }
                     } else {
-                        fallback(resultHandler, getFallbackMessage());
+                        context.getResult().set(getFallbackMessage());
                     }
+                    context.completeStep();
                 }
-            });
+            }, NewOperationContext.Stage.RUNTIME);
         } else {
-            fallback(resultHandler, getFallbackMessage());
+            context.getResult().set(getFallbackMessage());
         }
-        return new BasicOperationResult();
+        context.completeStep();
     }
 
     private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceController<?> controller) throws OperationFailedException {
@@ -145,11 +145,4 @@ final class WSEndpointMetrics implements ModelQueryOperationHandler {
     private static String getFallbackMessage() {
         return FALLBACK_MESSAGE;
     }
-
-    private static void fallback(final ResultHandler resultHandler, final String msg) {
-        final ModelNode fallbackFragmenet = new ModelNode().set(msg);
-        resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, fallbackFragmenet);
-        resultHandler.handleResultComplete();
-    }
-
 }

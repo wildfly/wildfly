@@ -21,40 +21,36 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Domain extension used to initialize the JPA subsystem element handlers.
@@ -100,19 +96,13 @@ public class JPAExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
     }
 
-    private static class JPADescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class JPADescribeHandler implements NewStepHandler, DescriptionProvider {
         static final JPADescribeHandler INSTANCE = new JPADescribeHandler();
 
-        @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-            ModelNode model = context.getSubModel();
-
-            ModelNode node = new ModelNode();
-            node.add(createAddOperation(model.require(CommonAttributes.DEFAULT_DATASOURCE).asString()));
-
-            resultHandler.handleResultFragment(Util.NO_LOCATION, node);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+            context.getResult().add(createAddOperation(model.require(CommonAttributes.DEFAULT_DATASOURCE).asString()));
+            context.completeStep();
         }
 
         @Override

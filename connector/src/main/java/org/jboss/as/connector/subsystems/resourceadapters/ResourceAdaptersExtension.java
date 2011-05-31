@@ -21,6 +21,12 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -30,6 +36,11 @@ import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.connector.pool.PoolOperations;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
@@ -71,38 +82,22 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.TEST_CONNECTION_DESC;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.connector.pool.PoolOperations;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -640,12 +635,10 @@ public class ResourceAdaptersExtension implements Extension {
         }
     }
 
-    private static class ResourceAdaptersSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class ResourceAdaptersSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
 
-        @Override
-        public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) {
-
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final ModelNode address = new ModelNode();
             address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTERS);
             address.protect();
@@ -654,7 +647,7 @@ public class ResourceAdaptersExtension implements Extension {
             add.get(OP).set(ADD);
             add.get(OP_ADDR).set(address);
 
-            ModelNode model = context.getSubModel();
+            ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             // FIXME remove when equivalent workaround in
             // ResourceAdaptersSubsystemAdd is gone
@@ -669,12 +662,8 @@ public class ResourceAdaptersExtension implements Extension {
                 // TODO Fill in the details
             }
 
-            ModelNode result = new ModelNode();
-            result.add(add);
-
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.getResult().add(add);
+            context.completeStep();
         }
 
         @Override
