@@ -50,7 +50,7 @@ class SecurityDomainOperations {
 
     private static final String PRINCIPAL_ARGUMENT = "principal";
 
-    static final ModelQueryOperationHandler LIST_CACHED_PRINCIPALS_OP = new NewStepHandler() {
+    static final NewStepHandler LIST_CACHED_PRINCIPALS_OP = new NewStepHandler() {
 
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode opAddr = operation.require(OP_ADDR);
@@ -82,7 +82,7 @@ class SecurityDomainOperations {
                     }
                 }, NewOperationContext.Stage.RUNTIME);
             } else {
-                context.getResult().set("authentication cache for security domain " + securityDomain + " available"));
+                context.getResult().set("authentication cache for security domain " + securityDomain + " available");
             }
             context.completeStep();
         }

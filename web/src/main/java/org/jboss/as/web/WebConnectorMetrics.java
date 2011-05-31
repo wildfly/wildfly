@@ -57,7 +57,7 @@ class WebConnectorMetrics implements NewStepHandler {
                     final String name = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
 
-                    final ServiceController<?> controller = context.getServiceRegistry()
+                    final ServiceController<?> controller = context.getServiceRegistry(false)
                             .getService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name));
                     if (controller != null) {
                         try {

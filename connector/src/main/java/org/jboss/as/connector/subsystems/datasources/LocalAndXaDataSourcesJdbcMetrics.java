@@ -43,8 +43,6 @@ public class LocalAndXaDataSourcesJdbcMetrics implements NewStepHandler {
 
     static LocalAndXaDataSourcesJdbcMetrics INSTANCE = new LocalAndXaDataSourcesJdbcMetrics();
 
-    static final String[] NO_LOCATION = new String[0];
-
     static final Set<String> ATTRIBUTES = (new JdbcStatisticsPlugin()).getNames();
 
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
@@ -55,7 +53,7 @@ public class LocalAndXaDataSourcesJdbcMetrics implements NewStepHandler {
                     final String jndiName = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
 
-                    final ServiceController<?> managementRepoService = context.getServiceRegistry().getService(
+                    final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                             ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
                     if (managementRepoService != null) {
                         try {
@@ -72,7 +70,6 @@ public class LocalAndXaDataSourcesJdbcMetrics implements NewStepHandler {
                                 }
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
                             throw new OperationFailedException(new ModelNode().set("failed to get metrics " + e.getMessage()));
                         }
                     }
