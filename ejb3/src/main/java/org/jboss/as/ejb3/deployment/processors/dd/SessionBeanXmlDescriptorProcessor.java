@@ -30,6 +30,7 @@ import org.jboss.as.ejb3.component.EJBMethodDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -149,6 +150,19 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         }
     }
 
+    private static void processSessionSynchronization(final SessionBean31MetaData metaData, final SessionBeanComponentDescription sessionBeanComponentDescription) {
+        if (!(sessionBeanComponentDescription instanceof StatefulComponentDescription))
+            return;
+        final StatefulComponentDescription description = (StatefulComponentDescription) sessionBeanComponentDescription;
+
+        if (metaData.getAfterBeginMethod() != null)
+            description.setAfterBegin(null, metaData.getAfterBeginMethod().getMethodName());
+        if (metaData.getAfterCompletionMethod() != null)
+            description.setAfterCompletion(null, metaData.getAfterCompletionMethod().getMethodName());
+        if (metaData.getBeforeCompletionMethod() != null)
+            description.setBeforeCompletion(null, metaData.getBeforeCompletionMethod().getMethodName());
+    }
+
     protected void processInterceptors(SessionBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription) {
 
         //for interceptor methods that specify a null class we cannot deal with them here
@@ -202,6 +216,8 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         if (sessionBean31MetaData.isSingleton() && sessionBeanComponentDescription instanceof SingletonComponentDescription) {
             this.processSingletonBean(sessionBean31MetaData, (SingletonComponentDescription) sessionBeanComponentDescription);
         }
+
+        processSessionSynchronization(sessionBean31MetaData, sessionBeanComponentDescription);
     }
 
     private void processSingletonBean(SessionBean31MetaData singletonBeanMetaData, SingletonComponentDescription singletonComponentDescription) {
