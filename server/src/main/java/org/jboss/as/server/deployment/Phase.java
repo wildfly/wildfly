@@ -269,6 +269,7 @@ public enum Phase {
 
 
     // DEPENDENCIES
+    public static final int DEPENDENCIES_EJB                            = 0x0000;
     public static final int DEPENDENCIES_MODULE                         = 0x0100;
     public static final int DEPENDENCIES_DS                             = 0x0200;
     public static final int DEPENDENCIES_RAR_CONFIG                     = 0x0300;
@@ -285,7 +286,6 @@ public enum Phase {
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     // Sets up appropriate module dependencies for EJB deployments
-    public static final int DEPENDENCIES_EJB                            = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
 
