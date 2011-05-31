@@ -73,6 +73,13 @@ public interface NewOperationContext {
     InputStream getAttachmentStream(int index) throws IOException;
 
     /**
+     * Gets the number of streams attached to the request.
+     *
+     * @return  the number of streams
+     */
+    int getAttachmentStreamCount();
+
+    /**
      * Get the node into which the operation result should be written.
      *
      * @return the result node
