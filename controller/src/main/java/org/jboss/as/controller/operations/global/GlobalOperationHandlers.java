@@ -95,10 +95,11 @@ public class GlobalOperationHandlers {
             final ModelNodeRegistration registry = context.getModelNodeRegistration();
             final ModelNode model = context.readModel(address);
             final ModelNode result;
-                if (readOperation.get(RECURSIVE).asBoolean(false)) {
+            if (readOperation.get(RECURSIVE).asBoolean(false)) {
                     // FIXME security checks JBAS-8842
                     result = model.clone();
-                } else {
+                    // FIXME deal with proxies
+            } else {
                     result = new ModelNode();
 
                     final Set<String> childNames = registry != null ? registry.getChildNames(address) : Collections.<String>emptySet();
@@ -142,7 +143,8 @@ public class GlobalOperationHandlers {
                             }
                         }
                     }
-                }
+                // FIXME deal with proxies
+            }
             return result;
         }
 
