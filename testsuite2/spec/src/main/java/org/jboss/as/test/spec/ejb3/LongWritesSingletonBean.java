@@ -42,9 +42,9 @@ public class LongWritesSingletonBean {
     private int count;
 
     @AccessTimeout(value = 1, unit = TimeUnit.SECONDS)
-    public void threeSecondWriteOperation() {
+    public void fiveSecondWriteOperation() {
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

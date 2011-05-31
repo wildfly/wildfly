@@ -132,19 +132,24 @@ public class SingletonBeanTestCase {
      */
     @Test
     public void testLongWritesSingleton() throws Exception {
+
+        // let's invoke a bean method (with WRITE lock semantics) which takes a long time to complete
+        final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+        final Future<?> firstInvocationResult = singleThreadExecutor.submit(new LongWritesSingletonBeanInvoker(this.longWritesSingletonBean));
+
+        // let's now try and invoke on this bean while the previous operation is in progress.
+        // we expect a ConcurrentAccessTimeoutException
         final int NUM_THREADS = 10;
-        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+        final ExecutorService nextTenInvocations = Executors.newFixedThreadPool(NUM_THREADS);
         Future<?>[] results = new Future[NUM_THREADS];
-        // let the 10 threads invoke on the bean's method (which has WRITE lock semantics) which takes 3 seconds to complete
+        // let the 10 threads invoke on the bean's method (which has WRITE lock semantics) which has a accesstimeout value
+        // set on it
         for (int i = 0; i < NUM_THREADS; i++) {
-            results[i] = executor.submit(new LongWritesSingletonBeanInvoker(longWritesSingletonBean));
+            results[i] = nextTenInvocations.submit(new LongWritesSingletonBeanInvoker(longWritesSingletonBean));
         }
         // Now fetch the results.
-
-        // the first one is expected to complete successfully
-        results[0].get(10, TimeUnit.SECONDS);
-        // rest all are expected to timeout
-        for (int i = 1; i < NUM_THREADS; i++) {
+        // all are expected to timeout
+        for (int i = 0; i < NUM_THREADS; i++) {
             try {
                 results[i].get(10, TimeUnit.SECONDS);
                 Assert.fail("Invocation on a singleton bean with WRITE lock was expected to fail for thread numbered: " + i);
@@ -152,6 +157,10 @@ public class SingletonBeanTestCase {
                 Assert.assertTrue("Unexpected exception during invocation on a singleton bean with WRITE lock", ee.getCause() instanceof ConcurrentAccessTimeoutException);
             }
         }
+        // get/wait (for) the result of the first invocation. Is expected to have completed successfully
+        firstInvocationResult.get(10, TimeUnit.SECONDS);
+        // only one call succeeded, so count should be 1
+        Assert.assertEquals("Unexpected count on singleton bean after invocation on method with WRITE lock semantic: ", 1, this.longWritesSingletonBean.getCount());
     }
 
     private class ReadOnlySingletonBeanInvoker implements Callable<String> {
@@ -181,7 +190,7 @@ public class SingletonBeanTestCase {
 
         @Override
         public Object call() throws Exception {
-            bean.threeSecondWriteOperation();
+            bean.fiveSecondWriteOperation();
             return null;
         }
     }
