@@ -20,59 +20,55 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A Element.
- * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * A Namespace.
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
-
-public enum Element {
-    /** always the first **/
+public enum Namespace {
+    // must be first
     UNKNOWN(null),
-    /** archive-validation element **/
-    ARCHIVE_VALIDATION("archive-validation"),
 
-    /** bean-validation element **/
-    BEAN_VALIDATION("bean-validation"),
+    JCA_1_0("urn:jboss:domain:jca:1.0");
 
-    /** default-workmanager element **/
-    DEFAULT_WORKMANAGER("default-workmanager"),
-
-    /** cached-connection-manager element **/
-    CACHED_CONNECTION_MANAGER("cached-connection-manager");
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = JCA_1_0;
 
     private final String name;
 
-    Element(final String name) {
+    Namespace(final String name) {
         this.name = name;
     }
 
     /**
-     * Get the local name of this element.
-     * @return the local name
+     * Get the URI of this namespace.
+     * @return the URI
      */
-    public String getLocalName() {
+    public String getUriString() {
         return name;
     }
 
-    private static final Map<String, Element> MAP;
+    private static final Map<String, Namespace> MAP;
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
-            final String name = element.getLocalName();
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
             if (name != null)
-                map.put(name, element);
+                map.put(name, namespace);
         }
         MAP = map;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }
 }

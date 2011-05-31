@@ -43,7 +43,7 @@ import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.AdminObjectService;
 import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.ConnectionFactoryService;
-import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;
@@ -97,7 +97,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     protected final InjectedValue<ManagementRepository> managementRepository = new InjectedValue<ManagementRepository>();
 
-    protected final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
+    protected final InjectedValue<JcaSubsystemConfiguration> config = new InjectedValue<JcaSubsystemConfiguration>();
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
@@ -175,7 +175,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return registry;
     }
 
-    public InjectedValue<ConnectorSubsystemConfiguration> getConfig() {
+    public InjectedValue<JcaSubsystemConfiguration> getConfig() {
         return config;
     }
 
@@ -187,7 +187,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return txInt;
     }
 
-    public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
+    public Injector<JcaSubsystemConfiguration> getConfigInjector() {
         return config;
     }
 

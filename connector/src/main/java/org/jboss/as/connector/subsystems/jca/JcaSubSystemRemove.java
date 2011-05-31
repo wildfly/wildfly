@@ -19,14 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.*;
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.jca.Constants.*;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -50,9 +46,9 @@ import org.jboss.msc.service.ServiceController;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class ConnectorSubSystemRemove implements ModelRemoveOperationHandler {
+public class JcaSubSystemRemove implements ModelRemoveOperationHandler {
 
-    static final OperationHandler INSTANCE = new ConnectorSubSystemRemove();
+    static final OperationHandler INSTANCE = new JcaSubSystemRemove();
 
     @Override
     public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {

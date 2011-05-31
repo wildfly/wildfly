@@ -1,4 +1,4 @@
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.dmr.ModelNode;
 

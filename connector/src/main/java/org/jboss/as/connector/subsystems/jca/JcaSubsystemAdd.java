@@ -20,16 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.connector.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
-import static org.jboss.as.connector.subsystems.connector.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
+import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
+import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
+import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
+import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -76,9 +76,9 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
+class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler {
 
-    static final OperationHandler INSTANCE = new ConnectorSubsystemAdd();
+    static final OperationHandler INSTANCE = new JcaSubsystemAdd();
 
     /**
      * {@inheritDoc}
@@ -183,7 +183,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                             .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER,
                                     com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
                                     defaultBootCtxService.getTxManagerInjector()).setInitialMode(Mode.ACTIVE).install();
-                    final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
+                    final JcaSubsystemConfiguration config = new JcaSubsystemConfiguration();
 
                     config.setArchiveValidation(archiveValidationEnabled);
                     config.setArchiveValidationFailOnError(failOnError);
@@ -192,7 +192,7 @@ class ConnectorSubsystemAdd implements ModelAddOperationHandler, BootOperationHa
                     // FIXME Bean validation currently not used
                     config.setBeanValidation(false);
 
-                    final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
+                    final JcaConfigService connectorConfigService = new JcaConfigService(config);
                     serviceTarget
                             .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
                             .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE,

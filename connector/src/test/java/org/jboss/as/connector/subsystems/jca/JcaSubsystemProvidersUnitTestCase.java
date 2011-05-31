@@ -20,29 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders;
 import org.junit.Test;
 
 /**
- * Tests {@link ConnectorSubsystemProviders}.
+ * Tests {@link JcaSubsystemProviders}.
  *
  * @author Brian Stansberry
  */
-public class ConnectorSubsystemProvidersUnitTestCase {
+public class JcaSubsystemProvidersUnitTestCase {
 
     @Test
     public void testSubsystem() {
-        ConnectorSubsystemProviders.SUBSYSTEM.getModelDescription(null);
+        JcaSubsystemProviders.SUBSYSTEM.getModelDescription(null);
     }
 
     @Test
     public void testSubsystemAddDesc() {
-        ConnectorSubsystemProviders.SUBSYSTEM_ADD_DESC.getModelDescription(null);
+        JcaSubsystemProviders.SUBSYSTEM_ADD_DESC.getModelDescription(null);
     }
 
     @Test
     public void testSubsystemRemoveDesc() {
-        ConnectorSubsystemProviders.SUBSYSTEM_REMOVE_DESC.getModelDescription(null);
+        JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC.getModelDescription(null);
     }
 }

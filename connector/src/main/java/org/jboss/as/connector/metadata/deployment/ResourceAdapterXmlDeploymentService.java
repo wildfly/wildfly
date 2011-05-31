@@ -29,7 +29,7 @@ import org.jboss.as.connector.services.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.AdminObjectService;
 import org.jboss.as.connector.services.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.ConnectionFactoryService;
-import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingStore;

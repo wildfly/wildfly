@@ -19,14 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
 class Constants {
-    static final String CONNECTOR = "connector";
+    static final String JCA = "jca";
     static final String ARCHIVE_VALIDATION_ENABLED = "archive-validation-enabled";
     static final String ARCHIVE_VALIDATION_FAIL_ON_ERROR = "archive-validation-fail-on-error";
     static final String ARCHIVE_VALIDATION_FAIL_ON_WARN = "archive-validation-fail-on-warn";

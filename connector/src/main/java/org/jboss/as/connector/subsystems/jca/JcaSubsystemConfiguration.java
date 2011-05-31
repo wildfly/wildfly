@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,7 +32,7 @@ import org.jboss.jca.deployers.common.Configuration;
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-public class ConnectorSubsystemConfiguration implements Configuration {
+public class JcaSubsystemConfiguration implements Configuration {
 
     /** Preform bean validation */
     private final AtomicBoolean beanValidation = new AtomicBoolean(true);
@@ -51,7 +51,7 @@ public class ConnectorSubsystemConfiguration implements Configuration {
     /**
      * Create a new ConnectorSubsystemConfiguration.
      */
-    public ConnectorSubsystemConfiguration() {
+    public JcaSubsystemConfiguration() {
     }
 
     /**

@@ -20,7 +20,7 @@
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 #
 
-org.jboss.as.connector.subsystems.connector.ConnectorExtension
+org.jboss.as.connector.subsystems.jca.JcaExtension
 org.jboss.as.connector.subsystems.datasources.DataSourcesExtension
 org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension
 

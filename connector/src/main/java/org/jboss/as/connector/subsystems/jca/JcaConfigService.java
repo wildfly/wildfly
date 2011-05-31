@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.Version;
@@ -37,22 +37,22 @@ import org.jboss.msc.value.InjectedValue;
  * A ConnectorConfigService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration> {
+final class JcaConfigService implements Service<JcaSubsystemConfiguration> {
 
-    private final ConnectorSubsystemConfiguration value;
+    private final JcaSubsystemConfiguration value;
 
     private final InjectedValue<CloneableBootstrapContext> defaultBootstrapContext = new InjectedValue<CloneableBootstrapContext>();
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     /** create an instance **/
-    public ConnectorConfigService(ConnectorSubsystemConfiguration value) {
+    public JcaConfigService(JcaSubsystemConfiguration value) {
         super();
         this.value = value;
     }
 
     @Override
-    public ConnectorSubsystemConfiguration getValue() throws IllegalStateException {
+    public JcaSubsystemConfiguration getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 

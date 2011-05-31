@@ -19,18 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.connector.subsystems.connector;
+package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.connector.Constants.*;
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.connector.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.connector.Constants.BEAN_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.connector.Constants.CONNECTOR;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.connector.Constants.DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL;
-import static org.jboss.as.connector.subsystems.connector.ConnectorSubsystemProviders.SUBSYSTEM;
-import static org.jboss.as.connector.subsystems.connector.ConnectorSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import static org.jboss.as.connector.subsystems.connector.ConnectorSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
+import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM;
+import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
+import static org.jboss.as.connector.subsystems.jca.Constants.*;
+
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -77,21 +72,21 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ConnectorExtension implements Extension {
+public class JcaExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     @Override
     public void initialize(final ExtensionContext context) {
         log.debugf("Initializing Connector Extension");
         // Register the connector subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(CONNECTOR);
+        final SubsystemRegistration registration = context.registerSubsystem(JCA);
 
         registration.registerXMLElementWriter(NewConnectorSubsystemParser.INSTANCE);
 
         // Connector subsystem description and operation handlers
         final ModelNodeRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
-        subsystem.registerOperationHandler(ADD, ConnectorSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(REMOVE, ConnectorSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
+        subsystem.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
+        subsystem.registerOperationHandler(REMOVE, JcaSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
         subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE,
                 ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
     }
@@ -103,7 +98,7 @@ public class ConnectorExtension implements Extension {
 
     private static ModelNode createEmptyAddOperation() {
         final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, CONNECTOR);
+        address.add(ModelDescriptionConstants.SUBSYSTEM, JCA);
         address.protect();
 
         final ModelNode subsystem = new ModelNode();
@@ -206,7 +201,7 @@ public class ConnectorExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case CONNECTOR_1_0: {
+                    case JCA_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (!visited.add(element)) {
                             throw unexpectedElement(reader);

@@ -36,7 +36,6 @@ import static org.junit.Assert.fail;
 
 /**
  * A XSDValidationUnitTestCase.
- *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
@@ -49,7 +48,7 @@ public class XSDValidationUnitTestCase {
 
     @Test
     public void testJBossConnector() throws Exception {
-        validateXsd("jboss-connector.xsd");
+        validateXsd("jboss-jca.xsd");
     }
 
     // FIXME disabled until it passes
