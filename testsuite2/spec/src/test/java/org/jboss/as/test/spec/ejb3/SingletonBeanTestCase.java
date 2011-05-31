@@ -22,6 +22,20 @@
 
 package org.jboss.as.test.spec.ejb3;
 
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonBean;
+import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
+import org.jboss.as.demos.ejb3.archive.StartupSingleton;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.EJB;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,24 +43,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.EJB;
-
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonBean;
-import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
-import org.jboss.as.demos.ejb3.archive.StartupSingleton;
-import org.jboss.as.test.spec.ejb3.LongWritesSingletonBean;
-import org.jboss.as.test.spec.ejb3.ReadOnlySingletonBean;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Testcase for testing the basic functionality of a EJB3 singleton session bean.
@@ -57,7 +53,7 @@ import org.junit.runner.RunWith;
 public class SingletonBeanTestCase {
 
     private static final Logger log = Logger.getLogger(SingletonBeanTestCase.class.getName());
-    
+
     @Deployment
     public static JavaArchive createDeployment() {
         // create the ejb jar
@@ -71,18 +67,18 @@ public class SingletonBeanTestCase {
         return jar;
     }
 
-    @EJB(mappedName="java:global/test/SimpleSingletonBean!org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal")
+    @EJB(mappedName = "java:global/test/SimpleSingletonBean!org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal")
     private SimpleSingletonLocal singletonBean;
-    
-    @EJB(mappedName="java:global/test/CallTrackerSingletonBean!org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean")
+
+    @EJB(mappedName = "java:global/test/CallTrackerSingletonBean!org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean")
     private CallTrackerSingletonBean callTrackerSingletonBean;
-    
-    @EJB(mappedName="java:global/test/ReadOnlySingletonBean!org.jboss.as.test.spec.ejb3.ReadOnlySingletonBean")
+
+    @EJB(mappedName = "java:global/test/ReadOnlySingletonBean!org.jboss.as.test.spec.ejb3.ReadOnlySingletonBean")
     private ReadOnlySingletonBean readOnlySingletonBean;
-    
-    @EJB(mappedName="java:global/test/LongWritesSingletonBean!org.jboss.as.test.spec.ejb3.LongWritesSingletonBean")
+
+    @EJB(mappedName = "java:global/test/LongWritesSingletonBean!org.jboss.as.test.spec.ejb3.LongWritesSingletonBean")
     private LongWritesSingletonBean longWritesSingletonBean;
-    
+
     /**
      * Test a basic invocation on @Singleton bean
      *
@@ -100,7 +96,7 @@ public class SingletonBeanTestCase {
 
     /**
      * Tests that a @Startup @Singleton bean is inited when the deployment is completed.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -110,6 +106,7 @@ public class SingletonBeanTestCase {
 
     /**
      * Tests that the concurrency on a singleton bean with lock type READ works as expected
+     *
      * @throws Exception
      */
     @Test
@@ -127,16 +124,23 @@ public class SingletonBeanTestCase {
         }
     }
 
+    /**
+     * Tests that invocation on a singleton bean method with write lock results in ConcurrentAccessTimeoutException
+     * for subsequent invocations, if the previous invocation(s) hasn't yet completed.
+     *
+     * @throws Exception
+     */
     @Test
-    @Ignore ("Disabled till we figure out why javax.ejb.* isn't available in the testcase module")
-    // Tried to remove the @Ignore now that javax.ejb is available, but the test errors w/ timeout - ALR
     public void testLongWritesSingleton() throws Exception {
         final int NUM_THREADS = 10;
         ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
         Future<?>[] results = new Future[NUM_THREADS];
+        // let the 10 threads invoke on the bean's method (which has WRITE lock semantics) which takes 3 seconds to complete
         for (int i = 0; i < NUM_THREADS; i++) {
             results[i] = executor.submit(new LongWritesSingletonBeanInvoker(longWritesSingletonBean));
         }
+        // Now fetch the results.
+
         // the first one is expected to complete successfully
         results[0].get(10, TimeUnit.SECONDS);
         // rest all are expected to timeout
@@ -144,8 +148,7 @@ public class SingletonBeanTestCase {
             try {
                 results[i].get(10, TimeUnit.SECONDS);
                 Assert.fail("Invocation on a singleton bean with WRITE lock was expected to fail for thread numbered: " + i);
-            }
-            catch (ExecutionException ee) {
+            } catch (ExecutionException ee) {
                 Assert.assertTrue("Unexpected exception during invocation on a singleton bean with WRITE lock", ee.getCause() instanceof ConcurrentAccessTimeoutException);
             }
         }
@@ -161,7 +164,7 @@ public class SingletonBeanTestCase {
             this.bean = bean;
             this.num = num;
         }
-        
+
         @Override
         public String call() throws Exception {
             return bean.twoSecondEcho(String.valueOf(this.num));
