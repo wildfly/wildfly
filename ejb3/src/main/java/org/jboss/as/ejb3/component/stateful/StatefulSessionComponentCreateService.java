@@ -34,6 +34,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * @author Stuart Douglas
@@ -80,6 +81,16 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return new StatefulSessionComponent(this);
     }
 
+    private static Method declaredMethodOfHierarchy(final Class<?> cls, final String name, final Class<?>[] parameterTypes) {
+        if (cls == null)
+            throw new RuntimeException("Unable to find method " + name + " " + Arrays.toString(parameterTypes));
+        try {
+            return cls.getDeclaredMethod(name, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            return declaredMethodOfHierarchy(cls.getSuperclass(), name, parameterTypes);
+        }
+    }
+
     private static Method methodOf(Class<?> cls, MethodDescription methodDescription) {
         if (methodDescription == null)
             return null;
@@ -94,7 +105,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
                 final Class<?> declaringClass = Class.forName(methodDescription.className, false, classLoader);
                 return declaringClass.getDeclaredMethod(methodDescription.methodName, paramTypes);
             }
-            return cls.getMethod(methodDescription.methodName, paramTypes);
+            return declaredMethodOfHierarchy(cls, methodDescription.methodName, paramTypes);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {

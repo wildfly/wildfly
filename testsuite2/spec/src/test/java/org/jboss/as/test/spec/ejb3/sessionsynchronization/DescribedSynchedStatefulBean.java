@@ -32,7 +32,7 @@ public class DescribedSynchedStatefulBean {
     public static boolean afterCompletionCalled = false;
     public static boolean beforeCompletionCalled = false;
 
-    public void afterBegin() {
+    private void afterBegin() {
         afterBeginCalled = true;
     }
 
