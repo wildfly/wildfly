@@ -22,11 +22,22 @@
 
 package org.jboss.as.security;
 
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -37,20 +48,6 @@ import static org.jboss.as.security.Constants.MAPPING_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ModelNodeRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceName;
@@ -100,13 +97,11 @@ public class SecurityExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), PARSER);
     }
 
-    private static class SecurityDescribeHandler implements ModelQueryOperationHandler {
+    private static class SecurityDescribeHandler implements NewStepHandler {
         static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
 
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) {
-            final ModelNode model = context.getSubModel();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
@@ -140,7 +135,7 @@ public class SecurityExtension implements Extension {
                 subsystem.get(SECURITY_PROPERTIES).set(model.get(SECURITY_PROPERTIES));
             }
 
-            ModelNode result = new ModelNode();
+            ModelNode result = context.getResult();
             result.add(subsystem);
 
             if (model.hasDefined(SECURITY_DOMAIN)) {
@@ -150,11 +145,8 @@ public class SecurityExtension implements Extension {
                 }
             }
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         }
-
     }
 
 }

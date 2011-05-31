@@ -25,20 +25,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.controller.registry.AttributeAccess;
-import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
 import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
-import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
-import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
-import static org.jboss.as.threads.CommonAttributes.NAME;
 import static org.jboss.as.threads.CommonAttributes.PRIORITY;
-import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
-import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREADS;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
@@ -59,19 +49,19 @@ import static org.jboss.as.threads.ThreadsSubsystemProviders.UNBOUNDED_QUEUE_THR
 
 import java.util.Locale;
 
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -146,26 +136,22 @@ public class ThreadsExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
     }
 
-    static class ThreadsSubsystemDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class ThreadsSubsystemDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final ThreadsSubsystemDescribeHandler INSTANCE = new ThreadsSubsystemDescribeHandler();
 
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) {
-            ModelNode result = new ModelNode();
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode result = context.getResult();
 
             result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));
 
-            final ModelNode model = context.getSubModel();
+            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
             addBoundedQueueThreadPools(result, model);
             addQueuelessThreadPools(result, model);
             addScheduledThreadPools(result, model);
             addThreadFactories(result, model);
             addUnboundedQueueThreadPools(result, model);
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         }
 
         private void addBoundedQueueThreadPools(final ModelNode result, final ModelNode model) {

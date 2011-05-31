@@ -22,20 +22,14 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.security.Principal;
 import java.util.Set;
-
-import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
@@ -56,60 +50,47 @@ class SecurityDomainOperations {
 
     private static final String PRINCIPAL_ARGUMENT = "principal";
 
-    static final ModelQueryOperationHandler LIST_CACHED_PRINCIPALS_OP = new ModelQueryOperationHandler() {
+    static final ModelQueryOperationHandler LIST_CACHED_PRINCIPALS_OP = new NewStepHandler() {
 
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode opAddr = operation.require(OP_ADDR);
             PathAddress address = PathAddress.pathAddress(opAddr);
             final String securityDomain = address.getLastElement().getValue();
 
-            if (context.getRuntimeContext() != null) {
-                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
+            if (context.getType() == NewOperationContext.Type.SERVER) {
+                context.addStep(new NewStepHandler() {
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    @Override
-                    @SuppressWarnings("unchecked")
-                    public void execute(RuntimeTaskContext context) throws OperationFailedException {
                         ServiceController<SecurityDomainContext> controller = (ServiceController<SecurityDomainContext>) context
-                                .getServiceRegistry().getRequiredService(
+                                .getServiceRegistry(false).getRequiredService(
                                         SecurityDomainService.SERVICE_NAME.append(securityDomain));
                         if (controller != null) {
                             SecurityDomainContext sdc = controller.getValue();
                             CacheableManager<?, Principal> manager = (CacheableManager<?, Principal>) sdc
                                     .getAuthenticationManager();
                             Set<Principal> cachedPrincipals = manager.getCachedKeys();
-                            ModelNode result = new ModelNode();
+                            ModelNode result = context.getResult();
                             for (Principal principal : cachedPrincipals) {
                                 result.add(principal.getName());
                             }
                             if (!result.isDefined())
                                 result.setEmptyList();
-                            resultHandler.handleResultFragment(new String[0], result);
-                            resultHandler.handleResultComplete();
                         } else {
-                            resultHandler.handleResultFragment(
-                                    new String[0],
-                                    new ModelNode().set("authentication cache for security domain " + securityDomain
-                                            + " available"));
-                            resultHandler.handleResultComplete();
+                            context.getResult().set("authentication cache for security domain " + securityDomain + " available");
                         }
+                        context.completeStep();
                     }
-                });
+                }, NewOperationContext.Stage.RUNTIME);
             } else {
-                resultHandler.handleResultFragment(new String[0],
-                        new ModelNode().set("authentication cache for security domain " + securityDomain + " available"));
-                resultHandler.handleResultComplete();
+                context.getResult().set("authentication cache for security domain " + securityDomain + " available"));
             }
-            return new BasicOperationResult();
+            context.completeStep();
         }
     };
 
-    static final ModelQueryOperationHandler FLUSH_CACHE_OP = new ModelQueryOperationHandler() {
+    static final NewStepHandler FLUSH_CACHE_OP = new NewStepHandler() {
 
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation,
-                final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode opAddr = operation.require(OP_ADDR);
             PathAddress address = PathAddress.pathAddress(opAddr);
             final String securityDomain = address.getLastElement().getValue();
@@ -117,15 +98,11 @@ class SecurityDomainOperations {
             if (operation.hasDefined(PRINCIPAL_ARGUMENT))
                 principal = operation.get(PRINCIPAL_ARGUMENT).asString();
             final String principalName = principal;
-
-            if (context.getRuntimeContext() != null) {
-                context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-
-                    @Override
-                    @SuppressWarnings("unchecked")
-                    public void execute(RuntimeTaskContext context) throws OperationFailedException {
+            if (context.getType() == NewOperationContext.Type.SERVER) {
+                context.addStep(new NewStepHandler() {
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                         ServiceController<SecurityDomainContext> controller = (ServiceController<SecurityDomainContext>) context
-                                .getServiceRegistry().getRequiredService(
+                                .getServiceRegistry(false).getRequiredService(
                                         SecurityDomainService.SERVICE_NAME.append(securityDomain));
                         if (controller != null) {
                             SecurityDomainContext sdc = controller.getValue();
@@ -135,22 +112,16 @@ class SecurityDomainOperations {
                                 manager.flushCache(new SimplePrincipal(principalName));
                             else
                                 manager.flushCache();
-                            resultHandler.handleResultComplete();
                         } else {
-                            resultHandler.handleResultFragment(
-                                    new String[0],
-                                    new ModelNode().set("authentication cache for security domain " + securityDomain
-                                            + " available"));
-                            resultHandler.handleResultComplete();
+                            context.getResult().set("authentication cache for security domain " + securityDomain + " available");
                         }
+                        context.completeStep();
                     }
-                });
+                }, NewOperationContext.Stage.RUNTIME);
             } else {
-                resultHandler.handleResultFragment(new String[0],
-                        new ModelNode().set("authentication cache for security domain " + securityDomain + " available"));
-                resultHandler.handleResultComplete();
+                context.getResult().set("authentication cache for security domain " + securityDomain + " available");
             }
-            return new BasicOperationResult();
+            context.completeStep();
         }
     };
 

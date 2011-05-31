@@ -22,38 +22,56 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.controller.BasicOperationResult;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import static org.jboss.as.txn.CommonAttributes.BINDING;
+import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
+import static org.jboss.as.txn.CommonAttributes.ENABLE_STATISTICS;
+import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
+import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
+import static org.jboss.as.txn.CommonAttributes.PROCESS_ID;
+import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
+import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
+import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.parsing.ParseUtils.*;
-import static org.jboss.as.txn.CommonAttributes.*;
 
 /**
  * The transaction managment extension.
@@ -427,14 +445,13 @@ public class TransactionExtension implements Extension {
         }
     }
 
-    private static class TransactionDescribeHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static class TransactionDescribeHandler implements NewStepHandler, DescriptionProvider {
         static final TransactionDescribeHandler INSTANCE = new TransactionDescribeHandler();
-        @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
 
+        public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode add = createEmptyAddOperation();
 
-            final ModelNode model = context.getSubModel();
+            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             if (model.hasDefined(CORE_ENVIRONMENT)) {
                 add.get(CORE_ENVIRONMENT).set(model.get(CORE_ENVIRONMENT));
@@ -450,12 +467,9 @@ public class TransactionExtension implements Extension {
                 add.get(OBJECT_STORE).set(model.get(OBJECT_STORE));
             }
 
-            final ModelNode result = new ModelNode();
-            result.add(add);
+            context.getResult().add(add);
 
-            resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         }
 
         @Override

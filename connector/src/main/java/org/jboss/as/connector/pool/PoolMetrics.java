@@ -22,23 +22,16 @@
 
 package org.jboss.as.connector.pool;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.api.management.DataSource;
@@ -50,50 +43,44 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  */
-public abstract class PoolMetrics implements ModelQueryOperationHandler {
+public abstract class PoolMetrics implements NewStepHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
     public static final Set<String> ATTRIBUTES = (new ManagedConnectionPoolStatisticsImpl(1)).getNames();
 
-    /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler)
-            throws OperationFailedException {
-
-        if (context.getRuntimeContext() != null) {
-            context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
-                public void execute(RuntimeTaskContext context) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.getType() == NewOperationContext.Type.SERVER) {
+            context.addStep(new NewStepHandler() {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String jndiName = address.getLastElement().getValue();
                     final String attributeName = operation.require(NAME).asString();
 
-                    final ServiceController<?> managementRepoService = context.getServiceRegistry().getService(
+                    final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                             ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
                     if (managementRepoService != null) {
                         try {
                             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
-                            final ModelNode result = new ModelNode();
+                            final ModelNode result = context.getResult();
                             List<StatisticsPlugin> stats = getMatchingStats(jndiName, repository);
                             for (StatisticsPlugin stat : stats) {
 
                                 result.set("" + stat.getValue(attributeName));
                             }
-
-                            resultHandler.handleResultFragment(new String[0], result);
-                            resultHandler.handleResultComplete();
                         } catch (Exception e) {
                             e.printStackTrace();
                             throw new OperationFailedException(new ModelNode().set("failed to get metrics " + e.getMessage()));
                         }
                     }
+                   context.completeStep();
                 }
-            });
+            }, NewOperationContext.Stage.RUNTIME);
         } else {
-            resultHandler.handleResultFragment(NO_LOCATION, new ModelNode().set("no metrics available"));
-            resultHandler.handleResultComplete();
+            context.getResult().set("no metrics available");
         }
-        return new BasicOperationResult();
+
+        context.completeStep();
     }
 
     protected abstract List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository);

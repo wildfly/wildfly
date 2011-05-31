@@ -22,27 +22,23 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
  * @author Paul Ferraro
  */
-public class JGroupsSubsystemDescribe implements ModelQueryOperationHandler, DescriptionProvider {
+public class JGroupsSubsystemDescribe implements NewStepHandler, DescriptionProvider {
 
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.as.controller.descriptions.DescriptionProvider#getModelDescription(java.util.Locale)
      */
     @Override
@@ -50,28 +46,21 @@ public class JGroupsSubsystemDescribe implements ModelQueryOperationHandler, Des
         return LocalDescriptions.getSubsystemDescribeDescription(locale);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.ModelQueryOperationHandler#execute(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.as.controller.ResultHandler)
-     */
-    @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        final ModelNode result = new ModelNode();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        final ModelNode result = context.getResult();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         result.add(JGroupsSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
 
         if (subModel.hasDefined(ModelKeys.STACK)) {
-            for(final Property stack : subModel.get(ModelKeys.STACK).asPropertyList()) {
+            for (final Property stack : subModel.get(ModelKeys.STACK).asPropertyList()) {
                 final ModelNode address = rootAddress.toModelNode();
                 address.add(ModelKeys.STACK, stack.getName());
                 result.add(ProtocolStackAdd.createOperation(address, stack.getValue()));
             }
         }
 
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.completeStep();
     }
 }

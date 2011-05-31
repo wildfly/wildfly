@@ -22,17 +22,14 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
@@ -44,14 +41,14 @@ import org.jboss.dmr.Property;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
+class MessagingSubsystemDescribeHandler implements NewStepHandler {
 
     static final MessagingSubsystemDescribeHandler INSTANCE = new MessagingSubsystemDescribeHandler();
 
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) {
-
+    /** {@inheritDoc} */
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode subsystemAdd = new ModelNode();
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
@@ -61,7 +58,7 @@ class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
                 subsystemAdd.get(attribute).set(subModel.get(attribute));
             }
         }
-        final ModelNode result = new ModelNode();
+        final ModelNode result = context.getResult();
         result.add(subsystemAdd);
 
         if(subModel.hasDefined(CommonAttributes.CONNECTION_FACTORY)) {
@@ -92,9 +89,8 @@ class MessagingSubsystemDescribeHandler implements ModelQueryOperationHandler {
                 result.add(PooledConnectionFactoryAdd.getAddOperation(address, property.getValue()));
             }
         }
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+
+        context.completeStep();
     }
 
 }

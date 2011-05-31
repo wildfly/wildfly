@@ -55,7 +55,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
     /**
      * Create an "add" operation using the existing model
      */
-    static ModelNode getOperation(ModelNode address, ModelNode existing) {
+    public static ModelNode getOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         if (existing.hasDefined(ENTRIES)) {
             op.get(ENTRIES).set(existing.get(ENTRIES));

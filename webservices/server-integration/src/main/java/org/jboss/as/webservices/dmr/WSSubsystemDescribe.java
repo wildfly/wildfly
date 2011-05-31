@@ -22,8 +22,10 @@
 
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -31,18 +33,12 @@ import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
-
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-final class WSSubsystemDescribe implements ModelQueryOperationHandler {
+final class WSSubsystemDescribe implements NewStepHandler {
 
     static final WSSubsystemDescribe INSTANCE = new WSSubsystemDescribe();
 
@@ -51,14 +47,10 @@ final class WSSubsystemDescribe implements ModelQueryOperationHandler {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation,
-            final ResultHandler resultHandler) {
-
-        final ModelNode result = new ModelNode();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
                 .getLastElement());
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         final ModelNode subsystemAdd = new ModelNode();
         subsystemAdd.get(OP).set(ADD);
@@ -80,11 +72,7 @@ final class WSSubsystemDescribe implements ModelQueryOperationHandler {
             subsystemAdd.get(WSDL_SECURE_PORT).set(subModel.get(WSDL_SECURE_PORT));
         }
 
-        result.add(subsystemAdd);
-
-        resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.getResult().add(subsystemAdd);
+        context.completeStep();
     }
-
 }
