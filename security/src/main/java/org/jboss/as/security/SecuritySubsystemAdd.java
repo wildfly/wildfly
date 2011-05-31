@@ -279,7 +279,7 @@ class SecuritySubsystemAdd implements NewStepHandler {
                     // add jaas configuration service
                     Configuration loginConfig = XMLLoginConfigImpl.getInstance();
                     final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
-                    final ServiceController<?> controller = target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
+                    target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
                             .addListener(verificationHandler)
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
@@ -291,7 +291,7 @@ class SecuritySubsystemAdd implements NewStepHandler {
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(controller);
+                        context.removeService(JaasConfigurationService.SERVICE_NAME);
                     }
                 }
             }, NewOperationContext.Stage.RUNTIME);

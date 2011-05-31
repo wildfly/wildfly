@@ -89,12 +89,12 @@ public class UnboundedQueueThreadPoolAdd implements NewStepHandler, DescriptionP
                     final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
                     ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
                     serviceBuilder.addListener(verificationHandler);
-                    final ServiceController<?> controller = serviceBuilder.install();
+                    serviceBuilder.install();
 
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(controller);
+                        context.removeService(serviceName);
                     }
                 }
             }, NewOperationContext.Stage.RUNTIME);

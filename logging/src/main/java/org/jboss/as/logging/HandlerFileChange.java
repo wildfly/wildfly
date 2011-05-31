@@ -90,13 +90,13 @@ public class HandlerFileChange implements NewStepHandler {
         if (operation.hasDefined(CommonAttributes.RELATIVE_TO)) {
             builder.addDependency(AbstractPathService.pathNameOf(operation.get(RELATIVE_TO).asString()), String.class, service.getRelativeToInjector());
         }
-        final ServiceController<?> controller = builder.setInitialMode(ServiceController.Mode.ACTIVE)
+        builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler).install();
 
         context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
         if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-            context.removeService(controller);
+            context.removeService(LogServices.handlerFileName(name));
         }
     }
 }

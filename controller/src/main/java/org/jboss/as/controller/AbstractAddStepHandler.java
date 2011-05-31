@@ -50,7 +50,7 @@ public abstract class AbstractAddStepHandler implements NewStepHandler {
 
                         if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
                             for(ServiceController<?> controller : controllers) {
-                                context.removeService(controller);
+                                context.removeService(controller.getName());
                             }
                         }
                     }
