@@ -32,7 +32,7 @@
         <module name="javax.inject.api"/>
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.arquillian.protocol.jmx"/>
-        <module name="org.jboss.arquillian.spi"/>
-        <module name="org.jboss.shrinkwrap.api"/>
+        <module name="org.jboss.arquillian.core"/>
+        <module name="org.jboss.shrinkwrap.core"/>
     </dependencies>
 </module>

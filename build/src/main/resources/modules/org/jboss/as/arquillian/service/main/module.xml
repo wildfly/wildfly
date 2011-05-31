@@ -36,13 +36,9 @@
         <module name="org.jboss.as.jmx" export="true"/>
         <module name="org.jboss.as.osgi" export="true"/>
         <module name="org.jboss.as.server" export="true"/>
-        <module name="org.jboss.arquillian.api" export="true"/>
-        <module name="org.jboss.arquillian.junit" export="true"/>
-        <module name="org.jboss.arquillian.protocol.jmx" export="true"/>
-        <module name="org.jboss.arquillian.protocol.osgi" export="true"/>
-        <module name="org.jboss.arquillian.spi" export="true"/>
+        <module name="org.jboss.arquillian.core" services="export" export="true"/>
+        <module name="org.jboss.arquillian.protocol.jmx" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.cdi" services="export" export="true"/>
-        <module name="org.jboss.arquillian.testenricher.jmx" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.msc" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.osgi" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.resource" services="export" export="true"/>
@@ -51,8 +47,7 @@
         <module name="org.jboss.modules" export="true"/>
         <module name="org.jboss.osgi.deployment" export="true"/>
         <module name="org.jboss.osgi.framework" export="true"/>
-        <module name="org.jboss.shrinkwrap.api" export="true"/>
-        <module name="org.jboss.shrinkwrap.impl" export="true"/>
+        <module name="org.jboss.shrinkwrap.core" export="true"/>
         <module name="org.osgi.core" export="true"/>
         <module name="org.junit" export="true"/>
     </dependencies>

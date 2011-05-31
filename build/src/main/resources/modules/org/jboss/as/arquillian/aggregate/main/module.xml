@@ -29,13 +29,8 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.arquillian.api" export="true"/>
-        <module name="org.jboss.arquillian.junit" export="true"/>
-        <module name="org.jboss.arquillian.protocol.jmx" export="true"/>
-        <module name="org.jboss.arquillian.protocol.osgi" export="true"/>
-        <module name="org.jboss.arquillian.spi" export="true"/>
-        <module name="org.jboss.shrinkwrap.api" export="true"/>
-        <module name="org.jboss.shrinkwrap.impl" export="true"/>
+        <module name="org.jboss.arquillian.core" export="true"/>
+        <module name="org.jboss.shrinkwrap.core" export="true"/>
         <module name="javax.inject.api" export="true"/>
         <module name="org.junit" export="true"/>
     </dependencies>

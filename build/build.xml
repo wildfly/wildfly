@@ -397,32 +397,29 @@
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
 
-        <module-def name="org.jboss.arquillian.api">
+        <module-def name="org.jboss.arquillian.core">
+            <maven-resource group="org.jboss.arquillian.config" artifact="arquillian-config-api"/>
+            <maven-resource group="org.jboss.arquillian.config" artifact="arquillian-config-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-api"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-spi"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-spi"/>
             <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-api"/>
-        </module-def>
-
-        <module-def name="org.jboss.arquillian.impl">
             <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-impl-base"/>
-        </module-def>
-
-        <module-def name="org.jboss.arquillian.junit">
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-spi"/>
             <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-core"/>
+            <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-container"/>
+            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-api"/>
+            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-spi"/>
         </module-def>
 
         <module-def name="org.jboss.arquillian.protocol.jmx">
             <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-jmx"/>
         </module-def>
 
-        <module-def name="org.jboss.arquillian.protocol.osgi">
-            <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-osgi"/>
-        </module-def>
-
-        <module-def name="org.jboss.arquillian.spi">
-            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-spi"/>
-        </module-def>
-
         <module-def name="org.jboss.arquillian.testenricher.cdi">
-            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
+            <!--maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/-->
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-cdi"/>
         </module-def>
 
@@ -435,7 +432,7 @@
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.resource">
-            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-resource"/>
+            <!--maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-resource"/-->
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-resource"/>
         </module-def>
 
@@ -445,10 +442,6 @@
 
         <module-def name="org.jboss.as.arquillian.common">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-common"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.arquillian.protocol.servlet">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-protocol-servlet"/>
         </module-def>
 
         <module-def name="org.jboss.as.arquillian.service"/>
@@ -806,16 +799,12 @@
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
         </module-def>
 
-        <module-def name="org.jboss.shrinkwrap.api">
+        <module-def name="org.jboss.shrinkwrap.core">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
-        </module-def>
-
-        <module-def name="org.jboss.shrinkwrap.spi">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-spi"/>
-        </module-def>
-
-        <module-def name="org.jboss.shrinkwrap.impl">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
+            <maven-resource group="org.jboss.shrinkwrap.descriptors" artifact="shrinkwrap-descriptors-api"/>
+            <maven-resource group="org.jboss.shrinkwrap.descriptors" artifact="shrinkwrap-descriptors-impl"/>
         </module-def>
 
         <module-def name="org.jboss.surefire.arquillian-deps"/>

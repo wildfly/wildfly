@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerInvocationHandler;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
@@ -46,7 +47,6 @@ import org.jboss.modules.management.ObjectProperties;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.management.ServiceContainerMXBean;
-import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -85,17 +85,15 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
-        return new ProtocolDescription("jmx-osgi");
+        return new ProtocolDescription("jmx-as7");
     }
 
     @Override
-    public void setup(T configuration) {
-        containerConfig = configuration;
-        modelControllerClient = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
-                containerConfig.getManagementPort());
+    public void setup(T config) {
+        containerConfig = config;
+        modelControllerClient = ModelControllerClient.Factory.create(config.getBindAddress(), config.getManagementPort());
         deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
-        modelControllerClient = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
-                containerConfig.getManagementPort());
+        modelControllerClient = ModelControllerClient.Factory.create(config.getBindAddress(), config.getManagementPort());
         deploymentManager = ServerDeploymentManager.Factory.create(modelControllerClient);
     }
 
@@ -103,11 +101,12 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
     public final void start() throws LifecycleException {
         startInternal();
         try {
-            MBeanServerConnection mbeanServer = getMBeanServerConnection(10000);
+            MBeanServerConnection mbeanServer = getMBeanServerConnection();
             ObjectName objectName = ObjectNameFactory.create(JMXTestRunnerMBean.OBJECT_NAME);
             boolean mbeanAvailable = mbeanServer.isRegistered(objectName);
             if (mbeanAvailable == false) {
                 String asVersion = AbstractDeployableContainer.class.getPackage().getImplementationVersion();
+                asVersion = asVersion != null ? asVersion : System.getProperty("project.version");
                 deployMavenArtifact("org.jboss.as", "jboss-as-arquillian-service", asVersion);
                 waitForMBean(objectName, 5000);
             }
@@ -174,7 +173,8 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
         }
     }
 
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Object deployment) throws Exception {
+    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Object deployment)
+            throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         registry.put(deployment, deployAction.getDeploymentUnitUniqueName());
         ServerDeploymentPlanResult planResult = future.get();
@@ -218,6 +218,8 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
             }
         }
     }
+
+    protected abstract MBeanServerConnection getMBeanServerConnection();
 
     protected MBeanServerConnection getMBeanServerConnection(long timeout) {
         while (timeout > 0) {
@@ -279,9 +281,8 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
             throw new IllegalStateException("Unexpected state for [" + serviceName + "] - " + currentState);
     }
 
-    protected abstract MBeanServerConnection getMBeanServerConnection();
-
-    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Archive<?> archive) throws Exception {
+    private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction, Archive<?> archive)
+            throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         registry.put(archive, deployAction.getDeploymentUnitUniqueName());
         ServerDeploymentPlanResult planResult = future.get();
@@ -322,6 +323,12 @@ public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfigu
             future.get();
         } catch (Exception ex) {
             log.warning("Cannot undeploy: " + artifactId + ":" + ex.getMessage());
+        }
+    }
+
+    static class MBeanProxy {
+        static <T> T get(MBeanServerConnection server, ObjectName name, Class<T> interf) {
+            return (T) MBeanServerInvocationHandler.newProxyInstance(server, name, interf, false);
         }
     }
 }

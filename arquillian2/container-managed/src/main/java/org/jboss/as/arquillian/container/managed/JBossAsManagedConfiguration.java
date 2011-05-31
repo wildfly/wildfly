@@ -38,11 +38,6 @@ public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
 
     private boolean outputToConsole = true;
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.as.arquillian.container.JBossAsContainerConfiguration#validate()
-     */
     @Override
     public void validate() throws ConfigurationException {
         super.validate();

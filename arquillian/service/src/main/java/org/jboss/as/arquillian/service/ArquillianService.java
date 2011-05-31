@@ -271,6 +271,11 @@ public class ArquillianService implements Service<ArquillianService> {
         }
 
         @Override
+        public ClassLoader getServiceClassLoader() {
+            return ArquillianService.class.getClassLoader();
+        }
+
+        @Override
         public Class<?> loadTestClass(String className) throws ClassNotFoundException {
 
             ArquillianConfig arqConfig = getConfig(className, 5000);

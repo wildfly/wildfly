@@ -29,12 +29,9 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="org.jboss.arquillian.impl"/>
-        <module name="org.jboss.arquillian.junit"/>
-        <module name="org.jboss.arquillian.spi"/>
+        <module name="org.jboss.arquillian.core"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.shrinkwrap.api"/>
-        <module name="org.jboss.shrinkwrap.impl"/>
+        <module name="org.jboss.shrinkwrap.core"/>
         <module name="org.junit"/>
     </dependencies>
 </module>

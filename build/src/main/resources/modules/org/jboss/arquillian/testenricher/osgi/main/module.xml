@@ -31,8 +31,8 @@
         <module name="javax.inject.api"/>
         <module name="org.jboss.arquillian.protocol.jmx"/>
         <module name="org.jboss.arquillian.protocol.osgi"/>
-        <module name="org.jboss.arquillian.spi"/>
-        <module name="org.jboss.shrinkwrap.api"/>
+        <module name="org.jboss.arquillian.core"/>
+        <module name="org.jboss.shrinkwrap.core"/>
         <module name="org.osgi.core"/>
     </dependencies>
 </module>

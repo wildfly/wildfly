@@ -545,11 +545,6 @@
         </dependency>
 
         <dependency>
-          <groupId>org.jboss.arquillian.protocol</groupId>
-          <artifactId>arquillian-protocol-osgi</artifactId>
-        </dependency>
-
-        <dependency>
            <groupId>org.jboss.arquillian.testenricher</groupId>
            <artifactId>arquillian-testenricher-resource</artifactId>
         </dependency>
@@ -576,6 +571,11 @@
         </dependency>
 
         <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
+        </dependency>
+
+        <dependency>
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
         </dependency>
@@ -583,11 +583,6 @@
         <dependency>
           <groupId>org.jboss.as</groupId>
           <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
         </dependency>
 
         <dependency>

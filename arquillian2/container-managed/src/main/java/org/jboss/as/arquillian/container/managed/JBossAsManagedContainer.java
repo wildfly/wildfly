@@ -199,10 +199,6 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAs
         return provider.getConnection();
     }
 
-    // protected ProtocolMetaData getProtocolMetaData(String deploymentName) {
-    // return new ProtocolMetaData();
-    // }
-
     private boolean isServerStarted() {
         try {
             ModelNode op = Util.getEmptyOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS.toModelNode());

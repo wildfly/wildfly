@@ -31,9 +31,9 @@ import org.jboss.shrinkwrap.api.Node;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 class ManifestUtils {
+
     static Manifest getManifest(Archive<?> archive, boolean create) {
         Manifest manifest = null;
         try {

@@ -46,9 +46,10 @@
         <!-- 
         <module>container-embedded</module>
         <module>container-remote</module>
-        -->
-        <module>processor-jsfunit</module>
         <module>protocol-servlet</module>
+        <module>processor-jsfunit</module>
+        -->
+        <module>protocol-jmx</module>
         <module>testenricher-cdi</module>
         <module>testenricher-msc</module>
         <module>testenricher-resource</module>
@@ -73,6 +74,10 @@
                         <property>
                           <name>jboss.home</name>
                           <value>../../build/target/jboss-${jboss.as.release.version}</value>
+                        </property>
+                        <property>
+                          <name>project.version</name>
+                          <value>${project.version}</value>
                         </property>
                         <property>
                           <name>jboss.embedded.root</name>

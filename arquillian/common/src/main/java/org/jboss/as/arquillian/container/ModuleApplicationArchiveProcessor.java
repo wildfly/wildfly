@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
@@ -44,14 +45,11 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
 
     static final List<String> defaultDependencies = new ArrayList<String>();
     static {
-        defaultDependencies.add("org.jboss.arquillian.api");
-        defaultDependencies.add("org.jboss.arquillian.junit");
+        defaultDependencies.add("org.jboss.arquillian.core");
         defaultDependencies.add("org.jboss.arquillian.protocol.jmx");
-        defaultDependencies.add("org.jboss.arquillian.spi");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
-        defaultDependencies.add("org.jboss.shrinkwrap.api");
-        defaultDependencies.add("org.jboss.shrinkwrap.impl");
+        defaultDependencies.add("org.jboss.shrinkwrap.core");
         defaultDependencies.add("org.junit");
     }
     static final List<String> jsfDependencies = new ArrayList<String>();
@@ -97,7 +95,7 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
         attributes.putValue("Dependencies", moduleDeps.toString());
 
         // Add the manifest to the archive
-        ArchivePath path = ArchivePaths.create("META-INF", "MANIFEST.MF");
+        ArchivePath path = ArchivePaths.create(JarFile.MANIFEST_NAME);
         appArchive.add(new Asset() {
                 public InputStream openStream() {
                     try {

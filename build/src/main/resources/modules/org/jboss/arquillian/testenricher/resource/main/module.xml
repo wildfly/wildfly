@@ -29,6 +29,6 @@
 
     <dependencies>
         <module name="javax.annotation.api"/>
-        <module name="org.jboss.arquillian.spi"/>
+        <module name="org.jboss.arquillian.core"/>
     </dependencies>
 </module>

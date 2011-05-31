@@ -29,7 +29,7 @@
 
     <dependencies>
         <module name="javax.inject.api"/>
-        <module name="org.jboss.arquillian.spi"/>
+        <module name="org.jboss.arquillian.core"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
     </dependencies>

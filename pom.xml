@@ -108,7 +108,7 @@
         <version.org.hornetq.hornetq-jms>2.2.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.0.0.CR2</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian.core>1.0.0.Beta1</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.0.0.CR1-SNAPSHOT</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0-SNAPSHOT</version.org.jboss.arquillian.osgi>
         <version.org.jboss.classfilewriter>1.0.0.Alpha7</version.org.jboss.classfilewriter>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta1</version.org.jboss.com.sun.httpserver>
@@ -538,7 +538,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
+                <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2882,6 +2882,12 @@
 
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
+              <artifactId>arquillian-container-osgi</artifactId>
+              <version>${version.org.jboss.arquillian.osgi}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-spi</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
@@ -2926,12 +2932,6 @@
               <groupId>org.jboss.arquillian.protocol</groupId>
               <artifactId>arquillian-protocol-jmx</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
-              <groupId>org.jboss.arquillian.protocol</groupId>
-              <artifactId>arquillian-protocol-osgi</artifactId>
-              <version>${version.org.jboss.arquillian.osgi}</version>
             </dependency>
 
             <dependency>

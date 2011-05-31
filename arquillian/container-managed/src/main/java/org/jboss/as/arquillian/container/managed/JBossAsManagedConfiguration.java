@@ -28,6 +28,7 @@ import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
  * @version $Revision: $
  */
 public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
+
     private String jbossHome = System.getenv("JBOSS_HOME");
 
     private String javaHome = System.getenv("JAVA_HOME");
@@ -38,11 +39,6 @@ public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
 
     private boolean outputToConsole = true;
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.as.arquillian.container.JBossAsContainerConfiguration#validate()
-     */
     @Override
     public void validate() throws ConfigurationException {
         super.validate();

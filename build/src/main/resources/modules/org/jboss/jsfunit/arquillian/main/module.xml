@@ -40,8 +40,7 @@
         <module name="org.apache.httpcomponents"/>
         <module name="org.jboss.arquillian.spi"/>
         <module name="org.jboss.jsfunit.core"/>
-        <module name="org.jboss.shrinkwrap.impl"/>
-        <module name="org.jboss.shrinkwrap.spi"/>
+        <module name="org.jboss.shrinkwrap.core"/>
         <module name="org.w3c.css.sac"/>
     </dependencies>
 </module>

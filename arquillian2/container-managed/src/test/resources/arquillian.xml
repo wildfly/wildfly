@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
+<arquillian xmlns="http://www.jboss.org/arquillian-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
 
-<!-- 
-	<engine>
-		<property name="deploymentExportPath">target/</property>
-	</engine>
- -->
- 	
-	<container qualifier="jboss" default="true">
-		<configuration>
-			<property name="jbossHome">target/jbossas</property>
-		</configuration>
-	</container>
+    <container qualifier="jboss" default="true">
+        <configuration>
+            <property name="jbossHome">target/jbossas</property>
+        </configuration>
+        <!-- 
+            [ARQ-425] config parser code not in sync with schema
+            Make executionType configurable
+        <protocol type="jmx-as7">
+            <configuration>
+                <property name="executionType">REMOTE</property>
+            </configuration>
+        </protocol>
+         -->
+    </container>
 </arquillian>
