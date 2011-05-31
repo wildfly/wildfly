@@ -61,6 +61,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
     public static final Map<String, String> FIXED_LOCATIONS;
     public static final Set<String> SIMPLE_ENTRIES;
+    public static final Set<String> RESOURCE_REF_ENTRIES;
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
@@ -95,6 +96,18 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         simpleEntries.add("java.lang.String");
         simpleEntries.add("java.lang.Class");
         SIMPLE_ENTRIES = Collections.unmodifiableSet(simpleEntries);
+
+        final Set<String> resourceRefEntries = new HashSet<String>();
+        resourceRefEntries.add("javax.sql.DataSource");
+        resourceRefEntries.add("javax.jms.QueueConnectionFactory");
+        resourceRefEntries.add("javax.jms.TopicConnectionFactory");
+        resourceRefEntries.add("javax.jms.ConnectionFactory");
+        resourceRefEntries.add("javax.mail.Session");
+        resourceRefEntries.add("java.net.URL");
+
+        RESOURCE_REF_ENTRIES = Collections.unmodifiableSet(resourceRefEntries);
+
+
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -194,6 +207,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         }
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
+        final boolean isResourceRefType = RESOURCE_REF_ENTRIES.contains(injectionType);
         if (!isEmpty(lookup)) {
             valueSource = new LookupInjectionSource(lookup);
         } else if (isEnvEntryType) {
@@ -204,7 +218,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // then there will be no binding the ENC and that's what is expected by the Java EE 6 spec. Furthermore,
             // if the @Resource is a env-entry binding then the injection target will be optional since in the absence of
             // a env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
-        } else {
+        } else if (!isResourceRefType) {
             final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(injectionType);
             if (resourceReferenceProcessor == null) {
                 throw new DeploymentUnitProcessingException("Can't handle @Resource for ENC name: " + localContextName +
@@ -218,7 +232,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         }
 
         // the binding/injection is optional if it's a env-entry which doesn't a env-entry-value or a lookup value
-        final boolean optionalEnvEntry = isEnvEntryType && this.isEmpty(lookup);
+        final boolean optionalEnvEntry = valueSource == null;
         // our injection comes from the local lookup, no matter what.
         final InjectionSource injectionSource = new LookupInjectionSource(localContextName, optionalEnvEntry);
         final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
