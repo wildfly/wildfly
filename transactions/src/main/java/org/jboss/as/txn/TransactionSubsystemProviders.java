@@ -24,13 +24,9 @@ package org.jboss.as.txn;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.txn.CommonAttributes.*;
 
 /**
  * @author Emanuel Muckenhuber
@@ -38,8 +34,6 @@ import static org.jboss.as.txn.CommonAttributes.*;
  */
 class TransactionSubsystemProviders {
 
-
-    static final String RESOURCE_NAME = TransactionSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 
@@ -55,159 +49,4 @@ class TransactionSubsystemProviders {
         }
     };
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
-    private static class Descriptions {
-        static ModelNode getSubsystem(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-
-            subsystem.get(DESCRIPTION).set(bundle.getString("txn"));
-            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
-            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(Namespace.TRANSACTIONS_1_0.getUriString());
-            // core-environment
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, DESCRIPTION).set(bundle.getString("core-environment"));
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, REQUIRED).set(true);
-            // core-environment.node-identifier
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DESCRIPTION).set(bundle.getString("core-environment.node-identifier"));
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DEFAULT).set(1);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, REQUIRED).set(false);
-            // core-environment/process-id
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, DESCRIPTION).set(bundle.getString("core-environment.process-id"));
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, TYPE).set(ModelType.OBJECT);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, MIN_LENGTH).set(1);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, REQUIRED).set(true);
-            // core-environment/process-id/uuid
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, DESCRIPTION).set(bundle.getString("core-environment.process-id.uuid"));
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, MIN_LENGTH).set(0);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, REQUIRED).set(false);
-
-            /* Not currently used
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DESCRIPTION).set(bundle.getString("core-environment.socket-process-id-max-ports"));
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, TYPE).set(ModelType.INT);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DEFAULT).set(10);
-            subsystem.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, REQUIRED).set(false);
-            */
-
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, DESCRIPTION).set(bundle.getString("recovery-environment"));
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, DESCRIPTION).set(bundle.getString("recovery-environment.socket-binding"));
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, MIN_LENGTH).set(1);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, DESCRIPTION).set(bundle.getString("recovery-environment.status-socket-binding"));
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, MIN_LENGTH).set(1);
-            subsystem.get(ATTRIBUTES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, REQUIRED).set(true);
-
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, DESCRIPTION).set(bundle.getString("coordinator-environment"));
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DESCRIPTION).set(bundle.getString("coordinator-environment.enable-statistics"));
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DEFAULT).set(true);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DEFAULT).set(300);
-
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, TYPE).set(ModelType.OBJECT);
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("object-store.relative-to"));
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("object-store.path"));
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, OBJECT_STORE, VALUE_TYPE, PATH, REQUIRED).set(false);
-
-            return subsystem;
-        }
-
-        static ModelNode getSubsystemAdd(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode op = new ModelNode();
-
-            op.get(DESCRIPTION).set(bundle.getString("txn.add"));
-            op.get(HEAD_COMMENT_ALLOWED).set(true);
-            op.get(TAIL_COMMENT_ALLOWED).set(true);
-            op.get(NAMESPACE).set(Namespace.TRANSACTIONS_1_0.getUriString());
-
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, DESCRIPTION).set(bundle.getString("core-environment"));
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DESCRIPTION).set(bundle.getString("core-environment.node-identifier"));
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, DEFAULT).set(1);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, NODE_IDENTIFIER, REQUIRED).set(false);
-            // core-environment/process-id
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, DESCRIPTION).set(bundle.getString("core-environment.process-id"));
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, TYPE).set(ModelType.OBJECT);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, MIN_LENGTH).set(1);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, PROCESS_ID, REQUIRED).set(true);
-            // core-environment/process-id/uuid
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, DESCRIPTION).set(bundle.getString("core-environment.process-id.uuid"));
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, MIN_LENGTH).set(0);
-            op.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, UUID, REQUIRED).set(false);
-
-            /* Not currently used
-            subsystem.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DESCRIPTION).set(bundle.getString("core-environment.socket-process-id-max-ports"));
-            subsystem.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, TYPE).set(ModelType.INT);
-            subsystem.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DEFAULT).set(10);
-            subsystem.get(REQUEST_PROPERTIES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, REQUIRED).set(false);
-            */
-
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, DESCRIPTION).set(bundle.getString("recovery-environment"));
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, DESCRIPTION).set(bundle.getString("recovery-environment.socket-binding"));
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, MIN_LENGTH).set(1);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, BINDING, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, DESCRIPTION).set(bundle.getString("recovery-environment.status-socket-binding"));
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, MIN_LENGTH).set(1);
-            op.get(REQUEST_PROPERTIES, RECOVERY_ENVIRONMENT, VALUE_TYPE, STATUS_BINDING, REQUIRED).set(true);
-
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, DESCRIPTION).set(bundle.getString("coordinator-environment"));
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, TYPE).set(ModelType.OBJECT);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DESCRIPTION).set(bundle.getString("coordinator-environment.enable-statistics"));
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, TYPE).set(ModelType.BOOLEAN);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, ENABLE_STATISTICS, DEFAULT).set(true);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, TYPE).set(ModelType.INT);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, COORDINATOR_ENVIRONMENT, VALUE_TYPE, DEFAULT_TIMEOUT, DEFAULT).set(300);
-
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, TYPE).set(ModelType.OBJECT);
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("object-store.relative-to"));
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("object-store.path"));
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
-            op.get(REQUEST_PROPERTIES, OBJECT_STORE, VALUE_TYPE, PATH, REQUIRED).set(false);
-
-            op.get(REPLY_PROPERTIES).setEmptyObject();
-
-            return op;
-        }
-    }
 }

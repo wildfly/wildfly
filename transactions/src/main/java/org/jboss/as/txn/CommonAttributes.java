@@ -45,5 +45,15 @@ interface CommonAttributes {
     String STATUS_BINDING = "status-socket-binding";
     /** The process-id/uuid element */
     String UUID = "uuid";
+    // TxStats
+    String NUMBER_OF_TRANSACTIONS = "number-of-transactions";
+    String NUMBER_OF_NESTED_TRANSACTIONS = "number-of-nested-transactions";
+    String NUMBER_OF_HEURISTICS = "number-of-heuristics";
+    String NUMBER_OF_COMMITTED_TRANSACTIONS = "number-of-committed-transactions";
+    String NUMBER_OF_ABORTED_TRANSACTIONS = "number-of-aborted-transactions";
+    String NUMBER_OF_INFLIGHT_TRANSACTIONS = "number-of-inflight-transactions";
+    String NUMBER_OF_TIMED_OUT_TRANSACTIONS = "number-of-timed-out-transactions";
+    String NUMBER_OF_APPLICATION_ROLLBACKS = "number-of-application-rollbacks";
+    String NUMBER_OF_RESOURCE_ROLLBACKS = "number-of-resource-rollbacks";
     // TODO, process-id/mbean, process-id/file
 }
