@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SessionSynchronizationAnnotationProcessor extends AbstractAnnotationEJBProcessor<StatefulComponentDescription> {
+public class SessionSynchronizationProcessor extends AbstractAnnotationEJBProcessor<StatefulComponentDescription> {
     private static final DotName AFTER_BEGIN = DotName.createSimple(AfterBegin.class.getName());
     private static final DotName AFTER_COMPLETION = DotName.createSimple(AfterCompletion.class.getName());
     private static final DotName BEFORE_COMPLETION = DotName.createSimple(BeforeCompletion.class.getName());
