@@ -36,8 +36,10 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
@@ -73,6 +75,8 @@ final class NewOperationContextImpl implements NewOperationContext {
     private final ServiceTarget serviceTarget;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     private final boolean booting;
+    private final OperationAttachments attachments;
+
     private boolean respectInterruption = true;
     private PathAddress modelAddress;
     private Stage currentStage = Stage.MODEL;
@@ -107,13 +111,16 @@ final class NewOperationContextImpl implements NewOperationContext {
         ROLLBACK_ON_FAIL,
     }
 
-    NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags, final OperationMessageHandler messageHandler, final ModelNode model, final NewModelController.OperationTransactionControl transactionControl, final boolean booting) {
+    NewOperationContextImpl(final NewModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
+                            final OperationMessageHandler messageHandler, final OperationAttachments attachments,
+                            final ModelNode model, final NewModelController.OperationTransactionControl transactionControl, final boolean booting) {
         this.contextType = contextType;
         this.transactionControl = transactionControl;
         this.booting = booting;
         this.model = readOnlyModel = model;
         this.modelController = modelController;
         this.messageHandler = messageHandler;
+        this.attachments = attachments;
         response = new ModelNode().setEmptyObject();
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
@@ -125,7 +132,14 @@ final class NewOperationContextImpl implements NewOperationContext {
     }
 
     public InputStream getAttachmentStream(final int index) throws IOException {
-        throw new UnsupportedOperationException("Not yet");
+        if (attachments == null) {
+            throw new ArrayIndexOutOfBoundsException(index);
+        }
+        return attachments.getInputStreams().get(index);
+    }
+
+    public int getAttachmentStreamCount() {
+        return attachments == null ? 0 : attachments.getInputStreams().size();
     }
 
     public void addStep(final NewStepHandler step, final Stage stage) throws IllegalArgumentException {

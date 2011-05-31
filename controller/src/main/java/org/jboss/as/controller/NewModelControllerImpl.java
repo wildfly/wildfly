@@ -87,7 +87,7 @@ class NewModelControllerImpl implements NewModelController {
         final ModelNode headers = operation.get(OPERATION_HEADERS);
         final boolean rollbackOnFailure = headers == null || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean(true);
         final EnumSet<NewOperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(NewOperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class);
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, modelReference.get(), control, bootingFlag.getAndSet(false));
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, contextFlags, handler, attachments, modelReference.get(), control, bootingFlag.getAndSet(false));
         ModelNode response = new ModelNode();
         if (prepareStep != null) {
             context.addStep(response, operation, prepareStep, NewOperationContext.Stage.MODEL);
@@ -112,7 +112,7 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, modelReference.get(), control, bootingFlag.getAndSet(false));
+        NewOperationContextImpl context = new NewOperationContextImpl(this, controllerType, EnumSet.noneOf(NewOperationContextImpl.ContextFlag.class), handler, null, modelReference.get(), control, bootingFlag.getAndSet(false));
         ModelNode result = context.getResult();
         result.setEmptyList();
         for (ModelNode bootOp : bootList) {
