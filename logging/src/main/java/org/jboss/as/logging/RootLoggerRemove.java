@@ -42,7 +42,7 @@ class RootLoggerRemove extends AbstractRemoveStepHandler {
     }
 
     protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model) {
-        context.removeService(LogServices.ROOT_LOGGER)
+        context.removeService(LogServices.ROOT_LOGGER);
         if (model.get(CommonAttributes.ROOT_LOGGER).has(CommonAttributes.HANDLERS)) {
             LogServices.uninstallLoggerHandlers(context, "", model.get(CommonAttributes.ROOT_LOGGER, CommonAttributes.HANDLERS));
         }

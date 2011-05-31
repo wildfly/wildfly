@@ -22,9 +22,6 @@
 
 package org.jboss.as.controller;
 
-import sun.jvm.hotspot.tools.FinalizerInfo;
-
-import java.security.PrivateKey;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 

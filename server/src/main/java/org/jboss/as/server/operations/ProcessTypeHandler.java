@@ -23,6 +23,8 @@
 package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -35,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ProcessTypeHandler implements OperationHandler {
+public class ProcessTypeHandler implements NewStepHandler {
 
     public static final ProcessTypeHandler INSTANCE = new ProcessTypeHandler();
 
@@ -44,10 +46,8 @@ public class ProcessTypeHandler implements OperationHandler {
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-        resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, new ModelNode().set("Server"));
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult();
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        context.getResult().set("Server");
+        context.completeStep();
     }
 }

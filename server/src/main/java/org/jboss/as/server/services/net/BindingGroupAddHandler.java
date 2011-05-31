@@ -20,6 +20,7 @@ package org.jboss.as.server.services.net;
 
 import java.util.List;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
@@ -80,7 +81,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
      * {@inheritDoc}
      */
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         super.populateModel(operation, model);
         ModelNode offset = operation.get(PORT_OFFSET);
         if (!offset.isDefined()) {
@@ -89,7 +90,8 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
         model.get(PORT_OFFSET).set(offset);
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    @Override
+    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Resolve any expressions and re-validate
         final ModelNode resolvedOp = operation.resolve();
         runtimeValidator.validate(resolvedOp);

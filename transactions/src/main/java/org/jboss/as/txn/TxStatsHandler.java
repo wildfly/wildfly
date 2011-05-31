@@ -26,6 +26,8 @@ import com.arjuna.ats.arjuna.coordinator.TxStats;
 import com.google.inject.internal.util.Finalizer;
 import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -47,7 +49,7 @@ import java.util.logging.Handler;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class TxStatsHandler implements OperationHandler {
+public class TxStatsHandler implements NewStepHandler {
 
     public enum TxStat {
 
@@ -93,12 +95,12 @@ public class TxStatsHandler implements OperationHandler {
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
 
         TxStat stat = TxStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
         if (stat == null) {
-            resultHandler.handleFailed(new ModelNode().set(String.format("Unknown metric %s", operation.require(ModelDescriptionConstants.NAME).asString())));
+            context.getFailureDescription().set(String.format("Unknown metric %s", operation.require(ModelDescriptionConstants.NAME).asString()));
         }
         else {
             ModelNode result = new ModelNode();
@@ -133,10 +135,9 @@ public class TxStatsHandler implements OperationHandler {
                 default:
                     throw new IllegalStateException(String.format("Unknown metric %s", stat));
             }
-            resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, result);
-            resultHandler.handleResultComplete();
+            context.getResult().set(result);
         }
 
-        return new BasicOperationResult();
+        context.completeStep();
     }
 }
