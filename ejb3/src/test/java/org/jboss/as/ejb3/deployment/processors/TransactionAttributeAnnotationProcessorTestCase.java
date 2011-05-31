@@ -26,8 +26,8 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -36,11 +36,15 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
 
 import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
+import static javax.ejb.TransactionAttributeType.MANDATORY;
+import static javax.ejb.TransactionAttributeType.NEVER;
+import static javax.ejb.TransactionAttributeType.REQUIRED;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import static javax.ejb.TransactionAttributeType.SUPPORTS;
 import static org.jboss.as.ejb3.TestHelper.index;
 import static org.jboss.as.ejb3.TestHelper.mockDeploymentUnit;
 import static org.junit.Assert.assertEquals;
@@ -49,19 +53,33 @@ import static org.junit.Assert.assertEquals;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class TransactionAttributeAnnotationProcessorTestCase {
-    @TransactionAttribute(TransactionAttributeType.MANDATORY)
+    private static class ABean extends SomeClass {
+        @Override
+        public void aMethod() { }
+
+        @TransactionAttribute(REQUIRES_NEW)
+        public void cMethod() { }
+    }
+
+    @TransactionAttribute(MANDATORY)
     private static class MyBean implements ViewA, ViewB {
         public void doSomething() {
         }
     }
 
+    @TransactionAttribute(SUPPORTS)
+    private static class SomeClass {
+        public void aMethod() { }
+        public void bMethod() { }
+    }
+
     private static interface ViewA {
-        @TransactionAttribute(TransactionAttributeType.NEVER)
+        @TransactionAttribute(NEVER)
         void doSomething();
     }
 
     private static interface ViewB {
-        @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+        @TransactionAttribute(REQUIRES_NEW)
         void doSomething();
     }
 
@@ -83,7 +101,59 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
-        assertEquals(TransactionAttributeType.MANDATORY, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, "anyMethod"));
+        assertEquals(MANDATORY, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, MyBean.class.getName(), "anyMethod"));
+    }
+
+    /**
+     * EJB 3.1 FR 13.3.7.1
+     */
+    @Test
+    public void testInheritance() throws Exception {
+        DeploymentUnit deploymentUnit = mockDeploymentUnit();
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
+        DeploymentPhaseContext phaseContext = null;
+        Indexer indexer = new Indexer();
+        index(indexer, SomeClass.class);
+        index(indexer, ABean.class);
+        CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
+
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final ServiceName duServiceName = deploymentUnit.getServiceName();
+        EJBComponentDescription componentDescription = new StatelessComponentDescription(ABean.class.getSimpleName(), ABean.class.getName(), ejbJarDescription, duServiceName);
+        TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
+        processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
+
+        // make sure to use the declaring class as the class name!
+        assertEquals(REQUIRED, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, ABean.class.getName(), "aMethod"));
+        assertEquals(SUPPORTS, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, SomeClass.class.getName(), "bMethod"));
+        assertEquals(REQUIRES_NEW, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, ABean.class.getName(), "cMethod"));
+    }
+
+    @Test
+    public void testNoInterfaceView() throws Exception {
+        DeploymentUnit deploymentUnit = mockDeploymentUnit();
+        // Mark the deployment unit as a EJB deployment
+        EjbDeploymentMarker.mark(deploymentUnit);
+        DeploymentPhaseContext phaseContext = null;
+        Indexer indexer = new Indexer();
+        index(indexer, SomeClass.class);
+        CompositeIndex index = new CompositeIndex(Arrays.asList(indexer.complete()));
+
+
+        final EEModuleDescription moduleDescription = new EEModuleDescription("TestApp", "TestModule");
+        final EjbJarDescription ejbJarDescription = new EjbJarDescription(moduleDescription, false);
+        final ServiceName duServiceName = deploymentUnit.getServiceName();
+        StatelessComponentDescription componentDescription = new StatelessComponentDescription(SomeClass.class.getSimpleName(), SomeClass.class.getName(), ejbJarDescription, duServiceName);
+        componentDescription.addNoInterfaceView();
+        TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
+        processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
+
+        // make sure to use the declaring class as the class name!
+        assertEquals(SUPPORTS, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, SomeClass.class.getName(), "aMethod"));
+        assertEquals(SUPPORTS, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, SomeClass.class.getName(), "bMethod"));
     }
 
     @Test
@@ -110,6 +180,6 @@ public class TransactionAttributeAnnotationProcessorTestCase {
         TransactionAttributeAnnotationProcessor processor = new TransactionAttributeAnnotationProcessor();
         processor.processComponentConfig(deploymentUnit, phaseContext, index, componentDescription);
 
-        assertEquals(TransactionAttributeType.MANDATORY, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, "anyMethod"));
+        assertEquals(MANDATORY, componentDescription.getTransactionAttribute(MethodIntf.LOCAL, MyBean.class.getName(), "anyMethod"));
     }
 }
