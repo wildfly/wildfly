@@ -28,3 +28,5 @@ pom.xml.versionsBackup
 /*.hprof
 # ignore 'randomly' strewn around logs
 server.log
+# ignore java crashes
+hs_err_pid*.log
