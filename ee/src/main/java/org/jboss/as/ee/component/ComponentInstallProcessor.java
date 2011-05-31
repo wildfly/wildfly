@@ -192,7 +192,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final Set<BindingConfiguration> uniqueBindings = new HashSet(bindings);
         for (BindingConfiguration bindingConfiguration : uniqueBindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
-                final String bindingName = bindingConfiguration.getName();
+                final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final BinderService service = new BinderService(bindingName);
                 final ServiceName serviceName = ContextNames.serviceNameOfEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
 
