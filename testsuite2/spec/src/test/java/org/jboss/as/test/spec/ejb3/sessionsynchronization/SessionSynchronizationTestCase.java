@@ -23,9 +23,9 @@ package org.jboss.as.test.spec.ejb3.sessionsynchronization;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.spec.ejb3.stateful.SFSBWithRemoveMethods;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,16 +42,40 @@ public class SessionSynchronizationTestCase {
     private static final Logger log = Logger.getLogger(SessionSynchronizationTestCase.class.getName());
 
     @Deployment
-    public static JavaArchive deployment() {
-        // create the ejb jar
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "sessionsynchronization.jar");
-        jar.addPackage(SynchedStatefulBean.class.getPackage());
-        log.info(jar.toString(true));
-        return jar;
+    public static Archive<?> deployment() {
+        // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "sessionsynchronization.war")
+                .addPackage(SynchedStatefulBean.class.getPackage())
+                .addPackage(SynchedStatefulBean2.class.getPackage())
+                .addAsWebInfResource("sessionsynchronization/ejb-jar.xml", "ejb-jar.xml");
+        log.info(war.toString(true));
+        return war;
     }
 
-    @EJB
+    @EJB(mappedName = "java:global/sessionsynchronization/DescribedSynchedStatefulBean")
+    private DescribedSynchedStatefulBean describedBean;
+
+    @EJB(mappedName = "java:global/sessionsynchronization/SynchedStatefulBean")
     private SynchedStatefulBean bean;
+
+    @EJB(mappedName = "java:global/sessionsynchronization/SynchedStatefulBean2")
+    private SynchedStatefulBean2 bean2;
+
+    @Test
+    public void testDescriptor() {
+        describedBean.doNothing();
+        assertTrue(DescribedSynchedStatefulBean.afterBeginCalled);
+        assertTrue(DescribedSynchedStatefulBean.beforeCompletionCalled);
+        assertTrue(DescribedSynchedStatefulBean.afterCompletionCalled);
+    }
+
+    @Test
+    public void testSessionSynchronizationInterface() {
+        bean2.doNothing();
+        assertTrue(SynchedStatefulBean2.afterBeginCalled);
+        assertTrue(SynchedStatefulBean2.beforeCompletionCalled);
+        assertTrue(SynchedStatefulBean2.afterCompletionCalled);
+    }
 
     @Test
     public void testSync() {
