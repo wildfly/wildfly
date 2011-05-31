@@ -24,14 +24,9 @@ package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.RuntimeTask;
-import org.jboss.as.controller.RuntimeTaskContext;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.server.ServerOperationContext;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
@@ -94,7 +89,7 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
 
         if (context.getType() == NewOperationContext.Type.SERVER) {
             context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(SOCKET_BINDING.append(element.getValue()));
                     if (controller != null) {
                         final SocketBinding binding = SocketBinding.class.cast(controller.getValue());

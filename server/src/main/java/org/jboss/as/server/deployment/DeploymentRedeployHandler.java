@@ -18,24 +18,17 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 
@@ -44,7 +37,7 @@ import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentRedeployHandler implements ModelQueryOperationHandler, DescriptionProvider {
+public class DeploymentRedeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REDEPLOY;
 
@@ -62,15 +55,12 @@ public class DeploymentRedeployHandler implements ModelQueryOperationHandler, De
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        ModelNode model = context.getSubModel();
-        ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
+        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
         final String name = model.require(NAME).asString();
         final String runtimeName = model.require(RUNTIME_NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
-        redeploy(context, runtimeName, name, resultHandler, contents);
-
-        return new BasicOperationResult(compensatingOp);
+        redeploy(context, runtimeName, name, contents);
     }
 }

@@ -18,9 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
@@ -28,38 +25,26 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
 import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.protocol.StreamUtils;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.*;
 
 /**
  * Handles addition of a deployment to the model.
@@ -173,7 +158,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
 
         if (subModel.get(ENABLED).asBoolean() && (context.getType() == NewOperationContext.Type.SERVER)) {
             context.addStep(new NewStepHandler() {
-                public void execute(NewOperationContext context, ModelNode operation) {
+                public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
                     DeploymentHandlerUtil.deploy(context, runtimeName, name, contentItem);
@@ -181,7 +166,7 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(controller);
+                        context.removeService(Services.deploymentUnitName(runtimeName));
                     }
                 }
             }, NewOperationContext.Stage.RUNTIME);

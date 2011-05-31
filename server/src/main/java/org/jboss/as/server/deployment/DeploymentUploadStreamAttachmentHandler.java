@@ -18,6 +18,7 @@
  */
 package org.jboss.as.server.deployment;
 
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -27,6 +28,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 
@@ -39,8 +41,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPL
 * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
 */
 public class DeploymentUploadStreamAttachmentHandler
-extends AbstractDeploymentUploadHandler
-implements DescriptionProvider {
+    extends AbstractDeploymentUploadHandler
+    implements DescriptionProvider {
 
     public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_STREAM;
 
@@ -60,20 +62,15 @@ implements DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws IOException, OperationFailedException {
+        // Validate the operation
         streamValidator.validate(operation);
-
-        int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-        int maxIndex = operationContext.getInputStreams().size() - 1;
-        if (streamIndex > maxIndex) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Invalid '" + INPUT_STREAM_INDEX + "' value: %s, the maximum index is %s", streamIndex, maxIndex)));
-        }
-
-        InputStream in = operationContext.getInputStreams().get(streamIndex);
+        // Get the attached stream
+        final int streamIndex = operation.require(INPUT_STREAM_INDEX).asInt();
+        final InputStream in = operationContext.getAttachmentStream(streamIndex);
         if (in == null) {
             throw new OperationFailedException(new ModelNode().set(String.format("Null stream at index %s", streamIndex)));
         }
-
         return in;
     }
 

@@ -19,7 +19,6 @@
 package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -28,7 +27,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingFixedPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
+public class BindingFixedPortHandler extends AbstractBindingWriteHandler {
 
     public static final BindingFixedPortHandler INSTANCE = new BindingFixedPortHandler();
 

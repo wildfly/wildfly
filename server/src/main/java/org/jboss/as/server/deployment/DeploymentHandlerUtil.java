@@ -18,22 +18,23 @@
  */
 package org.jboss.as.server.deployment;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 
 /**
  * Utility methods used by operation handlers involved with deployment.
@@ -43,6 +44,7 @@ import org.jboss.vfs.VirtualFile;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentHandlerUtil {
+
     static class ContentItem {
         // either hash or <path, relativeTo, isArchive>
         private byte[] hash;

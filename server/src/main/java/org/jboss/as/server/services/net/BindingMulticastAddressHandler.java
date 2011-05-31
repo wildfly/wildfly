@@ -20,7 +20,6 @@ package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.InetAddressValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 import java.net.InetAddress;

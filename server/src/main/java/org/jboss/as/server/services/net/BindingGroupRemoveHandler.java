@@ -18,11 +18,8 @@
  */
 package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupRemoveHandler;
 import org.jboss.as.server.BootOperationHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for the domain socket-binding-group resource's remove operation.

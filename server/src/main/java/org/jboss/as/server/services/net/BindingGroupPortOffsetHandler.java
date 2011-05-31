@@ -19,7 +19,6 @@
 package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 
 /**
@@ -27,7 +26,7 @@ import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperationHandler {
 
     public static final BindingGroupPortOffsetHandler INSTANCE = new BindingGroupPortOffsetHandler();
 
