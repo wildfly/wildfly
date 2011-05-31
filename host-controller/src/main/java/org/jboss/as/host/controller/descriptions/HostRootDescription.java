@@ -23,6 +23,7 @@
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -30,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
@@ -49,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -70,9 +73,6 @@ import org.jboss.dmr.ModelType;
 public class HostRootDescription {
 
     private static final String RESOURCE_NAME = HostRootDescription.class.getPackage().getName() + ".LocalDescriptions";
-
-    private static final String DOMAIN_CONTROLLER = "domain-controller";
-    private static final String SERVER_CONFIG = "server-config";
 
     public static ModelNode getDescription(final Locale locale) {
 
@@ -106,6 +106,9 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, PORT, TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, PORT, DESCRIPTION).set(bundle.getString("host.domain-controller.remote.port"));
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, REMOTE, VALUE_TYPE, PORT, REQUIRED).set(true);
+
+        root.get(ATTRIBUTES, MASTER, DESCRIPTION).set(bundle.getString("host.master"));
+        root.get(ATTRIBUTES, MASTER, TYPE).set(ModelType.BOOLEAN);
 
         root.get(OPERATIONS).setEmptyObject();
 

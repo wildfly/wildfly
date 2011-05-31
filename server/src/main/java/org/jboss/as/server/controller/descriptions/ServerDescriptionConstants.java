@@ -31,4 +31,8 @@ public final class ServerDescriptionConstants {
     public static final String PROFILE_NAME = "profile-name";
 
     public static final String SERVER_STATE = "server-state";
+
+    public static final String PROCESS_TYPE = "process-type";
+
+    public static final String LAUNCH_TYPE = "launch-type";
 }

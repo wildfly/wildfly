@@ -20,6 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.domain.controller.descriptions;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -29,19 +30,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -49,6 +55,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Model description for the domain root.
@@ -68,6 +75,14 @@ public class DomainRootDescription {
         root.get(TAIL_COMMENT_ALLOWED).set(true);
         root.get(ATTRIBUTES, NAMESPACES).set(CommonDescriptions.getNamespacePrefixAttribute(locale));
         root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonDescriptions.getSchemaLocationAttribute(locale));
+
+        root.get(ATTRIBUTES, PROCESS_TYPE, DESCRIPTION).set(bundle.getString("domain.process-type"));
+        root.get(ATTRIBUTES, PROCESS_TYPE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, PROCESS_TYPE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, PROCESS_TYPE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, PROCESS_TYPE, MIN_LENGTH).set(1);
+        root.get(ATTRIBUTES, PROCESS_TYPE, ALLOWED).add("Domain Controller");
+        root.get(ATTRIBUTES, PROCESS_TYPE, ALLOWED).add("Host Controller");
 
         root.get(OPERATIONS).setEmptyObject();
 

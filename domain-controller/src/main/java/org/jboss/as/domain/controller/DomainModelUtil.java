@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -93,6 +94,8 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
+import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
@@ -202,6 +205,8 @@ class DomainModelUtil {
         root.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
         SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(configurationPersister);
         root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
+
+        root.registerReadOnlyAttribute(PROCESS_TYPE, isMaster ? ProcessTypeHandler.MASTER : ProcessTypeHandler.SLAVE, Storage.RUNTIME);
 
         // System Properties
         ModelNodeRegistration systemProperties = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SYSTEM_PROPERTY_PROVIDER);

@@ -46,7 +46,7 @@ public abstract class AbstractServerInModuleTestCase {
 
         EmbeddedStandAloneServerFactory.setupCleanDirectories(System.getProperties());
 
-        ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv());
+        ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], new Properties(System.getProperties()), System.getenv(), ServerEnvironment.LaunchType.EMBEDDED);
 
         serverDetails += "AS server details: ";
         serverDetails += "server homedir = " + serverEnvironment.getHomeDir();

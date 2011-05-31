@@ -220,7 +220,7 @@ public class EmbeddedStandAloneServerFactory {
             public void start() throws ServerStartException {
                 try {
                     // Determine the ServerEnvironment
-                    ServerEnvironment serverEnviromment = Main.determineEnvironment(new String[0], systemProps, systemEnv);
+                    ServerEnvironment serverEnviromment = Main.determineEnvironment(new String[0], systemProps, systemEnv, ServerEnvironment.LaunchType.EMBEDDED);
 
                     Bootstrap bootstrap = Bootstrap.Factory.newInstance();
 

@@ -35,8 +35,8 @@ public class ModelDescriptionConstants {
     /** The key for {@link AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
-    public static final String ADD_OPERATION = "add-operation";
     public static final String ADDRESS = "address";
+    public static final String ALLOWED = "allowed";
     public static final String ANY = "any";
     public static final String ANY_ADDRESS = "any-address";
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
@@ -105,6 +105,7 @@ public class ModelDescriptionConstants {
     public static final String MANAGEMENT = "management";
     public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MASK = "mask";
+    public static final String MASTER = "master";
     public static final String MAX = "max";
     public static final String MAX_FAILED_SERVERS = "max-failed-servers";
     public static final String MAX_FAILURE_PERCENTAGE = "max-failure-percentage";
@@ -140,6 +141,7 @@ public class ModelDescriptionConstants {
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
     public static final String PRIORITY = "priority";
+    public static final String PROCESS_TYPE = "process-type";
     public static final String PROFILE = "profile";
     public static final String PROFILE_NAME = "profile-name";
     public static final String PROPERTIES = "properties";

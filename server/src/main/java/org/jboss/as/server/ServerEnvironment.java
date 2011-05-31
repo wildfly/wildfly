@@ -44,6 +44,12 @@ public class ServerEnvironment implements Serializable {
 
     private static final long serialVersionUID = -349976376447122910L;
 
+    public static enum LaunchType {
+        DOMAIN,
+        STANADALONE,
+        EMBEDDED
+    }
+
     // Provide logging
     private static final transient Logger log = Logger.getLogger(ServerEnvironment.class);
 
@@ -156,6 +162,7 @@ public class ServerEnvironment implements Serializable {
      */
     public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
 
+    private final LaunchType launchType;
     private final String qualifiedHostName;
     private final String hostName;
     private final String serverName;
@@ -174,11 +181,12 @@ public class ServerEnvironment implements Serializable {
     private final File serverTempDir;
     private final boolean standalone;
 
-    public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, boolean standalone) {
-        this.standalone = standalone;
+    public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, LaunchType launchType) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
+        this.launchType = launchType;
+        this.standalone = launchType != LaunchType.DOMAIN;
 
         // Calculate host and default server name
         String hostName = props.getProperty(HOST_NAME);
@@ -387,6 +395,10 @@ public class ServerEnvironment implements Serializable {
 
     public File getServerTempDir() {
         return serverTempDir;
+    }
+
+    public LaunchType getLaunchType() {
+        return launchType;
     }
 
     public boolean isStandalone() {

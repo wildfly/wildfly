@@ -74,7 +74,7 @@ public final class Main {
 
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
-            ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment());
+            ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.STANADALONE);
             if (serverEnvironment == null) {
                 abort(null);
             } else {
@@ -104,7 +104,7 @@ public final class Main {
         }
     }
 
-    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment) {
+    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
         final int argsLength = args.length;
         String serverConfig = null;
         for (int i = 0; i < argsLength; i++) {
@@ -150,7 +150,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, true);
+        return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

@@ -21,6 +21,8 @@
  */package org.jboss.as.server.controller.descriptions;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.LAUNCH_TYPE;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.SERVER_STATE;
 
@@ -28,6 +30,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -70,6 +73,21 @@ public class ServerRootDescription {
         root.get(ATTRIBUTES, SERVER_STATE, REQUIRED).set(true);
         root.get(ATTRIBUTES, SERVER_STATE, NILLABLE).set(false);
         root.get(ATTRIBUTES, SERVER_STATE, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, PROCESS_TYPE, DESCRIPTION).set(bundle.getString("server.process-type"));
+        root.get(ATTRIBUTES, PROCESS_TYPE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, PROCESS_TYPE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, PROCESS_TYPE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, PROCESS_TYPE, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, LAUNCH_TYPE, DESCRIPTION).set(bundle.getString("server.launch-type"));
+        root.get(ATTRIBUTES, LAUNCH_TYPE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, MIN_LENGTH).set(1);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.DOMAIN.toString());
+        root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.STANADALONE.toString());
+        root.get(ATTRIBUTES, LAUNCH_TYPE, ALLOWED).add(ServerEnvironment.LaunchType.EMBEDDED.toString());
 
         root.get(OPERATIONS);
 

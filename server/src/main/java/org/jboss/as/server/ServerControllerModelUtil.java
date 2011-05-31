@@ -96,8 +96,10 @@ import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.as.server.operations.ExtensionRemoveHandler;
 import org.jboss.as.server.operations.HttpManagementAddHandler;
+import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
+import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.ServerReloadHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.ServerStateAttributeHandler;
@@ -183,13 +185,18 @@ public class
         root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
 
         root.registerReadOnlyAttribute(ServerDescriptionConstants.SERVER_STATE, ServerStateAttributeHandler.INSTANCE, Storage.RUNTIME);
+        root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_TYPE, ProcessTypeHandler.INSTANCE, Storage.RUNTIME);
 
         // Runtime operations
-        root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
+        if (serverEnvironment != null) {
+            if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.DOMAIN)
+                root.registerOperationHandler(ServerReloadHandler.OPERATION_NAME, ServerReloadHandler.INSTANCE, ServerReloadHandler.INSTANCE, false);
 
-        if (serverEnvironment != null && serverEnvironment.isStandalone())
-            root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, ServerShutdownHandler.INSTANCE, ServerShutdownHandler.INSTANCE, false);
+            if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANADALONE)
+                root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, ServerShutdownHandler.INSTANCE, ServerShutdownHandler.INSTANCE, false);
 
+            root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(serverEnvironment.getLaunchType()), Storage.RUNTIME);
+        }
         // System Properties
         ModelNodeRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), ServerDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
         sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITHOUT_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITHOUT_BOOTTIME, false);

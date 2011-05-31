@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
@@ -84,7 +85,9 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.management.operations.ConnectionAddHandler;
 import org.jboss.as.domain.management.operations.SecurityRealmAddHandler;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
+import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.LocalHostAddHandler;
@@ -164,6 +167,7 @@ public class HostModelUtil {
         root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
         root.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, Storage.RUNTIME);
 
         // System Properties
         ModelNodeRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
