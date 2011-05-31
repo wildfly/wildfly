@@ -93,7 +93,7 @@ public class ThreadFactoryAdd implements NewStepHandler, DescriptionProvider {
                     service.setPriority(priority);
                     service.setThreadGroupName(groupName);
                     //TODO What about the properties?
-                    final ServiceController<?> controller = target.addService(ThreadsServices.threadFactoryName(name), service)
+                    target.addService(ThreadsServices.threadFactoryName(name), service)
                             .addListener(verificationHandler)
                             .setInitialMode(ServiceController.Mode.ACTIVE)
                             .install();
@@ -101,7 +101,7 @@ public class ThreadFactoryAdd implements NewStepHandler, DescriptionProvider {
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(controller);
+                        context.removeService(ThreadsServices.threadFactoryName(name));
                     }
                 }
             }, NewOperationContext.Stage.RUNTIME);

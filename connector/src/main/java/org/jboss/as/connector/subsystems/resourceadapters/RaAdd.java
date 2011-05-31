@@ -84,7 +84,7 @@ public class RaAdd extends AbstractRaOperation implements NewStepHandler {
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
                         if(controller != null) {
-                            context.removeService(controller);
+                            context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
                         }
                     }
                 }

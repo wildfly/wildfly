@@ -57,12 +57,11 @@ class RootLoggerAdd implements NewStepHandler {
                 public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceTarget target = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final ServiceController<?> controller;
                     try {
 
                         final RootLoggerService service = new RootLoggerService();
                         service.setLevel(Level.parse(level));
-                        controller = target.addService(LogServices.ROOT_LOGGER, service)
+                        target.addService(LogServices.ROOT_LOGGER, service)
                                 .addListener(verificationHandler)
                                 .setInitialMode(ServiceController.Mode.ACTIVE)
                                 .install();
@@ -84,9 +83,9 @@ class RootLoggerAdd implements NewStepHandler {
                     context.addStep(verificationHandler, NewOperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(controller);
+                        context.removeService(LogServices.ROOT_LOGGER);
                         if (loggerControllers != null) for (ServiceController<?> loggerController : loggerControllers) {
-                            context.removeService(loggerController);
+                            context.removeService(loggerController.getName());
                         }
                     }
                 }
