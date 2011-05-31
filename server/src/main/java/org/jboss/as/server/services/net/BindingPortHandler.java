@@ -20,7 +20,6 @@ package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -28,7 +27,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingPortHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
+public class BindingPortHandler extends AbstractBindingWriteHandler {
 
     public static final BindingPortHandler INSTANCE = new BindingPortHandler();
 

@@ -18,19 +18,16 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.BasicOperationResult;
-import org.jboss.as.controller.ModelQueryOperationHandler;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.SnapshotDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
 
 /**
  * An operation that deletes a snapshot of the current configuration
@@ -38,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class SnapshotDeleteHandler implements ModelQueryOperationHandler, DescriptionProvider {
+public class SnapshotDeleteHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "delete-snapshot";
 
@@ -49,14 +46,11 @@ public class SnapshotDeleteHandler implements ModelQueryOperationHandler, Descri
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
         try {
             persister.deleteSnapshot(name);
-            ModelNode result = new ModelNode();
-            resultHandler.handleResultFragment(new String[0], result);
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         } catch (Exception e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
         }

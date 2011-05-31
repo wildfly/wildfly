@@ -19,7 +19,6 @@
 package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 
 /**
@@ -27,7 +26,7 @@ import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOperationHandler implements BootOperationHandler {
+public class BindingGroupDefaultInterfaceHandler extends ServerWriteAttributeOperationHandler {
 
     public static final BindingGroupDefaultInterfaceHandler INSTANCE = new BindingGroupDefaultInterfaceHandler();
 

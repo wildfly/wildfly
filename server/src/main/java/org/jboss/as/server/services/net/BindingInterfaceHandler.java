@@ -19,7 +19,6 @@
 package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.BootOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -27,7 +26,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class BindingInterfaceHandler extends AbstractBindingWriteHandler implements BootOperationHandler {
+public class BindingInterfaceHandler extends AbstractBindingWriteHandler {
 
     public static final BindingInterfaceHandler INSTANCE = new BindingInterfaceHandler();
 
