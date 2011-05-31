@@ -22,15 +22,31 @@
 package org.jboss.as.jpa.hibernate;
 
 
-import javax.transaction.TransactionManager;
-
+import org.hibernate.service.jta.platform.internal.JtaSynchronizationStrategy;
+import org.hibernate.service.jta.platform.internal.SynchronizationRegistryAccess;
+import org.hibernate.service.jta.platform.internal.SynchronizationRegistryBasedSynchronizationStrategy;
 import org.jboss.as.jpa.transaction.TransactionUtil;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 
 /**
  * @author Steve Ebersole
  */
 public class JBossAppServerJtaPlatform extends org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform {
+
+    private final JtaSynchronizationStrategy synchronizationStrategy;
+
+    public JBossAppServerJtaPlatform() {
+        this.synchronizationStrategy =  new SynchronizationRegistryBasedSynchronizationStrategy(new SynchronizationRegistryAccess() {
+            @Override
+            public TransactionSynchronizationRegistry getSynchronizationRegistry() {
+                return TransactionUtil.getTransactionSynchronizationRegistry();
+            }
+        });
+    }
+
     @Override
     protected boolean canCacheTransactionManager() {
         return true;
@@ -41,4 +57,8 @@ public class JBossAppServerJtaPlatform extends org.hibernate.service.jta.platfor
         return TransactionUtil.getTransactionManager();
     }
 
+    @Override
+    protected JtaSynchronizationStrategy getSynchronizationStrategy() {
+        return synchronizationStrategy;
+    }
 }
