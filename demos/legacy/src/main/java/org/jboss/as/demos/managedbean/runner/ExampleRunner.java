@@ -35,6 +35,11 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

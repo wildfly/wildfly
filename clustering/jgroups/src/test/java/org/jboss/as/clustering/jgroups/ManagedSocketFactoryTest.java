@@ -33,7 +33,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-import org.jboss.as.server.services.net.SocketBindingManager;
+import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.SocketFactory;
 import org.junit.Before;
 import org.junit.Test;

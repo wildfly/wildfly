@@ -22,7 +22,7 @@
 
 package org.jboss.as.demos.client.jms.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import java.io.IOException;
 import java.net.InetAddress;

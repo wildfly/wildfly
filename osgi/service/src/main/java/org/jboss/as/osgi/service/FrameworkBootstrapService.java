@@ -37,11 +37,11 @@ import java.util.Map;
 import javax.management.MBeanServer;
 
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;

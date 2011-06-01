@@ -37,7 +37,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.process.ProcessControllerClient;
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
@@ -94,7 +94,7 @@ class ManagedServer implements ModelController {
     private final ManagedServerBootConfiguration bootConfiguration;
     private final byte[] authKey;
     private volatile ServerState state;
-    private volatile Connection serverManagementConnection;
+    private volatile ProtocolChannel serverManagementChannel;
 
     public ManagedServer(final String serverName, final ProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
@@ -124,8 +124,8 @@ class ManagedServer implements ModelController {
         return serverProcessName;
     }
 
-    Connection getServerConnection() {
-        return serverManagementConnection;
+    ProtocolChannel getServerManagementChannel() {
+        return serverManagementChannel;
     }
 
     public ServerState getState() {
@@ -150,8 +150,8 @@ class ManagedServer implements ModelController {
         return null;
     }
 
-    void setServerManagementConnection(Connection serverManagementConnection) {
-        this.serverManagementConnection = serverManagementConnection;
+    void setServerManagementChannel(ProtocolChannel serverManagementChannel) {
+        this.serverManagementChannel = serverManagementChannel;
     }
 
     int incrementAndGetRespawnCount() {

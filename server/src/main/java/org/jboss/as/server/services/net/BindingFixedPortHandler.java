@@ -19,6 +19,7 @@
 package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

@@ -21,15 +21,13 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
-import java.io.DataOutput;
+import java.io.DataInput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,18 +35,14 @@ import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerImpl;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.ManagementResponse;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * Standard ModelController operation handler that also has the operations for HC->DC.
+ * ModelController operation handler that also has the operations for HC->DC.
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -56,8 +50,8 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    public MasterDomainControllerOperationHandlerImpl(DomainController modelController, MessageHandler initiatingHandler) {
-        super(modelController, initiatingHandler);
+    public MasterDomainControllerOperationHandlerImpl(DomainController modelController) {
+        super(modelController);
     }
 
     @Override
@@ -66,8 +60,8 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
     }
 
     @Override
-    public ManagementResponse operationFor(byte commandByte) {
-        switch (commandByte) {
+    public ManagementRequestHandler getRequestHandler(byte id) {
+        switch (id) {
         case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
             return new RegisterOperation();
         case DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_REQUEST:
@@ -75,88 +69,53 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
         case DomainControllerProtocol.GET_FILE_REQUEST:
             return new GetFileOperation();
         default:
-            return super.operationFor(commandByte);
+            return super.getRequestHandler(id);
         }
     }
 
-    private abstract class RegistryOperation extends ManagementResponse {
+
+
+    private abstract class RegistryOperation extends ManagementRequestHandler {
         String hostId;
 
         RegistryOperation() {
-            super(getInitiatingHandler());
         }
 
         @Override
-        protected void readRequest(final InputStream inputStream) throws IOException {
-            expectHeader(inputStream, DomainControllerProtocol.PARAM_HOST_ID);
-            hostId = StreamUtils.readUTFZBytes(inputStream);
+        protected void readRequest(final DataInput input) throws IOException {
+            expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
+            hostId = input.readUTF();
         }
     }
 
     private class RegisterOperation extends RegistryOperation {
 
-//        Connection connection;
-        InetAddress slaveAddress;
-        int slavePort;
-
         @Override
-        protected final byte getResponseCode() {
-            return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_RESPONSE;
-        }
-
-//        @Override
-//        public void handle(final Connection connection, final InputStream input) throws IOException {
-//            this.connection = connection;
-//            super.handle(connection, input);
-//        }
-
-        @Override
-        protected void readRequest(InputStream inputStream) throws IOException {
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(inputStream);
-                expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
-                hostId = input.readUTF();
-                expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_HOST);
-                final int addressSize = input.readInt();
-                byte[] addressBytes = new byte[addressSize];
-                input.readFully(addressBytes);
-                expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_PORT);
-                slavePort = input.readInt();
-                slaveAddress = InetAddress.getByAddress(addressBytes);
-                input.close();
-            } finally {
-                StreamUtils.safeClose(input);
-            }
+        protected void readRequest(final DataInput input) throws IOException {
+            expectHeader(input, DomainControllerProtocol.PARAM_HOST_ID);
+            hostId = input.readUTF();
         }
 
 
         @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
-//            getController().addClient(new RemoteDomainControllerSlaveClient(hostId, connection));
-
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ModelNode node;
             try {
-                getController().addClient(new RemoteDomainControllerSlaveClient(hostId, slaveAddress, slavePort));
+                getController().addClient(new RemoteDomainControllerSlaveClient(hostId, getChannel()));
                 node = getController().getDomainModel();
             } catch (IllegalArgumentException e){
                 log.error(e);
                 node = new ModelNode();
                 node.get("protocol-error").set(e.getMessage());
             }
-            outputStream.write(DomainControllerProtocol.PARAM_MODEL);
-            node.writeExternal(outputStream);
+            output.write(DomainControllerProtocol.PARAM_MODEL);
+            node.writeExternal(output);
         }
     }
 
     private class UnregisterOperation extends RegistryOperation {
         @Override
-        protected final byte getResponseCode() {
-            return DomainControllerProtocol.UNREGISTER_HOST_CONTROLLER_RESPONSE;
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
             getController().removeClient(hostId);
         }
     }
@@ -165,67 +124,49 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
         private File localPath;
 
         @Override
-        protected final byte getResponseCode() {
-            return DomainControllerProtocol.GET_FILE_RESPONSE;
-        }
-
-        @Override
-        protected void readRequest(final InputStream inputStream) throws IOException {
+        protected void readRequest(final DataInput input) throws IOException {
             final byte rootId;
             final String filePath;
             final FileRepository localFileRepository = getController().getFileRepository();
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(inputStream);
-                expectHeader(input, DomainControllerProtocol.PARAM_ROOT_ID);
-                rootId = input.readByte();
-                expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
-                filePath = input.readUTF();
+            expectHeader(input, DomainControllerProtocol.PARAM_ROOT_ID);
+            rootId = input.readByte();
+            expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
+            filePath = input.readUTF();
 
-                switch (rootId) {
-                    case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
-                        localPath = localFileRepository.getFile(filePath);
-                        break;
-                    }
-                    case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
-                        localPath = localFileRepository.getConfigurationFile(filePath);
-                        break;
-                    }
-                    case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
-                        byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                        localPath = localFileRepository.getDeploymentRoot(hash);
-                        break;
-                    }
-                    default: {
-                        throw new IOException(String.format("Invalid root id [%d]", rootId));
-                    }
+            switch (rootId) {
+                case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                    localPath = localFileRepository.getFile(filePath);
+                    break;
                 }
-            } finally {
-                StreamUtils.safeClose(input);
+                case DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                    localPath = localFileRepository.getConfigurationFile(filePath);
+                    break;
+                }
+                case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                    byte[] hash = HashUtil.hexStringToByteArray(filePath);
+                    localPath = localFileRepository.getDeploymentRoot(hash);
+                    break;
+                }
+                default: {
+                    throw new IOException(String.format("Invalid root id [%d]", rootId));
+                }
             }
         }
 
         @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ByteDataOutput output = null;
-            try {
-                output = new SimpleByteDataOutput(outputStream);
-                output.writeByte(DomainControllerProtocol.PARAM_NUM_FILES);
-                if (localPath == null || !localPath.exists()) {
-                    output.writeInt(-1);
-                } else if (localPath.isFile()) {
-                    output.writeInt(1);
-                    writeFile(localPath, output);
-                } else {
-                    final List<File> childFiles = getChildFiles(localPath);
-                    output.writeInt(childFiles.size());
-                    for (File child : childFiles) {
-                        writeFile(child, output);
-                    }
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
+            output.writeByte(DomainControllerProtocol.PARAM_NUM_FILES);
+            if (localPath == null || !localPath.exists()) {
+                output.writeInt(-1);
+            } else if (localPath.isFile()) {
+                output.writeInt(1);
+                writeFile(localPath, output);
+            } else {
+                final List<File> childFiles = getChildFiles(localPath);
+                output.writeInt(childFiles.size());
+                for (File child : childFiles) {
+                    writeFile(child, output);
                 }
-                output.close();
-            } finally {
-                StreamUtils.safeClose(output);
             }
         }
 
@@ -249,7 +190,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
             return child.getAbsolutePath().substring(parent.getAbsolutePath().length());
         }
 
-        private void writeFile(final File file, final DataOutput output) throws IOException {
+        private void writeFile(final File file, final FlushableDataOutput output) throws IOException {
             output.writeByte(DomainControllerProtocol.FILE_START);
             output.writeByte(DomainControllerProtocol.PARAM_FILE_PATH);
             output.writeUTF(getRelativePath(localPath, file));
@@ -272,6 +213,7 @@ public class MasterDomainControllerOperationHandlerImpl extends ModelControllerO
                 }
             }
             output.writeByte(DomainControllerProtocol.FILE_END);
+            output.flush();
         }
     }
 }

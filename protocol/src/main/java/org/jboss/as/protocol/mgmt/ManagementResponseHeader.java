@@ -31,19 +31,10 @@ import java.io.IOException;
  * {@link ManagementProtocolHeader}.
  *
  * @author John Bailey
+ * @author Kabir Khan
  */
-public class ManagementResponseHeader extends ManagementProtocolHeader {
+class ManagementResponseHeader extends ManagementProtocolHeader {
     private int responseId;
-
-    /**
-     * Construct a new instance and read the header information from the input provided.
-     *
-     * @param input The input to read the header information from
-     * @throws IOException If any problem occur reading from the input
-     */
-    public ManagementResponseHeader(final DataInput input) throws IOException {
-        super(input);
-    }
 
     /**
      * Construct an instance with the protocol version for the header.
@@ -56,8 +47,12 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
         this.responseId = responseId;
     }
 
+    ManagementResponseHeader(final int version, final DataInput input) throws IOException {
+        super(version);
+        read(input);
+    }
+
     public void read(final DataInput input) throws IOException {
-        super.read(input);
         this.responseId = input.readInt();
     }
 
@@ -74,4 +69,15 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
     public int getResponseId() {
         return responseId;
     }
+
+    @Override
+    byte getType() {
+        return ManagementProtocol.RESPONSE;
+    }
+
+    @Override
+    boolean isRequest() {
+        return false;
+    }
+
 }

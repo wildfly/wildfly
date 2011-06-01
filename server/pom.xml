@@ -59,6 +59,10 @@
             <artifactId>jboss-as-process-controller</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-remoting</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jandex</artifactId>
         </dependency>
@@ -91,8 +95,8 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>staxmapper</artifactId>
+            <groupId>org.jboss.remoting3</groupId>
+            <artifactId>jboss-remoting</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.stdio</groupId>

@@ -39,7 +39,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**

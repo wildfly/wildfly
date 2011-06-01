@@ -35,9 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.ProtocolServer;
-import org.jboss.as.protocol.StreamUtils;
+
+import org.jboss.as.protocol.old.Connection;
+import org.jboss.as.protocol.old.ProtocolServer;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.logging.Logger;
 
 /**

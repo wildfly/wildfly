@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

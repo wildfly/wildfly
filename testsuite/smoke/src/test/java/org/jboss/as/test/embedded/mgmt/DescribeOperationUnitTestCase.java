@@ -41,8 +41,9 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.api.Run;
+import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
@@ -58,7 +59,7 @@ import org.junit.runner.RunWith;
  * @author Emanuel Muckenhuber
  */
 @RunWith(Arquillian.class)
-@RunAsClient
+@Run(RunModeType.AS_CLIENT)
 public class DescribeOperationUnitTestCase {
 
     private static final Set<String> ignored = new HashSet<String>();
@@ -68,7 +69,7 @@ public class DescribeOperationUnitTestCase {
         ignored.add("deployment-scanner");
     }
 
-    @Deployment(testable = false)
+    @Deployment()
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }

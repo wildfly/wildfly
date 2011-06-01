@@ -24,6 +24,7 @@ package org.jboss.as.controller.remote;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
@@ -31,7 +32,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -58,8 +59,9 @@ public class ModelControllerClientToModelControllerAdapter implements ModelContr
      *
      * @param connection the connection
      */
-    public ModelControllerClientToModelControllerAdapter(final Connection connection) {
-        client = ModelControllerClient.Factory.create(connection);
+    public ModelControllerClientToModelControllerAdapter(final ProtocolChannel channel, ExecutorService executorService) {
+        //TODO Get the executor from somewhere
+        client = ModelControllerClient.Factory.create(channel);
     }
 
     @Override

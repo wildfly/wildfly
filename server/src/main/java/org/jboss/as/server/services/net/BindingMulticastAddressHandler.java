@@ -18,12 +18,13 @@
  */
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.InetAddressValidator;
-import org.jboss.dmr.ModelNode;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.validation.InetAddressValidator;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for changing the interface on a socket binding.

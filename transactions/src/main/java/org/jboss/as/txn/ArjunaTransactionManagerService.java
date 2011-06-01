@@ -22,13 +22,13 @@
 
 package org.jboss.as.txn;
 
-import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jta.common.jtaPropertyManager;
+import static org.jboss.as.txn.SecurityActions.setContextLoader;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -40,12 +40,13 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.LastResource;
 import org.omg.CORBA.ORB;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.txn.SecurityActions.setContextLoader;
+import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.ats.jta.common.jtaPropertyManager;
 
 /**
  * A service for the propriatary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}

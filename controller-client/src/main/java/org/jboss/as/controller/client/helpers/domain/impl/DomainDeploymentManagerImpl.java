@@ -69,7 +69,7 @@ import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.DuplicateDeploymentNameException;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**

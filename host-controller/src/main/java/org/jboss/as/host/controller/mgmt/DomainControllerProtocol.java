@@ -30,13 +30,9 @@ import org.jboss.as.controller.client.ModelControllerClientProtocol;
  */
 public interface DomainControllerProtocol extends ModelControllerClientProtocol{
     byte REGISTER_HOST_CONTROLLER_REQUEST = 0x51;
-    byte REGISTER_HOST_CONTROLLER_RESPONSE = 0x52;
     byte UNREGISTER_HOST_CONTROLLER_REQUEST = 0x53;
-    byte UNREGISTER_HOST_CONTROLLER_RESPONSE = 0x54;
     byte GET_FILE_REQUEST = 0x55;
-    byte GET_FILE_RESPONSE = 0x56;
     byte IS_ACTIVE_REQUEST = 0x57;
-    byte IS_ACTIVE_RESPONSE = 0x58;
 
     byte PARAM_HOST_ID = 0x20;
     byte PARAM_HOST_CONTROLLER_HOST = 0x21;

@@ -22,16 +22,17 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.AccessController;
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import javax.net.SocketFactory;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.ProtocolClient;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+
+import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.ManagementChannelReceiverFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -39,33 +40,40 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Service used to connect to the host controller.  Will maintain the connection for the length of the service life.
  *
  * @author John Bailey
  */
-public class HostControllerConnectionService implements Service<Connection> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "connection");
-    private final InjectedValue<InetSocketAddress> smAddress = new InjectedValue<InetSocketAddress>();
+public class HostControllerConnectionService implements Service<ProtocolChannel> {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "channel");
+    private final InjectedValue<InetSocketAddress> hcAddress = new InjectedValue<InetSocketAddress>();
 
-    private Connection connection;
+    private volatile ProtocolChannel channel;
+    private volatile ProtocolChannelClient client;
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
-        final ProtocolClient.Configuration configuration = new ProtocolClient.Configuration();
-        configuration.setServerAddress(smAddress.getValue());
-        configuration.setMessageHandler(MessageHandler.NULL);
-        configuration.setSocketFactory(SocketFactory.getDefault());
-        final ThreadGroup threadGroup = new ThreadGroup("HostControllerConnection-threads");
-        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        configuration.setThreadFactory(threadFactory);
-        configuration.setReadExecutor(Executors.newCachedThreadPool(threadFactory));
 
-        final ProtocolClient protocolClient = new ProtocolClient(configuration);
+        ProtocolChannelClient client;
         try {
-            connection = protocolClient.connect();
+            ExecutorService executorService = Executors.newCachedThreadPool();
+            ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
+            configuration.setEndpointName("endpoint");
+            configuration.setUriScheme("remote");
+            configuration.setUri(new URI("remote://" + hcAddress.getValue().getHostName() + ":" + hcAddress.getValue().getPort()));
+            configuration.setExecutor(executorService);
+            configuration.setChannelReceiverFactory(new ManagementChannelReceiverFactory());
+            client = ProtocolChannelClient.create(configuration);
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
+
+        try {
+            client.connect();
+            channel = client.openChannel("server");
+            channel.startReceiving();
         } catch (IOException e) {
             throw new StartException("Failed to start remote Host Controller connection", e);
         }
@@ -73,13 +81,15 @@ public class HostControllerConnectionService implements Service<Connection> {
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        safeClose(connection);
-        connection = null;
+        safeClose(channel);
+        safeClose(client);
+        client = null;
+        channel = null;
     }
 
     /** {@inheritDoc} */
-    public synchronized Connection getValue() throws IllegalStateException {
-        return connection;
+    public synchronized ProtocolChannel getValue() throws IllegalStateException {
+        return channel;
     }
 
     /**
@@ -87,7 +97,7 @@ public class HostControllerConnectionService implements Service<Connection> {
      *
      * @return The injector
      */
-    public Injector<InetSocketAddress> getSmAddressInjector() {
-        return smAddress;
+    public Injector<InetSocketAddress> getHcAddressInjector() {
+        return hcAddress;
     }
 }

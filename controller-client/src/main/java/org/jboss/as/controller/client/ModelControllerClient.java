@@ -28,7 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -79,35 +79,39 @@ public interface ModelControllerClient extends Closeable {
 
     class Factory {
         /**
-         * Create a client instance for a remote address and port.
+         * Create a client instance for an existing channel. It is the client's responsibility to close this channel
          *
-         * @param hostName The host name to connect to
-         * @param port The remote port
+         * @param channel The channel to use
+         * @param executorService
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
          */
-        public static ModelControllerClient create(final String hostName, int port) throws UnknownHostException {
-            return create(InetAddress.getByName(hostName), port);
-        }
-        /**
-         * Create a client instance for a remote address and port.
-         *
-         * @param address The remote address to connect to
-         * @param port The remote port
-         * @return A model controller client
-         */
-        public static ModelControllerClient create(final InetAddress address, final int port) {
-            return new EstablishConnectionModelControllerClient(address, port);
+        public static ModelControllerClient create(final ProtocolChannel channel) {
+            return new ExistingChannelModelControllerClient(channel);
         }
 
         /**
-         * Create client instance using an existing connection
+         * Create a client instance for a remote address and port.
          *
-         * @param connection the connection
+         * @param address the address of the remote host
+         * @param executorService
          * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
          */
-        public static ModelControllerClient create(final Connection connection) {
-            return new ExistingConnectionModelControllerClient(connection);
+        public static ModelControllerClient create(final InetAddress address, final int port){
+            return new EstablishChannelModelControllerClient(address, port);
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param hostName the remote host
+         * @param executorService
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String hostName, final int port){
+            return new EstablishChannelModelControllerClient(hostName, port);
         }
     }
 }

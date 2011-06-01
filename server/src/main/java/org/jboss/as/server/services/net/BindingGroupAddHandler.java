@@ -34,6 +34,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.SocketBindingManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;

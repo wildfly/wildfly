@@ -37,7 +37,7 @@ import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.impl.AbstractServerDeploymentManager;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**

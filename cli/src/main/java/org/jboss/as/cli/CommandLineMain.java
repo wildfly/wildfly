@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +88,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -639,28 +638,22 @@ public class CommandLineMain {
                 port = defaultControllerPort;
             }
 
-            try {
-                ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
-                if(this.client != null) {
-                    disconnectController(loggingEnabled);
-                }
+            ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
+            if(this.client != null) {
+                disconnectController();
+            }
 
-                List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
-                if (!nodeTypes.isEmpty()) {
-                    domainMode = nodeTypes.contains("server-group");
-                    if(loggingEnabled) {
-                        printLine("Connected to "
-                            + (domainMode ? "domain controller at " : "standalone controller at ")
-                            + host + ":" + port);
-                    }
-                    client = newClient;
-                    this.controllerHost = host;
-                    this.controllerPort = port;
-                } else {
-                    printLine("The controller is not available at " + host + ":" + port);
-                }
-            } catch (UnknownHostException e) {
-                printLine("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+            List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
+            if (!nodeTypes.isEmpty()) {
+                domainMode = nodeTypes.contains("server-group");
+                printLine("Connected to "
+                        + (domainMode ? "domain controller at " : "standalone controller at ")
+                        + host + ":" + port);
+                client = newClient;
+                this.controllerHost = host;
+                this.controllerPort = port;
+            } else {
+                printLine("The controller is not available at " + host + ":" + port);
             }
         }
 

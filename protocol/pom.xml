@@ -50,13 +50,25 @@
             <artifactId>jboss-marshalling</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.remoting3</groupId>
+            <artifactId>jboss-remoting</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.modules</groupId>
-            <artifactId>jboss-modules</artifactId>
+            <groupId>org.jboss.threads</groupId>
+            <artifactId>jboss-threads</artifactId>
+        </dependency>    
+        <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-nio</artifactId>
         </dependency>
         <dependency>
            <groupId>junit</groupId>

@@ -39,16 +39,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.OperationBuilder;
-
 import org.jboss.as.controller.persistence.ConfigurationFile;
-
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.domain.controller.DomainModelImpl;
-import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
-import org.jboss.as.host.controller.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandler;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -177,9 +174,10 @@ public class HostControllerBootstrap {
         // Add the server to host operation handler
         final ServerToHostOperationHandler serverToHost = new ServerToHostOperationHandler();
         serviceTarget.addService(ServerToHostOperationHandler.SERVICE_NAME, serverToHost)
-            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallback())
-            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(serverToHost))
+            .addDependency(ServerInventoryService.SERVICE_NAME, ManagedServerLifecycleCallback.class, serverToHost.getCallbackInjector())
             .install();
+
+        RemotingServices.installChannelOpenListenerService(serviceTarget, "server", ServerToHostOperationHandler.SERVICE_NAME, null);
     }
 
     /**

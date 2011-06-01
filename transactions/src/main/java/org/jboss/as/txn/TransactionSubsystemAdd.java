@@ -47,7 +47,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -59,6 +59,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
+
 
 /**
  * Adds the transaction management subsystem.

@@ -59,7 +59,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.surefire.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;

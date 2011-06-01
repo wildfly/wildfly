@@ -27,6 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 
+import java.util.Map;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -40,11 +43,9 @@ import org.jboss.as.host.controller.operations.ServerStartHandler;
 import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -123,9 +124,9 @@ public class HostControllerImpl implements HostController {
     }
 
     @Override
-    public void registerRunningServer(String serverName, Connection connection) {
+    public void registerRunningServer(String serverName, ProtocolChannel channel) {
         final PathElement element = PathElement.pathElement(RUNNING_SERVER, serverName);
-        final ProxyController serverController = RemoteProxyController.create(connection, PathAddress.pathAddress(PathElement.pathElement(HOST, name), element));
+        final ProxyController serverController = RemoteProxyController.create(channel, Executors.newCachedThreadPool(), PathAddress.pathAddress(PathElement.pathElement(HOST, name), element));
         registry.registerProxyController(element, serverController);
         model.get(element.getKey(), element.getValue());
     }

@@ -28,7 +28,7 @@ import javax.naming.NameNotFoundException;
 import org.jboss.as.demos.DomainDeploymentUtils;
 import org.jboss.as.demos.ds.mbean.Test;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * Runner for the datasource demo

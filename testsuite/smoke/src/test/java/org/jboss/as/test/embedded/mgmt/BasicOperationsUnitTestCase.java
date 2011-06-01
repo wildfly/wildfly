@@ -44,10 +44,12 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.api.Run;
+import org.jboss.arquillian.api.RunModeType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -61,10 +63,10 @@ import org.junit.runner.RunWith;
  * @author Emanuel Muckenhuber
  */
 @RunWith(Arquillian.class)
-@RunAsClient
+@Run(RunModeType.AS_CLIENT)
 public class BasicOperationsUnitTestCase {
 
-    @Deployment(testable = false)
+    @Deployment()
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }

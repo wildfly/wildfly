@@ -21,8 +21,8 @@
 */
 package org.jboss.as.controller.remote;
 
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.protocol.MessageHandler;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,24 +47,21 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
 
     private volatile ModelControllerOperationHandler handler;
 
-    public ModelControllerOperationHandlerService() {
-    }
-
     /**
      * Use to inject the model controller that will be the target of the operations
      *
      * @return the injected value holder
      */
-    public InjectedValue<NewModelController> getModelControllerValue() {
+    public InjectedValue<NewModelController> getModelControllerInjector() {
         return modelControllerValue;
     }
 
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
+        log.debugf("Starting operation handler service %s", context.getController().getName());
         final NewModelController modelController = modelControllerValue.getValue();
-        final MessageHandler initialMessageHandler = getInitialMessageHandler();
-        this.handler = createOperationHandler(modelController, initialMessageHandler);
+        this.handler = createOperationHandler(modelController);
     }
 
     /** {@inheritDoc} */
@@ -83,13 +80,7 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
         this.handler = handler;
     }
 
-    protected MessageHandler getInitialMessageHandler() {
-        return MessageHandler.NULL;
-    }
-
-    protected ModelControllerOperationHandler createOperationHandler(NewModelController modelController, MessageHandler initialMessageHandler) {
-        log.info("Remote operations are disabled until remoting is integrated");
-        return null;
-        //return new ModelControllerOperationHandlerImpl(modelController, initialMessageHandler);
+    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController) {
+        return new ModelControllerOperationHandlerImpl(modelController);
     }
 }

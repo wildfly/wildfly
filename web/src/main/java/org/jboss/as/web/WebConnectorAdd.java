@@ -22,18 +22,8 @@
 
 package org.jboss.as.web;
 
-import java.util.List;
-import java.util.Locale;
-import org.apache.catalina.connector.Connector;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.services.net.SocketBinding;
 import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.ENABLE_LOOKUPS;
 import static org.jboss.as.web.Constants.EXECUTOR;
@@ -49,6 +39,18 @@ import static org.jboss.as.web.Constants.SECURE;
 import static org.jboss.as.web.Constants.SOCKET_BINDING;
 import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
+
+import java.util.List;
+import java.util.Locale;
+
+import org.apache.catalina.connector.Connector;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
