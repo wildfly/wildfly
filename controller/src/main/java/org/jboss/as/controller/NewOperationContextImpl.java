@@ -393,6 +393,7 @@ final class NewOperationContextImpl implements NewOperationContext {
      * Decide whether failure should trigger a rollback.
      *
      * @param cause the cause of the failure, or {@code null} if failure is not the result of catching a throwable
+     * @return the result action
      */
     private ResultAction getFailedResultAction(Throwable cause) {
         if (currentStage == Stage.MODEL || cancelled || contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL)
@@ -828,6 +829,18 @@ final class NewOperationContextImpl implements NewOperationContext {
             throw new UnsupportedOperationException();
         }
 
+        public ServiceTarget addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<Object> listener) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceTarget addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<Object>... listeners) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceTarget addListener(final ServiceListener.Inheritance inheritance, final Collection<ServiceListener<Object>> listeners) {
+            throw new UnsupportedOperationException();
+        }
+
         public ServiceTarget removeListener(final ServiceListener<Object> listener) {
             throw new UnsupportedOperationException();
         }
@@ -962,6 +975,21 @@ final class NewOperationContextImpl implements NewOperationContext {
 
         public ServiceBuilder<T> addListener(final Collection<? extends ServiceListener<? super T>> listeners) {
             realBuilder.addListener(listeners);
+            return this;
+        }
+
+        public ServiceBuilder<T> addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<? super T> listener) {
+            realBuilder.addListener(inheritance, listener);
+            return this;
+        }
+
+        public ServiceBuilder<T> addListener(final ServiceListener.Inheritance inheritance, final ServiceListener<? super T>... listeners) {
+            realBuilder.addListener(inheritance, listeners);
+            return this;
+        }
+
+        public ServiceBuilder<T> addListener(final ServiceListener.Inheritance inheritance, final Collection<? extends ServiceListener<? super T>> listeners) {
+            realBuilder.addListener(inheritance, listeners);
             return this;
         }
 
