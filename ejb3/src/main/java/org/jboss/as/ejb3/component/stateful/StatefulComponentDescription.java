@@ -221,17 +221,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     }
 
     private void addTransactionManagementInterceptor(final ViewDescription view) {
-        // for CMT, setup the session sychronization tx interceptor
-        if (TransactionManagementType.CONTAINER.equals(this.getTransactionManagementType())) {
-            view.getConfigurators().add(new ViewConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-
-                    logger.warn("Interceptors at ComponentInstance level aren't supported yet - SessionSynchronization semantics for " +
-                            "Stateful beans with CMT won't work!");
-                }
-            });
-        } else { // setup BMT interceptor
+        // setup BMT interceptor
+        if (TransactionManagementType.BEAN.equals(this.getTransactionManagementType())) {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
