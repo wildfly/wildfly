@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ~ JBoss, Home of Professional Open Source. ~ Copyright 2010, Red Hat, 
-    Inc., and individual contributors ~ as indicated by the @author tags. See 
-    the copyright.txt file in the ~ distribution for a full listing of individual 
-    contributors. ~ ~ This is free software; you can redistribute it and/or modify 
-    it ~ under the terms of the GNU Lesser General Public License as ~ published 
-    by the Free Software Foundation; either version 2.1 of ~ the License, or 
-    (at your option) any later version. ~ ~ This software is distributed in the 
-    hope that it will be useful, ~ but WITHOUT ANY WARRANTY; without even the 
-    implied warranty of ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    See the GNU ~ Lesser General Public License for more details. ~ ~ You should 
-    have received a copy of the GNU Lesser General Public ~ License along with 
-    this software; if not, write to the Free ~ Software Foundation, Inc., 51 
-    Franklin St, Fifth Floor, Boston, MA ~ 02110-1301 USA, or see the FSF site: 
-    http://www.fsf.org. -->
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -42,8 +49,14 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-service</artifactId>
+            <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+        </dependency>
+
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
@@ -55,43 +68,46 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <!-- here the phase you need -->
-            <phase>process-test-classes</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
-                  <includes>
-                    <include>**</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <parallel>none</parallel>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

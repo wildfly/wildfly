@@ -18,12 +18,13 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+
+import org.jboss.logging.Logger;
 
 /**
  * A provider for the JSR160 connection.
@@ -33,7 +34,7 @@ import javax.management.remote.JMXServiceURL;
  */
 public final class MBeanServerConnectionProvider {
 
-    private static final Logger log = Logger.getLogger(MBeanServerConnectionProvider.class.getName());
+    private static final Logger log = Logger.getLogger(MBeanServerConnectionProvider.class);
     private final InetAddress hostAddr;
     private final int port;
 
@@ -49,7 +50,7 @@ public final class MBeanServerConnectionProvider {
         String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
         try {
             if (jmxConnector == null) {
-                log.fine("Connecting JMXConnector to: " + urlString);
+                log.debug("Connecting JMXConnector to: " + urlString);
                 JMXServiceURL serviceURL = new JMXServiceURL(urlString);
                 jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
             }

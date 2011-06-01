@@ -34,6 +34,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-common</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-osgi-service</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.arquillian.core</groupId>
             <artifactId>arquillian-core-spi</artifactId>
         </dependency>
@@ -46,8 +54,9 @@
             <artifactId>shrinkwrap-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.spi</groupId>
-            <artifactId>jbosgi-spi</artifactId>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <scope>provided</scope>
         </dependency>
     </dependencies>
 

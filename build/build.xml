@@ -397,29 +397,30 @@
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
 
+    	<!--
         <module-def name="org.jboss.arquillian.core">
-            <maven-resource group="org.jboss.arquillian.config" artifact="arquillian-config-api"/>
-            <maven-resource group="org.jboss.arquillian.config" artifact="arquillian-config-impl-base"/>
-            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-api"/>
-            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-impl-base"/>
-            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-spi"/>
-            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-spi"/>
             <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-api"/>
-            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-impl-base"/>
             <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-spi"/>
-            <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-core"/>
-            <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-container"/>
-            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-api"/>
-            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-impl-base"/>
-            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-spi"/>
         </module-def>
-
+    	
         <module-def name="org.jboss.arquillian.protocol.jmx">
             <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-jmx"/>
         </module-def>
+    	
+        <module-def name="org.jboss.arquillian.core">
+            <maven-resource group="org.jboss.arquillian.config" artifact="arquillian-config-api"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-api"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-spi"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-spi"/>
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-api"/>
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-spi"/>
+            <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-core"/>
+            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-api"/>
+            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-spi"/>
+        </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.cdi">
-            <!--maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/-->
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-cdi"/>
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-cdi"/>
         </module-def>
 
@@ -432,16 +433,23 @@
         </module-def>
 
         <module-def name="org.jboss.arquillian.testenricher.resource">
-            <!--maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-resource"/-->
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-resource"/>
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-testenricher-resource"/>
         </module-def>
 
-        <module-def name="org.jboss.as.aggregate" />
-
         <module-def name="org.jboss.as.arquillian.aggregate"/>
 
-        <module-def name="org.jboss.as.arquillian.service"/>
+        <module-def name="org.jboss.as.arquillian.service">
+            <maven-resource group="org.jboss.arquillian.core" artifact="arquillian-core-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.junit" artifact="arquillian-junit-container"/>
+            <maven-resource group="org.jboss.arquillian.config" artifact="arquillian-config-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.container" artifact="arquillian-container-test-impl-base"/>
+            <maven-resource group="org.jboss.arquillian.test" artifact="arquillian-test-impl-base"/>
+    	</module-def>
+        -->
 
+        <module-def name="org.jboss.as.aggregate" />
+    	
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
         </module-def>

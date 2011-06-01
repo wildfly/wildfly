@@ -25,11 +25,14 @@ import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.command.CommandCallback;
 import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXProtocol;
 import org.jboss.arquillian.protocol.jmx.JMXProtocolConfiguration;
 import org.jboss.arquillian.protocol.jmx.JMXProtocolConfiguration.ExecutionType;
+import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
+import org.jboss.shrinkwrap.api.Archive;
 
 /**
  * JBossASProtocol
@@ -39,12 +42,18 @@ import org.jboss.arquillian.protocol.jmx.JMXProtocolConfiguration.ExecutionType;
  */
 public class JBossASProtocol extends JMXProtocol {
 
-    @Inject @ContainerScoped
+    @Inject
+    @ContainerScoped
     private Instance<MBeanServerConnection> mbeanServerInst;
+
+    @Inject
+    @SuiteScoped
+    private InstanceProducer<ServiceArchiveHolder> archiveHolderInst;
 
     @Override
     public DeploymentPackager getPackager() {
-        return new JBossASDeploymentPackager();
+        archiveHolderInst.set(new ServiceArchiveHolder());
+        return new JBossASDeploymentPackager(archiveHolderInst.get());
     }
 
     @Override
@@ -58,5 +67,17 @@ public class JBossASProtocol extends JMXProtocol {
     public ContainerMethodExecutor getExecutor(JMXProtocolConfiguration config, ProtocolMetaData metaData, CommandCallback callback) {
         MBeanServerConnection mbeanServer = mbeanServerInst.get();
         return new JMXMethodExecutor(mbeanServer, ExecutionType.REMOTE, callback);
+    }
+
+    class ServiceArchiveHolder {
+        private Archive<?> serviceArchive;
+
+        Archive<?> getArchive() {
+            return serviceArchive;
+        }
+
+        void setArchive(Archive<?> serviceArchive) {
+            this.serviceArchive = serviceArchive;
+        }
     }
 }

@@ -25,8 +25,6 @@ package org.jboss.as.arquillian.service;
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
 
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -38,15 +36,10 @@ import javax.management.MBeanServer;
 
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
-import org.jboss.arquillian.context.ContextManager;
-import org.jboss.arquillian.context.ContextManagerBuilder;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
-import org.jboss.arquillian.test.spi.TestResult;
-import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.server.ServerController;
@@ -54,7 +47,6 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -126,49 +118,7 @@ public class ArquillianService implements Service<ArquillianService> {
         final ServiceTarget serviceTarget = context.getChildTarget();
 
         try {
-            jmxTestRunner = new JMXTestRunner(testClassLoader) {
-
-                @Override
-                public TestResult runTestMethodRemote(String className, String methodName) {
-                    Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
-                    ContextManager contextManager = initializeContextManager(className, properties);
-                    try {
-                        // actually run the tests
-                        return super.runTestMethodRemote(className, methodName);
-                    } finally {
-                        contextManager.teardown(properties);
-                    }
-                }
-
-                @Override
-                public InputStream runTestMethodEmbedded(String className, String methodName) {
-                    Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
-                    ContextManager contextManager = initializeContextManager(className, properties);
-                    try {
-                        // actually run the tests
-                        return super.runTestMethodEmbedded(className, methodName);
-                    } finally {
-                        contextManager.teardown(properties);
-                    }
-                }
-
-                private ContextManager initializeContextManager(String className, Map<String, Object> properties) {
-                    final ContextManagerBuilder builder = new ContextManagerBuilder();
-                    ArquillianConfig config = getConfig(className, 5000);
-                    if (config != null) {
-                        final DeploymentUnit deployment = config.getDeploymentUnit();
-                        final Module module = deployment.getAttachment(Attachments.MODULE);
-                        if (module != null) {
-                            builder.add(new TCCLSetup(module.getClassLoader()));
-                        }
-                        builder.addAll(deployment);
-                    }
-
-                    ContextManager contextManager = builder.build();
-                    contextManager.setup(properties);
-                    return contextManager;
-                }
-            };
+            jmxTestRunner = new JMXTestRunner(testClassLoader);
             jmxTestRunner.registerMBean(mbeanServer);
         } catch (Throwable t) {
             throw new StartException("Failed to start Arquillian Test Runner", t);
@@ -263,11 +213,9 @@ public class ArquillianService implements Service<ArquillianService> {
     class TestClassLoaderImpl implements JMXTestRunner.TestClassLoader {
 
         private ServiceContainer serviceContainer;
-        private ServerDeploymentManager deploymentManager;
 
         TestClassLoaderImpl(ServiceContainer serviceContainer) {
             this.serviceContainer = serviceContainer;
-            this.deploymentManager = new ModelControllerServerDeploymentManager(injectedServerController.getValue());
         }
 
         @Override
@@ -293,16 +241,14 @@ public class ArquillianService implements Service<ArquillianService> {
 
             Class<?> testClass = null;
             if (module != null) {
-                ServiceContainerAssociation.setServiceContainer(serviceContainer);
-                ServerDeploymentManagerAssociation.setServerDeploymentManager(deploymentManager);
+                //ServiceContainerAssociation.setServiceContainer(serviceContainer);
                 testClass = module.getClassLoader().loadClass(className);
             }
 
             else if (osgidep != null) {
                 Bundle bundle = osgidep.getAttachment(Bundle.class);
                 bundleInst.set(bundle);
-                ServiceContainerAssociation.setServiceContainer(serviceContainer);
-                ServerDeploymentManagerAssociation.setServerDeploymentManager(deploymentManager);
+                //ServiceContainerAssociation.setServiceContainer(serviceContainer);
                 Framework framework = awaitActiveOSGiFramework();
                 frameworkInst.set(framework);
                 bundleContextInst.set(framework.getBundleContext());

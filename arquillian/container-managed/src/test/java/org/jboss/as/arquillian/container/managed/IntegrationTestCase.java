@@ -23,7 +23,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.container.managed.beans.GreetingService;
+import org.jboss.as.arquillian.container.managed.archive.GreetingService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -41,11 +41,11 @@ import org.junit.runner.RunWith;
 public class IntegrationTestCase {
 
     private static final Logger log = Logger.getLogger(IntegrationTestCase.class.getName());
-    
+
     @Deployment
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class).addClass(GreetingService.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class).addClass(GreetingService.class);
+        archive.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         log.info(archive.toString(true));
         return archive;
     }

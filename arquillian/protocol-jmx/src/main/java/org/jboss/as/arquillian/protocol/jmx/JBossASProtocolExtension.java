@@ -31,5 +31,6 @@ public class JBossASProtocolExtension implements LoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         builder.service(Protocol.class, JBossASProtocol.class);
+        builder.observer(ArquillianServiceDeployer.class);
     }
 }

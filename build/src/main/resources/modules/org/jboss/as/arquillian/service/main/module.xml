@@ -35,8 +35,8 @@
         <module name="org.jboss.as.jmx" export="true"/>
         <module name="org.jboss.as.osgi" export="true"/>
         <module name="org.jboss.as.server" export="true"/>
-        <module name="org.jboss.arquillian.core" export="true"/>
         <module name="org.jboss.arquillian.protocol.jmx" export="true"/>
+        <!-- 
         <module name="org.jboss.arquillian.testenricher.cdi" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.msc" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.osgi" services="export" export="true"/>
@@ -49,6 +49,7 @@
         <module name="org.jboss.shrinkwrap.core" export="true"/>
         <module name="org.osgi.core" export="true"/>
         <module name="org.junit" export="true"/>
+        -->
     </dependencies>
 
 </module>

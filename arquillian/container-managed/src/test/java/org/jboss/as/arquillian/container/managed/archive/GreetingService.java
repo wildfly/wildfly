@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.managed.beans;
+package org.jboss.as.arquillian.container.managed.archive;
 
 /**
  * GreetingService
