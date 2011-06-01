@@ -440,10 +440,6 @@
 
         <module-def name="org.jboss.as.arquillian.aggregate"/>
 
-        <module-def name="org.jboss.as.arquillian.common">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-common"/>
-        </module-def>
-
         <module-def name="org.jboss.as.arquillian.service"/>
 
         <module-def name="org.jboss.as.cli">

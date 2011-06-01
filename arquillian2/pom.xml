@@ -14,7 +14,7 @@
   <artifactId>jboss-as-arquillian2</artifactId>
   <version>7.0.0.Beta4-SNAPSHOT</version>
 
-  <name>JBoss Application Server: Arquillian</name>
+  <name>JBoss Application Server: Arquillian2</name>
 
   <modules>
     <module>common</module>

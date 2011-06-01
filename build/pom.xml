@@ -556,11 +556,6 @@
 
         <dependency>
            <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-arquillian-common</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
         </dependency>
 
