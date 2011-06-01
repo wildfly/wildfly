@@ -28,21 +28,29 @@ import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.Values;
 
+import java.lang.reflect.Method;
+
 /**
  * A binding description for DataSourceDefinition annotations.
- *
+ * <p/>
  * The referenced datasource must be directly visible to the
  * component declaring the annotation.
  *
  * @author Jason T. Greene
  */
 public class DirectDataSourceInjectionSource extends InjectionSource {
+
+    private static final Logger logger = Logger.getLogger(DirectDataSourceInjectionSource.class);
+
     public static final String USER_PROP = "user";
     public static final String URL_PROP = "url";
     public static final String TRANSACTIONAL_PROP = "transactional";
@@ -88,19 +96,19 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
 
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final Module module = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final DeploymentReflectionIndex index = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final DeploymentReflectionIndex deploymentReflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
         Object object;
         ClassReflectionIndex<?> classIndex;
         try {
             Class<?> clazz = module.getClassLoader().loadClass(className);
-            classIndex = index.getClassIndex(clazz);
+            classIndex = deploymentReflectionIndex.getClassIndex(clazz);
             object = classIndex.getConstructor(NO_CLASSES).newInstance();
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
 
-        setProperties(classIndex, object);
+        setProperties(deploymentReflectionIndex, classIndex, object);
         injector.inject(new ValueManagedReferenceFactory(Values.immediateValue(object)));
     }
 
@@ -110,41 +118,52 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         return other == this;
     }
 
-    private void setProperties(ClassReflectionIndex<?> clazz, Object object) {
-        setProperty(clazz, object, DESCRIPTION_PROP, description);
-        setProperty(clazz, object, URL_PROP, url);
-        setProperty(clazz, object, DATABASE_NAME_PROP, databaseName);
-        setProperty(clazz, object, SERVER_NAME_PROP, serverName);
-        setProperty(clazz, object, PORT_NUMBER_PROP, Integer.valueOf(portNumber));
-        setProperty(clazz, object, LOGIN_TIMEOUT_PROP, Integer.valueOf(loginTimeout));
-        setProperty(clazz, object, ISOLATION_LEVEL_PROP, Integer.valueOf(isolationLevel));
-        setProperty(clazz, object, TRANSACTIONAL_PROP, Boolean.valueOf(transactional));
-        setProperty(clazz, object, INITIAL_POOL_SIZE_PROP, Integer.valueOf(initialPoolSize));
-        setProperty(clazz, object, MAX_IDLE_TIME_PROP, Integer.valueOf(maxIdleTime));
-        setProperty(clazz, object, MAX_POOL_SIZE_PROP, Integer.valueOf(maxPoolSize));
-        setProperty(clazz, object, MAX_STATEMENTS_PROP, Integer.valueOf(maxStatements));
-        setProperty(clazz, object, MIN_POOL_SIZE_PROP, Integer.valueOf(minPoolSize));
-        setProperty(clazz, object, USER_PROP, user);
-        setProperty(clazz, object, PASSWORD_PROP, password);
+    private void setProperties(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classIndex, Object object) {
+        setProperty(deploymentReflectionIndex, classIndex, object, DESCRIPTION_PROP, description);
+        setProperty(deploymentReflectionIndex, classIndex, object, URL_PROP, url);
+        setProperty(deploymentReflectionIndex, classIndex, object, DATABASE_NAME_PROP, databaseName);
+        setProperty(deploymentReflectionIndex, classIndex, object, SERVER_NAME_PROP, serverName);
+        setProperty(deploymentReflectionIndex, classIndex, object, PORT_NUMBER_PROP, Integer.valueOf(portNumber));
+        setProperty(deploymentReflectionIndex, classIndex, object, LOGIN_TIMEOUT_PROP, Integer.valueOf(loginTimeout));
+        setProperty(deploymentReflectionIndex, classIndex, object, ISOLATION_LEVEL_PROP, Integer.valueOf(isolationLevel));
+        setProperty(deploymentReflectionIndex, classIndex, object, TRANSACTIONAL_PROP, Boolean.valueOf(transactional));
+        setProperty(deploymentReflectionIndex, classIndex, object, INITIAL_POOL_SIZE_PROP, Integer.valueOf(initialPoolSize));
+        setProperty(deploymentReflectionIndex, classIndex, object, MAX_IDLE_TIME_PROP, Integer.valueOf(maxIdleTime));
+        setProperty(deploymentReflectionIndex, classIndex, object, MAX_POOL_SIZE_PROP, Integer.valueOf(maxPoolSize));
+        setProperty(deploymentReflectionIndex, classIndex, object, MAX_STATEMENTS_PROP, Integer.valueOf(maxStatements));
+        setProperty(deploymentReflectionIndex, classIndex, object, MIN_POOL_SIZE_PROP, Integer.valueOf(minPoolSize));
+        setProperty(deploymentReflectionIndex, classIndex, object, USER_PROP, user);
+        setProperty(deploymentReflectionIndex, classIndex, object, PASSWORD_PROP, password);
 
         if (properties != null) for (String property : properties) {
             int pos = property.indexOf('=');
             if (pos == -1 || pos == property.length() - 1) continue;
 
-            setProperty(clazz, object, property.substring(0, pos), property.substring(pos + 1));
+            setProperty(deploymentReflectionIndex, classIndex, object, property.substring(0, pos), property.substring(pos + 1));
         }
     }
 
-    private void setProperty(ClassReflectionIndex<?> clazz, Object object, String name, Object value) {
+    private void setProperty(DeploymentReflectionIndex deploymentReflectionIndex, ClassReflectionIndex<?> classIndex, Object object, String name, Object value) {
         // Ignore defaulted values
         if (value == null) return;
         if (value instanceof String && "".equals(value)) return;
-        if (value instanceof Integer && ((Integer)value).intValue() == -1) return;
+        if (value instanceof Integer && ((Integer) value).intValue() == -1) return;
         StringBuilder builder = new StringBuilder("set").append(name);
         builder.setCharAt(3, Character.toUpperCase(name.charAt(0)));
+        final String methodName = builder.toString();
+        final Class<?> paramType = value.getClass();
+        final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName, paramType);
+        final Method setterMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, classIndex, methodIdentifier);
+        if (setterMethod == null) {
+            // just log a WARN message
+            logger.warn("Ignoring property " + name + " due to missing setter method: " + methodName + "("
+                    + paramType.getName() + ") on datasource class: " + classIndex.getIndexedClass().getName());
+            return;
+        }
         try {
-            clazz.getMethod(void.class, builder.toString(), value.getClass()).invoke(object, value);
-        } catch (Exception ignore) {
+            setterMethod.invoke(object, value);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not set property " + name + " on datasource class " + classIndex.getIndexedClass().getName(), e);
         }
     }
 
