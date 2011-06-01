@@ -46,7 +46,7 @@ public class ProxyStepHandler implements NewStepHandler {
 
     private final NewProxyController proxyController;
 
-    ProxyStepHandler(final NewProxyController proxyController) {
+    public ProxyStepHandler(final NewProxyController proxyController) {
         this.proxyController = proxyController;
     }
 

@@ -25,6 +25,7 @@ import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelAddOperationHandler;
 import org.jboss.as.controller.ModelQueryOperationHandler;
 import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewProxyController;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -47,6 +49,7 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,7 +70,7 @@ public class GlobalOperationHandlers {
     public static final NewStepHandler READ_CHILDREN_NAMES = new ReadChildrenNamesOperationHandler();
     public static final NewStepHandler READ_CHILDREN_RESOURCES = new ReadChildrenResourcesOperationHandler();
     public static final NewStepHandler WRITE_ATTRIBUTE = new WriteAttributeHandler();
-    public static final OperationHandler RESOLVE = new ResolveAddressOperationHandler();
+    public static final ResolveAddressOperationHandler RESOLVE = new ResolveAddressOperationHandler();
 
     private GlobalOperationHandlers() {
         //
@@ -441,7 +444,7 @@ public class GlobalOperationHandlers {
     };
 
 
-    public static final class ResolveAddressOperationHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    public static final class ResolveAddressOperationHandler implements NewStepHandler, DescriptionProvider {
 
         public static final String OPERATION_NAME = "resolve-address";
         public static final String ADDRESS_PARAM = "address-to-resolve";
@@ -449,95 +452,78 @@ public class GlobalOperationHandlers {
 
         /** {@inheritDoc} */
         @Override
-        public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS_PARAM));
             final String operationName = operation.require(ORIGINAL_OPERATION).asString();
             // First check if the address is handled by a proxy
-            final Collection<ProxyController> proxies = context.getRegistry().getProxyControllers(address);
+            final Collection<ProxyController> proxies = context.getModelNodeRegistration().getProxyControllers(PathAddress.EMPTY_ADDRESS);
             final int size = proxies.size();
             if(size > 0) {
-                final AtomicInteger count = new AtomicInteger(size);
-                final AtomicInteger status = new AtomicInteger();
-                final ModelNode failureResult = new ModelNode();
+                final Map<NewProxyController, ModelNode> proxyResponses = new HashMap<NewProxyController, ModelNode>();
                 for(final ProxyController proxy : proxies) {
                     final PathAddress proxyAddress = proxy.getProxyNodeAddress();
                     final ModelNode newOperation = operation.clone();
                     newOperation.get(OP_ADDR).set(address.subAddress(proxyAddress.size()).toModelNode());
-                    final Operation operationContext = OperationBuilder.Factory.create(newOperation).build();
-                    proxy.execute(operationContext, new ResultHandler() {
-                        @Override
-                        public void handleResultFragment(String[] location, ModelNode result) {
-                            synchronized(failureResult) {
-                                if(status.get() == 0) {
-                                    // Addresses are aggregated as list by the controller
-                                    final PathAddress resolved = PathAddress.pathAddress(result);
-                                    resultHandler.handleResultFragment(Util.NO_LOCATION, proxyAddress.append(resolved).toModelNode());
-                                }
-                            }
-                        }
-                        @Override
-                        public void handleResultComplete() {
-                            synchronized(failureResult) {
-                                status.compareAndSet(0, 1);
-                                if(count.decrementAndGet() == 0) {
-                                    handleComplete();
-                                }
-                            }
-                        }
-                        @Override
-                        public void handleFailed(ModelNode failureDescription) {
-                            synchronized(failureResult) {
-                                if(failureDescription != null)  {
-                                    failureResult.add(failureDescription);
-                                }
-                                status.compareAndSet(0, 2);
-                                if(count.decrementAndGet() == 0) {
-                                    handleComplete();
-                                }
-                            }
-                        }
-                        @Override
-                        public void handleCancellation() {
-                            synchronized(failureResult) {
-                                status.compareAndSet(0, 3);
-                                if(count.decrementAndGet() == 0) {
-                                    handleComplete();
-                                }
-                            }
-                        }
-                        private void handleComplete() {
-                            final int s = status.get();
-                            switch(s) {
-                                case 1: resultHandler.handleResultComplete(); break;
-                                case 2: resultHandler.handleFailed(new ModelNode()); break;
-                                case 3: resultHandler.handleCancellation(); break;
-                                default : throw new IllegalStateException();
-                            }
-                        }
-                    });
-                    return new BasicOperationResult();
+                    NewProxyController newProxyController = (NewProxyController) proxy;
+                    ProxyStepHandler proxyHandler = new ProxyStepHandler(newProxyController);
+                    ModelNode proxyResponse = new ModelNode();
+                    proxyResponses.put(newProxyController, proxyResponse);
+                    context.addStep(proxyResponse, newOperation, proxyHandler, NewOperationContext.Stage.IMMEDIATE);
                 }
-            }
-            // FIXME bogus cast just to compile
-            final OperationHandler operationHandler = (OperationHandler) context.getRegistry().getOperationHandler(address, operationName);
-            if(operationHandler == null) {
-                resultHandler.handleFailed(new ModelNode().set("no operation handler" + operationName));
-                return new BasicOperationResult();
-            }
-            final Collection<PathAddress> resolved;
-            if(operationHandler instanceof ModelQueryOperationHandler) {
-                resolved = PathAddress.resolve(address, context.getSubModel(), operationHandler instanceof ModelAddOperationHandler);
+
+                context.addStep(new NewStepHandler() {
+                    @Override
+                    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                        ModelNode failures = new ModelNode().setEmptyObject();
+                        ModelNode combined = new ModelNode().setEmptyList();
+                        for (Map.Entry<NewProxyController, ModelNode> entry : proxyResponses.entrySet()) {
+                            ModelNode rsp = entry.getValue();
+                            if (!SUCCESS.equals(rsp.get(OUTCOME))) {
+                               failures.get(entry.getKey().getProxyNodeAddress().toString()).set(rsp.get(FAILURE_DESCRIPTION));
+                            } else {
+                                ModelNode result = rsp.get(RESULT);
+                                if (result.isDefined()) {
+                                    for (ModelNode item : result.asList()) {
+                                        combined.add(item);
+                                    }
+                                }
+                            }
+                            if (failures.asInt() > 0) {
+                                ModelNode failMsg = new ModelNode();
+                                failMsg.add("Controllers for one or more addresses failed");
+                                failMsg.add(failures);
+                                context.getFailureDescription().set(failMsg);
+
+                            } else {
+                                context.getResult().set(combined);
+                            }
+                        }
+                        context.completeStep();
+                    }
+                }, NewOperationContext.Stage.MODEL);
+
             } else {
-                resolved = context.getRegistry().resolveAddress(address);
-            }
-            if(! resolved.isEmpty()) {
-                for(PathAddress a : resolved) {
-                    // Addresses are aggregated as list by the controller
-                    resultHandler.handleResultFragment(Util.NO_LOCATION, a.toModelNode());
+                // Deal with it directly
+                final NewStepHandler operationHandler = context.getModelNodeRegistration().getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+                if(operationHandler == null) {
+                    context.getFailureDescription().set("No operation handler" + operationName);
+                } else {
+                    final Collection<PathAddress> resolved;
+                    // FIXME we don't have this metadata with NewStepHandler
+                    if(operationHandler instanceof ModelQueryOperationHandler) {
+                        resolved = PathAddress.resolve(address, context.readModel(PathAddress.EMPTY_ADDRESS), operationHandler instanceof ModelAddOperationHandler);
+                    } else {
+                        resolved = context.getModelNodeRegistration().resolveAddress(address);
+                    }
+                    if(! resolved.isEmpty()) {
+                        ModelNode list = context.getResult().setEmptyList();
+                        for(PathAddress a : resolved) {
+                            list.add(a.toModelNode());
+                        }
+                    }
                 }
             }
-            resultHandler.handleResultComplete();
-            return new BasicOperationResult();
+            context.completeStep();
         }
 
         /** {@inheritDoc} */
