@@ -163,13 +163,13 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
-            <security-domains>
+            <!-- security-domains>
                 <security-domain name="other" cache-type="default">
                     <authentication>
                         <login-module code="UsersRoles" flag="required"/>
                     </authentication>
                 </security-domain>
-            </security-domains>
+            </security-domains -->
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
             <orb name="JBoss" print-version="off" giop-minor-version="2">
