@@ -21,7 +21,7 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
 import org.jboss.as.domain.controller.DomainController;
@@ -71,11 +71,13 @@ public class DomainControllerOperationHandlerService extends ModelControllerOper
     }
 
     @Override
-    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController, MessageHandler initialMessageHandler) {
-        if (isSlave) {
-            return super.createOperationHandler(modelController, initialMessageHandler);
-        }
-        return new MasterDomainControllerOperationHandlerImpl((DomainController)modelController, initialMessageHandler);
+    protected ModelControllerOperationHandler createOperationHandler(NewModelController modelController, MessageHandler initialMessageHandler) {
+        log.info("Remote operations are disabled until remoting is integrated");
+        return null;
+//        if (isSlave) {
+//            return super.createOperationHandler(modelController, initialMessageHandler);
+//        }
+//        return new MasterDomainControllerOperationHandlerImpl((DomainController)modelController, initialMessageHandler);
     }
 
 }

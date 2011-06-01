@@ -26,7 +26,6 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -42,7 +41,11 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+<<<<<<< HEAD:demos/legacy/src/main/java/org/jboss/as/demos/DeploymentUtils.java
 import org.jboss.as.controller.client.ModelControllerClient;
+=======
+import org.jboss.as.controller.client.NewModelControllerClient;
+>>>>>>> Get rid of CCEs by using NewModelControllerClient everywhere:demos/src/main/java/org/jboss/as/demos/DeploymentUtils.java
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DuplicateDeploymentNameException;
@@ -68,13 +71,14 @@ public class DeploymentUtils implements Closeable {
     public static final long DEFAULT_TIMEOUT = 15000;
 
     private final List<AbstractDeployment> deployments = new ArrayList<AbstractDeployment>();
-    private final ModelControllerClient client;
+    private final NewModelControllerClient client;
     private final ServerDeploymentManager manager;
     private long timeout = DEFAULT_TIMEOUT;
 
     public DeploymentUtils() throws UnknownHostException {
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        manager = ServerDeploymentManager.Factory.create(client);
+        throw new IllegalStateException("Waiting for remoting to be integrated until remote deployment is supported");
+//        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+//        manager = ServerDeploymentManager.Factory.create(client);
     }
 
     public DeploymentUtils(String archiveName, Package... pkg) throws UnknownHostException {

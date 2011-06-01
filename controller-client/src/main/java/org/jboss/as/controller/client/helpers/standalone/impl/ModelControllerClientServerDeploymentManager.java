@@ -29,8 +29,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.Cancellable;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationResult;
 import org.jboss.as.controller.client.ResultHandler;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.protocol.StreamUtils;
@@ -44,9 +45,9 @@ import org.jboss.dmr.ModelNode;
  */
 public class ModelControllerClientServerDeploymentManager extends AbstractServerDeploymentManager {
 
-    private final ModelControllerClient client;
+    private final NewModelControllerClient client;
 
-    public ModelControllerClientServerDeploymentManager(final ModelControllerClient client) {
+    public ModelControllerClientServerDeploymentManager(final NewModelControllerClient client) {
         this.client = client;
     }
 
@@ -54,11 +55,8 @@ public class ModelControllerClientServerDeploymentManager extends AbstractServer
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(Operation operation) {
-        Handler handler = new Handler(operation);
-        OperationResult c = client.execute(operation, handler.resultHandler);
-        handler.setCancellable(c.getCancellable());
-        return handler;
+    protected Future<ModelNode> executeOperation(NewOperation operation) {
+        return client.executeAsync(operation, null);
     }
 
     private static class Handler implements Future<ModelNode> {

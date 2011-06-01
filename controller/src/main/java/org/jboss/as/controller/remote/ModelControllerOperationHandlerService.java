@@ -21,7 +21,7 @@
 */
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -43,7 +43,7 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
-    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<NewModelController> modelControllerValue = new InjectedValue<NewModelController>();
 
     private volatile ModelControllerOperationHandler handler;
 
@@ -55,14 +55,14 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
      *
      * @return the injected value holder
      */
-    public InjectedValue<ModelController> getModelControllerValue() {
+    public InjectedValue<NewModelController> getModelControllerValue() {
         return modelControllerValue;
     }
 
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        final ModelController modelController = modelControllerValue.getValue();
+        final NewModelController modelController = modelControllerValue.getValue();
         final MessageHandler initialMessageHandler = getInitialMessageHandler();
         this.handler = createOperationHandler(modelController, initialMessageHandler);
     }
@@ -87,7 +87,9 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
         return MessageHandler.NULL;
     }
 
-    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController, MessageHandler initialMessageHandler) {
-        return new ModelControllerOperationHandlerImpl(modelController, initialMessageHandler);
+    protected ModelControllerOperationHandler createOperationHandler(NewModelController modelController, MessageHandler initialMessageHandler) {
+        log.info("Remote operations are disabled until remoting is integrated");
+        return null;
+        //return new ModelControllerOperationHandlerImpl(modelController, initialMessageHandler);
     }
 }

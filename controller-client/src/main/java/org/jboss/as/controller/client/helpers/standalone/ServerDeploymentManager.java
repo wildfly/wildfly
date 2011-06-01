@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.impl.ModelControllerClientServerDeploymentManager;
 
 /**
@@ -48,7 +49,8 @@ public interface ServerDeploymentManager {
          * @return A domain client
          */
         public static ServerDeploymentManager create(final InetAddress address, int port) {
-            return create(ModelControllerClient.Factory.create(address, port));
+            throw new IllegalStateException("Waiting for remoting to be integrated until remote clients are supported");
+            //return create(NewModelControllerClient.Factory.create(address, port));
         }
 
         /**
@@ -58,7 +60,7 @@ public interface ServerDeploymentManager {
          * @param port The remote port
          * @return A domain client
          */
-        public static ServerDeploymentManager create(final ModelControllerClient client) {
+        public static ServerDeploymentManager create(final NewModelControllerClient client) {
             return new ModelControllerClientServerDeploymentManager(client);
         }
     }

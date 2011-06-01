@@ -22,24 +22,22 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.ServerController;
-import org.jboss.as.server.deployment.DeploymentAddHandler;
-import org.jboss.as.server.deployment.DeploymentDeployHandler;
-import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.deployment.DeploymentRedeployHandler;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.as.server.deployment.DeploymentUndeployHandler;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZipException;
-import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -63,22 +61,24 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.deployment.DeploymentAddHandler;
+import org.jboss.as.server.deployment.DeploymentDeployHandler;
+import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
+import org.jboss.as.server.deployment.DeploymentRedeployHandler;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.as.server.deployment.DeploymentUndeployHandler;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZipException;
+import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 
 /**
  * Service that monitors the filesystem for deployment content and if found
@@ -120,7 +120,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final Map<File, IncompleteDeploymentStatus> incompleteDeployments = new HashMap<File, IncompleteDeploymentStatus>();
 
     private final ScheduledExecutorService scheduledExecutor;
-    private final ServerController serverController;
+    private final NewModelControllerClient controllerClient;
     private final ServerDeploymentRepository deploymentRepository;
     private final ContentRepository contentRepository;
 
@@ -145,14 +145,14 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     };
 
-    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final ServerController serverController, final ScheduledExecutorService scheduledExecutor,
+    FileSystemDeploymentService(final String relativeTo, final File deploymentDir, final File relativeToDir, final NewModelControllerClient controllerClient, final ScheduledExecutorService scheduledExecutor,
             final ServerDeploymentRepository deploymentRepository, final ContentRepository contentRepository) throws OperationFailedException {
         assert contentRepository != null : "content repository is null";
         if (scheduledExecutor == null) {
             throw new IllegalStateException("null scheduled executor");
         }
-        if (serverController == null) {
-            throw new IllegalStateException("null server controller");
+        if (controllerClient == null) {
+            throw new IllegalStateException("null controller client");
         }
         if (deploymentRepository == null) {
             throw new IllegalStateException("null deployment repository");
@@ -171,7 +171,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         this.relativeTo = relativeTo;
         this.deploymentDir = deploymentDir;
-        this.serverController = serverController;
+        this.controllerClient = controllerClient;
         this.scheduledExecutor = scheduledExecutor;
         this.deploymentRepository = deploymentRepository;
         this.contentRepository = contentRepository;
@@ -364,7 +364,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     while (!updates.isEmpty()) {
                         ModelNode composite = getCompositeUpdate(updates);
 
-                        final DeploymentTask deploymentTask = new DeploymentTask(OperationBuilder.Factory.create(composite).build());
+                        final DeploymentTask deploymentTask = new DeploymentTask(NewOperationBuilder.Factory.create(composite).build());
                         final Future<ModelNode> futureResults = scheduledExecutor.submit(deploymentTask);
                         final ModelNode results;
                         try {
@@ -735,7 +735,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private Set<String> getDeploymentNames() throws CancellationException {
         final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
         op.get(CHILD_TYPE).set(DEPLOYMENT);
-        final ModelNode response = serverController.execute(OperationBuilder.Factory.create(op).build());
+        ModelNode response;
+        try {
+            response = controllerClient.execute(op);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         final ModelNode result = response.get(RESULT);
         final Set<String> deploymentNames = new HashSet<String>();
         if (result.isDefined()) {
@@ -1073,15 +1078,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     private class DeploymentTask implements Callable<ModelNode> {
-        private final Operation deploymentOp;
+        private final NewOperation deploymentOp;
 
-        private DeploymentTask(final Operation deploymentOp) {
+        private DeploymentTask(final NewOperation deploymentOp) {
             this.deploymentOp = deploymentOp;
         }
 
         @Override
         public ModelNode call() {
-            return serverController.execute(deploymentOp);
+            try {
+                return controllerClient.execute(deploymentOp);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

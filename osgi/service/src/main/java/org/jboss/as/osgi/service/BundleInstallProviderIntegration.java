@@ -26,6 +26,7 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionR
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.osgi.deployment.DeploymentHolderService;
-import org.jboss.as.server.ServerController;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
@@ -60,14 +60,14 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
-    private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
+    private final InjectedValue<NewModelController> injectedController = new InjectedValue<NewModelController>();
     private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private ServerDeploymentManager deploymentManager;
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallProviderIntegration service = new BundleInstallProviderIntegration();
         ServiceBuilder<BundleInstallProvider> builder = target.addService(Services.BUNDLE_INSTALL_PROVIDER, service);
-        builder.addDependency(JBOSS_SERVER_CONTROLLER, ServerController.class, service.injectedServerController);
+        builder.addDependency(JBOSS_SERVER_CONTROLLER, NewModelController.class, service.injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
@@ -81,7 +81,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
         log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
-        deploymentManager = new ModelControllerServerDeploymentManager(injectedServerController.getValue());
+        deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
     }
 
     @Override

@@ -25,7 +25,8 @@ package org.jboss.as.server.mgmt;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.services.net.NetworkInterfaceBinding;
@@ -45,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
 public class HttpManagementService implements Service<HttpManagementService> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
-    private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<NewModelController> modelControllerValue = new InjectedValue<NewModelController>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
@@ -55,6 +56,7 @@ public class HttpManagementService implements Service<HttpManagementService> {
     private InetSocketAddress bindAddress;
     private InetSocketAddress secureBindAddress;
     private ManagementHttpServer serverManagement;
+    private NewModelControllerClient modelControllerClient;
 
 
     /**
@@ -64,9 +66,10 @@ public class HttpManagementService implements Service<HttpManagementService> {
      * @throws StartException If any errors occur
      */
     public synchronized void start(StartContext context) throws StartException {
-        final ModelController modelController = modelControllerValue.getValue();
+        final NewModelController modelController = modelControllerValue.getValue();
         final ExecutorService executorService = executorServiceValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
+        modelControllerClient = modelController.createClient(executorService);
 
         final int port = portValue.getOptionalValue();
         if (port > 0) {
@@ -80,7 +83,7 @@ public class HttpManagementService implements Service<HttpManagementService> {
         final SecurityRealmService securityRealmService = securityRealmServiceValue.getOptionalValue();
 
         try {
-            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelController, executorService, securityRealmService);
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient, executorService, securityRealmService);
             serverManagement.start();
         } catch (Exception e) {
             throw new StartException("Failed to start serverManagement socket", e);
@@ -146,7 +149,7 @@ public class HttpManagementService implements Service<HttpManagementService> {
      *
      * @return the injector
      */
-    public Injector<ModelController> getModelControllerInjector() {
+    public Injector<NewModelController> getModelControllerInjector() {
         return modelControllerValue;
     }
 

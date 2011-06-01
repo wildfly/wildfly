@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -87,7 +88,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
         ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
         newControllers.add(serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, operationHandlerService.getModelControllerValue())
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, operationHandlerService.getModelControllerValue())
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
