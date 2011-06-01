@@ -41,6 +41,7 @@
     <modules>
         <module>common</module>
         <module>container-managed</module>
+        <module>protocol-jmx</module>
         <!-- 
         <module>container-managed-domain</module>
         <module>container-embedded</module>
@@ -49,13 +50,21 @@
         <module>processor-jsfunit</module>
         <module>testenricher-msc</module>
         -->
-        <module>protocol-jmx</module>
     </modules>
 
     <packaging>pom</packaging>
 
-    <properties>
-    </properties>
+    <dependencies>
+        <dependency>
+           <groupId>org.jboss.arquillian.core</groupId>
+           <artifactId>arquillian-core-api</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -73,14 +82,6 @@
                           <name>jboss.home</name>
                           <value>../../build/target/jboss-${jboss.as.release.version}</value>
                         </property>
-                        <property>
-                          <name>project.version</name>
-                          <value>${project.version}</value>
-                        </property>
-                        <property>
-                          <name>jboss.embedded.root</name>
-                          <value>target/embedded</value>
-                        </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>
@@ -90,18 +91,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-           <groupId>org.jboss.arquillian.core</groupId>
-           <artifactId>arquillian-core-api</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>junit</groupId>
-           <artifactId>junit</artifactId>
-           <scope>test</scope>
-        </dependency>
-    </dependencies>
 
 </project>

@@ -51,13 +51,68 @@
         <jboss.home>${project.basedir}/../../build/target/jboss-${jboss.as.release.version}</jboss.home>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-build</artifactId>
+            <type>pom</type>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.osgi.foundation</artifactId>
+              </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>${surefire.system.args}</argLine>
+                    <parallel>none</parallel>
+                    <systemProperties>
+                        <property>
+                          <name>java.util.logging.manager</name>
+                          <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                        <property>
+                          <name>jboss.home</name>
+                          <value>../../build/target/jboss-${jboss.as.release.version}</value>
+                        </property>
+                    </systemProperties>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
@@ -85,10 +140,6 @@
             </modules>
         </profile>
         
-        <!--
-            Name: jpda
-            Descr: Enable JPDA remote debuging
-        -->
         <profile>
           <id>jpda</id>
           <activation>
@@ -101,29 +152,5 @@
           </properties>
         </profile>
     </profiles>
-
-    <dependencies>
-        <dependency>
-           <groupId>junit</groupId>
-           <artifactId>junit</artifactId>
-           <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-build</artifactId>
-            <type>pom</type>
-            <exclusions>
-              <exclusion>
-                <!--  Don't pull in the old jboss logging spi jar brought in by Arquillian -->
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging-spi</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.osgi.foundation</artifactId>
-              </exclusion>
-            </exclusions>
-        </dependency>
-    </dependencies>
 
 </project>

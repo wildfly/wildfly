@@ -47,18 +47,6 @@
     </properties>
 
     <dependencies>
-        <!-- 
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-protocol-servlet</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-           <groupId>org.jboss.jsfunit</groupId>
-           <artifactId>jsfunit-arquillian</artifactId>
-           <scope>test</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-demos</artifactId>
@@ -73,28 +61,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <enableAssertions>true</enableAssertions>
-                    <systemProperties>
-                        <property>
-                          <name>jboss.home</name>
-                          <value>${jboss.home}</value>
-                        </property>
-                        <property>
-                          <name>jboss.options</name>
-                          <value>-XX:MaxPermSize=256m</value>
-                        </property>
-                     </systemProperties>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <forkMode>once</forkMode>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
