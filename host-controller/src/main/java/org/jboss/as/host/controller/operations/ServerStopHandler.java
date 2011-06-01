@@ -26,6 +26,8 @@ import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -44,7 +46,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerStopHandler implements ModelQueryOperationHandler, DescriptionProvider {
+public class ServerStopHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "stop";
 
@@ -68,17 +70,21 @@ public class ServerStopHandler implements ModelQueryOperationHandler, Descriptio
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
 
-        ServerStatus status = hostController.stopServer(serverName);
-        resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, new ModelNode().set(status.toString()));
-        final ModelNode compensating = ServerStartHandler.getStartServerOperation(serverName);
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult(compensating);
+        context.addStep(new NewStepHandler() {
+            @Override
+            public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+                final ServerStatus status = hostController.stopServer(serverName);
+                context.getResult().set(status.toString());
+                context.completeStep();
+            }
+        }, NewOperationContext.Stage.RUNTIME);
+        context.completeStep();
     }
 
     @Override

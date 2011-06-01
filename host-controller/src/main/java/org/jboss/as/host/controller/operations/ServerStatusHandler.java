@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -42,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerStatusHandler implements ModelQueryOperationHandler {
+public class ServerStatusHandler implements NewStepHandler {
 
     public static final String ATTRIBUTE_NAME = "status";
 
@@ -52,13 +54,13 @@ public class ServerStatusHandler implements ModelQueryOperationHandler {
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
 
-        final ModelNode subModel = context.getSubModel();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
         final boolean isStart;
         if(subModel.hasDefined(AUTO_START)) {
             isStart = subModel.get(AUTO_START).asBoolean();
@@ -73,12 +75,11 @@ public class ServerStatusHandler implements ModelQueryOperationHandler {
         }
 
         if(status != null) {
-            resultHandler.handleResultFragment(Util.NO_LOCATION, new ModelNode().set(status.toString()));
-            resultHandler.handleResultComplete();
+            context.getResult().set(status.toString());
+            context.completeStep();
         } else {
-            resultHandler.handleFailed(new ModelNode().set("Failed to get server status"));
+            throw new OperationFailedException(new ModelNode().set("Failed to get server status"));
         }
-        return new BasicOperationResult();
     }
 
 }
