@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
@@ -181,7 +182,7 @@ public final class DomainServerMain {
         final HostControllerServerClient client = new HostControllerServerClient(serverName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
             .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
-            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, client.getServerControllerInjector())
+            .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, client.getServerControllerInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
     }

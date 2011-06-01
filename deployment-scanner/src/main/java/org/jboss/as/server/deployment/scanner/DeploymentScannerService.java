@@ -22,7 +22,14 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.server.ServerController;
+import java.io.File;
+import java.security.AccessController;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
@@ -41,13 +48,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
-
-import java.io.File;
-import java.security.AccessController;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible creating a {@code DeploymentScanner}
@@ -73,7 +73,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
     private final InjectedValue<String> relativePathValue = new InjectedValue<String>();
     private final InjectedValue<String> pathValue = new InjectedValue<String>();
-    private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
+    private final InjectedValue<NewModelController> controllerValue = new InjectedValue<NewModelController>();
     private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
     private final InjectedValue<ContentRepository> contentRepositoryValue = new InjectedValue<ContentRepository>();
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue = new InjectedValue<ScheduledExecutorService>();
@@ -111,7 +111,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
         ServiceBuilder builder = serviceTarget.addService(serviceName, service)
                 .addDependency(pathService, String.class, service.pathValue)
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ServerController.class, service.serverControllerValue)
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, service.controllerValue)
                 .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.deploymentRepositoryValue)
                 .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.contentRepositoryValue)
                 .addInjection(service.scheduledExecutorValue, scheduledExecutorService);
@@ -144,7 +144,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             final String pathName = pathValue.getValue();
             final String relativePathName = relativePathValue.getOptionalValue();
             final File relativePath = relativePathName != null ? new File(relativePathName) : null;
-            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, serverControllerValue.getValue(), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
+            final FileSystemDeploymentService scanner = new FileSystemDeploymentService(relativeTo, new File(pathName), relativePath, controllerValue.getValue().createClient(scheduledExecutorValue.getValue()), scheduledExecutorValue.getValue(), deploymentRepositoryValue.getValue(), contentRepositoryValue.getValue());
             scanner.setScanInterval(unit.toMillis(interval));
             scanner.setAutoDeployExplodedContent(autoDeployExploded);
             scanner.setAutoDeployZippedContent(autoDeployZipped);

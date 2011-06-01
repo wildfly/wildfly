@@ -27,13 +27,13 @@ import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementHeaderMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
-import org.jboss.as.server.ServerController;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -52,7 +52,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
-    private final InjectedValue<ServerController> controller = new InjectedValue<ServerController>();
+    private final InjectedValue<NewModelController> controller = new InjectedValue<NewModelController>();
     private final String serverName;
     private volatile ModelControllerOperationHandler modelControllerOperationHandler;
     private final MessageHandler initialMessageHandler = new ManagementHeaderMessageHandler() {
@@ -75,8 +75,9 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
-        smConnection.setMessageHandler(initialMessageHandler);
+        throw new IllegalStateException("Domain mode is disabled until remoting is integrated");
+        //modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
+        //smConnection.setMessageHandler(initialMessageHandler);
     }
 
     /** {@inheritDoc} */
@@ -96,7 +97,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         return smConnection;
     }
 
-    public Injector<ServerController> getServerControllerInjector() {
+    public Injector<NewModelController> getServerControllerInjector() {
         return controller;
     }
 

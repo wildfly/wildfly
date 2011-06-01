@@ -3,24 +3,27 @@
  */
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResultHandler;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.server.ServerController;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.vfs.VirtualFile;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Closeable;
 import java.io.File;
@@ -46,27 +49,24 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.server.ServerController;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.deployment.api.ContentRepository;
+import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.vfs.VirtualFile;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Unit tests of {@link FileSystemDeploymentService}.
@@ -982,9 +982,13 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private TesteeSet createTestee(final MockServerController sc, final ScheduledExecutorService executor) throws OperationFailedException {
         final MockDeploymentRepository repo = new MockDeploymentRepository();
-        final FileSystemDeploymentService testee = new FileSystemDeploymentService(null, tmpDir, null, sc, executor, repo, repo);
-        testee.startScanner();
-        return new TesteeSet(testee, repo, sc);
+        if (true) {
+            throw new IllegalStateException("Test needs rewriting to use NewModelController(Client)");
+        }
+//        final FileSystemDeploymentService testee = new FileSystemDeploymentService(null, tmpDir, null, sc, executor, repo, repo);
+//        testee.startScanner();
+//        return new TesteeSet(testee, repo, sc);
+        return null;
     }
 
     private File createFile(String fileName) throws IOException {

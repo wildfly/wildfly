@@ -22,17 +22,19 @@
 
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+
 import java.security.AccessController;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.ServerEnvironment;
@@ -91,7 +93,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler implements 
                 .addDependency(
                         NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                         NetworkInterfaceBinding.class, service.getInterfaceInjector())
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getModelControllerInjector())
+                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, service.getModelControllerInjector())
                 .addDependency(AbstractPathService.pathNameOf(ServerEnvironment.SERVER_TEMP_DIR), String.class, service.getTempDirInjector())
                 .addInjection(service.getPortInjector(), port)
                 .addInjection(service.getSecurePortInjector(), securePort)

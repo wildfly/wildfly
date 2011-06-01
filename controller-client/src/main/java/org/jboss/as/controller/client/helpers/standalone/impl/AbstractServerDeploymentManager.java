@@ -22,16 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.dmr.ModelNode;
-
-import java.util.concurrent.Future;
-
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
@@ -51,6 +41,16 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
+
+import java.util.concurrent.Future;
+
+import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.NewOperationBuilder;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -74,14 +74,14 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
             throw new IllegalArgumentException("Plan was not created by this manager");
         }
         DeploymentPlanImpl planImpl = (DeploymentPlanImpl) plan;
-        Operation operation = getCompositeOperation(planImpl);
+        NewOperation operation = getCompositeOperation(planImpl);
         Future<ModelNode> nodeFuture = executeOperation(operation);
         return new ServerDeploymentPlanResultFuture(planImpl, nodeFuture);
     }
 
-    protected abstract Future<ModelNode> executeOperation(Operation context);
+    protected abstract Future<ModelNode> executeOperation(NewOperation context);
 
-    private Operation getCompositeOperation(DeploymentPlanImpl plan) {
+    private NewOperation getCompositeOperation(DeploymentPlanImpl plan) {
 
         ModelNode op = new ModelNode();
         op.get(OP).set(COMPOSITE);
@@ -91,7 +91,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(plan.isGlobalRollback());
         // FIXME deal with shutdown params
 
-        OperationBuilder builder = OperationBuilder.Factory.create(op);
+        NewOperationBuilder builder = NewOperationBuilder.Factory.create(op);
 
         int stream = 0;
         for (DeploymentActionImpl action : plan.getDeploymentActionImpls()) {

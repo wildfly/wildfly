@@ -21,15 +21,16 @@
  */
 package org.jboss.as.domain.http.server;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import org.jboss.as.controller.ModelController;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.com.sun.net.httpserver.HttpsConfigurator;
@@ -91,7 +92,7 @@ public class ManagementHttpServer {
         }
     }
 
-    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, ModelController modelController, Executor executor, SecurityRealm securityRealm)
+    public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog, NewModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm)
             throws IOException {
         HttpServer httpServer = null;
         if (bindAddress != null) {
@@ -155,7 +156,7 @@ public class ManagementHttpServer {
         }
 
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
-        managementHttpServer.addHandler(new DomainApiHandler(modelController));
+        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient));
         managementHttpServer.addHandler(new ConsoleHandler());
 
         return managementHttpServer;

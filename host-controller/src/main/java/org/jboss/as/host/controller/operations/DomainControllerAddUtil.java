@@ -22,10 +22,25 @@
 
 package org.jboss.as.host.controller.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.jboss.as.controller.ModelController;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -51,21 +66,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ScheduledExecutorService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 
 /**
  * Utility class to handle the add operations for both local and remote domain controllers.
@@ -111,7 +111,7 @@ public class DomainControllerAddUtil {
         DomainControllerOperationHandlerService operationHandlerService = new DomainControllerOperationHandlerService(isSlave);
         controllers.add(serviceTarget.addService(DomainControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                .addDependency(DomainController.SERVICE_NAME, ModelController.class, operationHandlerService.getModelControllerValue())
+                .addDependency(DomainController.SERVICE_NAME, NewModelController.class, operationHandlerService.getModelControllerValue())
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());

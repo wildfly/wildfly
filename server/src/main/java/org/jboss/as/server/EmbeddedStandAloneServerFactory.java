@@ -22,9 +22,35 @@
 
 package org.jboss.as.server;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.namespace.QName;
+
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.Cancellable;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationResult;
@@ -47,28 +73,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.value.Value;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.xml.namespace.QName;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * This is the counter-part of EmbeddedServerFactory which lives behind a module class loader.
@@ -192,7 +196,7 @@ public class EmbeddedStandAloneServerFactory {
             private ServiceContainer serviceContainer;
             private ServerDeploymentManager serverDeploymentManager;
             private Context context;
-            private ModelControllerClient modelControllerClient;
+            private NewModelControllerClient modelControllerClient;
 
             @Override
             public void deploy(File file) throws IOException, ExecutionException, InterruptedException {
@@ -212,7 +216,7 @@ public class EmbeddedStandAloneServerFactory {
             }
 
             @Override
-            public ModelControllerClient getModelControllerClient() {
+            public NewModelControllerClient getModelControllerClient() {
                 return modelControllerClient;
             }
 
@@ -239,10 +243,10 @@ public class EmbeddedStandAloneServerFactory {
 
                     serviceContainer = future.get();
 
-                    final Value<ServerController> serverControllerService = (Value<ServerController>) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
-                    final ServerController controller = serverControllerService.getValue();
+                    final Value<NewModelController> controllerService = (Value<NewModelController>) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+                    final NewModelController controller = controllerService.getValue();
                     serverDeploymentManager = new ModelControllerServerDeploymentManager(controller);
-                    modelControllerClient = new ModelControllerToModelControllerClientAdapter(controller);
+                    modelControllerClient = controller.createClient(Executors.newCachedThreadPool());
 
                     context = new InitialContext();
                 } catch (RuntimeException rte) {

@@ -21,6 +21,7 @@ package org.jboss.as.server.deployment.client;
 import java.io.InputStream;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -28,9 +29,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.Cancellable;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationResult;
 import org.jboss.as.controller.ResultHandler;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.impl.AbstractServerDeploymentManager;
@@ -45,21 +48,18 @@ import org.jboss.dmr.ModelNode;
  */
 public class ModelControllerServerDeploymentManager extends AbstractServerDeploymentManager {
 
-    private final ModelController client;
+    private final NewModelControllerClient client;
 
-    public ModelControllerServerDeploymentManager(final ModelController client) {
-        this.client = client;
+    public ModelControllerServerDeploymentManager(final NewModelController controller) {
+        this.client = controller.createClient(Executors.newCachedThreadPool());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected Future<ModelNode> executeOperation(Operation executionContext) {
-        Handler handler = new Handler(executionContext);
-        OperationResult c = client.execute(executionContext, handler.resultHandler);
-        handler.setCancellable(c.getCancellable());
-        return handler;
+    protected Future<ModelNode> executeOperation(NewOperation executionContext) {
+        return client.executeAsync(executionContext, null);
     }
 
     private static class Handler implements Future<ModelNode> {
