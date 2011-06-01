@@ -454,7 +454,7 @@ public class BasicModelController extends AbstractModelController<OperationContr
     }
 
     /** An {@link OperationHandler} that can output a model in XML form */
-    public static final class XmlMarshallingHandler implements ModelQueryOperationHandler, DescriptionProvider {
+    private static final class XmlMarshallingHandler implements ModelQueryOperationHandler, DescriptionProvider {
 
         private final String[] EMPTY = new String[0];
         private final ConfigurationPersister configPersister;

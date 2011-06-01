@@ -32,6 +32,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelProvider;
 import org.jboss.as.controller.ModelRemoveOperationHandler;
 import org.jboss.as.controller.ModelUpdateOperationHandler;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContextFactory;
 import org.jboss.as.controller.OperationContextImpl;
@@ -51,6 +52,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersisterProvider;
@@ -226,7 +228,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
         registerInternalOperations();
         ModelNodeRegistration hostRegistry = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST,getLocalHostName())));
-        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(this.hostPersister,getHostModel());
+        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(this.hostPersister);
         hostRegistry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, xmlHandler, xmlHandler, false, OperationEntry.EntryType.PRIVATE);
 
         this.serverOperationResolver = new ServerOperationResolver(getLocalHostName());
@@ -248,7 +250,7 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
         registerInternalOperations();
         ModelNodeRegistration hostRegistry = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST,getLocalHostName())));
-        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(this.hostPersister,getHostModel());
+        XmlMarshallingHandler xmlHandler = new XmlMarshallingHandler(this.hostPersister);
         hostRegistry.registerOperationHandler(CommonDescriptions.READ_CONFIG_AS_XML, xmlHandler, xmlHandler, false, OperationEntry.EntryType.PRIVATE);
 
         this.serverOperationResolver = new ServerOperationResolver(getLocalHostName());
@@ -579,7 +581,8 @@ public class DomainModelImpl extends BasicModelController implements DomainModel
 
     private Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode domainOp, PathAddress domainOpAddress, ModelNode domainModel, ModelNode hostModel) {
         Map<Set<ServerIdentity>, ModelNode> result = null;
-        OperationHandler handler = getRegistry().getOperationHandler(domainOpAddress, domainOp.require(OP).asString());
+        NewStepHandler handler = getRegistry().getOperationHandler(domainOpAddress, domainOp.require(OP).asString());
+        // FIXME -- no longer valid
         if (!(handler instanceof ModelUpdateOperationHandler)) {
             result = Collections.emptyMap();
         }
