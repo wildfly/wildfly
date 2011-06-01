@@ -161,6 +161,8 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
                 return new ByteArrayInputStream(baos.toByteArray());
             }
         }, loadableExtentionsPath);
+
+        // Make the service archive availbale to {@link ArquillianServiceDeployer}
         serviceArchive.setArchive(archive);
     }
 }
