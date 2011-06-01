@@ -22,7 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import java.net.InetSocketAddress;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -33,19 +32,21 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.UnknownURISchemeException;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.remoting3.spi.NetworkServerProvider;
-import org.jboss.xnio.ChannelListener;
-import org.jboss.xnio.OptionMap;
-import org.jboss.xnio.channels.ConnectedStreamChannel;
+import org.xnio.ChannelListener;
+import org.xnio.OptionMap;
+import org.xnio.channels.AcceptingChannel;
+import org.xnio.channels.ConnectedStreamChannel;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConnectorService implements Service<ChannelListener<ConnectedStreamChannel<InetSocketAddress>>> {
+public final class ConnectorService implements Service<ChannelListener<AcceptingChannel<ConnectedStreamChannel>>> {
     private final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
     private final InjectedValue<ServerAuthenticationProvider> authenticationProviderInjectedValue = new InjectedValue<ServerAuthenticationProvider>();
 
+
     private OptionMap optionMap;
-    private ChannelListener<ConnectedStreamChannel<InetSocketAddress>> listener;
+    private ChannelListener<AcceptingChannel<ConnectedStreamChannel>> listener;
 
     public synchronized void start(final StartContext context) throws StartException {
         final Endpoint endpoint = endpointInjectedValue.getValue();
@@ -63,8 +64,8 @@ public final class ConnectorService implements Service<ChannelListener<Connected
         listener = null;
     }
 
-    public synchronized ChannelListener<ConnectedStreamChannel<InetSocketAddress>> getValue() throws IllegalStateException {
-        final ChannelListener<ConnectedStreamChannel<InetSocketAddress>> listener = this.listener;
+    public synchronized ChannelListener<AcceptingChannel<ConnectedStreamChannel>> getValue() throws IllegalStateException {
+        final ChannelListener<AcceptingChannel<ConnectedStreamChannel>> listener = this.listener;
         if (listener == null) {
             throw new IllegalStateException();
         }
@@ -75,15 +76,15 @@ public final class ConnectorService implements Service<ChannelListener<Connected
         return optionMap;
     }
 
-    void setOptionMap(final OptionMap optionMap) {
+    public void setOptionMap(final OptionMap optionMap) {
         this.optionMap = optionMap;
     }
 
-    Injector<ServerAuthenticationProvider> getAuthenticationProviderInjector() {
+    public Injector<ServerAuthenticationProvider> getAuthenticationProviderInjector() {
         return authenticationProviderInjectedValue;
     }
 
-    Injector<Endpoint> getEndpointInjector() {
+    public Injector<Endpoint> getEndpointInjector() {
         return endpointInjectedValue;
     }
 }

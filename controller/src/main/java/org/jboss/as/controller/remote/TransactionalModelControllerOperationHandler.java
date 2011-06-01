@@ -21,13 +21,12 @@
  */
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -41,9 +40,8 @@ import org.jboss.as.controller.TransactionalModelController;
 import org.jboss.as.controller.client.ModelControllerClientProtocol;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.ManagementResponse;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +49,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class TransactionalModelControllerOperationHandler extends ModelControllerOperationHandlerImpl {
+public abstract class TransactionalModelControllerOperationHandler extends ModelControllerOperationHandlerImpl {
 
     private final TransactionalModelController transactionalModelController;
 
@@ -68,20 +66,20 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
     public static final byte TRANSACTION_ROLLBACK_RESPONSE = (byte)0x28;
     public static final byte TRANSACTION_ID = (byte)0x30;
 
-    public TransactionalModelControllerOperationHandler(TransactionalModelController modelController, MessageHandler initiatingHandler) {
-        super(modelController, initiatingHandler);
+    protected TransactionalModelControllerOperationHandler(TransactionalModelController modelController) {
+        super(modelController);
         this.transactionalModelController = modelController;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public byte getIdentifier() {
-        return HANDLER_ID;
-    }
+//    /** {@inheritDoc} */
+//    @Override
+//    public byte getIdentifier() {
+//        return HANDLER_ID;
+//    }
 
     @Override
-    public ManagementResponse operationFor(final byte commandByte) {
-        switch (commandByte) {
+    public ManagementRequestHandler getRequestHandler(byte id) {
+        switch (id) {
             case EXECUTE_TRANSACTIONAL_REQUEST:
                 return new ExecuteTransactionalAsynchronousOperation();
             case EXECUTE_TRANSACTIONAL_SYNCHRONOUS_REQUEST:
@@ -91,34 +89,26 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
             case TRANSACTION_ROLLBACK_REQUEST:
                 return new RollbackTransactionOperation();
             default:
-                ManagementResponse rsp = super.operationFor(commandByte);
-                return rsp;
+                return super.getRequestHandler(id);
         }
     }
 
-    private ModelNode readNode(InputStream in) throws IOException {
-        ModelNode node = new ModelNode();
-        node.readExternal(in);
-        return node;
-    }
-
-    private abstract class ExecuteTransactionalOperation extends ManagementResponse {
+    private abstract class ExecuteTransactionalOperation extends ManagementRequestHandler {
         OperationBuilder builder;
         ModelNode txId;
 
         ExecuteTransactionalOperation() {
-            super(getInitiatingHandler());
+            super();
         }
 
         @Override
-        protected void readRequest(final InputStream inputStream) throws IOException {
-            expectHeader(inputStream, TRANSACTION_ID);
-            txId = new ModelNode();
-            txId.readExternal(inputStream);
-            expectHeader(inputStream, ModelControllerClientProtocol.PARAM_OPERATION);
-            builder = OperationBuilder.Factory.create(readNode(inputStream));
+        protected void readRequest(final DataInput input) throws IOException {
+            expectHeader(input, TRANSACTION_ID);
+            txId = readNode(input);
+            expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
+            builder = OperationBuilder.Factory.create(readNode(input));
 
-            int cmd = inputStream.read();
+            byte cmd = input.readByte();
             if (cmd == ModelControllerClientProtocol.PARAM_REQUEST_END) {
                 return;
             }
@@ -127,10 +117,10 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
             }
             while (cmd == ModelControllerClientProtocol.PARAM_INPUT_STREAM) {
                 //Just copy the stream contents for now - remoting will handle this better
-                int length = StreamUtils.readInt(inputStream);
+                int length = input.readInt();
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 for (int i = 0 ; i < length ; i++) {
-                    int b = inputStream.read();
+                    byte b = input.readByte();
                     if (b == -1) {
                         throw new IllegalArgumentException("Unexpected end of file");
                     }
@@ -138,7 +128,7 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
                 }
                 builder.addInputStream(new ByteArrayInputStream(bout.toByteArray()));
 
-                cmd = inputStream.read();
+                cmd = input.readByte();
             }
         }
 
@@ -153,18 +143,14 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
     }
 
     private class ExecuteTransactionalSynchronousOperation extends ExecuteTransactionalOperation {
-        @Override
-        protected final byte getResponseCode() {
-            return EXECUTE_TRANSACTIONAL_SYNCHRONOUS_RESPONSE;
-        }
 
         @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ControllerTransactionContext tx = getTransaction();
             Operation operation = builder.build();
             ModelNode result = transactionalModelController.execute(operation, tx);
-            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-            result.writeExternal(outputStream);
+            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
+            result.writeExternal(output);
         }
     }
 
@@ -173,12 +159,7 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
         final int asynchronousRequestId = getNextAsynchronousRequestId();
 
         @Override
-        protected final byte getResponseCode() {
-            return EXECUTE_TRANSACTIONAL_RESPONSE;
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
             final CountDownLatch completeLatch = new CountDownLatch(1);
             final IOExceptionHolder exceptionHolder = new IOExceptionHolder();
             final FailureHolder failureHolder = new FailureHolder();
@@ -190,16 +171,15 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
                 @Override
                 public void handleResultFragment(String[] location, ModelNode fragment) {
                     try {
-                        synchronized (outputStream) {
-                            outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT);
-                            outputStream.write(ModelControllerClientProtocol.PARAM_LOCATION);
-                            StreamUtils.writeInt(outputStream, location.length);
+                        synchronized (output) {
+                            output.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT);
+                            output.write(ModelControllerClientProtocol.PARAM_LOCATION);
+                            output.writeInt(location.length);
                             for (String loc : location) {
-                                StreamUtils.writeUTFZBytes(outputStream, loc);
+                                output.writeUTF(loc);
                             }
-                            outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
-                            fragment.writeExternal(outputStream);
-                            outputStream.flush();
+                            output.write(ModelControllerClientProtocol.PARAM_OPERATION);
+                            fragment.writeExternal(output);
                         }
                     } catch (IOException e) {
                         clearAsynchronousOperation(asynchronousRequestId);
@@ -237,11 +217,10 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
                 }
             }, tx);
 
-            synchronized (outputStream) {
-                outputStream.write(ModelControllerClientProtocol.PARAM_OPERATION);
+            synchronized (output) {
+                output.write(ModelControllerClientProtocol.PARAM_OPERATION);
                 ModelNode compensating = result.getCompensatingOperation() != null ? result.getCompensatingOperation() : new ModelNode();
-                compensating.writeExternal(outputStream);
-                outputStream.flush();
+                compensating.writeExternal(output);
             }
 
             if (completeLatch.getCount() == 0) {
@@ -249,10 +228,9 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
             } else {
                 //It was handled asynchronously
                 addAsynchronousOperation(asynchronousRequestId, result.getCancellable());
-                synchronized (outputStream) {
-                    outputStream.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
-                    StreamUtils.writeInt(outputStream, asynchronousRequestId);
-                    outputStream.flush();
+                synchronized (output) {
+                    output.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
+                    output.writeInt(asynchronousRequestId);
                 }
 
                 while (true) {
@@ -270,24 +248,21 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
 
             switch (status.get()) {
                 case 1: {
-                    synchronized (outputStream) {
-                        outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
-                        outputStream.flush();
+                    synchronized (output) {
+                        output.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_COMPLETE);
                     }
                     break;
                 }
                 case 2: {
-                    synchronized (outputStream) {
-                        outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
-                        failureHolder.getFailure().writeExternal(outputStream);
-                        outputStream.flush();
+                    synchronized (output) {
+                        output.write(ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FAILED);
+                        failureHolder.getFailure().writeExternal(output);
                     }
                     break;
                 }
                 case 3: {
-                    synchronized (outputStream) {
-                        outputStream.write(ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION);
-                        outputStream.flush();
+                    synchronized (output) {
+                        output.write(ModelControllerClientProtocol.PARAM_HANDLE_CANCELLATION);
                     }
                     break;
                 }
@@ -298,28 +273,22 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
         }
     }
 
-    private class CommitTransactionOperation extends ManagementResponse {
+    private class CommitTransactionOperation extends ManagementRequestHandler {
 
         private ModelNode  txId;
 
         CommitTransactionOperation() {
-            super(getInitiatingHandler());
+            super();
         }
 
         @Override
-        protected final byte getResponseCode() {
-            return TRANSACTION_COMMIT_RESPONSE;
+        protected final void readRequest(final DataInput input) throws IOException {
+            expectHeader(input, TRANSACTION_ID);
+            txId = readNode(input);
         }
 
         @Override
-        protected final void readRequest(final InputStream inputStream) throws IOException {
-            expectHeader(inputStream, TRANSACTION_ID);
-            txId = new ModelNode();
-            txId.readExternal(inputStream);
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
+        protected void writeResponse(final FlushableDataOutput outputStream) throws IOException {
             ControllerTransaction tx = transactions.remove(txId);
             if (tx != null) {
                 tx.commit();
@@ -327,28 +296,22 @@ public class TransactionalModelControllerOperationHandler extends ModelControlle
         }
     }
 
-    private class RollbackTransactionOperation extends ManagementResponse {
+    private class RollbackTransactionOperation extends ManagementRequestHandler {
 
         private ModelNode  txId;
 
         RollbackTransactionOperation() {
-            super(getInitiatingHandler());
+            super();
         }
 
         @Override
-        protected final byte getResponseCode() {
-            return TRANSACTION_ROLLBACK_RESPONSE;
+        protected final void readRequest(final DataInput input) throws IOException {
+            expectHeader(input, TRANSACTION_ID);
+            txId = readNode(input);
         }
 
         @Override
-        protected final void readRequest(final InputStream inputStream) throws IOException {
-            expectHeader(inputStream, TRANSACTION_ID);
-            txId = new ModelNode();
-            txId.readExternal(inputStream);
-        }
-
-        @Override
-        protected void sendResponse(final OutputStream outputStream) throws IOException {
+        protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ControllerTransaction tx = transactions.remove(txId);
             if (tx != null) {
                 tx.setRollbackOnly();

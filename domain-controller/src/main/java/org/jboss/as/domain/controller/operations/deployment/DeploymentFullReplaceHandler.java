@@ -52,7 +52,8 @@ import static org.jboss.as.domain.controller.operations.deployment.AbstractDeplo
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
-import org.jboss.as.protocol.StreamUtils;
+
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

@@ -34,8 +34,8 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logmanager.Level;
@@ -173,15 +173,15 @@ public final class DomainServerMain {
     }
 
     private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final InetSocketAddress managementSocket) {
-        final HostControllerConnectionService smConnection = new HostControllerConnectionService();
-        serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
-            .addInjection(smConnection.getSmAddressInjector(), managementSocket)
+        final HostControllerConnectionService hcConnection = new HostControllerConnectionService();
+        serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, hcConnection)
+            .addInjection(hcConnection.getHcAddressInjector(), managementSocket)
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
 
         final HostControllerServerClient client = new HostControllerServerClient(serverName);
         serviceTarget.addService(HostControllerServerClient.SERVICE_NAME, client)
-            .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
+            .addDependency(HostControllerConnectionService.SERVICE_NAME, ProtocolChannel.class, client.getHcChannelInjector())
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, client.getServerControllerInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();

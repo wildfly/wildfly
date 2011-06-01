@@ -29,7 +29,7 @@ import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
 import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

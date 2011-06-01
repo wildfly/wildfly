@@ -24,6 +24,10 @@ package org.jboss.as.controller.client;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
 
@@ -91,4 +95,43 @@ public interface NewModelControllerClient extends Closeable {
      * @return the future result of the operation
      */
     AsyncFuture<ModelNode> executeAsync(NewOperation operation, OperationMessageHandler messageHandler);
+
+    class Factory {
+        /**
+         * Create a client instance for an existing channel. It is the client's responsibility to close this channel
+         *
+         * @param channel The channel to use
+         * @param executorService
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static NewModelControllerClient create(final ProtocolChannel channel) {
+            return new NewExistingChannelModelControllerClient(channel);
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param address the address of the remote host
+         * @param executorService
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static NewModelControllerClient create(final InetAddress address, final int port){
+            return new NewEstablishChannelModelControllerClient(address, port);
+        }
+
+        /**
+         * Create a client instance for a remote address and port.
+         *
+         * @param hostName the remote host
+         * @param executorService
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static NewModelControllerClient create(final String hostName, final int port){
+            return new NewEstablishChannelModelControllerClient(hostName, port);
+        }
+    }
+
 }

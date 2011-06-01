@@ -36,7 +36,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.ManagedExecutorService;
 import org.jboss.as.clustering.ManagedScheduledExecutorService;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.Channel;

@@ -22,6 +22,10 @@
 package org.jboss.as.server.services.net;
 
 import java.net.InetAddress;
+
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.network.SocketBindingManagerImpl;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

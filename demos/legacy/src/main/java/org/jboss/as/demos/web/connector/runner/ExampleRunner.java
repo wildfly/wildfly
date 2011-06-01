@@ -22,7 +22,7 @@
 
 package org.jboss.as.demos.web.connector.runner;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

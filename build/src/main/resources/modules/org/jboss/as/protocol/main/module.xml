@@ -35,5 +35,6 @@
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>
         <module name="org.jboss.modules"/>
+        <module name="org.jboss.remoting3"/>
     </dependencies>
 </module>

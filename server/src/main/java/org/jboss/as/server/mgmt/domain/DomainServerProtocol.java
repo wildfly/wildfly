@@ -29,7 +29,6 @@ public interface DomainServerProtocol {
     int SERVER_TO_HOST_CONTROLLER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
     int REGISTER_REQUEST = 0x00;
     int PARAM_SERVER_NAME = 0x01;
-    int REGISTER_RESPONSE = 0x02;
 
 
     int SERVER_MODEL_UPDATES_REQUEST = 0x10;

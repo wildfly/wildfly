@@ -41,7 +41,7 @@ import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBu
 import org.jboss.as.controller.client.helpers.standalone.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.UndeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 
 /**
  * {@link DeploymentPlanBuilder} implementation meant to handle in-VM calls.

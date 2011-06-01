@@ -34,7 +34,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -207,7 +207,7 @@ class ServerInventory implements ManagedServerLifecycleCallback {
 
     /** {@inheritDoc} */
     @Override
-    public void serverRegistered(String serverName, Connection connection) {
+    public void serverRegistered(String serverName, ProtocolChannel channel) {
         try {
             final ManagedServer server = servers.get(serverName);
             if (server == null) {
@@ -215,12 +215,12 @@ class ServerInventory implements ManagedServerLifecycleCallback {
                 return;
             }
 
-            server.setServerManagementConnection(connection);
+            server.setServerManagementChannel(channel);
             if (!environment.isRestart()){
                 checkState(server, ServerState.STARTING);
             }
             server.setState(ServerState.STARTED);
-            hostController.registerRunningServer(server.getServerName(), server.getServerConnection());
+            hostController.registerRunningServer(server.getServerName(), server.getServerManagementChannel());
             server.resetRespawnCount();
         } catch (final Exception e) {
             log.errorf(e, "Could not start server %s", serverName);

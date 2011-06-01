@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 import java.io.Closeable;
 import java.io.File;
@@ -58,6 +58,7 @@ import org.jboss.shrinkwrap.api.container.ResourceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+
 
 /**
  * Used to deploy/undeploy deployments to a running <b>standalone</b> application server

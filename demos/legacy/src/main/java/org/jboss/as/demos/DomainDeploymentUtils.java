@@ -55,6 +55,7 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>domain controller</b>

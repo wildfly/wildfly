@@ -63,7 +63,7 @@ import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.TransientConfigurationPersister;
 import org.jboss.as.embedded.ServerStartException;
 import org.jboss.as.embedded.StandaloneServer;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;

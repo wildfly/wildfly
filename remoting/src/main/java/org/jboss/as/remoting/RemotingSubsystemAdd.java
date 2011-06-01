@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.xnio.OptionMap;
+import org.xnio.OptionMap;
 
 /**
  * Add operation handler for the remoting subsystem.

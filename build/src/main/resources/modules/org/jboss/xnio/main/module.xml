@@ -29,5 +29,6 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

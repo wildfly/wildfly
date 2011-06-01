@@ -33,54 +33,34 @@ import java.io.IOException;
  *
  * @author John Bailey
  */
-public class ManagementRequestHeader extends ManagementProtocolHeader {
-    private byte operationHandlerId;
+class ManagementRequestHeader extends ManagementProtocolHeader {
     private int requestId;
-
-     /**
-     * Construct a new instance and read the header information from the input provided.
-     *
-     * @param input The input to read the header information from
-     * @throws IOException If any problem occur reading from the input
-     */
-    public ManagementRequestHeader(final DataInput input) throws IOException {
-        super(input);
-    }
 
     /**
      * Construct an instance with the protocol version and operation handler for the header.
      *
      * @param version The protocol version
      * @param requestId The request id
-     * @param operationHandlerId The id of the expected operation handler
      */
-    public ManagementRequestHeader(final int version, final  int requestId, final byte operationHandlerId) {
+    public ManagementRequestHeader(final int version, final  int requestId) {
         super(version);
         this.requestId = requestId;
-        this.operationHandlerId = operationHandlerId;
+    }
+
+    public ManagementRequestHeader(final int version, final DataInput input) throws IOException {
+        super(version);
+        read(input);
     }
 
     /** {@inheritDoc} */
     public void read(final DataInput input) throws IOException {
-        super.read(input);
         requestId = input.readInt();
-        operationHandlerId = input.readByte();
     }
 
     /** {@inheritDoc} */
     public void write(final DataOutput output) throws IOException {
         super.write(output);
         output.writeInt(requestId);
-        output.writeByte(operationHandlerId);
-    }
-
-    /**
-     * Get the id of the operation handler for the request.
-     *
-     * @return The operation handler id
-     */
-    public byte getOperationHandlerId() {
-        return operationHandlerId;
     }
 
     /**
@@ -90,5 +70,15 @@ public class ManagementRequestHeader extends ManagementProtocolHeader {
      */
     public int getRequestId() {
         return requestId;
+    }
+
+    @Override
+    byte getType() {
+        return ManagementProtocol.REQUEST;
+    }
+
+    @Override
+    boolean isRequest() {
+        return true;
     }
 }

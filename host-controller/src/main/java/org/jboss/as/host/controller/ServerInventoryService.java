@@ -24,8 +24,8 @@ package org.jboss.as.host.controller;
 
 import java.net.InetSocketAddress;
 
+import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.process.ProcessControllerClient;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

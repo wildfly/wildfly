@@ -32,7 +32,7 @@ import javax.management.ObjectName;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
-import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.old.StreamUtils.safeClose;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

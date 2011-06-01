@@ -27,13 +27,14 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.ConnectionHandler;
-import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.StreamUtils;
+
+import org.jboss.as.protocol.old.Connection;
+import org.jboss.as.protocol.old.ConnectionHandler;
+import org.jboss.as.protocol.old.MessageHandler;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.logging.Logger;
 
-import static org.jboss.as.protocol.StreamUtils.*;
+import static org.jboss.as.protocol.old.StreamUtils.*;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

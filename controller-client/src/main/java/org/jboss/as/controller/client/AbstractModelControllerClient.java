@@ -21,13 +21,14 @@
  */
 package org.jboss.as.controller.client;
 
-import java.security.AccessController;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -41,9 +42,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.JBossThreadFactory;
 
@@ -83,7 +85,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             @Override
             public void run() {
                 try {
-                    Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(getConnectionStrategy());
+                    Future<Void> f = new ExecuteAsynchronousRequest(result, operation, handler).execute(executorService, getClientChannelStrategy());
 
                     while (true) {
                         try {
@@ -124,7 +126,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             throw new IllegalArgumentException("Null operation");
         }
         try {
-            return new ExecuteSynchronousRequest(operation).executeForResult(getConnectionStrategy());
+            return new ExecuteSynchronousRequest(operation).executeForResult(executorService, getClientChannelStrategy());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof IOException) {
                 throw new IOException(e);
@@ -145,22 +147,15 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
         executorService.shutdown();
     }
 
-    abstract ManagementRequestConnectionStrategy getConnectionStrategy();
+    abstract ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException;
 
-    private ModelNode readNode(InputStream in) throws IOException {
+    private ModelNode readNode(DataInput in) throws IOException {
         ModelNode node = new ModelNode();
         node.readExternal(in);
         return node;
     }
 
-    private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
-        @Override
-        protected byte getHandlerId() {
-            return ModelControllerClientProtocol.HANDLER_ID;
-        }
-    }
-
-    private abstract class ExecuteRequest<T> extends ModelControllerRequest<T> {
+    private abstract class ExecuteRequest<T> extends ManagementRequest<T> {
         private final Operation operation;
 
         public ExecuteRequest(Operation executionContext) {
@@ -169,7 +164,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
 
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
             output.write(ModelControllerClientProtocol.PARAM_OPERATION);
             operation.getOperation().writeExternal(output);
             List<InputStream> streams = operation.getInputStreams();
@@ -188,7 +183,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                 }
 
                 byte[] bytes = bout.toByteArray();
-                StreamUtils.writeInt(output, bytes.length);
+                output.writeInt(bytes.length);
                 try {
                     for (byte b : bytes) {
                         output.write(b);
@@ -212,14 +207,9 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             return ModelControllerClientProtocol.EXECUTE_SYNCHRONOUS_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return ModelControllerClientProtocol.EXECUTE_SYNCHRONOUS_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected ModelNode receiveResponse(InputStream input) throws IOException {
+        protected ModelNode readResponse(DataInput input) throws IOException {
             expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
             return readNode(input);
         }
@@ -241,18 +231,13 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             return ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return ModelControllerClientProtocol.EXECUTE_ASYNCHRONOUS_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected Void receiveResponse(InputStream input) throws IOException {
+        protected Void readResponse(DataInput input) throws IOException {
             try {
                 LOOP:
                 while (true) {
-                    int command = input.read();
+                    int command = input.readByte();
                     switch (command) {
                         case ModelControllerClientProtocol.PARAM_OPERATION : {
                             result.setCompensatingOperation(readNode(input));
@@ -260,10 +245,10 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:{
                             expectHeader(input, ModelControllerClientProtocol.PARAM_LOCATION);
-                            int length = StreamUtils.readInt(input);
+                            int length = input.readInt();
                             String[] location = new String[length];
                             for (int i = 0 ; i < length ; i++) {
-                                location[i] = StreamUtils.readUTFZBytes(input);
+                                location[i] = input.readUTF();
                             }
                             expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
                             ModelNode node = readNode(input);
@@ -284,7 +269,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_REQUEST_ID:{
-                            result.setAsynchronousId(StreamUtils.readInt(input));
+                            result.setAsynchronousId(input.readInt());
                             break;
                         }
                         default:{
@@ -299,7 +284,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
         }
     }
 
-    private class CancelAsynchronousOperationRequest extends ModelControllerRequest<Boolean> {
+    private class CancelAsynchronousOperationRequest extends ManagementRequest<Boolean> {
 
         private final int asynchronousId;
 
@@ -312,23 +297,18 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
             output.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
-            StreamUtils.writeInt(output, asynchronousId);
+            output.writeInt(asynchronousId);
         }
 
 
         /** {@inheritDoc} */
         @Override
-        protected Boolean receiveResponse(InputStream input) throws IOException {
-            return StreamUtils.readBoolean(input);
+        protected Boolean readResponse(DataInput input) throws IOException {
+            return input.readBoolean();
         }
     }
 
@@ -347,7 +327,7 @@ abstract class AbstractModelControllerClient implements ModelControllerClient {
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {
-                    return new CancelAsynchronousOperationRequest(i).executeForResult(getConnectionStrategy());
+                    return new CancelAsynchronousOperationRequest(i).executeForResult(executorService, getClientChannelStrategy());
                 }
                 else return false;
             } catch (IOException e) {

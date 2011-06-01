@@ -84,8 +84,8 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.xnio.SaslQop;
-import org.jboss.xnio.SaslStrength;
+import org.xnio.sasl.SaslQop;
+import org.xnio.sasl.SaslStrength;
 
 /**
  * The implementation of the Remoting extension.

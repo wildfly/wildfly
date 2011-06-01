@@ -24,6 +24,7 @@ package org.jboss.as.controller.remote;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationResult;
@@ -31,7 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -65,14 +66,15 @@ public class RemoteProxyController implements ProxyController {
     /**
      * Create a new model controller adapter reusing an existing connection
      *
-     * @param connection the connection
+     * @param channel the channel
+     * @param executor the executor
      * @param proxyNodeAddress the address in the host ModelController where this proxy controller applies to
      */
-    public static ProxyController create(final Connection connection, final PathAddress proxyNodeAddress) {
-        if (connection == null) {
-            throw new IllegalArgumentException("Null connection");
+    public static ProxyController create(final ProtocolChannel channel, final ExecutorService executor, final PathAddress proxyNodeAddress) {
+        if (channel == null) {
+            throw new IllegalArgumentException("Null channel");
         }
-        return new RemoteProxyController(new ModelControllerClientToModelControllerAdapter(connection), proxyNodeAddress);
+        return new RemoteProxyController(new ModelControllerClientToModelControllerAdapter(channel, executor), proxyNodeAddress);
     }
 
     private RemoteProxyController(ModelController delegate, PathAddress proxyNodeAddress) {

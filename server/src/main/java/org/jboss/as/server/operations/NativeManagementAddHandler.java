@@ -22,32 +22,25 @@
 
 package org.jboss.as.server.operations;
 
-import java.security.AccessController;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.mgmt.ManagementCommunicationService;
-import org.jboss.as.server.mgmt.ServerControllerOperationHandlerService;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author Kabir Khan
  */
 public class NativeManagementAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
@@ -68,30 +61,13 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        Logger.getLogger("org.jboss.as").infof("creating native management service using network interface (%s) port (%s)", interfaceName, port);
-
-        final ThreadGroup threadGroup = new ThreadGroup("ManagementCommunication-threads");
-        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-
-        final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
-        newControllers.add(serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
-                .addDependency(
-                        NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
-                        NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
-                .addInjection(managementCommunicationService.getPortInjector(), port)
-                .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool(threadFactory))
-                .addInjection(managementCommunicationService.getThreadFactoryInjector(), threadFactory)
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
-
-        ServerControllerOperationHandlerService operationHandlerService = new ServerControllerOperationHandlerService();
-        newControllers.add(serviceTarget.addService(ServerControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                .addDependency(Services.JBOSS_SERVER_CONTROLLER, NewModelController.class, operationHandlerService.getModelControllerValue())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
+        RemotingServices.installStandaloneManagementChannelServices(
+                context.getServiceTarget(),
+                new ModelControllerOperationHandlerService(),
+                Services.JBOSS_SERVER_CONTROLLER,
+                NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
+                port,
+                newControllers);
     }
 
     /**

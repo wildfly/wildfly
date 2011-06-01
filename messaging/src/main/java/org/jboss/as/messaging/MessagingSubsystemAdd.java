@@ -117,7 +117,7 @@ import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
-import org.jboss.as.server.services.net.SocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;

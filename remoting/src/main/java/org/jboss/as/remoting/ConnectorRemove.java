@@ -22,18 +22,14 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.Locale;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.NewOperationContext;
-import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
-import static org.jboss.as.remoting.CommonAttributes.PROPERTIES;
-import static org.jboss.as.remoting.CommonAttributes.SASL;
 import org.jboss.dmr.ModelNode;
 
 /**

@@ -22,19 +22,15 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
-import static org.jboss.as.protocol.StreamUtils.readUTFZBytes;
+import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
+import java.io.DataInput;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.jboss.as.host.controller.ManagedServerLifecycleCallback;
-import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementResponse;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -49,11 +45,12 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John Bailey
  * @author Emanuel Muckenhuber
+ * @author Kabir Khan
  */
-public class ServerToHostOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler, Service<ManagementOperationHandler> {
+public class ServerToHostOperationHandler implements ManagementOperationHandler, Service<ManagementOperationHandler> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller.mgmt");
-    public static final ServiceName SERVICE_NAME = ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "server", "to", "host", "controller");
 
     private final InjectedValue<ManagedServerLifecycleCallback> callback = new InjectedValue<ManagedServerLifecycleCallback>();
 
@@ -75,27 +72,8 @@ public class ServerToHostOperationHandler extends AbstractMessageHandler impleme
         return this;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public byte getIdentifier() {
-        return DomainServerProtocol.SERVER_TO_HOST_CONTROLLER_OPERATION;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void handle(Connection connection, InputStream inputStream) throws IOException {
-        expectHeader(inputStream, ManagementProtocol.REQUEST_OPERATION);
-        final byte commandCode = StreamUtils.readByte(inputStream);
-
-        final AbstractMessageHandler operation = operationFor(commandCode);
-        if (operation == null) {
-            throw new IOException("Invalid command code " + commandCode + " received");
-        }
-        operation.handle(connection, inputStream);
-    }
-
-    private AbstractMessageHandler operationFor(final byte commandByte) {
-        switch (commandByte) {
+    public ManagementRequestHandler getRequestHandler(final byte id) {
+        switch (id) {
             case DomainServerProtocol.REGISTER_REQUEST: {
                 return new ServerRegisterCommand();
             }
@@ -105,32 +83,23 @@ public class ServerToHostOperationHandler extends AbstractMessageHandler impleme
         }
     }
 
-    private class ServerRegisterCommand extends ManagementResponse {
-        private Connection connection;
-
-        /** {@inheritDoc} */
-        @Override
-        protected byte getResponseCode() {
-            return DomainServerProtocol.REGISTER_RESPONSE;
-        }
+    private class ServerRegisterCommand extends ManagementRequestHandler {
 
         @Override
-        public void handle(final Connection connection, final InputStream input) throws IOException {
-            this.connection = connection;
-            super.handle(connection, input);
-        }
-
-        @Override
-        protected void readRequest(final InputStream input) throws IOException {
+        public void readRequest(final DataInput input) throws IOException {
             expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
-            final String serverName = readUTFZBytes(input);
-            log.infof("Server [%s] registered using connection [%s]", serverName, connection);
-            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, connection);
+            final String serverName = input.readUTF();
+            log.infof("Server [%s] registered using connection [%s]", serverName, getChannel());
+            ServerToHostOperationHandler.this.callback.getValue().serverRegistered(serverName, getChannel());
+        }
+
+        @Override
+        protected void writeResponse(FlushableDataOutput output) throws IOException {
         }
 
     }
 
-    public InjectedValue<ManagedServerLifecycleCallback> getCallback() {
+    public InjectedValue<ManagedServerLifecycleCallback> getCallbackInjector() {
         return callback;
     }
 

@@ -1,0 +1,42 @@
+18:18:36,724 INFO  [org.jboss.remoting] (MSC service thread 1-3) JBoss Remoting version 3.2.0.Beta1-SNAPSHOT
+18:18:36,744 INFO  [org.jboss.as.jmx.JMXConnectorService] (MSC service thread 1-4) Starting remote JMX connector
+18:18:36,774 WARN  [org.jboss.osgi.framework.internal.URLHandlerPlugin] (MSC service thread 1-1) Unable to set the URLStreamHandlerFactory
+18:18:36,788 INFO  [org.xnio] (MSC service thread 1-3) XNIO Version 3.0.0.Beta2-SNAPSHOT
+18:18:36,796 INFO  [org.xnio.nio] (MSC service thread 1-3) XNIO NIO Implementation Version 3.0.0.Beta2-SNAPSHOT
+18:18:36,819 WARN  [org.jboss.osgi.framework.internal.URLHandlerPlugin] (MSC service thread 1-1) Unable to set the ContentHandlerFactory
+18:18:36,892 INFO  [stdout] (MSC service thread 1-4) ==== Starting connector
+18:18:36,893 INFO  [stdout] (MSC service thread 1-4) ==== Adding open listener for channel channelName
+18:18:36,907 INFO  [org.apache.coyote.http11.Http11Protocol] (MSC service thread 1-2) Starting Coyote HTTP/1.1 on http-localhost-127.0.0.1-8080
+18:18:36,959 INFO  [org.hornetq.core.server.impl.HornetQServerImpl] (MSC service thread 1-3) live server is starting..
+18:18:36,977 INFO  [stdout] (MSC service thread 1-4) ==== Starting stream server localhost/127.0.0.1:9999
+18:18:37,004 INFO  [org.jboss.as.connector] (MSC service thread 1-4) Starting JCA Subsystem (JBoss IronJacamar 1.0.0.Beta6)
+18:18:37,187 INFO  [org.jboss.as.connector.subsystems.datasources] (MSC service thread 1-4) Bound data source [java:/H2DS]
+18:18:37,435 INFO  [org.hornetq.core.remoting.impl.netty.NettyAcceptor] (MSC service thread 1-3) Started Netty Acceptor version 3.2.1.Final-r2319 localhost:5455 for CORE protocol
+18:18:37,436 INFO  [org.hornetq.core.remoting.impl.netty.NettyAcceptor] (MSC service thread 1-3) Started Netty Acceptor version 3.2.1.Final-r2319 localhost:5445 for CORE protocol
+18:18:37,437 INFO  [org.hornetq.core.server.impl.HornetQServerImpl] (MSC service thread 1-3) HornetQ Server version 2.1.2.Final (Colmeia, 120) started
+18:18:37,460 ERROR [org.jboss.remoting.remote] (pool-1-thread-1) JBREM00200: Remote connection failed: org.jboss.remoting3.ServiceNotFoundException: Unable to find service type 'management'
+	at org.jboss.remoting3.EndpointImpl$LocalConnectionContext.openService(EndpointImpl.java:351)
+	at org.jboss.remoting3.remote.RemoteReadListener.handleEvent(RemoteReadListener.java:119)
+	at org.jboss.remoting3.remote.RemoteReadListener.handleEvent(RemoteReadListener.java:44)
+	at org.xnio.ChannelListeners.invokeChannelListener(ChannelListeners.java:71)
+	at org.xnio.channels.TranslatingSuspendableChannel$2.handleEvent(TranslatingSuspendableChannel.java:77)
+	at org.xnio.channels.TranslatingSuspendableChannel$2.handleEvent(TranslatingSuspendableChannel.java:1)
+	at org.xnio.ChannelListeners.invokeChannelListener(ChannelListeners.java:71)
+	at org.xnio.nio.NioHandle.invoke(NioHandle.java:77)
+	at org.xnio.nio.AbstractNioChannelThread$1.run(AbstractNioChannelThread.java:133)
+	at java.lang.Thread.run(Thread.java:680) [:1.6.0_24]
+
+18:18:37,468 ERROR [org.xnio.listener] (pool-1-thread-1) A channel event listener threw an exception: java.lang.IllegalStateException
+	at org.xnio.Buffers$3.getResource(Buffers.java:1701)
+	at org.xnio.Buffers$3.getResource(Buffers.java:1)
+	at org.xnio.channels.FramedMessageChannel.isReadable(FramedMessageChannel.java:70)
+	at org.xnio.channels.TranslatingSuspendableChannel$2.handleEvent(TranslatingSuspendableChannel.java:80)
+	at org.xnio.channels.TranslatingSuspendableChannel$2.handleEvent(TranslatingSuspendableChannel.java:1)
+	at org.xnio.ChannelListeners.invokeChannelListener(ChannelListeners.java:71)
+	at org.xnio.nio.NioHandle.invoke(NioHandle.java:77)
+	at org.xnio.nio.AbstractNioChannelThread$1.run(AbstractNioChannelThread.java:133)
+	at java.lang.Thread.run(Thread.java:680) [:1.6.0_24]
+
+18:18:37,520 INFO  [org.jboss.as] (MSC service thread 1-3) JBoss AS 7.0.0.Beta4-SNAPSHOT "(TBD)" started in 3471ms - Started 110 of 164 services (54 services are passive or on-demand)
+18:18:42,204 INFO  [org.jboss.as.osgi] (MSC service thread 1-4) Stopping OSGi Framework
+18:18:42,206 INFO  [org.apache.coyote.http11.Http11Protocol] (MSC service thread 1-3) Stopping Coyote HTTP/1.1 on http-localhost-127.0.0.1-8080

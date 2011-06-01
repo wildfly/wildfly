@@ -40,10 +40,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
@@ -56,10 +56,10 @@ import org.jboss.as.host.controller.ConfigurationPersisterFactory;
 import org.jboss.as.host.controller.HostController;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.RemoteDomainConnectionService;
-import org.jboss.as.host.controller.mgmt.DomainControllerOperationHandlerService;
-import org.jboss.as.host.controller.mgmt.ManagementCommunicationService;
+import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.deployment.api.ContentRepository;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -107,21 +107,22 @@ public class DomainControllerAddUtil {
                 .addListener(verificationHandler)
                 .install());
 
-        //Install the domain controller operation handler
-        DomainControllerOperationHandlerService operationHandlerService = new DomainControllerOperationHandlerService(isSlave);
-        controllers.add(serviceTarget.addService(DomainControllerOperationHandlerService.SERVICE_NAME, operationHandlerService)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, operationHandlerService.getManagementCommunicationServiceValue())
-                .addDependency(DomainController.SERVICE_NAME, NewModelController.class, operationHandlerService.getModelControllerValue())
-                .addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
+        RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
+                new ModelControllerOperationHandlerService(),
+                DomainController.SERVICE_NAME,
+                NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork),
+                mgmtPort,
+                controllers);
 
+        if (!isSlave) {
+            RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(), DomainController.SERVICE_NAME, "domain", controllers);
+        }
         return controllers;
     }
 
     static void installRemoteDomainControllerConnection(final ModelNode host, final ServiceTarget serviceTarget, final FileRepository repository) {
 
-        String name;
+        final String name;
         try {
             name = host.require(NAME).asString();
         } catch (NoSuchElementException e1) {
@@ -129,16 +130,15 @@ public class DomainControllerAddUtil {
         }
 
         final ModelNode dc = host.require(DOMAIN_CONTROLLER).require(REMOTE);
-        InetAddress addr;
+        final InetAddress addr;
         try {
             addr = InetAddress.getByName(dc.require(HOST).resolve().asString());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        int port = dc.require(PORT).resolve().asInt();
+        final int port = dc.require(PORT).resolve().asInt();
         final RemoteDomainConnectionService service = new RemoteDomainConnectionService(name, addr, port, repository);
         serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, service.getManagementCommunicationServiceInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

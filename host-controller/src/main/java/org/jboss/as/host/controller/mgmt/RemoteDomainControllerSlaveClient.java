@@ -1,13 +1,12 @@
 package org.jboss.as.host.controller.mgmt;
 
-import java.security.AccessController;
-import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
+import java.security.AccessController;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -29,43 +28,37 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.remote.ModelControllerClientToModelControllerAdapter;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.DomainControllerSlaveClient;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.ProtocolChannel;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
-import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.threads.JBossThreadFactory;
 
+/**
+ * Client used by Host Controller to talk to the servers. The servers connect to HC.
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
+ */
 class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-    private static final int CONNECTION_TIMEOUT = 5000;
 
     // We delegate non-transactional requests
     private final ModelController delegate;
-//    private final Connection connection;
     private final String hostId;
-    private final InetAddress slaveAddress;
-    private final int slavePort;
-//    private final ManagementRequestConnectionStrategy connectionStrategy;
+    private final ProtocolChannel channel;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("RemoteDomainConnection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
-    public RemoteDomainControllerSlaveClient(String hostId, InetAddress slaveAddress, int slavePort) {
+    public RemoteDomainControllerSlaveClient(final String hostId, final ProtocolChannel channel) {
         this.hostId = hostId;
-        this.slaveAddress = slaveAddress;
-        this.slavePort = slavePort;
-//        this.connection = connection;
-        this.delegate = new ModelControllerClientToModelControllerAdapter(slaveAddress, slavePort);
-//        this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
+        this.channel = channel;
+        this.delegate = new ModelControllerClientToModelControllerAdapter(channel, executorService);
     }
-
-//    public RemoteDomainControllerSlaveClient(String hostId, Connection connection) {
-//        this.hostId = hostId;
-//        this.connection = connection;
-//        this.delegate = new ModelControllerClientToModelControllerAdapter(connection);
-//        this.connectionStrategy = new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(connection);
-//    }
 
     @Override
     public OperationResult execute(Operation operation, ResultHandler handler) {
@@ -83,7 +76,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             throw new IllegalArgumentException("Null operation");
         }
         try {
-            return new ExecuteSynchronousTransactionalRequest(operation, transaction).executeForResult(getConnectionStrategy());
+            return new ExecuteSynchronousTransactionalRequest(operation, transaction).executeForResult(executorService, getConnectionStrategy());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof CancellationException) {
                 throw new CancellationException(e.getCause().getMessage());
@@ -113,7 +106,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             @Override
             public void run() {
                 try {
-                    Future<ModelNode> f = new ExecuteAsyncTransactionalRequest(result, operation, handler, transaction).execute(getConnectionStrategy());
+                    Future<ModelNode> f = new ExecuteAsyncTransactionalRequest(result, operation, handler, transaction).execute(executorService, getConnectionStrategy());
 
                     while (true) {
                         try {
@@ -152,29 +145,36 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
 
     @Override
     public boolean isActive() {
-//        return connection.getPeerAddress() != null;
         try {
-            return new IsActiveRequest().executeForResult(getConnectionStrategy());
+            return new IsActiveRequest().executeForResult(executorService, getConnectionStrategy());
         } catch (Exception e) {
             return false;
         }
     }
 
-    private ModelNode readNode(InputStream in) throws IOException {
+    private ModelNode readNode(DataInput in) throws IOException {
         ModelNode node = new ModelNode();
         node.readExternal(in);
         return node;
     }
 
-    private ManagementRequestConnectionStrategy getConnectionStrategy() {
-        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(slaveAddress, slavePort,
-                CONNECTION_TIMEOUT, executorService, threadFactory);
+    private ManagementClientChannelStrategy getConnectionStrategy() {
+        try {
+            return ManagementClientChannelStrategy.create(channel);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
         @Override
         protected byte getHandlerId() {
             return TransactionalModelControllerOperationHandler.HANDLER_ID;
+        }
+
+        @Override
+        protected T readResponse(DataInput input) throws IOException {
+            return null;
         }
     }
 
@@ -191,7 +191,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             try {
                 int i = asynchronousId.get().intValue();
                 if (i >= 0) {
-                    return new CancelAsynchronousOperationRequest(i).executeForResult(getConnectionStrategy());
+                    return new CancelAsynchronousOperationRequest(i).executeForResult(executorService, getConnectionStrategy());
                 }
                 else return false;
             } catch (Exception e) {
@@ -235,14 +235,9 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             return TransactionalModelControllerOperationHandler.EXECUTE_TRANSACTIONAL_SYNCHRONOUS_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return TransactionalModelControllerOperationHandler.EXECUTE_TRANSACTIONAL_SYNCHRONOUS_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected ModelNode receiveResponse(InputStream input) throws IOException {
+        protected ModelNode readResponse(DataInput input) throws IOException {
             expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
             return readNode(input);
         }
@@ -265,18 +260,13 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             return TransactionalModelControllerOperationHandler.EXECUTE_TRANSACTIONAL_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return TransactionalModelControllerOperationHandler.EXECUTE_TRANSACTIONAL_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected ModelNode receiveResponse(InputStream input) throws IOException {
+        protected ModelNode readResponse(DataInput input) throws IOException {
             try {
                 LOOP:
                 while (true) {
-                    int command = input.read();
+                    byte command = input.readByte();
                     switch (command) {
                         case ModelControllerClientProtocol.PARAM_OPERATION : {
                             result.setCompensatingOperation(readNode(input));
@@ -284,10 +274,10 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
                         }
                         case ModelControllerClientProtocol.PARAM_HANDLE_RESULT_FRAGMENT:{
                             expectHeader(input, ModelControllerClientProtocol.PARAM_LOCATION);
-                            int length = StreamUtils.readInt(input);
+                            int length = input.readInt();
                             String[] location = new String[length];
                             for (int i = 0 ; i < length ; i++) {
-                                location[i] = StreamUtils.readUTFZBytes(input);
+                                location[i] = input.readUTF();
                             }
                             expectHeader(input, ModelControllerClientProtocol.PARAM_OPERATION);
                             ModelNode node = readNode(input);
@@ -308,7 +298,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
                             break LOOP;
                         }
                         case ModelControllerClientProtocol.PARAM_REQUEST_ID:{
-                            result.setAsynchronousId(StreamUtils.readInt(input));
+                            result.setAsynchronousId(input.readInt());
                             break;
                         }
                         default:{
@@ -336,7 +326,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
 
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
             output.write(TransactionalModelControllerOperationHandler.TRANSACTION_ID);
             transactionId.writeExternal(output);
             output.write(ModelControllerClientProtocol.PARAM_OPERATION);
@@ -358,7 +348,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
                 }
 
                 byte[] bytes = bout.toByteArray();
-                StreamUtils.writeInt(output, bytes.length);
+                output.writeInt(bytes.length);
                 try {
                     for (byte b : bytes) {
                         output.write(b);
@@ -384,14 +374,9 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             return TransactionalModelControllerOperationHandler.TRANSACTION_COMMIT_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return TransactionalModelControllerOperationHandler.TRANSACTION_COMMIT_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
             output.write(TransactionalModelControllerOperationHandler.TRANSACTION_ID);
             transactionId.writeExternal(output);
         }
@@ -410,14 +395,9 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             return TransactionalModelControllerOperationHandler.TRANSACTION_ROLLBACK_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return TransactionalModelControllerOperationHandler.TRANSACTION_ROLLBACK_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
             output.write(TransactionalModelControllerOperationHandler.TRANSACTION_ID);
             transactionId.writeExternal(output);
         }
@@ -434,7 +414,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
         @Override
         public void commit() {
             try {
-                new CommitTransactionRequest(transactionId).executeForResult(getConnectionStrategy());
+                new CommitTransactionRequest(transactionId).executeForResult(executorService, getConnectionStrategy());
             } catch (Exception e) {
                 log.errorf(e, "Failed committing management transaction %s on host %s", transactionId, hostId);
                 // TODO flag the host as out of sync
@@ -444,7 +424,7 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
         @Override
         public void rollback() {
             try {
-                new RollbackTransactionRequest(transactionId).executeForResult(getConnectionStrategy());
+                new RollbackTransactionRequest(transactionId).executeForResult(executorService, getConnectionStrategy());
             } catch (Exception e) {
                 // Less serious as failing to roll back just means the tx is sitting around
                 log.warnf(e, "Failed rolling back management transaction %s on host %s", transactionId, hostId);
@@ -465,23 +445,18 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_REQUEST;
         }
 
-        @Override
-        protected byte getResponseCode() {
-            return ModelControllerClientProtocol.CANCEL_ASYNCHRONOUS_OPERATION_RESPONSE;
-        }
-
         /** {@inheritDoc} */
         @Override
-        protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
+        protected void writeRequest(int protocolVersion, FlushableDataOutput output) throws IOException {
             output.write(ModelControllerClientProtocol.PARAM_REQUEST_ID);
-            StreamUtils.writeInt(output, asynchronousId);
+            output.writeInt(asynchronousId);
         }
 
 
         /** {@inheritDoc} */
         @Override
-        protected Boolean receiveResponse(InputStream input) throws IOException {
-            return StreamUtils.readBoolean(input);
+        protected Boolean readResponse(DataInput input) throws IOException {
+            return input.readBoolean();
         }
     }
 
@@ -491,13 +466,9 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
             return DomainControllerProtocol.IS_ACTIVE_REQUEST;
         }
 
-        @Override
-        protected final byte getResponseCode() {
-            return DomainControllerProtocol.IS_ACTIVE_RESPONSE;
-        }
 
         @Override
-        protected Boolean receiveResponse(final InputStream input) throws IOException {
+        protected Boolean readResponse(final DataInput input) throws IOException {
             return true;  // If we made it here, we correctly established a connection
         }
     }

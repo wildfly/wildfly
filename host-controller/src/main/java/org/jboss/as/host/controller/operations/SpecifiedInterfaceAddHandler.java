@@ -29,7 +29,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.server.services.net.NetworkInterfaceBinding;
+import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
