@@ -46,7 +46,6 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
     static final List<String> defaultDependencies = new ArrayList<String>();
     static {
         defaultDependencies.add("org.jboss.arquillian.core");
-        defaultDependencies.add("org.jboss.arquillian.protocol.jmx");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.jboss.shrinkwrap.core");

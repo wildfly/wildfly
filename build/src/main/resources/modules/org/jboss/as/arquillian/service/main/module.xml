@@ -30,14 +30,13 @@
 
     <dependencies>
         <module name="javax.inject.api" export="true"/>
-        <module name="org.jboss.as.arquillian.common" export="true"/>
         <module name="org.jboss.as.controller" export="true"/>
         <module name="org.jboss.as.controller-client" export="true"/>
         <module name="org.jboss.as.jmx" export="true"/>
         <module name="org.jboss.as.osgi" export="true"/>
         <module name="org.jboss.as.server" export="true"/>
-        <module name="org.jboss.arquillian.core" services="export" export="true"/>
-        <module name="org.jboss.arquillian.protocol.jmx" services="export" export="true"/>
+        <module name="org.jboss.arquillian.core" export="true"/>
+        <module name="org.jboss.arquillian.protocol.jmx" export="true"/>
         <module name="org.jboss.arquillian.testenricher.cdi" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.msc" services="export" export="true"/>
         <module name="org.jboss.arquillian.testenricher.osgi" services="export" export="true"/>
