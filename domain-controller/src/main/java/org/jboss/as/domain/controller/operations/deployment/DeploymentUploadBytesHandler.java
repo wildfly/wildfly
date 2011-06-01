@@ -18,6 +18,7 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -62,7 +63,7 @@ public class DeploymentUploadBytesHandler
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws OperationFailedException {
         bytesValidator.validate(operation);
         byte[] bytes = operation.get(BYTES).asBytes();
         return new ByteArrayInputStream(bytes);

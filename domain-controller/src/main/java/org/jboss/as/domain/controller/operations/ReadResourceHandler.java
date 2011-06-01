@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Map;
 
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -49,7 +50,7 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
     }
 
     @Override
-    protected void addProxyNodes(final OperationContext context, final PathAddress address, final ModelNode originalOperation,
+    protected void addProxyNodes(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation,
             final ModelNode result, final ModelNodeRegistration registry) {
 
         super.addProxyNodes(context, address, originalOperation, result, registry);
@@ -61,7 +62,7 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
                     final PathAddress hostAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, entry.getKey()));
                     operation.get(OP_ADDR).set(hostAddr.toModelNode());
 
-                    ModelNode hostResult = entry.getValue().execute(OperationBuilder.Factory.copy(context, operation).build());
+                    ModelNode hostResult = entry.getValue().execute(OperationBuilder.Factory.create(operation).build());
                     addProxyResultToMainResult(hostAddr, result, hostResult);
                 }
             }
@@ -71,7 +72,7 @@ public class ReadResourceHandler extends org.jboss.as.controller.operations.glob
     }
 
     @Override
-    protected void handleNonRecursiveProxyEntries(final OperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
+    protected void handleNonRecursiveProxyEntries(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
         if (address.size() == 0 && domainModelImpl.isMaster()) {
             for (Map.Entry<String, DomainControllerSlaveClient> entry : domainModelImpl.getRemoteHosts().entrySet()) {
                 result.get(HOST, entry.getKey());

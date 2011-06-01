@@ -19,6 +19,8 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationHandler;
@@ -36,7 +38,7 @@ import java.io.InputStream;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractDeploymentUploadHandler implements OperationHandler {
+public abstract class AbstractDeploymentUploadHandler implements NewStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
@@ -51,14 +53,14 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (contentRepository != null) {
             try {
                 InputStream is = getContentInputStream(context, operation);
                 try {
                     byte[] hash = contentRepository.addContent(is);
-                    resultHandler.handleResultFragment(EMPTY, new ModelNode().set(hash));
+                    context.getResult().set(hash);
                 }
                 finally {
                     safeClose(is);
@@ -70,11 +72,10 @@ public abstract class AbstractDeploymentUploadHandler implements OperationHandle
         }
         // else this is a slave domain controller and we should ignore this operation
 
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        context.completeStep();
     }
 
-    protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws OperationFailedException;
+    protected abstract InputStream getContentInputStream(NewOperationContext context, ModelNode operation) throws OperationFailedException;
 
     private static void safeClose(InputStream is) {
         if (is != null) {
