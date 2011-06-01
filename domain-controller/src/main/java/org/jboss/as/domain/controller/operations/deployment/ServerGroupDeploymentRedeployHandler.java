@@ -25,6 +25,8 @@ import java.util.Locale;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -39,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentRedeployHandler implements ModelQueryOperationHandler, DescriptionProvider {
+public class ServerGroupDeploymentRedeployHandler implements NewStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = REDEPLOY;
 
@@ -57,11 +59,8 @@ public class ServerGroupDeploymentRedeployHandler implements ModelQueryOperation
      * {@inheritDoc}
      */
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
-
-        ModelNode compensatingOp = Util.getEmptyOperation(OPERATION_NAME, operation.get(OP_ADDR));
-        resultHandler.handleResultComplete();
-
-        return new BasicOperationResult(compensatingOp);
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
+        // We do nothing. This operation is really handled at the server level.
+        context.completeStep();
     }
 }

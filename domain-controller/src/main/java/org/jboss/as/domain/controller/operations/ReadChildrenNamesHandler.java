@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.BasicOperationResult;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
@@ -48,7 +49,7 @@ public class ReadChildrenNamesHandler extends GlobalOperationHandlers.ReadChildr
     }
 
     @Override
-    public OperationResult execute(final OperationContext context, final ModelNode operation, final ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         if (address.size() == 0 && domainModelImpl.isMaster()) {
             final String childName = operation.require(CHILD_TYPE).asString();
@@ -57,12 +58,12 @@ public class ReadChildrenNamesHandler extends GlobalOperationHandlers.ReadChildr
                 for(final String hostName : domainModelImpl.getHostNames()) {
                     result.add(hostName);
                 }
-                resultHandler.handleResultFragment(Util.NO_LOCATION, result);
-                resultHandler.handleResultComplete();
-                return new BasicOperationResult();
+                context.getResult().set(result);
+                context.completeStep();
             }
+        } else {
+            super.execute(context, operation);
         }
-        return super.execute(context, operation, resultHandler);
     }
 
 }

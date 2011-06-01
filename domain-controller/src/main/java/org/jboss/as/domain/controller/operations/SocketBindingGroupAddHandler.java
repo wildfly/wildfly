@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 
 import java.util.Locale;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
 import org.jboss.as.controller.operations.common.Util;
@@ -70,7 +71,7 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
      * {@inheritDoc}
      */
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         super.populateModel(operation, model);
         model.get(INCLUDES).set(operation.get(INCLUDES));
     }

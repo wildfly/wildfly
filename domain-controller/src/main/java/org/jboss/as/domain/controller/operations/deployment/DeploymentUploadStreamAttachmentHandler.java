@@ -18,7 +18,7 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
@@ -27,6 +27,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 
@@ -60,21 +61,25 @@ implements DescriptionProvider {
      * {@inheritDoc}
      */
     @Override
-    protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+    protected InputStream getContentInputStream(NewOperationContext operationContext, ModelNode operation) throws OperationFailedException {
         streamValidator.validate(operation);
 
         int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
-        int maxIndex = operationContext.getInputStreams().size() - 1;
+        int maxIndex = operationContext.getAttachmentStreamCount();
         if (streamIndex > maxIndex) {
             throw new OperationFailedException(new ModelNode().set(String.format("Invalid '" + INPUT_STREAM_INDEX + "' value: %d, the maximum index is %d", streamIndex, maxIndex)));
         }
 
-        InputStream in = operationContext.getInputStreams().get(streamIndex);
-        if (in == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Null stream at index %s", streamIndex)));
-        }
+        try {
+            InputStream in = operationContext.getAttachmentStream(streamIndex);
+            if (in == null) {
+                throw new OperationFailedException(new ModelNode().set(String.format("Null stream at index %s", streamIndex)));
+            }
 
-        return in;
+            return in;
+        } catch (IOException e) {
+            throw new OperationFailedException(new ModelNode().set(String.format("Failed to get attachment stream at index [%d] -- %s", streamIndex, e.toString())));
+        }
     }
 
 }

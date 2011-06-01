@@ -120,7 +120,6 @@ public class DeploymentAddHandler implements NewStepHandler, DescriptionProvider
      */
     public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
-        
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;

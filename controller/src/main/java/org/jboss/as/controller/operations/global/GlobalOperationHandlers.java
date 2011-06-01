@@ -151,6 +151,18 @@ public class GlobalOperationHandlers {
             return result;
         }
 
+        protected void addProxyNodes(NewOperationContext context, PathAddress address, ModelNode originalOperation, ModelNode result, ModelNodeRegistration registry) {
+            // FIXME implement
+            throw new UnsupportedOperationException();
+        }
+        protected void handleNonRecursiveProxyEntries(final NewOperationContext context, final PathAddress address, final ModelNode originalOperation, final ModelNode result, final ModelNodeRegistration registry) {
+            // FIXME implement
+            throw new UnsupportedOperationException();
+        }
+        protected void addProxyResultToMainResult(final PathAddress address, final ModelNode mainResult, final ModelNode proxyResult) {
+            // FIXME implement
+            throw new UnsupportedOperationException();
+        }
     };
 
     /**
