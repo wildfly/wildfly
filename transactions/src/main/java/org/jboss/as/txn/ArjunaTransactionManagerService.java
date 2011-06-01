@@ -100,7 +100,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
                 "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");
 
-            final ORB orb = orbInjector.getValue();
+            final ORB orb = orbInjector.getOptionalValue();
 
             if (orb == null) {
                 // No IIOP, stick with JTA mode.
