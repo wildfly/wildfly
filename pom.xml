@@ -257,10 +257,26 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -288,6 +304,7 @@
                                         <Os-Version>${os.version}</Os-Version>
                                         <Scm-Url>${project.scm.developerConnection}</Scm-Url>
                                         <Build-Time>${build.timestamp}</Build-Time>
+                                        <Scm-Version>${buildNumber}</Scm-Version>
                                     </manifestEntries>
                                 </manifestSection>
                             </manifestSections>
