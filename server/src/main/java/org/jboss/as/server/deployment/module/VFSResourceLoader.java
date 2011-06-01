@@ -26,6 +26,7 @@ import java.security.CodeSigner;
 import java.security.CodeSource;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.PackageSpec;
+import org.jboss.modules.PathUtils;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.modules.Resource;
@@ -149,7 +150,7 @@ public class VFSResourceLoader implements ResourceLoader {
     /** {@inheritDoc} */
     public Resource getResource(final String name) {
         try {
-            final VirtualFile file = root.getChild(name);
+            final VirtualFile file = root.getChild(PathUtils.canonicalize(name));
             if (!file.exists()) {
                 return null;
             }
