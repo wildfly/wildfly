@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrentAccessTimeoutException;
@@ -38,8 +39,19 @@ import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInte
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterceptor {
+    private static final Logger log = Logger.getLogger(StatefulSessionSynchronizationInterceptor.class);
+
     private final ReentrantLock lock = new ReentrantLock(true);
     private Object transactionKey = null;
+
+    private static Error handleThrowable(final Throwable t) {
+        log.error(t);
+        if (t instanceof RuntimeException)
+            throw (RuntimeException) t;
+        if (t instanceof Error)
+            throw (Error) t;
+        throw (EJBException) new EJBException().initCause(t);
+    }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
@@ -64,13 +76,23 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                 transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
                     @Override
                     public void beforeCompletion() {
-                        instance.beforeCompletion();
+                        try {
+                            instance.beforeCompletion();
+                        } catch (Throwable t) {
+                            instance.discard();
+                            throw handleThrowable(t);
+                        }
                     }
 
                     @Override
                     public void afterCompletion(int status) {
-                        instance.afterCompletion(status == Status.STATUS_COMMITTED);
-                        release(instance);
+                        try {
+                            instance.afterCompletion(status == Status.STATUS_COMMITTED);
+                            release(instance);
+                        } catch (Throwable t) {
+                            instance.discard();
+                            throw handleThrowable(t);
+                        }
                     }
                 });
                 instance.afterBegin();

@@ -46,6 +46,8 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     private final Interceptor afterCompletion;
     private final Interceptor beforeCompletion;
 
+    private boolean isDiscarded = false;
+
     /**
      * Construct a new instance.
      *
@@ -70,6 +72,13 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     protected void beforeCompletion() {
         execute(beforeCompletion);
+    }
+
+    protected void discard() {
+        if (!isDiscarded) {
+            isDiscarded = true;
+            getComponent().getCache().discard(id);
+        }
     }
 
     protected Object execute(final Interceptor interceptor, final Object... parameters) {
