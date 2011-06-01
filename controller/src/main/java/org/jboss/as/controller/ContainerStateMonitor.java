@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -39,7 +40,7 @@ import org.jboss.msc.service.ServiceRegistry;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ContainerStateMonitor extends AbstractServiceListener<Object> {
+public final class ContainerStateMonitor extends AbstractServiceListener<Object> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 

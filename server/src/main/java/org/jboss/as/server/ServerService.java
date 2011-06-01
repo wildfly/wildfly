@@ -29,11 +29,13 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeployerChainsService;
@@ -223,5 +225,11 @@ public final class ServerService extends AbstractControllerService {
         DeploymentUnitProcessor getProcessor() {
             return processor;
         }
+    }
+
+    @Override
+    protected void initModel(ModelNodeRegistration rootRegistration) {
+        ServerControllerModelUtil.createCoreModel();
+        ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(), configuration.getConfigurationPersister(), configuration.getServerEnvironment());
     }
 }
