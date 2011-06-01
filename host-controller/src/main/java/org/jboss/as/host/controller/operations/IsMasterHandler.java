@@ -24,9 +24,12 @@ package org.jboss.as.host.controller.operations;
 
 import org.jboss.as.controller.BasicOperationResult;
 import org.jboss.as.controller.ModelQueryOperationHandler;
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.NewStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationResult;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResultHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -37,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class IsMasterHandler implements ModelQueryOperationHandler {
+public class IsMasterHandler implements NewStepHandler {
 
     public static final IsMasterHandler INSTANCE = new IsMasterHandler();
 
@@ -46,11 +49,11 @@ public class IsMasterHandler implements ModelQueryOperationHandler {
     }
 
     @Override
-    public OperationResult execute(OperationContext context, ModelNode operation, ResultHandler resultHandler) throws OperationFailedException {
+    public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
 
-        boolean master = context.getSubModel().get(ModelDescriptionConstants.DOMAIN_CONTROLLER).hasDefined(ModelDescriptionConstants.LOCAL);
-        resultHandler.handleResultFragment(ResultHandler.EMPTY_LOCATION, new ModelNode().set(master));
-        resultHandler.handleResultComplete();
-        return new BasicOperationResult();
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+        boolean master = subModel.get(ModelDescriptionConstants.DOMAIN_CONTROLLER).hasDefined(ModelDescriptionConstants.LOCAL);
+        context.getResult().set(master);
+        context.completeStep();
     }
 }
