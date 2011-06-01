@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
@@ -39,6 +40,12 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
     private int outstanding;
 
     public synchronized void execute(final NewOperationContext context, final ModelNode operation) {
+
+        //TODO return this
+        if (true) {
+            return;
+        }
+
         while (outstanding > 0) {
             try {
                 wait();
