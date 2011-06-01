@@ -85,11 +85,11 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors) {
+        // wise, or not?
         if (this.singletonComponentInstance != null) {
             throw new IllegalStateException("A singleton component instance has already been created for bean: " + this.getComponentName());
         }
-        this.singletonComponentInstance = new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
-        return this.singletonComponentInstance;
+        return new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     ComponentInstance getComponentInstance() {
@@ -97,11 +97,13 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             synchronized (this) {
                 if(this.singletonComponentInstance == null) {
 
-                    for(ServiceName serviceName : dependsOn) {
-                        final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceRegistry.getServiceRegistry().getRequiredService(serviceName);
-                        final Component component = service.getValue();
-                        if(component instanceof SingletonComponent) {
-                            ((SingletonComponent) component).getComponentInstance();
+                    if (dependsOn != null) {
+                        for(ServiceName serviceName : dependsOn) {
+                            final ServiceController<Component> service = (ServiceController<Component>) CurrentServiceRegistry.getServiceRegistry().getRequiredService(serviceName);
+                            final Component component = service.getValue();
+                            if(component instanceof SingletonComponent) {
+                                ((SingletonComponent) component).getComponentInstance();
+                            }
                         }
                     }
 

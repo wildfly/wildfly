@@ -36,6 +36,8 @@ import org.junit.runner.RunWith;
 
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJB;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -43,6 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Testcase for testing the basic functionality of a EJB3 singleton session bean.
@@ -149,18 +154,29 @@ public class SingletonBeanTestCase {
         }
         // Now fetch the results.
         // all are expected to timeout
+
+        // one is expected to complete successfully
+        // rest all are expected to timeout
+        final List<Object> passed = new ArrayList<Object>();
+        final List<Throwable> throwables = new ArrayList<Throwable>();
         for (int i = 0; i < NUM_THREADS; i++) {
             try {
-                results[i].get(10, TimeUnit.SECONDS);
-                Assert.fail("Invocation on a singleton bean with WRITE lock was expected to fail for thread numbered: " + i);
+                passed.add(results[i].get(10, TimeUnit.SECONDS));
             } catch (ExecutionException ee) {
-                Assert.assertTrue("Unexpected exception during invocation on a singleton bean with WRITE lock", ee.getCause() instanceof ConcurrentAccessTimeoutException);
+                throwables.add(ee.getCause());
             }
         }
         // get/wait (for) the result of the first invocation. Is expected to have completed successfully
         firstInvocationResult.get(10, TimeUnit.SECONDS);
         // only one call succeeded, so count should be 1
         Assert.assertEquals("Unexpected count on singleton bean after invocation on method with WRITE lock semantic: ", 1, this.longWritesSingletonBean.getCount());
+
+        assertEquals(1, passed.size());
+        assertEquals(NUM_THREADS - 1, throwables.size());
+        for (Throwable t : throwables) {
+            assertTrue(t instanceof ConcurrentAccessTimeoutException);
+        }
+
     }
 
     private class ReadOnlySingletonBeanInvoker implements Callable<String> {
