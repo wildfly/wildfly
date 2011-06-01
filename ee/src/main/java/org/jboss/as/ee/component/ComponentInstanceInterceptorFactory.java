@@ -40,11 +40,11 @@ public abstract class ComponentInstanceInterceptorFactory implements Interceptor
         final Map<Object, Object> contextData = context.getContextData();
         Interceptor interceptor = (Interceptor) contextData.get(KEY);
         if (interceptor == null) {
-            final ComponentInstance instance = (ComponentInstance) context.getContextData().get(ComponentInstance.class);
-            contextData.put(KEY, interceptor = create(instance, context));
+            final Component component = (Component) context.getContextData().get(Component.class);
+            contextData.put(KEY, interceptor = create(component, context));
         }
         return interceptor;
     }
 
-    protected abstract Interceptor create(ComponentInstance instance, InterceptorFactoryContext context);
+    protected abstract Interceptor create(Component component, InterceptorFactoryContext context);
 }

@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -103,7 +103,25 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     }
                 }
             });
-
+        } else {
+            // add the bmt interceptor
+            getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    final ComponentInstanceInterceptorFactory slsbBmtInterceptorFactory = new ComponentInstanceInterceptorFactory() {
+                        @Override
+                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                            if (component instanceof SingletonComponent == false) {
+                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
+                                        " isn't a singleton component");
+                            }
+                            return new SingletonBMTInterceptor((SingletonComponent) component);
+                        }
+                    };
+                    // add the bmt interceptor factory
+                    configuration.addComponentInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
+                }
+            });
         }
 
         return singletonComponentConfiguration;
@@ -161,29 +179,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 configuration.addViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
-
-
-        // add the bmt interceptor
-        if (TransactionManagementType.BEAN.equals(this.getTransactionManagementType())) {
-            view.getConfigurators().add(new ViewConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                    final ComponentInterceptorFactory slsbBmtInterceptorFactory = new ComponentInterceptorFactory() {
-                        @Override
-                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                            if (component instanceof SingletonComponent == false) {
-                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                        " isn't a singleton component");
-                            }
-                            return new SingletonBMTInterceptor((SingletonComponent) component);
-                        }
-                    };
-                    // add the bmt interceptor factory
-                    configuration.addViewInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
-                }
-            });
-        }
-
     }
 
     private void addConcurrencyManagementInterceptor() {

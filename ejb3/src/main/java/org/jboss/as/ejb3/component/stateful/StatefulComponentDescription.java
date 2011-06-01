@@ -27,9 +27,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -116,13 +114,14 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 final InterceptorFactory interceptorFactory = new ComponentInstanceInterceptorFactory() {
                     @Override
-                    protected Interceptor create(ComponentInstance instance, InterceptorFactoryContext context) {
+                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
                         return new StatefulSessionSynchronizationInterceptor();
                     }
                 };
                 configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.SFSB_SYNCHRONIZATION_INTERCEPTOR, false);
             }
         });
+
     }
 
     @Override
@@ -131,6 +130,26 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, moduleConfiguration.getClassConfiguration(getComponentClassName()));
         // setup the component create service
         statefulComponentConfiguration.setComponentCreateServiceFactory(new StatefulComponentCreateServiceFactory());
+
+        if(getTransactionManagementType() == TransactionManagementType.BEAN) {
+            getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    final ComponentInstanceInterceptorFactory bmtComponentInterceptorFactory = new ComponentInstanceInterceptorFactory() {
+                        @Override
+                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
+                            if (component instanceof StatefulSessionComponent == false) {
+                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
+                                        " isn't a stateful component");
+                            }
+                            return new StatefulBMTInterceptor((StatefulSessionComponent) component);
+                        }
+                    };
+                    configuration.addComponentInterceptor(bmtComponentInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
+                }
+            });
+        }
+
         return statefulComponentConfiguration;
     }
 
@@ -176,8 +195,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         this.addRemoveMethodInterceptor(view);
         // setup the instance associating interceptors
         this.addStatefulInstanceAssociatingInterceptor(view);
-        // setup tx management interceptors
-        this.addTransactionManagementInterceptor(view);
 
 
     }
@@ -247,25 +264,4 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         });
     }
 
-    private void addTransactionManagementInterceptor(final ViewDescription view) {
-        // setup BMT interceptor
-        if (TransactionManagementType.BEAN.equals(this.getTransactionManagementType())) {
-            view.getConfigurators().add(new ViewConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                    final ComponentInterceptorFactory bmtComponentInterceptorFactory = new ComponentInterceptorFactory() {
-                        @Override
-                        protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                            if (component instanceof StatefulSessionComponent == false) {
-                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                        " isn't a stateful component");
-                            }
-                            return new StatefulBMTInterceptor((StatefulSessionComponent) component);
-                        }
-                    };
-                    configuration.addViewInterceptor(bmtComponentInterceptorFactory, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
-                }
-            });
-        }
-    }
 }

@@ -396,7 +396,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
                 // Add CMT interceptor factory
                 if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
-                    configuration.addViewInterceptor(CMTTxInterceptorFactory.INSTANCE, InterceptorOrder.View.TRANSACTION_INTERCEPTOR);
+                    configuration.addViewInterceptor(CMTTxInterceptorFactory.INSTANCE, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
                 }
             }
         });
