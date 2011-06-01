@@ -23,10 +23,11 @@ package org.jboss.as.testsuite.integration.deployment.classloading.rar;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
@@ -46,10 +47,10 @@ public class RarClassLoadingTestCase {
         ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "rarClassLoadingTest.rar");
         JavaArchive jar1 = ShrinkWrap.create(JavaArchive.class, "main.jar");
         jar1.addClasses(RarClassLoadingTestCase.class, RarMainClass.class);
-        rar.add(jar1, "/");
+        rar.add(jar1, "/", ZipExporter.class);
         JavaArchive jar2 = ShrinkWrap.create(JavaArchive.class, "support.jar");
         jar2.addClasses(RarSupportClass.class);
-        rar.add(jar2, "some/random/directory");
+        rar.add(jar2, "some/random/directory", ZipExporter.class);
 
         return rar;
     }

@@ -22,10 +22,10 @@
 
 package org.jboss.as.testsuite.integration.jpa.hibernate;
 
-import org.hibernate.Session;
-
 import javax.ejb.Stateful;
 import javax.persistence.PersistenceContext;
+
+import org.hibernate.Session;
 
 /**
  * Test that a peristence context can be injected into a Hibernate session

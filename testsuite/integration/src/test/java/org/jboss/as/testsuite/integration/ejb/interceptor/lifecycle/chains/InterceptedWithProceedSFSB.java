@@ -21,11 +21,11 @@
  */
 package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.chains;
 
-import org.junit.Assert;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

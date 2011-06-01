@@ -21,9 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.ejb.interceptor.lifecycle.order;
 
-import org.junit.Assert;
-
 import javax.annotation.PostConstruct;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

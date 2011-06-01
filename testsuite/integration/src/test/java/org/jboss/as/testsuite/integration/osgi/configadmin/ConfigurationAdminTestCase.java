@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.osgi.xservice.bundle.ConfiguredService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;

@@ -21,7 +21,11 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.enventry;
 
-import org.jboss.arquillian.api.Deployment;
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,10 +33,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A test for injection via env-entry in web.xml
@@ -46,7 +46,7 @@ public class EnvEntryInjectionTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(EnvEntryInjectionTestCase.class, EnvEntryInjectionServlet.class);
-        war.addWebResource(getWebXml(),"web.xml");
+        war.addAsWebResource(getWebXml(),"web.xml");
         return war;
     }
 

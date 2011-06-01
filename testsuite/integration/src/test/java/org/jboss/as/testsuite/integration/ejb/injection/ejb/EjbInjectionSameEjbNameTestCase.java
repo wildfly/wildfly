@@ -21,7 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.ejb.injection.ejb;
 
-import org.jboss.arquillian.api.Deployment;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -31,9 +34,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Tests that @Ejb injection works when two beans have the same name in different modules.
@@ -48,17 +48,17 @@ public class EjbInjectionSameEjbNameTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class,"testinject.ear");
         final JavaArchive lib = ShrinkWrap.create(JavaArchive.class,"lib.jar");
         lib.addClass(BeanInterface.class);
-        ear.addLibraries(lib);
+        ear.addAsLibraries(lib);
 
         final JavaArchive b1 = ShrinkWrap.create(JavaArchive.class,"b1.jar");
         b1.addClass(Bean1.class);
-        ear.addModule(b1);
+        ear.addAsModule(b1);
         final JavaArchive b2 = ShrinkWrap.create(JavaArchive.class,"b2.jar");
         b2.addClass(Bean2.class);
-        ear.addModule(b2);
+        ear.addAsModule(b2);
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
         main.addClasses(EjbInjectionSameEjbNameTestCase.class, InjectingBean.class);
-        ear.addModule(main);
+        ear.addAsModule(main);
         return ear;
 
     }

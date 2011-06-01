@@ -21,7 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.webejb;
 
-import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 

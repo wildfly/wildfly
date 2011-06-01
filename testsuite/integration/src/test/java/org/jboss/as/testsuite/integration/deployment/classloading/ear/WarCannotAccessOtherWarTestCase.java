@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,10 +41,10 @@ public class WarCannotAccessOtherWarTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addClass(TestAA.class);
 
-        ear.addModule(war);
+        ear.addAsModule(war);
         war = ShrinkWrap.create(WebArchive.class);
         war.addClass(WarCannotAccessOtherWarTestCase.class);
-        ear.addModule(war);
+        ear.addAsModule(war);
 
         return ear;
     }

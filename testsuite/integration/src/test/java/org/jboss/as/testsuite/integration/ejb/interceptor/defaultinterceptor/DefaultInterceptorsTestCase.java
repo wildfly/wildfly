@@ -21,7 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.ejb.interceptor.defaultinterceptor;
 
-import org.jboss.arquillian.api.Deployment;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -30,9 +33,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Tests that default interceptors are correctly applied
@@ -46,7 +46,7 @@ public class DefaultInterceptorsTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "testdefaultinterceptors.war");
         war.addPackage(DefaultInterceptorsTestCase.class.getPackage());
-        war.addWebResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        war.addAsWebResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
                 "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
                 "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +

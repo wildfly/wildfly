@@ -21,12 +21,12 @@
  */
 package org.jboss.as.testsuite.integration.jaxrs.multipart;
 
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
 /**
  * @author Stuart Douglas

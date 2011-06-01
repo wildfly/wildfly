@@ -31,7 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.xml.XMLParserCapability;
@@ -63,7 +63,7 @@ public class SAXParserTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-xml-parser");
-        archive.addResource("osgi/xml/example-xml-parser.xml", "example-xml-parser.xml");
+        archive.addAsResource("osgi/xml/example-xml-parser.xml", "example-xml-parser.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();

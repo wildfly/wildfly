@@ -27,6 +27,7 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
+import org.jboss.logging.Logger;
 
 /**
  * ArquillianServiceDeployer
@@ -35,6 +36,8 @@ import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder
  * @since 31-May-2011
  */
 public class ArquillianServiceDeployer {
+
+    private static final Logger log = Logger.getLogger(ManifestBuilder.class);
 
     @Inject
     @SuiteScoped
@@ -46,18 +49,26 @@ public class ArquillianServiceDeployer {
 
     private String runtimeName;
 
-    public void doServiceDeploy(@Observes BeforeDeploy event) throws DeploymentException {
+    public void doServiceDeploy(@Observes BeforeDeploy event) {
         if (runtimeName == null) {
-            ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
-            ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
-            runtimeName = archiveDeployer.deploy(archiveHolder.getArchive());
+            try {
+                ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
+                ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
+                runtimeName = archiveDeployer.deploy(archiveHolder.getArchive());
+            } catch (DeploymentException ex) {
+                log.error(ex);
+            }
         }
     }
 
-    public void undeploy(@Observes BeforeStop event) throws DeploymentException {
+    public void undeploy(@Observes BeforeStop event) {
         if (runtimeName != null) {
-            ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
-            archiveDeployer.undeploy(runtimeName);
+            try {
+                ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
+                archiveDeployer.undeploy(runtimeName);
+            } catch (DeploymentException ex) {
+                log.error(ex);
+            }
         }
     }
 }

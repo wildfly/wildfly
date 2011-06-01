@@ -22,7 +22,6 @@
 
 package org.jboss.as.testsuite.integration.jpa.defaultdatasource;
 
-import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;

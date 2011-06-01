@@ -21,8 +21,6 @@
  */
 package org.jboss.as.testsuite.integration.jpa.epcpropagation;
 
-import org.jboss.ejb3.annotation.JndiInject;
-
 import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.SessionContext;
@@ -32,6 +30,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.TransactionManager;
+
+import org.jboss.ejb3.annotation.JndiInject;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

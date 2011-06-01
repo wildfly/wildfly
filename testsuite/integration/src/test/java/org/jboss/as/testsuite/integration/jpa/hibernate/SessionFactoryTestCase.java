@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -80,7 +80,7 @@ public class SessionFactoryTestCase {
             SFSBHibernateSessionFactory.class
         );
 
-        jar.addResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         return jar;
     }
 

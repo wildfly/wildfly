@@ -21,9 +21,12 @@
  */
 package org.jboss.as.testsuite.integration.jaxrs.servletintegration;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,10 +34,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
@@ -48,7 +47,7 @@ import static org.junit.Assert.assertEquals;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class ApplicationIntegrationTestCase {
 
     @Deployment
@@ -56,7 +55,7 @@ public class ApplicationIntegrationTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(ApplicationIntegrationTestCase.class, HelloWorldResource.class,HelloWorldApplication.class);
-        war.addWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>"+HelloWorldApplication.class.getName()+"</servlet-name>\n" +
                 "        <url-pattern>/hello/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +

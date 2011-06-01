@@ -32,7 +32,7 @@ import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
 
 import org.apache.aries.jmx.framework.BundleState;
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.osgi.testing.OSGiManifestBuilder;

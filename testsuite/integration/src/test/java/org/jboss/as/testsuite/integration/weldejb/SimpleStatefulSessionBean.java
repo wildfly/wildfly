@@ -21,15 +21,16 @@
  */
 package org.jboss.as.testsuite.integration.weldejb;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ejb.TransactionAttributeType.NEVER;
+
+import java.util.concurrent.CountDownLatch;
+
 import javax.annotation.PostConstruct;
 import javax.ejb.AccessTimeout;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
-import java.util.concurrent.CountDownLatch;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ejb.TransactionAttributeType.NEVER;
 
 /**
  * A simple stateful session bean.

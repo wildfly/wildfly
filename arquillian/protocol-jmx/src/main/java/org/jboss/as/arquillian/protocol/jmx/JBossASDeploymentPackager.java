@@ -27,7 +27,6 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
@@ -37,16 +36,12 @@ import org.jboss.arquillian.protocol.jmx.JMXProtocol;
 import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * A {@link DeploymentPackager} that for AS7 test deployments.
@@ -77,6 +72,7 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
         final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
         generateArquillianServiceArchive(appArchive, auxArchives);
 
+        /*
         final Manifest manifest = ManifestUtils.getOrCreateManifest(testDeployment.getApplicationArchive());
         if (BundleInfo.isValidateBundleManifest(manifest) == false) {
             // JBAS-9059 Inconvertible types error due to OpenJDK compiler bug
@@ -96,6 +92,7 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
                 }
             }
         }
+        */
         return appArchive;
     }
 
@@ -147,7 +144,7 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
         archive.addAsResource("arquillian-service/" + serviceActivatorPath, serviceActivatorPath);
 
-        // Replace the LoadableExtension with the collected set
+        // Replace the loadable extensions with the collected set
         archive.delete(ArchivePaths.create(loadableExtentionsPath));
         archive.addAsResource(new Asset() {
             @Override

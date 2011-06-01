@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -37,17 +37,17 @@ public class EarClassLoadingTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        // war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
         libJar.addClass(TestAA.class);
-        war.addLibraries(libJar);
+        war.addAsLibraries(libJar);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addModule(war);
+        ear.addAsModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class);
         earLib.addClass(TestBB.class);
         earLib.addClass(EarClassLoadingTestCase.class);
-        ear.addLibraries(earLib);
+        ear.addAsLibraries(earLib);
         return ear;
     }
 

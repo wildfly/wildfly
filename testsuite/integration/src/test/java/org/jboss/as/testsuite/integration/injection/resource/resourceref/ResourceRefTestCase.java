@@ -21,7 +21,11 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.resourceref;
 
-import org.jboss.arquillian.api.Deployment;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -30,10 +34,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 
 
@@ -50,7 +50,7 @@ public class ResourceRefTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "multiple-bindings-superclass.war");
-        war.addWebResource(getWebXml(),"web.xml");
+        war.addAsWebResource(getWebXml(),"web.xml");
         war.addPackage(ResourceRefTestCase.class.getPackage());
         return war;
     }

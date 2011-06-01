@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,14 +41,14 @@ public class EjbJarCanAccessOtherEjbJarTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "otherjar.jar");
         jar.addClass(TestAA.class);
-        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
+        jar.addAsResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
 
-        ear.addModule(jar);
+        ear.addAsModule(jar);
         jar = ShrinkWrap.create(JavaArchive.class, "testjar.jar");
         jar.addClass(EjbJarCanAccessOtherEjbJarTestCase.class);
-        jar.addResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
-        jar.addManifestResource(new StringAsset("Class-Path: otherjar.jar\n"),"MANIFEST.MF");
-        ear.addModule(jar);
+        jar.addAsResource(emptyEjbJar(), "META-INF/ejb-jar.xml");
+        jar.addAsManifestResource(new StringAsset("Class-Path: otherjar.jar\n"),"MANIFEST.MF");
+        ear.addAsModule(jar);
 
         return ear;
     }

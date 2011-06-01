@@ -21,8 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.ejb.localview;
 
-import javax.ejb.Stateless;
 import java.io.Serializable;
+
+import javax.ejb.Stateless;
 
 /**
  * Bean that has a single implicit local interface, that also implements Serializable

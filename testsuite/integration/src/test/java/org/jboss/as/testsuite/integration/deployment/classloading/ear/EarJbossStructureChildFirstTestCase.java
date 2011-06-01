@@ -21,8 +21,11 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
+import javax.ejb.Stateless;
+
 import junit.framework.Assert;
-import org.jboss.arquillian.api.Deployment;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,8 +36,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.Stateless;
-
 @RunWith(Arquillian.class)
 public class EarJbossStructureChildFirstTestCase {
 
@@ -44,13 +45,13 @@ public class EarJbossStructureChildFirstTestCase {
         war.addClasses(TestAA.class, EarJbossStructureChildFirstTestCase.class, Stateless.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addModule(war);
-        ear.addManifestResource(new StringAsset(
+        ear.addAsModule(war);
+        ear.addAsManifestResource(new StringAsset(
                 "<jboss-deployment-structure><deployment></deployment><sub-deployment name=\"test.war\"><child-first>false</child-first></sub-deployment></jboss-deployment-structure>"),
                 "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
         earLib.addClasses(TestBB.class, TestAA.class);
-        ear.addLibrary(earLib);
+        ear.addAsLibrary(earLib);
         return ear;
     }
 

@@ -21,7 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.jpa.webnontxem;
 
-import org.jboss.arquillian.api.Deployment;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,9 +32,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
 
 /**
  * test case for injecting transactional entity manager into web servlet, without a jta transaction
@@ -58,7 +58,7 @@ public class NonTransactionalEmTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "NonTransactionalEmTestCase.war");
         war.addClasses(HttpRequest.class, SimpleServlet.class, Employee.class);
-        war.addResource(new StringAsset(persistence_xml), "WEB-INF/classes/META-INF/persistence.xml");
+        war.addAsResource(new StringAsset(persistence_xml), "WEB-INF/classes/META-INF/persistence.xml");
         return war;
     }
 

@@ -21,12 +21,12 @@
  */
 package org.jboss.as.testsuite.integration.weldejb.interceptor.binding;
 
-import org.junit.Assert;
-
 import javax.annotation.PostConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

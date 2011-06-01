@@ -21,9 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.jaxrs.jaxb;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.Run;
-import org.jboss.arquillian.api.RunModeType;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
@@ -33,8 +34,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests a JAX-RS deployment without an application bundled.
@@ -50,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@Run(RunModeType.AS_CLIENT)
+@RunAsClient
 public class JaxbProviderTestCase {
 
     @Deployment
@@ -58,7 +57,7 @@ public class JaxbProviderTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addClasses(JaxbProviderTestCase.class, JaxbModel.class, JaxbResource.class);
-        war.addWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +

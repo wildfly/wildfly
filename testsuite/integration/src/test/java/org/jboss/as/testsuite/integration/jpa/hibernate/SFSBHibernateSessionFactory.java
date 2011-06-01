@@ -22,14 +22,13 @@
 
 package org.jboss.as.testsuite.integration.jpa.hibernate;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceUnit;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 /**
  * Test that a peristence unit can be injected into a Hibernate session

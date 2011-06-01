@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,8 +41,8 @@ public class EarJbossStructureAdditionalModuleTestCase {
         war.addClasses(TestAA.class, EarJbossStructureAdditionalModuleTestCase.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addModule(war);
-        ear.addManifestResource(new StringAsset(
+        ear.addAsModule(war);
+        ear.addAsManifestResource(new StringAsset(
                 "<jboss-deployment-structure>" +
                         "<sub-deployment name=\"test.war\">" +
                         "<dependencies>" +
@@ -56,7 +56,7 @@ public class EarJbossStructureAdditionalModuleTestCase {
                 "jboss-deployment-structure.xml");
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "someModule.jar");
         earLib.addClass(TestBB.class);
-        ear.addModule(earLib);
+        ear.addAsModule(earLib);
         return ear;
     }
 

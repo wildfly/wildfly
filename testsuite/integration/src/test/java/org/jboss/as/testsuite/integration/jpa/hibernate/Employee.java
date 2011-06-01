@@ -25,7 +25,6 @@ package org.jboss.as.testsuite.integration.jpa.hibernate;
 import javax.persistence.Cacheable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.io.Serializable;
 
 /**
  * Cachable Employee entity class

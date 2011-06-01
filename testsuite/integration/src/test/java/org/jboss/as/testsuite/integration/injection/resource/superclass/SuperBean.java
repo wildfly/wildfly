@@ -22,8 +22,6 @@
 package org.jboss.as.testsuite.integration.injection.resource.superclass;
 
 import javax.annotation.Resource;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas

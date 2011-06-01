@@ -21,20 +21,21 @@
  */
 package org.jboss.as.testsuite.integration.ejb.localview;
 
-import org.jboss.arquillian.api.Deployment;
+import static org.junit.Assert.fail;
+
+import java.io.Serializable;
+
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import java.io.Serializable;
-
-import static org.junit.Assert.fail;
 
 /**
  * Tests that local views of SLSF's are handled properly, as per EE 3.1 4.9.7

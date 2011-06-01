@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.war;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,10 +38,10 @@ public class WarClassLoadingTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addClass(WarClassLoadingTestCase.class);
-        war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
         libJar.addClass(WebInfLibClass.class);
-        war.addLibraries(libJar);
+        war.addAsLibraries(libJar);
         return war;
     }
 

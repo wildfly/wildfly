@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.jsf.managedbean.annotation;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,7 +41,7 @@ public class AnnotatedManagedBeanTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jsfmanagedbean.war");
         war.addPackage(AnnotatedManagedBeanTestCase.class.getPackage());
-        war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
 
         return war;
     }

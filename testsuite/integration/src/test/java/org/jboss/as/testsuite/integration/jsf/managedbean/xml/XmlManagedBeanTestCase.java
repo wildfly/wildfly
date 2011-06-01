@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.jsf.managedbean.xml;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,8 +42,8 @@ public class XmlManagedBeanTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jsfmanagedbean.war");
         war.addPackage(XmlManagedBeanTestCase.class.getPackage());
-        war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
-        war.addWebResource(new StringAsset("<?xml version='1.0' encoding='UTF-8'?>\n" +
+        war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebResource(new StringAsset("<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<faces-config version=\"1.2\" \n" +
                 "    xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
                 "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +

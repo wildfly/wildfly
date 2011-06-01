@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,17 +41,17 @@ public class EarClassPath4TestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addResource(new StringAsset("Class-Path: ejb-jar.jar other-jar.jar \n"),"META-INF/MANIFEST.MF");
+        war.addAsResource(new StringAsset("Class-Path: ejb-jar.jar other-jar.jar \n"),"META-INF/MANIFEST.MF");
         war.addClasses(EarClassPath4TestCase.class);
 
-        ear.addModule(war);
+        ear.addAsModule(war);
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar");
         jar.addClass(MyEjb.class);
-        ear.addModule(jar);
+        ear.addAsModule(jar);
 
         jar = ShrinkWrap.create(JavaArchive.class, "other-jar.jar");
         jar.addClass(TestAA.class);
-        ear.addModule(jar);
+        ear.addAsModule(jar);
 
         return ear;
     }

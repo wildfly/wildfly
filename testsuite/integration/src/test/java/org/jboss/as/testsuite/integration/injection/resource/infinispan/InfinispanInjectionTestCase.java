@@ -25,7 +25,7 @@ package org.jboss.as.testsuite.integration.injection.resource.infinispan;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,7 +44,7 @@ public class InfinispanInjectionTestCase {
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "infinispan-injection.jar");
         jar.addClasses(InfinispanManagedBean.class, InfinispanInjectionTestCase.class);
-        jar.addResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan export\n"), "META-INF/MANIFEST.MF");
+        jar.addAsResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan export\n"), "META-INF/MANIFEST.MF");
         return jar;
     }
 

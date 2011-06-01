@@ -21,8 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.ejb.localview;
 
-import javax.ejb.Stateless;
 import java.io.Serializable;
+
+import javax.ejb.Stateless;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

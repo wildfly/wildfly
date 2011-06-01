@@ -21,7 +21,12 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.persistencecontextref;
 
-import org.jboss.arquillian.api.Deployment;
+import static org.junit.Assert.assertNotNull;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,11 +34,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stuart Douglas
@@ -70,8 +70,8 @@ public class PersistenceContextRefTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addPackage(PersistenceContextRefTestCase.class.getPackage());
 
-        war.addResource(new StringAsset(persistence_xml), "WEB-INF/classes/META-INF/persistence.xml");
-        war.addWebResource(getWebXml(), "web.xml");
+        war.addAsResource(new StringAsset(persistence_xml), "WEB-INF/classes/META-INF/persistence.xml");
+        war.addAsWebResource(getWebXml(), "web.xml");
         return war;
     }
 

@@ -21,15 +21,8 @@
  */
 package org.jboss.as.testsuite.integration.weldejb;
 
-import org.jboss.stdio.WriterOutputStream;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.beans.XMLEncoder;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -43,7 +36,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.jboss.stdio.WriterOutputStream;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

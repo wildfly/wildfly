@@ -21,6 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.jpa.webnontxem;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -31,8 +34,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * @author Scott Marlow (based on Carlo's webejb test)

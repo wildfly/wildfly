@@ -21,7 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.jaxrs.jackson;
 
-import org.jboss.arquillian.api.Deployment;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
@@ -31,8 +33,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the resteasy multipart provider
@@ -47,7 +47,7 @@ public class JaxrsJacksonProviderTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addPackage(JaxrsJacksonProviderTestCase.class.getPackage());
-        war.addWebResource(WebXml.get("<servlet-mapping>\n" +
+        war.addAsWebResource(WebXml.get("<servlet-mapping>\n" +
                 "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
                 "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +

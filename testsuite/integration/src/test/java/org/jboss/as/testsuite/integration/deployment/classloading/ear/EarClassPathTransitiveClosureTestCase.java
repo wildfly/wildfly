@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.deployment.classloading.ear;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,24 +38,24 @@ public class EarClassPathTransitiveClosureTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        // war.addWebResource(EmptyAsset.INSTANCE, "beans.xml");
+        // war.addAsWebResource(EmptyAsset.INSTANCE, "beans.xml");
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
         libJar.addClasses(TestAA.class, EarClassPathTransitiveClosureTestCase.class);
-        war.addLibraries(libJar);
+        war.addAsLibraries(libJar);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addModule(war);
+        ear.addAsModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
-        earLib.addManifestResource(new ByteArrayAsset("Class-Path: ../cp1.jar\n".getBytes()), "MANIFEST.MF");
-        ear.addLibraries(earLib);
+        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: ../cp1.jar\n".getBytes()), "MANIFEST.MF");
+        ear.addAsLibraries(earLib);
 
         earLib = ShrinkWrap.create(JavaArchive.class, "cp1.jar");
-        earLib.addManifestResource(new ByteArrayAsset("Class-Path: cp2.jar\n".getBytes()), "MANIFEST.MF");
-        ear.addModule(earLib);
+        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: cp2.jar\n".getBytes()), "MANIFEST.MF");
+        ear.addAsModule(earLib);
 
         earLib = ShrinkWrap.create(JavaArchive.class, "cp2.jar");
         earLib.addClass(TestBB.class);
-        ear.addModule(earLib);
+        ear.addAsModule(earLib);
         return ear;
     }
 

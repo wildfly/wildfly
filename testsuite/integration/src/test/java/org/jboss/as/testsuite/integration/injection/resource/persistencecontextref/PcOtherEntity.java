@@ -21,9 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.injection.resource.persistencecontextref;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>

@@ -33,9 +33,6 @@ import junit.framework.Assert;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.marshall.Marshaller;
-import org.infinispan.marshall.StreamingMarshaller;
 
 /**
  * @author Paul Ferraro

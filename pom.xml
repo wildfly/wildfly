@@ -209,7 +209,6 @@
     </properties>
 
     <modules>
-        <module>arquillian2</module>
         <module>build</module>
         <module>build-config</module>
         <module>arquillian</module>
@@ -219,7 +218,6 @@
         <module>controller</module>
         <module>controller-client</module>
         <module>demos</module>
-        <module>demos2</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
         <module>dist</module>
@@ -246,7 +244,11 @@
         <module>security</module>
         <module>server</module>
         <module>testsuite</module>
+        <!-- 
+        <module>arquillian2</module>
+        <module>demos2</module>
         <module>testsuite2</module>
+        -->
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>

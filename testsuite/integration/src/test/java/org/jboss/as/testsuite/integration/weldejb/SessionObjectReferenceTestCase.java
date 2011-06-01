@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.ejb.ConcurrentAccessException;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,8 +58,8 @@ public class SessionObjectReferenceTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war")
             .addClasses(HttpRequest.class, SimpleServlet.class, SimpleStatefulSessionBean.class, WriterOutputStream.class)
-            .addWebResource(SessionObjectReferenceTestCase.class.getPackage().getName() + "/beans.xml")
-            .addWebResource(SessionObjectReferenceTestCase.class.getPackage().getName() + "/web.xml")
+            .addAsWebResource(SessionObjectReferenceTestCase.class.getPackage().getName() + "/beans.xml")
+            .addAsWebResource(SessionObjectReferenceTestCase.class.getPackage().getName() + "/web.xml")
             ;
         return war;
     }

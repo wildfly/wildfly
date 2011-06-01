@@ -21,10 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.weldejb.interceptor.binding;
 
-import org.junit.Assert;
-
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+
+import org.junit.Assert;
 
 /**
  * @author Stuart Douglas

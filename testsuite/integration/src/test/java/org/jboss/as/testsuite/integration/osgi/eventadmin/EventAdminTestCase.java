@@ -32,8 +32,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.Deployment;
-import org.jboss.arquillian.api.DeploymentProvider;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -62,9 +61,6 @@ public class EventAdminTestCase {
 
     @Inject
     public Bundle bundle;
-
-    @Inject
-    public DeploymentProvider provider;
 
     @Inject
     public BundleContext context;

@@ -25,7 +25,7 @@ package org.jboss.as.testsuite.integration.injection.resource.infinispan;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,8 +44,8 @@ public class InfinispanResourceRefTestCase {
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "infinispan-resource-ref.war");
         war.addClasses(InfinispanBean.class, InfinispanResourceRefTestCase.class);
-        war.addWebResource(getWebXml(),"web.xml");
-        war.addResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan export\n"), "META-INF/MANIFEST.MF");
+        war.addAsWebResource(getWebXml(),"web.xml");
+        war.addAsResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan export\n"), "META-INF/MANIFEST.MF");
         return war;
     }
 

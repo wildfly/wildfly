@@ -28,7 +28,7 @@ import java.io.InputStream;
 import javax.inject.Inject;
 import javax.management.MBeanServer;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.osgi.jmx.bundle.Foo;
 import org.jboss.as.testsuite.integration.osgi.jmx.bundle.FooMBean;

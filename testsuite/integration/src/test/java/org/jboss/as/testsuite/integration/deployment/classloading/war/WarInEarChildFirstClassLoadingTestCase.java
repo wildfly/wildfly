@@ -25,7 +25,7 @@ import javax.ejb.Stateless;
 
 import junit.framework.Assert;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.deployment.classloading.ear.TestBB;
 import org.jboss.shrinkwrap.api.Archive;
@@ -45,10 +45,10 @@ public class WarInEarChildFirstClassLoadingTestCase {
         war.addClasses(WebInfLibClass.class, WarInEarChildFirstClassLoadingTestCase.class, Stateless.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addModule(war);
+        ear.addAsModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "cp.jar");
         earLib.addClasses(TestBB.class, WebInfLibClass.class);
-        ear.addLibrary(earLib);
+        ear.addAsLibrary(earLib);
         return ear;
     }
 

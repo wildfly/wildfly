@@ -23,7 +23,7 @@ package org.jboss.as.testsuite.integration.wsejb;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

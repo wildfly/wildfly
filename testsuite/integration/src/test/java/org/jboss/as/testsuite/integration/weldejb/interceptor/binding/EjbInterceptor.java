@@ -21,10 +21,10 @@
  */
 package org.jboss.as.testsuite.integration.weldejb.interceptor.binding;
 
-import org.junit.Assert;
-
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
+
+import org.junit.Assert;
 
 /**
  * A normal non-cdi interceptor. This must be called before CDI interceptors
