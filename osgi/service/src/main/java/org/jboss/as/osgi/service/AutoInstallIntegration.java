@@ -27,7 +27,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.osgi.parser.SubsystemState;
@@ -88,13 +88,17 @@ final class AutoInstallIntegration extends AbstractService<AutoInstallProvider> 
         builder.install();
     }
 
+    static Map<ServiceName, OSGiModule> createPendingServicesMap() {
+        return new LinkedHashMap<ServiceName, OSGiModule>();
+    }
+
     private AutoInstallIntegration(SubsystemState subsystemState) {
         this.subsystemState = subsystemState;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        final Map<ServiceName, OSGiModule> pendingServices = new HashMap<ServiceName, OSGiModule>();
+        final Map<ServiceName, OSGiModule> pendingServices = createPendingServicesMap();
         try {
             final BundleManagerService bundleManager = injectedBundleManager.getValue();
             final ServiceContainer serviceContainer = context.getController().getServiceContainer();
