@@ -36,6 +36,7 @@ import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
@@ -76,9 +77,10 @@ class NewModelControllerImpl implements NewModelController {
     private final NewStepHandler prepareStep;
     private final ControlledProcessState processState;
 
-    NewModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
+    NewModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ModelNodeRegistration rootRegistration,
                            final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final NewOperationContext.Type controllerType,
                            final NewStepHandler prepareStep,final ControlledProcessState processState) {
+        modelReference.set(model);
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -152,13 +154,17 @@ class NewModelControllerImpl implements NewModelController {
             this.response = response;
         }
 
-        public void execute(final NewOperationContext context, final ModelNode operation) {
+        public void execute(final NewOperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
             NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operation.require(OP).asString());
             if (stepHandler == null) {
-                context.getFailureDescription().set("No handler for operation address " + address);
+                throw new OperationFailedException(new ModelNode().set("No handler for operation address " + address));
             } else {
-                context.addStep(response, this.operation, stepHandler, NewOperationContext.Stage.MODEL);
+                NewOperationContext.Stage stage = NewOperationContext.Stage.MODEL;
+                if(stepHandler instanceof AbstractExtensionAddHandler) {
+                    stage = NewOperationContext.Stage.IMMEDIATE;
+                }
+                context.addStep(response, this.operation, stepHandler, stage);
             }
             context.completeStep();
         }

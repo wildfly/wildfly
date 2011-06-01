@@ -208,7 +208,7 @@ public class GlobalOperationHandlers {
             } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
                 throw new OperationFailedException(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
             } else {
-                attributeAccess.getReadHandler().execute(context, operation);
+                attributeAccess.getWriteHandler().execute(context, operation);
             }
         }
     };

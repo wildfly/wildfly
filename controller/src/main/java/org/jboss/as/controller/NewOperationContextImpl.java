@@ -303,10 +303,11 @@ final class NewOperationContextImpl implements NewOperationContext {
             response = this.response = step.response;
             this.restartStampHolder = step.restartStamp;
             ModelNode newOperation = operation = step.operation;
-            modelAddress = PathAddress.pathAddress(newOperation.get(ADDRESS));
+            modelAddress = PathAddress.pathAddress(newOperation.get(OP_ADDR));
             try {
                 step.handler.execute(this, newOperation);
             } catch (OperationFailedException ofe) {
+                ofe.printStackTrace();
                 if (currentStage != Stage.DONE) {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
@@ -321,6 +322,7 @@ final class NewOperationContextImpl implements NewOperationContext {
             }
             assert resultAction != null;
         } catch (Throwable t) {
+            t.printStackTrace();
             // If this block is entered, then the next step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {

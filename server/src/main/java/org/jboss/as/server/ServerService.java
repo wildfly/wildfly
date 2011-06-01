@@ -22,14 +22,6 @@
 
 package org.jboss.as.server;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewOperationContext;
@@ -70,6 +62,7 @@ import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -77,6 +70,14 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -228,8 +229,12 @@ public final class ServerService extends AbstractControllerService {
     }
 
     @Override
+    protected ModelNode createCoreModel() {
+        return ServerControllerModelUtil.createCoreModel();
+    }
+
+    @Override
     protected void initModel(ModelNodeRegistration rootRegistration) {
-        ServerControllerModelUtil.createCoreModel();
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(), configuration.getConfigurationPersister(), configuration.getServerEnvironment());
     }
 }
