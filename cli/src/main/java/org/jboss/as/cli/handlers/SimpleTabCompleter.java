@@ -35,6 +35,8 @@ import org.jboss.as.cli.CommandLineCompleter;
  */
 public class SimpleTabCompleter implements CommandLineCompleter {
 
+    public static final SimpleTabCompleter BOOLEAN_COMPLETER = new SimpleTabCompleter(new String[]{"false", "true"});
+
     private final List<String> all;
 
     public SimpleTabCompleter(String[] candidates) {

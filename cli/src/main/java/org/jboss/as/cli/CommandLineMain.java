@@ -43,6 +43,7 @@ import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
 import org.jboss.as.cli.handlers.ConnectHandler;
+import org.jboss.as.cli.handlers.CreateDatasourceHandler;
 import org.jboss.as.cli.handlers.CreateJmsCFHandler;
 import org.jboss.as.cli.handlers.CreateJmsQueueHandler;
 import org.jboss.as.cli.handlers.CreateJmsResourceHandler;
@@ -122,7 +123,9 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new BatchMoveLineHandler(), "move-batch-line");
         cmdRegistry.registerHandler(new BatchEditLineHandler(), "edit-batch-line");
 
-        cmdRegistry.registerHandler(VersionHandler.INSTANCE, "version");
+        cmdRegistry.registerHandler(new VersionHandler(), "version");
+
+        cmdRegistry.registerHandler(new CreateDatasourceHandler(), "create-datasource");
     }
 
     public static void main(String[] args) throws Exception {

@@ -21,10 +21,17 @@
  */
 package org.jboss.as.cli.handlers;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.OperationCommand;
+import org.jboss.as.cli.ParsedArguments;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.impl.RequestParamArg;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -33,6 +40,8 @@ import org.jboss.dmr.ModelNode;
  * @author Alexey Loubyansky
  */
 public abstract class BaseOperationCommand extends CommandHandlerWithHelp implements OperationCommand {
+
+    private List<RequestParamArg> params = new ArrayList<RequestParamArg>();
 
     public BaseOperationCommand(String command) {
         super(command);
@@ -56,6 +65,11 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             return;
         }
 
+        if(request == null) {
+            ctx.printLine("Operation request wasn't built.");
+            return;
+        }
+
         ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode result;
         try {
@@ -69,7 +83,19 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             ctx.printLine(Util.getFailureDescription(result));
             return;
         }
+    }
 
-        ctx.printLine("Done.");
+    @Override
+    public void addArgument(CommandArgument arg) {
+        super.addArgument(arg);
+        if(arg instanceof RequestParamArg) {
+            params.add((RequestParamArg) arg);
+        }
+    }
+
+    protected void setParams(ParsedArguments args, ModelNode request) throws CommandFormatException {
+        for(RequestParamArg arg : params) {
+            arg.set(args, request);
+        }
     }
 }
