@@ -53,7 +53,7 @@ public class SpecifiedPathAddHandler extends PathAddHandler {
         String path = pathNode.isDefined() ? pathNode.asString() : null;
         String relativeTo = relNode.isDefined() ? relNode.asString() : null;
 
-        final ServiceTarget target = context.getServiceTarget().subTarget();
+        final ServiceTarget target = context.getServiceTarget();
         if (relativeTo == null) {
             newControllers.add(AbsolutePathService.addService(name, path, target));
         } else {

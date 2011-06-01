@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 // TODO consider making this concrete and folding in subclass logic
-public abstract class AbstractExtensionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public abstract class  AbstractExtensionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
