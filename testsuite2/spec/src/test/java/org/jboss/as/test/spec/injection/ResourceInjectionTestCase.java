@@ -115,4 +115,13 @@ public class ResourceInjectionTestCase {
         Assert.assertFalse("env-entry of type String, without a env-entry-value was *not* expected to be available in ENC", stringEnvEntryAvailableInEnc);
 
     }
+
+    /**
+     * Tests that a EJB with a @Resource of type {@link javax.ejb.TimerService} deploys fine and the {@link javax.ejb.TimerService}
+     * is injected in the bean
+     */
+    @Test
+    public void testTimerServiceInjection() {
+        Assert.assertTrue("Timerservice was not injected in bean", this.slsb.isTimerServiceInjected());
+    }
 }

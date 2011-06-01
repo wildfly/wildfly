@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TimerService;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -39,6 +40,9 @@ public class SimpleSLSB extends Parent {
 
     // injected via the setter
     private Parent otherBean;
+
+    @Resource
+    private TimerService timerService;
 
     @Resource
     private SessionContext sessionContext;
@@ -111,5 +115,9 @@ public class SimpleSLSB extends Parent {
         } catch (NamingException ne) {
             throw new RuntimeException(ne);
         }
+    }
+
+    public boolean isTimerServiceInjected() {
+        return this.timerService != null;
     }
 }

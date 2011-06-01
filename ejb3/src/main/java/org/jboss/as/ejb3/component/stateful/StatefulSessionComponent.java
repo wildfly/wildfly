@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
@@ -79,8 +80,12 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         });
     }
 
+    @Override
+    public TimerService getTimerService() throws IllegalStateException {
+        throw new IllegalStateException("TimerService is not supported for Stateful session bean " + this.getComponentName());
+    }
 
-//    @Override
+    //    @Override
 //    public Interceptor createClientInterceptor(Class<?> view) {
 //        final Serializable sessionId = createSession();
 //        return createClientInterceptor(view, sessionId);

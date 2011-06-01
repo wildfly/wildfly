@@ -253,6 +253,7 @@ public enum Phase {
     public static final int PARSE_WEBSERVICES_XML                       = 0x2C00;
     public static final int PARSE_DATA_SOURCE_DEFINITION                = 0x2D00;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
+    public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
     public static final int PARSE_PERSISTENCE_ANNOTATION                = 0x3000;
     public static final int PARSE_INTERCEPTORS_ANNOTATION               = 0x3100;
