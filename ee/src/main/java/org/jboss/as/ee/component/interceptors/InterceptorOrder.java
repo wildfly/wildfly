@@ -47,8 +47,8 @@ public class InterceptorOrder {
          * All user level interceptors are added with the same priority, so they execute
          * in the order that they are added.
          */
-        public static final int USER_INTERCEPTORS = 0x600;
-        public static final int TERMINAL_INTERCEPTOR = 0x700;
+        public static final int USER_INTERCEPTORS = 0x800;
+        public static final int TERMINAL_INTERCEPTOR = 0x900;
 
         private Component() {
         }
