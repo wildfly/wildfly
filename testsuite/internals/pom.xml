@@ -28,12 +28,12 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite2</artifactId>
+        <artifactId>jboss-as-testsuite</artifactId>
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-testsuite2-integration-internals</artifactId>
-    <name>JBoss Application Server: Test Suite2: AS7 Internals Integration Tests</name>
+    <artifactId>jboss-as-testsuite-integration-internals</artifactId>
+    <name>JBoss Application Server: Test Suite: AS7 Internals Integration Tests</name>
 
    <!-- 
    Compile-time dependencies upon anything  in the AS7 runtime
