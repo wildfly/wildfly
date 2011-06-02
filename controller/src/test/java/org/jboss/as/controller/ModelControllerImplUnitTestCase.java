@@ -156,7 +156,7 @@ public class ModelControllerImplUnitTestCase {
             ModelNodeRegistration rootRegistration = ModelNodeRegistration.Factory.create(DESC_PROVIDER);
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("composite", new NewCompositeOperationHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("composite", NewCompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("good", new ModelStageGoodHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("bad", new ModelStageFailsHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("evil", new ModelStageThrowsExceptionHandler(), DESC_PROVIDER, false);

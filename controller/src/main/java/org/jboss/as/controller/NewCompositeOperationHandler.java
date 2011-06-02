@@ -22,15 +22,20 @@
 
 package org.jboss.as.controller;
 
-import java.util.ArrayList;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Handler for the "composite" operation; i.e. one that includes one or more child operations
@@ -39,7 +44,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-final class NewCompositeOperationHandler implements NewStepHandler {
+public final class NewCompositeOperationHandler implements NewStepHandler, DescriptionProvider {
+    public static final NewCompositeOperationHandler INSTANCE = new NewCompositeOperationHandler();
+    public static final String NAME = ModelDescriptionConstants.COMPOSITE;
+
+    private NewCompositeOperationHandler() {
+    }
 
     public void execute(final NewOperationContext context, final ModelNode operation) {
         ModelNodeRegistration registry = context.getModelNodeRegistration();
@@ -86,5 +96,11 @@ final class NewCompositeOperationHandler implements NewStepHandler {
             }
             context.getFailureDescription().set(failureMsg);
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        //Since this instance should have EntryType.PRIVATE, there is no need for a description
+        return new ModelNode();
     }
 }
