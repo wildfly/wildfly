@@ -985,6 +985,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.security</groupId>
+            <artifactId>jboss-negotiation</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.slf4j</groupId>
             <artifactId>slf4j-jboss-logmanager</artifactId>
         </dependency>

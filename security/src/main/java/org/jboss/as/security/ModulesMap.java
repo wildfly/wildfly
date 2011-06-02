@@ -43,6 +43,9 @@ import org.jboss.security.auth.spi.RoleMappingLoginModule;
 import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.security.auth.spi.SimpleServerLoginModule;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.jboss.security.negotiation.AdvancedADLoginModule;
+import org.jboss.security.negotiation.AdvancedLdapLoginModule;
+import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
 
 /**
  * A map for modules and their aliases.
@@ -73,6 +76,11 @@ public interface ModulesMap {
             put("JaasSecurityDomainIdentity", JaasSecurityDomainIdentityLoginModule.class.getName());
             put("PBEIdentity", PBEIdentityLoginModule.class.getName());
             put("SecureIdentity", SecureIdentityLoginModule.class.getName());
+            // Negotiation Related Modules
+            put("Kerberos", "com.sun.security.auth.module.Krb5LoginModule");
+            put("SPNEGO", SPNEGOLoginModule.class.getName());
+            put("AdvancedLdap", AdvancedLdapLoginModule.class.getName());
+            put("AdvancedAdLdap", AdvancedADLoginModule.class.getName());
         }
     });
 

@@ -808,6 +808,10 @@
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider" jandex="true"/>
         </module-def>
 
+        <module-def name="org.jboss.security.negotiation">
+            <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
+        </module-def>
+
         <module-def name="org.jboss.shrinkwrap.api">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
         </module-def>
