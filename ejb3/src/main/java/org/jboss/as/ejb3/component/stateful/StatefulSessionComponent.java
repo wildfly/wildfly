@@ -21,18 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.ejb.TimerService;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
@@ -47,8 +35,8 @@ import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.tm.TxUtils;
 
-
 import javax.ejb.AccessTimeout;
+import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
@@ -57,6 +45,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
 
 /**
  * Stateful Session Bean
