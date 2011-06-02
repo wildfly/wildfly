@@ -179,7 +179,12 @@ class ClassPathEjbJarScanner {
         // Split by the path separator character
         final String[] classPathEntries = classPath.split(File.pathSeparator);
 
-        final Object modules = properties.get(EJBContainer.MODULES);
+        final Object modules;
+        if(properties != null) {
+            modules = properties.get(EJBContainer.MODULES);
+        } else {
+            modules = null;
+        }
         if (modules != null) {
             if (modules instanceof File[]) {
                 for (File file : (File[]) modules) {
