@@ -36,7 +36,7 @@ import org.jboss.jandex.Index;
  * Utility class that allows easy access to all annotation Indexes in a deployment.
  *
  * @author Stuart Douglas
- *
+ * @author Ales Justin
  */
 public class AnnotationIndexUtils {
 
@@ -52,6 +52,9 @@ public class AnnotationIndexUtils {
         allResourceRoots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
         Map<ResourceRoot, Index> indexes = new HashMap<ResourceRoot, Index>();
         for (ResourceRoot resourceRoot : allResourceRoots) {
+            if (resourceRoot == null)
+                continue;
+
             Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
             if (index != null) {
                 indexes.put(resourceRoot, index);
