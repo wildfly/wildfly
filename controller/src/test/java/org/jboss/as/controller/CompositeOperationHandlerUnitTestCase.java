@@ -3,22 +3,6 @@
  */
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.controller.ModelControllerImplUnitTestCase.getOperation;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -38,6 +22,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests of composite operation handling.
@@ -531,6 +532,29 @@ public class CompositeOperationHandlerUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         Assert.assertEquals("success", result.get(OUTCOME).asString());
         Assert.assertEquals(1, result.get(RESULT).asInt());
+    }
+
+    @Test
+    public void testCompositeReleasesLocks() throws Exception {
+        System.out.println("------");
+        assertTrue(sharedState.get());
+        ModelNode step1 = getOperation("good", "attr1", 2);
+        ModelNode step2 = getOperation("good-service", "attr2", 1);
+        controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
+
+        System.out.println("------");
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicInteger i = new AtomicInteger();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                i.set(controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
+                latch.countDown();
+            }
+        }).start();
+        latch.await();
+        assertEquals(1, i.get());
     }
 
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {

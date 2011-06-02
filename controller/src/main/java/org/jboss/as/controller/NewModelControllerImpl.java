@@ -22,16 +22,22 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicStampedReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -45,13 +51,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -252,6 +251,7 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     void acquireLock(final boolean interruptibly) throws InterruptedException {
+        System.out.println("==== Getting");
         if (interruptibly) {
             //noinspection LockAcquiredButNotSafelyReleased
             writeLock.lockInterruptibly();
@@ -259,9 +259,11 @@ class NewModelControllerImpl implements NewModelController {
             //noinspection LockAcquiredButNotSafelyReleased
             writeLock.lock();
         }
+        System.out.println("==== Got");
     }
 
     void releaseLock() {
+        System.out.println("==== Releasing");
         writeLock.unlock();
     }
 
