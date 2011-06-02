@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
+import org.jboss.jca.core.security.UsersRoles;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -53,6 +54,8 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
+    private UsersRoles usersRoles;
+
     /** create an instance **/
     public WorkManagerService(WorkManager value) {
         super();
@@ -72,12 +75,34 @@ public final class WorkManagerService implements Service<WorkManager> {
         this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
+        // TODO - Remove and do proper integration
+        String usersProperties = System.getProperty("users.properties");
+        String rolesProperties = System.getProperty("roles.properties");
+
+        if (usersProperties != null && rolesProperties != null) {
+            try {
+                usersRoles = new UsersRoles();
+                usersRoles.setUsersProperties(usersProperties);
+                usersRoles.setRolesProperties(rolesProperties);
+                usersRoles.start();
+
+                this.value.setCallbackSecurity(usersRoles);
+            } catch (Throwable t) {
+                log.debug(t.getMessage(), t);
+            }
+        }
+
         log.debugf("Starting JCA WorkManager");
     }
 
     @Override
     public void stop(StopContext context) {
-
+        try {
+            if (usersRoles != null)
+                usersRoles.stop();
+        } catch (Throwable t) {
+            log.debug(t.getMessage(), t);
+        }
     }
 
     public Injector<Executor> getExecutorShortInjector() {
