@@ -1194,6 +1194,11 @@
             <artifactId>wsdl4j</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.seam.integration</groupId>
+            <artifactId>jboss-seam-int-jbossas</artifactId>
+        </dependency>
+
     </dependencies>
 
     <profiles>

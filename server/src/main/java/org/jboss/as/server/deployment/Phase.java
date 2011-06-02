@@ -280,6 +280,7 @@ public enum Phase {
     public static final int DEPENDENCIES_CLASS_PATH                     = 0x0800;
     public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x0900;
     public static final int DEPENDENCIES_WELD                           = 0x0A00;
+    public static final int DEPENDENCIES_SEAM                           = 0x0A01;
     public static final int DEPENDENCIES_NAMING                         = 0x0B00;
     public static final int DEPENDENCIES_WS                             = 0x0C00;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
