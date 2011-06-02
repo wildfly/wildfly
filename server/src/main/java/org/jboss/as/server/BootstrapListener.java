@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller;
+package org.jboss.as.server;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -28,6 +28,9 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.version.Version;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -35,15 +38,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public abstract class BootstrapListener extends AbstractServiceListener<Object> {
+class BootstrapListener extends AbstractServiceListener<Object> {
 
     private final AtomicInteger started = new AtomicInteger();
     private final AtomicInteger failed = new AtomicInteger();
-    private final AtomicInteger outstanding = new AtomicInteger();
+    private final AtomicInteger outstanding = new AtomicInteger(1);
     private final AtomicBoolean done = new AtomicBoolean();
     private final AtomicInteger missingDeps = new AtomicInteger();
     private final EnumMap<ServiceController.Mode, AtomicInteger> map;
@@ -53,10 +55,15 @@ public abstract class BootstrapListener extends AbstractServiceListener<Object> 
     private final long startTime;
     private volatile boolean cancelLikely;
 
-    protected BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget) {
+    final FutureServiceContainer futureContainer;
+    final Bootstrap.Configuration configuration;
+
+    protected BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer, Bootstrap.Configuration configuration) {
         this.serviceContainer = serviceContainer;
         this.startTime = startTime;
         this.serviceTarget = serviceTarget;
+        this.futureContainer = futureContainer;
+        this.configuration = configuration;
         final EnumMap<ServiceController.Mode, AtomicInteger> map = new EnumMap<ServiceController.Mode, AtomicInteger>(ServiceController.Mode.class);
         for (ServiceController.Mode mode : ServiceController.Mode.values()) {
             map.put(mode, new AtomicInteger());
@@ -64,6 +71,7 @@ public abstract class BootstrapListener extends AbstractServiceListener<Object> 
         this.map = map;
     }
 
+    static int cnt = 0;
     @Override
     public void listenerAdded(final ServiceController<?> controller) {
         final ServiceController.Mode mode = controller.getMode();
@@ -115,7 +123,7 @@ public abstract class BootstrapListener extends AbstractServiceListener<Object> 
         }
     }
 
-    private void tick() {
+    void tick() {
         int outstanding = this.outstanding.decrementAndGet();
         if (outstanding != missingDeps.get()) {
             return;
@@ -138,5 +146,22 @@ public abstract class BootstrapListener extends AbstractServiceListener<Object> 
         done(container, elapsedTime, started, failed, map, missingDepsSet);
     }
 
-    protected abstract void done(final ServiceContainer container, final long elapsedTime, final int started, final int failed, final EnumMap<ServiceController.Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet);
+    protected void done(ServiceContainer container, long elapsedTime, int started, int failed, EnumMap<ServiceController.Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet) {
+        futureContainer.done(container);
+        final Logger log = Logger.getLogger("org.jboss.as");
+        final int active = map.get(ServiceController.Mode.ACTIVE).get();
+        final int passive = map.get(ServiceController.Mode.PASSIVE).get();
+        final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
+        final int never = map.get(ServiceController.Mode.NEVER).get();
+        if (failed == 0) {
+            log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
+            try {
+                configuration.getConfigurationPersister().successfulBoot();
+            } catch (ConfigurationPersistenceException e) {
+                log.error(e);
+            }
+        } else {
+            log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
+        }
+    }
 }

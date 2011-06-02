@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.controller.AbstractControllerService;
+import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.NewStepHandler;
@@ -65,6 +66,7 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -90,6 +92,7 @@ public final class ServerService extends AbstractControllerService {
 
     private final InjectedValue<ExternalModuleService> injectedExternalModuleService = new InjectedValue<ExternalModuleService>();
     private final Bootstrap.Configuration configuration;
+    private final BootstrapListener bootstrapListener;
 
     /**
      * Construct a new instance.
@@ -97,9 +100,10 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      * @param prepareStep the prepare step to use
      */
-    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final NewStepHandler prepareStep) {
+    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState, final NewStepHandler prepareStep, final BootstrapListener bootstrapListener) {
         super(NewOperationContext.Type.SERVER, configuration.getConfigurationPersister(), processState, ServerDescriptionProviders.ROOT_PROVIDER, prepareStep);
         this.configuration = configuration;
+        this.bootstrapListener = bootstrapListener;
     }
 
     /**
@@ -108,8 +112,8 @@ public final class ServerService extends AbstractControllerService {
      * @param serviceTarget the service target
      * @param configuration the bootstrap configuration
      */
-    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration, final ControlledProcessState processState) {
-        ServerService service = new ServerService(configuration, processState, null);
+    public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration, final ControlledProcessState processState, final BootstrapListener bootstrapListener) {
+        ServerService service = new ServerService(configuration, processState, null, bootstrapListener);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME,ServerDeploymentRepository.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
@@ -123,7 +127,7 @@ public final class ServerService extends AbstractControllerService {
         super.start(context);
     }
 
-    protected void boot(final StartContext context) throws ConfigurationPersistenceException {
+    protected void boot(final BootContext context) throws ConfigurationPersistenceException {
         final EnumMap<Phase, Set<RegisteredProcessor>> deployers = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
         for (Phase phase : Phase.values()) {
             deployers.put(phase, new TreeSet<RegisteredProcessor>());
@@ -135,8 +139,8 @@ public final class ServerService extends AbstractControllerService {
             }
         });
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
-        final ServiceTarget serviceTarget = context.getChildTarget();
-
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         final File[] extDirs = serverEnvironment.getJavaExtDirs();
         final File[] newExtDirs = Arrays.copyOf(extDirs, extDirs.length + 1);
         newExtDirs[extDirs.length] = new File(serverEnvironment.getServerBaseDir(), "lib/ext");
@@ -198,6 +202,7 @@ public final class ServerService extends AbstractControllerService {
             finalDeployers.put(phase, Arrays.asList(processorList.toArray(new DeploymentUnitProcessor[processorList.size()])));
         }
         DeployerChainsService.addService(serviceTarget, finalDeployers);
+        bootstrapListener.tick();
     }
 
     public void stop(final StopContext context) {

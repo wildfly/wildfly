@@ -40,13 +40,6 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
     private int outstanding;
 
     public synchronized void execute(final NewOperationContext context, final ModelNode operation) {
-
-        //TODO remove this
-        if (context.isBooting()) {
-            context.completeStep();
-            return;
-        }
-
         while (outstanding > 0) {
             try {
                 wait();
