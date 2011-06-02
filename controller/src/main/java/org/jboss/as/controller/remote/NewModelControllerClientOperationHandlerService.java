@@ -34,6 +34,6 @@ import org.jboss.as.controller.NewModelController;
 public class NewModelControllerClientOperationHandlerService extends NewAbstractModelControllerOperationHandlerService<NewModelControllerClientOperationHandler>{
 
     protected NewModelControllerClientOperationHandler createOperationHandler(NewModelController modelController, ExecutorService executor) {
-        return new NewModelControllerClientOperationHandler(null, executor, modelController);
+        return new NewModelControllerClientOperationHandler(executor, modelController);
     }
 }

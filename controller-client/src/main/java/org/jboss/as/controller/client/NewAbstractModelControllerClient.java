@@ -183,7 +183,9 @@ abstract class NewAbstractModelControllerClient implements NewModelControllerCli
             if (requestContext == null) {
                 throw new IOException("No active request found for " + executionId);
             }
-            requestContext.getMessageHandler().handleReport(severity, message);
+            if (requestContext.getMessageHandler() != null) {
+                requestContext.getMessageHandler().handleReport(severity, message);
+            }
         }
 
         @Override

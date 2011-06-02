@@ -97,7 +97,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
@@ -142,7 +142,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
@@ -194,7 +194,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
@@ -271,7 +271,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
@@ -355,7 +355,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
@@ -450,7 +450,7 @@ public class RemoteProxyControllerTestCase {
             }
         };
 
-        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewTransactionalModelControllerOperationHandler operationHandler = new NewTransactionalModelControllerOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewRemoteProxyController proxyController = NewRemoteProxyController.create(channels.getExecutorService(), PathAddress.pathAddress(), channels.getClientChannel());
