@@ -25,6 +25,10 @@ package org.jboss.as.arquillian.service;
 import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
 
+import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -40,6 +44,7 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
+import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.server.ServerController;
@@ -47,6 +52,7 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -83,7 +89,7 @@ public class ArquillianService implements Service<ArquillianService> {
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerController> injectedServerController = new InjectedValue<ServerController>();
-    private final Map<ServiceName, ArquillianConfig> deployedTests = new ConcurrentHashMap<ServiceName, ArquillianConfig>();
+    private final Map<String, ArquillianConfig> deployedTests = new ConcurrentHashMap<String, ArquillianConfig>();
     private final Map<String, CountDownLatch> waitingTests = new ConcurrentHashMap<String, CountDownLatch>();
     private JMXTestRunner jmxTestRunner;
 
@@ -118,13 +124,69 @@ public class ArquillianService implements Service<ArquillianService> {
         final ServiceTarget serviceTarget = context.getChildTarget();
 
         try {
-            jmxTestRunner = new JMXTestRunner(testClassLoader);
+            jmxTestRunner = new JMXTestRunner(testClassLoader) {
+
+                /**
+                 * @see org.jboss.arquillian.protocol.jmx.JMXTestRunner#runTestMethodRemote(java.lang.String, java.lang.String)
+                 */
+                @Override
+                public TestResult runTestMethodRemote(final String className, final String methodName) {
+                    final Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY,
+                            className);
+                    final ContextManager contextManager = initializeContextManager(className, properties);
+                    try {
+                        // actually run the tests
+                        return super.runTestMethodRemote(className, methodName);
+                    } finally {
+                        contextManager.teardown(properties);
+                    }
+                }
+
+                /**
+                 * @see org.jboss.arquillian.protocol.jmx.JMXTestRunner#runTestMethodEmbedded(java.lang.String,
+                 *      java.lang.String)
+                 */
+                @Override
+                public InputStream runTestMethodEmbedded(final String className, final String methodName) {
+                    Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
+                    ContextManager contextManager = initializeContextManager(className, properties);
+                    try {
+                        // actually run the tests
+                        return super.runTestMethodEmbedded(className, methodName);
+                    } finally {
+                        contextManager.teardown(properties);
+                    }
+                }
+
+                private ContextManager initializeContextManager(final String className, final Map<String, Object> properties) {
+                    final ContextManagerBuilder builder = new ContextManagerBuilder();
+                    final ArquillianConfig config = getConfig(className);
+                    if (config != null) {
+                        final DeploymentUnit deployment = config.getDeploymentUnit();
+                        final Module module = deployment.getAttachment(Attachments.MODULE);
+                        if (module != null) {
+                            builder.add(new TCCLSetupAction(module.getClassLoader()));
+                        }
+                        builder.addAll(deployment);
+                    }
+
+                    ContextManager contextManager = builder.build();
+                    contextManager.setup(properties);
+                    return contextManager;
+                }
+
+            };
             jmxTestRunner.registerMBean(mbeanServer);
         } catch (Throwable t) {
             throw new StartException("Failed to start Arquillian Test Runner", t);
         }
 
         serviceContainer.addListener(new AbstractServiceListener<Object>() {
+
+            /**
+             * Processor to be set by the started callback, used in deregistration
+             */
+            private ArquillianRunWithProcessor processor;
 
             @Override
             public void serviceStarted(ServiceController<? extends Object> controller) {
@@ -134,10 +196,13 @@ public class ArquillianService implements Service<ArquillianService> {
                     ServiceName parentName = serviceName.getParent();
                     ServiceController<?> parentController = serviceContainer.getService(parentName);
                     DeploymentUnit deploymentUnit = (DeploymentUnit) parentController.getValue();
-                    ArquillianConfig arqConfig = new ArquillianRunWithProcessor(deploymentUnit).getArquillianConfig();
+                    // Set the processor
+                    this.processor = new ArquillianRunWithProcessor(deploymentUnit);
+                    ArquillianConfig arqConfig = processor.getArquillianConfig();
                     if (arqConfig != null) {
                         new ArquillianDeploymentProcessor(deploymentUnit).deploy(serviceTarget);
                         new ArquillianDependencyProcessor(deploymentUnit).deploy();
+                        log.debug("Registering Arquillian Deployment: " + parentName);
                         registerDeployment(parentName, arqConfig);
                     }
                 }
@@ -145,14 +210,41 @@ public class ArquillianService implements Service<ArquillianService> {
 
             @Override
             public void serviceStopped(ServiceController<? extends Object> controller) {
-                ServiceName serviceName = controller.getName();
-                ArquillianConfig arqConfig = deployedTests.remove(serviceName);
+                assert processor != null : "Arquillian Processor should have been set by serviceStarted";
+                ArquillianConfig arqConfig = processor.getArquillianConfig();
+                unregisterDeployment(arqConfig);
                 if (arqConfig != null) {
                     DeploymentUnit deploymentUnit = arqConfig.getDeploymentUnit();
                     new ArquillianDeploymentProcessor(deploymentUnit).undeploy();
                 }
             }
         });
+    }
+
+    private ArquillianConfig getConfig(final String className) {
+        CountDownLatch latch = null;
+        synchronized (deployedTests) {
+            ArquillianConfig config = deployedTests.get(className);
+            if (config != null) {
+                return config;
+            }
+            latch = new CountDownLatch(1);
+            waitingTests.put(className, latch);
+        }
+
+        long end = System.currentTimeMillis() + 10000;
+        while (true) {
+            try {
+                latch.await(end - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+                break;
+            } catch (InterruptedException e) {
+            }
+        }
+
+        synchronized (deployedTests) {
+            waitingTests.remove(className);
+            return deployedTests.get(className);
+        }
     }
 
     public synchronized void stop(StopContext context) {
@@ -171,12 +263,12 @@ public class ArquillianService implements Service<ArquillianService> {
         return this;
     }
 
-    private void registerDeployment(ServiceName serviceName, ArquillianConfig arqConfig) {
+    private void registerDeployment(final ServiceName serviceName, final ArquillianConfig arqConfig) {
         synchronized (deployedTests) {
-            log.infof("Register Arquillian deployment: %s", serviceName);
-            deployedTests.put(serviceName, arqConfig);
             for (String className : arqConfig.getTestClasses()) {
-                CountDownLatch latch = waitingTests.remove(className);
+                deployedTests.put(className, arqConfig);
+                log.infof("Register Arquillian deployment: %s", className);
+                final CountDownLatch latch = waitingTests.remove(className);
                 if (latch != null) {
                     latch.countDown();
                 }
@@ -184,30 +276,12 @@ public class ArquillianService implements Service<ArquillianService> {
         }
     }
 
-    private ArquillianConfig getConfig(String className, int timeout) {
-        CountDownLatch latch = null;
+    private void unregisterDeployment(final ArquillianConfig arqConfig) {
         synchronized (deployedTests) {
-            for (ArquillianConfig aux : deployedTests.values()) {
-                if (aux.getTestClasses().contains(className)) {
-                    waitingTests.remove(className);
-                    return aux;
-                }
-            }
-            latch = new CountDownLatch(1);
-            waitingTests.put(className, latch);
-        }
-
-        if (latch != null && timeout > 0) {
-            try {
-                log.debugf("Await Arquillian config for: %s", className);
-                latch.await(timeout, TimeUnit.MILLISECONDS);
-                return getConfig(className, 0);
-            } catch (InterruptedException ex) {
-                // ignore
+            for (String className : arqConfig.getTestClasses()) {
+                deployedTests.remove(className);
             }
         }
-
-        return null;
     }
 
     class TestClassLoaderImpl implements JMXTestRunner.TestClassLoader {
@@ -224,9 +298,9 @@ public class ArquillianService implements Service<ArquillianService> {
         }
 
         @Override
-        public Class<?> loadTestClass(String className) throws ClassNotFoundException {
+        public Class<?> loadTestClass(final String className) throws ClassNotFoundException {
 
-            ArquillianConfig arqConfig = getConfig(className, 5000);
+            final ArquillianConfig arqConfig = getConfig(className);
             if (arqConfig == null)
                 throw new ClassNotFoundException(className);
 
@@ -291,5 +365,78 @@ public class ArquillianService implements Service<ArquillianService> {
             }
             return framework;
         }
+    }
+
+    /**
+     * Sets and restores the Thread Context ClassLoader
+     *
+     * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+     * @author Stuart Douglas
+     */
+    private static final class TCCLSetupAction implements SetupAction {
+        private final ThreadLocal<ClassLoader> oldClassLoader = new ThreadLocal<ClassLoader>();
+
+        private final ClassLoader classLoader;
+
+        TCCLSetupAction(final ClassLoader classLoader) {
+            this.classLoader = classLoader;
+        }
+
+        @Override
+        public int priority() {
+            return 10000;
+        }
+
+        @Override
+        public void setup(Map<String, Object> properties) {
+            oldClassLoader.set(getTccl());
+            setTccl(classLoader);
+        }
+
+        @Override
+        public void teardown(Map<String, Object> properties) {
+            ClassLoader old = oldClassLoader.get();
+            oldClassLoader.remove();
+            setTccl(old);
+        }
+    }
+
+    /**
+     * {@link PrivilegedAction} implementation to get at the TCCL
+     *
+     * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+     */
+    private enum GetTcclAction implements PrivilegedAction<ClassLoader> {
+        INSTANCE;
+
+        @Override
+        public ClassLoader run() {
+            return Thread.currentThread().getContextClassLoader();
+        }
+    }
+
+    /**
+     * Obtains the TCCL in a secure fashion
+     *
+     * @return
+     */
+    private static ClassLoader getTccl() {
+        return AccessController.doPrivileged(GetTcclAction.INSTANCE);
+    }
+
+    /**
+     * Sets the TCCL in a secure fashion
+     *
+     * @param cl
+     */
+    private static void setTccl(final ClassLoader cl) {
+        assert cl != null : "ClassLoader must be specified";
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Thread.currentThread().setContextClassLoader(cl);
+                return null;
+            }
+        });
     }
 }
