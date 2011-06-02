@@ -100,6 +100,10 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(JMXProtocol.class.getPackage());
+        //archive.addPackage(EnterpriseArchive.class.getPackage());
+        //archive.addPackage(JavaArchive.class.getPackage());
+        //archive.addPackage(WebArchive.class.getPackage());
+        //archive.addPackage(ResourceAdapterArchive.class.getPackage());
 
         // Merge the auxilliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();

@@ -101,7 +101,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- 
                     <parallel>none</parallel>
+                    -->
                     <systemProperties>
                         <property>
                           <name>java.util.logging.manager</name>
@@ -109,13 +111,10 @@
                         </property>
                         <property>
                           <name>jboss.home</name>
-                          <value>../../build/target/jboss-${jboss.as.release.version}</value>
+                          <value>${basedir}/target/jbossas</value>
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
                 </configuration>
             </plugin>
         </plugins>

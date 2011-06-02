@@ -45,6 +45,7 @@ import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +56,7 @@ import org.junit.runner.RunWith;
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class ConfigAdminServiceTestCase {
 
     @Inject

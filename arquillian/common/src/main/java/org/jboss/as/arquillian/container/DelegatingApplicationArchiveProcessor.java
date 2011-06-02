@@ -16,12 +16,20 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.logging.Logger;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.impl.base.io.IOUtil;
 
 /**
  * An {@link ApplicationArchiveProcessor} that delegates to deployment type specific packagers.
@@ -32,19 +40,36 @@ import org.jboss.shrinkwrap.api.Archive;
  */
 public class DelegatingApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
+    private static final Logger log = Logger.getLogger(DelegatingApplicationArchiveProcessor.class);
+
     @Override
     public void process(Archive<?> appArchive, TestClass testClass) {
         ApplicationArchiveProcessor archiveProcessor;
-        if (isBundleArchive(testClass, appArchive))
+        if (isBundleArchive(testClass, appArchive)) {
             archiveProcessor = new OSGiApplicationArchiveProcessor();
-        else
+        } else {
             archiveProcessor = new ModuleApplicationArchiveProcessor();
+        }
 
+        log.debugf("Process %s with: %s", appArchive.getName(), archiveProcessor);
         archiveProcessor.process(appArchive, testClass);
+
+        // Debug the application archive manifest
+        ArchivePath manifestPath = ArchivePaths.create(JarFile.MANIFEST_NAME);
+        Node node = appArchive.get(manifestPath);
+        if (node == null) {
+            log.errorf("Cannot find manifest in: %s", appArchive.getName());
+        } else {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                IOUtil.copy(node.getAsset().openStream(), baos);
+            } catch (IOException ex) {
+            }
+            log.debugf("Manifest for %s: \n%s", appArchive.getName(), new String(baos.toByteArray()));
+        }
     }
 
     private boolean isBundleArchive(TestClass testClass, Archive<?> appArchive) {
-        // Check if the archive contains a valid OSGi manifest
         Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
         return BundleInfo.isValidateBundleManifest(manifest);
     }

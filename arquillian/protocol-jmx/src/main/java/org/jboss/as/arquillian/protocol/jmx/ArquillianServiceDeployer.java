@@ -17,7 +17,10 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
-import org.jboss.arquillian.container.spi.client.container.DeploymentException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.arquillian.container.spi.Container;
+import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeStop;
@@ -25,7 +28,6 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
-import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
 import org.jboss.logging.Logger;
 
@@ -45,29 +47,32 @@ public class ArquillianServiceDeployer {
 
     @Inject
     @ContainerScoped
-    private Instance<ArchiveDeployer> archiveDeployerInst;
+    private Instance<Container> containerInst;
 
-    private String runtimeName;
+    private AtomicBoolean serviceArchiveDeployed = new AtomicBoolean();
 
     public void doServiceDeploy(@Observes BeforeDeploy event) {
-        if (runtimeName == null) {
+        if (serviceArchiveDeployed.get() == false) {
             try {
                 ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
-                ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
-                runtimeName = archiveDeployer.deploy(archiveHolder.getArchive());
-            } catch (DeploymentException ex) {
-                log.error(ex);
+                DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
+                deployableContainer.deploy(archiveHolder.getArchive());
+                serviceArchiveDeployed.set(true);
+            } catch (Throwable th) {
+                log.error("Cannot deploy arquillian service", th);
             }
         }
     }
 
     public void undeploy(@Observes BeforeStop event) {
-        if (runtimeName != null) {
+        if (serviceArchiveDeployed.get() == true) {
             try {
-                ArchiveDeployer archiveDeployer = archiveDeployerInst.get();
-                archiveDeployer.undeploy(runtimeName);
-            } catch (DeploymentException ex) {
-                log.error(ex);
+                DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
+                ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
+                deployableContainer.undeploy(archiveHolder.getArchive());
+                serviceArchiveDeployed.set(false);
+            } catch (Throwable th) {
+                log.error("Cannot undeploy arquillian service", th);
             }
         }
     }

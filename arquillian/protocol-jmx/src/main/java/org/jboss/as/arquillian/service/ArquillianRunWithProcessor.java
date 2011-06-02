@@ -32,6 +32,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 import org.junit.runner.RunWith;
 
 /**
@@ -45,9 +46,11 @@ public class ArquillianRunWithProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
+    private final ServiceName serviceName;
     private final DeploymentUnit deploymentUnit;
 
-    ArquillianRunWithProcessor(DeploymentUnit deploymentUnit) {
+    ArquillianRunWithProcessor(ServiceName serviceName, DeploymentUnit deploymentUnit) {
+        this.serviceName = serviceName;
         this.deploymentUnit = deploymentUnit;
     }
 
@@ -68,7 +71,7 @@ public class ArquillianRunWithProcessor {
         }
 
         log.infof("Arquillian test deployment detected: %s", deploymentUnit);
-        ArquillianConfig arqConfig = new ArquillianConfig(deploymentUnit);
+        ArquillianConfig arqConfig = new ArquillianConfig(serviceName, deploymentUnit);
         deploymentUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
 
         for (AnnotationInstance instance : instances) {

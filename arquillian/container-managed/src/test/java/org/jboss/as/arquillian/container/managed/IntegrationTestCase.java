@@ -17,8 +17,6 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import java.util.logging.Logger;
-
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -40,13 +38,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class IntegrationTestCase {
 
-    private static final Logger log = Logger.getLogger(IntegrationTestCase.class.getName());
-
     @Deployment
     public static JavaArchive create() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class).addClass(GreetingService.class);
         archive.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        log.info(archive.toString(true));
         return archive;
     }
 

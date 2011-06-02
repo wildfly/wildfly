@@ -101,29 +101,6 @@
                     <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <enableAssertions>true</enableAssertions>
-                    <systemProperties>
-                        <property>
-                          <name>jboss.home</name>
-                          <value>${jboss.home}</value>
-                        </property>
-                        <property>
-                          <name>jboss.options</name>
-                          <value>-XX:MaxPermSize=256m</value>
-                        </property>
-                     </systemProperties>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <forkMode>once</forkMode>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 

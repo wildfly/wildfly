@@ -26,29 +26,33 @@ import java.util.List;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * [TODO]
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class ArquillianConfig {
 
     static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
 
-    private DeploymentUnit deploymentUnit;
-    private List<String> testClasses = new ArrayList<String>();
+    private final ServiceName serviceName;
+    private final DeploymentUnit deploymentUnit;
+    private final List<String> testClasses = new ArrayList<String>();
 
-    ArquillianConfig(DeploymentUnit deploymentUnit){
+    ArquillianConfig(ServiceName serviceName, DeploymentUnit deploymentUnit) {
+        this.serviceName = serviceName;
         this.deploymentUnit = deploymentUnit;
+    }
+
+    ServiceName getServiceName() {
+        return serviceName;
     }
 
     DeploymentUnit getDeploymentUnit() {
         return deploymentUnit;
     }
 
-
-    List<String> getTestClasses(){
+    List<String> getTestClasses() {
         return testClasses;
     }
 
