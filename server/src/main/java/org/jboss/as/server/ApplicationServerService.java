@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -122,7 +123,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         CurrentServiceRegistry.setServiceRegistry(context.getController().getServiceContainer());
 
         final BootstrapListener bootstrapListener = new BootstrapListener(container, startTime, serviceTarget, futureContainer, configuration);
-        serviceTarget.addListener(bootstrapListener);
+        serviceTarget.addListener(ServiceListener.Inheritance.ALL, bootstrapListener);
         myController.addListener(bootstrapListener);
         ContentRepositoryImpl contentRepository = ContentRepositoryImpl.addService(serviceTarget, serverEnvironment.getServerDeployDir());
         ServerDeploymentRepositoryImpl.addService(serviceTarget, contentRepository);
