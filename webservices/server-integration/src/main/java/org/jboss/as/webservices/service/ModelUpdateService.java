@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.NewModelController;
 import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;

@@ -28,11 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.remote.ModelControllerOperationHandler;
 import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
-import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -65,16 +62,17 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
-        final ProtocolChannel hcChannel = this.hcChannel.getValue();
+        throw new IllegalStateException("Domain mode is disabled until remoting is integrated");
+
+        /*final ProtocolChannel hcChannel = this.hcChannel.getValue();
         hcChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(ModelControllerOperationHandler.Factory.create(controller.getValue()));
         try {
             new ServerRegisterRequest().executeForResult(executor, ManagementClientChannelStrategy.create(hcChannel));
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to host controller", e);
         }
-        throw new IllegalStateException("Domain mode is disabled until remoting is integrated");
-        //modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
-        //smConnection.setMessageHandler(initialMessageHandler);
+        modelControllerOperationHandler = ModelControllerOperationHandler.Factory.create(controller.getValue(), initialMessageHandler);
+        smConnection.setMessageHandler(initialMessageHandler);*/
     }
 
     /** {@inheritDoc} */

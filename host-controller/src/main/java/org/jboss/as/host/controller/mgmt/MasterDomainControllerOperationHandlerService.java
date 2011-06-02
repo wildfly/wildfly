@@ -21,9 +21,11 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.remote.ModelControllerOperationHandler;
-import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
+import java.util.concurrent.ExecutorService;
+
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerService;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
@@ -34,16 +36,17 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class MasterDomainControllerOperationHandlerService extends ModelControllerOperationHandlerService {
+public class MasterDomainControllerOperationHandlerService extends ModelControllerClientOperationHandlerService {
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
-    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
+    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(ModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
 
     public MasterDomainControllerOperationHandlerService() {
     }
     @Override
-    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController) {
-        return new MasterDomainControllerOperationHandlerImpl((DomainController)modelController);
+    protected NewModelControllerClientOperationHandler createOperationHandler(NewModelController modelController, ExecutorService executor) {
+        throw new IllegalStateException("Remote domain management not yet implemented");
+        //return new MasterDomainControllerOperationHandlerImpl((DomainController)modelController);
     }
 
 }

@@ -55,7 +55,6 @@ public abstract class TransactionalModelControllerOperationHandler extends Model
 
     private final ConcurrentMap<ModelNode, ControllerTransaction> transactions = new ConcurrentHashMap<ModelNode, ControllerTransaction>();
 
-    public static final byte HANDLER_ID = (byte)0x10;
     public static final byte EXECUTE_TRANSACTIONAL_REQUEST = (byte)0x21;
     public static final byte EXECUTE_TRANSACTIONAL_RESPONSE = (byte)0x22;
     public static final byte EXECUTE_TRANSACTIONAL_SYNCHRONOUS_REQUEST = (byte)0x23;
