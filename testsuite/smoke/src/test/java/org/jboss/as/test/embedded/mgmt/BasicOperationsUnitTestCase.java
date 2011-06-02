@@ -37,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,13 +48,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,21 +64,14 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class BasicOperationsUnitTestCase {
 
-    private ModelControllerClient client;
-
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }
 
-    @Before
-    public void setUp() throws Exception {
-        this.client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-    }
-
-    @After
-    public void tearDown() {
-        StreamUtils.safeClose(client);
+    // [ARQ-458] @Before not called with @RunAsClient
+    private ModelControllerClient getModelControllerClient() throws UnknownHostException {
+        return ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
     }
 
     @Test
@@ -95,7 +86,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = client.execute(operation);
+        final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Collection<ModelNode> steps = getSteps(result.get(RESULT));
@@ -119,7 +110,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = client.execute(operation);
+        final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final Collection<ModelNode> steps = getSteps(result.get(RESULT));
@@ -145,7 +136,7 @@ public class BasicOperationsUnitTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).set(address);
 
-        final ModelNode result = client.execute(operation);
+        final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertTrue(result.hasDefined(RESULT));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         final List<ModelNode> steps = getSteps(result.get(RESULT));
@@ -162,7 +153,7 @@ public class BasicOperationsUnitTestCase {
         address.add("scanner", "default");
 
         final ModelNode operation = createReadAttributeOperation(address, "path");
-        final ModelNode result = client.execute(operation);
+        final ModelNode result = getModelControllerClient().execute(operation);
         assertSuccessful(result);
 
         Assert.assertEquals("deployments", result.get(RESULT).asString());
@@ -175,7 +166,7 @@ public class BasicOperationsUnitTestCase {
         address.add("connector", "http");
 
         final ModelNode operation = createReadAttributeOperation(address, "bytesReceived");
-        final ModelNode result = client.execute(operation);
+        final ModelNode result = getModelControllerClient().execute(operation);
         assertSuccessful(result);
         Assert.assertTrue(result.asInt() >= 0);
     }
@@ -185,7 +176,7 @@ public class BasicOperationsUnitTestCase {
         address.add("subsystem", "deployment-scanner");
 
         final ModelNode operation = createReadAttributeOperation(address, "scanner");
-        final ModelNode result = client.execute(operation);
+        final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertEquals(FAILED, result.get(OUTCOME));
     }
 
@@ -210,5 +201,4 @@ public class BasicOperationsUnitTestCase {
         }
         return steps;
     }
-
 }
