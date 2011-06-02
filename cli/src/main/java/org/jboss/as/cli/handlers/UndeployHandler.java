@@ -38,7 +38,7 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -176,7 +176,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        NewModelControllerClient client = ctx.getModelControllerClient();
         ParsedArguments args = ctx.getParsedArguments();
         boolean l = this.l.isPresent(args);
         if(!args.hasArguments() || l) {
@@ -227,7 +227,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("Required argument name are missing.");
         }
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        NewModelControllerClient client = ctx.getModelControllerClient();
         DefaultOperationRequestBuilder builder;
 
         boolean keepContent;

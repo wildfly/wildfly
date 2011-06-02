@@ -33,7 +33,7 @@ import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -54,7 +54,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
     @Override
     public void handle(CommandContext ctx) {
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        NewModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             ctx.printLine("You are disconnected at the moment." +
                     " Type 'connect' to connect to the server" +
