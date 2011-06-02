@@ -48,7 +48,7 @@ import org.jboss.util.NotImplementedException;
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public abstract class AbstractDeployableContainer<T extends JBossAsCommonConfiguration> implements DeployableContainer<T> {
+public abstract class CommonDeployableContainer<T extends CommonContainerConfiguration> implements DeployableContainer<T> {
 
     protected static final ObjectName OBJECT_NAME;
 

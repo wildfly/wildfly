@@ -27,81 +27,49 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.protocol.jmx.JMXProtocol;
-import org.jboss.as.arquillian.container.ManifestUtils;
-import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
+import org.jboss.as.arquillian.protocol.jmx.JMXProtocolExtension.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
- * A {@link DeploymentPackager} that for AS7 test deployments.
+ * A {@link DeploymentPackager} for the JMXProtocol.
+ *
+ * It dynamically generates the arquillian-archive, which is deployed to the
+ * target container before the test run.
+ *
+ * @see JMXProtocolEndpointDeployer
  *
  * @author Thomas.Diesler@jboss.com
- * @author Kabir Khan
- * @since 17-Nov-2010
+ * @since 01-Jul-2011
  */
-public class JBossASDeploymentPackager implements DeploymentPackager {
-
-    private static final Logger log = Logger.getLogger(JBossASDeploymentPackager.class);
-
-    private static final Set<String> excludedAuxillaryArchives = new HashSet<String>();
-
-    static {
-        excludedAuxillaryArchives.add("arquillian-core.jar");
-        excludedAuxillaryArchives.add("arquillian-junit.jar");
-    }
+public class JMXProtocolPackager implements DeploymentPackager {
 
     private ServiceArchiveHolder serviceArchive;
 
-    JBossASDeploymentPackager(ServiceArchiveHolder serviceArchive) {
+    JMXProtocolPackager(ServiceArchiveHolder serviceArchive) {
         this.serviceArchive = serviceArchive;
     }
 
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> protocolProcessors) {
 
+        final Archive<?> appArchive = testDeployment.getApplicationArchive();
         final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
         generateArquillianServiceArchive(auxArchives);
 
-        final Archive<?> appArchive = testDeployment.getApplicationArchive();
-        final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
-        if (BundleInfo.isValidBundleManifest(manifest) == false) {
-            // JBAS-9059 Inconvertible types error due to OpenJDK compiler bug
-            // if (appArchive instanceof WebArchive) {
-            if (WebArchive.class.isAssignableFrom(appArchive.getClass())) {
-                final ArchivePath webInfLib = ArchivePaths.create("WEB-INF", "lib");
-                for (Archive<?> aux : auxArchives) {
-                    if (!excludedAuxillaryArchives.contains(aux.getName())) {
-                        appArchive.add(aux, webInfLib, ZipExporter.class);
-                    }
-                }
-            } else {
-                for (Archive<?> aux : auxArchives) {
-                    if (!excludedAuxillaryArchives.contains(aux.getName())) {
-                        appArchive.merge(aux);
-                    }
-                }
-            }
-        }
-        log.debugf("Archive content: %s\n%s", appArchive.getName(), appArchive.toString(true));
         return appArchive;
     }
 
@@ -168,7 +136,7 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
             }
         }, loadableExtentionsPath);
 
-        // Make the service archive availbale to {@link ArquillianServiceDeployer}
+        // Make the service archive available to {@link JMXProtocolEndpointDeployer}
         serviceArchive.setArchive(archive);
     }
 }

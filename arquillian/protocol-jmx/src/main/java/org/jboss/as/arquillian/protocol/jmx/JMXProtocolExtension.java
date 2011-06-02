@@ -17,20 +17,10 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
-import javax.management.MBeanServerConnection;
-
-import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
-import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
-import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
-import org.jboss.arquillian.container.test.spi.command.CommandCallback;
-import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXProtocol;
-import org.jboss.arquillian.protocol.jmx.JMXProtocolConfiguration;
-import org.jboss.arquillian.protocol.jmx.JMXProtocolConfiguration.ExecutionType;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.shrinkwrap.api.Archive;
 
@@ -40,11 +30,7 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JBossASProtocol extends JMXProtocol {
-
-    @Inject
-    @ContainerScoped
-    private Instance<MBeanServerConnection> mbeanServerInst;
+public class JMXProtocolExtension extends JMXProtocol {
 
     @Inject
     @SuiteScoped
@@ -53,20 +39,12 @@ public class JBossASProtocol extends JMXProtocol {
     @Override
     public DeploymentPackager getPackager() {
         archiveHolderInst.set(new ServiceArchiveHolder());
-        return new JBossASDeploymentPackager(archiveHolderInst.get());
+        return new JMXProtocolPackager(archiveHolderInst.get());
     }
 
     @Override
     public String getProtocolName() {
         return "jmx-as7";
-    }
-
-    @Override
-    // [ARQ-425] config parser code not in sync with schema
-    // Remove explicit execution type
-    public ContainerMethodExecutor getExecutor(JMXProtocolConfiguration config, ProtocolMetaData metaData, CommandCallback callback) {
-        MBeanServerConnection mbeanServer = mbeanServerInst.get();
-        return new JMXMethodExecutor(mbeanServer, ExecutionType.REMOTE, callback);
     }
 
     class ServiceArchiveHolder {

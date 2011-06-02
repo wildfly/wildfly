@@ -26,11 +26,11 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JBossASProtocolExtension implements LoadableExtension {
+public class JMXProtocolExtensions implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, JBossASProtocol.class);
-        builder.observer(ArquillianServiceDeployer.class);
+        builder.service(Protocol.class, JMXProtocolExtension.class);
+        builder.observer(JMXProtocolEndpointDeployer.class);
     }
 }

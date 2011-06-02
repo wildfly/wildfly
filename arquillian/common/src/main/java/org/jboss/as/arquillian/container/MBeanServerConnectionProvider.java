@@ -59,4 +59,21 @@ public final class MBeanServerConnectionProvider {
             throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
         }
     }
+
+    public MBeanServerConnection getConnection(long timeout) {
+        while (timeout > 0) {
+            try {
+                return getConnection();
+            } catch (Exception ex) {
+                // ignore
+            }
+            try {
+                Thread.sleep(100);
+                timeout -= 100;
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+        }
+        throw new IllegalStateException("MBeanServerConnection not available");
+    }
 }

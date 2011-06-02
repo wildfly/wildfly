@@ -53,9 +53,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public final class JBossAsManagedContainer extends AbstractDeployableContainer<JBossAsManagedConfiguration> {
+public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
-    private final Logger log = Logger.getLogger(JBossAsManagedContainer.class.getName());
+    private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
     private MBeanServerConnectionProvider provider;
     private Thread shutdownThread;
     private Process process;
@@ -76,12 +76,12 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer<J
     }
 
     @Override
-    public Class<JBossAsManagedConfiguration> getConfigurationClass() {
-        return JBossAsManagedConfiguration.class;
+    public Class<ManagedContainerConfiguration> getConfigurationClass() {
+        return ManagedContainerConfiguration.class;
     }
 
     @Override
-    public void setup(JBossAsManagedConfiguration config) {
+    public void setup(ManagedContainerConfiguration config) {
         super.setup(config);
         provider = new MBeanServerConnectionProvider(config.getBindAddress(), config.getJmxPort());
     }
@@ -89,7 +89,7 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer<J
     @Override
     protected void startInternal() throws LifecycleException {
         try {
-            JBossAsManagedConfiguration config = getContainerConfiguration();
+            ManagedContainerConfiguration config = getContainerConfiguration();
             final String jbossHomeDir = config.getJbossHome();
             final String additionalJavaOpts = System.getProperty("jboss.options");
 

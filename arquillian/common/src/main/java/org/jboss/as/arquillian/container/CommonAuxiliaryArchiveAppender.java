@@ -32,16 +32,12 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  *
  * @author <a href="mailto:aslak@conduct.no">Aslak Knutsen</a>
  */
-public class JBossASDeploymentAppender implements AuxiliaryArchiveAppender {
+public class CommonAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
 
     public Archive<?> createAuxiliaryArchive() {
-        JavaArchive archive = ShrinkWrap
-                .create(JavaArchive.class, "arquillian-jboss-testenrichers.jar")
-                .addPackages(true, EJBInjectionEnricher.class.getPackage(), ResourceInjectionEnricher.class.getPackage(),
-                        CDIInjectionEnricher.class.getPackage())
-                .addAsServiceProvider(TestEnricher.class, CDIInjectionEnricher.class, EJBInjectionEnricher.class,
-                        ResourceInjectionEnricher.class);
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-jboss-testenrichers.jar");
+        archive.addPackages(true, EJBInjectionEnricher.class.getPackage(), ResourceInjectionEnricher.class.getPackage(), CDIInjectionEnricher.class.getPackage());
+        archive.addAsServiceProvider(TestEnricher.class, CDIInjectionEnricher.class, EJBInjectionEnricher.class, ResourceInjectionEnricher.class);
         return archive;
     }
-
 }

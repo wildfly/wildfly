@@ -14,19 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container;
+package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
+import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
+import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
+import org.jboss.as.arquillian.container.CommonContainerExtension;
+import org.jboss.as.arquillian.protocol.jmx.JMXProtocolExtension;
 
 /**
+ * The extensions used by the managed container.
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+ * @author Thomas.Diesler@jboss.com
+ * @since 02-Jun-2011
  */
-public class JBossASExceptionTransformer implements DeploymentExceptionTransformer {
+public class ManagedContainerExtension extends CommonContainerExtension {
 
     @Override
-    public Throwable transform(final Throwable exception) {
-        // NOOP Base impl
-        return exception;
+    public void register(ExtensionBuilder builder) {
+        super.register(builder);
+        builder.service(Protocol.class, JMXProtocolExtension.class);
+        builder.service(DeployableContainer.class, ManagedDeployableContainer.class);
     }
 }

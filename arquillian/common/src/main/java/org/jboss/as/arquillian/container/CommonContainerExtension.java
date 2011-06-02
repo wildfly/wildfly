@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.managed;
+package org.jboss.as.arquillian.container;
 
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.as.arquillian.container.DelegatingApplicationArchiveProcessor;
-import org.jboss.as.arquillian.container.JBossASExceptionTransformer;
-import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol;
 
 /**
+ * The extensions used by the any jboss container.
  *
- * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+ * @author Thomas.Diesler@jboss.com
+ * @since 02-Jun-2011
  */
-public class JBossAsManagedContainerExtension implements LoadableExtension {
+public class CommonContainerExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, JBossASProtocol.class);
-        builder.service(DeployableContainer.class, JBossAsManagedContainer.class);
         builder.service(ApplicationArchiveProcessor.class, DelegatingApplicationArchiveProcessor.class);
-        builder.service(DeploymentExceptionTransformer.class, JBossASExceptionTransformer.class);
+        builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
     }
 }

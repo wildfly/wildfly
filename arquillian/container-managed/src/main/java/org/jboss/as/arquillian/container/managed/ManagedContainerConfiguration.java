@@ -19,7 +19,7 @@ package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
-import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
+import org.jboss.as.arquillian.container.CommonContainerConfiguration;
 
 /**
  * JBossAsManagedConfiguration
@@ -27,7 +27,7 @@ import org.jboss.as.arquillian.container.JBossAsCommonConfiguration;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class JBossAsManagedConfiguration extends JBossAsCommonConfiguration {
+public class ManagedContainerConfiguration extends CommonContainerConfiguration {
 
     private String jbossHome = System.getenv("JBOSS_HOME");
 

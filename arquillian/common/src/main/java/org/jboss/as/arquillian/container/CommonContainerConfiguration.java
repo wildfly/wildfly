@@ -28,14 +28,14 @@ import java.net.UnknownHostException;
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public class JBossAsCommonConfiguration implements ContainerConfiguration {
+public class CommonContainerConfiguration implements ContainerConfiguration {
 
     private InetAddress bindAddress;
     private int managementPort;
     private int jmxPort;
     private int httpPort;
 
-    public JBossAsCommonConfiguration() {
+    public CommonContainerConfiguration() {
         bindAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
         jmxPort = 1090;

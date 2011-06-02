@@ -28,18 +28,20 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
-import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
+import org.jboss.as.arquillian.protocol.jmx.JMXProtocolExtension.ServiceArchiveHolder;
 import org.jboss.logging.Logger;
 
 /**
- * ArquillianServiceDeployer
+ * A deployer for the Arquillian JMXProtocol endpoint.
+ *
+ * @see JMXProtocolPackager
  *
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class ArquillianServiceDeployer {
+public class JMXProtocolEndpointDeployer {
 
-    private static final Logger log = Logger.getLogger(ArquillianServiceDeployer.class);
+    private static final Logger log = Logger.getLogger(JMXProtocolEndpointDeployer.class);
 
     @Inject
     @SuiteScoped

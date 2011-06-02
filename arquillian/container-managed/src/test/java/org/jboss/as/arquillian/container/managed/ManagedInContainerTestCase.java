@@ -20,53 +20,37 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 
-import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.managed.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * JBossASRemoteIntegrationTestCase
+ * ManagedInContainerTestCase
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Thomas.Diesler@jboss.com
  */
 @RunWith(Arquillian.class)
-public class JBossASManagedInContainerTestCase {
+public class ManagedInContainerTestCase extends AbstractContainerTestCase {
 
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sar-example.sar");
         archive.addPackage(ConfigService.class.getPackage());
-        archive.addClass(JBossASManagedInContainerTestCase.class);
+        archive.addClasses(AbstractContainerTestCase.class);
         String path = "META-INF/jboss-service.xml";
-        URL resourceURL = JBossASManagedInContainerTestCase.class.getResource("/sar-example.sar/" + path);
+        URL resourceURL = ManagedInContainerTestCase.class.getResource("/sar-example.sar/" + path);
         archive.addAsResource(new File(resourceURL.getFile()), path);
         return archive;
     }
 
-    @Test
-    public void testDeployedService() throws Exception {
-        MBeanServerConnection mbeanServer = getMBeanServer();
-        ObjectName objectName = new ObjectName("jboss:name=test,type=config");
-
-        //FIXME should have some notification happening when the deployment has been installed for client
-        waitForMbean(mbeanServer, objectName);
-
-        mbeanServer.getAttribute(objectName, "IntervalSeconds");
-        mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
-    }
-
-    protected MBeanServerConnection getMBeanServer() throws Exception {
+    @Override
+    MBeanServerConnection getMBeanServer() throws Exception {
         return ManagementFactory.getPlatformMBeanServer();
-    }
-
-    protected void waitForMbean(MBeanServerConnection mbeanServer, ObjectName name) throws Exception {
     }
 }

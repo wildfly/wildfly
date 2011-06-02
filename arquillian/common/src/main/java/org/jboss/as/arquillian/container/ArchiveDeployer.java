@@ -31,7 +31,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
 /**
- * A JBossAS deployable container
+ * A deployer that uses the {@link ServerDeploymentManager}
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
