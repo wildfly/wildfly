@@ -21,7 +21,9 @@
 */
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.controller.ModelController;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.controller.NewModelController;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -37,7 +39,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ModelControllerOperationHandlerService implements Service<ModelControllerOperationHandler>{
+public class ModelControllerClientOperationHandlerService implements Service<NewModelControllerClientOperationHandler>{
 
     protected static final Logger log = Logger.getLogger("org.jboss.server.management");
 
@@ -45,7 +47,9 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
 
     private final InjectedValue<NewModelController> modelControllerValue = new InjectedValue<NewModelController>();
 
-    private volatile ModelControllerOperationHandler handler;
+    private volatile ExecutorService executor = Executors.newCachedThreadPool();
+
+    private volatile NewModelControllerClientOperationHandler handler;
 
     /**
      * Use to inject the model controller that will be the target of the operations
@@ -61,7 +65,7 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
     public void start(StartContext context) throws StartException {
         log.debugf("Starting operation handler service %s", context.getController().getName());
         final NewModelController modelController = modelControllerValue.getValue();
-        this.handler = createOperationHandler(modelController);
+        this.handler = createOperationHandler(modelController, executor);
     }
 
     /** {@inheritDoc} */
@@ -72,15 +76,15 @@ public class ModelControllerOperationHandlerService implements Service<ModelCont
 
     /** {@inheritDoc} */
     @Override
-    public ModelControllerOperationHandler getValue() throws IllegalStateException {
+    public NewModelControllerClientOperationHandler getValue() throws IllegalStateException {
         return handler;
     }
 
-    protected void setHandler(ModelControllerOperationHandler handler) {
+    protected void setHandler(NewModelControllerClientOperationHandler handler) {
         this.handler = handler;
     }
 
-    protected ModelControllerOperationHandler createOperationHandler(ModelController modelController) {
-        return new ModelControllerOperationHandlerImpl(modelController);
+    protected NewModelControllerClientOperationHandler createOperationHandler(NewModelController modelController, ExecutorService executor) {
+        return new NewModelControllerClientOperationHandler(null, executor, modelController);
     }
 }

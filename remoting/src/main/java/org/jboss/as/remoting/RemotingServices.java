@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
+import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerService;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.msc.inject.Injector;
@@ -68,12 +68,12 @@ public final class RemotingServices {
     }
 
     public static ServiceName operationHandlerName(ServiceName controllerName, String channelName) {
-        return controllerName.append(channelName).append(ModelControllerOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
+        return controllerName.append(channelName).append(ModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
     }
 
     public static void installStandaloneManagementChannelServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerOperationHandlerService operationHandlerService,
+            final ModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
@@ -83,7 +83,7 @@ public final class RemotingServices {
 
     public static void installDomainControllerManagementChannelServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerOperationHandlerService operationHandlerService,
+            final ModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
@@ -104,7 +104,7 @@ public final class RemotingServices {
 
     private static void installServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerOperationHandlerService operationHandlerService,
+            final ModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
@@ -151,14 +151,14 @@ public final class RemotingServices {
 
     public static void installChannelServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerOperationHandlerService operationHandlerService,
+            final ModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
             List<ServiceController<?>> newControllers) {
 
         final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
         addController(newControllers, serviceTarget.addService(operationHandlerName, operationHandlerService)
-            .addDependency(modelControllerName, ModelController.class, operationHandlerService.getModelControllerInjector())
+            .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
             .setInitialMode(Mode.ACTIVE)
             .install());
 

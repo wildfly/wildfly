@@ -43,7 +43,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.remote.ModelControllerOperationHandlerService;
+import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerService;
 import org.jboss.as.domain.controller.DomainContentRepository;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerService;
@@ -108,7 +108,7 @@ public class DomainControllerAddUtil {
                 .install());
 
         RemotingServices.installDomainControllerManagementChannelServices(serviceTarget,
-                new ModelControllerOperationHandlerService(),
+                new ModelControllerClientOperationHandlerService(),
                 DomainController.SERVICE_NAME,
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(mgmtNetwork),
                 mgmtPort,

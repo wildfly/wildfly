@@ -167,10 +167,6 @@ class RemoteDomainControllerSlaveClient implements DomainControllerSlaveClient {
     }
 
     private abstract class ModelControllerRequest<T> extends ManagementRequest<T>{
-        @Override
-        protected byte getHandlerId() {
-            return TransactionalModelControllerOperationHandler.HANDLER_ID;
-        }
 
         @Override
         protected T readResponse(DataInput input) throws IOException {
