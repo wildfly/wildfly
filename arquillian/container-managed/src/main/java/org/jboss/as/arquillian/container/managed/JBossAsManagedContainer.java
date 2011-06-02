@@ -16,12 +16,6 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
@@ -49,6 +43,12 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 /**
  * JBossASEmbeddedContainer
  *
@@ -61,6 +61,17 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
     private MBeanServerConnectionProvider provider;
     private Process process;
     private Thread shutdownThread;
+
+    private int destroyProcess() {
+        if (process == null)
+            return 0;
+        process.destroy();
+        try {
+            return process.waitFor();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void setup(Context context, Configuration configuration) {
@@ -138,7 +149,8 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             }
 
             if (!serverAvailable) {
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+                destroyProcess();
+                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", getContainerConfiguration().getStartupTimeout()));
             }
 
             boolean testRunnerMBeanAvailable = false;

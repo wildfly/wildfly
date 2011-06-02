@@ -16,11 +16,11 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.jboss.arquillian.spi.ContainerConfiguration;
 import org.jboss.arquillian.spi.ContainerProfile;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * JBossAS7 server configuration
@@ -41,7 +41,7 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
         managementPort = 9999;
         jmxPort = 1090;
         httpPort = 8080;
-        startupTimeout = 10000;
+        startupTimeout = 30000;
     }
 
     @Override
