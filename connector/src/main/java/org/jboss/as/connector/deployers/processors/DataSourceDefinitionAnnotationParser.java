@@ -69,7 +69,7 @@ import static org.jboss.as.connector.deployers.processors.DirectDataSourceInject
  * @author John Bailey
  * @author Jason T. Greene
  */
-public class DataSourceDefinitionDeployer implements DeploymentUnitProcessor {
+public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProcessor {
 
     private static final DotName DATASOURCE_DEFINITION = DotName.createSimple(DataSourceDefinition.class.getName());
     private static final DotName DATASOURCE_DEFINITIONS = DotName.createSimple(DataSourceDefinitions.class.getName());

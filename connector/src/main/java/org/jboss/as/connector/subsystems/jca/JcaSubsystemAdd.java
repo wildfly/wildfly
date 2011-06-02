@@ -20,6 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
+
 package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_ENABLED;
@@ -42,7 +43,8 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
-import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeployer;
+import org.jboss.as.connector.deployers.processors.DataSourceDefinitionAnnotationParser;
+import org.jboss.as.connector.deployers.processors.DataSourceDefinitionDeploymentDescriptorParser;
 import org.jboss.as.connector.registry.DriverRegistryService;
 import org.jboss.as.connector.services.CcmService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
@@ -71,6 +73,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -131,8 +134,10 @@ class JcaSubsystemAdd implements ModelAddOperationHandler, BootOperationHandler 
             // @DataSourceDefinitions
             // TODO: The DataSourceDefinitionDeployer should perhaps belong to
             // EE subsystem
-            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION,
-                    new DataSourceDefinitionDeployer());
+            bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION,
+                    new DataSourceDefinitionAnnotationParser());
+            bootContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DATASOURCE_REF,
+                    new DataSourceDefinitionDeploymentDescriptorParser());
 
             context.getRuntimeContext().setRuntimeTask(new RuntimeTask() {
                 @Override
