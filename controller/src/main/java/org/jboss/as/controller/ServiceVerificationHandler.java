@@ -41,8 +41,9 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
     public synchronized void execute(final NewOperationContext context, final ModelNode operation) {
 
-        //TODO return this
-        if (true) {
+        //TODO remove this
+        if (context.isBooting()) {
+            context.completeStep();
             return;
         }
 

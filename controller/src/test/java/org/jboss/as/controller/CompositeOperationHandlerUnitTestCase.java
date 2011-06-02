@@ -554,7 +554,7 @@ public class CompositeOperationHandlerUnitTestCase {
             }
         }).start();
         latch.await();
-        assertEquals(1, i.get());
+        assertEquals(2, i.get());
     }
 
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {

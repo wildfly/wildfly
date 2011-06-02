@@ -23,8 +23,12 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
@@ -109,13 +113,19 @@ class NewModelControllerImpl implements NewModelController {
                 }
             }
         }, NewOperationContext.Stage.VERIFY);
-        NewStepHandler stepHandler = rootRegistration.getOperationHandler(PathAddress.pathAddress(operation.require(ADDRESS)), operation.require(OP).asString());
-        context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
-        RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
-        try {
-            context.completeStep();
-        } finally {
-            RB_ON_RT_FAILURE.set(null);
+        PathAddress address =  PathAddress.pathAddress(operation.get(OP_ADDR));
+        String operationName =  operation.require(OP).asString();
+        NewStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+        if (stepHandler != null) {
+            context.addStep(response, operation, stepHandler, NewOperationContext.Stage.MODEL);
+            RB_ON_RT_FAILURE.set(Boolean.valueOf(rollbackOnFailure));
+            try {
+                context.completeStep();
+            } finally {
+                RB_ON_RT_FAILURE.set(null);
+            }
+        } else {
+            reportNoHandler(operationName, address, response);
         }
         ControlledProcessState.State state = processState.getState();
         switch (state) {
@@ -142,6 +152,11 @@ class NewModelControllerImpl implements NewModelController {
 
     ModelNodeRegistration getRootRegistration() {
         return rootRegistration;
+    }
+
+    private static void reportNoHandler(final String operationName, final PathAddress address, final ModelNode response) {
+        response.get(OUTCOME).set(FAILED);
+        response.get(FAILURE_DESCRIPTION).set(String.format("No handler for %s at address %s", operationName, address));
     }
 
     class BootStepHandler implements NewStepHandler {
@@ -251,7 +266,6 @@ class NewModelControllerImpl implements NewModelController {
     }
 
     void acquireLock(final boolean interruptibly) throws InterruptedException {
-        System.out.println("==== Getting");
         if (interruptibly) {
             //noinspection LockAcquiredButNotSafelyReleased
             writeLock.lockInterruptibly();
@@ -259,11 +273,9 @@ class NewModelControllerImpl implements NewModelController {
             //noinspection LockAcquiredButNotSafelyReleased
             writeLock.lock();
         }
-        System.out.println("==== Got");
     }
 
     void releaseLock() {
-        System.out.println("==== Releasing");
         writeLock.unlock();
     }
 
