@@ -240,52 +240,6 @@ public class ModelControllerClientTestCase {
         assertEquals("Test2", messages.take());
     }
 
-    @Test
-    public void testCancelledAsynchronousOperation() throws Exception {
-        ProtocolChannel serverChannel = channels.getServerChannel();
-        ProtocolChannel clientChannel = channels.getClientChannel();
-        clientChannel.startReceiving();
-
-        final CountDownLatch executeLatch = new CountDownLatch(1);
-        MockModelController controller = new MockModelController() {
-            @Override
-            public ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments) {
-                this.operation = operation;
-                executeLatch.countDown();
-                ModelNode result = new ModelNode();
-                result.get("testing").set(operation.get("test"));
-                return result;
-            }
-        };
-
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(serverChannel, channels.getExecutorService(), controller);
-        serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
-
-        NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
-        clientChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler((ManagementOperationHandler)client);
-
-        ModelNode operation = new ModelNode();
-        operation.get("test").set("123");
-
-        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
-
-        AsyncFuture<ModelNode> resultFuture = client.executeAsync(operation,
-                new OperationMessageHandler() {
-
-                    @Override
-                    public void handleReport(MessageSeverity severity, String message) {
-                        if (severity == MessageSeverity.INFO && message.startsWith("Test")) {
-                            messages.add(message);
-                        }
-                    }
-                });
-        ModelNode result = resultFuture.get();
-        assertEquals("123", controller.getOperation().get("test").asString());
-        assertEquals("123", result.get("testing").asString());
-        assertEquals("Test1", messages.take());
-        assertEquals("Test2", messages.take());
-    }
-
     private void assertArrays(byte[] expected, byte[] actual) {
         assertEquals(expected.length, actual.length);
         for (int i = 0 ; i < expected.length ; i++) {

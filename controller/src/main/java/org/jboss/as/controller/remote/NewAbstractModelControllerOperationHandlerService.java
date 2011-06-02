@@ -34,12 +34,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Installs the ModelControllerOperationHandler
+ * Installs the {@link NewAbstractModelControllerOperationHandlerService}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ModelControllerClientOperationHandlerService implements Service<NewModelControllerClientOperationHandler>{
+public abstract class NewAbstractModelControllerOperationHandlerService<T extends NewAbstractModelControllerOperationHandler> implements Service<T>{
 
     protected static final Logger log = Logger.getLogger("org.jboss.server.management");
 
@@ -49,7 +49,7 @@ public class ModelControllerClientOperationHandlerService implements Service<New
 
     private volatile ExecutorService executor = Executors.newCachedThreadPool();
 
-    private volatile NewModelControllerClientOperationHandler handler;
+    private volatile T handler;
 
     /**
      * Use to inject the model controller that will be the target of the operations
@@ -76,15 +76,9 @@ public class ModelControllerClientOperationHandlerService implements Service<New
 
     /** {@inheritDoc} */
     @Override
-    public NewModelControllerClientOperationHandler getValue() throws IllegalStateException {
+    public T getValue() throws IllegalStateException {
         return handler;
     }
 
-    protected void setHandler(NewModelControllerClientOperationHandler handler) {
-        this.handler = handler;
-    }
-
-    protected NewModelControllerClientOperationHandler createOperationHandler(NewModelController modelController, ExecutorService executor) {
-        return new NewModelControllerClientOperationHandler(null, executor, modelController);
-    }
+    protected abstract T createOperationHandler(NewModelController modelController, ExecutorService executor);
 }

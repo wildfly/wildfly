@@ -82,11 +82,31 @@ public class NewRemoteProxyController implements _TempNewProxyController, Manage
         });
     }
 
+    /**
+     * Creates a new remote proxy controller using an exisiting channel
+     *
+     * @param executorService the executor to use for the requests
+     * @param pathAddress the address within the model of the created proxy controller
+     * @param channel the channel to use for communication
+     * @return the proxy controller
+     */
     public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final ProtocolChannel channel) {
         return new NewRemoteProxyController(executorService, pathAddress, channel, false);
     }
 
-    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws ConnectException, IOException {
+    /**
+     * Creates a new remote proxy controller connecting to a remote server
+     *
+     * @param executorService the executor to use for the requests
+     * @param pathAddress the address within the model of the created proxy controller
+     * @param hostName the host name of the remote server
+     * @param port the port of the remote server
+     * @param channelName the channel name
+     * @return the proxy controller
+     * @throws IOException if an error occurred
+     * @throws ConnectException if we could not connect to the remote server
+     */
+    public static NewRemoteProxyController create(final ExecutorService executorService, final PathAddress pathAddress, final String hostName, final int port, String channelName) throws IOException {
         final ProtocolChannelClient client;
         try {
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();

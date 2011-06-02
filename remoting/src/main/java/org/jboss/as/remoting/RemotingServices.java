@@ -27,7 +27,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerService;
+import org.jboss.as.controller.remote.NewAbstractModelControllerOperationHandlerService;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.msc.inject.Injector;
@@ -43,37 +44,87 @@ import org.xnio.Options;
 import org.xnio.Sequence;
 
 /**
+ * Utility class to add remoting services
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:kkhan@redhat.com">Kabir Khan</a>
  */
 public final class RemotingServices {
     private RemotingServices() {
     }
 
+    /** The name of the remoting service */
     public static final ServiceName REMOTING = ServiceName.JBOSS.append("remoting");
+
+    /** The name of the endpoint service */
     public static final ServiceName ENDPOINT = REMOTING.append("endpoint");
+
+    /** The base name of the connector services */
     public static final ServiceName CONNECTOR = REMOTING.append("connector");
+
+    /** The base name of the stream server services */
     public static final ServiceName SERVER = REMOTING.append("server");
+
+    /** The base name of the channel open listener services */
     public static final ServiceName CHANNEL = REMOTING.append("channel");
 
+    /**
+     * Create the service name for a connector
+     *
+     * @param connectorName the connector name
+     * @return the service name
+     */
     public static ServiceName connectorServiceName(final String connectorName) {
         return CONNECTOR.append(connectorName);
     }
 
+    /**
+     * Create the service name for a stream server
+     *
+     * @param address the host name
+     * @param port the port
+     * @return the service name
+     */
     public static ServiceName serverServiceName(final String address, final int port) {
         return SERVER.append(address).append(String.valueOf(port));
     }
 
+    /**
+     * Create the service name for a channel
+     *
+     * @param channelName the channel name
+     * @return the service name
+     */
     public static ServiceName channelServiceName(final String channelName) {
         return CHANNEL.append(channelName);
     }
 
+    /**
+     * Create the service name for an operation handler
+     *
+     * @param controllerName the controller name name
+     * @param channelName the name of the channel this operation handler should handle operations for
+     * @return the service name
+     */
     public static ServiceName operationHandlerName(ServiceName controllerName, String channelName) {
-        return controllerName.append(channelName).append(ModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
+        return controllerName.append(channelName).append(NewModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
     }
 
+    /**
+     * Set up the remoting services for a standalone instanc needed for management.
+     * This includes setting up the stream server listening on the management socket, and the main
+     * managemenent channel and associated operation handler.
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param operationHandlerService the operation handler service
+     * @param modelControllerName the name of the server controller
+     * @param networkInterfaceBindingName the name of the network interface binding
+     * @param port the port
+     * @param newControllers list to add the new services to
+     */
     public static void installStandaloneManagementChannelServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerClientOperationHandlerService operationHandlerService,
+            final NewModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
@@ -81,9 +132,21 @@ public final class RemotingServices {
         installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, newControllers);
     }
 
+    /**
+     * Set up the remoting services for a domain controller instance needed for management.
+     * This includes setting up the main endpoint, the stream server listening on the management socket, and the main
+     * managemenent channel and associated operation handler.
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param operationHandlerService the operation handler service
+     * @param modelControllerName the name of the domain controller
+     * @param networkInterfaceBindingName the name of the network interface binding
+     * @param port the port
+     * @param newControllers list to add the new services to
+     */
     public static void installDomainControllerManagementChannelServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerClientOperationHandlerService operationHandlerService,
+            final NewModelControllerClientOperationHandlerService operationHandlerService,
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
@@ -102,9 +165,61 @@ public final class RemotingServices {
         installServices(serviceTarget, operationHandlerService, modelControllerName, networkInterfaceBindingName, port, newControllers);
     }
 
+    /**
+     * Set up the services to create a channel listener. This assumes that an endpoint called {@link #ENDPOINT} exists.
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param channelName the name of the channel
+     * @param operationHandlerName the name of the operation handler to handle request for this channel
+     * @param newControllers list to add the new services to
+     */
+    public static void installChannelOpenListenerService(
+            final ServiceTarget serviceTarget,
+            final String channelName,
+            final ServiceName operationHandlerName,
+            List<ServiceController<?>> newControllers) {
+
+        final ChannelOpenListenerService channelOpenListenerService = new ChannelOpenListenerService(channelName, OptionMap.EMPTY);
+        addController(newControllers, serviceTarget.addService(channelOpenListenerService.getServiceName(), channelOpenListenerService)
+            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, channelOpenListenerService.getEndpointInjector())
+            .addDependency(operationHandlerName, ManagementOperationHandler.class, channelOpenListenerService.getOperationHandlerInjector())
+            .setInitialMode(Mode.ACTIVE)
+            .install());
+    }
+
+    /**
+     * Set up the services to create a channel listener and operation handler service. This assumes that an endpoint called {@link #ENDPOINT} exists.
+     *
+     * @param serviceTarget the service target to install the services into
+     * @param channelName the name of the channel
+     * @param operationHandlerName the name of the operation handler to handle request for this channel
+     * @param newControllers list to add the new services to
+     */
+    public static void installChannelServices(
+            final ServiceTarget serviceTarget,
+            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
+            final ServiceName modelControllerName,
+            final String channelName,
+            List<ServiceController<?>> newControllers) {
+
+        final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
+        addController(newControllers, serviceTarget.addService(operationHandlerName, operationHandlerService)
+            .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
+            .setInitialMode(Mode.ACTIVE)
+            .install());
+
+        installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, newControllers);
+    }
+
+    private static void addController(List<ServiceController<?>> newControllers, ServiceController<?> controller) {
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
+    }
+
     private static void installServices(
             final ServiceTarget serviceTarget,
-            final ModelControllerClientOperationHandlerService operationHandlerService,
+            final NewAbstractModelControllerOperationHandlerService<?> operationHandlerService,
             final ServiceName modelControllerName,
             final ServiceName networkInterfaceBindingName,
             final int port,
@@ -135,39 +250,4 @@ public final class RemotingServices {
         installChannelServices(serviceTarget, operationHandlerService, modelControllerName, "management", newControllers);
     }
 
-    public static void installChannelOpenListenerService(
-            final ServiceTarget serviceTarget,
-            final String channelName,
-            final ServiceName operationHandlerName,
-            List<ServiceController<?>> newControllers) {
-
-        final ChannelOpenListenerService channelOpenListenerService = new ChannelOpenListenerService(channelName, OptionMap.EMPTY);
-        addController(newControllers, serviceTarget.addService(channelOpenListenerService.getServiceName(), channelOpenListenerService)
-            .addDependency(RemotingServices.ENDPOINT, Endpoint.class, channelOpenListenerService.getEndpointInjector())
-            .addDependency(operationHandlerName, ManagementOperationHandler.class, channelOpenListenerService.getOperationHandlerInjector())
-            .setInitialMode(Mode.ACTIVE)
-            .install());
-    }
-
-    public static void installChannelServices(
-            final ServiceTarget serviceTarget,
-            final ModelControllerClientOperationHandlerService operationHandlerService,
-            final ServiceName modelControllerName,
-            final String channelName,
-            List<ServiceController<?>> newControllers) {
-
-        final ServiceName operationHandlerName = operationHandlerName(modelControllerName, channelName);
-        addController(newControllers, serviceTarget.addService(operationHandlerName, operationHandlerService)
-            .addDependency(modelControllerName, NewModelController.class, operationHandlerService.getModelControllerInjector())
-            .setInitialMode(Mode.ACTIVE)
-            .install());
-
-        installChannelOpenListenerService(serviceTarget, channelName, operationHandlerName, newControllers);
-    }
-
-    private static void addController(List<ServiceController<?>> newControllers, ServiceController<?> controller) {
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
-    }
 }
