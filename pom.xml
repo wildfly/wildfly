@@ -248,11 +248,6 @@
         <module>security</module>
         <module>server</module>
         <module>testsuite</module>
-        <!-- 
-        <module>arquillian2</module>
-        <module>demos2</module>
-        <module>testsuite2</module>
-        -->
         <module>threads</module>
         <module>transactions</module>
         <module>web</module>

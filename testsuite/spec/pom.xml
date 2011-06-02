@@ -46,7 +46,7 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-demos2-spec</artifactId>
+        <artifactId>jboss-as-demos-spec</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

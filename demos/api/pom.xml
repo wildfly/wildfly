@@ -28,12 +28,12 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-demos2</artifactId>
+        <artifactId>jboss-as-demos</artifactId>
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-demos2-api</artifactId>
-    <name>JBoss Application Server: Demos2: AS7 API</name>
+    <artifactId>jboss-as-demos-api</artifactId>
+    <name>JBoss Application Server: Demos: AS7 API</name>
 
    <!-- 
    When available, the AS7 API dependency declaration will live here

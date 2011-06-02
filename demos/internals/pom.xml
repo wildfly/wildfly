@@ -28,12 +28,12 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-demos2</artifactId>
+        <artifactId>jboss-as-demos</artifactId>
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-demos2-internals</artifactId>
-    <name>JBoss Application Server: Demos2: AS7 Internals</name>
+    <artifactId>jboss-as-demos-internals</artifactId>
+    <name>JBoss Application Server: Demos: AS7 Internals</name>
 
    <!-- 
    Compile-time dependencies upon anything  in the AS7 runtime
