@@ -84,9 +84,6 @@
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
                 </configuration>
             </plugin>
         </plugins>

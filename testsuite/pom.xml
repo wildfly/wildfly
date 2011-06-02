@@ -78,13 +78,13 @@
                 <executions>
                     <execution>
                         <id>copy-resources</id>
-                        <!-- here the phase you need -->
                         <phase>process-test-classes</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
