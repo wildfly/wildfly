@@ -62,7 +62,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class MessagingClientTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getEmptyDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("messaging-client.jar");
     }

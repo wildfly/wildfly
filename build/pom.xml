@@ -515,72 +515,6 @@
         </dependency>
 
         <dependency>
-          <groupId>org.jboss.arquillian.core</groupId>
-          <artifactId>arquillian-core-api</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.arquillian.core</groupId>
-          <artifactId>arquillian-core-impl-base</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.arquillian.core</groupId>
-          <artifactId>arquillian-core-spi</artifactId>
-        </dependency>
-        
-        <dependency>
-          <groupId>org.jboss.arquillian.junit</groupId>
-          <artifactId>arquillian-junit-container</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.arquillian.junit</groupId>
-          <artifactId>arquillian-junit-core</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.arquillian.protocol</groupId>
-          <artifactId>arquillian-protocol-jmx</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.arquillian.testenricher</groupId>
-           <artifactId>arquillian-testenricher-resource</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.arquillian.testenricher</groupId>
-           <artifactId>arquillian-testenricher-osgi</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-arquillian-processor-jsfunit</artifactId>
-           <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
-        </dependency>
-
-        <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
-        </dependency>
-
-        <dependency>
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-cli</artifactId>
         </dependency>
@@ -831,12 +765,6 @@
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
             <artifactId>jbossjts-integration</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.jsfunit</groupId>
-            <artifactId>jsfunit-arquillian</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

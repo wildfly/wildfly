@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class JaxrsTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment(){
         return ShrinkWrapUtils.createWebArchive("demos/jaxrs-example.war", HelloWorldResource.class.getPackage());
     }

@@ -631,16 +631,8 @@
             <maven-resource group="jboss.jaxbintros" artifact="jboss-jaxb-intros"/>
         </module-def>
 
-        <module-def name="org.jboss.jsfunit.arquillian">
-            <maven-resource group="org.jboss.jsfunit" artifact="jsfunit-arquillian"/>
-        </module-def>
-
         <module-def name="org.jboss.jsfunit.core">
             <maven-resource group="org.jboss.jsfunit" artifact="jboss-jsfunit-core"/>
-        </module-def>
-
-        <module-def name="org.jboss.jsfunit.jsfunit-arquillian-processor">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-processor-jsfunit"/>
         </module-def>
 
         <module-def name="org.jboss.jts">
@@ -756,13 +748,7 @@
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-spi"/>
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
-            <maven-resource group="org.jboss.shrinkwrap.descriptors" artifact="shrinkwrap-descriptors-api"/>
-            <maven-resource group="org.jboss.shrinkwrap.descriptors" artifact="shrinkwrap-descriptors-impl"/>
         </module-def>
-
-        <module-def name="org.jboss.surefire.arquillian-deps"/>
-
-        <module-def name="org.jboss.surefire.arquillian-jsfunit-deps"/>
 
         <module-def name="org.jboss.staxmapper">
             <maven-resource group="org.jboss" artifact="staxmapper"/>

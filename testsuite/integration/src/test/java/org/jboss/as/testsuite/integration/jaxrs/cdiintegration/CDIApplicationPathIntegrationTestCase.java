@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class CDIApplicationPathIntegrationTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class,"jaxrsapp.war");
         war.addPackage(HttpRequest.class.getPackage());

@@ -50,7 +50,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class WSTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment(){
         return ShrinkWrapUtils.createWebArchive("demos/ws-example.war", EndpointImpl.class.getPackage());
     }

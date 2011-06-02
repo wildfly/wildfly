@@ -64,7 +64,7 @@ import org.junit.runner.RunWith;
 		"Arquillian AND the same issues as org.jboss.as.test.embedded.demos.ds.DsTestCase")
 public class WebAppTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment(){
         //TODO - either deploy this separately once Arquillian (post Alpha4) supports multiple deployments
         //or wait until we have real remote jndi

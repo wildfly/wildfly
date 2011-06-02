@@ -45,8 +45,8 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class WarTestCase {
 
-    @Deployment
-    public static Archive<?> getDeployment(){
+    @Deployment(testable = false)
+    public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createWebArchive("demos/war-example.war", SimpleServlet.class.getPackage());
     }
 
@@ -61,7 +61,6 @@ public class WarTestCase {
         String s = performCall("legacy", "Hello");
         Assert.assertEquals("Simple Legacy Servlet called with input=Hello", s);
     }
-
 
     private static String performCall(String urlPattern, String param) throws Exception {
         URL url = new URL("http://localhost:8080/war-example/" + urlPattern + "?input=" + param);

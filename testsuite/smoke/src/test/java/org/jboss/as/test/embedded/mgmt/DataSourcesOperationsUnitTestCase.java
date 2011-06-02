@@ -62,7 +62,7 @@ public class DataSourcesOperationsUnitTestCase {
 
     private ModelControllerClient client;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createEmptyJavaArchive("dummy");
     }

@@ -71,7 +71,7 @@ public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> createDeployment(){
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
         return ShrinkWrapUtils.createJavaArchive("demos/fakejndi.sar", FakeJndi.class.getPackage());

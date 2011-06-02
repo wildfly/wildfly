@@ -63,10 +63,8 @@ public class ArquillianRunWithProcessor {
         }
 
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
-
-        final List<AnnotationInstance> instances = compositeIndex.getAnnotations(runWithName);
-        if (instances.isEmpty()) {
-            log.infof("Cannot find @RunWith annotation in: %s", deploymentUnit);
+        final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
+        if (runWithList.isEmpty()) {
             return null;
         }
 
@@ -74,7 +72,7 @@ public class ArquillianRunWithProcessor {
         ArquillianConfig arqConfig = new ArquillianConfig(serviceName, deploymentUnit);
         deploymentUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
 
-        for (AnnotationInstance instance : instances) {
+        for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;

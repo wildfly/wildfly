@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
@@ -36,12 +37,16 @@ import org.jboss.arquillian.protocol.jmx.JMXProtocol;
 import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * A {@link DeploymentPackager} that for AS7 test deployments.
@@ -72,9 +77,8 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
         final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
         generateArquillianServiceArchive(appArchive, auxArchives);
 
-        /*
         final Manifest manifest = ManifestUtils.getOrCreateManifest(testDeployment.getApplicationArchive());
-        if (BundleInfo.isValidateBundleManifest(manifest) == false) {
+        if (BundleInfo.isValidBundleManifest(manifest) == false) {
             // JBAS-9059 Inconvertible types error due to OpenJDK compiler bug
             // if (appArchive instanceof WebArchive) {
             if (WebArchive.class.isAssignableFrom(appArchive.getClass())) {
@@ -92,7 +96,6 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
                 }
             }
         }
-        */
         return appArchive;
     }
 
@@ -100,10 +103,6 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(JMXProtocol.class.getPackage());
-        //archive.addPackage(EnterpriseArchive.class.getPackage());
-        //archive.addPackage(JavaArchive.class.getPackage());
-        //archive.addPackage(WebArchive.class.getPackage());
-        //archive.addPackage(ResourceAdapterArchive.class.getPackage());
 
         // Merge the auxilliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();

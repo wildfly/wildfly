@@ -51,7 +51,7 @@ public class DelegatingApplicationArchiveProcessor implements ApplicationArchive
             archiveProcessor = new ModuleApplicationArchiveProcessor();
         }
 
-        log.debugf("Process %s with: %s", appArchive.getName(), archiveProcessor);
+        log.debugf("Process archive '%s' with: %s", appArchive.getName(), archiveProcessor);
         archiveProcessor.process(appArchive, testClass);
 
         // Debug the application archive manifest
@@ -71,6 +71,6 @@ public class DelegatingApplicationArchiveProcessor implements ApplicationArchive
 
     private boolean isBundleArchive(TestClass testClass, Archive<?> appArchive) {
         Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
-        return BundleInfo.isValidateBundleManifest(manifest);
+        return BundleInfo.isValidBundleManifest(manifest);
     }
 }

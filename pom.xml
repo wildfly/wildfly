@@ -146,7 +146,7 @@
         <version.org.jboss.osgi.jmx>1.0.9</version.org.jboss.osgi.jmx>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.resolver>1.0.9</version.org.jboss.osgi.resolver>
-        <version.org.jboss.osgi.spi>1.0.26</version.org.jboss.osgi.spi>
+        <version.org.jboss.osgi.spi>1.0.27-SNAPSHOT</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
         <version.org.jboss.osgi.webapp>1.0.1</version.org.jboss.osgi.webapp>
         <version.org.jboss.osgi.webconsole>1.0.6</version.org.jboss.osgi.webconsole>
@@ -545,30 +545,6 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-testenricher-cdi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-testenricher-resource</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2895,6 +2871,12 @@
             <dependency>
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-spi</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            
+            <dependency>
+              <groupId>org.jboss.arquillian.container</groupId>
+              <artifactId>arquillian-container-test-api</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
             

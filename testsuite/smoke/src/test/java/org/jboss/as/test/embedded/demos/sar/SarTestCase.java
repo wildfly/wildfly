@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class SarTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static JavaArchive createDeployment() throws Exception {
         return ShrinkWrapUtils.createJavaArchive("demos/sar-example.sar", ConfigService.class.getPackage());
     }
