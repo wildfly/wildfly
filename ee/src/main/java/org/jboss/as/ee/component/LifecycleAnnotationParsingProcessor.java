@@ -34,6 +34,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
+import org.jboss.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -47,6 +48,7 @@ import java.util.List;
  * @author Stuart Douglas
  */
 public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProcessor {
+    private static Logger log = Logger.getLogger(LifecycleAnnotationParsingProcessor.class);
     private static final DotName POST_CONSTRUCT_ANNOTATION = DotName.createSimple(PostConstruct.class.getName());
     private static final DotName PRE_DESTROY_ANNOTATION = DotName.createSimple(PreDestroy.class.getName());
     private static DotName[] LIFE_CYCLE_ANNOTATIONS = {POST_CONSTRUCT_ANNOTATION, PRE_DESTROY_ANNOTATION};
@@ -77,9 +79,11 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
 
         final Type[] args = methodInfo.args();
         if (args.length > 1) {
-            throw new IllegalArgumentException("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
+            log.warn("Invalid number of arguments for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name());
+            return;
         } else if (args.length == 1 && !args[0].name().toString().equals(InvocationContext.class.getName())) {
-            throw new IllegalArgumentException("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() + ", signature must be void methodName(InvocationContext ctx)");
+            log.warn("Invalid signature for method " + methodInfo.name() + " annotated with " + annotationType + " on class " + classInfo.name() + ", signature must be void methodName(InvocationContext ctx)");
+            return;
         }
 
         final MethodIdentifier methodIdentifier;
