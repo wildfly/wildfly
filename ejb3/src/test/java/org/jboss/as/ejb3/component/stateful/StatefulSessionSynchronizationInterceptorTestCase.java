@@ -91,7 +91,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         context.setInterceptors(Arrays.asList(noop()));
         final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
         context.putPrivateData(Component.class, component);
-        when(component.getAccessTimeout()).thenReturn(defaultAccessTimeout());
+        when(component.getAccessTimeout(null)).thenReturn(defaultAccessTimeout());
         Cache<StatefulSessionComponentInstance> cache = mock(Cache.class);
         when(component.getCache()).thenReturn(cache);
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = mock(TransactionSynchronizationRegistry.class);
@@ -133,7 +133,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         context.setInterceptors(Arrays.asList(noop()));
         final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
         context.putPrivateData(Component.class, component);
-        when(component.getAccessTimeout()).thenReturn(defaultAccessTimeout());
+        when(component.getAccessTimeout(null)).thenReturn(defaultAccessTimeout());
         Cache<StatefulSessionComponentInstance> cache = mock(Cache.class);
         when(component.getCache()).thenReturn(cache);
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = mock(TransactionSynchronizationRegistry.class);

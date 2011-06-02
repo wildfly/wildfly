@@ -58,8 +58,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         final StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         final StatefulSessionComponentInstance instance = getComponentInstance(context);
 
-        // TODO: per method
-        AccessTimeout timeout = component.getAccessTimeout();
+        AccessTimeout timeout = component.getAccessTimeout(context.getMethod());
         boolean acquired = lock.tryLock(timeout.value(), timeout.unit());
         if(!acquired) {
             throw new ConcurrentAccessTimeoutException("EJB 3.1 FR 4.3.14.1 concurrent access timeout on " + context

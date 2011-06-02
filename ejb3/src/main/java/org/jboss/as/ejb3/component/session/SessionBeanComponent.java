@@ -112,15 +112,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     }
 
     /**
-     * Returns the {@link AccessTimeout} applicable to the bean
-     *
-     * @return
-     */
-    public AccessTimeout getAccessTimeout() {
-        return this.beanLevelAccessTimeout;
-    }
-
-    /**
      * Return the {@link Executor} used for asynchronous invocations.
      *
      * @return the async executor

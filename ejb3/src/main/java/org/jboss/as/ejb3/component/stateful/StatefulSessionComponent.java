@@ -35,6 +35,7 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb3.cache.Cache;
@@ -47,6 +48,15 @@ import org.jboss.logging.Logger;
 import org.jboss.tm.TxUtils;
 
 
+import javax.ejb.AccessTimeout;
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Stateful Session Bean
@@ -64,6 +74,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     final InterceptorFactory afterBegin;
     final InterceptorFactory afterCompletion;
     final InterceptorFactory beforeCompletion;
+    private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
 
     /**
      * Construct a new instance.
@@ -76,6 +87,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         this.afterBegin = ejbComponentCreateService.afterBegin;
         this.afterCompletion = ejbComponentCreateService.afterCompletion;
         this.beforeCompletion = ejbComponentCreateService.beforeCompletion;
+        this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
 
         cache = new NoPassivationCache<StatefulSessionComponentInstance>();
         cache.setStatefulObjectFactory(new StatefulObjectFactory<StatefulSessionComponentInstance>() {
@@ -94,6 +106,23 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     @Override
     public TimerService getTimerService() throws IllegalStateException {
         throw new IllegalStateException("TimerService is not supported for Stateful session bean " + this.getComponentName());
+    }
+
+        /**
+     * Returns the {@link AccessTimeout} applicable to given method
+     *
+     */
+    public AccessTimeout getAccessTimeout(Method method) {
+        final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
+        final AccessTimeout accessTimeout = this.methodAccessTimeouts.get(ejbMethod);
+        if (accessTimeout != null) {
+            return accessTimeout;
+        }
+        // check bean level access timeout
+        if (this.beanLevelAccessTimeout != null) {
+            return this.beanLevelAccessTimeout;
+        }
+        return null;
     }
 
     //    @Override
