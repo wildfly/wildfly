@@ -32,6 +32,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.junit.runner.RunWith;
 
@@ -42,35 +43,40 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
  */
-public class ArquillianRunWithProcessor {
+public class ArquillianRunWithProcessor extends ArquillianDeploymentProcessor<ArquillianConfig> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     private final ServiceName serviceName;
-    private final DeploymentUnit deploymentUnit;
+    private ArquillianConfig arqConfig;
 
-    ArquillianRunWithProcessor(ServiceName serviceName, DeploymentUnit deploymentUnit) {
+    ArquillianRunWithProcessor(ServiceContainer serviceContainer, ServiceName serviceName, DeploymentUnit deploymentUnit) {
+        super(serviceContainer, deploymentUnit);
         this.serviceName = serviceName;
-        this.deploymentUnit = deploymentUnit;
     }
 
-    ArquillianConfig getArquillianConfig() {
+    @Override
+    ArquillianConfig getValue() {
+        return arqConfig;
+    }
 
-        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+    ArquillianRunWithProcessor process() {
+
+        final CompositeIndex compositeIndex = getDeploymentUnit().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
-            log.infof("Cannot find composite annotation index in: %s", deploymentUnit);
-            return null;
+            log.infof("Cannot find composite annotation index in: %s", getDeploymentUnit());
+            return this;
         }
 
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
         final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
         if (runWithList.isEmpty()) {
-            return null;
+            return this;
         }
 
-        log.infof("Arquillian test deployment detected: %s", deploymentUnit);
-        ArquillianConfig arqConfig = new ArquillianConfig(serviceName, deploymentUnit);
-        deploymentUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
+        log.infof("Arquillian test deployment detected: %s", getDeploymentUnit());
+        arqConfig = new ArquillianConfig(serviceName, getDeploymentUnit());
+        getDeploymentUnit().putAttachment(ArquillianConfig.KEY, arqConfig);
 
         for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();
@@ -81,6 +87,6 @@ public class ArquillianRunWithProcessor {
             }
         }
 
-        return arqConfig;
+        return this;
     }
 }

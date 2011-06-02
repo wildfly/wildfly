@@ -40,6 +40,7 @@ import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;

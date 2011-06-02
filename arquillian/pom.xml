@@ -70,9 +70,33 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../../build/target/jboss-${project.version}</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <parallel>none</parallel>
                     <systemProperties>
                         <property>
                           <name>java.util.logging.manager</name>
@@ -80,7 +104,7 @@
                         </property>
                         <property>
                           <name>jboss.home</name>
-                          <value>../../build/target/jboss-${jboss.as.release.version}</value>
+                          <value>${basedir}/target/jbossas</value>
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>

@@ -37,6 +37,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.test.spi.TestResult;
+import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.server.deployment.Attachments;
@@ -73,6 +74,7 @@ public class ArquillianService implements Service<ArquillianService> {
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final Map<String, ArquillianConfig> deployedTests = new ConcurrentHashMap<String, ArquillianConfig>();
     private final Map<String, CountDownLatch> waitingTests = new ConcurrentHashMap<String, CountDownLatch>();
+    private ServiceContainer serviceContainer;
     private JMXTestRunner jmxTestRunner;
 
     public static void addService(final ServiceTarget serviceTarget) {
@@ -88,7 +90,7 @@ public class ArquillianService implements Service<ArquillianService> {
         log.debugf("Starting Arquillian Test Runner");
 
         final MBeanServer mbeanServer = injectedMBeanServer.getValue();
-        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        serviceContainer = context.getController().getServiceContainer();
         try {
             jmxTestRunner = new ExtendedJMXTestRunner();
             jmxTestRunner.registerMBean(mbeanServer);
@@ -106,9 +108,10 @@ public class ArquillianService implements Service<ArquillianService> {
                     ServiceName parentName = serviceName.getParent();
                     ServiceController<?> parentController = serviceContainer.getService(parentName);
                     DeploymentUnit deploymentUnit = (DeploymentUnit) parentController.getValue();
-                    ArquillianRunWithProcessor processor = new ArquillianRunWithProcessor(serviceName, deploymentUnit);
-                    ArquillianConfig arqConfig = processor.getArquillianConfig();
+                    ArquillianRunWithProcessor processor = new ArquillianRunWithProcessor(serviceContainer, serviceName, deploymentUnit);
+                    ArquillianConfig arqConfig = processor.process().getValue();
                     if (arqConfig != null) {
+                        new BundleContextProcessor(serviceContainer, deploymentUnit).process();
                         registerConfig(arqConfig);
                     }
                 }
@@ -260,11 +263,8 @@ public class ArquillianService implements Service<ArquillianService> {
 
             else if (osgidep != null) {
                 Bundle bundle = osgidep.getAttachment(Bundle.class);
-                //bundleInst.set(bundle);
-                // ServiceContainerAssociation.setServiceContainer(serviceContainer);
-                //frameworkInst.set(framework);
-                //bundleContextInst.set(framework.getBundleContext());
                 testClass = bundle.loadClass(className);
+                BundleAssociation.setBundle(bundle);
             }
 
             if (testClass == null)

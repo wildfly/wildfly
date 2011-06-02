@@ -39,7 +39,7 @@ import org.jboss.logging.Logger;
  */
 public class ArquillianServiceDeployer {
 
-    private static final Logger log = Logger.getLogger(ManifestBuilder.class);
+    private static final Logger log = Logger.getLogger(ArquillianServiceDeployer.class);
 
     @Inject
     @SuiteScoped

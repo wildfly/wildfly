@@ -39,6 +39,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
 
 /**
  * Test the embedded OSGi framework
@@ -47,14 +48,14 @@ import org.osgi.framework.ServiceReference;
  */
 @RunWith(Arquillian.class)
 @Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class SimpleArquillianTestCase {
+public class SimpleBundleTestCase {
 
     @Inject
     public Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-arquillian");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-bundle");
         archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
@@ -73,8 +74,10 @@ public class SimpleArquillianTestCase {
     @Test
     public void testBundleInjection() throws Exception {
 
-        // Assert that the bundle is injected
+        // Assert that the injected bundle
         assertNotNull("Bundle injected", bundle);
+        assertEquals("example-bundle", bundle.getSymbolicName());
+        assertEquals(Version.emptyVersion, bundle.getVersion());
 
         // Assert that the bundle is in state RESOLVED
         // Note when the test bundle contains the test case it
