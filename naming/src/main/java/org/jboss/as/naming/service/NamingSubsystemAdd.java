@@ -78,7 +78,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
         // Create the java:global namespace
         newControllers.add(addGlobalContextFactory(target, "global", verificationHandler));
         // Create the java:jboss vendor namespace
-        newControllers.add(addGlobalContextFactory(target, " jboss", verificationHandler));
+        newControllers.add(addGlobalContextFactory(target, "jboss", verificationHandler));
 
         // Create the EE namespace
         newControllers.add(addContextFactory(target, "app", verificationHandler));
