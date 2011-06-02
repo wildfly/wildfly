@@ -31,7 +31,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
-import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerService;
+import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -63,7 +63,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
 
         RemotingServices.installStandaloneManagementChannelServices(
                 context.getServiceTarget(),
-                new ModelControllerClientOperationHandlerService(),
+                new NewModelControllerClientOperationHandlerService(),
                 Services.JBOSS_SERVER_CONTROLLER,
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                 port,

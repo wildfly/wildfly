@@ -19,34 +19,21 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.host.controller.mgmt;
+package org.jboss.as.controller.remote;
 
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandlerService;
-import org.jboss.as.controller.remote.NewModelControllerClientOperationHandler;
-import org.jboss.as.domain.controller.DomainController;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
 
 /**
- * Installs the transactional model controller for the master DC
+ * Installs the {@link NewModelControllerClientOperationHandlerService}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class MasterDomainControllerOperationHandlerService extends NewModelControllerClientOperationHandlerService {
-    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
+public class NewModelControllerClientOperationHandlerService extends NewAbstractModelControllerOperationHandlerService<NewModelControllerClientOperationHandler>{
 
-    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append(NewModelControllerClientOperationHandlerService.OPERATION_HANDLER_NAME_SUFFIX);
-
-    public MasterDomainControllerOperationHandlerService() {
-    }
-    @Override
     protected NewModelControllerClientOperationHandler createOperationHandler(NewModelController modelController, ExecutorService executor) {
-        throw new IllegalStateException("Remote domain management not yet implemented");
-        //return new MasterDomainControllerOperationHandlerImpl((DomainController)modelController);
+        return new NewModelControllerClientOperationHandler(null, executor, modelController);
     }
-
 }

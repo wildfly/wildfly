@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
-import org.jboss.as.controller._TempNewProxyController;
-import org.jboss.as.controller._TempNewProxyController.ProxyOperationControl;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.protocol.ProtocolChannel;
