@@ -46,7 +46,9 @@ public class ServerControllerOperationHandlerService extends ModelControllerOper
     @Override
     public void start(StartContext context) throws StartException {
         super.start(context);
-        managementCommunicationService.getValue().addHandler(getValue());
+        // FIXME enable when remoting is added
+//        managementCommunicationService.getValue().addHandler(getValue());
+        log.error("FIXME re-enable management comms");
     }
 
     public void stop(StartContext context) {

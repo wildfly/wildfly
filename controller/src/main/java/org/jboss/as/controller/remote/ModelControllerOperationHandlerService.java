@@ -39,7 +39,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ModelControllerOperationHandlerService implements Service<ModelControllerOperationHandler>{
 
-    private static final Logger log = Logger.getLogger("org.jboss.server.management");
+    protected static final Logger log = Logger.getLogger("org.jboss.server.management");
 
     public static final ServiceName OPERATION_HANDLER_NAME_SUFFIX = ServiceName.of("operation", "handler");
 
