@@ -101,7 +101,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                     try {
                         inputStream = classFile.openStream();
                         indexer.index(inputStream);
-                    }catch (Exception e){
+                    }catch (IOException e){
                         throw new IOException("Could not index class "+classFile.getPathNameRelativeTo(virtualFile)+" in archive '"+virtualFile+"'",e);
                     } finally {
                         VFSUtils.safeClose(inputStream);
