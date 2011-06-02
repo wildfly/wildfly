@@ -31,6 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -71,20 +72,30 @@ public abstract class AbstractControllerService implements Service<NewModelContr
         final NewModelControllerImpl controller = new NewModelControllerImpl(createCoreModel(), container, context.getChildTarget(), ModelNodeRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
         initModel(controller.getRootRegistration());
         this.controller = controller;
-        try {
-            boot(context);
-        } catch (ConfigurationPersistenceException e) {
-            throw new StartException(e);
-        }
+
+        final ServiceTarget target = context.getChildTarget();
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    boot(new BootContext() {
+                        public ServiceTarget getServiceTarget() {
+                            return target;
+                        }
+                    });
+                } catch (ConfigurationPersistenceException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, "Controller Boot Thread").start();
     }
 
     /**
      * Boot the controller.  Called during service start.
      *
-     * @param context the service start context
+     * @param context the boot context
      * @throws ConfigurationPersistenceException if the configuration failed to be loaded
      */
-    protected void boot(final StartContext context) throws ConfigurationPersistenceException {
+    protected void boot(final BootContext context) throws ConfigurationPersistenceException {
         controller.boot(configurationPersister.load(), OperationMessageHandler.logging, NewModelController.OperationTransactionControl.COMMIT);
     }
 

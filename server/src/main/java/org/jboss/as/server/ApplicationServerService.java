@@ -56,7 +56,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -130,7 +129,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServiceModuleLoader.addService(serviceTarget, configuration);
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
-        ServerService.addService(serviceTarget, configuration, processState);
+        ServerService.addService(serviceTarget, configuration, processState, bootstrapListener);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
             public ServiceTarget getServiceTarget() {
@@ -186,47 +185,5 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
     @Override
     public AsyncFuture<ServiceContainer> getValue() throws IllegalStateException, IllegalArgumentException {
         return futureContainer;
-    }
-
-    private static class BootstrapListener extends org.jboss.as.controller.BootstrapListener {
-        final FutureServiceContainer futureContainer;
-        final Configuration configuration;
-
-        BootstrapListener(final ServiceContainer serviceContainer, final long startTime, final ServiceTarget serviceTarget, final FutureServiceContainer futureContainer, Configuration configuration) {
-            super(serviceContainer, startTime, serviceTarget);
-            this.futureContainer = futureContainer;
-            this.configuration = configuration;
-        }
-
-        @Override
-        protected void done(ServiceContainer container, long elapsedTime, int started, int failed, EnumMap<Mode, AtomicInteger> map, Set<ServiceName> missingDepsSet) {
-            futureContainer.done(container);
-            final Logger log = Logger.getLogger("org.jboss.as");
-            final int active = map.get(ServiceController.Mode.ACTIVE).get();
-            final int passive = map.get(ServiceController.Mode.PASSIVE).get();
-            final int onDemand = map.get(ServiceController.Mode.ON_DEMAND).get();
-            final int never = map.get(ServiceController.Mode.NEVER).get();
-            if (failed == 0) {
-                log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
-                try {
-                    configuration.getConfigurationPersister().successfulBoot();
-                } catch (ConfigurationPersistenceException e) {
-                    log.error(e);
-                }
-            } else {
-                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
-            }
-        }
-    }
-
-    private static class FutureServiceContainer extends AsyncFutureTask<ServiceContainer> {
-
-        FutureServiceContainer() {
-            super(JBossExecutors.directExecutor());
-        }
-
-        void done(final ServiceContainer container) {
-            setResult(container);
-        }
     }
 }
