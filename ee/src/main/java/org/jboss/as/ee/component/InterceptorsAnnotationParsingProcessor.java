@@ -173,9 +173,9 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
      */
     private Collection<ComponentDescription> getApplicableComponents(final CompositeIndex index, final ClassInfo klass, final EEModuleDescription eeModuleDescription) {
         Set<ComponentDescription> componentDescriptions = new HashSet<ComponentDescription>();
-        final ComponentDescription componentDescription = eeModuleDescription.getComponentByClassName(klass.name().toString());
-        if (componentDescription != null) {
-            componentDescriptions.add(componentDescription);
+        final List<ComponentDescription> descriptions = eeModuleDescription.getComponentsByClassName(klass.name().toString());
+        if (componentDescriptions.isEmpty()) {
+            componentDescriptions.addAll(descriptions);
         } else {
             componentDescriptions.addAll(this.getKnownSubClassComponents(index, klass, eeModuleDescription));
         }
@@ -199,11 +199,8 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
         }
         Set<ComponentDescription> components = new HashSet<ComponentDescription>();
         for (ClassInfo subClass : subClasses) {
-            final ComponentDescription component = eeModuleDescription.getComponentByClassName(subClass.name().toString());
-            if (component == null) {
-                continue;
-            }
-            components.add(component);
+            final List<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentsByClassName(subClass.name().toString());
+            components.addAll(componentDescriptions);
         }
         return components;
     }

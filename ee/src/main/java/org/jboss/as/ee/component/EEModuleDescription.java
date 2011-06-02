@@ -27,6 +27,7 @@ import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ public final class EEModuleDescription {
     private final String applicationName;
     private volatile String moduleName;
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
-    private final Map<String, ComponentDescription> componentsByClassName = new HashMap<String, ComponentDescription>();
+    private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
     private final Map<String, EEModuleClassDescription> classesByName = new HashMap<String, EEModuleClassDescription>();
     /**
      * Resource injections that only get installed if a binding is set up
@@ -108,11 +109,12 @@ public final class EEModuleDescription {
         if (componentsByName.containsKey(componentName)) {
             throw new IllegalArgumentException("A component named '" + componentName + "' is already defined in this module");
         }
-        if (componentsByClassName.containsKey(componentClassName)) {
-            throw new IllegalArgumentException("A component of class " + componentClassName + " is already defined in this module");
-        }
         componentsByName.put(componentName, description);
-        componentsByClassName.put(componentClassName, description);
+        List<ComponentDescription> list = componentsByClassName.get(componentClassName);
+        if(list == null) {
+            componentsByClassName.put(componentClassName, list = new ArrayList<ComponentDescription>(1));
+        }
+        list.add(description);
     }
 
     public void addClass(EEModuleClassDescription description) {
@@ -146,8 +148,9 @@ public final class EEModuleDescription {
         return componentsByName.get(name);
     }
 
-    public ComponentDescription getComponentByClassName(String className) {
-        return componentsByClassName.get(className);
+    public List<ComponentDescription> getComponentsByClassName(String className) {
+        final List<ComponentDescription> ret = componentsByClassName.get(className);
+        return ret == null ? Collections.<ComponentDescription>emptyList() : ret;
     }
 
     public Collection<ComponentDescription> getComponentDescriptions() {

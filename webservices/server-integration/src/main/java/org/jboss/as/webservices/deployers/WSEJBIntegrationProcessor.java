@@ -89,22 +89,30 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
            final AnnotationTarget target = webServiceAnnotation.target();
            final ClassInfo webServiceClassInfo = (ClassInfo) target;
            final String beanClassName = webServiceClassInfo.name().toString();
-           final ComponentDescription componentDescription = moduleDescription.getComponentByClassName(beanClassName);
-           final SessionBeanComponentDescription sessionBean = getSessionBean(componentDescription);
-           if (sessionBean != null && (sessionBean.isStateless() || sessionBean.isSingleton())) {
-               final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
-               final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
-               endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName));
+
+           final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(beanClassName);
+
+           // final String componentName = beanClassName.substring(beanClassName.lastIndexOf(".") + 1); // TODO: investigate why commented out
+           // final ServiceName baseName = unit.getServiceName().append("component").append(componentName).append("START"); // TODO: investigate why commented out
+           final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
+           for(SessionBeanComponentDescription sessionBean : sessionBeans) {
+               if (sessionBean.isStateless() || sessionBean.isSingleton()) {
+                   final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
+                   final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
+                   endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName));
+               }
            }
        }
    }
 
-   private static SessionBeanComponentDescription getSessionBean(final ComponentDescription componentDescription) {
-       if (componentDescription instanceof SessionBeanComponentDescription) {
-           return (SessionBeanComponentDescription) componentDescription;
+   private static List<SessionBeanComponentDescription> getSessionBeans(final List<ComponentDescription> componentDescriptions) {
+       final List<SessionBeanComponentDescription> beans = new ArrayList<SessionBeanComponentDescription>(1);
+       for(ComponentDescription componentDescription : componentDescriptions) {
+           if (componentDescription instanceof SessionBeanComponentDescription) {
+               beans.add((SessionBeanComponentDescription)componentDescription);
+           }
        }
-
-       return null;
+       return beans;
    }
 
    private static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
