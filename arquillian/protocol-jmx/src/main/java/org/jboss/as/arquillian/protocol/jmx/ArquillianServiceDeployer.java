@@ -52,9 +52,9 @@ public class ArquillianServiceDeployer {
     private AtomicBoolean serviceArchiveDeployed = new AtomicBoolean();
 
     public void doServiceDeploy(@Observes BeforeDeploy event) {
-        if (serviceArchiveDeployed.get() == false) {
+        ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
+        if (archiveHolder != null && !serviceArchiveDeployed.get()) {
             try {
-                ServiceArchiveHolder archiveHolder = archiveHolderInst.get();
                 DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
                 deployableContainer.deploy(archiveHolder.getArchive());
                 serviceArchiveDeployed.set(true);
@@ -65,7 +65,7 @@ public class ArquillianServiceDeployer {
     }
 
     public void undeploy(@Observes BeforeStop event) {
-        if (serviceArchiveDeployed.get() == true) {
+        if (serviceArchiveDeployed.get()) {
             try {
                 DeployableContainer<?> deployableContainer = containerInst.get().getDeployableContainer();
                 ServiceArchiveHolder archiveHolder = archiveHolderInst.get();

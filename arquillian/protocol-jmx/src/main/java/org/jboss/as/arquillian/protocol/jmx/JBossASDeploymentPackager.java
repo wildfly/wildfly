@@ -34,8 +34,10 @@ import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPacka
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.protocol.jmx.JMXProtocol;
+import org.jboss.as.arquillian.container.ManifestUtils;
 import org.jboss.as.arquillian.protocol.jmx.JBossASProtocol.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
@@ -57,6 +59,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  */
 public class JBossASDeploymentPackager implements DeploymentPackager {
 
+    private static final Logger log = Logger.getLogger(JBossASDeploymentPackager.class);
+
     private static final Set<String> excludedAuxillaryArchives = new HashSet<String>();
 
     static {
@@ -73,11 +77,11 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> protocolProcessors) {
 
-        final Archive<?> appArchive = testDeployment.getApplicationArchive();
         final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
-        generateArquillianServiceArchive(appArchive, auxArchives);
+        generateArquillianServiceArchive(auxArchives);
 
-        final Manifest manifest = ManifestUtils.getOrCreateManifest(testDeployment.getApplicationArchive());
+        final Archive<?> appArchive = testDeployment.getApplicationArchive();
+        final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
         if (BundleInfo.isValidBundleManifest(manifest) == false) {
             // JBAS-9059 Inconvertible types error due to OpenJDK compiler bug
             // if (appArchive instanceof WebArchive) {
@@ -96,10 +100,11 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
                 }
             }
         }
+        log.debugf("Archive content: %s\n%s", appArchive.getName(), appArchive.toString(true));
         return appArchive;
     }
 
-    private void generateArquillianServiceArchive(Archive<?> appArchive, Collection<Archive<?>> auxArchives) {
+    private void generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(JMXProtocol.class.getPackage());

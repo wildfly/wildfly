@@ -30,11 +30,12 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.jboss.shrinkwrap.api.container.ResourceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -162,13 +163,13 @@ public class ShrinkWrapUtils {
         return jarFile;
     }
 
-    public static void addFiles(ResourceContainer<?> archive, File dir, ArchivePath dest) {
+    public static void addFiles(Archive<?> archive, File dir, ArchivePath dest) {
         for (String name : dir.list()) {
             File file = new File(dir, name);
             if (file.isDirectory()) {
                 addFiles(archive, file, ArchivePaths.create(dest, name));
             } else {
-                archive.addAsResource(file, ArchivePaths.create(dest, name));
+                archive.add(new FileAsset(file), ArchivePaths.create(dest, name));
             }
         }
     }
@@ -190,7 +191,7 @@ public class ShrinkWrapUtils {
         }
     }
 
-    private static void addResources(String archiveName, ResourceContainer<?> archive) {
+    private static void addResources(String archiveName, Archive<?> archive) {
         File resourcesDir = getResources(archiveName);
         if (resourcesDir != null) {
             addFiles(archive, resourcesDir, ArchivePaths.create("/"));
