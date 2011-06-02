@@ -174,7 +174,7 @@ public class InterceptorsAnnotationParsingProcessor implements DeploymentUnitPro
     private Collection<ComponentDescription> getApplicableComponents(final CompositeIndex index, final ClassInfo klass, final EEModuleDescription eeModuleDescription) {
         Set<ComponentDescription> componentDescriptions = new HashSet<ComponentDescription>();
         final List<ComponentDescription> descriptions = eeModuleDescription.getComponentsByClassName(klass.name().toString());
-        if (componentDescriptions.isEmpty()) {
+        if (!descriptions.isEmpty()) {
             componentDescriptions.addAll(descriptions);
         } else {
             componentDescriptions.addAll(this.getKnownSubClassComponents(index, klass, eeModuleDescription));
