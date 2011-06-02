@@ -50,12 +50,10 @@ import org.jboss.as.protocol.old.ProtocolUtils;
  */
 public abstract class NewAbstractModelControllerOperationHandler implements ManagementOperationHandler {
 
-    protected final ProtocolChannel channel;
     protected final ExecutorService executorService;
     protected final NewModelController controller;
 
-    public NewAbstractModelControllerOperationHandler(final ProtocolChannel channel, final ExecutorService executorService, final NewModelController controller) {
-        this.channel = channel;
+    public NewAbstractModelControllerOperationHandler(final ExecutorService executorService, final NewModelController controller) {
         this.executorService = executorService;
         this.controller = controller;
     }
@@ -63,7 +61,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     @Override
     public abstract ManagementRequestHandler getRequestHandler(final byte id);
 
-    protected ManagementClientChannelStrategy getChannelStrategy() {
+    protected ManagementClientChannelStrategy getChannelStrategy(ProtocolChannel channel) {
         return ManagementClientChannelStrategy.create(channel);
     }
 
@@ -71,9 +69,11 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
      * A proxy to the operation message handler on the remote caller
      */
     class OperationMessageHandlerProxy implements OperationMessageHandler {
+        final ProtocolChannel channel;
         final int executionId;
 
-        public OperationMessageHandlerProxy(final int executionId) {
+        public OperationMessageHandlerProxy(final ProtocolChannel channel, final int executionId) {
+            this.channel = channel;
             this.executionId = executionId;
         }
 
@@ -103,7 +103,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                     protected Void readResponse(final DataInput input) throws IOException {
                         return null;
                     }
-                }.executeForResult(executorService, getChannelStrategy());
+                }.executeForResult(executorService, getChannelStrategy(channel));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -113,10 +113,10 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     class OperationAttachmentsProxy implements OperationAttachments {
         final List<InputStream> proxiedStreams;
 
-        OperationAttachmentsProxy(final int executionId, final int size){
+        OperationAttachmentsProxy(final ProtocolChannel channel, final int executionId, final int size){
             proxiedStreams = new ArrayList<InputStream>(size);
             for (int i = 0 ; i < size ; i++) {
-                proxiedStreams.add(new ProxiedInputStream(executionId, i));
+                proxiedStreams.add(new ProxiedInputStream(channel, executionId, i));
             }
         }
 
@@ -127,13 +127,14 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
     }
 
     private class ProxiedInputStream extends InputStream {
-
+        final ProtocolChannel channel;
         final int executionId;
         final int index;
         volatile byte[] bytes;
         volatile ByteArrayInputStream delegate;
 
-        public ProxiedInputStream(final int executionId, final int index) {
+        public ProxiedInputStream(final ProtocolChannel channel, final int executionId, final int index) {
+            this.channel = channel;
             this.executionId = executionId;
             this.index = index;
         }
@@ -191,7 +192,7 @@ public abstract class NewAbstractModelControllerOperationHandler implements Mana
                         }
                         return null;
                     }
-                }.execute(executorService, getChannelStrategy());
+                }.execute(executorService, getChannelStrategy(channel));
             }
         }
     }

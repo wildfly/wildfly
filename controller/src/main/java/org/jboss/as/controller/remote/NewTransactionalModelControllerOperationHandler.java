@@ -55,19 +55,8 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
 
     private Map<Integer, OperationTransaction> activeTransactions = new HashMap<Integer, NewModelController.OperationTransaction>();
 
-    public NewTransactionalModelControllerOperationHandler(final ProtocolChannel channel, final ExecutorService executorService, final NewModelController controller) {
-        super(channel, executorService, controller);
-
-        channel.addCloseHandler(new CloseHandler<Channel>() {
-            @Override
-            public void handleClose(Channel closed) {
-                synchronized (activeTransactions) {
-                    for (OperationTransaction tx : activeTransactions.values()) {
-                        tx.rollback();
-                    }
-                }
-            }
-        });
+    public NewTransactionalModelControllerOperationHandler(final ExecutorService executorService, final NewModelController controller) {
+        super(executorService, controller);
     }
 
     @Override
@@ -99,6 +88,19 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, NewModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             attachmentsLength = input.readInt();
+
+            //TODO make sure this is only added once
+            getChannel().addCloseHandler(new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed) {
+                    synchronized (activeTransactions) {
+                        for (OperationTransaction tx : activeTransactions.values()) {
+                            tx.rollback();
+                        }
+                    }
+                }
+            });
+
         }
 
         @Override
@@ -106,10 +108,14 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ProxyOperationControlProxy control = new ProxyOperationControlProxy(executionId);
+                    ProxyOperationControlProxy control = new ProxyOperationControlProxy(getChannel(), executionId);
                     final ModelNode result;
                     try {
-                        result = controller.execute(operation, new OperationMessageHandlerProxy(executionId), control, new OperationAttachmentsProxy(executionId, attachmentsLength));
+                        result = controller.execute(
+                                operation,
+                                new OperationMessageHandlerProxy(getChannel(), executionId),
+                                control,
+                                new OperationAttachmentsProxy(getChannel(), executionId, attachmentsLength));
                     } catch (Exception e) {
                         activeTransactions.remove(executionId);
                         final ModelNode failure = new ModelNode();
@@ -181,9 +187,11 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
      * A proxy to the proxy operation control proxy on the remote caller
      */
     private class ProxyOperationControlProxy implements ProxyOperationControl {
+        final ProtocolChannel channel;
         final int executionId;
 
-        public ProxyOperationControlProxy(final int executionId) {
+        public ProxyOperationControlProxy(final ProtocolChannel channel, final int executionId) {
+            this.channel = channel;
             this.executionId = executionId;
         }
 
@@ -197,7 +205,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     return NewModelControllerProtocol.OPERATION_PREPARED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy());
+            }.execute(executorService, getChannelStrategy(channel));
         }
 
         @Override
@@ -210,7 +218,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     return NewModelControllerProtocol.OPERATION_FAILED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy());
+            }.execute(executorService, getChannelStrategy(channel));
         }
 
         @Override
@@ -222,7 +230,7 @@ public class NewTransactionalModelControllerOperationHandler extends NewAbstract
                     return NewModelControllerProtocol.OPERATION_COMPLETED_REQUEST;
                 }
 
-            }.execute(executorService, getChannelStrategy());
+            }.execute(executorService, getChannelStrategy(channel));
         }
 
         /**

@@ -47,8 +47,8 @@ public abstract class ManagementClientChannelStrategy {
         return new Existing(channel);
     }
 
-    public static ManagementClientChannelStrategy create(String hostName, int port, final ExecutorService executorService) throws URISyntaxException, IOException {
-        return new Establishing(hostName, port, executorService);
+    public static ManagementClientChannelStrategy create(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) throws URISyntaxException, IOException {
+        return new Establishing(hostName, port, executorService, handler);
     }
 
     private static class Existing extends ManagementClientChannelStrategy {
@@ -73,11 +73,13 @@ public abstract class ManagementClientChannelStrategy {
         private final int port;
         private final ExecutorService executorService;
         private volatile ProtocolChannel channel;
+        private final ManagementOperationHandler handler;
 
-        public Establishing(String hostName, int port, final ExecutorService executorService) {
+        public Establishing(String hostName, int port, final ExecutorService executorService, final ManagementOperationHandler handler) {
             this.hostName = hostName;
             this.port = port;
             this.executorService = executorService;
+            this.handler = handler;
         }
 
         @Override
@@ -107,6 +109,7 @@ public abstract class ManagementClientChannelStrategy {
 
             try {
                 channel = client.openChannel("management");
+                channel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(handler);
                 channel.startReceiving();
                 return channel;
             } catch (IOException e) {

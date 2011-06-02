@@ -30,25 +30,33 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.NewModelController;
+import org.jboss.as.controller._TempNewProxyController;
+import org.jboss.as.controller._TempNewProxyController.ProxyOperationControl;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewModelControllerProtocol;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.protocol.ProtocolChannel;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.old.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Operation handlers for the remote implementation of {@link NewModelControllerClient}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public class NewModelControllerClientOperationHandler extends NewAbstractModelControllerOperationHandler {
 
-    public NewModelControllerClientOperationHandler(final ProtocolChannel channel, final ExecutorService executorService, final NewModelController controller) {
-        super(channel, executorService, controller);
+    /**
+     * @param executorService executor to use to execute requests from this operation handler to the initiator
+     * @param controller the target controller
+     */
+    public NewModelControllerClientOperationHandler(final ExecutorService executorService, final NewModelController controller) {
+        super(executorService, controller);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ManagementRequestHandler getRequestHandler(final byte id) {
         if (id == NewModelControllerProtocol.EXECUTE_REQUEST) {
@@ -80,7 +88,11 @@ public class NewModelControllerClientOperationHandler extends NewAbstractModelCo
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             ModelNode result;
             try {
-                result = controller.execute(operation, new OperationMessageHandlerProxy(executionId), NewModelController.OperationTransactionControl.COMMIT, new OperationAttachmentsProxy(executionId, attachmentsLength));
+                result = controller.execute(
+                        operation,
+                        new OperationMessageHandlerProxy(getChannel(), executionId),
+                        NewModelController.OperationTransactionControl.COMMIT,
+                        new OperationAttachmentsProxy(getChannel(), executionId, attachmentsLength));
             } catch (Exception e) {
                 final ModelNode failure = new ModelNode();
                 failure.get(OUTCOME).set(FAILED);

@@ -142,7 +142,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             dmr.get("address").setEmptyList();
             dmr.get("input-stream-index").set(0);
 
-            NewOperationBuilder operation = NewOperationBuilder.Factory.create(dmr);
+            NewOperationBuilder operation = new NewOperationBuilder(dmr);
             operation.addInputStream(result.stream);
             response = modelController.execute(operation.build());
             drain(http.getRequestBody());

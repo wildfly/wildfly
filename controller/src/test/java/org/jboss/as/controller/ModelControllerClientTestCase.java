@@ -90,7 +90,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
@@ -169,7 +169,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());
@@ -212,7 +212,7 @@ public class ModelControllerClientTestCase {
             }
         };
 
-        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(serverChannel, channels.getExecutorService(), controller);
+        NewModelControllerClientOperationHandler operationHandler = new NewModelControllerClientOperationHandler(channels.getExecutorService(), controller);
         serverChannel.getReceiver(ManagementChannelReceiver.class).setOperationHandler(operationHandler);
 
         NewModelControllerClient client = NewModelControllerClient.Factory.create(channels.getClientChannel());

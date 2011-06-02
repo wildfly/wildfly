@@ -51,6 +51,6 @@ class NewEstablishChannelModelControllerClient extends NewAbstractModelControlle
 
     @Override
     ManagementClientChannelStrategy getClientChannelStrategy() throws URISyntaxException, IOException{
-        return ManagementClientChannelStrategy.create(hostName, port, executorService);
+        return ManagementClientChannelStrategy.create(hostName, port, executorService, this);
     }
 }
