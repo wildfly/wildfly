@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment.annotation;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -100,6 +101,8 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                     try {
                         inputStream = classFile.openStream();
                         indexer.index(inputStream);
+                    }catch (Exception e){
+                        throw new IOException("Could not index class "+classFile.getPathNameRelativeTo(virtualFile)+" in archive '"+virtualFile+"'",e);
                     } finally {
                         VFSUtils.safeClose(inputStream);
                     }
