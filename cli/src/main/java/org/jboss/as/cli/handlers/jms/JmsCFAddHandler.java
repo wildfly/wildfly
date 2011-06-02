@@ -33,6 +33,7 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**

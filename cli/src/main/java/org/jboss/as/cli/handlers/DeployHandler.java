@@ -37,8 +37,8 @@ import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -207,7 +207,7 @@ public class DeployHandler extends BatchModeCommandHandler {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        NewModelControllerClient client = ctx.getModelControllerClient();
 
         ParsedArguments args = ctx.getParsedArguments();
         boolean l = this.l.isPresent(args);
@@ -261,7 +261,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 try {
                     is = new FileInputStream(f);
                     ModelNode request = builder.buildRequest();
-                    OperationBuilder op = OperationBuilder.Factory.create(request);
+                    NewOperationBuilder op = new NewOperationBuilder(request);
                     op.addInputStream(is);
                     request.get("content").get(0).get("input-stream-index").set(0);
                     result = client.execute(op.build());
@@ -300,7 +300,7 @@ public class DeployHandler extends BatchModeCommandHandler {
                 try {
                     is = new FileInputStream(f);
                     ModelNode request = builder.buildRequest();
-                    OperationBuilder op = OperationBuilder.Factory.create(request);
+                    NewOperationBuilder op = new NewOperationBuilder(request);
                     op.addInputStream(is);
                     request.get("content").get(0).get("input-stream-index").set(0);
                     result = client.execute(op.build());

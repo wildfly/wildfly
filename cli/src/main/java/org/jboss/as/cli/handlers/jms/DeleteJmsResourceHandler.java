@@ -27,7 +27,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.handlers.BatchModeCommandHandler;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -72,7 +72,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
             throw new OperationFormatException("name is missing.");
         }
 
-        ModelControllerClient client = ctx.getModelControllerClient();
+        NewModelControllerClient client = ctx.getModelControllerClient();
         final String resource;
         if(Util.isTopic(client, jndiName)) {
             resource = "jms-topic";

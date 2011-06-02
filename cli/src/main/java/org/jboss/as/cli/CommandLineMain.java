@@ -87,7 +87,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -494,7 +494,7 @@ public class CommandLineMain {
         /** domain or standalone mode*/
         private boolean domainMode;
         /** the controller client */
-        private ModelControllerClient client;
+        private NewModelControllerClient client;
         /** the default controller host */
         private String defaultControllerHost = "localhost";
         /** the default controller port */
@@ -604,7 +604,7 @@ public class CommandLineMain {
         }
 
         @Override
-        public ModelControllerClient getModelControllerClient() {
+        public NewModelControllerClient getModelControllerClient() {
             return client;
         }
 
@@ -638,7 +638,7 @@ public class CommandLineMain {
                 port = defaultControllerPort;
             }
 
-            ModelControllerClient newClient = ModelControllerClient.Factory.create(host, port);
+            NewModelControllerClient newClient = NewModelControllerClient.Factory.create(host, port);
             if(this.client != null) {
                 disconnectController();
             }

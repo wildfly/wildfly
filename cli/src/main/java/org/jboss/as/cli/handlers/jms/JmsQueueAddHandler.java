@@ -34,6 +34,10 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+<<<<<<< HEAD:cli/src/main/java/org/jboss/as/cli/handlers/jms/JmsQueueAddHandler.java
+=======
+import org.jboss.as.controller.client.NewModelControllerClient;
+>>>>>>> Get CLI working with standalone:cli/src/main/java/org/jboss/as/cli/handlers/CreateJmsQueueHandler.java
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -82,7 +86,41 @@ public class JmsQueueAddHandler extends BatchModeCommandHandler {
         selector.addRequiredPreceding(name);
 
         durable = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"false", "true"}), "--durable");
+<<<<<<< HEAD:cli/src/main/java/org/jboss/as/cli/handlers/jms/JmsQueueAddHandler.java
         durable.addRequiredPreceding(name);
+=======
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
+     */
+    @Override
+    protected void doHandle(CommandContext ctx) {
+
+        ModelNode request;
+        try {
+            request = buildRequest(ctx);
+        } catch (CommandFormatException e) {
+            ctx.printLine(e.getLocalizedMessage());
+            return;
+        }
+
+        NewModelControllerClient client = ctx.getModelControllerClient();
+        final ModelNode result;
+        try {
+            result = client.execute(request);
+        } catch (Exception e) {
+            ctx.printLine("Failed to perform operation: " + e.getLocalizedMessage());
+            return;
+        }
+
+        if (!Util.isSuccess(result)) {
+            ctx.printLine(Util.getFailureDescription(result));
+            return;
+        }
+
+        ctx.printLine("Sucessfully created queue.");
+>>>>>>> Get CLI working with standalone:cli/src/main/java/org/jboss/as/cli/handlers/CreateJmsQueueHandler.java
     }
 
     @Override
