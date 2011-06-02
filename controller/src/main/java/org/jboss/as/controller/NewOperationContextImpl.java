@@ -39,7 +39,6 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ModelNodeRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
@@ -520,7 +519,6 @@ final class NewOperationContextImpl implements NewOperationContext {
             affectsRuntime = true;
             acquireContainerMonitor();
             awaitContainerMonitor();
-            modelController.acquireContainerMonitor();
         }
         ServiceController<?> controller = modelController.getServiceRegistry().getService(name);
         if (controller != null) {
@@ -613,13 +611,8 @@ final class NewOperationContextImpl implements NewOperationContext {
             if (currentStage == Stage.DONE) {
                 throw new IllegalStateException("Invalid modification after completed step");
             }
-            try {
-                modelController.acquireLock(respectInterruption);
-                containerMonitorDepth = depth;
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new CancellationException("Operation cancelled asynchronously");
-            }
+            modelController.acquireContainerMonitor();
+            containerMonitorDepth = depth;
         }
     }
 
