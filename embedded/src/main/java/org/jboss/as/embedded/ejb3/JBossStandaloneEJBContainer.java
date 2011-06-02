@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -65,11 +66,12 @@ public class JBossStandaloneEJBContainer extends EJBContainer {
 
     /**
      * Search the JVM classpath to find EJB modules and deploy them.
+     * @param properties
      */
-    void init() throws IOException, ExecutionException, InterruptedException {
+    void init(final Map<?, ?> properties) throws IOException, ExecutionException, InterruptedException {
         // TODO: the ClassPathEjbJarScanner is not the optimal way to find EJBs, see TODOs in there.
         // ClassPathEjbJarScanner uses TCCL
-        final String[] candidates = ClassPathEjbJarScanner.getEjbJars();
+        final String[] candidates = ClassPathEjbJarScanner.getEjbJars(properties);
         // TODO: use a DeploymentPlan
         for (int i = 0; i < candidates.length; i++) {
             deploy(new File(candidates[i]));

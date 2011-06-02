@@ -89,7 +89,7 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
             final JBossStandaloneEJBContainer container = new JBossStandaloneEJBContainer(server);
             boolean okay = false;
             try {
-                container.init();
+                container.init(properties);
                 okay = true;
                 return container;
             }

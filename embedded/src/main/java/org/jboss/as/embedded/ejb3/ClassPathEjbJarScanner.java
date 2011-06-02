@@ -30,14 +30,19 @@ import javax.ejb.MessageDriven;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
+import javax.ejb.embeddable.EJBContainer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -158,7 +163,7 @@ class ClassPathEjbJarScanner {
     /**
      * Obtains all EJB JAR entries from the ClassPath
      */
-    public static String[] getEjbJars() {
+    public static String[] getEjbJars(Map<?, ?> properties) {
 
         // Initialize
         final Collection<String> returnValue = new ArrayList<String>();
@@ -174,12 +179,48 @@ class ClassPathEjbJarScanner {
         // Split by the path separator character
         final String[] classPathEntries = classPath.split(File.pathSeparator);
 
-        // For each CP entry
-        for (final String classPathEntry : classPathEntries) {
-            // If this is an EJB JAR
-            if (isEjbJar(classPathEntry)) {
-                // Add to be returned
-                returnValue.add(classPathEntry);
+        final Object modules = properties.get(EJBContainer.MODULES);
+        if (modules != null) {
+            if (modules instanceof File[]) {
+                for (File file : (File[]) modules) {
+                    returnValue.add(file.getAbsolutePath());
+                }
+            } else if (modules instanceof File) {
+                returnValue.add(((File) modules).getAbsolutePath());
+            } else if (modules instanceof String[]) {
+                final Set<String> cpSet = new HashSet<String>();
+                cpSet.addAll(Arrays.asList(classPathEntries));
+                for (final String file : (String[]) modules) {
+                    if (cpSet.contains(file)) {
+                        returnValue.add(file);
+                    } else {
+                        log.warn("Entry " + file + " specified in " + EJBContainer.MODULES + " was not on the class path, ignoring");
+                    }
+                }
+            } else if (modules instanceof String) {
+                boolean found = false;
+                for(String classPathEntry : classPathEntries) {
+                    if(classPathEntry.equals(modules)) {
+                        found = true;
+                        returnValue.add(classPathEntry);
+                        break;
+                    }
+                }
+                if(!found) {
+                    //we don't have any jars, throw an exception
+                    throw new RuntimeException(modules + " entry specified in " + EJBContainer.MODULES + " was not found on the class path");
+                }
+            } else {
+                throw new RuntimeException(EJBContainer.MODULES + " was not of type File[], File, String[] or String, but of type " + modules.getClass());
+            }
+        } else {
+            // For each CP entry
+            for (final String classPathEntry : classPathEntries) {
+                // If this is an EJB JAR
+                if (isEjbJar(classPathEntry)) {
+                    // Add to be returned
+                    returnValue.add(classPathEntry);
+                }
             }
         }
 
@@ -304,8 +345,7 @@ class ClassPathEjbJarScanner {
 
                 // Return
                 return false;
-            }
-            finally {
+            } finally {
                 try {
                     handle.close();
                 } catch (final IOException e) {
