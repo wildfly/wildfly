@@ -153,6 +153,7 @@
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.resteasy.resteasy-jaxrs>2.1.0.GA</version.org.jboss.resteasy.resteasy-jaxrs>
+        <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.0.0-alpha-11</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
@@ -4722,6 +4723,62 @@
                 <groupId>wsdl4j</groupId>
                 <artifactId>wsdl4j</artifactId>
                 <version>${version.wsdl4j}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.seam.integration</groupId>
+                <artifactId>jboss-seam-int-jbossas</artifactId>
+                <version>${version.org.jboss.seam.int}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.seam.integration</groupId>
+                        <artifactId>jboss-seam-int-microcontainer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.deployers</groupId>
+                        <artifactId>jboss-deployers-vfs</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.cl</groupId>
+                        <artifactId>jboss-classloader</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.deployers</groupId>
+                        <artifactId>jboss-deployers-vfs-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.kernel</groupId>
+                        <artifactId>jboss-dependency</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.kernel</groupId>
+                        <artifactId>jboss-kernel</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jbossxb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.man</groupId>
+                        <artifactId>jboss-managed</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.seam</groupId>
+                        <artifactId>jboss-seam</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-vfs</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
         </dependencies>

@@ -39,6 +39,7 @@ import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
 import org.jboss.as.server.deployment.api.ContentRepository;
 import org.jboss.as.server.deployment.api.ServerDeploymentRepository;
+import org.jboss.as.server.deployment.integration.SeamProcessor;
 import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser;
@@ -235,6 +236,10 @@ final class ServerControllerService implements Service<ServerController> {
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_INSTALL_EXTENSION, new ModuleExtensionNameProcessor()));
         deployers.get(Phase.POST_MODULE).add(new RegisteredProcessor(Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor()));
         deployers.get(Phase.INSTALL).add(new RegisteredProcessor(Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor()));
+
+        // Ext integration deployers
+
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SEAM, new SeamProcessor()));
 
         // All deployers are registered
 

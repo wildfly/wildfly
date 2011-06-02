@@ -32,7 +32,7 @@ import java.util.List;
  * TODO: this should probably be somewhere else
  *
  * @author Stuart Douglas
- *
+ * @author Ales Justin
  */
 public final class DeploymentUtils {
 
@@ -53,6 +53,24 @@ public final class DeploymentUtils {
             roots.addAll(resourceRoots);
         }
         return roots;
+    }
+
+    /**
+     * Get top deployment unit.
+     *
+     * @param unit the current deployment unit
+     * @return top deployment unit
+     */
+    public static DeploymentUnit getTopDeploymentUnit(DeploymentUnit unit) {
+        if (unit == null)
+            throw new IllegalArgumentException("Null initial unit");
+
+        DeploymentUnit parent = unit.getParent();
+        while (parent != null) {
+            unit = parent;
+            parent = unit.getParent();
+        }
+        return unit;
     }
 
     private DeploymentUtils() {
