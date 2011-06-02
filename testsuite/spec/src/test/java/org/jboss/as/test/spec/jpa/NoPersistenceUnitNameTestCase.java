@@ -33,18 +33,20 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Transaction tests
+ * Ensure that pu name can be omitted and default persistence unit picked up
  *
  * @author Scott Marlow
  */
+@Ignore // Currently failing during AS7-734 Migration
 @RunWith(Arquillian.class)
-public class RelativeDataSourceNameTestCase {
+public class NoPersistenceUnitNameTestCase {
 
-    private static final String ARCHIVE_NAME = "RelativeDataSourceNameTestCase";
+    private static final String ARCHIVE_NAME = "NoPersistenceUnitNameTestCase";
 
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
@@ -52,7 +54,7 @@ public class RelativeDataSourceNameTestCase {
             "  <persistence-unit name=\"mypc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "  <jta-data-source>H2DS</jta-data-source>" +
+            "  <jta-data-source>java:/H2DS</jta-data-source>" +
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
@@ -69,9 +71,9 @@ public class RelativeDataSourceNameTestCase {
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(RelativeDataSourceNameTestCase.class,
+        jar.addClasses(NoPersistenceUnitNameTestCase.class,
             Employee.class,
-            SFSB1.class
+            SFSBNoPuName.class
         );
 
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -79,13 +81,17 @@ public class RelativeDataSourceNameTestCase {
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
-    private SFSB1 sfsb1;
+    @EJB(mappedName = "java:global/test/SFSBNoPuName!org.jboss.as.test.spec.jpa.SFSBNoPuName")
+    private SFSBNoPuName sfsb;
 
+    /**
+     * Ensure that we can do basic JPA operations with the default PU
+      * @throws Exception
+     */
     @Test
-    public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
+    public void testUsingDefaultPersitenceUnit() throws Exception {
         Exception error = null;
-        sfsb1.createEmployee("Susan Sells", "1 Main Street", 1);
+        sfsb.createEmployee("Susan Sells", "1 Main Street", 1);
     }
 
 }

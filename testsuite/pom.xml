@@ -39,7 +39,9 @@
     <name>JBoss Application Server: Test Suite: Aggregator</name>
 
     <modules>
+        <module>api</module>
         <module>smoke</module>
+        <module>spec</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -82,6 +84,36 @@
 
     <build>
         <plugins>
+        
+            <!-- Big complex hack just to get @Resource(lookup="foo") -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jboss.spec.javax.annotation</groupId>
+                                    <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
+                </configuration>
+            </plugin>
+        
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

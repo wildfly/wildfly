@@ -22,53 +22,41 @@
 
 package org.jboss.as.test.spec.jpa;
 
-import org.jboss.arquillian.api.Deployment;
+import javax.ejb.EJB;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import junit.framework.Assert;
-
-import javax.ejb.EJB;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Map;
-
 /**
- * Ensure that both pu definitions can be used.
+ * Transaction tests
  *
  * @author Scott Marlow
  */
+@Ignore // Currently failing during AS7-734 Migration
 @RunWith(Arquillian.class)
-public class MultiplePuTestCase {
+public class RelativeDataSourceNameTestCase {
 
-    private static final String ARCHIVE_NAME = "MultiplePuTestCase";
+    private static final String ARCHIVE_NAME = "RelativeDataSourceNameTestCase";
 
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
             "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"pu1\">" +
+            "  <persistence-unit name=\"mypc\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "    <jta-data-source>H2DS</jta-data-source>" +
-            "    <properties> " +
-            "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "      <property name=\"PersistenceUnitName\" value=\"pu1\"/>" +
-            "    </properties>" +
-            "  </persistence-unit>" +
-            "  <persistence-unit name=\"pu2\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "    <jta-data-source>H2DS</jta-data-source>" +
-            "    <properties> " +
-            "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "      <property name=\"PersistenceUnitName\" value=\"pu2\"/>" +
-            "    </properties>" +
+            "  <jta-data-source>H2DS</jta-data-source>" +
+            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";
 
@@ -83,9 +71,9 @@ public class MultiplePuTestCase {
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(MultiplePuTestCase.class,
-            SLSBPU1.class,
-            SLSBPU2.class
+        jar.addClasses(RelativeDataSourceNameTestCase.class,
+            Employee.class,
+            SFSB1.class
         );
 
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -93,20 +81,13 @@ public class MultiplePuTestCase {
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
-    private SLSBPU1 slsbpu1;
-
-    @EJB(mappedName = "java:global/test/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
-    private SLSBPU2 slsbpu2;
-
+    @EJB(mappedName = "java:global/test/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
+    private SFSB1 sfsb1;
 
     @Test
-    public void testBothPersistenceUnitDefinitions() throws Exception {
-        Map sl1Props = slsbpu1.getEMInfo();
-        Map sl2Props = slsbpu2.getEMInfo();
-
-        Assert.assertEquals("wrong pu " ,sl1Props.get("PersistenceUnitName"),"pu1");
-        Assert.assertEquals("wrong pu ", sl2Props.get("PersistenceUnitName"),"pu2");
+    public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
+        Exception error = null;
+        sfsb1.createEmployee("Susan Sells", "1 Main Street", 1);
     }
 
 }

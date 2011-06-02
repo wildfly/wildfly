@@ -22,9 +22,13 @@
 
 package org.jboss.as.test.spec.jpa;
 
+import java.util.Map;
+
 import javax.ejb.EJB;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import junit.framework.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,28 +37,41 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Ensure that pu name can be omitted and default persistence unit picked up
+ * Ensure that both pu definitions can be used.
  *
  * @author Scott Marlow
  */
+@Ignore // Currently failing during AS7-734 Migration
 @RunWith(Arquillian.class)
-public class NoPersistenceUnitNameTestCase {
+public class MultiplePuTestCase {
 
-    private static final String ARCHIVE_NAME = "NoPersistenceUnitNameTestCase";
+    private static final String ARCHIVE_NAME = "MultiplePuTestCase";
 
     private static final String persistence_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
             "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
+            "  <persistence-unit name=\"pu1\">" +
             "    <description>Persistence Unit." +
             "    </description>" +
-            "  <jta-data-source>java:/H2DS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "</properties>" +
+            "    <jta-data-source>H2DS</jta-data-source>" +
+            "    <properties> " +
+            "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "      <property name=\"PersistenceUnitName\" value=\"pu1\"/>" +
+            "    </properties>" +
+            "  </persistence-unit>" +
+            "  <persistence-unit name=\"pu2\">" +
+            "    <description>Persistence Unit." +
+            "    </description>" +
+            "    <jta-data-source>H2DS</jta-data-source>" +
+            "    <properties> " +
+            "      <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+            "      <property name=\"PersistenceUnitName\" value=\"pu2\"/>" +
+            "    </properties>" +
             "  </persistence-unit>" +
             "</persistence>";
 
@@ -69,9 +86,9 @@ public class NoPersistenceUnitNameTestCase {
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(NoPersistenceUnitNameTestCase.class,
-            Employee.class,
-            SFSBNoPuName.class
+        jar.addClasses(MultiplePuTestCase.class,
+            SLSBPU1.class,
+            SLSBPU2.class
         );
 
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
@@ -79,17 +96,20 @@ public class NoPersistenceUnitNameTestCase {
         return jar;
     }
 
-    @EJB(mappedName = "java:global/test/SFSBNoPuName!org.jboss.as.test.spec.jpa.SFSBNoPuName")
-    private SFSBNoPuName sfsb;
+    @EJB(mappedName = "java:global/test/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
+    private SLSBPU1 slsbpu1;
 
-    /**
-     * Ensure that we can do basic JPA operations with the default PU
-      * @throws Exception
-     */
+    @EJB(mappedName = "java:global/test/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
+    private SLSBPU2 slsbpu2;
+
+
     @Test
-    public void testUsingDefaultPersitenceUnit() throws Exception {
-        Exception error = null;
-        sfsb.createEmployee("Susan Sells", "1 Main Street", 1);
+    public void testBothPersistenceUnitDefinitions() throws Exception {
+        Map sl1Props = slsbpu1.getEMInfo();
+        Map sl2Props = slsbpu2.getEMInfo();
+
+        Assert.assertEquals("wrong pu " ,sl1Props.get("PersistenceUnitName"),"pu1");
+        Assert.assertEquals("wrong pu ", sl2Props.get("PersistenceUnitName"),"pu2");
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.spec.ejb3;
+package org.jboss.as.test.spec.jpa;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.LocalBean;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+
+import javax.ejb.Stateless;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 
 /**
- * @author Jaikiran Pai
+ * stateless session bean
+ *
+ * @author Scott Marlow
  */
-@Singleton
-@LocalBean
-@Lock(value = LockType.READ)
-public class ReadOnlySingletonBean {
+@Stateless
+public class SLSBPU2 {
 
+    @PersistenceUnit(unitName="pu2")
+    private EntityManagerFactory emf;
 
-    @AccessTimeout(value = 1, unit = TimeUnit.SECONDS)
-    public String twoSecondEcho(String msg) {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return msg;
+    public Map<String, Object> getEMInfo(){
+        return emf.getProperties();
     }
+
 }

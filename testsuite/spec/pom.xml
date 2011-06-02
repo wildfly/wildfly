@@ -28,15 +28,32 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite2</artifactId>
+        <artifactId>jboss-as-testsuite</artifactId>
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-testsuite2-integration-api</artifactId>
-    <name>JBoss Application Server: Test Suite2: AS7 API Integration Tests</name>
+    <artifactId>jboss-as-testsuite-integration-spec</artifactId>
+    <name>JBoss Application Server: Test Suite: Spec Integration Tests</name>
 
-   <!-- 
-   When available, the AS7 API dependency declaration will live here
-    -->
-
+    <!-- 
+    ONLY the Java EE Spec APIs are to be allowed in compile scope here
+    (inherited from parent)
+     -->
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.spec.javax.servlet</groupId>
+        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-demos2-spec</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-arquillian-container-managed</artifactId>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+    
 </project>
