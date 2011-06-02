@@ -77,9 +77,8 @@ public class DeploymentUtils implements Closeable {
     private long timeout = DEFAULT_TIMEOUT;
 
     public DeploymentUtils() throws UnknownHostException {
-        throw new IllegalStateException("Waiting for remoting to be integrated until remote deployment is supported");
-//        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-//        manager = ServerDeploymentManager.Factory.create(client);
+        client = NewModelControllerClient.Factory.create("localhost", 9999);
+        manager = ServerDeploymentManager.Factory.create(client);
     }
 
     public DeploymentUtils(String archiveName, Package... pkg) throws UnknownHostException {

@@ -54,6 +54,7 @@ public class CompositeOperationHandlerUnitTestCase {
 
     @Before
     public void setupController() throws InterruptedException {
+        System.out.println("=========  New Test \n");
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
@@ -81,6 +82,7 @@ public class CompositeOperationHandlerUnitTestCase {
                 container = null;
             }
         }
+        System.out.println("======================");
     }
 
     @Test
