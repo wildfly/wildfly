@@ -48,6 +48,10 @@ set "JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc
 rem # Warn when resolving remote XML DTDs or schemas.
 set "JAVA_OPTS=%JAVA_OPTS% -Dorg.jboss.resolver.warning=true"
 
+rem # Make Byteman classes visible in all module loaders
+rem # This is necessary to inject Byteman rules into AS7 deployments
+set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
+
 rem # Sample JPDA settings for remote socket debugging
 rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
 
