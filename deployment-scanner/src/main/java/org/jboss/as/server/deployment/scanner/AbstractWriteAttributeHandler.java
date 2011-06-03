@@ -59,13 +59,17 @@ abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperati
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
+                    DeploymentScanner scanner = null;
                     if (controller == null) {
                         throw new OperationFailedException(new ModelNode().set("scanner not configured"));
                     } else {
-                        final DeploymentScanner scanner = (DeploymentScanner) controller.getValue();
+                        scanner = (DeploymentScanner) controller.getValue();
                         updateScanner(scanner, newValue);
                     }
-                    context.completeStep();
+
+                    if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && scanner != null) {
+                        updateScanner(scanner, currentValue);
+                    }
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }

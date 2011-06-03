@@ -36,6 +36,8 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 
+import java.util.List;
+
 /**
  * The managed subsystem add update.
  *

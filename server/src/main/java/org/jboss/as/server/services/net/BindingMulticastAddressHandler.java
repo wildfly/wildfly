@@ -36,7 +36,7 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
     public static final BindingMulticastAddressHandler INSTANCE = new BindingMulticastAddressHandler();
 
     private BindingMulticastAddressHandler() {
-        super(new InetAddressValidator(true, true));
+        super(new InetAddressValidator(true, true), new InetAddressValidator(true, false));
     }
 
     @Override
@@ -47,6 +47,21 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
                 address = InetAddress.getByName(attributeValue.asString());
             } catch (UnknownHostException e) {
                 throw new OperationFailedException(new ModelNode().set("failed to get multi-cast address for " + attributeValue));
+            }
+        } else {
+            address = null;
+        }
+        binding.setMulticastAddress(address);
+    }
+
+    @Override
+    void handleRuntimeRollback(ModelNode operation, String attributeName, ModelNode attributeValue, SocketBinding binding) {
+        final InetAddress address;
+        if(attributeValue.isDefined()) {
+            try {
+                address = InetAddress.getByName(attributeValue.asString());
+            } catch (UnknownHostException e) {
+                throw new RuntimeException("Failed to get multi-cast address for " + attributeValue.asString());
             }
         } else {
             address = null;

@@ -71,17 +71,13 @@ public class WriteAttributeHandlers {
         public void execute(NewOperationContext context, ModelNode operation) throws OperationFailedException {
             final String name = operation.require(NAME).asString();
             // Don't require VALUE. Let validateValue decide if it's bothered
-            // by and undefined value
+            // by an undefined value
             final ModelNode value = operation.get(VALUE);
 
             validateValue(name, value);
 
-            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode submodel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
             final ModelNode currentValue = submodel.get(name).clone();
-
-            final ModelNode compensating = Util.getEmptyOperation(operation.require(OP).asString(), operation.require(OP_ADDR));
-            compensating.get(NAME).set(name);
-            compensating.get(VALUE).set(currentValue);
 
             submodel.get(name).set(value);
 
@@ -91,6 +87,9 @@ public class WriteAttributeHandlers {
         /**
          * If a validator was passed to the constructor, uses it to validate the value.
          * Subclasses can alter this behavior.
+         *
+         * @param name the name of the attribute
+         * @param value the value to validate
          */
         protected void validateValue(String name, ModelNode value) throws OperationFailedException {
             if (valueValidator != null) {
@@ -101,8 +100,15 @@ public class WriteAttributeHandlers {
         /**
          * Notification that the model has been changed. Subclasses can override
          * to apply additional processing. Any subclass that overrides MUST ensure
-         * one of the 3 terminating methods on {@code resultHandler} is invoked.
-         * This default implementation simply invokes {@link ResultHandler#handleResultComplete()}.
+         * that either {@link org.jboss.as.controller.NewOperationContext#completeStep()} is invoked
+         * or {@link OperationFailedException} is thrown.
+         *
+         * @param context the context of the operation
+         * @param operation the operation
+         * @param attributeName the name of the attribute being modified
+         * @param newValue the new value for the attribute
+         * @param currentValue the existing value for the attribute
+         *
          * @throws OperationFailedException
          */
         protected void modelChanged(final NewOperationContext context, final ModelNode operation, final String attributeName,

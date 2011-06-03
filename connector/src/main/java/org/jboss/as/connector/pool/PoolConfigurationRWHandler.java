@@ -97,33 +97,21 @@ public class PoolConfigurationRWHandler {
 
                         final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
                                 ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+                        List<PoolConfiguration> poolConfigs = null;
                         if (managementRepoService != null) {
                             try {
                                 final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
-                                List<PoolConfiguration> poolConfigs = getMatchingPoolConfigs(jndiName, repository);
-                                for (PoolConfiguration pc : poolConfigs) {
-                                    if (MAX_POOL_SIZE.equals(parameterName)) {
-                                        pc.setMaxSize(newValue.asInt());
-                                    }
-                                    if (MIN_POOL_SIZE.equals(parameterName)) {
-                                        pc.setMinSize(newValue.asInt());
-                                    }
-                                    if (BLOCKING_TIMEOUT_WAIT_MILLIS.equals(parameterName)) {
-                                        pc.setBlockingTimeout(newValue.asLong());
-                                    }
-                                    if (POOL_USE_STRICT_MIN.equals(parameterName)) {
-                                        pc.setStrictMin(newValue.asBoolean());
-                                    }
-                                    if (USE_FAST_FAIL.equals(parameterName)) {
-                                        pc.setUseFastFail(newValue.asBoolean());
-                                    }
-
-                                }
+                                poolConfigs = getMatchingPoolConfigs(jndiName, repository);
+                                updatePoolConfigs(poolConfigs, parameterName, newValue);
                             } catch (Exception e) {
                                 throw new OperationFailedException(new ModelNode().set("failed to set attribute" + e.getMessage()));
                             }
                         }
-                        context.completeStep();
+
+                        if (context.completeStep() == NewOperationContext.ResultAction.ROLLBACK && poolConfigs != null) {
+                            updatePoolConfigs(poolConfigs, parameterName, currentValue);
+                        }
+
                     }
                 }, NewOperationContext.Stage.RUNTIME);
             }
@@ -131,6 +119,27 @@ public class PoolConfigurationRWHandler {
             return (IDLETIMEOUTMINUTES.equals(parameterName) || BACKGROUNDVALIDATION.equals(parameterName)
                     || BACKGROUNDVALIDATIONMINUTES.equals(parameterName) || POOL_PREFILL.equals(parameterName));
 
+        }
+
+        private void updatePoolConfigs(List<PoolConfiguration> poolConfigs, String parameterName, ModelNode newValue) {
+            for (PoolConfiguration pc : poolConfigs) {
+                if (MAX_POOL_SIZE.equals(parameterName)) {
+                    pc.setMaxSize(newValue.asInt());
+                }
+                if (MIN_POOL_SIZE.equals(parameterName)) {
+                    pc.setMinSize(newValue.asInt());
+                }
+                if (BLOCKING_TIMEOUT_WAIT_MILLIS.equals(parameterName)) {
+                    pc.setBlockingTimeout(newValue.asLong());
+                }
+                if (POOL_USE_STRICT_MIN.equals(parameterName)) {
+                    pc.setStrictMin(newValue.asBoolean());
+                }
+                if (USE_FAST_FAIL.equals(parameterName)) {
+                    pc.setUseFastFail(newValue.asBoolean());
+                }
+
+            }
         }
 
         protected abstract List<PoolConfiguration> getMatchingPoolConfigs(String jndiName, ManagementRepository repository);

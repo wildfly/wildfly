@@ -32,6 +32,7 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 import java.net.UnknownHostException;
 import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -58,7 +59,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WSSubsystemAdd extends AbstractAddStepHandler {
+public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.webservices");
 
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
@@ -88,16 +89,15 @@ public class WSSubsystemAdd extends AbstractAddStepHandler {
         submodel.get(ENDPOINT).setEmptyObject();
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    // add the DUP for dealing with WS deployments
-                    WSDeploymentActivator.activate(processorTarget);
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                // add the DUP for dealing with WS deployments
+                WSDeploymentActivator.activate(processorTarget);
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
+            }
+        }, NewOperationContext.Stage.RUNTIME);
 
         log.info("Activating WebServices Extension");
         ModuleClassLoaderProvider.register();

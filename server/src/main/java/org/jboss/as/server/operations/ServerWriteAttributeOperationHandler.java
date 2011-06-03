@@ -82,14 +82,19 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
     @Override
     protected void modelChanged(final NewOperationContext context, final ModelNode operation,
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+
+        boolean restartRequired = false;
         if (context.getType() == NewOperationContext.Type.SERVER) {
             validateResolvedValue(attributeName, newValue);
-            boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, newValue, currentValue);
-            if (restartRequired && context instanceof ServerOperationContext) {
-                ServerOperationContext.class.cast(context).restartRequired();
+            ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
+            restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue);
+            if (restartRequired) {
+                context.reloadRequired();
             }
-        } else {
-            context.completeStep();
+        }
+
+        if (context.completeStep() != NewOperationContext.ResultAction.KEEP && restartRequired) {
+            context.revertReloadRequired();
         }
     }
 
@@ -105,20 +110,25 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
 
 
     /**
-     * Hook to allow subclasses to make runtime changes to effect the attribute value change.
-     * Any subclass that overrides MUST ensure
-     * one of the 3 terminating methods on {@code resultHandler} is invoked.
-     * <p/>
-     * This default implementation simply invokes {@link ResultHandler#handleResultComplete()}
-     * and returns {@code true} if the subclass implements {@link BootOperationHandler}.
+     * Hook to allow subclasses to make runtime changes to effect the attribute value change. Runtime changes
+     * should be implemented by calling {@link NewOperationContext#addStep(org.jboss.as.controller.NewStepHandler, org.jboss.as.controller.NewOperationContext.Stage) adding a new step}
+     * with {@link org.jboss.as.controller.NewOperationContext.Stage#RUNTIME}.
+     * <p>
+     * This default implementation simply returns {@code false}.
+     * </p>
+     *
+     * @param context the context of the operation
+     * @param operation the operation
+     * @param attributeName the name of the attribute being modified
+     * @param newValue the new value for the attribute
+     * @param currentValue the existing value for the attribute
      *
      * @return {@code true} if the server requires restart to effect the attribute
      *         value change; {@code false} if not
      */
     protected boolean applyUpdateToRuntime(final NewOperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        return (this instanceof BootOperationHandler); // HMMM
+        return false;
     }
 
 

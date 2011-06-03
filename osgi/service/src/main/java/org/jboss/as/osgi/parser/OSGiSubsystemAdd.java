@@ -24,7 +24,7 @@ package org.jboss.as.osgi.parser;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.deployment.BundleStartTracker;
@@ -57,7 +57,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @since 11-Sep-2010
  */
-class OSGiSubsystemAdd extends AbstractAddStepHandler {
+class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
@@ -84,14 +84,14 @@ class OSGiSubsystemAdd extends AbstractAddStepHandler {
         }
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    new OSGiDeploymentActivator().activate(processorTarget);
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                new OSGiDeploymentActivator().activate(processorTarget);
+            }
+        }, NewOperationContext.Stage.RUNTIME);
+
         log.infof("Activating OSGi Subsystem");
         long begin = System.currentTimeMillis();
         SubsystemState subsystemState = createSubsystemState(operation);

@@ -18,8 +18,11 @@
  */
 package org.jboss.as.server.services.net;
 
+import org.jboss.as.controller.NewOperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for changing the port-offset on a socket binding group.
@@ -32,6 +35,11 @@ public class BindingGroupPortOffsetHandler extends ServerWriteAttributeOperation
 
     private BindingGroupPortOffsetHandler() {
         super(new IntRangeValidator(0, 65535, true, true));
+    }
+
+    @Override
+    protected boolean applyUpdateToRuntime(NewOperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+        return true;
     }
 
 }

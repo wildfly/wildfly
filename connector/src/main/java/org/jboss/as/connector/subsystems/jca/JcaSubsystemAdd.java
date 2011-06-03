@@ -46,7 +46,7 @@ import org.jboss.as.connector.registry.DriverRegistryService;
 import org.jboss.as.connector.services.CcmService;
 import org.jboss.as.connector.transactionintegration.TransactionIntegrationService;
 import org.jboss.as.connector.workmanager.WorkManagerService;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.NewOperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -71,7 +71,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-class JcaSubsystemAdd extends AbstractAddStepHandler {
+class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final JcaSubsystemAdd INSTANCE = new JcaSubsystemAdd();
 
@@ -110,22 +110,20 @@ class JcaSubsystemAdd extends AbstractAddStepHandler {
         }
     }
 
-    protected void performRuntime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(NewOperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final RaDeploymentActivator deploymentActivator = new RaDeploymentActivator();
 
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    // Add the deployer which processes EE @DataSourceDefinition and
-                    // @DataSourceDefinitions
-                    // TODO: The DataSourceDefinitionDeployer should perhaps belong to
-                    // EE subsystem
-                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION, new DataSourceDefinitionAnnotationParser());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_DATASOURCE_REF, new DataSourceDefinitionDeploymentDescriptorParser());
-                    deploymentActivator.activateProcessors(processorTarget);
-                }
-            }, NewOperationContext.Stage.RUNTIME);
-        }
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                // Add the deployer which processes EE @DataSourceDefinition and
+                // @DataSourceDefinitions
+                // TODO: The DataSourceDefinitionDeployer should perhaps belong to
+                // EE subsystem
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION, new DataSourceDefinitionAnnotationParser());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_DATASOURCE_REF, new DataSourceDefinitionDeploymentDescriptorParser());
+                deploymentActivator.activateProcessors(processorTarget);
+            }
+        }, NewOperationContext.Stage.RUNTIME);
 
         final boolean archiveValidationEnabled = ParamsUtils
                 .parseBooleanParameter(operation, ARCHIVE_VALIDATION_ENABLED, false);
