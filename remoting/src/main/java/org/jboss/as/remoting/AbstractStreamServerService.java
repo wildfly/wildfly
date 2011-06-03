@@ -31,6 +31,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.xnio.ChannelListener;
 import org.xnio.ConnectionChannelThread;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Xnio;
 import org.xnio.channels.AcceptingChannel;
@@ -74,6 +75,7 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
 
     @Override
     public void stop(StopContext context) {
+        IoUtils.safeClose(streamServer);
     }
 
     abstract InetSocketAddress getSocketAddress();
