@@ -221,6 +221,7 @@
         <module>demos2</module>
         <module>deployment-repository</module>
         <module>deployment-scanner</module>
+        <module>dist</module>
         <module>domain-controller</module>
         <module>domain-http-api</module>
         <module>domain-management</module>

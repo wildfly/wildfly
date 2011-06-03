@@ -9,7 +9,7 @@
 
     <fileSets>
         <fileSet>
-            <directory>target</directory>
+            <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
                 <include>jboss-*/**</include>
@@ -19,7 +19,7 @@
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>target</directory>
+            <directory>../build/target</directory>
             <outputDirectory/>
             <includes>
                 <include>jboss-*/**/*.sh</include>
