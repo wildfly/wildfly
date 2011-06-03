@@ -53,7 +53,7 @@ public class ManagedAsClientTestCase extends AbstractContainerTestCase {
 
     @Override
     protected MBeanServerConnection getMBeanServer() throws Exception {
-        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getByName("127.0.0.1"), 1090);
         return provider.getConnection();
     }
 }
