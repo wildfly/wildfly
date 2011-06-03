@@ -34,15 +34,15 @@ import org.jboss.osgi.spi.util.BundleInfo;
 public class BundleInfoAttachment {
     public static final AttachmentKey<BundleInfo> KEY = AttachmentKey.create(BundleInfo.class);
 
-    public static void attachBundleInfo(final DeploymentUnit context, final BundleInfo info) {
-        context.putAttachment(KEY, info);
+    public static void attachBundleInfo(final DeploymentUnit depUnit, final BundleInfo info) {
+        depUnit.putAttachment(KEY, info);
     }
 
-    public static BundleInfo getBundleInfo(final DeploymentUnit context) {
-        return context.getAttachment(KEY);
+    public static BundleInfo getBundleInfo(final DeploymentUnit depUnit) {
+        return depUnit.getAttachment(KEY);
     }
 
-    public static void detachBundleInfo(final DeploymentUnit context) {
-        context.removeAttachment(KEY);
+    public static void detachBundleInfo(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(KEY);
     }
 }

@@ -30,7 +30,6 @@ import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -43,7 +42,6 @@ import org.osgi.framework.Version;
  * @author thomas.diesler@jboss.com
  */
 @RunWith(Arquillian.class)
-@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SimpleBundleContextTestCase {
 
     @Inject

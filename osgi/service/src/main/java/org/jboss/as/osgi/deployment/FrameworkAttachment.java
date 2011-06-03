@@ -20,35 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.arquillian.service;
+package org.jboss.as.osgi.deployment;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.msc.service.ServiceContainer;
+import org.osgi.framework.launch.Framework;
 
 /**
- * Generic base for Arquillian deployment processors
+ * Utility to help attach and retrieve a Framework from a deployment context.
  *
  * @author Thomas.Diesler@jboss.com
  */
-abstract class ArquillianDeploymentProcessor<T extends Object> {
+public class FrameworkAttachment {
+    public static final AttachmentKey<Framework> KEY = AttachmentKey.create(Framework.class);
 
-    private final ServiceContainer serviceContainer;
-    private final DeploymentUnit deploymentUnit;
-
-    ArquillianDeploymentProcessor(ServiceContainer serviceContainer, DeploymentUnit deploymentUnit) {
-        this.serviceContainer = serviceContainer;
-        this.deploymentUnit = deploymentUnit;
+    public static void attachFramework(final DeploymentUnit depUnit, final Framework metadata) {
+        depUnit.putAttachment(KEY, metadata);
     }
 
-    ServiceContainer getServiceContainer() {
-        return serviceContainer;
+    public static Framework getFramework(final DeploymentUnit depUnit) {
+        return depUnit.getAttachment(KEY);
     }
 
-    DeploymentUnit getDeploymentUnit() {
-        return deploymentUnit;
+    public static void detachFramework(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(KEY);
     }
-
-    abstract ArquillianDeploymentProcessor<T> process();
-
-    abstract T getValue();
 }

@@ -28,65 +28,45 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.junit.runner.RunWith;
 
 /**
  * Uses the annotation index to check whether there is a class annotated with @RunWith.
- * In which case an {@link ArquillianConfig} object that names the test class is attached to the context.
+ * In which case an {@link ArquillianConfig} service is created.
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
  */
-public class ArquillianRunWithProcessor extends ArquillianDeploymentProcessor<ArquillianConfig> {
+public class ArquillianConfigBuilder {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
-    private final ServiceName serviceName;
-    private ArquillianConfig arqConfig;
-
-    ArquillianRunWithProcessor(ServiceContainer serviceContainer, ServiceName serviceName, DeploymentUnit deploymentUnit) {
-        super(serviceContainer, deploymentUnit);
-        this.serviceName = serviceName;
+    ArquillianConfigBuilder(DeploymentUnit deploymentUnit) {
     }
 
-    @Override
-    ArquillianConfig getValue() {
-        return arqConfig;
-    }
+    static ArquillianConfig processDeployment(ArquillianService arqService, DeploymentUnit depUnit) {
 
-    ArquillianRunWithProcessor process() {
-
-        final CompositeIndex compositeIndex = getDeploymentUnit().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
-            log.infof("Cannot find composite annotation index in: %s", getDeploymentUnit());
-            return this;
+            log.warnf("Cannot find composite annotation index in: %s", depUnit);
+            return null;
         }
 
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
         final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
         if (runWithList.isEmpty()) {
-            return this;
+            return null;
         }
 
-        log.infof("Arquillian test deployment detected: %s", getDeploymentUnit());
-        arqConfig = new ArquillianConfig(serviceName, getDeploymentUnit());
-        getDeploymentUnit().putAttachment(ArquillianConfig.KEY, arqConfig);
-
-        for (AnnotationInstance instance : runWithList) {
-            final AnnotationTarget target = instance.target();
-            if (target instanceof ClassInfo) {
-                final ClassInfo classInfo = (ClassInfo) target;
-                final String testClassName = classInfo.name().toString();
-                arqConfig.addTestClass(testClassName);
-            }
+        // FIXME: Why do we get another service started event from a deployment INSTALLED service?
+        ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, runWithList);
+        if (arqService.getServiceContainer().getService(arqConfig.getServiceName()) != null) {
+            log.warnf("Arquillian config already registered: %s", arqConfig);
+            return null;
         }
 
-        return this;
+        depUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
+        return arqConfig;
     }
 }

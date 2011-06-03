@@ -27,22 +27,22 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.osgi.metadata.OSGiMetaData;
 
 /**
- * Utility to help attach and retrieve a OSGiMetaData from a deployment context.
+ * Utility to help attach and retrieve a OSGiMetaData from a deployment unit.
  *
  * @author Thomas.Diesler@jboss.com
  */
 public class OSGiMetaDataAttachment {
     public static final AttachmentKey<OSGiMetaData> KEY = AttachmentKey.create(OSGiMetaData.class);
 
-    public static void attachOSGiMetaData(final DeploymentUnit context, final OSGiMetaData metadata) {
-        context.putAttachment(KEY, metadata);
+    public static void attachOSGiMetaData(final DeploymentUnit depUnit, final OSGiMetaData metadata) {
+        depUnit.putAttachment(KEY, metadata);
     }
 
-    public static OSGiMetaData getOSGiMetaData(final DeploymentUnit context) {
-        return context.getAttachment(KEY);
+    public static OSGiMetaData getOSGiMetaData(final DeploymentUnit depUnit) {
+        return depUnit.getAttachment(KEY);
     }
 
-    public static void detachOSGiMetaData(final DeploymentUnit context) {
-        context.removeAttachment(KEY);
+    public static void detachOSGiMetaData(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(KEY);
     }
 }

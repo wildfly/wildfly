@@ -35,6 +35,7 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.protocol.jmx.JMXProtocol;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolExtension.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -57,24 +58,30 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  */
 public class JMXProtocolPackager implements DeploymentPackager {
 
-    private ServiceArchiveHolder serviceArchive;
+    private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
 
-    JMXProtocolPackager(ServiceArchiveHolder serviceArchive) {
-        this.serviceArchive = serviceArchive;
+    private ServiceArchiveHolder archiveHolder;
+
+    JMXProtocolPackager(ServiceArchiveHolder archiveHolder) {
+        this.archiveHolder = archiveHolder;
     }
 
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> protocolProcessors) {
-
         final Archive<?> appArchive = testDeployment.getApplicationArchive();
-        final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
-        generateArquillianServiceArchive(auxArchives);
-
+        if (archiveHolder.getArchive() == null) {
+            final Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
+            JavaArchive archive = generateArquillianServiceArchive(auxArchives);
+            archiveHolder.setArchive(archive);
+        }
         return appArchive;
     }
 
-    private void generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
+    private JavaArchive generateArquillianServiceArchive(Collection<Archive<?>> auxArchives) {
+
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-service");
+        log.debugf("Generating: %s", archive.getName());
+
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(JMXProtocol.class.getPackage());
 
@@ -95,6 +102,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                     // ignore
                 }
             }
+            log.debugf("Merging archive: %s", aux);
             archive.merge(aux);
         }
 
@@ -136,7 +144,8 @@ public class JMXProtocolPackager implements DeploymentPackager {
             }
         }, loadableExtentionsPath);
 
-        // Make the service archive available to {@link JMXProtocolEndpointDeployer}
-        serviceArchive.setArchive(archive);
+        log.debugf("Loadable extensions: %s", loadableExtensions);
+        log.debugf("Archive content: %s\n%s", archive, archive.toString(true));
+        return archive;
     }
 }
