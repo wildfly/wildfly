@@ -82,16 +82,20 @@ public class SeamProcessor implements DeploymentUnitProcessor {
     public static final ModuleIdentifier VFS_MODULE = ModuleIdentifier.create("org.jboss.vfs");
     public static final AttachmentKey<Boolean> ADDED = AttachmentKey.create(Boolean.class);
 
+    private ServiceTarget serviceTarget; // service target from the service that added this dup
     private ResourceLoaderSpec seamIntResourceLoader;
+
+    public SeamProcessor(ServiceTarget serviceTarget) {
+        this.serviceTarget = serviceTarget;
+    }
 
     /**
      * Lookup Seam integration resource loader.
      *
-     * @param serviceTarget the service target
      * @return the Seam integration resource loader
      * @throws DeploymentUnitProcessingException for any error
      */
-    protected synchronized ResourceLoaderSpec getSeamIntResourceLoader(ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+    protected synchronized ResourceLoaderSpec getSeamIntResourceLoader() throws DeploymentUnitProcessingException {
         try {
             if (seamIntResourceLoader == null) {
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
@@ -117,6 +121,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
                 };
                 ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SEAM_INT_JAR), mountHandleService);
                 builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                serviceTarget = null; // our cleanup service install work is done
 
                 ResourceLoader resourceLoader = new VFSResourceLoader(SEAM_INT_JAR, vf);
                 seamIntResourceLoader = ResourceLoaderSpec.createResourceLoaderSpec(resourceLoader);
@@ -144,7 +149,7 @@ public class SeamProcessor implements DeploymentUnitProcessor {
                 final ModuleSpecification moduleSpecification = top.getAttachment(Attachments.MODULE_SPECIFICATION);
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
                 moduleSpecification.addDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
-                moduleSpecification.addResourceLoader(getSeamIntResourceLoader(phaseContext.getServiceTarget()));
+                moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
                 break;
             }
         }

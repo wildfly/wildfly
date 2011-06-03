@@ -239,7 +239,7 @@ final class ServerControllerService implements Service<ServerController> {
 
         // Ext integration deployers
 
-        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SEAM, new SeamProcessor()));
+        deployers.get(Phase.DEPENDENCIES).add(new RegisteredProcessor(Phase.DEPENDENCIES_SEAM, new SeamProcessor(serviceTarget)));
 
         // All deployers are registered
 
