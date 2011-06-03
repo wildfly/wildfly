@@ -206,5 +206,34 @@ public class SingletonConcurrencyInheritanceTestCase {
         future.get();
     }
 
+    @Test
+    public void testWritersBlockReader() throws Exception {
+        final SingletonBaseBean singleton = lookup(SingletonChildBean.class.getSimpleName(), SingletonChildBean.class);
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch entered = new CountDownLatch(1);
+        //call a method with a write lock
+        //this will block till we hit the latch
+        Future<?> future = pool.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    singleton.writeLock(latch, entered);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        entered.await();
+        try {
+            singleton.readLock(latch, entered);
+            throw new RuntimeException("Expecting a concurrency access exception");
+        } catch (ConcurrentAccessTimeoutException e) {
+            //expected
+        }
+        latch.countDown();
+        future.get();
+    }
+
 
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.concurrency;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
@@ -35,7 +36,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
  * <p/>
  * User: Jaikiran Pai
  */
-public class ContainerManagedConcurrencyInterceptorFactory implements InterceptorFactory {
+public class ContainerManagedConcurrencyInterceptorFactory extends ComponentInstanceInterceptorFactory {
 
     public static final ContainerManagedConcurrencyInterceptorFactory INSTANCE = new ContainerManagedConcurrencyInterceptorFactory();
 
@@ -44,14 +45,7 @@ public class ContainerManagedConcurrencyInterceptorFactory implements Intercepto
     }
 
     @Override
-    public Interceptor create(InterceptorFactoryContext context) {
-        final Component component = (Component) context.getContextData().get(Component.class);
-        if (component == null) {
-            throw new IllegalStateException("Component not found in interceptor factory context: " + context);
-        }
-        if (component instanceof LockableComponent == false) {
-            throw new IllegalStateException("Component " + component + " is of type: " + component.getClass().getName() + " expected type: " + LockableComponent.class.getName());
-        }
+    protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
         return new ContainerManagedConcurrencyInterceptor((LockableComponent) component);
     }
 }
