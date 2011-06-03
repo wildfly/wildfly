@@ -79,7 +79,6 @@ public class DeploymentHandlerUtil {
                 }
             }, NewOperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
     }
 
     private static void doDeploy(final NewOperationContext context, final String deploymentUnitName, final String managementName, final ContentItem... contents) {
