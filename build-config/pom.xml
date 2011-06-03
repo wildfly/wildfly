@@ -36,4 +36,14 @@
     <name>JBoss Application Server: Build Configuration</name>
     <version>7.0.0.Beta4-SNAPSHOT</version>
 
+    <build>    
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav-jackrabbit</artifactId>
+                <version>1.0-beta-7</version>
+            </extension>
+        </extensions>
+    </build>    
+
 </project>
