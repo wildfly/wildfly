@@ -22,6 +22,18 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_UPDATE_SKIPPED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
@@ -35,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -54,8 +67,6 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Operation context implementation.
@@ -244,21 +255,23 @@ final class NewOperationContextImpl implements NewOperationContext {
             step = steps.get(currentStage).pollFirst();
             if (step == null) {
                 // No steps remain in this stage; proceed to the next stage.
-                currentStage = currentStage.next();
-                if (contextType == Type.MANAGEMENT && currentStage == Stage.MODEL.next()) {
-                    // Management mode; we do not proceed past the MODEL stage.
-                    currentStage = null;
-                } else if (affectsRuntime && currentStage == Stage.VERIFY) {
-                    // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
-                    try {
-                        modelController.awaitContainerMonitor(true, 1);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        cancelled = true;
-                        response.get(OUTCOME).set(CANCELLED);
-                        response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
-                        response.get(ROLLED_BACK).set(true);
-                        return ResultAction.ROLLBACK;
+                if (currentStage.hasNext()) {
+                    currentStage = currentStage.next();
+                    if (contextType == Type.MANAGEMENT && currentStage == Stage.MODEL.next()) {
+                        // Management mode; we do not proceed past the MODEL stage.
+                        currentStage = null;
+                    } else if (affectsRuntime && currentStage == Stage.VERIFY) {
+                        // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
+                        try {
+                            modelController.awaitContainerMonitor(true, 1);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            cancelled = true;
+                            response.get(OUTCOME).set(CANCELLED);
+                            response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
+                            response.get(ROLLED_BACK).set(true);
+                            return ResultAction.ROLLBACK;
+                        }
                     }
                 }
             } else {
