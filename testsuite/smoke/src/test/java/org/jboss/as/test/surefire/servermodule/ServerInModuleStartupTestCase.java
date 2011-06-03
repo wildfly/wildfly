@@ -86,7 +86,6 @@ public class ServerInModuleStartupTestCase  {
      */
     @Test
     public void testReadConfigAsXml() throws Exception {
-        Assert.fail("Temporarily disabled - read-config-as-xml does not seem to exist");
         NewModelControllerClient client = NewModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         try {
             ModelNode request = new ModelNode();
