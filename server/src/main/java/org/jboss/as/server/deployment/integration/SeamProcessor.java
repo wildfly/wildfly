@@ -34,8 +34,17 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ResourceLoader;
+import org.jboss.modules.ResourceLoaderSpec;
+import org.jboss.modules.ResourceLoaders;
+import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VirtualFile;
+
+import java.io.File;
+import java.net.URL;
+import java.util.jar.JarFile;
 
 /**
  * Recognize Seam deployments and add org.jboss.seam.int module to it.
@@ -59,8 +68,37 @@ public class SeamProcessor implements DeploymentUnitProcessor {
             SEAM_COMPONENTS_WEB_INF
     };
 
-    public static final ModuleIdentifier SEAM_INT_MODULE = ModuleIdentifier.create("org.jboss.seam.int");
+    public static final String SEAM_INT_JAR = "jboss-seam-int.jar";
+    public static final ModuleIdentifier EXT_CONTENT_MODULE = ModuleIdentifier.create("org.jboss.integration.ext-content");
+    public static final ModuleIdentifier VFS_MODULE = ModuleIdentifier.create("org.jboss.vfs");
     public static final AttachmentKey<Boolean> ADDED = AttachmentKey.create(Boolean.class);
+
+    private ResourceLoaderSpec seamIntResourceLoader;
+
+    /**
+     * Lookup Seam integration resource loader.
+     *
+     * @return the Seam integration resource loader
+     * @throws DeploymentUnitProcessingException for any error
+     */
+    protected ResourceLoaderSpec getSeamIntResourceLoader() throws DeploymentUnitProcessingException {
+        try {
+            if (seamIntResourceLoader == null) {
+                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                Module extModule = moduleLoader.loadModule(EXT_CONTENT_MODULE);
+                URL url = extModule.getExportedResource(SEAM_INT_JAR);
+                if (url == null)
+                    throw new DeploymentUnitProcessingException("No Seam Integration jar present: " + extModule);
+
+                JarFile seamIntFile = new JarFile(new File(url.toURI()));
+                ResourceLoader resourceLoader = ResourceLoaders.createJarResourceLoader(SEAM_INT_JAR, seamIntFile);
+                seamIntResourceLoader = ResourceLoaderSpec.createResourceLoaderSpec(resourceLoader);
+            }
+            return seamIntResourceLoader;
+        } catch (Exception e) {
+            throw new DeploymentUnitProcessingException(e);
+        }
+    }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = phaseContext.getDeploymentUnit();
@@ -77,7 +115,8 @@ public class SeamProcessor implements DeploymentUnitProcessor {
             if (root.getChild(path).exists()) {
                 final ModuleSpecification moduleSpecification = top.getAttachment(Attachments.MODULE_SPECIFICATION);
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                moduleSpecification.addDependency(new ModuleDependency(moduleLoader, SEAM_INT_MODULE, false, false, true));
+                moduleSpecification.addDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
+                moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
                 top.putAttachment(ADDED, true);
                 break;
             }
