@@ -34,6 +34,7 @@ import org.jboss.as.testsuite.integration.jaxrs.servletintegration.WebXml;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SimpleWebserviceEndpointTestCase {
 
     private static final Logger log = Logger.getLogger(SimpleWebserviceEndpointTestCase.class.getName());

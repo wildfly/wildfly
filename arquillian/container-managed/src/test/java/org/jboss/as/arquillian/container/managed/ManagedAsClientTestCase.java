@@ -17,7 +17,6 @@
 package org.jboss.as.arquillian.container.managed;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.URL;
 
 import javax.management.MBeanServerConnection;
@@ -53,7 +52,7 @@ public class ManagedAsClientTestCase extends AbstractContainerTestCase {
 
     @Override
     protected MBeanServerConnection getMBeanServer() throws Exception {
-        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getByName("127.0.0.1"), 1090);
+        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
         return provider.getConnection();
     }
 }

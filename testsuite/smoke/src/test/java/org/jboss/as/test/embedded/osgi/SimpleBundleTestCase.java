@@ -42,7 +42,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 
 /**
- * Test the embedded OSGi framework
+ * Test simple OSGi bundle deployment
  *
  * @author thomas.diesler@jboss.com
  */

@@ -51,8 +51,8 @@ public class AsyncBeanTestCase {
         jar.addPackage(AsyncBean.class.getPackage());
         return jar;
     }
-    
-    @EJB(mappedName = "java:global/test/AsyncBean!org.jboss.as.demos.ejb3.archive.AsyncLocal")
+
+    @EJB(mappedName = "java:global/ejb3-async-example/AsyncBean!org.jboss.as.demos.ejb3.archive.AsyncLocal")
     private AsyncLocal localBean;
 
     @Test

@@ -33,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,6 +43,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
 public class SimpleStatelessWebserviceEndpointTestCase {
 
     private static final Logger log = Logger.getLogger(SimpleStatelessWebserviceEndpointTestCase.class.getName());

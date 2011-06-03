@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.embedded.demos.sar;
 
-import java.net.InetAddress;
-
 import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -54,7 +52,7 @@ public class SarTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
         MBeanServerConnection mbeanServer = provider.getConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));

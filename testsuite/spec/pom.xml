@@ -32,7 +32,7 @@
         <version>7.0.0.Beta4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-as-testsuite-integration-spec</artifactId>
+    <artifactId>jboss-as-testsuite-spec</artifactId>
     <name>JBoss Application Server Test Suite: Specification Tests</name>
 
     <!-- 

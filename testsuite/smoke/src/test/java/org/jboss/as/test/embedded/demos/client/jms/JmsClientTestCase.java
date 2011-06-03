@@ -81,7 +81,7 @@ public class JmsClientTestCase {
     public void testMessagingClient() throws Exception {
         QueueConnection conn = null;
         QueueSession session = null;
-        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("127.0.0.1"), 9999);
 
         boolean actionsApplied = false;
         try {
@@ -177,7 +177,7 @@ public class JmsClientTestCase {
 
     private static <T> T lookup(String name, Class<T> expected) throws Exception {
         //TODO Don't do this FakeJndi stuff once we have remote JNDI working
-        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
         MBeanServerConnection mbeanServer = provider.getConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         PollingUtils.retryWithTimeout(10000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));

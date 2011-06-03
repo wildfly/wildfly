@@ -25,7 +25,6 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -135,7 +134,7 @@ public class WebAppTestCase {
     }
 
     private static <T> T lookup(String name, Class<T> expected) throws Exception {
-        MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
         MBeanServerConnection mbeanServer = provider.getConnection();
         ObjectName objectName = new ObjectName("jboss:name=test,type=fakejndi");
         Object o = mbeanServer.invoke(objectName, "lookup", new Object[] {name}, new String[] {"java.lang.String"});

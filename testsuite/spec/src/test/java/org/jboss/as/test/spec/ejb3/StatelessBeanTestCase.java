@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 public class StatelessBeanTestCase {
 
     private static final Logger log = Logger.getLogger(StatelessBeanTestCase.class.getName());
-    
+
     @Deployment
     public static JavaArchive createDeployment() {
         // create the ejb jar
@@ -56,8 +56,8 @@ public class StatelessBeanTestCase {
         log.info(jar.toString(true));
         return jar;
     }
-    
-    @EJB(mappedName="java:global/test/SimpleStatelessSessionBean!org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal")
+
+    @EJB(mappedName="java:global/ejb3-slsb-example/SimpleStatelessSessionBean!org.jboss.as.demos.ejb3.archive.SimpleStatelessSessionLocal")
     private SimpleStatelessSessionLocal localBean;
 
     /**

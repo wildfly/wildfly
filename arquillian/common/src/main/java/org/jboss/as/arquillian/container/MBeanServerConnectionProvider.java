@@ -18,6 +18,7 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -39,6 +40,10 @@ public final class MBeanServerConnectionProvider {
     private final int port;
 
     private JMXConnector jmxConnector;
+
+    public static MBeanServerConnectionProvider defaultProvider() throws UnknownHostException {
+        return new MBeanServerConnectionProvider(InetAddress.getByName("127.0.0.1"), 1090);
+    }
 
     public MBeanServerConnectionProvider(InetAddress hostAddr, int port) {
         this.hostAddr = hostAddr;

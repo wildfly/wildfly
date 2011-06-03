@@ -25,10 +25,12 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,20 +40,21 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 
 /**
- * Tests that a non OSGi module can have the system context injected
+ * Test the embedded OSGi framework
  *
  * @author thomas.diesler@jboss.com
  */
 @RunWith(Arquillian.class)
 @Ignore("[AS7-734] Migrate to ARQ Beta1")
-public class SimpleBundleContextTestCase {
+public class SimpleModuleRegistrationTestCase {
 
     @Inject
     public BundleContext bundleContext;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-bundlecontext");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-module-reg");
+        archive.addClass(SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -60,6 +63,7 @@ public class SimpleBundleContextTestCase {
                 return builder.openStream();
             }
         });
+        archive.addAsManifestResource(new StringAsset("Export-Package: " + SimpleService.class.getPackage().getName()), "jbosgi-xservice.properties");
         return archive;
     }
 

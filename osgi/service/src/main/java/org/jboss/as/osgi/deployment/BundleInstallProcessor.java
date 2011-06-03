@@ -22,22 +22,17 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.resolver.XModule;
+import org.jboss.osgi.framework.BundleInstallProvider;
 import org.jboss.osgi.spi.util.BundleInfo;
-import org.jboss.osgi.vfs.AbstractVFS;
-import org.jboss.vfs.VirtualFile;
-import org.osgi.framework.Version;
 
 /**
  * Processes deployments that have OSGi metadata attached.
@@ -77,7 +72,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
 
-        // Check for attached OSGiMetaData
+        /* Check for attached OSGiMetaData
         OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaData(deploymentUnit);
         if (deployment == null && metadata != null) {
             String symbolicName = metadata.getBundleSymbolicName();
@@ -88,8 +83,9 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             deployment.addAttachment(OSGiMetaData.class, metadata);
             OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
+        */
 
-        // Check for attached XModule
+        /* Check for attached XModule
         XModule resModule = XModuleAttachment.getXModuleAttachment(deploymentUnit);
         if (deployment == null && resModule != null) {
             String symbolicName = resModule.getName();
@@ -100,12 +96,10 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             deployment.addAttachment(XModule.class, resModule);
             OSGiDeploymentAttachment.attachDeployment(deploymentUnit, deployment);
         }
+        */
 
         // Create the {@link BundleInstallProvider}
         if (deployment != null) {
-            // Prevent garbage collection of the MountHandle which will close the file
-            // MountHandle mount = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getMountHandle();
-            // deployment.addAttachment(MountHandle.class, mount);
             BundleInstallService.addService(phaseContext, deployment);
         }
     }

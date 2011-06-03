@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 public class StatefulBeanTestCase {
 
     private static final Logger log = Logger.getLogger(StatefulBeanTestCase.class.getName());
-    
+
     @Deployment
     public static JavaArchive createDeployment() {
         // create the ejb jar
@@ -58,9 +58,9 @@ public class StatefulBeanTestCase {
         return jar;
     }
 
-    @EJB(mappedName="java:global/test/SimpleStatefulSessionBean!org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal")
+    @EJB(mappedName="java:global/ejb3-sfsb-example/SimpleStatefulSessionBean!org.jboss.as.demos.ejb3.archive.SimpleStatefulSessionLocal")
     private SimpleStatefulSessionLocal localSfsb;
-    
+
     /**
      * Test a basic invocation of SFSB
      *

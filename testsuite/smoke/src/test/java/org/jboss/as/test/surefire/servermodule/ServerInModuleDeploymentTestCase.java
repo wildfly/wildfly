@@ -375,7 +375,7 @@ public class ServerInModuleDeploymentTestCase extends AbstractServerInModuleTest
     }
 
     private void testDeployments(DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServerConnectionProvider provider = new MBeanServerConnectionProvider(InetAddress.getLocalHost(), 1090);
+        final MBeanServerConnectionProvider provider = MBeanServerConnectionProvider.defaultProvider();
         final MBeanServerConnection mbeanServer = provider.getConnection();
         final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
         final TestNotificationListener listener = new TestNotificationListener(name);

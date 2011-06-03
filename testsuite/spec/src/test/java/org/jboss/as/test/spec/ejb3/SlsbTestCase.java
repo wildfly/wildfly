@@ -64,7 +64,7 @@ public class SlsbTestCase {
     /**
      * EJB under test
      */
-    @EJB(mappedName = "java:global/test/GreeterSlsb!org.jboss.as.test.spec.ejb3.GreeterCommonBusiness")
+    @EJB(mappedName = "java:global/slsb/GreeterSlsb!org.jboss.as.test.spec.ejb3.GreeterCommonBusiness")
     private GreeterCommonBusiness slsb;
 
     /**
