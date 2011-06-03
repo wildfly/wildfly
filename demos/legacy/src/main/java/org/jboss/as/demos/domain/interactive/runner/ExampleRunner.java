@@ -30,15 +30,29 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.TextMessage;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -62,30 +76,8 @@ import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.TextMessage;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewOperation;
+import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
@@ -101,9 +93,6 @@ import org.jboss.as.demos.DomainDeploymentUtils;
 import org.jboss.as.demos.fakejndi.FakeJndi;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLContentWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
  * Demonstration of basic aspects of administering servers via the domain management API.
@@ -286,7 +275,7 @@ public class ExampleRunner implements Runnable {
 
         ModelNode op = new ModelNode();
         op.get("operation").set("read-config-as-xml");
-        stdout.println(executeForResult(OperationBuilder.Factory.create(op).build()).asString());
+        stdout.println(executeForResult(new NewOperationBuilder(op).build()).asString());
         return continuePrompt();
     }
 
@@ -333,7 +322,7 @@ public class ExampleRunner implements Runnable {
         ModelNode op = new ModelNode();
         op.get("operation").set("read-config-as-xml");
         op.get("address").add("host", hc);
-        stdout.println(executeForResult(OperationBuilder.Factory.create(op).build()).asString());
+        stdout.println(executeForResult(new NewOperationBuilder(op).build()).asString());
     }
 
     private boolean listServers() throws Exception {
@@ -360,7 +349,7 @@ public class ExampleRunner implements Runnable {
             ModelNode address = op.get("address");
             address.add("host", server.getHostName());
             address.add("server", server.getServerName());
-            stdout.println(executeForResult(OperationBuilder.Factory.create(op).build()).asString());
+            stdout.println(executeForResult(new NewOperationBuilder(op).build()).asString());
         }
         return continuePrompt();
     }
@@ -500,7 +489,7 @@ public class ExampleRunner implements Runnable {
         op.get("operation").set("read-resource");
         op.get("recursive").set(true);
         op.get("proxies").set(false);
-        return executeForResult(OperationBuilder.Factory.create(op).build());
+        return executeForResult(new NewOperationBuilder(op).build());
     }
 
     private boolean removeServer() throws Exception {
@@ -515,7 +504,7 @@ public class ExampleRunner implements Runnable {
             address.add("server-config", server.getServerName());
             boolean success = true;
             try {
-                executeForResult(OperationBuilder.Factory.create(op).build());
+                executeForResult(new NewOperationBuilder(op).build());
             }
             catch (Exception e) {
                 success = false;
@@ -1252,10 +1241,10 @@ public class ExampleRunner implements Runnable {
     }
 
     private ModelNode executeForResult(ModelNode op) throws Exception {
-        return executeForResult(OperationBuilder.Factory.create(op).build());
+        return executeForResult(new NewOperationBuilder(op).build());
     }
 
-    private ModelNode executeForResult(Operation op) {
+    private ModelNode executeForResult(NewOperation op) {
         try {
             ModelNode result = client.execute(op);
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {

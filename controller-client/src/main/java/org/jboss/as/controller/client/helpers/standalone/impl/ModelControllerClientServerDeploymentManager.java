@@ -28,7 +28,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.client.Cancellable;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.NewModelControllerClient;
 import org.jboss.as.controller.client.NewOperation;
 import org.jboss.as.controller.client.Operation;
@@ -38,7 +37,7 @@ import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ServerDeploymentManager} the uses a {@link ModelControllerClient}.
+ * {@link ServerDeploymentManager} that uses a {@link NewModelControllerClient}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  *

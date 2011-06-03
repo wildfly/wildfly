@@ -32,7 +32,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.NewModelControllerClient;
-import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.EmbeddedStandAloneServerFactory;
 import org.jboss.as.server.Main;
@@ -93,7 +92,7 @@ public class ServerInModuleStartupTestCase  {
             ModelNode request = new ModelNode();
             request.get("operation").set("read-config-as-xml");
             request.get("address").setEmptyList();
-            ModelNode r = client.execute(NewOperationBuilder.Factory.create(request).build());
+            ModelNode r = client.execute(request);
 
             Assert.assertEquals(serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {
@@ -123,7 +122,7 @@ public class ServerInModuleStartupTestCase  {
             request.get("address").setEmptyList();
             request.get("recursive").set(true);
             request.get("operations").set(true);
-            r = client.execute(new NewOperationBuilder(request).build());
+            r = client.execute(request);
 
             Assert.assertEquals("response with failure details:"+r.toString() + ":" + serverDetails, SUCCESS, r.require(OUTCOME).asString());
         } finally {

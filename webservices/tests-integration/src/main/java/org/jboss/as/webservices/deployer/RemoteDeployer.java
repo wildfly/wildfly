@@ -38,8 +38,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.NewModelControllerClient;
+import org.jboss.as.controller.client.NewOperationBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
@@ -115,19 +115,19 @@ public final class RemoteDeployer implements Deployer {
 
     @Override
     public void addSecurityDomain(String name, Map<String, String> authenticationOptions) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(address, PORT);
         ModelNode result = createSecurityDomain(client, name, authenticationOptions);
         checkResult(result);
     }
 
     @Override
     public void removeSecurityDomain(String name) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create(address, PORT);
+        NewModelControllerClient client = NewModelControllerClient.Factory.create(address, PORT);
         ModelNode result = removeSecurityDomain(client, name);
         checkResult(result);
     }
 
-    private static ModelNode createSecurityDomain(ModelControllerClient client, String name, Map<String, String> authenticationOptions) throws IOException {
+    private static ModelNode createSecurityDomain(NewModelControllerClient client, String name, Map<String, String> authenticationOptions) throws IOException {
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
@@ -141,15 +141,15 @@ public final class RemoteDeployer implements Deployer {
                 moduleOptions.add(k, authenticationOptions.get(k));
             }
         }
-        return client.execute(OperationBuilder.Factory.create(op).build());
+        return client.execute(op);
     }
 
-    private static ModelNode removeSecurityDomain(ModelControllerClient client, String name) throws IOException {
+    private static ModelNode removeSecurityDomain(NewModelControllerClient client, String name) throws IOException {
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, name);
-        return client.execute(OperationBuilder.Factory.create(op).build());
+        return client.execute(op);
     }
 
     private static void checkResult(ModelNode result) throws Exception {
