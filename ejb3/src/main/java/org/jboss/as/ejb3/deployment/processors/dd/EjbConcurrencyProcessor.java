@@ -24,7 +24,9 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -63,7 +65,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Stuart Douglas
  */
-public class SingletonConcurrencyProcessor implements DeploymentUnitProcessor {
+public class EjbConcurrencyProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -78,16 +80,15 @@ public class SingletonConcurrencyProcessor implements DeploymentUnitProcessor {
         }
 
         for (ComponentDescription description : eeModuleDescription.getComponentDescriptions()) {
-            if (description instanceof SingletonComponentDescription) {
+            if (description instanceof SingletonComponentDescription || description instanceof StatefulComponentDescription) {
                 try {
                     Class<?> componentClass = module.getClassLoader().loadClass(description.getComponentClassName());
-                    final SingletonComponentDescription singletonComponentDescription = (SingletonComponentDescription) description;
-                    checkMethodOverrides(componentClass, singletonComponentDescription, index);
+                    checkMethodOverrides(componentClass, (SessionBeanComponentDescription) description, index);
 
                     if (ejbJarMetaData != null) {
-                        EnterpriseBeanMetaData bean = ejbJarMetaData.getEnterpriseBean(singletonComponentDescription.getEJBName());
+                        EnterpriseBeanMetaData bean = ejbJarMetaData.getEnterpriseBean(((SessionBeanComponentDescription)description).getEJBName());
                         if (bean instanceof SessionBean31MetaData) {
-                            processSingletonBean((SessionBean31MetaData) bean, singletonComponentDescription, index, componentClass);
+                            processBean((SessionBean31MetaData) bean, (SessionBeanComponentDescription) description, index, componentClass);
                         }
                     }
 
@@ -103,7 +104,7 @@ public class SingletonConcurrencyProcessor implements DeploymentUnitProcessor {
      * Removes annotation information from a class if the method has been overridden with a method that has no annotation,
      * as the jandex index cannot be used to get information about methods with no annotations
      */
-    private void checkMethodOverrides(final Class<?> componentClass, final SingletonComponentDescription description, final DeploymentReflectionIndex index) {
+    private void checkMethodOverrides(final Class<?> componentClass, final SessionBeanComponentDescription description, final DeploymentReflectionIndex index) {
 
         ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
         Iterator<Map.Entry<MethodIdentifier, LockType>> iterator = description.getMethodApplicableLockTypes().entrySet().iterator();
@@ -139,7 +140,7 @@ public class SingletonConcurrencyProcessor implements DeploymentUnitProcessor {
     /**
      * Processes method level concurrency from the deployment descriptor.
      */
-    private void processSingletonBean(SessionBean31MetaData singletonBeanMetaData, SingletonComponentDescription singletonComponentDescription, DeploymentReflectionIndex reflectionIndex, Class<?> componentClass) throws DeploymentUnitProcessingException {
+    private void processBean(SessionBean31MetaData singletonBeanMetaData, SessionBeanComponentDescription singletonComponentDescription, DeploymentReflectionIndex reflectionIndex, Class<?> componentClass) throws DeploymentUnitProcessingException {
 
         // add method level lock type to the description
         ConcurrentMethodsMetaData concurrentMethods = singletonBeanMetaData.getConcurrentMethods();
@@ -180,15 +181,15 @@ public class SingletonConcurrencyProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException("Could not find method" + methodData.getMethodName() + "with parameter types" + methodData.getMethodParams() + " referenced in ejb-jar.xml");
         }
         final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
-        Method resolvedMethod = null;
+
         if (methodData.getMethodParams() == null) {
             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
             if (methods.isEmpty()) {
-                resolveMethod(index, (Class<Object>) componentClass.getSuperclass(), methodData);
+                return resolveMethod(index, (Class<Object>) componentClass.getSuperclass(), methodData);
             } else if (methods.size() > 1) {
                 throw new DeploymentUnitProcessingException("More than one method " + methodData.getMethodName() + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
             }
-            resolvedMethod = methods.iterator().next();
+            return methods.iterator().next();
         } else {
             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName(), methodData.getMethodParams().size());
             for (final Method method : methods) {
@@ -200,15 +201,11 @@ public class SingletonConcurrencyProcessor implements DeploymentUnitProcessor {
                     }
                 }
                 if (match) {
-                    resolvedMethod = method;
-                    break;
+                    return method;
                 }
             }
-            if (resolvedMethod == null) {
-                resolveMethod(index, (Class<Object>) componentClass.getSuperclass(), methodData);
-            }
         }
-        return resolvedMethod;
+        return resolveMethod(index, (Class<Object>) componentClass.getSuperclass(), methodData);
     }
 
     @Override
