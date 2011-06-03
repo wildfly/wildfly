@@ -21,6 +21,10 @@
  */
 package org.jboss.as.embedded.ejb3;
 
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
@@ -34,6 +38,7 @@ import javax.ejb.embeddable.EJBContainer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -180,54 +185,45 @@ class ClassPathEjbJarScanner {
         final String[] classPathEntries = classPath.split(File.pathSeparator);
 
         final Object modules;
-        if(properties != null) {
+        if (properties != null) {
             modules = properties.get(EJBContainer.MODULES);
         } else {
             modules = null;
         }
+        Set<String> moduleNames = null;
         if (modules != null) {
             if (modules instanceof File[]) {
                 for (File file : (File[]) modules) {
                     returnValue.add(file.getAbsolutePath());
                 }
+                return returnValue.toArray(DUMMY);
             } else if (modules instanceof File) {
                 returnValue.add(((File) modules).getAbsolutePath());
+                return returnValue.toArray(DUMMY);
             } else if (modules instanceof String[]) {
-                final Set<String> cpSet = new HashSet<String>();
-                cpSet.addAll(Arrays.asList(classPathEntries));
-                for (final String file : (String[]) modules) {
-                    if (cpSet.contains(file)) {
-                        returnValue.add(file);
-                    } else {
-                        log.warn("Entry " + file + " specified in " + EJBContainer.MODULES + " was not on the class path, ignoring");
-                    }
-                }
+                moduleNames = new HashSet<String>();
+                moduleNames.addAll(Arrays.asList((String[]) modules));
             } else if (modules instanceof String) {
-                boolean found = false;
-                for(String classPathEntry : classPathEntries) {
-                    if(classPathEntry.equals(modules)) {
-                        found = true;
-                        returnValue.add(classPathEntry);
-                        break;
-                    }
-                }
-                if(!found) {
-                    //we don't have any jars, throw an exception
-                    throw new RuntimeException(modules + " entry specified in " + EJBContainer.MODULES + " was not found on the class path");
-                }
+                moduleNames = new HashSet<String>();
+                moduleNames.add(modules.toString());
             } else {
                 throw new RuntimeException(EJBContainer.MODULES + " was not of type File[], File, String[] or String, but of type " + modules.getClass());
             }
-        } else {
-            // For each CP entry
-            for (final String classPathEntry : classPathEntries) {
-                // If this is an EJB JAR
-                if (isEjbJar(classPathEntry)) {
+        }
+        // For each CP entry
+        for (final String classPathEntry : classPathEntries) {
+            // If this is an EJB JAR
+            final String moduleName = getEjbJar(classPathEntry);
+            if (moduleName != null) {
+                if (moduleNames == null) {
                     // Add to be returned
+                    returnValue.add(classPathEntry);
+                } else if (moduleNames.contains(moduleName)) {
                     returnValue.add(classPathEntry);
                 }
             }
         }
+
 
         // Return
         if (log.isDebugEnabled()) {
@@ -264,10 +260,12 @@ class ClassPathEjbJarScanner {
 
     /**
      * Determines whether this entry from the ClassPath is an EJB JAR
+     *
+     * @return The module name, or null if this is not an EJB jar
      */
-    private static boolean isEjbJar(final String candidate) {
+    private static String getEjbJar(final String candidate) {
         if (candidate == null || candidate.isEmpty())
-            return false;
+            return null;
 
         /*
         * EJB 3.1 22.2.1:
@@ -293,12 +291,12 @@ class ClassPathEjbJarScanner {
                 if (log.isTraceEnabled()) {
                     log.tracef("%s matched %s for exclusion; skipping", exclusionFilter, file);
                 }
-                return false;
+                return null;
             }
         }
 
+        Closeable handle;
         try {
-            Closeable handle;
 
             // If the file exists
             if (file.exists()) {
@@ -318,14 +316,14 @@ class ClassPathEjbJarScanner {
                 else {
                     // So it's obvious if we've got something we didn't properly mount
                     log.warn("Encountered unknown file type, skipping: " + file);
-                    return false;
+                    return null;
                 }
 
             }
             // Not a real file
             else {
                 log.warn("File on ClassPath could not be found: " + file);
-                return false;
+                return null;
             }
 
             try {
@@ -340,16 +338,16 @@ class ClassPathEjbJarScanner {
                     if (log.isTraceEnabled()) {
                         log.tracef("Found descriptor %s in %s", ejbJarXml.getPathNameRelativeTo(file), file);
                     }
-                    return true;
+                    return getModuleNameFromEjbJar(file, ejbJarXml);
                 }
 
                 // Look for at least one .class with an EJB annotation
                 if (containsEjbComponentClass(file)) {
-                    return true;
+                    return getModuleNameFromFileName(file);
                 }
 
                 // Return
-                return false;
+                return null;
             } finally {
                 try {
                     handle.close();
@@ -364,6 +362,17 @@ class ClassPathEjbJarScanner {
 
     }
 
+    private static String getModuleNameFromEjbJar(final VirtualFile file, final VirtualFile ejbJarXml) {
+        //TODO: parse the xml file and get the module name
+        return getModuleNameFromFileName(file);
+    }
+
+    private static String getModuleNameFromFileName(final VirtualFile file) {
+        String moduleName = file.getName();
+        int index = moduleName.lastIndexOf('.');
+        return moduleName.substring(0, index - 1);
+    }
+
     /**
      * Determines if there is at least one .class in the given file
      * with an EJB component-defining annotation (Stateless, Stateful,
@@ -375,7 +384,17 @@ class ClassPathEjbJarScanner {
      */
     @Deprecated
     private static boolean containsEjbComponentClass(final VirtualFile file) {
-        return containsEjbComponentClass(file, file);
+        Indexer indexer = new Indexer();
+        indexClasses(file, file, indexer);
+        Index index = indexer.complete();
+        for(Class<? extends Annotation> annotation : EJB_COMPONENT_ANNOTATIONS) {
+            final DotName annotationName = DotName.createSimple(annotation.getName());
+            final List<AnnotationInstance> classes = index.getAnnotations(annotationName);
+            if(classes != null && !classes.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -389,7 +408,7 @@ class ClassPathEjbJarScanner {
      * @deprecated Use a real implementation scanner
      */
     @Deprecated
-    private static boolean containsEjbComponentClass(final VirtualFile root, final VirtualFile file) {
+    private static void indexClasses(final VirtualFile root, final VirtualFile file, Indexer indexer) {
 
         // Precondition check
         assert file != null : "File must be specified";
@@ -398,56 +417,30 @@ class ClassPathEjbJarScanner {
         for (final VirtualFile child : file.getChildren()) {
             if (child.isDirectory()) {
                 // Determine if there's one in the child
-                final boolean foundInChild = containsEjbComponentClass(root, child);
-                if (foundInChild) {
-                    return true;
-                }
+                indexClasses(root, child, indexer);
             }
 
             // Get the Class for all .class files
             final String childName = child.getPathNameRelativeTo(root);
             if (childName.endsWith(EXTENSION_CLASS)) {
-                final String className = childName.substring(0, childName.length() - EXTENSION_CLASS.length()).replace('/',
-                        '.');
-
-                // Here's the naughty part; loading the Class (which we really don't need to do at all, just inspect for annotations)
-                Class<?> clazz = null;
+                InputStream stream = null;
                 try {
-                    clazz = Class.forName(className, false, getTccl());
-                } catch (final ClassNotFoundException cnfe) {
-                    throw new RuntimeException("Found .class on ClassPath which could not be found by the TCCL", cnfe);
-                } catch (final NoClassDefFoundError ncdfe) {
-                    // Ugly hack used to identify the stuff for which we need to configure an exclusion filter
-                    log.warnf(
-                            "Dev Hack Alert: Ignoring class on ClassPath which can't be loaded due to %s while loading %s; "
-                                    + "configure an exclusion filter so %s is not processed", ncdfe.toString(), className, root);
-                } catch (final LinkageError e) {
-                    // a work-around for jboss-modules bug
-                    // Ugly hack used to identify the stuff for which we need to configure an exclusion filter
-                    log.warnf(
-                            "Dev Hack Alert: Ignoring class on ClassPath which can't be loaded due to %s while loading %s; "
-                                    + "configure an exclusion filter so %s is not processed", e.toString(), className, root);
-                } catch (final SecurityException e) {
-                    log.warnf("Can't load class %s (%s).", className, e.toString());
-                }
-
-                // Determine if we have a class with an EJB component annotation
-                if (clazz != null) {
-                    for (final Class<? extends Annotation> annotationClass : EJB_COMPONENT_ANNOTATIONS) {
-                        if (clazz.isAnnotationPresent(annotationClass)) {
-                            if (log.isTraceEnabled()) {
-                                log.tracef("Found %s on %s in %s", annotationClass, clazz, root);
-                            }
-                            return true;
+                    try {
+                        stream = child.openStream();
+                        indexer.index(stream);
+                    } catch (IOException e) {
+                        log.warn("Could not load class file " + child, e);
+                    }
+                } finally {
+                    try {
+                        if(stream != null) {
+                            stream.close();
                         }
+                    } catch (IOException e) {
+                        log.warn("Exception closing file " + child, e);
                     }
                 }
-
             }
-
         }
-
-        // No conditions met, so false
-        return false;
     }
 }
