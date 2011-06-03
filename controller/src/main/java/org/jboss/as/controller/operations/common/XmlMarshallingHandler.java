@@ -48,6 +48,8 @@ public class XmlMarshallingHandler implements NewStepHandler, DescriptionProvide
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
+    public static final String OPERATION_NAME = CommonDescriptions.READ_CONFIG_AS_XML;
+
     private final String[] EMPTY = new String[0];
     private final ConfigurationPersister configPersister;
 

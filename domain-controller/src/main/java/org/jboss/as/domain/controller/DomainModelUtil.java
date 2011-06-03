@@ -82,6 +82,7 @@ import org.jboss.as.controller.operations.common.SocketBindingRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
+import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.InetAddressValidatingHandler;
@@ -186,6 +187,8 @@ class DomainModelUtil {
         root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
         // Other root resource operations
+        XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister);
+        root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false);
         root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
         root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
