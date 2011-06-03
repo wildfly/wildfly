@@ -32,19 +32,28 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.as.server.deployment.module.VFSResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.modules.ResourceLoaderSpec;
-import org.jboss.modules.ResourceLoaders;
-import org.jboss.modules.filter.PathFilters;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
+import java.io.Closeable;
 import java.io.File;
 import java.net.URL;
-import java.util.jar.JarFile;
 
 /**
  * Recognize Seam deployments and add org.jboss.seam.int module to it.
@@ -78,10 +87,11 @@ public class SeamProcessor implements DeploymentUnitProcessor {
     /**
      * Lookup Seam integration resource loader.
      *
+     * @param serviceTarget the service target
      * @return the Seam integration resource loader
      * @throws DeploymentUnitProcessingException for any error
      */
-    protected ResourceLoaderSpec getSeamIntResourceLoader() throws DeploymentUnitProcessingException {
+    protected synchronized ResourceLoaderSpec getSeamIntResourceLoader(ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
         try {
             if (seamIntResourceLoader == null) {
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
@@ -90,8 +100,25 @@ public class SeamProcessor implements DeploymentUnitProcessor {
                 if (url == null)
                     throw new DeploymentUnitProcessingException("No Seam Integration jar present: " + extModule);
 
-                JarFile seamIntFile = new JarFile(new File(url.toURI()));
-                ResourceLoader resourceLoader = ResourceLoaders.createJarResourceLoader(SEAM_INT_JAR, seamIntFile);
+                File file = new File(url.toURI());
+                VirtualFile vf = VFS.getChild(file.toURI());
+                final Closeable mountHandle = VFS.mountZip(vf, vf, TempFileProviderService.provider());
+                Service<Closeable> mountHandleService = new Service<Closeable>() {
+                    public void start(StartContext startContext) throws StartException {
+                    }
+
+                    public void stop(StopContext stopContext) {
+                        VFSUtils.safeClose(mountHandle);
+                    }
+
+                    public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
+                        return mountHandle;
+                    }
+                };
+                ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SEAM_INT_JAR), mountHandleService);
+                builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+                ResourceLoader resourceLoader = new VFSResourceLoader(SEAM_INT_JAR, vf);
                 seamIntResourceLoader = ResourceLoaderSpec.createResourceLoaderSpec(resourceLoader);
             }
             return seamIntResourceLoader;
@@ -113,11 +140,11 @@ public class SeamProcessor implements DeploymentUnitProcessor {
         VirtualFile root = mainRoot.getRoot();
         for (String path : SEAM_FILES) {
             if (root.getChild(path).exists()) {
+                top.putAttachment(ADDED, true); // marked checked and added
                 final ModuleSpecification moduleSpecification = top.getAttachment(Attachments.MODULE_SPECIFICATION);
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
                 moduleSpecification.addDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false));
-                moduleSpecification.addResourceLoader(getSeamIntResourceLoader());
-                top.putAttachment(ADDED, true);
+                moduleSpecification.addResourceLoader(getSeamIntResourceLoader(phaseContext.getServiceTarget()));
                 break;
             }
         }
