@@ -49,8 +49,7 @@ public interface ServerDeploymentManager {
          * @return A domain client
          */
         public static ServerDeploymentManager create(final InetAddress address, int port) {
-            throw new IllegalStateException("Waiting for remoting to be integrated until remote clients are supported");
-            //return create(NewModelControllerClient.Factory.create(address, port));
+            return create(NewModelControllerClient.Factory.create(address, port));
         }
 
         /**
