@@ -78,10 +78,6 @@
             <maven-resource group="asm" artifact="asm" />
         </module-def>
 
-        <module-def name="net.sf.cglib">
-            <maven-resource group="cglib" artifact="cglib" />
-        </module-def>
-
         <module-def name="ch.qos.cal10n">
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>

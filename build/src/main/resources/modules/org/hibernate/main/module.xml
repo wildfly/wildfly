@@ -33,7 +33,6 @@
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
-        <module name="net.sf.cglib"/>
         <module name="org.antlr"/>
         <module name="org.apache.ant"/>
         <module name="org.apache.commons.collections"/>
